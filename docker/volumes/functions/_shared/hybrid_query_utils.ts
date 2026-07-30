@@ -182,6 +182,84 @@ function prependSeedTerm(terms: string[], seed: string): string[] {
   return uniqueTerms([normalizedSeed, ...terms]);
 }
 
+function isOrBoundary(char: string | undefined): boolean {
+  return !char || /\s|[()]/.test(char);
+}
+
+function isTopLevelOrOperator(term: string, index: number): boolean {
+  return (
+    term.slice(index, index + 2).toLowerCase() === 'or' &&
+    isOrBoundary(term[index - 1]) &&
+    isOrBoundary(term[index + 2])
+  );
+}
+
+function stripOneBalancedOuterParen(term: string): string {
+  const normalized = normalizeTerm(term);
+  if (!normalized.startsWith('(') || !normalized.endsWith(')')) {
+    return normalized;
+  }
+
+  let depth = 0;
+  for (let index = 0; index < normalized.length; index += 1) {
+    const char = normalized[index];
+    if (char === '(') {
+      depth += 1;
+    } else if (char === ')') {
+      depth -= 1;
+      if (depth === 0 && index < normalized.length - 1) {
+        return normalized;
+      }
+    }
+    if (depth < 0) {
+      return normalized;
+    }
+  }
+
+  return depth === 0 ? normalizeTerm(normalized.slice(1, -1)) : normalized;
+}
+
+function splitTopLevelOrTerms(term: string): string[] {
+  const normalized = normalizeTerm(term);
+  if (!normalized) {
+    return [];
+  }
+  const unwrapped = stripOneBalancedOuterParen(normalized);
+  if (unwrapped !== normalized) {
+    return splitTopLevelOrTerms(unwrapped);
+  }
+
+  const parts: string[] = [];
+  let partStart = 0;
+  let parenDepth = 0;
+  let bracketDepth = 0;
+
+  for (let index = 0; index < normalized.length; index += 1) {
+    const char = normalized[index];
+
+    if (parenDepth === 0 && bracketDepth === 0 && isTopLevelOrOperator(normalized, index)) {
+      parts.push(normalized.slice(partStart, index));
+      partStart = index + 2;
+      index += 1;
+      continue;
+    }
+
+    if (char === '(') {
+      parenDepth += 1;
+    } else if (char === ')') {
+      parenDepth = Math.max(0, parenDepth - 1);
+    } else if (char === '[') {
+      bracketDepth += 1;
+    } else if (char === ']') {
+      bracketDepth = Math.max(0, bracketDepth - 1);
+    }
+  }
+
+  parts.push(normalized.slice(partStart));
+
+  return parts.map(stripOneBalancedOuterParen).filter((part) => part.length > 0);
+}
+
 export function sanitizeHybridQueryOutput(
   raw: HybridSearchQuery,
   userQuery: string,
@@ -195,6 +273,8 @@ export function sanitizeHybridQueryOutput(
   );
 
   const normalizedUserQuery = normalizeTerm(userQuery);
+  const userQueryHasCjk = CJK_PATTERN.test(normalizedUserQuery);
+  const userQueryHasLatin = LATIN_CHAR_PATTERN.test(normalizedUserQuery);
 
   if (fulltextQueryEn.length === 0 && semanticQueryEn) {
     fulltextQueryEn = [semanticQueryEn];
@@ -203,16 +283,31 @@ export function sanitizeHybridQueryOutput(
     fulltextQueryZh = [normalizedUserQuery];
   }
 
+  if (normalizedUserQuery && (userQueryHasLatin || CAS_PATTERN.test(normalizedUserQuery))) {
+    fulltextQueryEn = prependSeedTerm(fulltextQueryEn, normalizedUserQuery);
+  }
+  if (normalizedUserQuery && userQueryHasCjk) {
+    fulltextQueryZh = prependSeedTerm(fulltextQueryZh, normalizedUserQuery);
+  }
+
   const enSeed = semanticQueryEn || fulltextQueryEn[0] || '';
+  const rawEnSeed =
+    normalizedUserQuery && (userQueryHasLatin || CAS_PATTERN.test(normalizedUserQuery))
+      ? normalizedUserQuery
+      : '';
   const zhSeed =
     normalizedUserQuery && CJK_PATTERN.test(normalizedUserQuery)
       ? normalizedUserQuery
       : fulltextQueryZh[0] || '';
-  const enRest = fulltextQueryEn.filter((term) => term.toLowerCase() !== enSeed.toLowerCase());
+  const enRest = fulltextQueryEn.filter(
+    (term) =>
+      term.toLowerCase() !== enSeed.toLowerCase() &&
+      (!rawEnSeed || term.toLowerCase() !== rawEnSeed.toLowerCase()),
+  );
   const zhRest = fulltextQueryZh.filter((term) => term !== zhSeed);
   const sortedEnRest = sortTermsDeterministically(dedupeNearDuplicates(enRest), 'en');
   const sortedZhRest = sortTermsDeterministically(dedupeNearDuplicates(zhRest), 'zh-Hans-CN');
-  fulltextQueryEn = enSeed ? [enSeed, ...sortedEnRest] : sortedEnRest;
+  fulltextQueryEn = uniqueTerms([enSeed, rawEnSeed, ...sortedEnRest].filter(Boolean));
   fulltextQueryZh = zhSeed ? [zhSeed, ...sortedZhRest] : sortedZhRest;
 
   return {
@@ -220,4 +315,10 @@ export function sanitizeHybridQueryOutput(
     fulltext_query_en: fulltextQueryEn.slice(0, 6),
     fulltext_query_zh: fulltextQueryZh.slice(0, 6),
   };
+}
+
+export function buildHybridFulltextQueryTerms(query: HybridSearchQuery): string[] {
+  return uniqueTerms(
+    [...query.fulltext_query_zh, ...query.fulltext_query_en].flatMap(splitTopLevelOrTerms),
+  );
 }

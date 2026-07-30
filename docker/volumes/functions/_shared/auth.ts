@@ -4,12 +4,12 @@ import type {
   UserAppMetadata,
   UserMetadata,
 } from 'jsr:@supabase/supabase-js@2.98.0';
-import { createClient } from 'jsr:@supabase/supabase-js@2.98.0';
 // import { Redis } from '@upstash/redis';
 import { authenticateCognitoToken } from './cognito_auth.ts';
 import { corsHeaders } from './cors.ts';
 import decodeApiKey from './decode_api_key.ts';
-import { redisGet, redisSet, type RedisClient } from './redis_client.ts';
+import { type RedisClient, redisGet, redisSet } from './redis_client.ts';
+import { createSupabaseAuthClient, getSupabaseUrl } from './supabase_client.ts';
 
 const _defaultAppMetadata: UserAppMetadata = {
   provider: '',
@@ -22,6 +22,98 @@ const _defaultUserMetadata: UserMetadata = {
 const _defaultAud = '';
 
 const _defaultCreatedAt = '';
+const textEncoder = new TextEncoder();
+
+function readOptionalEnv(name: string): string | undefined {
+  const value = Deno.env.get(name);
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function readPublishableApiKey(): string | undefined {
+  return (
+    readOptionalEnv('REMOTE_SUPABASE_PUBLISHABLE_KEY') ??
+    readOptionalEnv('REMOTE_SUPABASE_ANON_KEY') ??
+    readOptionalEnv('SUPABASE_PUBLISHABLE_KEY') ??
+    readOptionalEnv('SUPABASE_ANON_KEY')
+  );
+}
+
+export function isSupabasePublishableApiKey(
+  apiKey: string,
+  publishableApiKey: string | undefined = readPublishableApiKey(),
+): boolean {
+  if (!apiKey) {
+    return false;
+  }
+
+  if (publishableApiKey && apiKey === publishableApiKey) {
+    return true;
+  }
+
+  return apiKey.startsWith('sb_publishable_');
+}
+
+const JWT_PATTERN = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+
+function extractBearerToken(authHeader: string | null): string | undefined {
+  if (!authHeader) {
+    return undefined;
+  }
+
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  return token.length > 0 ? token : undefined;
+}
+
+function isJwtLikeToken(token: string): boolean {
+  return JWT_PATTERN.test(token);
+}
+
+function createAuthResponse(message: string, status: number): Response {
+  return new Response(message, {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const message = Reflect.get(error, 'message');
+    if (typeof message === 'string' && message.trim().length > 0) {
+      return message;
+    }
+  }
+
+  return fallback;
+}
+
+function getErrorStatus(error: unknown, fallback: number): number {
+  if (typeof error === 'object' && error !== null) {
+    const status = Reflect.get(error, 'status');
+    if (typeof status === 'number' && Number.isFinite(status)) {
+      return status;
+    }
+  }
+
+  return fallback;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function createUserApiKeyCacheKey(email: string, password: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', textEncoder.encode(`${email}\0${password}`));
+  return `lca_${email}_${bytesToHex(new Uint8Array(digest))}`;
+}
 
 export interface AuthedUser extends User {
   role?: string;
@@ -40,8 +132,8 @@ export interface AuthResult {
  * Authentication configuration
  */
 export interface AuthConfig {
-  /** Supabase client instance */
-  supabase?: SupabaseClient;
+  /** Supabase auth client instance used for JWT validation */
+  authClient?: SupabaseClient;
   /** Redis client instance for caching */
   redis?: RedisClient;
   /** Whether to require authentication (default: true) */
@@ -77,13 +169,13 @@ export enum AuthMethod {
  * ```typescript
  * // Basic usage with Supabase JWT
  * const authResult = await authenticateRequest(req, {
- *   supabase: supabaseClient,
+ *   authClient: supabaseAuthClient,
  *   allowedMethods: [AuthMethod.JWT]
  * });
  *
  * // With User API key support and Redis caching
  * const authResult = await authenticateRequest(req, {
- *   supabase: supabaseClient,
+ *   authClient: supabaseAuthClient,
  *   redis: redisClient,
  *   allowedMethods: [AuthMethod.USER_API_KEY]
  * });
@@ -99,7 +191,7 @@ export async function authenticateRequest(
   config: AuthConfig = {},
 ): Promise<AuthResult> {
   const {
-    supabase,
+    authClient,
     redis,
     requireAuth = true,
     allowedMethods = [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
@@ -107,7 +199,10 @@ export async function authenticateRequest(
   } = config;
 
   const resolvedServiceApiKey =
-    serviceApiKey ?? Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY');
+    serviceApiKey ??
+    readOptionalEnv('REMOTE_SERVICE_API_KEY') ??
+    readOptionalEnv('SERVICE_API_KEY');
+  const resolvedPublishableApiKey = readPublishableApiKey();
 
   // If authentication is not required, return success
   if (!requireAuth) {
@@ -116,32 +211,52 @@ export async function authenticateRequest(
   }
 
   const authHeader = req.headers.get('Authorization');
+  const bearerToken = extractBearerToken(authHeader);
+  const bearerLooksLikeJwt = bearerToken ? isJwtLikeToken(bearerToken) : false;
   const apiKey = req.headers.get('apikey');
 
   // Collect all possible authentication results
   const authResults: Array<{ method: AuthMethod; result: AuthResult | Promise<AuthResult> }> = [];
 
   // Check Service API key
-  if (allowedMethods.includes(AuthMethod.SERVICE_API_KEY) && apiKey) {
+  if (
+    allowedMethods.includes(AuthMethod.SERVICE_API_KEY) &&
+    apiKey &&
+    !isSupabasePublishableApiKey(apiKey, resolvedPublishableApiKey)
+  ) {
     console.log('Checking Service API key authentication');
     const result = authenticateServiceApiKey(apiKey, resolvedServiceApiKey);
     authResults.push({ method: AuthMethod.SERVICE_API_KEY, result });
   }
 
   // Check User API key
-  if (allowedMethods.includes(AuthMethod.USER_API_KEY) && supabase && redis && authHeader) {
+  if (
+    allowedMethods.includes(AuthMethod.USER_API_KEY) &&
+    redis &&
+    bearerToken &&
+    !bearerLooksLikeJwt
+  ) {
     console.log('Checking User API key authentication');
-    const apiKeyValue = authHeader.replace('Bearer ', '');
-    const result = authenticateUserApiKey(apiKeyValue, redis);
+    const result = authenticateUserApiKey(bearerToken, redis);
     authResults.push({ method: AuthMethod.USER_API_KEY, result });
   }
 
   // Check Supabase JWT
-  if (allowedMethods.includes(AuthMethod.JWT) && supabase && authHeader) {
-    console.log('Checking Supabase JWT authentication');
-    const token = authHeader.replace('Bearer ', '');
-    const result = authenticateSupabaseJWT(token, supabase);
-    authResults.push({ method: AuthMethod.JWT, result });
+  if (
+    allowedMethods.includes(AuthMethod.JWT) &&
+    bearerToken &&
+    (bearerLooksLikeJwt || !allowedMethods.includes(AuthMethod.USER_API_KEY))
+  ) {
+    if (!authClient) {
+      authResults.push({
+        method: AuthMethod.JWT,
+        result: authClientNotConfiguredResult(),
+      });
+    } else {
+      console.log('Checking Supabase JWT authentication');
+      const result = authenticateSupabaseJWT(bearerToken, authClient);
+      authResults.push({ method: AuthMethod.JWT, result });
+    }
   }
 
   // If no authentication method is found, return unauthorized
@@ -157,6 +272,12 @@ export async function authenticateRequest(
   }
 
   // Await all asynchronous authentication results
+  return await finalizeAuthResults(authResults);
+}
+
+async function finalizeAuthResults(
+  authResults: Array<{ method: AuthMethod; result: AuthResult | Promise<AuthResult> }>,
+): Promise<AuthResult> {
   const resolvedResults = await Promise.all(
     authResults.map(async ({ method, result }) => ({
       method,
@@ -196,15 +317,20 @@ export async function authenticateRequest(
   return failedAuths[0].result;
 }
 
+function authClientNotConfiguredResult(): AuthResult {
+  return {
+    isAuthenticated: false,
+    response: createAuthResponse('Auth client not configured', 500),
+  };
+}
+
 /**
  * Determine if a bearer token is from Cognito or Supabase
  * @param bearerKey - The bearer token to analyze
  * @returns Token type: 'cognito' or 'supabase'
  */
 function getTokenType(bearerKey: string): 'cognito' | 'supabase' {
-  const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
-
-  if (jwtPattern.test(bearerKey)) {
+  if (isJwtLikeToken(bearerKey)) {
     try {
       const payload = JSON.parse(atob(bearerKey.split('.')[1]));
       if (payload.iss && payload.iss.includes('cognito')) {
@@ -233,33 +359,46 @@ async function authenticateSupabaseJWT(
     return await authenticateCognitoToken(token);
   }
 
-  const { data: authData } = await supabase.auth.getUser(token);
-  console.log('Supabase JWT authentication result:', authData);
+  try {
+    const { data: authData, error } = await supabase.auth.getUser(token);
+    if (error) {
+      console.error('Supabase JWT authentication failed:', error);
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse(
+          getErrorMessage(error, 'JWT authentication failed'),
+          getErrorStatus(error, 401),
+        ),
+      };
+    }
 
-  if (!authData?.user) {
+    console.log('Supabase JWT authentication result:', authData);
+
+    if (!authData?.user) {
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse('User Not Found', 401),
+      };
+    }
+
+    if (authData.user.role !== 'authenticated') {
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse('Forbidden', 403),
+      };
+    }
+
+    return {
+      isAuthenticated: true,
+      user: authData.user,
+    };
+  } catch (error) {
+    console.error('Supabase JWT authentication threw:', error);
     return {
       isAuthenticated: false,
-      response: new Response('User Not Found', {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }),
+      response: createAuthResponse(getErrorMessage(error, 'JWT authentication failed'), 500),
     };
   }
-
-  if (authData.user.role !== 'authenticated') {
-    return {
-      isAuthenticated: false,
-      response: new Response('Forbidden', {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }),
-    };
-  }
-
-  return {
-    isAuthenticated: true,
-    user: authData.user,
-  };
 }
 
 /**
@@ -281,7 +420,7 @@ async function authenticateUserApiKey(apiKey: string, redis: RedisClient): Promi
   }
 
   const { email = '', password = '' } = credentials;
-  const cacheKey = `lca_${email}`;
+  const cacheKey = await createUserApiKeyCacheKey(email, password);
   const cachedUserId = await redisGet(redis, cacheKey);
 
   if (cachedUserId) {
@@ -302,70 +441,80 @@ async function authenticateUserApiKey(apiKey: string, redis: RedisClient): Promi
   if (!authClient) {
     return {
       isAuthenticated: false,
-      response: new Response('Auth client not configured', {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }),
+      response: createAuthResponse('Auth client not configured', 500),
     };
   }
 
-  const { data, error } = await authClient.auth.signInWithPassword({
-    email: email,
-    password: password,
-  });
+  try {
+    const { data, error } = await authClient.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-  if (error || !data.user) {
+    if (error) {
+      console.error('Supabase user API key sign-in failed:', error);
+      const status = getErrorStatus(error, 401);
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse(
+          status >= 500
+            ? getErrorMessage(error, 'User API key authentication failed')
+            : 'Unauthorized',
+          status,
+        ),
+      };
+    }
+
+    if (!data.user) {
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse('Unauthorized', 401),
+      };
+    }
+
+    if (data.user.role !== 'authenticated') {
+      return {
+        isAuthenticated: false,
+        response: createAuthResponse('You are not an authenticated user.', 401),
+      };
+    }
+
+    // Cache the user ID for 1 hour.
+    await redisSet(redis, cacheKey, data.user.id, { ex: 3600 });
+
+    return {
+      isAuthenticated: true,
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        app_metadata: _defaultAppMetadata,
+        user_metadata: _defaultUserMetadata,
+        aud: _defaultAud,
+        created_at: _defaultCreatedAt,
+      },
+    };
+  } catch (error) {
+    console.error('Supabase user API key sign-in threw:', error);
     return {
       isAuthenticated: false,
-      response: new Response('Unauthorized', {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }),
+      response: createAuthResponse(
+        getErrorMessage(error, 'User API key authentication failed'),
+        500,
+      ),
     };
   }
-
-  if (data.user.role !== 'authenticated') {
-    return {
-      isAuthenticated: false,
-      response: new Response('You are not an authenticated user.', {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }),
-    };
-  }
-
-  // Cache the user ID for 1 hour.
-  await redisSet(redis, cacheKey, data.user.id, { ex: 3600 });
-
-  return {
-    isAuthenticated: true,
-    user: {
-      id: data.user.id,
-      email: data.user.email,
-      app_metadata: _defaultAppMetadata,
-      user_metadata: _defaultUserMetadata,
-      aud: _defaultAud,
-      created_at: _defaultCreatedAt,
-    },
-  };
 }
 
 function createAuthClientForUserApiKey(): SupabaseClient | null {
-  const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
-  const serviceApiKey =
-    Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '';
+  const supabaseUrl =
+    readOptionalEnv('REMOTE_SUPABASE_URL') ?? readOptionalEnv('SUPABASE_URL') ?? '';
+  const publishableApiKey = readPublishableApiKey() ?? '';
 
-  if (!supabaseUrl || !serviceApiKey) {
+  if (!supabaseUrl || !publishableApiKey) {
     return null;
   }
 
-  return createClient(supabaseUrl, serviceApiKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
+  return createSupabaseAuthClient();
 }
 
 /**
@@ -425,6 +574,6 @@ export function handleCors(req: Request): Response | null {
  */
 export async function createAuthenticatedSupabaseClient(apiKey: string): Promise<SupabaseClient> {
   const { createClient } = await import('jsr:@supabase/supabase-js@2.98.0');
-  const supabaseUrl = Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseUrl = getSupabaseUrl();
   return createClient(supabaseUrl, apiKey);
 }

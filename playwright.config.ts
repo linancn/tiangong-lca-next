@@ -18,6 +18,7 @@ const releaseRun = process.env.E2E_RELEASE_MODE === 'true';
 const verifiedEvidenceRun = process.env.E2E_WRITE_VERIFIED_EVIDENCE === 'true';
 const externalCandidateServer = process.env.E2E_EXTERNAL_SERVER === 'true';
 const expectTimeout = authenticatedRun ? 45_000 : 15_000;
+const qualificationRun = process.env.E2E_QUALIFICATION === 'true';
 if (
   verifiedEvidenceRun &&
   (!authenticatedRun ||
@@ -43,7 +44,11 @@ export default defineConfig({
   },
   globalSetup: './tests/e2e/i18n/global-setup.ts',
   globalTeardown: './tests/e2e/i18n/global-teardown.ts',
-  reporter: [['line'], ['./tests/e2e/i18n/evidence-reporter.ts']],
+  reporter: [
+    ['line'],
+    ['./tests/e2e/i18n/evidence-reporter.ts'],
+    ...(qualificationRun ? ([['./tests/e2e/i18n/qualification-reporter.ts']] as [string][]) : []),
+  ],
   use: {
     baseURL,
     locale: 'en-US',

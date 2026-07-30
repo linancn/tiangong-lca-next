@@ -592,7 +592,6 @@ async function getProcessTableAllData(
   lang: string,
   typeOfDataSet?: string,
   ownerDraftOnly = false,
-  keyword = '',
 ): Promise<ProcessTableResponse> {
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user?.id;
@@ -622,10 +621,6 @@ async function getProcessTableAllData(
       'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
       typeOfDataSet,
     );
-  }
-
-  if (keyword.trim()) {
-    query = query.ilike('extracted_text', `%${keyword.trim()}%`);
   }
 
   const result = await query;
@@ -834,6 +829,7 @@ export async function getProcessTablePgroongaSearch(
   typeOfDataSet?: string,
   orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
+  ownerDraftOnly = false,
 ) {
   // const time_start = new Date();
   const session = await supabase.auth.getSession();
@@ -860,10 +856,12 @@ export async function getProcessTablePgroongaSearch(
     data_source: dataSource,
     this_user_id: session.data.session.user?.id,
     team_id_filter: teamId,
-    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    state_code_filter: ownerDraftOnly ? 0 : typeof stateCode === 'number' ? stateCode : null,
     type_of_data_set_filter: typeOfDataSet ?? 'all',
+    query_terms: [queryText],
+    owner_draft_only: ownerDraftOnly,
   };
-  const result = await supabase.rpc('search_processes_latest', requestParams);
+  const result = await supabase.rpc('search_processes_latest_v2', requestParams);
   if (result.error) {
     console.log('error', result.error);
   }
@@ -1045,6 +1043,7 @@ async function listAllDataSearchProcessPage(
   filterCondition: any,
   stateCode: string | number,
   typeOfDataSet: string,
+  ownerDraftOnly = false,
 ): Promise<ProcessTableResponse> {
   const currentPage = Math.max(1, params.current ?? 1);
   const pageSize = Math.max(1, params.pageSize ?? 10);
@@ -1061,6 +1060,9 @@ async function listAllDataSearchProcessPage(
         filterCondition,
         stateCode,
         typeOfDataSet,
+        undefined,
+        [],
+        ownerDraftOnly && dataSource === 'my',
       ),
       pageParams.current,
     );
@@ -1224,7 +1226,19 @@ export async function listProcessesForLcaAnalysis(
   }
 
   if (dataScope === 'public_plus_owner_draft') {
-    return await getProcessTableAllData(params, sort, lang, typeOfDataSet, true, trimmedKeyword);
+    if (trimmedKeyword) {
+      return await listAllDataSearchProcessPage(
+        params,
+        lang,
+        trimmedKeyword,
+        filterCondition,
+        stateCode,
+        typeOfDataSet,
+        true,
+      );
+    }
+
+    return await getProcessTableAllData(params, sort, lang, typeOfDataSet, true);
   }
 
   return loadBySource(dataScope === 'open_data' ? 'tg' : 'my');

@@ -1,5 +1,10 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 import { corsHeaders } from './cors.ts';
+import {
+  enqueueCalculatorWorkerJob,
+  isWorkerJobsCutoverEnabled,
+  workerJobPayloadStringFromRpcData,
+} from './worker_jobs_cutover.ts';
 
 export const SUPPORTED_TIDAS_TABLES = [
   'contacts',
@@ -61,9 +66,19 @@ type ExportRequestCacheRow = {
   id: string;
   status: string;
   job_id: string | null;
+  worker_job_id?: string | null;
   export_artifact_id: string | null;
   report_artifact_id: string | null;
   hit_count: number;
+};
+
+type ExportRequestCacheLookupRow = ExportRequestCacheRow & {
+  request_key: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  last_accessed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 export type ExportCacheAction = 'cache_hit' | 'in_progress' | 'retry';
@@ -81,11 +96,29 @@ type PackageArtifactResponse = {
   storage_object_path: string | null;
   signed_download_url: string | null;
   signed_download_expires_in_seconds: number | null;
+  download_status: PackageArtifactDownloadStatus;
+  download_error_code: string | null;
+  download_error_message: string | null;
   metadata: JsonRecord;
   expires_at: string | null;
   is_pinned: boolean;
   created_at: string | null;
   updated_at: string | null;
+};
+
+export type PackageArtifactDownloadStatus =
+  | 'available'
+  | 'not_ready'
+  | 'expired'
+  | 'deleted'
+  | 'object_missing'
+  | 'storage_path_invalid'
+  | 'signed_url_failed';
+
+type PackageArtifactDownloadState = {
+  status: PackageArtifactDownloadStatus;
+  code: string | null;
+  message: string | null;
 };
 
 type PackageRequestCacheResponse = {
@@ -128,8 +161,25 @@ type PackageJobRow = {
   updated_at: string | null;
 };
 
+type WorkerPackageJobRow = {
+  id: string;
+  job_kind: string;
+  status: string;
+  requested_by: string | null;
+  request_hash: string | null;
+  payload: JsonRecord;
+  diagnostics: unknown;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  updated_at: string | null;
+};
+
 type PackageArtifactRow = {
   id: string;
+  worker_job_id: string | null;
   artifact_kind: TidasPackageArtifactKind;
   status: string;
   artifact_url: string;
@@ -309,8 +359,13 @@ export async function queueExportTidasPackage(
   if (existingCache) {
     await touchExportRequestCache(supabase, existingCache, nowIso);
 
-    const existingJob = existingCache.job_id
-      ? await fetchOwnedPackageJobIfExists(supabase, userId, existingCache.job_id, 'export_package')
+    const existingJob = existingCache.worker_job_id
+      ? await fetchOwnedWorkerPackageJobIfExists(
+          supabase,
+          userId,
+          existingCache.worker_job_id,
+          'tidas.export_package',
+        )
       : null;
     const cacheAction = resolveExportCacheAction(existingCache, existingJob);
 
@@ -319,6 +374,7 @@ export async function queueExportTidasPackage(
         ok: true,
         mode: 'cache_hit' as const,
         job_id: existingCache.job_id,
+        ...(existingCache.worker_job_id ? { worker_job_id: existingCache.worker_job_id } : {}),
         scope: normalized.scope,
         root_count: normalized.roots.length,
       };
@@ -329,6 +385,7 @@ export async function queueExportTidasPackage(
         ok: true,
         mode: 'in_progress' as const,
         job_id: existingCache.job_id,
+        ...(existingCache.worker_job_id ? { worker_job_id: existingCache.worker_job_id } : {}),
         scope: normalized.scope,
         root_count: normalized.roots.length,
       };
@@ -350,61 +407,55 @@ export async function queueExportTidasPackage(
     roots: normalized.roots,
   };
 
-  const { error: insertJobError } = await supabase.from('lca_package_jobs').insert({
-    id: newJobId,
-    job_type: 'export_package',
-    status: 'queued',
-    payload,
-    diagnostics: {},
-    requested_by: userId,
-    scope: normalized.scope,
-    root_count: normalized.roots.length,
-    request_key: requestKey,
-    idempotency_key: idempotencyKey,
-    created_at: nowIso,
-    updated_at: nowIso,
-  });
-
-  if (insertJobError && !isDuplicateKey(insertJobError.code)) {
-    console.error('insert lca_package_jobs failed', {
-      error: insertJobError.message,
-      code: insertJobError.code,
+  if (!isWorkerJobsCutoverEnabled('TIDAS_PACKAGE_WORKER_JOBS_ENABLED')) {
+    console.error('legacy package queue fallback is disabled before export job insert', {
       idempotency_key: idempotencyKey,
+      request_key: requestKey,
       user_id: userId,
     });
-    throw new TidasPackageError(500, 'JOB_INSERT_FAILED', 'Failed to create export job');
+    throw new TidasPackageError(
+      503,
+      'LEGACY_QUEUE_DISABLED',
+      'Package worker_jobs cutover must be enabled',
+    );
   }
 
-  const finalJobId = await readJobIdByIdempotencyKey(supabase, idempotencyKey, userId);
-
-  if (finalJobId === newJobId) {
-    const { error: enqueueError } = await supabase.rpc('lca_package_enqueue_job', {
-      p_message: payload,
+  const workerJob = await enqueueCalculatorWorkerJob(supabase, {
+    jobKind: 'tidas.export_package',
+    payload,
+    payloadSchemaVersion: 'tidas.export_package.request.v1',
+    subjectType: 'lca_package_job',
+    subjectId: newJobId,
+    subjectVersion: normalized.scope,
+    requestedBy: userId,
+    requesterType: 'user',
+    idempotencyKey,
+    requestHash: requestKey,
+    queueKey: normalized.scope,
+    visibility: 'user',
+  });
+  if (!workerJob.ok) {
+    console.error('enqueue tidas export worker_jobs job failed', {
+      error: workerJob.error,
+      status: workerJob.status,
+      details: workerJob.details,
+      job_id: newJobId,
     });
-
-    if (enqueueError) {
-      console.error('enqueue lca_package job failed', {
-        error: enqueueError.message,
-        code: enqueueError.code,
-        details: enqueueError.details,
-        hint: enqueueError.hint,
-        job_id: newJobId,
-      });
-      if (
-        enqueueError.code === 'PGRST202' ||
-        enqueueError.message.includes('lca_package_enqueue_job')
-      ) {
-        throw new TidasPackageError(500, 'QUEUE_RPC_MISSING', 'Package queue RPC is missing');
-      }
-      throw new TidasPackageError(500, 'QUEUE_ENQUEUE_FAILED', 'Failed to enqueue export job');
-    }
+    throw new TidasPackageError(
+      workerJob.status,
+      'WORKER_JOBS_ENQUEUE_FAILED',
+      'Failed to enqueue export worker job',
+    );
   }
+  const finalJobId = workerJobPayloadStringFromRpcData(workerJob.data, 'job_id') ?? newJobId;
+  const finalWorkerJobId = workerJob.workerJobId;
 
   await upsertExportRequestCache(supabase, {
     requested_by: userId,
     request_key: requestKey,
     request_payload: normalized.request_payload,
     job_id: finalJobId,
+    worker_job_id: finalWorkerJobId,
     hit_count: existingCache ? existingCache.hit_count + 1 : 1,
     nowIso,
   });
@@ -413,6 +464,7 @@ export async function queueExportTidasPackage(
     ok: true,
     mode: 'queued' as const,
     job_id: finalJobId,
+    ...(finalWorkerJobId ? { worker_job_id: finalWorkerJobId } : {}),
     scope: normalized.scope,
     root_count: normalized.roots.length,
   };
@@ -433,37 +485,10 @@ export async function prepareImportTidasPackageUpload(
   let objectPath = buildImportSourceObjectPath(jobId);
   let artifactUrl = buildStorageObjectUrl(resolveStorageBucket(), objectPath);
 
-  const payload = {
-    type: 'import_package',
-    job_id: jobId,
-    requested_by: userId,
-    source_artifact_id: sourceArtifactId,
-    upload_state: 'prepared',
-  };
-
-  const { error: insertJobError } = await supabase.from('lca_package_jobs').insert({
-    id: jobId,
-    job_type: 'import_package',
-    status: 'stale',
-    payload,
-    diagnostics: { phase: 'prepare_upload' },
-    requested_by: userId,
-    idempotency_key: idempotencyKey,
-    created_at: nowIso,
-    updated_at: nowIso,
-  });
-
-  if (insertJobError) {
-    if (!idempotencyKey || !isDuplicateKey(insertJobError.code)) {
-      console.error('insert import prepare job failed', {
-        error: insertJobError.message,
-        code: insertJobError.code,
-        user_id: userId,
-      });
-      throw new TidasPackageError(500, 'JOB_INSERT_FAILED', 'Failed to prepare import upload');
-    }
-
-    const existing = await fetchPreparedImportJob(supabase, userId, idempotencyKey);
+  const existing = idempotencyKey
+    ? await fetchPreparedImportArtifactByIdempotencyKey(supabase, userId, idempotencyKey)
+    : null;
+  if (existing) {
     jobId = existing.job_id;
     sourceArtifactId = existing.source_artifact_id;
     objectPath = existing.object_path;
@@ -472,6 +497,7 @@ export async function prepareImportTidasPackageUpload(
     const { error: insertArtifactError } = await supabase.from('lca_package_artifacts').insert({
       id: sourceArtifactId,
       job_id: jobId,
+      worker_job_id: null,
       artifact_kind: 'import_source',
       status: 'pending',
       artifact_url: artifactUrl,
@@ -481,6 +507,8 @@ export async function prepareImportTidasPackageUpload(
         filename: parsed.filename,
         original_filename: parsed.filename,
         upload_state: 'prepared',
+        requested_by: userId,
+        import_prepare_idempotency_key: idempotencyKey,
       },
       created_at: nowIso,
       updated_at: nowIso,
@@ -530,8 +558,13 @@ export async function enqueueImportTidasPackage(
 ) {
   const parsed = parseEnqueueImportRequest(body);
   const nowIso = new Date().toISOString();
-  const job = await fetchOwnedPackageJob(supabase, userId, parsed.job_id, 'import_package');
-  const sourceArtifact = await fetchPackageArtifact(supabase, parsed.source_artifact_id, job.id);
+  const sourceArtifact = await fetchPackageArtifact(
+    supabase,
+    parsed.source_artifact_id,
+    parsed.job_id,
+  );
+  assertPackageArtifactOwnedBy(sourceArtifact, userId);
+  assertPackageArtifactUsable(sourceArtifact);
 
   if (sourceArtifact.artifact_kind !== 'import_source') {
     throw new TidasPackageError(
@@ -541,30 +574,52 @@ export async function enqueueImportTidasPackage(
     );
   }
 
-  if (job.status === 'completed') {
-    return {
-      ok: true,
-      mode: 'completed' as const,
-      job_id: job.id,
-      source_artifact_id: sourceArtifact.id,
-    };
-  }
-
-  if (job.status === 'queued' || job.status === 'running') {
-    return {
-      ok: true,
-      mode: 'in_progress' as const,
-      job_id: job.id,
-      source_artifact_id: sourceArtifact.id,
-    };
+  if (sourceArtifact.worker_job_id) {
+    const existingWorkerJob = await fetchOwnedWorkerPackageJobIfExists(
+      supabase,
+      userId,
+      sourceArtifact.worker_job_id,
+      'tidas.import_package',
+    );
+    if (existingWorkerJob?.status === 'completed') {
+      return {
+        ok: true,
+        mode: 'completed' as const,
+        job_id: parsed.job_id,
+        worker_job_id: existingWorkerJob.id,
+        source_artifact_id: sourceArtifact.id,
+      };
+    }
+    if (existingWorkerJob && isActiveWorkerJobStatus(existingWorkerJob.status)) {
+      return {
+        ok: true,
+        mode: 'in_progress' as const,
+        job_id: parsed.job_id,
+        worker_job_id: existingWorkerJob.id,
+        source_artifact_id: sourceArtifact.id,
+      };
+    }
   }
 
   const payload = {
     type: 'import_package',
-    job_id: job.id,
+    job_id: parsed.job_id,
     requested_by: userId,
     source_artifact_id: sourceArtifact.id,
   };
+
+  if (!isWorkerJobsCutoverEnabled('TIDAS_PACKAGE_WORKER_JOBS_ENABLED')) {
+    console.error('legacy package queue fallback is disabled before import job enqueue', {
+      job_id: parsed.job_id,
+      source_artifact_id: sourceArtifact.id,
+      user_id: userId,
+    });
+    throw new TidasPackageError(
+      503,
+      'LEGACY_QUEUE_DISABLED',
+      'Package worker_jobs cutover must be enabled',
+    );
+  }
 
   const metadata = {
     ...sourceArtifact.metadata,
@@ -572,6 +627,7 @@ export async function enqueueImportTidasPackage(
     original_filename:
       parsed.filename ?? sourceArtifact.metadata.original_filename ?? IMPORT_SOURCE_FILENAME,
     upload_state: 'uploaded',
+    requested_by: sourceArtifact.metadata.requested_by ?? userId,
   };
 
   const { error: artifactUpdateError } = await supabase
@@ -585,13 +641,13 @@ export async function enqueueImportTidasPackage(
       updated_at: nowIso,
     })
     .eq('id', sourceArtifact.id)
-    .eq('job_id', job.id);
+    .eq('job_id', parsed.job_id);
 
   if (artifactUpdateError) {
     console.error('update import source artifact failed', {
       error: artifactUpdateError.message,
       code: artifactUpdateError.code,
-      job_id: job.id,
+      job_id: parsed.job_id,
       artifact_id: sourceArtifact.id,
     });
     throw new TidasPackageError(
@@ -601,50 +657,52 @@ export async function enqueueImportTidasPackage(
     );
   }
 
-  const { error: jobUpdateError } = await supabase
-    .from('lca_package_jobs')
-    .update({
-      status: 'queued',
-      payload,
-      diagnostics: { phase: 'enqueue_import', source_artifact_id: sourceArtifact.id },
-      request_key: parsed.artifact_sha256 ?? sourceArtifact.id,
-      updated_at: nowIso,
-    })
-    .eq('id', job.id)
-    .eq('requested_by', userId);
-
-  if (jobUpdateError) {
-    console.error('update import job failed', {
-      error: jobUpdateError.message,
-      code: jobUpdateError.code,
-      job_id: job.id,
-    });
-    throw new TidasPackageError(500, 'JOB_UPDATE_FAILED', 'Failed to enqueue import job');
-  }
-
-  const { error: enqueueError } = await supabase.rpc('lca_package_enqueue_job', {
-    p_message: payload,
+  let workerJobId: string | null = null;
+  const workerJob = await enqueueCalculatorWorkerJob(supabase, {
+    jobKind: 'tidas.import_package',
+    payload,
+    payloadSchemaVersion: 'tidas.import_package.request.v1',
+    subjectType: 'lca_package_job',
+    subjectId: parsed.job_id,
+    subjectVersion: sourceArtifact.id,
+    requestedBy: userId,
+    requesterType: 'user',
+    idempotencyKey: `${userId}:import_package:${parsed.job_id}`,
+    requestHash: parsed.artifact_sha256 ?? sourceArtifact.id,
+    queueKey: sourceArtifact.id,
+    visibility: 'user',
   });
-
-  if (enqueueError) {
-    console.error('enqueue import job failed', {
-      error: enqueueError.message,
-      code: enqueueError.code,
-      job_id: job.id,
+  if (!workerJob.ok) {
+    console.error('enqueue tidas import worker_jobs job failed', {
+      error: workerJob.error,
+      status: workerJob.status,
+      details: workerJob.details,
+      job_id: parsed.job_id,
     });
-    if (
-      enqueueError.code === 'PGRST202' ||
-      enqueueError.message.includes('lca_package_enqueue_job')
-    ) {
-      throw new TidasPackageError(500, 'QUEUE_RPC_MISSING', 'Package queue RPC is missing');
-    }
-    throw new TidasPackageError(500, 'QUEUE_ENQUEUE_FAILED', 'Failed to enqueue import job');
+    throw new TidasPackageError(
+      workerJob.status,
+      'WORKER_JOBS_ENQUEUE_FAILED',
+      'Failed to enqueue import worker job',
+    );
   }
+  workerJobId = workerJob.workerJobId;
+
+  await linkPackageArtifactWorkerJob(supabase, {
+    artifactId: sourceArtifact.id,
+    jobId: parsed.job_id,
+    workerJobId,
+    nowIso,
+    metadata: {
+      ...metadata,
+      phase: 'enqueue_import',
+    },
+  });
 
   return {
     ok: true,
     mode: 'queued' as const,
-    job_id: job.id,
+    job_id: parsed.job_id,
+    ...(workerJobId ? { worker_job_id: workerJobId } : {}),
     source_artifact_id: sourceArtifact.id,
   };
 }
@@ -658,58 +716,69 @@ export async function lookupTidasPackageJob(
     throw new TidasPackageError(400, 'INVALID_JOB_ID', 'Invalid job identifier');
   }
 
-  const job = await fetchOwnedPackageJob(supabase, userId, jobId);
+  const requestCacheRow = await fetchOwnedExportRequestCacheByLookupId(supabase, userId, jobId);
+  const effectiveJobId = requestCacheRow?.job_id ?? jobId;
   const { data: artifactRows, error: artifactError } = await supabase
     .from('lca_package_artifacts')
     .select(
-      'id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
+      'id,worker_job_id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
     )
-    .eq('job_id', jobId)
+    .eq('job_id', effectiveJobId)
     .order('created_at', { ascending: true });
 
   if (artifactError) {
     console.error('query lca_package_artifacts failed', {
       error: artifactError.message,
       code: artifactError.code,
-      job_id: jobId,
+      job_id: effectiveJobId,
       user_id: userId,
     });
     throw new TidasPackageError(500, 'ARTIFACT_LOOKUP_FAILED', 'Failed to query package artifacts');
   }
 
+  const artifactDomainRows = (artifactRows ?? []).map((row) => toPackageArtifactRow(row));
+  const hasOwnedArtifact = artifactDomainRows.some(
+    (artifact) => normalizeNullableString(artifact.metadata.requested_by) === userId,
+  );
+  const requestCacheWorkerJob = requestCacheRow?.worker_job_id
+    ? await fetchOwnedWorkerPackageJobIfExists(
+        supabase,
+        userId,
+        requestCacheRow.worker_job_id,
+        'tidas.export_package',
+      )
+    : null;
+  const lookupWorkerJob =
+    !requestCacheWorkerJob && jobId !== effectiveJobId
+      ? await fetchOwnedWorkerPackageJobIfExists(supabase, userId, jobId, 'tidas.export_package')
+      : null;
+  const artifactWorkerJob = await fetchWorkerPackageJobForArtifacts(
+    supabase,
+    userId,
+    artifactDomainRows,
+  );
+  const workerJob = requestCacheWorkerJob ?? lookupWorkerJob ?? artifactWorkerJob;
+
+  if (!hasOwnedArtifact && !requestCacheRow && !workerJob) {
+    throw new TidasPackageError(404, 'JOB_NOT_FOUND', 'Package job not found');
+  }
+
+  const job = buildPackageJobRowFromWorkerOrArtifacts(
+    effectiveJobId,
+    workerJob,
+    artifactDomainRows,
+  );
+
   const artifacts = await Promise.all(
     (artifactRows ?? []).map((row) => toArtifactResponse(supabase, row)),
   );
-
-  const { data: cacheRow } = await supabase
-    .from('lca_package_request_cache')
-    .select(
-      'id,status,error_code,error_message,hit_count,last_accessed_at,created_at,updated_at,export_artifact_id,report_artifact_id',
-    )
-    .eq('job_id', jobId)
-    .maybeSingle();
 
   const artifactsByKind = Object.fromEntries(
     artifacts.map((artifact) => [artifact.artifact_kind, artifact]),
   );
 
-  const requestCache: PackageRequestCacheResponse | null = cacheRow
-    ? {
-        id: String(cacheRow.id),
-        status: String(cacheRow.status),
-        error_code: cacheRow.error_code ? String(cacheRow.error_code) : null,
-        error_message: cacheRow.error_message ? String(cacheRow.error_message) : null,
-        hit_count: Number(cacheRow.hit_count ?? 0),
-        last_accessed_at: cacheRow.last_accessed_at ?? null,
-        created_at: cacheRow.created_at ?? null,
-        updated_at: cacheRow.updated_at ?? null,
-        export_artifact_id: cacheRow.export_artifact_id
-          ? String(cacheRow.export_artifact_id)
-          : null,
-        report_artifact_id: cacheRow.report_artifact_id
-          ? String(cacheRow.report_artifact_id)
-          : null,
-      }
+  const requestCache: PackageRequestCacheResponse | null = requestCacheRow
+    ? toPackageRequestCacheResponse(requestCacheRow)
     : null;
   const diagnosticsSummary = buildPackageJobDiagnosticsSummary({
     status: job.status,
@@ -979,7 +1048,7 @@ async function fetchExportRequestCache(
 ): Promise<ExportRequestCacheRow | null> {
   const { data, error } = await supabase
     .from('lca_package_request_cache')
-    .select('id,status,job_id,export_artifact_id,report_artifact_id,hit_count')
+    .select('id,status,job_id,worker_job_id,export_artifact_id,report_artifact_id,hit_count')
     .eq('requested_by', userId)
     .eq('operation', 'export_package')
     .eq('request_key', requestKey)
@@ -1002,9 +1071,93 @@ async function fetchExportRequestCache(
     id: String(data.id),
     status: String(data.status),
     job_id: data.job_id ? String(data.job_id) : null,
+    worker_job_id: data.worker_job_id ? String(data.worker_job_id) : null,
     export_artifact_id: data.export_artifact_id ? String(data.export_artifact_id) : null,
     report_artifact_id: data.report_artifact_id ? String(data.report_artifact_id) : null,
     hit_count: Number(data.hit_count ?? 0),
+  };
+}
+
+async function fetchOwnedExportRequestCacheByLookupId(
+  supabase: SupabaseClient,
+  userId: string,
+  lookupId: string,
+): Promise<ExportRequestCacheLookupRow | null> {
+  const byCompatibilityJobId = await fetchOwnedExportRequestCacheByField(
+    supabase,
+    userId,
+    'job_id',
+    lookupId,
+  );
+  if (byCompatibilityJobId) {
+    return byCompatibilityJobId;
+  }
+
+  return await fetchOwnedExportRequestCacheByField(supabase, userId, 'worker_job_id', lookupId);
+}
+
+async function fetchOwnedExportRequestCacheByField(
+  supabase: SupabaseClient,
+  userId: string,
+  field: 'job_id' | 'worker_job_id',
+  value: string,
+): Promise<ExportRequestCacheLookupRow | null> {
+  const { data, error } = await supabase
+    .from('lca_package_request_cache')
+    .select(
+      'id,status,request_key,job_id,worker_job_id,error_code,error_message,hit_count,last_accessed_at,created_at,updated_at,export_artifact_id,report_artifact_id',
+    )
+    .eq('requested_by', userId)
+    .eq('operation', 'export_package')
+    .eq(field, value)
+    .maybeSingle();
+
+  if (error) {
+    console.error('query lca_package_request_cache by job id failed', {
+      error: error.message,
+      code: error.code,
+      user_id: userId,
+      lookup_field: field,
+      lookup_id: value,
+    });
+    throw new TidasPackageError(500, 'REQUEST_CACHE_LOOKUP_FAILED', 'Failed to query export cache');
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    id: String(data.id),
+    status: String(data.status),
+    request_key: data.request_key ? String(data.request_key) : null,
+    job_id: data.job_id ? String(data.job_id) : null,
+    worker_job_id: data.worker_job_id ? String(data.worker_job_id) : null,
+    error_code: data.error_code ? String(data.error_code) : null,
+    error_message: data.error_message ? String(data.error_message) : null,
+    hit_count: Number(data.hit_count ?? 0),
+    last_accessed_at: data.last_accessed_at ? String(data.last_accessed_at) : null,
+    created_at: data.created_at ? String(data.created_at) : null,
+    updated_at: data.updated_at ? String(data.updated_at) : null,
+    export_artifact_id: data.export_artifact_id ? String(data.export_artifact_id) : null,
+    report_artifact_id: data.report_artifact_id ? String(data.report_artifact_id) : null,
+  };
+}
+
+function toPackageRequestCacheResponse(
+  row: ExportRequestCacheLookupRow,
+): PackageRequestCacheResponse {
+  return {
+    id: row.id,
+    status: row.status,
+    error_code: row.error_code,
+    error_message: row.error_message,
+    hit_count: row.hit_count,
+    last_accessed_at: row.last_accessed_at,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    export_artifact_id: row.export_artifact_id,
+    report_artifact_id: row.report_artifact_id,
   };
 }
 
@@ -1039,6 +1192,7 @@ async function upsertExportRequestCache(
     request_key: string;
     request_payload: unknown;
     job_id: string;
+    worker_job_id: string | null;
     hit_count: number;
     nowIso: string;
   },
@@ -1051,6 +1205,7 @@ async function upsertExportRequestCache(
       .update({
         status: 'pending',
         job_id: args.job_id,
+        worker_job_id: args.worker_job_id,
         request_payload: args.request_payload,
         export_artifact_id: null,
         report_artifact_id: null,
@@ -1085,6 +1240,7 @@ async function upsertExportRequestCache(
     request_payload: args.request_payload,
     status: 'pending',
     job_id: args.job_id,
+    worker_job_id: args.worker_job_id,
     hit_count: args.hit_count,
     last_accessed_at: args.nowIso,
     created_at: args.nowIso,
@@ -1106,31 +1262,238 @@ async function upsertExportRequestCache(
   }
 }
 
-async function readJobIdByIdempotencyKey(
+async function linkPackageArtifactWorkerJob(
   supabase: SupabaseClient,
-  idempotencyKey: string,
+  args: {
+    artifactId: string;
+    jobId: string;
+    workerJobId: string | null;
+    nowIso: string;
+    metadata: JsonRecord;
+  },
+): Promise<void> {
+  const { error } = await supabase
+    .from('lca_package_artifacts')
+    .update({
+      worker_job_id: args.workerJobId,
+      metadata: args.metadata,
+      updated_at: args.nowIso,
+    })
+    .eq('id', args.artifactId)
+    .eq('job_id', args.jobId);
+
+  if (error) {
+    console.error('link package artifact worker job failed', {
+      error: error.message,
+      code: error.code,
+      artifact_id: args.artifactId,
+      job_id: args.jobId,
+      worker_job_id: args.workerJobId,
+    });
+    throw new TidasPackageError(
+      500,
+      'ARTIFACT_WORKER_JOB_LINK_FAILED',
+      'Failed to link package artifact to worker job',
+    );
+  }
+}
+
+async function fetchPreparedImportArtifactByIdempotencyKey(
+  supabase: SupabaseClient,
   userId: string,
-): Promise<string> {
+  idempotencyKey: string,
+): Promise<{
+  job_id: string;
+  source_artifact_id: string;
+  object_path: string;
+  artifact_url: string;
+} | null> {
   const { data, error } = await supabase
-    .from('lca_package_jobs')
-    .select('id')
-    .eq('idempotency_key', idempotencyKey)
-    .eq('requested_by', userId)
+    .from('lca_package_artifacts')
+    .select(
+      'id,worker_job_id,job_id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
+    )
+    .eq('artifact_kind', 'import_source')
+    .contains('metadata', {
+      requested_by: userId,
+      import_prepare_idempotency_key: idempotencyKey,
+    })
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (error || !data?.id) {
-    console.error('read lca_package_jobs by idempotency_key failed', {
-      error: error?.message,
-      code: error?.code,
-      idempotency_key: idempotencyKey,
+  if (error) {
+    console.error('query prepared import artifact by idempotency key failed', {
+      error: error.message,
+      code: error.code,
       user_id: userId,
     });
-    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to read package job');
+    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to read prepared import upload');
   }
 
-  return String(data.id);
+  if (!data) {
+    return null;
+  }
+
+  const artifact = toPackageArtifactRow(data);
+  const storagePath = parseStoragePathFromArtifactUrl(artifact.artifact_url);
+  if (!storagePath) {
+    throw new TidasPackageError(
+      500,
+      'IMPORT_ARTIFACT_STORAGE_PATH_INVALID',
+      'Prepared import artifact has an invalid storage path',
+    );
+  }
+
+  return {
+    job_id: String((data as { job_id?: unknown }).job_id),
+    source_artifact_id: artifact.id,
+    object_path: storagePath.objectPath,
+    artifact_url: artifact.artifact_url,
+  };
+}
+
+async function fetchOwnedWorkerPackageJobIfExists(
+  supabase: SupabaseClient,
+  userId: string,
+  workerJobId: string,
+  expectedJobKind?: string,
+): Promise<WorkerPackageJobRow | null> {
+  const { data, error } = await supabase
+    .from('worker_jobs')
+    .select(
+      'id,job_kind,status,requested_by,request_hash,payload_json,diagnostics,error_code,error_message,created_at,started_at,finished_at,updated_at',
+    )
+    .eq('id', workerJobId)
+    .eq('requested_by', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('query worker package job failed', {
+      error: error.message,
+      code: error.code,
+      worker_job_id: workerJobId,
+      user_id: userId,
+    });
+    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to query package worker job');
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const row = toWorkerPackageJobRow(data);
+  if (expectedJobKind && row.job_kind !== expectedJobKind) {
+    return null;
+  }
+
+  return row;
+}
+
+async function fetchWorkerPackageJobForArtifacts(
+  supabase: SupabaseClient,
+  userId: string,
+  artifacts: PackageArtifactRow[],
+): Promise<WorkerPackageJobRow | null> {
+  const workerJobId = artifacts.find((artifact) => artifact.worker_job_id)?.worker_job_id;
+  if (!workerJobId) {
+    return null;
+  }
+
+  return await fetchOwnedWorkerPackageJobIfExists(supabase, userId, workerJobId);
+}
+
+function buildPackageJobRowFromWorkerOrArtifacts(
+  jobId: string,
+  workerJob: WorkerPackageJobRow | null,
+  artifacts: PackageArtifactRow[],
+): PackageJobRow {
+  const importSource = artifacts.find((artifact) => artifact.artifact_kind === 'import_source');
+  const payload = workerJob?.payload ?? {
+    type: 'import_package',
+    job_id: jobId,
+    source_artifact_id: importSource?.id,
+  };
+  const jobType = packageJobTypeFromPayload(payload);
+  const workerDiagnostics = isJsonRecord(workerJob?.diagnostics) ? workerJob?.diagnostics : null;
+  const diagnostics =
+    workerDiagnostics && Object.keys(workerDiagnostics).length > 0
+      ? workerDiagnostics
+      : {
+          phase: importSource?.metadata.phase ?? importSource?.metadata.upload_state ?? 'prepared',
+          worker_job_id: workerJob?.id ?? null,
+        };
+
+  return {
+    id: jobId,
+    job_type: jobType,
+    status: workerJob ? workerStatusToPackageStatus(workerJob.status) : 'stale',
+    scope: normalizeNullableString(payload.scope),
+    root_count: Array.isArray(payload.roots) ? payload.roots.length : 0,
+    request_key: workerJob?.request_hash ?? null,
+    payload,
+    diagnostics,
+    created_at: workerJob?.created_at ?? importSource?.created_at ?? null,
+    started_at: workerJob?.started_at ?? null,
+    finished_at: workerJob?.finished_at ?? null,
+    updated_at: workerJob?.updated_at ?? importSource?.updated_at ?? null,
+  };
+}
+
+function toWorkerPackageJobRow(data: Record<string, unknown>): WorkerPackageJobRow {
+  return {
+    id: String(data.id),
+    job_kind: String(data.job_kind),
+    status: String(data.status),
+    requested_by: data.requested_by ? String(data.requested_by) : null,
+    request_hash: data.request_hash ? String(data.request_hash) : null,
+    payload: isJsonRecord(data.payload_json) ? data.payload_json : {},
+    diagnostics: data.diagnostics ?? {},
+    error_code: data.error_code ? String(data.error_code) : null,
+    error_message: data.error_message ? String(data.error_message) : null,
+    created_at: data.created_at ? String(data.created_at) : null,
+    started_at: data.started_at ? String(data.started_at) : null,
+    finished_at: data.finished_at ? String(data.finished_at) : null,
+    updated_at: data.updated_at ? String(data.updated_at) : null,
+  };
+}
+
+function packageJobTypeFromPayload(payload: JsonRecord): TidasPackageJobType {
+  return payload.type === 'export_package' ? 'export_package' : 'import_package';
+}
+
+function workerStatusToPackageStatus(status: string): TidasPackageJobStatus {
+  switch (status) {
+    case 'completed':
+      return 'completed';
+    case 'failed':
+    case 'cancelled':
+      return 'failed';
+    case 'stale':
+      return 'stale';
+    case 'queued':
+    case 'waiting':
+    case 'blocked':
+      return 'queued';
+    case 'running':
+      return 'running';
+    default:
+      return 'stale';
+  }
+}
+
+function isActiveWorkerJobStatus(status: string): boolean {
+  return (
+    status === 'queued' || status === 'running' || status === 'waiting' || status === 'blocked'
+  );
+}
+
+function assertPackageArtifactOwnedBy(artifact: PackageArtifactRow, userId: string): void {
+  if (normalizeNullableString(artifact.metadata.requested_by) === userId) {
+    return;
+  }
+
+  throw new TidasPackageError(404, 'JOB_NOT_FOUND', 'Package job not found');
 }
 
 function buildRetryIdempotencyKey(
@@ -1143,7 +1506,7 @@ function buildRetryIdempotencyKey(
 
 export function resolveExportCacheAction(
   cacheRow: ExportRequestCacheRow,
-  jobRow: Pick<PackageJobRow, 'status'> | null,
+  jobRow: { status: string } | null,
 ): ExportCacheAction {
   if (!cacheRow.job_id || !jobRow) {
     return 'retry';
@@ -1209,160 +1572,6 @@ function parseEnqueueImportRequest(body: unknown): NormalizedEnqueueImportReques
   };
 }
 
-async function fetchPreparedImportJob(
-  supabase: SupabaseClient,
-  userId: string,
-  idempotencyKey: string,
-): Promise<{
-  job_id: string;
-  source_artifact_id: string;
-  object_path: string;
-  artifact_url: string;
-}> {
-  const job = await fetchOwnedPackageJobByIdempotencyKey(supabase, userId, idempotencyKey);
-  const artifact = await fetchPackageArtifactByKind(supabase, job.id, 'import_source');
-  const storagePath = parseStoragePathFromArtifactUrl(artifact.artifact_url);
-
-  if (!storagePath) {
-    throw new TidasPackageError(
-      500,
-      'IMPORT_ARTIFACT_STORAGE_PATH_INVALID',
-      'Prepared import artifact has an invalid storage path',
-    );
-  }
-
-  return {
-    job_id: job.id,
-    source_artifact_id: artifact.id,
-    object_path: storagePath.objectPath,
-    artifact_url: artifact.artifact_url,
-  };
-}
-
-async function fetchOwnedPackageJobByIdempotencyKey(
-  supabase: SupabaseClient,
-  userId: string,
-  idempotencyKey: string,
-): Promise<PackageJobRow> {
-  const { data, error } = await supabase
-    .from('lca_package_jobs')
-    .select(
-      'id,job_type,status,scope,root_count,request_key,payload,diagnostics,created_at,started_at,finished_at,updated_at',
-    )
-    .eq('requested_by', userId)
-    .eq('idempotency_key', idempotencyKey)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error('query lca_package_jobs by idempotency_key failed', {
-      error: error.message,
-      code: error.code,
-      idempotency_key: idempotencyKey,
-      user_id: userId,
-    });
-    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to query package job');
-  }
-
-  if (!data) {
-    throw new TidasPackageError(404, 'JOB_NOT_FOUND', 'Package job not found');
-  }
-
-  return toPackageJobRow(data);
-}
-
-async function fetchOwnedPackageJobIfExists(
-  supabase: SupabaseClient,
-  userId: string,
-  jobId: string,
-  expectedJobType?: TidasPackageJobType,
-): Promise<PackageJobRow | null> {
-  const { data, error } = await supabase
-    .from('lca_package_jobs')
-    .select(
-      'id,job_type,status,scope,root_count,request_key,payload,diagnostics,created_at,started_at,finished_at,updated_at',
-    )
-    .eq('id', jobId)
-    .eq('requested_by', userId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('query lca_package_jobs failed during cache reconciliation', {
-      error: error.message,
-      code: error.code,
-      job_id: jobId,
-      user_id: userId,
-    });
-    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to query package job');
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  const row = toPackageJobRow(data);
-  if (expectedJobType && row.job_type !== expectedJobType) {
-    return null;
-  }
-
-  return row;
-}
-
-async function fetchOwnedPackageJob(
-  supabase: SupabaseClient,
-  userId: string,
-  jobId: string,
-  expectedJobType?: TidasPackageJobType,
-): Promise<PackageJobRow> {
-  const { data, error } = await supabase
-    .from('lca_package_jobs')
-    .select(
-      'id,job_type,status,scope,root_count,request_key,payload,diagnostics,created_at,started_at,finished_at,updated_at',
-    )
-    .eq('id', jobId)
-    .eq('requested_by', userId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('query lca_package_jobs failed', {
-      error: error.message,
-      code: error.code,
-      job_id: jobId,
-      user_id: userId,
-    });
-    throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to query package job');
-  }
-
-  if (!data) {
-    throw new TidasPackageError(404, 'JOB_NOT_FOUND', 'Package job not found');
-  }
-
-  const row = toPackageJobRow(data);
-  if (expectedJobType && row.job_type !== expectedJobType) {
-    throw new TidasPackageError(400, 'JOB_TYPE_MISMATCH', 'Package job type mismatch');
-  }
-
-  return row;
-}
-
-function toPackageJobRow(data: Record<string, unknown>): PackageJobRow {
-  return {
-    id: String(data.id),
-    job_type: String(data.job_type) as TidasPackageJobType,
-    status: String(data.status) as TidasPackageJobStatus,
-    scope: data.scope ? String(data.scope) : null,
-    root_count: Number(data.root_count ?? 0),
-    request_key: data.request_key ? String(data.request_key) : null,
-    payload: data.payload ?? {},
-    diagnostics: data.diagnostics ?? {},
-    created_at: data.created_at ? String(data.created_at) : null,
-    started_at: data.started_at ? String(data.started_at) : null,
-    finished_at: data.finished_at ? String(data.finished_at) : null,
-    updated_at: data.updated_at ? String(data.updated_at) : null,
-  };
-}
-
 async function fetchPackageArtifact(
   supabase: SupabaseClient,
   artifactId: string,
@@ -1371,7 +1580,7 @@ async function fetchPackageArtifact(
   const { data, error } = await supabase
     .from('lca_package_artifacts')
     .select(
-      'id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
+      'id,worker_job_id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
     )
     .eq('id', artifactId)
     .eq('job_id', jobId)
@@ -1394,6 +1603,31 @@ async function fetchPackageArtifact(
   return toPackageArtifactRow(data);
 }
 
+function assertPackageArtifactUsable(artifact: PackageArtifactRow): void {
+  const unavailable = getPackageArtifactDownloadUnavailableState(artifact, {
+    hasStoragePath: true,
+  });
+  if (!unavailable) {
+    return;
+  }
+
+  if (unavailable.code === 'PACKAGE_ARTIFACT_DELETED') {
+    throw new TidasPackageError(
+      410,
+      unavailable.code,
+      'Package artifact payload has been deleted; create a new package job',
+    );
+  }
+
+  if (unavailable.code === 'PACKAGE_ARTIFACT_EXPIRED') {
+    throw new TidasPackageError(
+      410,
+      unavailable.code,
+      'Package artifact has expired; create a new package job',
+    );
+  }
+}
+
 async function fetchPackageArtifactByKind(
   supabase: SupabaseClient,
   jobId: string,
@@ -1402,7 +1636,7 @@ async function fetchPackageArtifactByKind(
   const { data, error } = await supabase
     .from('lca_package_artifacts')
     .select(
-      'id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
+      'id,worker_job_id,artifact_kind,status,artifact_url,artifact_sha256,artifact_byte_size,artifact_format,content_type,metadata,expires_at,is_pinned,created_at,updated_at',
     )
     .eq('job_id', jobId)
     .eq('artifact_kind', artifactKind)
@@ -1428,6 +1662,7 @@ async function fetchPackageArtifactByKind(
 function toPackageArtifactRow(data: Record<string, unknown>): PackageArtifactRow {
   return {
     id: String(data.id),
+    worker_job_id: data.worker_job_id ? String(data.worker_job_id) : null,
     artifact_kind: String(data.artifact_kind) as TidasPackageArtifactKind,
     status: String(data.status),
     artifact_url: String(data.artifact_url),
@@ -1458,8 +1693,18 @@ async function toArtifactResponse(supabase: SupabaseClient, row: Record<string, 
   const artifact = toPackageArtifactRow(row);
   const storagePath = parseStoragePathFromArtifactUrl(artifact.artifact_url);
   let signedDownloadUrl: string | null = null;
+  let downloadState: PackageArtifactDownloadState = getPackageArtifactDownloadUnavailableState(
+    artifact,
+    {
+      hasStoragePath: storagePath !== null,
+    },
+  ) ?? {
+    status: 'available',
+    code: null,
+    message: null,
+  };
 
-  if (artifact.status === 'ready' && storagePath) {
+  if (downloadState.status === 'available' && storagePath) {
     const { data, error } = await supabase.storage
       .from(storagePath.bucket)
       .createSignedUrl(storagePath.objectPath, SIGNED_URL_EXPIRES_IN_SECONDS);
@@ -1470,8 +1715,16 @@ async function toArtifactResponse(supabase: SupabaseClient, row: Record<string, 
         artifact_id: artifact.id,
         artifact_url: artifact.artifact_url,
       });
+      downloadState = classifySignedUrlError(error);
     } else {
       signedDownloadUrl = data?.signedUrl ?? null;
+      if (!signedDownloadUrl) {
+        downloadState = {
+          status: 'signed_url_failed',
+          code: 'PACKAGE_ARTIFACT_SIGNED_URL_FAILED',
+          message: 'Package artifact signed download URL could not be created',
+        };
+      }
     }
   }
 
@@ -1488,11 +1741,92 @@ async function toArtifactResponse(supabase: SupabaseClient, row: Record<string, 
     storage_object_path: storagePath?.objectPath ?? null,
     signed_download_url: signedDownloadUrl,
     signed_download_expires_in_seconds: signedDownloadUrl ? SIGNED_URL_EXPIRES_IN_SECONDS : null,
+    download_status: downloadState.status,
+    download_error_code: downloadState.code,
+    download_error_message: downloadState.message,
     metadata: artifact.metadata,
     expires_at: artifact.expires_at,
     is_pinned: artifact.is_pinned,
     created_at: artifact.created_at,
     updated_at: artifact.updated_at,
+  };
+}
+
+function getPackageArtifactDownloadUnavailableState(
+  artifact: PackageArtifactRow,
+  options: { hasStoragePath: boolean },
+): PackageArtifactDownloadState | null {
+  if (artifact.status === 'deleted') {
+    return {
+      status: 'deleted',
+      code: 'PACKAGE_ARTIFACT_DELETED',
+      message: 'Package artifact payload has been deleted; create a new package job',
+    };
+  }
+
+  if (artifact.status === 'ready' && isPackageArtifactExpired(artifact)) {
+    return {
+      status: 'expired',
+      code: 'PACKAGE_ARTIFACT_EXPIRED',
+      message: 'Package artifact has expired; create a new package job',
+    };
+  }
+
+  if (artifact.status !== 'ready') {
+    return {
+      status: 'not_ready',
+      code: artifact.status === 'stale' ? 'PACKAGE_ARTIFACT_STALE' : 'PACKAGE_ARTIFACT_NOT_READY',
+      message:
+        artifact.status === 'stale'
+          ? 'Package artifact is stale; create a new package job'
+          : 'Package artifact is not ready for download',
+    };
+  }
+
+  if (!options.hasStoragePath) {
+    return {
+      status: 'storage_path_invalid',
+      code: 'PACKAGE_ARTIFACT_STORAGE_PATH_INVALID',
+      message: 'Package artifact storage path is invalid',
+    };
+  }
+
+  return null;
+}
+
+function isPackageArtifactExpired(artifact: PackageArtifactRow): boolean {
+  if (artifact.is_pinned || !artifact.expires_at) {
+    return false;
+  }
+
+  const expiresAtMs = Date.parse(artifact.expires_at);
+  return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+}
+
+function classifySignedUrlError(error: unknown): PackageArtifactDownloadState {
+  const record = asRecord(error);
+  const message = normalizeNullableString(record.message) ?? 'Package artifact is unavailable';
+  const code = normalizeNullableString(record.code);
+  const statusCode = normalizeNullableString(record.statusCode ?? record.status);
+  const searchable = `${code ?? ''} ${statusCode ?? ''} ${message}`.toLowerCase();
+
+  if (
+    statusCode === '404' ||
+    searchable.includes('nosuchkey') ||
+    searchable.includes('no such key') ||
+    searchable.includes('not found')
+  ) {
+    return {
+      status: 'object_missing',
+      code: 'PACKAGE_ARTIFACT_OBJECT_MISSING',
+      message: 'Package artifact object is missing; create a new package job',
+    };
+  }
+
+  return {
+    status: 'signed_url_failed',
+    code: 'PACKAGE_ARTIFACT_SIGNED_URL_FAILED',
+    message,
   };
 }
 

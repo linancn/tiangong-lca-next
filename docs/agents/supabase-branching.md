@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: read-only lifecycle-model rendering does not change environment or backend ownership, while #698 Hybrid Search keeps JWT/query shaping in Next and orchestration/schema truth in their owning repos.'
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8
+lastReviewedNote: 'Reviewed for Issue #720: Edge retains runtime source ownership; Next may carry only a generated, full-commit-bound Docker mirror with source receipt and delete-aware synchronization.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -64,13 +64,15 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
-- closure checks, closure reports, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes curated closure and `task-summary.v2` projections rather than worker rows or private artifact locators
+- closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
+- Process keyword searches call `search_processes_latest_v2` through `src/services/processes/api.ts`, pass explicit query terms, and never query `extracted_text` with app-side ILIKE. The `public_plus_owner_draft` picker asks the database for strict personal drafts and public rows separately; database-engine owns the exact `state_code=0`, null-team, null-review, latest-version, and `extracted_md` index constraints
 - the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
@@ -82,8 +84,10 @@ Rules:
 | app-only change | work in this repo, use `dev`, validate here |
 | ordered-dataset shaping or validation normalization under `src/services/**` | keep the change in this repo, validate here, and escalate only if schema truth or Edge runtime behavior must change |
 | foundation-dataset Hybrid Search entrypoint | change Next pages/services here, pair it with the matching Edge route and database RPC revisions, validate against a non-production environment, and preserve UUID/empty-query behavior |
+| Process keyword search or strict calculation picker scope | change the app-side request here, pair it with the matching database v2 RPC revision, and validate public plus owner-draft results against a non-production environment; never restore direct `extracted_text` filtering |
 | translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
+| self-hosted Edge Function mirror refresh | first review and promote the owning Edge commit, then run the Next helper with that full SHA, verify byte-for-byte parity/source receipt/stale deletion, and require a no-diff second run |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
 | semantic localization release evidence | run the local candidate with the tracked `main` backend only inside the guarded Playwright workflow; use user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |
 

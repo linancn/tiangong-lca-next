@@ -49,6 +49,7 @@ export type ClosureCheckSummaryV1 = {
   dataSnapshotToken?: string;
   blockerCodes?: string[];
   summary?: Record<string, unknown>;
+  artifacts?: ClosureArtifactV1[];
   scanExecutionId?: string;
   reusedFromCheckId?: string;
   workerJob?: ClosureCheckWorkerJobV1 | null;
@@ -56,6 +57,41 @@ export type ClosureCheckSummaryV1 = {
   updatedAt?: string;
   finishedAt?: string;
 };
+
+export type ClosureArtifactLifecycleState =
+  'preparing' | 'available' | 'expired' | 'unavailable' | 'failed';
+
+export type ClosurePrimaryArtifactRole = 'closure_report_xlsx' | 'closure_issue_manifest';
+export type ClosureArtifactRole = ClosurePrimaryArtifactRole;
+export type ClosureArtifactState = 'pending' | 'ready' | 'expired' | 'deleted' | 'failed';
+export type ClosureArtifactFormat = 'xlsx' | 'json';
+export type ClosureArtifactMediaType =
+  | 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  | 'application/vnd.tiangong.scope-closure-manifest+json';
+
+type ClosureArtifactProjectionBase = {
+  artifactRole: ClosureArtifactRole;
+};
+
+export type ClosureArtifactV1 =
+  | (ClosureArtifactProjectionBase & {
+      artifactState: 'ready';
+      filename: string;
+      format: ClosureArtifactFormat;
+      mediaType: ClosureArtifactMediaType;
+      size: number;
+      checksumSha256: string;
+      artifactExpiresAt: string;
+    })
+  | (ClosureArtifactProjectionBase & {
+      artifactState: Exclude<ClosureArtifactState, 'ready'>;
+      filename: string | null;
+      format: ClosureArtifactFormat | null;
+      mediaType: ClosureArtifactMediaType | null;
+      size: number | null;
+      checksumSha256: string | null;
+      artifactExpiresAt: string | null;
+    });
 
 export type ClosureScopeIdentityV1 = {
   id: string;
@@ -105,9 +141,15 @@ export type ClosureCheckIssuePageV1 = {
 export type ClosureReportDownloadDescriptorV1 = {
   signedDownloadUrl: string;
   artifactId: string;
-  mediaType: string;
+  artifactRole: ClosureArtifactRole;
+  artifactState: 'ready';
+  format: ClosureArtifactFormat;
+  filename: string;
+  mediaType: ClosureArtifactMediaType;
   size: number;
   checksumSha256: string;
+  artifactExpiresAt: string;
+  signedUrlExpiresAt: string;
   expiresInSeconds: number;
 };
 
@@ -135,6 +177,120 @@ function numberValue(value: unknown): number | undefined {
 function stringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
   return value.filter((item): item is string => isNonEmptyString(item));
+}
+
+function isTimestamp(value: unknown): value is string {
+  return isNonEmptyString(value) && Number.isFinite(Date.parse(value));
+}
+
+const closureArtifactIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const closureArtifactChecksumPattern = /^[a-f0-9]{64}$/;
+function isClosureArtifactRole(value: unknown): value is ClosureArtifactRole {
+  return value === 'closure_report_xlsx' || value === 'closure_issue_manifest';
+}
+
+function hasSemanticFilename(value: unknown): value is string {
+  return (
+    isNonEmptyString(value) &&
+    value.length <= 255 &&
+    value !== '.' &&
+    value !== '..' &&
+    !value.includes('/') &&
+    !value.includes('\\') &&
+    !/[\u0000-\u001f\u007f]/.test(value)
+  );
+}
+
+function matchesClosureArtifactRepresentation(
+  role: ClosureArtifactRole,
+  format: unknown,
+  mediaType: unknown,
+): boolean {
+  if (role === 'closure_report_xlsx') {
+    return (
+      format === 'xlsx' &&
+      mediaType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+  }
+  return format === 'json' && mediaType === 'application/vnd.tiangong.scope-closure-manifest+json';
+}
+
+export function decodeClosureArtifact(value: unknown): ClosureArtifactV1 | null {
+  if (!isRecord(value)) return null;
+  const exactFields = [
+    'artifactRole',
+    'artifactState',
+    'filename',
+    'format',
+    'mediaType',
+    'size',
+    'checksumSha256',
+    'artifactExpiresAt',
+  ];
+  if (
+    Object.keys(value).length !== exactFields.length ||
+    exactFields.some((field) => !Object.prototype.hasOwnProperty.call(value, field))
+  ) {
+    return null;
+  }
+  const artifactRole = value.artifactRole;
+  const artifactState = value.artifactState;
+  if (
+    !isClosureArtifactRole(artifactRole) ||
+    !['pending', 'ready', 'expired', 'deleted', 'failed'].includes(String(artifactState))
+  ) {
+    return null;
+  }
+
+  const hasFormat = value.format !== undefined && value.format !== null;
+  const hasFilename = value.filename !== undefined && value.filename !== null;
+  const hasMediaType = value.mediaType !== undefined && value.mediaType !== null;
+  const hasSize = value.size !== undefined && value.size !== null;
+  const hasChecksum = value.checksumSha256 !== undefined && value.checksumSha256 !== null;
+  const hasExpiry = value.artifactExpiresAt !== undefined && value.artifactExpiresAt !== null;
+  const parsedSize = numberValue(value.size);
+
+  if (
+    (hasFilename && !hasSemanticFilename(value.filename)) ||
+    (hasSize &&
+      (parsedSize === undefined || !Number.isSafeInteger(parsedSize) || parsedSize < 0)) ||
+    (hasChecksum &&
+      (!isNonEmptyString(value.checksumSha256) ||
+        !closureArtifactChecksumPattern.test(value.checksumSha256))) ||
+    (hasExpiry && !isTimestamp(value.artifactExpiresAt)) ||
+    ((hasFormat || hasMediaType) &&
+      !matchesClosureArtifactRepresentation(artifactRole, value.format, value.mediaType))
+  ) {
+    return null;
+  }
+
+  if (artifactState === 'ready') {
+    if (![hasFilename, hasFormat, hasMediaType, hasSize, hasChecksum, hasExpiry].every(Boolean)) {
+      return null;
+    }
+    return {
+      artifactRole,
+      artifactState: 'ready',
+      filename: value.filename as string,
+      format: value.format as ClosureArtifactFormat,
+      mediaType: value.mediaType as ClosureArtifactMediaType,
+      size: parsedSize!,
+      checksumSha256: value.checksumSha256 as string,
+      artifactExpiresAt: value.artifactExpiresAt as string,
+    };
+  }
+
+  return {
+    artifactRole,
+    artifactState: artifactState as Exclude<ClosureArtifactState, 'ready'>,
+    filename: hasFilename ? (value.filename as string) : null,
+    format: hasFormat ? (value.format as ClosureArtifactFormat) : null,
+    mediaType: hasMediaType ? (value.mediaType as ClosureArtifactMediaType) : null,
+    size: hasSize ? parsedSize! : null,
+    checksumSha256: hasChecksum ? (value.checksumSha256 as string) : null,
+    artifactExpiresAt: hasExpiry ? (value.artifactExpiresAt as string) : null,
+  };
 }
 
 /**
@@ -209,6 +365,19 @@ export function decodeClosureCheckSummary(value: unknown): ClosureCheckSummaryV1
   }
   const blockerCodes = stringArray(value.blockerCodes);
   const workerJob = decodeClosureCheckWorkerJob(value.workerJob);
+  let artifacts: ClosureArtifactV1[] | undefined;
+  if (value.artifacts !== undefined && value.artifacts !== null) {
+    if (!Array.isArray(value.artifacts) || value.artifacts.length !== 2) return null;
+    const decodedArtifacts = value.artifacts.map(decodeClosureArtifact);
+    if (
+      decodedArtifacts.some((artifact) => artifact === null) ||
+      decodedArtifacts[0]?.artifactRole !== 'closure_report_xlsx' ||
+      decodedArtifacts[1]?.artifactRole !== 'closure_issue_manifest'
+    ) {
+      return null;
+    }
+    artifacts = decodedArtifacts as ClosureArtifactV1[];
+  }
   return {
     schemaVersion: 'lcia.scope-closure-check.v1',
     closureCheckId,
@@ -229,6 +398,7 @@ export function decodeClosureCheckSummary(value: unknown): ClosureCheckSummaryV1
       : {}),
     ...(blockerCodes ? { blockerCodes } : {}),
     ...(isRecord(value.summary) ? { summary: value.summary } : {}),
+    ...(artifacts ? { artifacts } : {}),
     ...(isNonEmptyString(value.scanExecutionId) ? { scanExecutionId: value.scanExecutionId } : {}),
     ...(isNonEmptyString(value.reusedFromCheckId)
       ? { reusedFromCheckId: value.reusedFromCheckId }
@@ -306,21 +476,40 @@ export function decodeClosureReportDownloadDescriptor(
   const row = value as Record<string, unknown>;
   const signedDownloadUrl = row.signedDownloadUrl;
   const artifactId = row.artifactId;
+  const artifactRole = row.artifactRole;
+  const artifactState = row.artifactState;
+  const format = row.format;
+  const filename = row.filename;
   const mediaType = row.mediaType;
   const size = numberValue(row.size);
   const checksumSha256 = row.checksumSha256;
+  const artifactExpiresAt = row.artifactExpiresAt;
+  const signedUrlExpiresAt = row.signedUrlExpiresAt;
   const expiresInSeconds = numberValue(row.expiresInSeconds);
 
   if (
     !isNonEmptyString(signedDownloadUrl) ||
     !isHttpUrl(signedDownloadUrl) ||
     !isNonEmptyString(artifactId) ||
+    !closureArtifactIdPattern.test(artifactId) ||
+    !isClosureArtifactRole(artifactRole) ||
+    artifactState !== 'ready' ||
+    !isNonEmptyString(format) ||
+    !hasSemanticFilename(filename) ||
     !isNonEmptyString(mediaType) ||
     size === undefined ||
+    !Number.isSafeInteger(size) ||
     size < 0 ||
     !isNonEmptyString(checksumSha256) ||
+    !closureArtifactChecksumPattern.test(checksumSha256) ||
+    !isTimestamp(artifactExpiresAt) ||
+    !isTimestamp(signedUrlExpiresAt) ||
     expiresInSeconds === undefined ||
-    expiresInSeconds <= 0
+    !Number.isSafeInteger(expiresInSeconds) ||
+    expiresInSeconds <= 0 ||
+    expiresInSeconds > 900 ||
+    Date.parse(signedUrlExpiresAt) > Date.parse(artifactExpiresAt) ||
+    !matchesClosureArtifactRepresentation(artifactRole, format, mediaType)
   ) {
     return null;
   }
@@ -328,9 +517,15 @@ export function decodeClosureReportDownloadDescriptor(
   return {
     signedDownloadUrl,
     artifactId,
-    mediaType,
+    artifactRole,
+    artifactState: 'ready',
+    format: format as ClosureArtifactFormat,
+    filename,
+    mediaType: mediaType as ClosureArtifactMediaType,
     size,
     checksumSha256,
+    artifactExpiresAt,
+    signedUrlExpiresAt,
     expiresInSeconds,
   };
 }
@@ -381,16 +576,30 @@ export function getClosureCheck(
 
 export async function createClosureReportDownload(
   closureCheckId: string,
+  artifactRole: ClosureArtifactRole = 'closure_report_xlsx',
 ): Promise<DataProductApiResult<ClosureReportDownloadDescriptorV1>> {
   const response = await invokeDataProductCommand<unknown>({
     action: 'create_closure_report_download',
     closureCheckId,
+    artifactRole,
   });
   if (response.error || !response.data) {
     return response as DataProductApiResult<ClosureReportDownloadDescriptorV1>;
   }
 
   const descriptor = decodeClosureReportDownloadDescriptor(response.data);
+  if (descriptor && descriptor.artifactRole !== artifactRole) {
+    return {
+      ...response,
+      data: null,
+      error: {
+        message: 'Invalid closure report download descriptor',
+        code: 'INVALID_CLOSURE_REPORT_DESCRIPTOR',
+        details: '',
+        hint: '',
+      },
+    };
+  }
   if (descriptor) return { ...response, data: descriptor };
 
   return {

@@ -3,7 +3,7 @@ import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { langgraphClient, listAssistants } from '../_shared/langgraph_client.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
-import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient } from '../_shared/supabase_client.ts';
 
 async function suggestData(tidasData: string, dataType: string, options: Record<string, unknown>) {
   const assistants = await listAssistants();
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
   const redis = await getRedisClient();
 
   const authResult = await authenticateRequest(req, {
-    supabase: supabase,
+    authClient: supabaseAuthClient,
     redis: redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
   });

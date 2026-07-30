@@ -18,7 +18,15 @@ import {
 } from './contracts';
 import { waitForRenderedLoginControl } from './login-route-readiness';
 import { installVerifiedProductionReadOnlyGuard } from './production-backend-target';
-import { assertNoBlockedProductionRequests } from './production-request-guard';
+import {
+  assertNoBlockedProductionRequests,
+  type ProductionRequestGuard,
+} from './production-request-guard';
+import {
+  assertSemanticBackendSimulatorClosed,
+  installSemanticBackendSimulator,
+  type SemanticBackendSimulator,
+} from './semantic-backend-simulator';
 
 const LOGIN_ASSERTION = findRouteAssertion(LOGIN_PATH);
 const ANONYMOUS_PROTECTED_ASSERTIONS = flattenExecutableRouteAssertions().filter(
@@ -27,6 +35,24 @@ const ANONYMOUS_PROTECTED_ASSERTIONS = flattenExecutableRouteAssertions().filter
 
 if (ANONYMOUS_PROTECTED_ASSERTIONS.length === 0) {
   throw new Error('The route contract must expose at least one authenticated route.');
+}
+
+async function installAnonymousBackendGuard(
+  context: Parameters<typeof installSemanticBackendSimulator>[0],
+): Promise<ProductionRequestGuard | SemanticBackendSimulator> {
+  return process.env.E2E_QUALIFICATION === 'true'
+    ? installSemanticBackendSimulator(context, 'anonymous')
+    : (await installVerifiedProductionReadOnlyGuard(context)).guard;
+}
+
+function assertAnonymousBackendGuardClosed(
+  guard: ProductionRequestGuard | SemanticBackendSimulator,
+): void {
+  if ('externalRequests' in guard && 'productionWrites' in guard) {
+    assertSemanticBackendSimulatorClosed(guard);
+  } else {
+    assertNoBlockedProductionRequests(guard);
+  }
 }
 
 function assertionMessageIds(assertion: ExecutableRouteAssertion): readonly string[] {
@@ -129,7 +155,7 @@ test('anonymous protected routes fail closed to the canonical localized login', 
       locale: localeDefinition.canonicalLocale,
       serviceWorkers: 'block',
     });
-    const { guard: productionRequestGuard } = await installVerifiedProductionReadOnlyGuard(context);
+    const productionRequestGuard = await installAnonymousBackendGuard(context);
     const page = await context.newPage();
     try {
       for (const assertion of ANONYMOUS_PROTECTED_ASSERTIONS) {
@@ -153,7 +179,7 @@ test('anonymous protected routes fail closed to the canonical localized login', 
       }
     } finally {
       await context.close();
-      assertNoBlockedProductionRequests(productionRequestGuard);
+      assertAnonymousBackendGuardClosed(productionRequestGuard);
     }
   }
 });
@@ -171,14 +197,14 @@ test('browser locale preference selects every registry locale on first render', 
       locale: localeDefinition.canonicalLocale,
       serviceWorkers: 'block',
     });
-    const { guard: productionRequestGuard } = await installVerifiedProductionReadOnlyGuard(context);
+    const productionRequestGuard = await installAnonymousBackendGuard(context);
     const page = await context.newPage();
     try {
       await page.goto(loginUrl(baseURL!), { waitUntil: 'domcontentloaded' });
       await expectLocalizedLogin(page, localeDefinition);
     } finally {
       await context.close();
-      assertNoBlockedProductionRequests(productionRequestGuard);
+      assertAnonymousBackendGuardClosed(productionRequestGuard);
     }
   }
 });
@@ -194,14 +220,14 @@ test('legacy locale aliases migrate and an invalid stored locale uses the regist
     const legacyAlias = materializeLegacyAlias(localeDefinition);
     expect(legacyAlias).not.toBe(localeDefinition.canonicalLocale);
     const context = await newContextWithStoredLocale(browser, baseURL!, legacyAlias);
-    const { guard: productionRequestGuard } = await installVerifiedProductionReadOnlyGuard(context);
+    const productionRequestGuard = await installAnonymousBackendGuard(context);
     const page = await context.newPage();
     try {
       await page.goto(loginUrl(baseURL!), { waitUntil: 'domcontentloaded' });
       await expectLocalizedLogin(page, localeDefinition);
     } finally {
       await context.close();
-      assertNoBlockedProductionRequests(productionRequestGuard);
+      assertAnonymousBackendGuardClosed(productionRequestGuard);
     }
   }
 
@@ -211,7 +237,7 @@ test('legacy locale aliases migrate and an invalid stored locale uses the regist
   expect(defaultDefinition).toBeDefined();
   const invalidLocale = `${LOCALE_REGISTRY.map(({ canonicalLocale }) => canonicalLocale).join('.')}.invalid`;
   const context = await browser.newContext({ baseURL: baseURL!, serviceWorkers: 'block' });
-  const { guard: productionRequestGuard } = await installVerifiedProductionReadOnlyGuard(context);
+  const productionRequestGuard = await installAnonymousBackendGuard(context);
   await context.addInitScript(
     ({ key, value }) => {
       window.localStorage.setItem(key, value);
@@ -233,7 +259,7 @@ test('legacy locale aliases migrate and an invalid stored locale uses the regist
     await expectLocalizedLoginContent(page, defaultDefinition!);
   } finally {
     await context.close();
-    assertNoBlockedProductionRequests(productionRequestGuard);
+    assertAnonymousBackendGuardClosed(productionRequestGuard);
   }
 });
 

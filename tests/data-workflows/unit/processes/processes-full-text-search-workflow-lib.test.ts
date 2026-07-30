@@ -215,12 +215,14 @@ describe('processes-full-text-search-workflow-lib', () => {
       );
       expect(rpc).toHaveBeenNthCalledWith(
         1,
-        'search_processes_latest',
+        'search_processes_latest_v2',
         expect.objectContaining({
           data_source: 'my',
+          owner_draft_only: false,
           page_current: 1,
           page_size: 10,
           query_text: 'test-process001_create',
+          query_terms: ['test-process001_create'],
         }),
       );
       expect(invoke).toHaveBeenNthCalledWith(

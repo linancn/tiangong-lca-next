@@ -9,7 +9,7 @@ import {
   permissionErrorStatusCode,
   validateDeleteBody,
 } from '../_shared/lifecyclemodel_bundle.ts';
-import { supabaseClient } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   }
 
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
+    authClient: supabaseAuthClient,
     allowedMethods: [AuthMethod.JWT],
   });
 

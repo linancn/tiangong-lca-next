@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, and managed push remain unchanged.'
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: retiring superseded digest compatibility entries follows the existing canonical-evidence, focused-contract-test, and managed-push sequence.'
 ---
 
 # Development Bootstrap
@@ -99,6 +99,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | start shared `dev` env | `npm start` |
 | explicit shared `dev` env | `npm run start:dev` |
 | explicit `main` env | `npm run start:main` |
+| sync the self-hosted Edge mirror from one reviewed commit | `./docker/pull-edge-functions.sh --ref <40-character-commit-sha>` |
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
@@ -131,6 +132,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | check every active locale's activation boundary | `npm run i18n:locale:all:check` |
 | require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | run the combined credential-free production preflight | `npm run release:preflight` |
+| qualify the semantic release harness locally without production access | `npm run e2e:qualify` |
+| verify the current source has a matching qualification receipt | `npm run e2e:qualification:check` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
@@ -140,6 +143,10 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
+
+Run `npm run e2e:qualify` on a clean committed source before preparing a release candidate. It executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 72 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
+
+A successful qualification updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`. Review and merge that generated receipt through the normal tracked `dev` PR flow before invoking authenticated release proof from the resulting clean commit. The receipt path is excluded from its own semantic input digest, so committing the generated record preserves the qualified input identity.
 
 After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 
@@ -154,9 +161,12 @@ npm run e2e:release -- \
 
 The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
+Create the `dev -> main` Promote PR only after that authorized run has produced current checked-in evidence with exact cleanup and the full managed release gate has passed on the immutable candidate. The Promote PR and its credential-free Release Readiness job verify the matching qualification receipt, production evidence, and diff. They do not create production proof: the repository has no protected production actor credential or external recovery ledger in GitHub Actions, by design.
+
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
+- Edge mirror refresh accepts only a full reviewed commit SHA, records the resolved source in `docker/volumes/functions/.source-revision.json`, deletes stale mirror files, and must be rerun once with no resulting tracked change before handoff
 - documentation capture is a separate local operator workflow: this repository supplies only `config/docs-capture/profile.v1.json`, stable semantic locators, and its exact UI runtime
 - the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces
 - the workspace wrapper must load the profile from the same exact Next commit that it starts as the render target; a profile from current `main` must not control a historical UI

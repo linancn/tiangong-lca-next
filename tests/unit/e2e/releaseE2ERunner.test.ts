@@ -33,6 +33,10 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     now: number,
     key: Buffer,
   ) => Record<string, unknown>;
+  validateQualificationReceipt: (
+    receipt: Record<string, unknown>,
+    expectedInput: string,
+  ) => Record<string, unknown>;
   validateRunOptions: (options: Record<string, any>) => void;
 };
 const staticServer = require('../../../scripts/e2e/static-server.cjs') as {
@@ -66,6 +70,8 @@ describe('release E2E controller contracts', () => {
     expect(help).toContain('npm run e2e:env:doctor');
     expect(help).toContain('npm run e2e:release');
     expect(help).toContain('npm run e2e:release:resume');
+    expect(help).toContain('npm run e2e:qualify');
+    expect(help).toContain('npm run e2e:qualification:check');
     expect(help).toContain('npm run e2e:env:clean');
     expect(help).toContain('npm run e2e:dev');
     expect(() => controller.parseOptions('resume', ['--format=json'])).toThrow(
@@ -76,6 +82,47 @@ describe('release E2E controller contracts', () => {
     );
     expect(() => controller.parseOptions('run', ['--authenticated=false'])).toThrow(
       'does not accept a value',
+    );
+  });
+
+  it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
+    const input = 'a'.repeat(64);
+    const receipt = {
+      browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
+        name,
+        version: '1.61.1',
+      })),
+      cleanup: { cleaned: 0, created: 0, leaked: 0 },
+      coverage: {
+        contractAssertionCount: 49,
+        discoveredCases: 72,
+        executedCases: 48,
+        harnessControlCases: 12,
+        liveAssertionCount: 49,
+        qualificationDiscoveredCases: 84,
+        skippedCases: 24,
+      },
+      externalRequests: 0,
+      productionWrites: 0,
+      qualificationInputSha256: input,
+      schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+      status: 'qualified',
+    };
+    expect(controller.validateQualificationReceipt(receipt, input)).toBe(receipt);
+    expect(() =>
+      controller.validateQualificationReceipt(
+        {
+          ...receipt,
+          coverage: { ...receipt.coverage, liveAssertionCount: 48 },
+        },
+        input,
+      ),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() =>
+      controller.validateQualificationReceipt({ ...receipt, externalRequests: 1 }, input),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() => controller.validateQualificationReceipt(receipt, 'b'.repeat(64))).toThrow(
+      'missing, stale, or incomplete',
     );
   });
 

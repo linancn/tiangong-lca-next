@@ -1,5 +1,6 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { readdirSync } from 'node:fs';
 import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -382,6 +383,17 @@ async function verifyRoleNeutralAuthentication(): Promise<Record<string, string>
 }
 
 async function verifyLedgerSafety(): Promise<Record<string, unknown>> {
+  if (process.env.E2E_QUALIFICATION === 'true') {
+    if (process.env.E2E_ALLOW_PRODUCTION_DATA === 'true') {
+      throw new Error('Semantic harness qualification forbids production-data authorization.');
+    }
+    return {
+      productionDataAuthorized: false,
+      recoveryDirectoryWritable: false,
+      semanticBackendSimulator: true,
+      unresolvedLedger: false,
+    };
+  }
   const recoveryPath = process.env.E2E_RECOVERY_LEDGER_PATH?.trim();
   if (!recoveryPath || !path.isAbsolute(recoveryPath)) {
     throw new Error('An absolute external recovery ledger path is required.');
@@ -406,17 +418,19 @@ async function verifyLedgerSafety(): Promise<Record<string, unknown>> {
 
 function discoverPlaywrightTests(): Record<string, unknown> {
   const args = JSON.parse(process.env.E2E_PLAYWRIGHT_ARGS_JSON || '[]') as string[];
-  const result = spawnSync(
-    path.join(process.cwd(), 'node_modules/.bin/playwright'),
-    ['test', '--config=playwright.config.ts', '--list', ...args],
-    {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      env: process.env,
-      maxBuffer: 16 * 1024 * 1024,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    },
-  );
+  const discover = (discoveryArgs: string[]) =>
+    spawnSync(
+      path.join(process.cwd(), 'node_modules/.bin/playwright'),
+      ['test', '--config=playwright.config.ts', '--list', ...discoveryArgs],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        env: process.env,
+        maxBuffer: 16 * 1024 * 1024,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
+  const result = discover(args);
   if (result.error) throw result.error;
   if (result.status !== 0) {
     throw new Error(`Playwright discovery failed: ${String(result.stderr || '').trim()}`);
@@ -424,7 +438,26 @@ function discoverPlaywrightTests(): Record<string, unknown> {
   const output = String(result.stdout || '');
   const listedTests = output.split(/\r?\n/u).filter((line) => /^\s*\[/u.test(line)).length;
   if (listedTests === 0) throw new Error('Playwright discovery returned no tests.');
-  return { listingSha256: sha256(output), listedTests };
+  if (process.env.E2E_QUALIFICATION !== 'true') {
+    return { listingSha256: sha256(output), listedTests };
+  }
+  const canonicalSpecs = readdirSync(path.join(process.cwd(), 'tests/e2e/i18n'))
+    .filter((name) => name.endsWith('.spec.ts') && name !== 'harness-qualification.spec.ts')
+    .sort()
+    .map((name) => `tests/e2e/i18n/${name}`);
+  const fullResult = discover(canonicalSpecs);
+  if (fullResult.error) throw fullResult.error;
+  if (fullResult.status !== 0) {
+    throw new Error(`Full Playwright discovery failed: ${String(fullResult.stderr || '').trim()}`);
+  }
+  const fullOutput = String(fullResult.stdout || '');
+  const fullListedTests = fullOutput.split(/\r?\n/u).filter((line) => /^\s*\[/u.test(line)).length;
+  return {
+    fullListingSha256: sha256(fullOutput),
+    fullListedTests,
+    listingSha256: sha256(output),
+    listedTests,
+  };
 }
 
 async function runPlaywright(): Promise<number> {
@@ -448,6 +481,9 @@ async function runPlaywright(): Promise<number> {
 }
 
 async function ensureExactCleanup(): Promise<Record<string, number>> {
+  if (process.env.E2E_QUALIFICATION === 'true') {
+    return { cleaned: 0, created: 0, leaked: 0 };
+  }
   const ledger = await readProductionDataLedger();
   if (ledger) {
     const result = await cleanupCodexE2EProcess();
@@ -572,7 +608,7 @@ async function main(): Promise<number> {
         trackedMainEnvironmentSha256: target.trackedMainEnvironmentSha256,
       };
     });
-    if (process.env.E2E_AUTHENTICATED === 'true') {
+    if (process.env.E2E_AUTHENTICATED === 'true' && process.env.E2E_QUALIFICATION !== 'true') {
       await check('auth.role-neutral-login', verifyRoleNeutralAuthentication);
     } else {
       checks.push({
@@ -600,6 +636,98 @@ async function main(): Promise<number> {
         phase,
       });
     }
+    let qualification: Record<string, unknown> | undefined;
+    if (process.env.E2E_QUALIFICATION === 'true') {
+      qualification = await readJson<Record<string, unknown>>(
+        process.env.E2E_QUALIFICATION_RESULT_PATH ||
+          '/e2e-output/semantic-harness-qualification.json',
+      );
+      const assertionIds = qualification.assertionIds;
+      const assertionBrowsers = qualification.assertionBrowsers;
+      const canonicalBrowsers = qualification.canonicalBrowsers;
+      const harnessBrowsers = qualification.harnessBrowsers;
+      const expectedCriticalAssertionIds = [
+        'rv.login.login-and-register',
+        'rv.process-lists.mydata',
+        'rv.team.team-membership',
+      ];
+      const expectedBrowsers = ['chromium', 'firefox', 'webkit'];
+      const countTotals = (value: unknown): { executed: number; skipped: number } | undefined => {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+        const counts = Object.values(value as Record<string, unknown>);
+        if (
+          counts.length !== 3 ||
+          counts.some(
+            (entry) =>
+              !entry ||
+              typeof entry !== 'object' ||
+              Array.isArray(entry) ||
+              typeof (entry as Record<string, unknown>).executed !== 'number' ||
+              typeof (entry as Record<string, unknown>).skipped !== 'number',
+          )
+        ) {
+          return undefined;
+        }
+        return counts.reduce<{ executed: number; skipped: number }>(
+          (total, entry) => ({
+            executed: total.executed + Number((entry as Record<string, unknown>).executed),
+            skipped: total.skipped + Number((entry as Record<string, unknown>).skipped),
+          }),
+          { executed: 0, skipped: 0 },
+        );
+      };
+      const canonicalTotals = countTotals(canonicalBrowsers);
+      const harnessTotals = countTotals(harnessBrowsers);
+      const hasExactBrowserApplicability =
+        assertionBrowsers &&
+        typeof assertionBrowsers === 'object' &&
+        !Array.isArray(assertionBrowsers) &&
+        assertionIds instanceof Array &&
+        assertionIds.every((assertionId) => {
+          const observed = (assertionBrowsers as Record<string, unknown>)[String(assertionId)];
+          if (
+            !Array.isArray(observed) ||
+            observed.length === 0 ||
+            observed.some((browser) => !expectedBrowsers.includes(String(browser))) ||
+            !observed.includes('chromium')
+          ) {
+            return false;
+          }
+          return (
+            !expectedCriticalAssertionIds.includes(String(assertionId)) ||
+            expectedBrowsers.every((browser) => observed.includes(browser))
+          );
+        });
+      const canonicalCheck = spawnSync(
+        process.execPath,
+        [
+          '--import',
+          'tsx',
+          'scripts/i18n/check-semantic-evidence-format.mjs',
+          '--path',
+          '/e2e-output/qualification-evidence-roundtrip.json',
+        ],
+        { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      );
+      if (
+        canonicalCheck.status !== 0 ||
+        !Array.isArray(assertionIds) ||
+        assertionIds.length !== 49 ||
+        canonicalTotals?.executed !== 48 ||
+        canonicalTotals?.skipped !== 24 ||
+        harnessTotals?.executed !== 12 ||
+        harnessTotals?.skipped !== 0 ||
+        !hasExactBrowserApplicability ||
+        qualification.externalRequests !== 0 ||
+        qualification.productionWrites !== 0
+      ) {
+        throw new RunnerError('Semantic harness qualification closure is incomplete.', {
+          exitCode: EXIT.BROWSER,
+          failureCode: 'E2E_QUALIFICATION_INCOMPLETE',
+          phase,
+        });
+      }
+    }
 
     phase = 'cleanup';
     cleanupResult = await ensureExactCleanup();
@@ -625,6 +753,7 @@ async function main(): Promise<number> {
       exitCode: 0,
       finishedAt: new Date(finishedAtMs).toISOString(),
       fixtureIntentCreated,
+      qualification,
       phase,
       preflight: { checks: checks.length, status: 'passed' },
       startedAt: new Date(startedAtMs).toISOString(),

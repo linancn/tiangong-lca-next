@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-28"
-lastReviewedCommit: "61b2158f9de009278371bb40e0217160933025cb"
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh production evidence supersedes the active #703 waiver and stale digest pairs without changing routing or ownership; #704 retains the runner repairs.'
+lastReviewedAt: '2026-07-29'
+lastReviewedCommit: 'af58e108e6bd350fca71f070c245f2ee0a26b527'
+lastReviewedNote: 'Reviewed for Issue #724: obsolete semantic-evidence digest compatibility entries are removed after exact production evidence supersedes them; required-doc and ownership sets remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

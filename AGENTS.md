@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence and waiver sunset preserve repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: retiring superseded semantic-evidence compatibility entries remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -198,7 +198,7 @@ Use the role table in this file as the update map.
 ## Hard Boundaries
 
 - do not author schema or migration truth here
-- do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh`
+- do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial
 - do not use the screenshot executor for data creation or mutation; only the explicit authentication/session exchange may use non-GET requests

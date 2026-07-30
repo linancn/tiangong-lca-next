@@ -745,7 +745,6 @@ const tidasProcessToMarkdown = (processJson: any, lang = DEFAULT_LANG) => {
 
 Deno.serve(async (req) => {
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
     allowedMethods: [AuthMethod.SERVICE_API_KEY],
   });
 

@@ -1,0 +1,43 @@
+{
+  "browsers": [
+    {
+      "name": "chromium",
+      "version": "149.0.7827.0"
+    },
+    {
+      "name": "firefox",
+      "version": "151.0"
+    },
+    {
+      "name": "webkit",
+      "version": "26.5"
+    }
+  ],
+  "cleanup": {
+    "cleaned": 0,
+    "created": 0,
+    "leaked": 0
+  },
+  "coverage": {
+    "contractAssertionCount": 49,
+    "discoveredCases": 72,
+    "executedCases": 48,
+    "harnessControlCases": 12,
+    "liveAssertionCount": 49,
+    "qualificationDiscoveredCases": 84,
+    "skippedCases": 24
+  },
+  "diagnostics": {
+    "retainedOutsideGit": true,
+    "runResultSha256": "2dbcfc64a9fcfa0c24a715c8071c83e68657943e7133be23cd86d4acdf040983"
+  },
+  "environmentManifestSha256": "95c6d32067c68c776b38b23feb2eeef810ecb448b3befc6a9c617c4c202b40d9",
+  "externalRequests": 0,
+  "generatedAt": "2026-07-29T19:34:17.028Z",
+  "productionWrites": 0,
+  "qualificationInputSha256": "4c91fb91060b0c81191e2350c2fcc507df56a1d826b19e41e845df04af2a4abf",
+  "qualifiedCommit": "d6e1c29e8e7b5e2434391d1f6c96b029abd10765",
+  "qualifiedTree": "461299c00e5ab1662461742fd714c86be4f2fc5a",
+  "schemaVersion": "tiangong.semantic-harness-qualification.v1",
+  "status": "qualified"
+}

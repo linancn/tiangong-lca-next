@@ -12,6 +12,7 @@ import type {
   TestCase,
   TestResult,
 } from '@playwright/test/reporter';
+import { formatCanonicalSemanticEvidence } from '../../../scripts/i18n/semantic-evidence-format';
 import { signInViaUi } from './auth';
 import {
   APP_LOCALES,
@@ -41,16 +42,8 @@ export type ScenarioCoverage = {
   browsers: readonly string[];
 };
 
-export async function formatCanonicalEvidenceJson(
-  targetPath: string,
-  value: unknown,
-): Promise<string> {
-  const prettier = await import('prettier');
-  const resolvedConfig = await prettier.resolveConfig(targetPath);
-  return prettier.format(JSON.stringify(value, null, 2), {
-    ...(resolvedConfig ?? {}),
-    filepath: targetPath,
-  });
+export async function formatCanonicalEvidenceJson(value: unknown): Promise<string> {
+  return formatCanonicalSemanticEvidence(value, REPOSITORY_ROOT);
 }
 
 type RouteCoverageDigestInput = {
@@ -752,10 +745,6 @@ export default class I18nEvidenceReporter implements Reporter {
     };
 
     await mkdir(path.dirname(E2E_EVIDENCE_PATH), { recursive: true });
-    await writeFile(
-      E2E_EVIDENCE_PATH,
-      await formatCanonicalEvidenceJson(E2E_EVIDENCE_PATH, evidence),
-      'utf8',
-    );
+    await writeFile(E2E_EVIDENCE_PATH, await formatCanonicalEvidenceJson(evidence), 'utf8');
   }
 }
