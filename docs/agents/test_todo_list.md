@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after removing superseded digest compatibility entries; no new testing backlog item is required.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: verified production evidence and the current hermetic receipt close the cleanup proof gap without creating a new coverage backlog item.'
 ---
 
 # Testing Execution State

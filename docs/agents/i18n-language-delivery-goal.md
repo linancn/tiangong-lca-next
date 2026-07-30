@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
-lastReviewedNote: 'Reviewed for Issue #724: the verified 60-pass production run preserves the 49-ID, credential, write-safety, cleanup, and explicit-promotion-confirmation contracts.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: fresh authenticated evidence preserves the four-locale, 49-assertion, candidate-local/production-backend, exact-write, and zero-leak contracts.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

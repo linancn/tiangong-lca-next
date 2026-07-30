@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: retiring superseded semantic-evidence compatibility entries remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local schema now mirrors the current database-owned extracted_md and embedding_ft contract without changing repo ownership, dev-to-main delivery, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

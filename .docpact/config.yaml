@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-29'
-lastReviewedCommit: 'af58e108e6bd350fca71f070c245f2ee0a26b527'
-lastReviewedNote: 'Reviewed for Issue #724: obsolete semantic-evidence digest compatibility entries are removed after exact production evidence supersedes them; required-doc and ownership sets remain correct.'
+lastReviewedAt: '2026-07-30'
+lastReviewedCommit: '524ca80ff3fd341450eca0267bffc1fe4b9cedf5'
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local database artifact is current with the migration-parity-checked database contract; routing, validation ownership, and managed release boundaries remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
