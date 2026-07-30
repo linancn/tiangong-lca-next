@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: authenticated production E2E, canonical evidence, deterministic artifacts, qualification, and release preflight follow the documented proof order without changing gate commands.'
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: generated schema sync, deterministic check mode, secret redaction, and retained v2/FT object counts complement the existing production E2E and release proof without changing gate commands.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

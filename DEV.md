@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: ebd2abf106f131c7846f581fc39e8af766cc2c56
-lastReviewedNote: 'Reviewed for Issue #735 production closure: the refreshed semantic-harness evidence still follows the documented managed push, dev PR, release-gate, promotion, and workspace-integration loop.'
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated database snapshot follows the documented sync and validation path, while the managed push, dev PR, promotion, and workspace-integration loop remains unchanged.'
 ---
 
 # Development Bootstrap
