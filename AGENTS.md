@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: retiring superseded semantic-evidence compatibility entries remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: the version-only release delta leaves repository ownership, branch policy, release automation, and managed-push boundaries unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
