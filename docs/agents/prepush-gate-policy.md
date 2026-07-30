@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: removing superseded compatibility entries still requires a new clean managed push; production-write authorization and release-evidence policies remain fail closed.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: a simulator allowlist contraction still requires the normal clean managed gate; production-write authorization remains fail closed.'
 ---
 
 # Pre-Push Gate Policy

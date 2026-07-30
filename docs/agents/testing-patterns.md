@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: compatibility entries sunset when verified evidence directly matches the current input hash, following the existing exact-digest proof pattern.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: exact request-key allowlists remain the correct semantic simulator pattern.'
 ---
 
 # Testing Patterns Reference

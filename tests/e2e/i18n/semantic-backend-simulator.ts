@@ -22,7 +22,6 @@ const WELCOME_VIDEO_SIGN_PATH =
   '/storage/v1/object/sign/sys-files/video/platform_usage_process_first_matched.mp4';
 const SEMANTIC_REST_QUERY_KEYS = {
   processes: new Set([
-    'extracted_text',
     'id',
     'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
     'limit',

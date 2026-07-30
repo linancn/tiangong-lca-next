@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: exact production evidence eliminates two temporary digest compatibility entries; no strategy or matrix expansion is required.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: the existing Process RPC and semantic simulator coverage are sufficient; no test-strategy expansion is required.'
 ---
 
 # Testing Strategy

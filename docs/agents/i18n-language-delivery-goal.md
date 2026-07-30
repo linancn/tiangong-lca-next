@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
-lastReviewedNote: 'Reviewed for Issue #724: the verified 60-pass production run preserves the 49-ID, credential, write-safety, cleanup, and explicit-promotion-confirmation contracts.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: removing one obsolete simulator query key changes no locale, assertion-ID, credential, write-safety, or cleanup contract.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
