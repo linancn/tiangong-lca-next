@@ -1,12 +1,12 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-29T19:13:51.968Z",
-  "runId": "local-81f1343b-0a88-4f61-a7ad-7649568ff953",
+  "generatedAt": "2026-07-30T15:33:52.111Z",
+  "runId": "local-2d365dbf-8958-454b-b5d7-430930f45976",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "82ed0855eed7c855c5298f6568c707b3e3b4eced",
-    "packageManifestDigest": "57389d83ac34ff293f1312ba4dcfdc76b5a1ac32fa71ef5449bca6e7a358dbdf",
+    "observedHeadCommit": "bf14d3e3227e48181ccb540ee66b2dc0da913312",
+    "packageManifestDigest": "be54f5b04df8858db21ebc7933a2a3d99fbe8f78f34b8cca98f734ef8b1358ed",
     "sourceTreeDigest": "f0ebaaf11f0cf19c979f2c118189d4779f65600289152ee68d7e9d653727a1d6",
     "unitTestTreeDigest": "f5e5024efa50109a81c9daca0b1d4cb3fbb5371dc9ce0cdcdddcf359307476e6"
   },
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "082c623e76b64e161d0894bb3e7879d096f235494ce3fecc8106dd2723e33902"
+      "sha256": "03ca78dbd4f5d71ce7872dae69b239953ffb281240134950e71e5d7e21bccd77"
     },
     "runtimeAssets": [
       {
@@ -273,7 +273,7 @@
       },
       {
         "path": "tests/e2e/i18n/semantic-backend-simulator.ts",
-        "sha256": "35e0b220453ec603345d04d3baabdf372dfc263e1af2efd08054430d8084d35b"
+        "sha256": "5d4658259b1265e237a0db96bcd8cc50f3ac206dece7eaf993f10826baacd64a"
       },
       {
         "path": "tests/e2e/i18n/semantic-critical.spec.ts",
