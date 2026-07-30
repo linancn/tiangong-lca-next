@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the Process v2 cleanup candidate passed the hermetic three-browser harness and receipt validation; release gates remain unchanged.'
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: authenticated production E2E, canonical evidence, deterministic artifacts, qualification, and release preflight follow the documented proof order without changing gate commands.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

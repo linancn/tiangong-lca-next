@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: removing one obsolete simulator query key changes no locale, assertion-ID, credential, write-safety, or cleanup contract.'
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: fresh authenticated evidence preserves the four-locale, 49-assertion, candidate-local/production-backend, exact-write, and zero-leak contracts.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

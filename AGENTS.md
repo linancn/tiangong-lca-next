@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the merged cleanup retains the indexed v2 RPC and database-owned extracted_md contract and now has current hermetic three-browser evidence.'
+lastReviewedCommit: ebd2abf106f131c7846f581fc39e8af766cc2c56
+lastReviewedNote: 'Reviewed for Issue #735 production closure: the refreshed three-browser evidence and qualification receipt preserve the repo contract, dev-to-main promotion path, and database-owned extracted_md boundary.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

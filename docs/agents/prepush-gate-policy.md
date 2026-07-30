@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the simulator allowlist contraction has a current three-browser receipt; the clean managed gate and production-write fail-closed rules remain unchanged.'
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: refreshed verified evidence and the follow-up three-browser receipt still require the normal clean managed gate; production-write authorization remains fail closed.'
 ---
 
 # Pre-Push Gate Policy
