@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: the test/docs-only search residue cleanup follows the normal dev PR, full gate, promotion, and workspace-integration sequence.'
+lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
+lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the regenerated semantic-harness receipt follows the documented dev PR, release-gate, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

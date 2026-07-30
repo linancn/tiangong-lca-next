@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: Process search retains the indexed v2 RPC and database-owned extracted_md contract while retired query-field residue is removed from current tests and docs.'
+lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
+lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the merged cleanup retains the indexed v2 RPC and database-owned extracted_md contract and now has current hermetic three-browser evidence.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
