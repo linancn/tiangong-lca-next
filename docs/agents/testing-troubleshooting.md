@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #735 qualification refresh: the regenerated receipt followed the documented stale-receipt recovery path; no troubleshooting exception is added.'
+lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
+lastReviewedNote: 'Reviewed for Issue #735 production closure: the digest-mismatch recovery used a fresh authenticated run, copied canonical evidence, deterministic artifact refresh, clean-candidate qualification, and no exception path.'
 ---
 
 # Testing Troubleshooting
