@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: ebd2abf106f131c7846f581fc39e8af766cc2c56
-lastReviewedNote: 'Reviewed for Issue #735 production closure: the refreshed three-browser evidence and qualification receipt preserve the repo contract, dev-to-main promotion path, and database-owned extracted_md boundary.'
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local schema now mirrors the current database-owned extracted_md and embedding_ft contract without changing repo ownership, dev-to-main delivery, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

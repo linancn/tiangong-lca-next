@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: Process keyword search remains an indexed v2 RPC over database-owned extracted_md with no app-side field filtering.'
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the local initialization artifact now contains the same seven v2 Hybrid RPCs, database-owned extracted_md derivatives, and embedding_ft indexes as the current database contract.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

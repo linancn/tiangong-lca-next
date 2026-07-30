@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: Next owns only the Process v2 RPC request while database-engine retains extracted_md and visibility semantics.'
+lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
+lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the local generated snapshot remains a derived development artifact; database-engine retains schema, extracted_md, embedding_ft, visibility, and hosted migration ownership.'
 ---
 
 # Supabase Environment And Database Workflow
