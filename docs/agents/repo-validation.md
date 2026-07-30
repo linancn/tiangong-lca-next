@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #734: existing locale audits, focused Welcome tests, responsive browser proof, lint, build, and the managed push gate cover this change.'
+lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: existing locale audits, focused Welcome tests, responsive browser proof, lint, build, and the managed push gate cover this change.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

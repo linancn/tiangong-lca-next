@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #734: focused page, semantic contract, and responsive layout proof are sufficient; no testing-strategy expansion is required.'
+lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: focused page, semantic contract, and responsive layout proof are sufficient; no testing-strategy expansion is required.'
 ---
 
 # Testing Strategy

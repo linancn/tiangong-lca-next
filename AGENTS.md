@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #734: Welcome copy and responsive layout changes do not alter repository ownership, branch policy, delivery rules, or hard boundaries.'
+lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: Welcome copy and responsive layout changes do not alter repository ownership, branch policy, delivery rules, or hard boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
