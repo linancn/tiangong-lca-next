@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: retiring superseded digest compatibility entries follows the existing canonical-evidence, focused-contract-test, and managed-push sequence.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: the test/docs-only search residue cleanup follows the normal dev PR, full gate, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

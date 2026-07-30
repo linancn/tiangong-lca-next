@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: a compatibility entry whose evidence hash already equals the current file correctly fails closed and is resolved by retiring the obsolete entry.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: removed simulator query keys should fail as unexpected requests; no troubleshooting exception is added.'
 ---
 
 # Testing Troubleshooting

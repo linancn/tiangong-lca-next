@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: retiring superseded semantic-evidence compatibility entries remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
+lastReviewedNote: 'Reviewed for Issue #735: Process search retains the indexed v2 RPC and database-owned extracted_md contract while retired query-field residue is removed from current tests and docs.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
