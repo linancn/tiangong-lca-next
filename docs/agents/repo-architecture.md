@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: Process keyword search remains an indexed v2 RPC over database-owned extracted_md with no app-side field filtering.'
+lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
+lastReviewedNote: 'Reviewed for Issue #734: the Welcome page remains in the existing route-level UI layer and introduces no architecture or service-boundary change.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

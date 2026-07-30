@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: a simulator allowlist contraction still requires the normal clean managed gate; production-write authorization remains fail closed.'
+lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
+lastReviewedNote: 'Reviewed for Issue #734: the Welcome and locale-artifact change uses the existing managed push gate and does not change trigger or authorization policy.'
 ---
 
 # Pre-Push Gate Policy

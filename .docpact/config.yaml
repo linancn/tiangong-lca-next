@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-30'
-lastReviewedCommit: '2d582c989f8f6965236b9e464631d5e2256744f0'
-lastReviewedNote: 'Reviewed for Issue #735: retired Process search query-field residue is removed without changing v2 RPC, extracted_md, or managed release boundaries.'
+lastReviewedAt: "2026-07-30"
+lastReviewedCommit: "a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe"
+lastReviewedNote: 'Reviewed for Issue #734: the Welcome LCA quick start, locale artifacts, and focused tests remain within existing frontend, i18n, and test-governance rules.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

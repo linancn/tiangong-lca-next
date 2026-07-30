@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 2d582c989f8f6965236b9e464631d5e2256744f0
-lastReviewedNote: 'Reviewed for Issue #735: removed simulator query keys should fail as unexpected requests; no troubleshooting exception is added.'
+lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
+lastReviewedNote: 'Reviewed for Issue #734: existing locale-artifact and serial Umi-test recovery guidance covers this change; no new exception is added.'
 ---
 
 # Testing Troubleshooting

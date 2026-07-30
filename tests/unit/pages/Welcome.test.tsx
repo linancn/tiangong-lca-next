@@ -192,21 +192,26 @@ describe('Welcome page', () => {
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 
-  it('switches the welcome center content to the carbon footprint database guide', async () => {
+  it('switches the welcome center content to the life cycle data quick start', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<Welcome />);
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+    await user.click(screen.getByRole('button', { name: 'LCA Data Quick Start' }));
 
     expect(mockHistoryPush).toHaveBeenCalledWith('/welcome?view=carbon-footprint');
-    expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
-    expect(screen.getByText('Process Data Development Workflow')).toBeInTheDocument();
-    expect(screen.getByText('Data Objects')).toBeInTheDocument();
-    expect(screen.getByText('Collect Raw Data')).toBeInTheDocument();
-    expect(screen.getByText('Validate And Submit')).toBeInTheDocument();
+    expect(screen.getByText('Platform Walkthrough')).toBeInTheDocument();
+    expect(screen.getByText('Process Dataset Development and Submission')).toBeInTheDocument();
+    expect(screen.getByText('Data Objects in the Platform')).toBeInTheDocument();
+    expect(screen.getByText('Define the Process Scope')).toBeInTheDocument();
+    expect(screen.getByText('Submit for Review')).toBeInTheDocument();
+    const workflowSteps = screen.getAllByTestId('welcome-guide-workflow-step');
+    expect(workflowSteps).toHaveLength(6);
+    workflowSteps.forEach((step) => {
+      expect(step).toHaveClass('ant-col-xs-24', 'ant-col-sm-12', 'ant-col-xl-8');
+    });
     expect(screen.queryByRole('button', { name: /View Sample Data/ })).not.toBeInTheDocument();
     await waitFor(() =>
       expect(mockGetSignedStorageFileUrl).toHaveBeenCalledWith(
@@ -227,11 +232,11 @@ describe('Welcome page', () => {
     await user.click(screen.getByRole('button', { name: 'Browse Open Data', exact: true }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/tgdata/flows');
 
-    await user.click(screen.getByRole('button', { name: 'My Data', exact: true }));
+    await user.click(screen.getByRole('button', { name: 'Go to My Data', exact: true }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
-  it('preserves the carbon footprint query across locale switching and refresh', async () => {
+  it('preserves the backward-compatible guide query across locale switching and refresh', async () => {
     mockLocation = { pathname: '/welcome', search: '?view=carbon-footprint' };
     let resolveVideoUrl = (url: string): void => {
       void url;
@@ -249,16 +254,16 @@ describe('Welcome page', () => {
 
     const { rerender, unmount } = renderWithProviders(<Welcome />);
 
-    expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
-    expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
+    expect(screen.getByText('Life Cycle Data Development')).toBeInTheDocument();
+    expect(screen.getByText('Platform Walkthrough')).toBeInTheDocument();
     expect(screen.queryByText('Unit Processes & Inventories')).not.toBeInTheDocument();
 
     mockLocale = 'fr-FR';
     mockGetLang.mockReturnValue('en');
     rerender(<Welcome />);
 
-    expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
-    expect(screen.getByText('Vidéo de démonstration')).toBeInTheDocument();
+    expect(screen.getByText('Développement des données de cycle de vie')).toBeInTheDocument();
+    expect(screen.getByText('Démonstration de la plateforme')).toBeInTheDocument();
     expect(screen.getByText('Chargement de la vidéo…')).toBeInTheDocument();
     expect(screen.queryByText('Processus élémentaires et inventaires')).not.toBeInTheDocument();
     expect(mockHistoryPush).not.toHaveBeenCalled();
@@ -278,7 +283,7 @@ describe('Welcome page', () => {
     unmount();
     renderWithProviders(<Welcome />);
 
-    expect(screen.getByText('Vidéo de démonstration')).toBeInTheDocument();
+    expect(screen.getByText('Démonstration de la plateforme')).toBeInTheDocument();
     expect(screen.queryByText('Processus élémentaires et inventaires')).not.toBeInTheDocument();
     await waitFor(() =>
       expect(document.querySelector('video source')).toHaveAttribute(
@@ -296,7 +301,7 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+    await user.click(screen.getByRole('button', { name: 'LCA Data Quick Start' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
@@ -311,7 +316,7 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+    await user.click(screen.getByRole('button', { name: 'LCA Data Quick Start' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
@@ -334,7 +339,7 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: 'Guide de développement des données' }));
+    await user.click(screen.getByRole('button', { name: 'Démarrage rapide des données d’ACV' }));
 
     await waitFor(() =>
       expect(document.querySelector('video source')).toHaveAttribute(
@@ -366,7 +371,7 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
     expect(screen.getByText('Unit Processes & Inventories')).toBeInTheDocument();
-    expect(screen.queryByText('Operation Demo Video')).not.toBeInTheDocument();
+    expect(screen.queryByText('Platform Walkthrough')).not.toBeInTheDocument();
   });
 
   it('uses the default locale definition when the runtime locale is unsupported', async () => {
