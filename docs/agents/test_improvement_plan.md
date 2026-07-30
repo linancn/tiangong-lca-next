@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: exact production evidence eliminates two temporary digest compatibility entries; no strategy or matrix expansion is required.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: the version-only release delta does not reopen testing strategy or require matrix expansion.'
 ---
 
 # Testing Strategy

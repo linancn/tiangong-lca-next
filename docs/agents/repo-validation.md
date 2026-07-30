@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: obsolete digest compatibility entries are removed only after exact evidence hashes match and focused contract tests pass; validation commands remain unchanged.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: release, smoke, and validation commands remain current after the version-only release delta.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

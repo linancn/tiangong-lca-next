@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: removing superseded compatibility entries still requires a new clean managed push; production-write authorization and release-evidence policies remain fail closed.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: the release-only package version change leaves hook, receipt, preflight, and protected-branch behavior unchanged.'
 ---
 
 # Pre-Push Gate Policy

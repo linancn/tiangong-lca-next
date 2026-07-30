@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: a compatibility entry whose evidence hash already equals the current file correctly fails closed and is resolved by retiring the obsolete entry.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: the version-only release delta introduces no new failure mode or recovery command.'
 ---
 
 # Testing Troubleshooting

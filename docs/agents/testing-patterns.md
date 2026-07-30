@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-29
-lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
-lastReviewedNote: 'Reviewed for Issue #724: compatibility entries sunset when verified evidence directly matches the current input hash, following the existing exact-digest proof pattern.'
+lastReviewedAt: 2026-07-30
+lastReviewedCommit: 96ac5d91d44c4b2d5d0181d0e9ccf7dc237943ab
+lastReviewedNote: 'Reviewed for the v0.0.63 main-to-dev backmerge: the version-only release delta does not change reusable test-selection or exact-digest proof patterns.'
 ---
 
 # Testing Patterns Reference
