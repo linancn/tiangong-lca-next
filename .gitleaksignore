@@ -1,0 +1,11 @@
+# Verified false positives from the Edge mirror sync in commit 251e9aa1.
+# Each entry is scoped to one commit, path, rule, and start line. See issue #728.
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/auth.ts:generic-api-key:205
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/auth.ts:generic-api-key:214
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/auth.ts:generic-api-key:451
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/auth.ts:generic-api-key:511
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/hybrid_search_rpc_context.ts:generic-api-key:54
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/supabase_client.ts:generic-api-key:107
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/hybrid_search_handler.ts:generic-api-key:67
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/hybrid_search_handler.ts:generic-api-key:68
+251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/lca_release_results/index.ts:generic-api-key:74
