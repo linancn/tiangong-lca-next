@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-31"
-lastReviewedCommit: "cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e"
-lastReviewedNote: 'Reviewed for Issue #743 after refreshing the credential-free semantic-harness qualification on dev commit 3ac0ca60: existing routing, testing-gate, release, and workspace-integration boundaries remain accurate.'
+lastReviewedCommit: "2486dc7547fe0f840cba0beb13139a79783024d0"
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: existing routing, testing-gate, release, and workspace-integration boundaries remain accurate with fresh 49-ID, three-browser, zero-leak production evidence.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

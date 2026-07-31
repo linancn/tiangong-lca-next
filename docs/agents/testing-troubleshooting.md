@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the existing stale-receipt, clean-candidate, Docker, and serial-gate recovery guidance covers the refreshed qualification without a new exception.'
+lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: the existing clean-candidate, Docker, production-proof, and exact-cleanup guidance covered the 60-pass/24-designed-skip run without a new exception.'
 ---
 
 # Testing Troubleshooting

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the credential-free receipt flow, 49-ID digest binding, and separately authorized ledger-controlled production mutation remain the correct semantic E2E patterns.'
+lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: the 49-ID, three-browser proof and ledger-controlled exact production cleanup created=1, cleaned=1, leaked=0 validate the existing semantic E2E patterns.'
 ---
 
 # Testing Patterns Reference

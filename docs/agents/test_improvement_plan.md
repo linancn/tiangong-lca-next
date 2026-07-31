@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after the credential-free qualification of dev commit 3ac0ca60: the hermetic 60-pass/24-designed-skip result fits the maintained strategy and requires no testing-strategy expansion.'
+lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: the 60-pass/24-designed-skip, 49-ID, three-browser, created=1/cleaned=1/leaked=0 result fits the maintained strategy and requires no testing-strategy expansion.'
 ---
 
 # Testing Strategy

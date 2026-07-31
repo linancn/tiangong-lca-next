@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the refreshed credential-free receipt does not alter repository ownership, branch policy, delivery rules, production-write authorization, or workspace integration.'
+lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: fresh 49-ID, three-browser evidence with created=1, cleaned=1, leaked=0 does not alter repository ownership, branch policy, delivery rules, production-write authorization, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

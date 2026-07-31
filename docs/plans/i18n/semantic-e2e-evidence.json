@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-30T15:33:52.111Z",
-  "runId": "local-2d365dbf-8958-454b-b5d7-430930f45976",
+  "generatedAt": "2026-07-31T03:48:30.114Z",
+  "runId": "local-7c16d109-b0d2-4950-94ae-a8400c66cf04",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "bf14d3e3227e48181ccb540ee66b2dc0da913312",
-    "packageManifestDigest": "be54f5b04df8858db21ebc7933a2a3d99fbe8f78f34b8cca98f734ef8b1358ed",
-    "sourceTreeDigest": "f0ebaaf11f0cf19c979f2c118189d4779f65600289152ee68d7e9d653727a1d6",
-    "unitTestTreeDigest": "f5e5024efa50109a81c9daca0b1d4cb3fbb5371dc9ce0cdcdddcf359307476e6"
+    "observedHeadCommit": "2486dc7547fe0f840cba0beb13139a79783024d0",
+    "packageManifestDigest": "819ec6485f6f10ba732ce1450687f144cfdaaa3e5d1bcd92413562fb1c09b469",
+    "sourceTreeDigest": "b5c361c9083bf1853307e915396a0f41ebc70b35d9fbb1ba90fc84a8bd46270b",
+    "unitTestTreeDigest": "d5f8ef16585fefe533d5ae5adca6d2fe7b127f974c54f1037e395187f899ce3b"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "03ca78dbd4f5d71ce7872dae69b239953ffb281240134950e71e5d7e21bccd77"
+      "sha256": "428dade726f924751cccac4f8cadb2675d3a9bd138c7adba11262a06542011cd"
     },
     "runtimeAssets": [
       {
@@ -461,7 +461,7 @@
       },
       {
         "path": "tests/unit/pages/Welcome.test.tsx",
-        "sha256": "f499a1fe47b70532e9ef3aea704a914cc89d163d3e58d41df2d02828b138105d"
+        "sha256": "0a6f1fd01531c2091c124f78eb6c1908df75cad8051423ccb3746cc15cfcc8a4"
       },
       {
         "path": "tests/unit/requestErrorConfig.test.ts",
@@ -527,7 +527,7 @@
       },
       {
         "path": "src/locales/en-US/pages_home.ts",
-        "sha256": "0f849cb7eab9c1367bd6deeb72a458122ba5c700d0388b55a38e17539c982a5b"
+        "sha256": "4710d7fcaaafe9ce0fe328040e4f2ab3bd1f1fea0acda2e59ca58ce9a7013c36"
       },
       {
         "path": "src/pages/404.tsx",
@@ -615,7 +615,7 @@
       },
       {
         "path": "src/pages/Welcome.tsx",
-        "sha256": "164eef3bb11731e98081618b4d8efd9f5d378c49e3b3994d43dd0901c092e81f"
+        "sha256": "04c11208afd8297ac329fc547f9dce953a62f4d4ab256286492f2b09b797e0aa"
       },
       {
         "path": "src/requestErrorConfig.ts",
