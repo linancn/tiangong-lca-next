@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local schema now mirrors the current database-owned extracted_md and embedding_ft contract without changing repo ownership, dev-to-main delivery, or workspace integration.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: Welcome copy and responsive layout changes do not alter repository ownership, branch policy, delivery rules, schema ownership, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

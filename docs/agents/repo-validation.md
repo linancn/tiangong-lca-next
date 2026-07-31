@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: generated schema sync, deterministic check mode, secret redaction, and retained v2/FT object counts complement the existing production E2E and release proof without changing gate commands.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: locale audits, focused Welcome tests, responsive browser proof, lint, build, and the clean managed gate remain the applicable validation set.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

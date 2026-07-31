@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: fresh production and hermetic evidence confirm exact request-key allowlists, digest binding, and ledger-controlled mutation remain the correct semantic E2E patterns.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: route-view assertions and responsive grid checks remain the focused Welcome pattern, while exact request keys, digest binding, and ledger-controlled mutation remain the semantic E2E pattern.'
 ---
 
 # Testing Patterns Reference

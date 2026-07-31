@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: the digest-mismatch recovery used a fresh authenticated run, copied canonical evidence, deterministic artifact refresh, clean-candidate qualification, and no exception path.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: existing locale-artifact, digest-mismatch, clean-candidate qualification, and serial Umi-test recovery guidance covers the merged state without a new exception.'
 ---
 
 # Testing Troubleshooting

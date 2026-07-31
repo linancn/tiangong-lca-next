@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated database snapshot follows the documented sync and validation path, while the managed push, dev PR, promotion, and workspace-integration loop remains unchanged.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: the Welcome quick-start change follows the existing dev work loop, clean managed gate, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

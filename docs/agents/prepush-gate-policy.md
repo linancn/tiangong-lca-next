@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: refreshed verified evidence and the follow-up three-browser receipt still require the normal clean managed gate; production-write authorization remains fail closed.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: Welcome and locale-artifact changes use the existing clean managed gate; production-write authorization, release, and trigger policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

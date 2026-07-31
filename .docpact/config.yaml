@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-30'
-lastReviewedCommit: '524ca80ff3fd341450eca0267bffc1fe4b9cedf5'
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local database artifact is current with the migration-parity-checked database contract; routing, validation ownership, and managed release boundaries remain unchanged.'
+lastReviewedCommit: '30e31e7ad2f69444e80b2a042ec173c7857ce360'
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: the Welcome LCA quick start, locale artifacts, and responsive proof remain within existing frontend, i18n, testing, and managed release boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
