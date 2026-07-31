@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
-lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed across three browsers, and exact cleanup finished created=1, cleaned=1, leaked=0; the existing receipt, preflight, and managed-gate flow remains accurate.'
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed, and external requests and production writes stayed zero; the existing receipt, preflight, and managed-gate flow remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

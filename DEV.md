@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
-lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: the completed local-only 49-ID proof with created=1, cleaned=1, leaked=0 follows the existing clean qualification, production-preflight, promotion, and workspace-integration sequence.'
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the current 60-pass/24-designed-skip receipt follows the existing clean qualification, production-preflight, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

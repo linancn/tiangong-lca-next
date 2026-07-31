@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
-lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: the local-only production proof closed all 49 IDs with created=1, cleaned=1, leaked=0, while the managed push, credential-free GitHub Actions, and release trigger policy remain unchanged.'
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the generated credential-free receipt closes 49 IDs with zero external requests or production writes and follows the existing managed-push and release trigger policy.'
 ---
 
 # Pre-Push Gate Policy
