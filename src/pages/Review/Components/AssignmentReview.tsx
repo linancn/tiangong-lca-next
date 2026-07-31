@@ -5,15 +5,17 @@ import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import {
-  getLifeCycleModelSubTableDataBatch,
   getReviewsTableDataOfReviewAdmin,
   getReviewsTableDataOfReviewMember,
+  getRootReviewReferenceProgress,
+  type ReviewSubmitDatasetTable,
+  type RootReviewReferenceProgress,
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Card, Col, Input, Row, Space, Spin, Table, theme } from 'antd';
+import { FormattedMessage, Link, useIntl } from '@umijs/max';
+import { Card, Col, Input, Row, Space, Spin, Table, Tag, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
@@ -22,6 +24,7 @@ import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
 import ReviewProgress from './ReviewProgress';
 import SelectReviewer from './SelectReviewer';
+import SimpleReviewActions from './SimpleReviewActions';
 
 const { Search } = Input;
 
@@ -69,7 +72,6 @@ const AssignmentReview = ({
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
   const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
-  const [preloadedSubTableData, setPreloadedSubTableData] = useState<Record<string, any[]>>({});
   const previousLangRef = useRef(lang);
 
   useEffect(() => {
@@ -82,7 +84,6 @@ const AssignmentReview = ({
     setExpandedRowKeys([]);
     setSubTableData({});
     setSubTableLoading({});
-    setPreloadedSubTableData({});
     actionRef.current?.reload?.();
   }, [actionRef, lang]);
 
@@ -96,104 +97,115 @@ const AssignmentReview = ({
     setSelectedRowKeys(keys);
   };
 
-  const preloadSubTableData = async (reviewsData: ReviewsTable[]) => {
-    const modelDatas = reviewsData
-      .filter((r) => r.isFromLifeCycle && r.modelData)
-      .map((r) => ({
-        reviewId: r.id,
-        modelData: r.modelData!,
-      }));
-
-    if (modelDatas.length === 0) {
-      return;
-    }
-
-    try {
-      const result = await getLifeCycleModelSubTableDataBatch(modelDatas, lang);
-      if (result.success) {
-        setPreloadedSubTableData(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to preload sub table data:', error);
-    }
-  };
-
   const loadSubTableData = async (record: ReviewsTable) => {
     const rowKey = record.id;
-
-    if (preloadedSubTableData[rowKey]) {
-      setSubTableData((prev) => ({ ...prev, [rowKey]: preloadedSubTableData[rowKey] }));
-      return;
-    }
-
     setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
+    try {
+      const result = await getRootReviewReferenceProgress(record.id);
+      if (result.error) throw result.error;
+      setSubTableData((prev) => ({ ...prev, [rowKey]: result.data }));
+    } catch (error) {
+      console.error('Failed to load reference review data:', error);
+      setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
+    } finally {
+      setSubTableLoading((prev) => ({ ...prev, [rowKey]: false }));
+    }
   };
 
   const handleExpand = async (expanded: boolean, record: ReviewsTable) => {
-    if (expanded && record.isFromLifeCycle) {
+    setExpandedRowKeys((currentKeys) =>
+      expanded
+        ? Array.from(new Set([...currentKeys, record.id]))
+        : currentKeys.filter((key) => key !== record.id),
+    );
+    if (expanded && record.reviewKind === 'root') {
       await loadSubTableData(record);
     }
-    const newExpandedKeys = expanded
-      ? [...expandedRowKeys, record.id]
-      : expandedRowKeys.filter((key) => key !== record.id);
-    setExpandedRowKeys(newExpandedKeys);
   };
 
   const subColumns = [
     {
-      title: (
-        <FormattedMessage
-          id='pages.review.table.column.processName'
-          defaultMessage='Process Name'
-        />
-      ),
-      dataIndex: 'name',
-      key: 'name',
-      render: (_: any, record: any) => {
-        return (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <ProcessView
-              id={record.id}
-              version={record.version}
-              lang={lang}
-              buttonType='icon'
-              disabled={false}
-              buttonTypeProp='text'
-            />
-            <span style={{ marginLeft: 8 }}>{record.name}</span>
-          </div>
-        );
+      title: <FormattedMessage id='pages.review.reference.table' defaultMessage='Data type' />,
+      dataIndex: 'target_table',
+      key: 'target_table',
+    },
+    {
+      title: <FormattedMessage id='pages.review.reference.version' defaultMessage='Data version' />,
+      dataIndex: 'data_version',
+      key: 'data_version',
+    },
+    {
+      title: <FormattedMessage id='pages.review.table.status' defaultMessage='Status' />,
+      dataIndex: 'state_code',
+      key: 'state_code',
+      render: (stateCode: number) => {
+        const status =
+          stateCode === 2
+            ? {
+                color: 'success',
+                text: intl.formatMessage({
+                  id: 'pages.review.reference.status.approved',
+                  defaultMessage: 'Approved',
+                }),
+              }
+            : stateCode === -1
+              ? {
+                  color: 'error',
+                  text: intl.formatMessage({
+                    id: 'pages.review.reference.status.rejected',
+                    defaultMessage: 'Rejected',
+                  }),
+                }
+              : stateCode === 1
+                ? {
+                    color: 'processing',
+                    text: intl.formatMessage({
+                      id: 'pages.review.reference.status.inReview',
+                      defaultMessage: 'In review',
+                    }),
+                  }
+                : {
+                    color: 'default',
+                    text: intl.formatMessage({
+                      id: 'pages.review.reference.status.unassigned',
+                      defaultMessage: 'Unassigned',
+                    }),
+                  };
+        return <Tag color={status.color}>{status.text}</Tag>;
       },
     },
     {
-      title: <FormattedMessage id='pages.review.table.column.type' defaultMessage='Type' />,
-      dataIndex: 'type',
-      key: 'type',
-      width: 120,
-      render: (_: any, record: any) => {
-        if (record.sourceType === 'processInstance') {
-          return (
-            <FormattedMessage id='pages.review.table.type.modelNode' defaultMessage='Model Node' />
-          );
-        }
-        // submodel
-        if (record.submodelType === 'primary') {
-          return (
-            <FormattedMessage
-              id='pages.review.table.type.primaryProduct'
-              defaultMessage='Primary Product'
-            />
-          );
-        }
-        return (
-          <FormattedMessage
-            id='pages.review.table.type.secondaryProduct'
-            defaultMessage='Secondary Product'
-          />
-        );
-      },
+      title: (
+        <FormattedMessage id='pages.review.progress.button' defaultMessage='Review Progress' />
+      ),
+      key: 'progress',
+      render: (_: unknown, record: RootReviewReferenceProgress) =>
+        `${record.completed_reviewer_count}/${record.reviewer_count}`,
+    },
+    {
+      title: <FormattedMessage id='pages.review.reference.paths' defaultMessage='Relation paths' />,
+      dataIndex: 'relation_paths',
+      key: 'relation_paths',
+      render: (paths: unknown[]) =>
+        (paths ?? []).map((path) => JSON.stringify(path)).join(', ') || '-',
     },
   ];
+
+  const datasetRoutes: Record<ReviewSubmitDatasetTable, string> = {
+    contacts: '/mydata/contacts',
+    sources: '/mydata/sources',
+    unitgroups: '/mydata/unitgroups',
+    flowproperties: '/mydata/flowproperties',
+    flows: '/mydata/flows',
+    processes: '/mydata/processes',
+    lifecyclemodels: '/mydata/models',
+  };
+
+  const isSimpleReview = (record: ReviewsTable) =>
+    record.reviewKind === 'reference' ||
+    (record.reviewKind === 'root' &&
+      Boolean(record.targetTable) &&
+      !['processes', 'lifecyclemodels'].includes(record.targetTable as string));
 
   const columns: ProColumns<ReviewsTable>[] = [
     {
@@ -204,19 +216,22 @@ const AssignmentReview = ({
     },
     {
       title: (
-        <FormattedMessage
-          id='pages.review.table.column.processName'
-          defaultMessage='Process Name'
-        />
+        <FormattedMessage id='pages.review.table.column.dataName' defaultMessage='Data name' />
       ),
       dataIndex: 'processName',
       sorter: false,
       search: false,
       render: (_, row) => {
+        const targetTable = row.targetTable as ReviewSubmitDatasetTable | undefined;
+        const dataLink = targetTable
+          ? `${datasetRoutes[targetTable]}?id=${encodeURIComponent(
+              row.json?.data?.id,
+            )}&version=${encodeURIComponent(row.json?.data?.version)}&mode=view`
+          : undefined;
         return [
           <div key={0} style={{ display: 'flex' }}>
             {row.name}
-            {row?.isFromLifeCycle ? (
+            {targetTable === 'lifecyclemodels' ? (
               <LifeCycleModelView
                 id={row?.json?.data?.id}
                 version={row?.json?.data?.version}
@@ -224,7 +239,7 @@ const AssignmentReview = ({
                 buttonType='icon'
                 buttonTypeProp='text'
               />
-            ) : (
+            ) : targetTable === 'processes' ? (
               <ProcessView
                 id={row?.json?.data?.id}
                 version={row?.json?.data?.version}
@@ -233,7 +248,11 @@ const AssignmentReview = ({
                 disabled={false}
                 buttonTypeProp='text'
               />
-            )}
+            ) : dataLink ? (
+              <Link to={dataLink} target='_blank' style={{ marginLeft: 8 }}>
+                <FormattedMessage id='pages.review.table.view' defaultMessage='View' />
+              </Link>
+            ) : null}
           </div>,
         ];
       },
@@ -277,6 +296,7 @@ const AssignmentReview = ({
             dataId={record.json?.data?.id}
             dataVersion={record.json?.data?.version}
             reviewId={record.id}
+            targetTable={record.targetTable as ReviewSubmitDatasetTable | undefined}
             key={0}
             actionRef={actionRef}
           />,
@@ -309,7 +329,7 @@ const AssignmentReview = ({
                 isCurrentAssignedReviewerCommentState(item.state_code),
               ).length ?? 0;
             const reviewed =
-              record.comments?.filter((item: any) => item.state_code === 1).length ?? 0;
+              record.comments?.filter((item: any) => [1, -3].includes(item.state_code)).length ?? 0;
             return [<Space key={0}>{`${reviewed}/${total}`}</Space>];
           },
         },
@@ -318,6 +338,17 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (isSimpleReview(record) && record.targetTable) {
+              return [
+                <SimpleReviewActions
+                  key={0}
+                  reviewId={record.id}
+                  targetTable={record.targetTable as ReviewSubmitDatasetTable}
+                  role='admin'
+                  actionRef={actionRef}
+                />,
+              ];
+            }
             return [
               <Space key={0}>
                 {record.isFromLifeCycle ? (
@@ -374,6 +405,19 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (isSimpleReview(record)) {
+              return tableType === 'pending' && record.targetTable
+                ? [
+                    <SimpleReviewActions
+                      key={0}
+                      reviewId={record.id}
+                      targetTable={record.targetTable as ReviewSubmitDatasetTable}
+                      role='reviewer'
+                      actionRef={actionRef}
+                    />,
+                  ]
+                : [];
+            }
             return [
               <Space key={0}>
                 {record.isFromLifeCycle ? (
@@ -450,6 +494,7 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (isSimpleReview(record)) return [];
             return [
               <Space key={0}>
                 {record.isFromLifeCycle ? (
@@ -562,7 +607,7 @@ const AssignmentReview = ({
         expandable={{
           expandedRowKeys,
           onExpand: handleExpand,
-          rowExpandable: (record) => record.isFromLifeCycle === true,
+          rowExpandable: (record) => record.reviewKind === 'root',
           expandedRowRender: (record) => {
             if (subTableLoading[record.id]) {
               return (
@@ -577,7 +622,7 @@ const AssignmentReview = ({
                 columns={subColumns}
                 dataSource={data}
                 pagination={false}
-                rowKey='id'
+                rowKey='reference_review_id'
                 size='small'
                 style={{ margin: '0 48px' }}
               />
@@ -624,11 +669,7 @@ const AssignmentReview = ({
             }
             setTableLoading(true);
             setSelectedRowKeys([]);
-            setPreloadedSubTableData({});
             const result = await getReviewsTableData(params, sort);
-            if (result.data && result.data.length > 0) {
-              preloadSubTableData(result.data);
-            }
             return result;
           } catch (error) {
             console.error(error);

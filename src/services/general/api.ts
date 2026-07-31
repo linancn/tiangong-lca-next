@@ -204,7 +204,8 @@ type DatasetCommandFunctionName =
   | 'app_dataset_save_draft'
   | 'app_dataset_assign_team'
   | 'app_dataset_publish'
-  | 'app_dataset_submit_review';
+  | 'app_dataset_submit_review'
+  | 'app_simple_review_submit_decision';
 
 const DATASET_COMMAND_TABLES: readonly TidasPackageRootTable[] = [
   'contacts',

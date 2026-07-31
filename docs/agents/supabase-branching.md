@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the local generated snapshot remains a derived development artifact; database-engine retains schema, extracted_md, embedding_ft, visibility, and hosted migration ownership.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
+lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: frontend environment selection and app-side service ownership remain unchanged; Database and Edge retain review schema, authorization, and command truth.'
 ---
 
 # Supabase Environment And Database Workflow

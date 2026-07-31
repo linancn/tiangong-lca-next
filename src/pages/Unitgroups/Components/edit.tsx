@@ -1,4 +1,5 @@
 /* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
+import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
@@ -395,7 +396,7 @@ const UnitGroupEdit: FC<Props> = ({
     [id],
   );
 
-  const handleCheckData = async (options?: { silent?: boolean }) => {
+  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
       if (!silent) {
@@ -406,7 +407,7 @@ const UnitGroupEdit: FC<Props> = ({
           }),
         );
       }
-      return;
+      return false;
     }
     setSpinning(true);
     const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
@@ -559,6 +560,7 @@ const UnitGroupEdit: FC<Props> = ({
       }
     }
     setSpinning(false);
+    return feedbackState === 'success';
   };
 
   useEffect(() => {
@@ -614,6 +616,18 @@ const UnitGroupEdit: FC<Props> = ({
             <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
+            <DatasetSubmitReviewButton
+              table='unitgroups'
+              id={id}
+              version={version}
+              disabled={spinning || detailStateCode !== 0}
+              beforeSubmit={() => handleCheckData()}
+              onSuccess={() => {
+                setDetailStateCode(20);
+                actionRef?.current?.reload();
+                closeDrawer();
+              }}
+            />
             <Button
               onClick={() => {
                 handleUpdateReference();

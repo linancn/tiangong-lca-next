@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering changes no team role, permission, or management flow.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
+lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: team owner/admin do not participate in review; existing membership only constrains already-authorized reference visibility and never expands access.'
 ---
 
 # Team Management Reference
@@ -57,3 +57,9 @@ Member-management actions are always role-gated:
 - `owner`: full team-management surface
 - `admin`: limited team-management surface
 - `member`: no management actions
+
+## Review Workflow Boundary
+
+Team `owner` and `admin` roles do not assign, review, approve, reject, repair, or receive notifications for Root/Reference Reviews. Review Admin and Review Member remain the only review roles, while each dataset owner remains responsible for repairing and resubmitting rejected data.
+
+Existing team membership and dataset visibility may determine whether a submitter can already read and reference another owner's draft. Review submission must not grant new team or cross-team access. Result notifications go only to the affected dataset owner.

@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the current receipt closes 49 IDs with 60 passes, 24 designed skips, zero external requests, and zero production writes without creating a testing backlog item.'
+lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: focused service and notification coverage is included in the change and creates no new repository-wide testing backlog item.'
 ---
 
 # Testing Execution State

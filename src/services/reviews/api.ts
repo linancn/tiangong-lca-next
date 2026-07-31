@@ -14,10 +14,7 @@ import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import { isCurrentAssignedReviewerCommentState } from './util';
 
-export type ReviewSubmitDatasetTable = Extract<
-  TidasPackageRootTable,
-  'processes' | 'lifecyclemodels'
->;
+export type ReviewSubmitDatasetTable = TidasPackageRootTable;
 export type ReviewSubmitGateDatasetTable = Extract<ReviewSubmitDatasetTable, 'processes'>;
 export const REVIEW_SUBMIT_GATE_POLICY_PROFILE = 'review_submit_fast.v1';
 export const REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION = 'review_submit_gate_report.v1';
@@ -162,6 +159,18 @@ type ReviewItemRpcRow = {
   deadline?: string | null;
   created_at?: string;
   modified_at?: string;
+};
+
+export type RootReviewReferenceProgress = {
+  reference_review_id: string;
+  target_table: ReviewSubmitDatasetTable;
+  data_id: string;
+  data_version: string;
+  submitted_revision_checksum: string;
+  state_code: number;
+  reviewer_count: number;
+  completed_reviewer_count: number;
+  relation_paths: unknown[];
 };
 
 type ReviewAdminQueueRpcRow = ReviewItemRpcRow & {
@@ -366,6 +375,9 @@ function mapReviewRowToTableData(
     key: row.id,
     id: row.id,
     isFromLifeCycle: Boolean(model),
+    reviewKind: row?.json?.review_kind,
+    targetTable: row?.json?.data?.table,
+    stateCode: row.state_code,
     name:
       (model
         ? genProcessName(modelName ?? {}, lang)
@@ -381,6 +393,29 @@ function mapReviewRowToTableData(
       ? { id: model.id, version: model.version, json: model.json, json_tg: model.json_tg }
       : null,
   };
+}
+
+export async function getRootReviewReferenceProgress(reviewId: string) {
+  const { data, error } = await supabase.rpc('qry_root_review_reference_progress', {
+    p_root_review_id: reviewId,
+  });
+
+  return {
+    data: (data ?? []) as RootReviewReferenceProgress[],
+    error,
+  };
+}
+
+export async function submitSimpleReviewDecision(
+  reviewId: string,
+  decision: 'approve' | 'reject',
+  reason?: string,
+) {
+  return invokeDatasetCommand<Record<string, unknown>>('app_simple_review_submit_decision', {
+    reviewId,
+    decision,
+    ...(decision === 'reject' ? { reason: reason?.trim() } : {}),
+  });
 }
 
 async function getReviewItemsRpc(params: {
@@ -841,6 +876,7 @@ export async function getNotifyReviews(
       key: row.id,
       id: row.id,
       isFromLifeCycle: model ? true : false,
+      targetTable: row?.json?.data?.table,
       name:
         (model
           ? genProcessName(name ?? {}, lang)

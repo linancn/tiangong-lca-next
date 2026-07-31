@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
-lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: fresh evidence closes all 49 assertion IDs across four locales and three browsers, with exact production cleanup created=1, cleaned=1, leaked=0; the existing delivery and release contracts remain accurate.'
+lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the exact read-only production guard adds only the root-reference progress RPC; four-locale, semantic evidence, explicit-write, and zero-leak contracts remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

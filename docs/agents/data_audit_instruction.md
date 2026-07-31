@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering changes no audit state code or workflow transition.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
+lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: record Root/Reference semantics, advisory Reviewer outcomes, Admin override rules, exact-target state transitions, Process-only Gate, and owner-only rejection notifications.'
 ---
 
 # Audit Status Reference
@@ -29,17 +29,19 @@ lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering cha
 
 ## Core Tables
 
-| Table              | Role                            |
-| ------------------ | ------------------------------- |
-| `Lifecyclesmodels` | model data                      |
-| `Processes`        | process data                    |
-| `Flows`            | flow data                       |
-| `Flowproperties`   | flow property data              |
-| `Unitgroups`       | unit-group data                 |
-| `Sources`          | source data                     |
-| `Contacts`         | contact data                    |
-| `reviews`          | audit-administrator review task |
-| `comments`         | auditor comment task            |
+| Table             | Role                                               |
+| ----------------- | -------------------------------------------------- |
+| `lifecyclemodels` | model data                                         |
+| `processes`       | process data                                       |
+| `flows`           | flow data                                          |
+| `flowproperties`  | flow-property data                                 |
+| `unitgroups`      | unit-group data                                    |
+| `sources`         | source data                                        |
+| `contacts`        | contact data                                       |
+| `reviews`         | Root, Reference, and immutable legacy review tasks |
+| `comments`        | assigned Review Member opinions                    |
+
+New reviews use `review_kind = root | reference`. Migrated legacy source rows retain `review_kind = null` and remain read-only history. A Root Review stores its append-only reference relation in `scope_history`; a Reference Review is shared by every Root Review that uses the same exact dataset revision.
 
 ## Status Codes
 
@@ -76,20 +78,26 @@ lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering cha
 
 | Event | Required state updates |
 | --- | --- |
-| submit editable model data into audit queue | model `state_code -> 20`; create or update `reviews.state_code -> 0` |
-| initial review rejects a submission before auditor assignment | `reviews.state_code -> -1`; related data and referenced data reset to `0` |
+| submit an editable dataset | create a Root Review, or a new Reference Review when repairing a rejected reference; target `state_code: 0 -> 20`; new `reviews.state_code = 0` |
+| submit a Root Review with references | create or reuse an exact Reference Review for every readable reference; append one immutable Root scope snapshot; referenced drafts enter `20` without broadening the submitter's access |
+| Review Admin rejects before assignment or after assignment | `reviews.state_code -> -1`; only that review's target may return `20 -> 0`; all non-revoked comments `0/1/-3 -> -1`; revoked `-2` comments remain unchanged |
 | assign previously unassigned data | `reviews.state_code -> 1`; `comments.state_code -> 0` |
 | remove an assigned auditor | remove the reviewer from `reviews`; matching `comments.state_code -> -2` |
-| auditor approves pending data | `comments.state_code -> 1` |
-| auditor rejects pending data | `comments.state_code -> -3` |
-| final audit approval | `comments.state_code -> 2`; `reviews.state_code -> 2`; related data and referenced data move to `100` unless already `100` or `200` |
-| final audit rejection after auditor review | `reviews.state_code -> -1`; related data and referenced data reset to `0`; `comments.state_code -> -1` |
+| Review Member approves | `comments.state_code -> 1`; simple Root/Reference approval has no opinion field |
+| Review Member rejects | a non-empty reason is required; `comments.state_code -> -3` |
+| Review Admin finally approves | after all current Review Members have completed, `comments.state_code -> 2`, `reviews.state_code -> 2`, and only the exact review target moves `20 -> 100` |
+
+Review Member outcomes are advisory. Review Admin may finally approve even when every Review Member used `-3`, and may reject before every Review Member has completed. A Root Review may be approved while its Reference Reviews are still pending; this does not approve or release those references. Conversely, a Reference Review continues independently when its only Root Review is rejected.
+
+Process and Lifecycle Model Root Reviews retain their existing metadata form and metadata writeback. Contact, Source, Unit Group, Flow Property, Flow, and every Reference Review use only approve/reject actions: approve requires no opinion; reject requires a reason.
 
 ## Process Summary
 
-1. draft data exists in editable state
-2. submission creates or updates the review ledger
-3. audit administrator performs initial review
-4. auditor approves or rejects
-5. audit administrator performs final review
-6. final approval promotes state; final rejection restores editable state
+1. each of the seven edit pages shows one `Submit Review` action
+2. Process first completes the existing numeric Gate; the other six types do not calculate a Gate
+3. the database decides Root versus rejected-Reference repair and records exact relations
+4. Review Admin assigns Review Members; assignment sends no notification
+5. Review Members record advisory opinions
+6. Review Admin makes the final decision and only the data owner receives the result notification
+7. rejection reasons are shown through notifications; dataset detail pages are unchanged
+8. Review Management expands a Root row to show all related Reference Reviews

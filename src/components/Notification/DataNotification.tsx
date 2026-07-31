@@ -1,4 +1,5 @@
 import { getLang, getLangText } from '@/services/general/util';
+import type { ReviewSubmitDatasetTable } from '@/services/reviews/api';
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
 import { Button, Modal, Space, Table, Tag, Typography, theme } from 'antd';
@@ -14,6 +15,7 @@ interface DataNotificationItem {
   userName: string;
   modifiedAt: string;
   isFromLifeCycle: boolean;
+  targetTable?: ReviewSubmitDatasetTable;
   stateCode?: number;
   rejectReason?: string;
   json: any;
@@ -47,8 +49,22 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   ) => {
     const dataId = record?.json?.data?.id ?? '';
     const dataVersion = record?.json?.data?.version ?? '';
-    const basePath =
-      options.forceProcess || !record.isFromLifeCycle ? '/mydata/processes' : '/mydata/models';
+    const routeByTable: Record<ReviewSubmitDatasetTable, string> = {
+      contacts: '/mydata/contacts',
+      sources: '/mydata/sources',
+      unitgroups: '/mydata/unitgroups',
+      flowproperties: '/mydata/flowproperties',
+      flows: '/mydata/flows',
+      processes: '/mydata/processes',
+      lifecyclemodels: '/mydata/models',
+    };
+    const basePath = options.forceProcess
+      ? '/mydata/processes'
+      : record.targetTable
+        ? routeByTable[record.targetTable]
+        : record.isFromLifeCycle
+          ? '/mydata/models'
+          : '/mydata/processes';
     return `${basePath}?id=${encodeURIComponent(dataId)}&version=${encodeURIComponent(
       dataVersion,
     )}&mode=${mode}`;
@@ -92,6 +108,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
           userName: item.userName,
           modifiedAt: item.modifiedAt ?? '',
           isFromLifeCycle: item.isFromLifeCycle,
+          targetTable: item.targetTable as ReviewSubmitDatasetTable | undefined,
           rejectReason: getRejectReason(item),
           stateCode: item.stateCode,
           json: item.json,
@@ -304,7 +321,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
                   target='_blank'
                   rel='noopener noreferrer'
                   to={getNotificationDataRoute(selectedRejectedRecord, 'edit', {
-                    forceProcess: true,
+                    forceProcess: !selectedRejectedRecord.targetTable,
                   })}
                   onClick={() => setSelectedRejectedRecord(null)}
                 >
