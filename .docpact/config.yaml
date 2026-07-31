@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-30'
-lastReviewedCommit: '30e31e7ad2f69444e80b2a042ec173c7857ce360'
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: the Welcome LCA quick start, locale artifacts, and responsive proof remain within existing frontend, i18n, testing, and managed release boundaries.'
+lastReviewedAt: "2026-07-31"
+lastReviewedCommit: "cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e"
+lastReviewedNote: 'Reviewed for Issue #743 after refreshing the credential-free semantic-harness qualification on dev commit 3ac0ca60: existing routing, testing-gate, release, and workspace-integration boundaries remain accurate.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

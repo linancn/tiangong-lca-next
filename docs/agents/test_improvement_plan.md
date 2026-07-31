@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: focused page, semantic-contract, responsive-layout, authenticated, and hermetic proof remain sufficient; no testing-strategy expansion is required.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after the credential-free qualification of dev commit 3ac0ca60: the hermetic 60-pass/24-designed-skip result fits the maintained strategy and requires no testing-strategy expansion.'
 ---
 
 # Testing Strategy

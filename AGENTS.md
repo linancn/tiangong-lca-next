@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: Welcome copy and responsive layout changes do not alter repository ownership, branch policy, delivery rules, schema ownership, or workspace integration.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the refreshed credential-free receipt does not alter repository ownership, branch policy, delivery rules, production-write authorization, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

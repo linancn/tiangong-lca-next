@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: the Welcome quick-start change and refreshed production evidence create no new coverage or test-execution backlog item.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the refreshed receipt closes the current hermetic qualification checkpoint without creating a coverage or test-execution backlog item.'
 ---
 
 # Testing Execution State
@@ -60,7 +60,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
-- Issue #722 records the current credential-free semantic-harness qualification for the exact post-mirror `dev` inputs: 48 canonical cases and 12 harness-control cases executed, 24 designed cases skipped, all 49 assertion IDs closed, and external requests, production writes, and cleanup residue all zero. The generated receipt must merge before the clean authorized production run.
+- Issue #743 records the current credential-free semantic-harness qualification for exact `dev` commit `3ac0ca60a7370d767ca003342180bb51f1b2dd7d`: 48 canonical cases and 12 harness-control cases executed, 24 designed cases skipped, all 49 assertion IDs closed, and external requests, production writes, and cleanup residue all zero. The generated receipt must merge before any clean authorized production run for the v0.0.64 candidate.
 - Issue #704 tracks two harness defects observed during authenticated production evidence refreshes. The evidence-writer repair now resolves the repository-owned Prettier configuration independently of `/e2e-output` and gives the checker a read-only external-artifact path, so raw container bytes can satisfy the same canonical contract without host normalization. The separate argument-free `e2e:release:resume` dispatch defect remains open under #704.
 - Issue #660 keeps production-data E2E fail-closed on real CI hosts while allowing an authorized local run to override only the release image's inherited `CI`/`GITHUB_ACTIONS` markers before the unchanged in-container authorization and ledger checks
 - tracked semantic evidence remains fail closed for production readiness until one full local authenticated execution closes every assertion, matches the declared source/test/route bindings, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; routine pre-push checks validate the record structurally without requiring current production-proof hashes, package-lock verification rejects all executable dependency drift while tolerating only root release-version metadata after proving the evidence's raw lock at its recorded commit, and adding a registry locale still invalidates older evidence rather than silently shrinking coverage
