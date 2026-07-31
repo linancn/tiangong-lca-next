@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "c8e4b54b4c39fa3049c690e68a0d1a6260bc56220c0668d8358cd39d31c6406b",
+    "auditedInputDigest": "29f7ede794fb24c05e20da02db1b30285357e0319b9300f7b584e407714edf4e",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -56457,7 +56457,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 802,
+          "line": 827,
           "column": 11,
           "symbol": "Welcome",
           "defaultMessage": "Data Ecosystem (A-Z Order)",
@@ -56472,7 +56472,7 @@
           "locations": [
             {
               "path": "src/pages/Welcome.tsx",
-              "line": 802,
+              "line": 827,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -244529,7 +244529,7 @@
           }
         },
         "de-DE": {
-          "value": "Open Data durchsuchen",
+          "value": "Offene Daten durchsuchen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244555,7 +244555,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 370,
+          "line": 369,
           "column": 25,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -244576,7 +244576,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "My Data",
+          "value": "Go to My Data",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244598,7 +244598,7 @@
           }
         },
         "de-DE": {
-          "value": "Meine Daten",
+          "value": "Zu „Meine Daten“",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244609,7 +244609,7 @@
           }
         },
         "fr-FR": {
-          "value": "Accéder à Mes données",
+          "value": "Accéder à mes données",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244624,7 +244624,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 371,
+          "line": 370,
           "column": 20,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -244645,7 +244645,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Data Development Guide",
+          "value": "LCA Data Quick Start",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244656,7 +244656,7 @@
           }
         },
         "zh-CN": {
-          "value": "数据研制指南",
+          "value": "LCA 数据快速入门",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244667,7 +244667,7 @@
           }
         },
         "de-DE": {
-          "value": "Leitfaden zur Datenentwicklung",
+          "value": "LCA-Daten: Schnelleinstieg",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244678,7 +244678,7 @@
           }
         },
         "fr-FR": {
-          "value": "Guide de développement des données",
+          "value": "Démarrage rapide des données d’ACV",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244693,7 +244693,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 358,
+          "line": 357,
           "column": 17,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -244714,7 +244714,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Built for product carbon footprint reporting, background data management, and lifecycle modeling. Data entry starts with processes: record boundaries, inputs and outputs, quantities, units, and sources; choose existing flows or add product flows as needed; then complete validation, review, and model linking.",
+          "value": "Life cycle data development generally centers on process datasets. A process dataset describes a production or treatment activity and records its inputs/outputs, reference flow, time, geography, technology, and sources. Process datasets can be developed, checked, and reviewed independently; when relationships among multiple processes need to be represented, a model connects them visually to form a partly terminated system or foreground system.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244725,7 +244725,7 @@
           }
         },
         "zh-CN": {
-          "value": "面向产品碳足迹数据报送、背景数据管理和生命周期建模。数据填报从过程开始，先记录过程边界、输入输出、数量单位和来源，再按需要选择已有流或新增产品流，最后完成验证、审核和模型串接。",
+          "value": "生命周期数据研制通常以过程数据集为核心。过程数据集描述一项生产或处理活动，记录其输入/输出、基准流，以及时间、地区、技术和来源等信息。过程数据集可以独立研制、校验和审核；需要表达多个过程之间的关系时，再通过模型将过程可视化连接，构建部分终止系统或前景系统。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244736,7 +244736,7 @@
           }
         },
         "de-DE": {
-          "value": "Für die Berichterstattung zu CO₂-Fußabdrücken von Produkten, die Verwaltung von Hintergrunddaten und die Lebenszyklusmodellierung. Die Datenerfassung beginnt bei den Prozessen: Erfassen Sie Grenzen, Inputs und Outputs, Mengen, Einheiten und Quellen. Wählen Sie vorhandene Flüsse aus oder ergänzen Sie bei Bedarf Produktflüsse. Schließen Sie anschließend Validierung, Prüfung und Modellverknüpfung ab.",
+          "value": "Die Entwicklung von Lebenszyklusdaten konzentriert sich in der Regel auf Prozessdatensätze. Ein Prozessdatensatz beschreibt eine Produktions- oder Behandlungsaktivität und erfasst ihre Inputs/Outputs, den Referenzfluss sowie Zeit, Geografie, Technologie und Quellen. Prozessdatensätze können unabhängig entwickelt, geprüft und begutachtet werden; sollen Beziehungen zwischen mehreren Prozessen dargestellt werden, verbindet ein Modell sie visuell zu einem teilweise abgeschlossenen System oder Vordergrundsystem.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244747,7 +244747,7 @@
           }
         },
         "fr-FR": {
-          "value": "Conçue pour la déclaration de l’empreinte carbone des produits, la gestion des données d’arrière-plan et la modélisation du cycle de vie. La saisie des données commence par les processus : enregistrez les limites, les entrées et sorties, les quantités, les unités et les sources ; sélectionnez des flux existants ou ajoutez des flux de produit selon les besoins ; puis terminez la validation, la revue et la liaison des modèles.",
+          "value": "Le développement des données de cycle de vie s’organise généralement autour des jeux de données de processus. Un jeu de données de processus décrit une activité de production ou de traitement et consigne ses entrées/sorties, son flux de référence, sa période, sa zone géographique, sa technologie et ses sources. Les jeux de données de processus peuvent être développés, vérifiés et revus indépendamment ; lorsqu’il faut représenter les relations entre plusieurs processus, un modèle les relie visuellement pour former un système partiellement terminé ou un système de premier plan.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244762,7 +244762,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 360,
+          "line": 359,
           "column": 12,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -244783,7 +244783,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Match existing flows first; add missing product flows only when needed and keep units consistent.",
+          "value": "Organize contacts and sources, and select existing flows, flow properties, and unit groups whenever possible.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244794,7 +244794,7 @@
           }
         },
         "zh-CN": {
-          "value": "先匹配已有流；确实缺少的产品流再新增，并统一数量单位。",
+          "value": "整理联系人和来源，并优先从平台选择已有的流、流属性和单位组。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244805,7 +244805,7 @@
           }
         },
         "de-DE": {
-          "value": "Ordnen Sie zunächst vorhandene Flüsse zu. Ergänzen Sie fehlende Produktflüsse nur bei Bedarf und verwenden Sie konsistente Einheiten.",
+          "value": "Ordnen Sie Kontakte und Quellen und wählen Sie möglichst vorhandene Flüsse, Flusseigenschaften und Einheitengruppen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244816,7 +244816,7 @@
           }
         },
         "fr-FR": {
-          "value": "Faites d’abord correspondre les flux existants ; ajoutez uniquement les flux de produit manquants si nécessaire et veillez à la cohérence des unités.",
+          "value": "Organisez les contacts et les sources, et sélectionnez autant que possible les flux, propriétés de flux et groupes d’unités existants.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244842,7 +244842,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Check Flows And Units",
+          "value": "Prepare Referenced Objects",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244853,7 +244853,7 @@
           }
         },
         "zh-CN": {
-          "value": "核对流与单位",
+          "value": "准备引用对象",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244864,7 +244864,7 @@
           }
         },
         "de-DE": {
-          "value": "Flüsse und Einheiten prüfen",
+          "value": "Referenzierte Objekte vorbereiten",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244875,7 +244875,7 @@
           }
         },
         "fr-FR": {
-          "value": "Vérifier les flux et les unités",
+          "value": "Préparer les objets référencés",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244901,7 +244901,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Clarify product, functional unit, time span, geography, and process boundary.",
+          "value": "Define the production or treatment activity, its temporal, geographical, and technological scope, and the reference product and reference flow representing its output.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244912,7 +244912,7 @@
           }
         },
         "zh-CN": {
-          "value": "明确产品、功能单位、时间范围、地理范围和工艺边界。",
+          "value": "明确所记录的生产或处理活动、时间、地区和技术范围，以及代表该过程产出的基准产品和基准流。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244923,7 +244923,7 @@
           }
         },
         "de-DE": {
-          "value": "Klären Sie Produkt, funktionelle Einheit, Zeitraum, Geografie und Prozessgrenze.",
+          "value": "Definieren Sie die Produktions- oder Behandlungsaktivität, ihren zeitlichen, geografischen und technologischen Umfang sowie Referenzprodukt und Referenzfluss des Outputs.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244934,7 +244934,7 @@
           }
         },
         "fr-FR": {
-          "value": "Précisez le produit, l’unité fonctionnelle, la période, la zone géographique et les limites du processus.",
+          "value": "Définissez l’activité de production ou de traitement, son périmètre temporel, géographique et technologique, ainsi que le produit et le flux de référence représentant sa sortie.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244960,7 +244960,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Collect Raw Data",
+          "value": "Define the Process Scope",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244971,7 +244971,7 @@
           }
         },
         "zh-CN": {
-          "value": "收集原始数据",
+          "value": "确定过程范围",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244982,7 +244982,7 @@
           }
         },
         "de-DE": {
-          "value": "Rohdaten erfassen",
+          "value": "Prozessumfang festlegen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -244993,7 +244993,7 @@
           }
         },
         "fr-FR": {
-          "value": "Collecter les données brutes",
+          "value": "Définir le périmètre du processus",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245019,7 +245019,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Break manufacturing, transport, energy use, and waste treatment into enterable unit processes.",
+          "value": "Prepare the process diagram; time, geography, and technology information; and data for materials, energy, products, waste, and emissions.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245030,7 +245030,7 @@
           }
         },
         "zh-CN": {
-          "value": "把制造、运输、能源使用、废弃物处理等环节拆成可录入的单元过程。",
+          "value": "准备工艺流程、时间、地区和技术信息，以及原料、能源、产品、废物和排放数据。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245041,7 +245041,7 @@
           }
         },
         "de-DE": {
-          "value": "Gliedern Sie Herstellung, Transport, Energienutzung und Abfallbehandlung in erfassbare Prozessmodule.",
+          "value": "Bereiten Sie Prozessablauf, Zeit-, Geografie- und Technologieinformationen sowie Daten zu Stoffen, Energie, Produkten, Abfällen und Emissionen vor.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245052,7 +245052,7 @@
           }
         },
         "fr-FR": {
-          "value": "Décomposez la fabrication, le transport, la consommation d’énergie et le traitement des déchets en processus élémentaires pouvant être saisis.",
+          "value": "Préparez le schéma du processus, les informations temporelles, géographiques et technologiques, ainsi que les données de matières, d’énergie, de produits, de déchets et d’émissions.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245078,7 +245078,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Map Unit Processes",
+          "value": "Organize Source Data",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245089,7 +245089,7 @@
           }
         },
         "zh-CN": {
-          "value": "梳理单元过程",
+          "value": "整理原始资料",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245100,7 +245100,7 @@
           }
         },
         "de-DE": {
-          "value": "Prozessmodule strukturieren",
+          "value": "Ausgangsdaten ordnen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245111,7 +245111,7 @@
           }
         },
         "fr-FR": {
-          "value": "Cartographier les processus élémentaires",
+          "value": "Organiser les données sources",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245137,7 +245137,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Complete required process fields, inputs and outputs, and sources before validation and review.",
+          "value": "Confirm that inputs and outputs cover the process scope, quantities and units are consistent, and sources support key data, assumptions, and decisions.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245148,7 +245148,7 @@
           }
         },
         "zh-CN": {
-          "value": "完成过程必填项、输入输出和来源说明后，再进入验证与审核。",
+          "value": "确认输入/输出覆盖过程范围、数量和单位一致，并为主要数据、假设和判断补充来源说明。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245159,7 +245159,7 @@
           }
         },
         "de-DE": {
-          "value": "Vervollständigen Sie die Pflichtfelder des Prozesses, Inputs und Outputs sowie Quellen, bevor Sie validieren und zur Prüfung einreichen.",
+          "value": "Bestätigen Sie, dass Inputs und Outputs den Prozessumfang abdecken, Mengen und Einheiten konsistent sind und Quellen wichtige Daten, Annahmen und Entscheidungen belegen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245170,7 +245170,7 @@
           }
         },
         "fr-FR": {
-          "value": "Renseignez les champs obligatoires du processus, les entrées et sorties ainsi que les sources avant la validation et la revue.",
+          "value": "Confirmez que les entrées et sorties couvrent le périmètre, que les quantités et unités sont cohérentes et que les sources étayent les données, hypothèses et décisions importantes.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245196,7 +245196,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Submit For Review",
+          "value": "Check Data Completeness",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245207,7 +245207,7 @@
           }
         },
         "zh-CN": {
-          "value": "提交验证审核",
+          "value": "核对数据完整性",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245218,7 +245218,7 @@
           }
         },
         "de-DE": {
-          "value": "Zur Prüfung einreichen",
+          "value": "Datenvollständigkeit prüfen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245229,7 +245229,7 @@
           }
         },
         "fr-FR": {
-          "value": "Soumettre pour revue",
+          "value": "Vérifier l’exhaustivité des données",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245255,7 +245255,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Records people, working groups, organizations, or database networks related to datasets.",
+          "value": "Stores data owners, authors, or organizations so they can be reused in processes, sources, and other datasets.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245266,7 +245266,7 @@
           }
         },
         "zh-CN": {
-          "value": "记录与数据集相关的个人、工作组、组织或数据库网络联系信息。",
+          "value": "记录数据负责人、作者或所属组织，创建后可在过程、来源和其他数据集中复用。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245277,7 +245277,7 @@
           }
         },
         "de-DE": {
-          "value": "Erfasst Personen, Arbeitsgruppen, Organisationen oder Datenbanknetzwerke mit Bezug zu Datensätzen.",
+          "value": "Speichert Datenverantwortliche, Autoren oder Organisationen zur Wiederverwendung in Prozessen, Quellen und anderen Datensätzen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245288,7 +245288,7 @@
           }
         },
         "fr-FR": {
-          "value": "Enregistre les personnes, groupes de travail, organisations ou réseaux de bases de données associés aux jeux de données.",
+          "value": "Stocke les responsables des données, auteurs ou organisations afin de les réutiliser dans les processus, sources et autres jeux de données.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245373,7 +245373,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Defines material, energy, or waste exchanged in lifecycle assessment, connecting processes and models.",
+          "value": "Referenced by process inputs and outputs as a product, waste, or elementary flow. Flow names and directions connect processes.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245384,7 +245384,7 @@
           }
         },
         "zh-CN": {
-          "value": "定义生命周期评估中的物质、能量或废弃物，是过程和模型的连接基础。",
+          "value": "过程输入/输出引用的对象，包括产品流、废物流和基础流；通过流名称和方向连接过程。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245395,7 +245395,7 @@
           }
         },
         "de-DE": {
-          "value": "Definiert in der Ökobilanz ausgetauschte Materialien, Energie oder Abfälle und verbindet Prozesse und Modelle.",
+          "value": "Wird in Prozess-Inputs und -Outputs als Produkt-, Abfall- oder Elementarfluss referenziert. Flussnamen und -richtungen verbinden Prozesse.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245406,7 +245406,7 @@
           }
         },
         "fr-FR": {
-          "value": "Définit les matières, l’énergie ou les déchets échangés lors de l’évaluation du cycle de vie, et relie les processus et les modèles.",
+          "value": "Référencé dans les entrées et sorties comme flux de produit, de déchet ou flux élémentaire. Les noms et directions des flux relient les processus.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245491,7 +245491,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Defines how a flow is measured, such as mass, energy, volume, or economic value.",
+          "value": "Defines whether a flow is measured by mass, energy, volume, or another quantity and links it to a unit group. Reuse existing entries when possible.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245502,7 +245502,7 @@
           }
         },
         "zh-CN": {
-          "value": "定义流的计量方式，例如质量、能量、体积、经济价值等。",
+          "value": "定义流按质量、能量、体积等方式计量，并关联相应单位组；通常优先复用平台已有内容。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245513,7 +245513,7 @@
           }
         },
         "de-DE": {
-          "value": "Definiert, wie ein Fluss gemessen wird, etwa nach Masse, Energie, Volumen oder wirtschaftlichem Wert.",
+          "value": "Legt fest, ob ein Fluss nach Masse, Energie, Volumen oder einer anderen Größe gemessen wird, und verbindet ihn mit einer Einheitengruppe. Vorhandene Einträge bevorzugen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245524,7 +245524,7 @@
           }
         },
         "fr-FR": {
-          "value": "Définit la manière dont un flux est mesuré, par exemple selon sa masse, son énergie, son volume ou sa valeur économique.",
+          "value": "Définit si le flux est mesuré en masse, énergie, volume ou autre grandeur et l’associe à un groupe d’unités. Réutilisez les entrées existantes si possible.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245609,7 +245609,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Describes a full or partial product system lifecycle made of connected processes.",
+          "value": "A modeling object independent of process datasets. It connects processes visually to build a partly terminated system or foreground system and is not required before submitting a process.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245620,7 +245620,7 @@
           }
         },
         "zh-CN": {
-          "value": "描述产品系统的完整或部分生命周期，由多个相互连接的过程组成。",
+          "value": "独立于过程数据集的建模对象；通过可视化方式连接多个过程，用于构建部分终止系统或前景系统，不是提交过程的必需步骤。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245631,7 +245631,7 @@
           }
         },
         "de-DE": {
-          "value": "Beschreibt den vollständigen oder teilweisen Lebenszyklus eines Produktsystems aus miteinander verbundenen Prozessen.",
+          "value": "Ein von Prozessdatensätzen unabhängiges Modellierungsobjekt. Es verbindet Prozesse visuell zu einem teilweise abgeschlossenen System oder Vordergrundsystem und ist für die Einreichung eines Prozesses nicht erforderlich.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245642,7 +245642,7 @@
           }
         },
         "fr-FR": {
-          "value": "Décrit le cycle de vie complet ou partiel d’un système de produit constitué de processus interconnectés.",
+          "value": "Objet de modélisation distinct des jeux de données de processus. Il relie visuellement des processus pour construire un système partiellement terminé ou un système de premier plan et n’est pas requis pour soumettre un processus.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245701,7 +245701,7 @@
           }
         },
         "fr-FR": {
-          "value": "Modèle",
+          "value": "Modèle de cycle de vie",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245727,7 +245727,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Records inputs, outputs, time, geography, and technical representativeness for one production or treatment process.",
+          "value": "The core object of LCA data development, recording an activity’s Process information, Modelling and validation, Administrative information, and Inputs/Outputs.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245738,7 +245738,7 @@
           }
         },
         "zh-CN": {
-          "value": "记录单个生产或处理过程的输入输出流、时间、地理和技术代表性。",
+          "value": "LCA 数据研制的核心对象；记录一个活动的过程信息、建模和验证、管理信息及输入/输出。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245749,7 +245749,7 @@
           }
         },
         "de-DE": {
-          "value": "Erfasst Inputs, Outputs, Zeit, Geografie und technische Repräsentativität eines Produktions- oder Behandlungsprozesses.",
+          "value": "Das Kernobjekt der LCA-Datenentwicklung; es erfasst Prozessinformationen, Modellierung und Validierung, administrative Informationen sowie Inputs und Outputs einer Aktivität.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245760,7 +245760,7 @@
           }
         },
         "fr-FR": {
-          "value": "Enregistre les entrées, les sorties, la période, la zone géographique et la représentativité technique d’un processus de production ou de traitement.",
+          "value": "Objet central du développement des données d’ACV ; il consigne les informations sur le processus, la modélisation et la validation, les informations administratives et les entrées/sorties d’une activité.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245845,7 +245845,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Records literature, database, compliance, or other references for transparency and traceability.",
+          "value": "Stores the title, author, year, URL or DOI, and attachments for literature, reports, surveys, or databases referenced by datasets.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245856,7 +245856,7 @@
           }
         },
         "zh-CN": {
-          "value": "记录文献、数据库、合规系统等引用信息，支撑透明性和可追溯性。",
+          "value": "记录文献、报告、调研材料或数据库的题名、作者、年份、URL/DOI 及附件，供数据集引用。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245867,7 +245867,7 @@
           }
         },
         "de-DE": {
-          "value": "Erfasst Literatur-, Datenbank-, Konformitäts- und sonstige Referenzen für Transparenz und Nachvollziehbarkeit.",
+          "value": "Speichert Titel, Autor, Jahr, URL oder DOI und Anhänge für Literatur, Berichte, Erhebungen oder Datenbanken, die in Datensätzen zitiert werden.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245878,7 +245878,7 @@
           }
         },
         "fr-FR": {
-          "value": "Enregistre les références bibliographiques, les bases de données, les éléments de conformité ou d’autres références pour assurer transparence et traçabilité.",
+          "value": "Stocke le titre, l’auteur, l’année, l’URL ou le DOI et les pièces jointes des publications, rapports, relevés ou bases cités par les jeux de données.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245963,7 +245963,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Defines related measurement units and conversions for consistent cross-dataset unit handling.",
+          "value": "Stores the reference unit and conversion factors for one quantity. Most users select an existing unit group.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245974,7 +245974,7 @@
           }
         },
         "zh-CN": {
-          "value": "定义相关计量单位及其换算关系，支撑跨数据集的单位转换。",
+          "value": "保存同一计量属性下的基准单位和换算关系；普通用户通常直接选择已有单位组。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245985,7 +245985,7 @@
           }
         },
         "de-DE": {
-          "value": "Definiert zusammengehörige Maßeinheiten und Umrechnungen für eine konsistente Einheitenverarbeitung über Datensätze hinweg.",
+          "value": "Speichert Referenzeinheit und Umrechnungsfaktoren einer Größe. Die meisten Nutzenden wählen eine vorhandene Einheitengruppe.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -245996,7 +245996,7 @@
           }
         },
         "fr-FR": {
-          "value": "Définit les unités de mesure associées et leurs conversions afin de garantir un traitement cohérent des unités entre les jeux de données.",
+          "value": "Stocke l’unité de référence et les facteurs de conversion d’une grandeur. La plupart des utilisateurs sélectionnent un groupe existant.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246081,7 +246081,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Data Objects",
+          "value": "Data Objects in the Platform",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246092,7 +246092,7 @@
           }
         },
         "zh-CN": {
-          "value": "数据对象",
+          "value": "平台中的数据对象",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246103,7 +246103,7 @@
           }
         },
         "de-DE": {
-          "value": "Datenobjekte",
+          "value": "Datenobjekte der Plattform",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246114,7 +246114,7 @@
           }
         },
         "fr-FR": {
-          "value": "Objets de données",
+          "value": "Les objets de données de la plateforme",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246129,7 +246129,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 368,
+          "line": 367,
           "column": 18,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -246150,7 +246150,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Enter My Data and start with basic unit process information.",
+          "value": "Create contacts and sources in My Data; find and reuse existing flows, flow properties, and unit groups.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246161,7 +246161,7 @@
           }
         },
         "zh-CN": {
-          "value": "从我的数据进入过程，先录入单元过程基本信息。",
+          "value": "在“我的数据”中创建联系人和来源；查找并复用已有的流、流属性和单位组。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246172,7 +246172,7 @@
           }
         },
         "de-DE": {
-          "value": "Öffnen Sie „Meine Daten“ und beginnen Sie mit den Grundinformationen zum Prozessmodul.",
+          "value": "Legen Sie unter „Meine Daten“ Kontakte und Quellen an; suchen und verwenden Sie vorhandene Flüsse, Flusseigenschaften und Einheitengruppen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246183,7 +246183,7 @@
           }
         },
         "fr-FR": {
-          "value": "Accédez à Mes données et commencez par les informations de base du processus élémentaire.",
+          "value": "Créez les contacts et les sources dans « Mes données » ; recherchez et réutilisez les flux, propriétés de flux et groupes d’unités existants.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246209,7 +246209,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Create Process",
+          "value": "Create Referenced Data",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246220,7 +246220,7 @@
           }
         },
         "zh-CN": {
-          "value": "新建过程",
+          "value": "建立引用数据",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246231,7 +246231,7 @@
           }
         },
         "de-DE": {
-          "value": "Prozess erstellen",
+          "value": "Referenzierte Daten anlegen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246242,7 +246242,7 @@
           }
         },
         "fr-FR": {
-          "value": "Créer un processus",
+          "value": "Créer les données référencées",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246268,7 +246268,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Record materials, energy, emissions, and product flows with direction, quantity, and unit.",
+          "value": "Select or create flows, enter direction, amount, and unit, and mark the exchange that represents the process output as the reference flow.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246279,7 +246279,7 @@
           }
         },
         "zh-CN": {
-          "value": "记录物料、能源、排放和产品流的方向、数量和单位。",
+          "value": "选择或创建流，填写方向、数量和单位，并将代表该过程产出的交换项设为基准流。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246290,7 +246290,7 @@
           }
         },
         "de-DE": {
-          "value": "Erfassen Sie Materialien, Energie, Emissionen und Produktflüsse mit Richtung, Menge und Einheit.",
+          "value": "Wählen oder erstellen Sie Flüsse, erfassen Sie Richtung, Menge und Einheit und markieren Sie den Austausch, der den Prozessoutput darstellt, als Referenzfluss.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246301,7 +246301,7 @@
           }
         },
         "fr-FR": {
-          "value": "Enregistrez les matières, l’énergie, les émissions et les flux de produit avec leur direction, leur quantité et leur unité.",
+          "value": "Sélectionnez ou créez les flux, saisissez le sens, la quantité et l’unité, puis définissez comme flux de référence l’échange qui représente la sortie du processus.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246386,7 +246386,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Add name, boundary, year, region, source, and product system.",
+          "value": "Go to My Data → Processes, select “+”, and complete Process information, Modelling and validation, and Administrative information.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246397,7 +246397,7 @@
           }
         },
         "zh-CN": {
-          "value": "补充过程名称、边界、年份、地区、来源和产品系统。",
+          "value": "进入“我的数据”→“过程”，点击“+”，填写“过程信息”“建模和验证”和“管理信息”。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246408,7 +246408,7 @@
           }
         },
         "de-DE": {
-          "value": "Ergänzen Sie Name, Grenze, Jahr, Region, Quelle und Produktsystem.",
+          "value": "Öffnen Sie „Meine Daten“ → „Prozesse“, wählen Sie „+“ und füllen Sie „Prozessinformationen“, „Modellierung und Validierung“ und „Administrative Informationen“ aus.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246419,7 +246419,7 @@
           }
         },
         "fr-FR": {
-          "value": "Ajoutez le nom, les limites, l’année, la région, la source et le système de produit.",
+          "value": "Ouvrez « Mes données » → « Processus », sélectionnez « + », puis renseignez « Informations sur le processus », « Modélisation et validation » et « Informations administratives ».",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246445,7 +246445,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Fill Basics",
+          "value": "Create a Process",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246456,7 +246456,7 @@
           }
         },
         "zh-CN": {
-          "value": "填写基础信息",
+          "value": "新建过程",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246467,7 +246467,7 @@
           }
         },
         "de-DE": {
-          "value": "Grundinformationen ausfüllen",
+          "value": "Prozess anlegen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246478,7 +246478,7 @@
           }
         },
         "fr-FR": {
-          "value": "Renseigner les informations de base",
+          "value": "Créer un processus",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246504,7 +246504,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Review starter entry points, tutorial videos, and data objects.",
+          "value": "Organize the process diagram and input/output data, and retain literature, reports, survey records, and other original evidence.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246515,7 +246515,7 @@
           }
         },
         "zh-CN": {
-          "value": "查看新手入口、教学视频和数据对象说明。",
+          "value": "整理工艺流程和输入输出数据，保留文献、报告、调研记录等原始依据。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246526,7 +246526,7 @@
           }
         },
         "de-DE": {
-          "value": "Sehen Sie sich Einstiegsoptionen, Anleitungsvideos und Datenobjekte an.",
+          "value": "Ordnen Sie Prozessablauf und Input-/Output-Daten und bewahren Sie Literatur, Berichte, Erhebungsprotokolle und weitere Originalbelege auf.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246537,7 +246537,7 @@
           }
         },
         "fr-FR": {
-          "value": "Consultez les points d’entrée pour débuter, les vidéos didactiques et les objets de données.",
+          "value": "Organisez le schéma du processus et les données d’entrée/sortie, et conservez la littérature, les rapports, les relevés et les autres preuves d’origine.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246563,7 +246563,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Open Home",
+          "value": "Organize Source Materials",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246574,7 +246574,7 @@
           }
         },
         "zh-CN": {
-          "value": "登录首页",
+          "value": "整理研制资料",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246585,7 +246585,7 @@
           }
         },
         "de-DE": {
-          "value": "Startseite öffnen",
+          "value": "Ausgangsmaterial ordnen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246596,7 +246596,7 @@
           }
         },
         "fr-FR": {
-          "value": "Ouvrir l’accueil",
+          "value": "Organiser les documents sources",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246622,7 +246622,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Select existing platform flows first; add missing product flows only when needed.",
+          "value": "Save the process dataset, select Data Check, and fix the required fields, units, and references identified by the platform.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246633,7 +246633,7 @@
           }
         },
         "zh-CN": {
-          "value": "平台已有流直接选择；缺少的产品流再新建并关联。",
+          "value": "保存过程数据集，点击“数据校验”，并根据提示修正必填项、单位和引用关系。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246644,7 +246644,7 @@
           }
         },
         "de-DE": {
-          "value": "Wählen Sie zunächst vorhandene Plattformflüsse aus. Fügen Sie fehlende Produktflüsse nur bei Bedarf hinzu.",
+          "value": "Speichern Sie den Prozessdatensatz, wählen Sie „Daten prüfen“ und korrigieren Sie die gemeldeten Pflichtfelder, Einheiten und Referenzen.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246655,7 +246655,7 @@
           }
         },
         "fr-FR": {
-          "value": "Sélectionnez d’abord les flux existants de la plateforme ; ajoutez uniquement les flux de produit manquants si nécessaire.",
+          "value": "Enregistrez le jeu de données de processus, sélectionnez « Vérifier les données », puis corrigez les champs obligatoires, unités et références signalés.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246681,7 +246681,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Select Or Add Flows",
+          "value": "Run Data Check",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246692,7 +246692,7 @@
           }
         },
         "zh-CN": {
-          "value": "选择或新增流",
+          "value": "数据校验",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246703,7 +246703,7 @@
           }
         },
         "de-DE": {
-          "value": "Flüsse auswählen oder hinzufügen",
+          "value": "Daten prüfen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246714,7 +246714,7 @@
           }
         },
         "fr-FR": {
-          "value": "Sélectionner ou ajouter des flux",
+          "value": "Vérifier les données",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246740,7 +246740,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Check required fields, units, and logic before submitting for review.",
+          "value": "After the process passes Data Check, select Submit for Review. A process dataset can be submitted independently; no model is required.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246751,7 +246751,7 @@
           }
         },
         "zh-CN": {
-          "value": "检查必填项、单位和逻辑关系，通过后提交审核。",
+          "value": "校验通过后点击“提交审核”。过程数据集可以独立提交，无需先创建模型。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246762,7 +246762,7 @@
           }
         },
         "de-DE": {
-          "value": "Prüfen Sie Pflichtfelder, Einheiten und logische Zusammenhänge, bevor Sie die Daten zur Prüfung einreichen.",
+          "value": "Wählen Sie nach erfolgreicher Datenprüfung „Zur Prüfung einreichen“. Ein Prozessdatensatz kann unabhängig eingereicht werden; ein Modell ist nicht erforderlich.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246773,7 +246773,7 @@
           }
         },
         "fr-FR": {
-          "value": "Vérifiez les champs obligatoires, les unités et la logique avant de soumettre les données pour revue.",
+          "value": "Après validation, sélectionnez « Soumettre pour revue ». Un jeu de données de processus peut être soumis indépendamment ; aucun modèle n’est requis.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246799,7 +246799,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Validate And Submit",
+          "value": "Submit for Review",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246810,7 +246810,7 @@
           }
         },
         "zh-CN": {
-          "value": "验证与提交",
+          "value": "提交审核",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246821,7 +246821,7 @@
           }
         },
         "de-DE": {
-          "value": "Validieren und einreichen",
+          "value": "Zur Prüfung einreichen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246832,7 +246832,7 @@
           }
         },
         "fr-FR": {
-          "value": "Valider et soumettre",
+          "value": "Soumettre pour revue",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246858,7 +246858,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "TianGong Life Cycle Database",
+          "value": "Life Cycle Data Development",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246869,7 +246869,7 @@
           }
         },
         "zh-CN": {
-          "value": "天工生命周期数据库",
+          "value": "生命周期数据研制",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246880,7 +246880,7 @@
           }
         },
         "de-DE": {
-          "value": "TianGong-Lebenszyklusdatenbank",
+          "value": "Entwicklung von Lebenszyklusdaten",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246891,7 +246891,7 @@
           }
         },
         "fr-FR": {
-          "value": "TianGong Life Cycle Database",
+          "value": "Développement des données de cycle de vie",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -246906,7 +246906,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 359,
+          "line": 358,
           "column": 12,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -246975,7 +246975,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 362,
+          "line": 361,
           "column": 20,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247044,7 +247044,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 365,
+          "line": 364,
           "column": 32,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247113,7 +247113,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 364,
+          "line": 363,
           "column": 26,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247182,7 +247182,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 363,
+          "line": 362,
           "column": 19,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247251,7 +247251,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 366,
+          "line": 365,
           "column": 18,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247272,7 +247272,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Operation Demo Video",
+          "value": "Platform Walkthrough",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247283,7 +247283,7 @@
           }
         },
         "zh-CN": {
-          "value": "操作演示视频",
+          "value": "平台操作演示",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247294,7 +247294,7 @@
           }
         },
         "de-DE": {
-          "value": "Video zur Bedienung",
+          "value": "Plattform-Demo",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247305,7 +247305,7 @@
           }
         },
         "fr-FR": {
-          "value": "Vidéo de démonstration",
+          "value": "Démonstration de la plateforme",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247320,7 +247320,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 361,
+          "line": 360,
           "column": 17,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247341,7 +247341,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Process Data Development Workflow",
+          "value": "Process Dataset Development and Submission",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247352,7 +247352,7 @@
           }
         },
         "zh-CN": {
-          "value": "过程数据研制流程",
+          "value": "过程数据集研制与提交",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247363,7 +247363,7 @@
           }
         },
         "de-DE": {
-          "value": "Arbeitsablauf zur Entwicklung von Prozessdaten",
+          "value": "Prozessdatensatz entwickeln und einreichen",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247374,7 +247374,7 @@
           }
         },
         "fr-FR": {
-          "value": "Flux de travail pour le développement des données de processus",
+          "value": "Développer et soumettre un jeu de données de processus",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -247389,7 +247389,7 @@
         {
           "kind": "messageHelper",
           "path": "src/pages/Welcome.tsx",
-          "line": 367,
+          "line": 366,
           "column": 20,
           "symbol": "currentGuideContent",
           "defaultMessage": null,
@@ -247517,7 +247517,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 422,
+          "line": 421,
           "column": 30,
           "symbol": "dataEcosystemLabel",
           "defaultMessage": null,
@@ -247586,7 +247586,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 835,
+          "line": 860,
           "column": 16,
           "symbol": "Welcome",
           "defaultMessage": "No data teams are available yet.",
@@ -247599,7 +247599,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 835, "column": 16, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 860, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -247664,7 +247664,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 816,
+          "line": 841,
           "column": 18,
           "symbol": "Welcome",
           "defaultMessage": "Data teams could not be loaded.",
@@ -247677,7 +247677,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 816, "column": 18, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 841, "column": 18, "kind": "formatMessage" }
           ]
         }
       ]
@@ -247742,7 +247742,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 822,
+          "line": 847,
           "column": 18,
           "symbol": "Welcome",
           "defaultMessage": "Try again",
@@ -247755,7 +247755,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 822, "column": 18, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 847, "column": 18, "kind": "formatMessage" }
           ]
         }
       ]
@@ -247820,7 +247820,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 425,
+          "line": 424,
           "column": 25,
           "symbol": "modalSubtitle",
           "defaultMessage": null,
@@ -247889,7 +247889,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 313,
+          "line": 312,
           "column": 12,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -247958,7 +247958,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 418,
+          "line": 417,
           "column": 14,
           "symbol": "metrics",
           "defaultMessage": null,
@@ -248027,7 +248027,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 400,
+          "line": 399,
           "column": 14,
           "symbol": "metrics",
           "defaultMessage": null,
@@ -248096,7 +248096,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 412,
+          "line": 411,
           "column": 14,
           "symbol": "metrics",
           "defaultMessage": null,
@@ -248165,7 +248165,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 406,
+          "line": 405,
           "column": 14,
           "symbol": "metrics",
           "defaultMessage": null,
@@ -248234,7 +248234,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 394,
+          "line": 393,
           "column": 14,
           "symbol": "metrics",
           "defaultMessage": null,
@@ -248303,7 +248303,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 338,
+          "line": 337,
           "column": 22,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248372,7 +248372,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 335,
+          "line": 334,
           "column": 18,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248441,7 +248441,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 329,
+          "line": 328,
           "column": 22,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248510,7 +248510,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 326,
+          "line": 325,
           "column": 18,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248579,7 +248579,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 320,
+          "line": 319,
           "column": 22,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248648,7 +248648,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 317,
+          "line": 316,
           "column": 18,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248717,7 +248717,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 347,
+          "line": 346,
           "column": 22,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248786,7 +248786,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 344,
+          "line": 343,
           "column": 18,
           "symbol": "overviewContent",
           "defaultMessage": null,
@@ -248855,7 +248855,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 429,
+          "line": 428,
           "column": 28,
           "symbol": "tidasDescription",
           "defaultMessage": null,
@@ -248924,7 +248924,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 438,
+          "line": 437,
           "column": 30,
           "symbol": "tidasReadMoreLabel",
           "defaultMessage": null,
@@ -249052,7 +249052,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 450,
+          "line": 449,
           "column": 25,
           "symbol": "tidasImageAlt",
           "defaultMessage": null,
@@ -249121,7 +249121,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 919,
+          "line": 944,
           "column": 16,
           "symbol": "Welcome",
           "defaultMessage": "Diagram language: {language}",
@@ -249134,7 +249134,7 @@
           "argumentSignature": [{ "name": "language", "type": "simple" }],
           "placeholders": ["language"],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 919, "column": 16, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 944, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -249199,7 +249199,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 438,
+          "line": 437,
           "column": 30,
           "symbol": "tidasReadMoreLabel",
           "defaultMessage": null,
@@ -249268,7 +249268,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 428,
+          "line": 427,
           "column": 22,
           "symbol": "tidasTitle",
           "defaultMessage": null,
@@ -258481,7 +258481,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`${CARBON_FOOTPRINT_GUIDE_I18N_PREFIX}.${id}`",
-      "locations": ["354:21"],
+      "locations": ["353:21"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258491,7 +258491,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`preparationItems.${key}.description`",
-      "locations": ["381:20"],
+      "locations": ["380:20"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258501,7 +258501,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`preparationItems.${key}.title`",
-      "locations": ["380:14"],
+      "locations": ["379:14"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258511,7 +258511,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`schemaItems.${key}.description`",
-      "locations": ["386:20"],
+      "locations": ["385:20"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258521,7 +258521,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`schemaItems.${key}.title`",
-      "locations": ["385:14"],
+      "locations": ["384:14"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258531,7 +258531,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`teachingSteps.${key}.description`",
-      "locations": ["376:20"],
+      "locations": ["375:20"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"
@@ -258541,7 +258541,7 @@
       "count": 1,
       "file": "src/pages/Welcome.tsx",
       "expression": "`teachingSteps.${key}.title`",
-      "locations": ["375:14"],
+      "locations": ["374:14"],
       "category": "active-dynamic",
       "family": "welcomeGuide",
       "reviewStatus": "reviewed"

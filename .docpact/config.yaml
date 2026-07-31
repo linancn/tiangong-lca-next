@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-30'
-lastReviewedCommit: '524ca80ff3fd341450eca0267bffc1fe4b9cedf5'
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated local database artifact is current with the migration-parity-checked database contract; routing, validation ownership, and managed release boundaries remain unchanged.'
+lastReviewedAt: "2026-07-31"
+lastReviewedCommit: "1cf3f5accdbf4ef745022ed69d8815e851df833f"
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the 60-pass/24-designed-skip credential-free result preserves existing routing, testing-gate, release, and workspace-integration boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

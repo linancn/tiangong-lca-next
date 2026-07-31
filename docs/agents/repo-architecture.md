@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the local initialization artifact now contains the same seven v2 Hybrid RPCs, database-owned extracted_md derivatives, and embedding_ft indexes as the current database contract.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 Docker-snapshot closure: the Welcome page remains in the route-level UI layer while the local database artifact retains its current v2 RPC, extracted_md, and embedding_ft contract.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

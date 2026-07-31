@@ -14,6 +14,1393 @@
     "existingTranslationChanges": "Every post-baseline change requires an exact compact dossier below; no private or human confirmation is read.",
     "historicalGermanConfirmations": "Frozen snapshot only; never an input to current German or new-locale activation."
   },
-  "corrections": [],
-  "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2"
+  "corrections": [
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.actions.browsePublicData",
+      "before": "Open Data durchsuchen",
+      "after": "Offene Daten durchsuchen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "a6a1ff19fa1ebd5eaae42efa7f437101f0a60f37cc002f98eb17228f04999a51"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.actions.enterMyData",
+      "before": "Meine Daten",
+      "after": "Zu „Meine Daten“",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "82110d6f026fa11e6d877dfb5a2ff12681b8c19930deb347f9686969e09dcec0"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.entryLabel",
+      "before": "数据研制指南",
+      "after": "LCA 数据快速入门",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "5bcedb1f83a4c9b73d307164ccfa2f08bf1ae6f5f356220ccd50f53f7fbfc960"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.entryLabel",
+      "before": "Leitfaden zur Datenentwicklung",
+      "after": "LCA-Daten: Schnelleinstieg",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "a4ac3aa92db7315f05f3bccbcee84a640a08b0786a43512d32cd374d64ad327d"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.intro",
+      "before": "面向产品碳足迹数据报送、背景数据管理和生命周期建模。数据填报从过程开始，先记录过程边界、输入输出、数量单位和来源，再按需要选择已有流或新增产品流，最后完成验证、审核和模型串接。",
+      "after": "生命周期数据研制通常以过程数据集为核心。过程数据集描述一项生产或处理活动，记录其输入/输出、基准流，以及时间、地区、技术和来源等信息。过程数据集可以独立研制、校验和审核；需要表达多个过程之间的关系时，再通过模型将过程可视化连接，构建部分终止系统或前景系统。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "6c9f58af35136a8505318412bfa823aae5086704e26a45a103b932b9a7fb469d"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.intro",
+      "before": "Für die Berichterstattung zu CO₂-Fußabdrücken von Produkten, die Verwaltung von Hintergrunddaten und die Lebenszyklusmodellierung. Die Datenerfassung beginnt bei den Prozessen: Erfassen Sie Grenzen, Inputs und Outputs, Mengen, Einheiten und Quellen. Wählen Sie vorhandene Flüsse aus oder ergänzen Sie bei Bedarf Produktflüsse. Schließen Sie anschließend Validierung, Prüfung und Modellverknüpfung ab.",
+      "after": "Die Entwicklung von Lebenszyklusdaten konzentriert sich in der Regel auf Prozessdatensätze. Ein Prozessdatensatz beschreibt eine Produktions- oder Behandlungsaktivität und erfasst ihre Inputs/Outputs, den Referenzfluss sowie Zeit, Geografie, Technologie und Quellen. Prozessdatensätze können unabhängig entwickelt, geprüft und begutachtet werden; sollen Beziehungen zwischen mehreren Prozessen dargestellt werden, verbindet ein Modell sie visuell zu einem teilweise abgeschlossenen System oder Vordergrundsystem.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "be0c19fadaae25d93cc548a39db8b9cce16f86f88d8a95d52cc64bec34050407"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.description",
+      "before": "先匹配已有流；确实缺少的产品流再新增，并统一数量单位。",
+      "after": "整理联系人和来源，并优先从平台选择已有的流、流属性和单位组。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "c4b6a4c184bbfc0ba8014af03dec0bfdf65c734b14060906970c30780e001518"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.description",
+      "before": "Ordnen Sie zunächst vorhandene Flüsse zu. Ergänzen Sie fehlende Produktflüsse nur bei Bedarf und verwenden Sie konsistente Einheiten.",
+      "after": "Ordnen Sie Kontakte und Quellen und wählen Sie möglichst vorhandene Flüsse, Flusseigenschaften und Einheitengruppen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "22b933ed5fe88e0a95f5e6582b6ce973cfef92c05a8e9b57f65aa82e6345f567"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.title",
+      "before": "核对流与单位",
+      "after": "准备引用对象",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "cd50c06057384919bf3e119fa659c0f5312d675cd671a8bb30c2424b09e32b92"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.title",
+      "before": "Flüsse und Einheiten prüfen",
+      "after": "Referenzierte Objekte vorbereiten",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "87a26de67251ba99480c0ba42af3fcc93833c93d86d8ee1352bf9fc22e9b7e72"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.description",
+      "before": "明确产品、功能单位、时间范围、地理范围和工艺边界。",
+      "after": "明确所记录的生产或处理活动、时间、地区和技术范围，以及代表该过程产出的基准产品和基准流。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "048f09085de47a21ca34a29b6746dafc64124568c8945f2f0db775da342ab1b1"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.description",
+      "before": "Klären Sie Produkt, funktionelle Einheit, Zeitraum, Geografie und Prozessgrenze.",
+      "after": "Definieren Sie die Produktions- oder Behandlungsaktivität, ihren zeitlichen, geografischen und technologischen Umfang sowie Referenzprodukt und Referenzfluss des Outputs.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "47e27d12a69dfb079534d1f74b2f8ca74955984576f14fc72950f7ddea8c8fa0"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.title",
+      "before": "收集原始数据",
+      "after": "确定过程范围",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "9940101d30388df8db386f605fb82090cd12ca35255e3d3c87c4a7fde8ec833f"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.title",
+      "before": "Rohdaten erfassen",
+      "after": "Prozessumfang festlegen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "60e1ccd78ccc24c884f26592aae92f0702ba8e8fdd17d7316c0de4b61c954fdf"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.description",
+      "before": "把制造、运输、能源使用、废弃物处理等环节拆成可录入的单元过程。",
+      "after": "准备工艺流程、时间、地区和技术信息，以及原料、能源、产品、废物和排放数据。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "2438e08c98dce08c286c636ca040bae30d343bf3f7fe66f6ca0350892d22e087"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.description",
+      "before": "Gliedern Sie Herstellung, Transport, Energienutzung und Abfallbehandlung in erfassbare Prozessmodule.",
+      "after": "Bereiten Sie Prozessablauf, Zeit-, Geografie- und Technologieinformationen sowie Daten zu Stoffen, Energie, Produkten, Abfällen und Emissionen vor.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "fff82cdae8a1895e7d0e00dae5a65421b0cac4a3218cbe3ddba9a2b214f1add7"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.title",
+      "before": "梳理单元过程",
+      "after": "整理原始资料",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "5891094cc27c3704da5ed482eb72b9ef0e0cf17079e619c06453aec7b5e2e7c5"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.title",
+      "before": "Prozessmodule strukturieren",
+      "after": "Ausgangsdaten ordnen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "77ba7e797275ada6f82b0640b8431aca8f12096e4663aba8a6b452688f0752a1"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.description",
+      "before": "完成过程必填项、输入输出和来源说明后，再进入验证与审核。",
+      "after": "确认输入/输出覆盖过程范围、数量和单位一致，并为主要数据、假设和判断补充来源说明。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "145d339094ea4cd30dc039757c33e62077694c68c37817366550265ee648a6e4"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.description",
+      "before": "Vervollständigen Sie die Pflichtfelder des Prozesses, Inputs und Outputs sowie Quellen, bevor Sie validieren und zur Prüfung einreichen.",
+      "after": "Bestätigen Sie, dass Inputs und Outputs den Prozessumfang abdecken, Mengen und Einheiten konsistent sind und Quellen wichtige Daten, Annahmen und Entscheidungen belegen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "725fad28bd515d1fde74f4d18092022215822797e0610c5706eb7685d6da7cb5"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.title",
+      "before": "提交验证审核",
+      "after": "核对数据完整性",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "13cf13e4e2bd77a90e0d9cbb50b77394ffb3256f6d3b4b32175b746ccc77fd10"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.title",
+      "before": "Zur Prüfung einreichen",
+      "after": "Datenvollständigkeit prüfen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "91576215151593a532332995eeaaf74ec4e8f076db8d6826f23189036c54f04f"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.contact.description",
+      "before": "记录与数据集相关的个人、工作组、组织或数据库网络联系信息。",
+      "after": "记录数据负责人、作者或所属组织，创建后可在过程、来源和其他数据集中复用。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "54240e24202dac5ddc00c849274944eb23c078074eaa7b4504853f4d9cf4410e"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.contact.description",
+      "before": "Erfasst Personen, Arbeitsgruppen, Organisationen oder Datenbanknetzwerke mit Bezug zu Datensätzen.",
+      "after": "Speichert Datenverantwortliche, Autoren oder Organisationen zur Wiederverwendung in Prozessen, Quellen und anderen Datensätzen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "e4bdbc6b6c1e27752a53e5b12944ba51fb834515af8d9439476065cd12e9995e"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.flow.description",
+      "before": "定义生命周期评估中的物质、能量或废弃物，是过程和模型的连接基础。",
+      "after": "过程输入/输出引用的对象，包括产品流、废物流和基础流；通过流名称和方向连接过程。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "ae14f8d0de184680363fe85e3fe9448e03720dda0d6c6802b448d72d9b4a7dac"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.flow.description",
+      "before": "Definiert in der Ökobilanz ausgetauschte Materialien, Energie oder Abfälle und verbindet Prozesse und Modelle.",
+      "after": "Wird in Prozess-Inputs und -Outputs als Produkt-, Abfall- oder Elementarfluss referenziert. Flussnamen und -richtungen verbinden Prozesse.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "b735e4aaf8b67f12f98a23ffae73912b608518d7d760eb1433d0e24d33b6777b"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.flowProperty.description",
+      "before": "定义流的计量方式，例如质量、能量、体积、经济价值等。",
+      "after": "定义流按质量、能量、体积等方式计量，并关联相应单位组；通常优先复用平台已有内容。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "cad4d5a344a54e1bf8f4f83713efecb9485d997503532c225ba06e3b2eec45dc"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.flowProperty.description",
+      "before": "Definiert, wie ein Fluss gemessen wird, etwa nach Masse, Energie, Volumen oder wirtschaftlichem Wert.",
+      "after": "Legt fest, ob ein Fluss nach Masse, Energie, Volumen oder einer anderen Größe gemessen wird, und verbindet ihn mit einer Einheitengruppe. Vorhandene Einträge bevorzugen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "61c887e66e1b608f96bd3590fd9873187915ae9a010f2cc27fc639ec2adb0572"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.model.description",
+      "before": "描述产品系统的完整或部分生命周期，由多个相互连接的过程组成。",
+      "after": "独立于过程数据集的建模对象；通过可视化方式连接多个过程，用于构建部分终止系统或前景系统，不是提交过程的必需步骤。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "161401d3f968bd0aabf54695ec0c4f429f6c9e2b5d2083fe71e8ec5b9e51a444"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.model.description",
+      "before": "Beschreibt den vollständigen oder teilweisen Lebenszyklus eines Produktsystems aus miteinander verbundenen Prozessen.",
+      "after": "Ein von Prozessdatensätzen unabhängiges Modellierungsobjekt. Es verbindet Prozesse visuell zu einem teilweise abgeschlossenen System oder Vordergrundsystem und ist für die Einreichung eines Prozesses nicht erforderlich.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "501f1cdbc54f3de614415eb5d7cd850180764e074a657972f593c77bfee8b182"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.process.description",
+      "before": "记录单个生产或处理过程的输入输出流、时间、地理和技术代表性。",
+      "after": "LCA 数据研制的核心对象；记录一个活动的过程信息、建模和验证、管理信息及输入/输出。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "44f9e14b32ed4a1e24baf67a5241c1cd90deb717e6bb4d28ac79439555891e54"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.process.description",
+      "before": "Erfasst Inputs, Outputs, Zeit, Geografie und technische Repräsentativität eines Produktions- oder Behandlungsprozesses.",
+      "after": "Das Kernobjekt der LCA-Datenentwicklung; es erfasst Prozessinformationen, Modellierung und Validierung, administrative Informationen sowie Inputs und Outputs einer Aktivität.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "f6687c30d7b8cff1bd4746d2b2aee42e326b0e4cad78113e1ce2f0fbd274d36c"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.source.description",
+      "before": "记录文献、数据库、合规系统等引用信息，支撑透明性和可追溯性。",
+      "after": "记录文献、报告、调研材料或数据库的题名、作者、年份、URL/DOI 及附件，供数据集引用。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "24a6b8cc2b72b88be2524b3e60f51d828f41e30267d228a1b128de61c14f620d"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.source.description",
+      "before": "Erfasst Literatur-, Datenbank-, Konformitäts- und sonstige Referenzen für Transparenz und Nachvollziehbarkeit.",
+      "after": "Speichert Titel, Autor, Jahr, URL oder DOI und Anhänge für Literatur, Berichte, Erhebungen oder Datenbanken, die in Datensätzen zitiert werden.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "3f020500d0b3c6103a2d05befa3b4222510685c1a949daeba73a9f3962da28d1"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.unitGroup.description",
+      "before": "定义相关计量单位及其换算关系，支撑跨数据集的单位转换。",
+      "after": "保存同一计量属性下的基准单位和换算关系；普通用户通常直接选择已有单位组。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "5e0025e454ecb8310a39863adbd6c30e6a650a69ab7247bc309a8b6ae4113fcc"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaItems.unitGroup.description",
+      "before": "Definiert zusammengehörige Maßeinheiten und Umrechnungen für eine konsistente Einheitenverarbeitung über Datensätze hinweg.",
+      "after": "Speichert Referenzeinheit und Umrechnungsfaktoren einer Größe. Die meisten Nutzenden wählen eine vorhandene Einheitengruppe.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "950bec32e0c5510aae7d1bee99832f2991d12fc5d494086247545b0187a292a9"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaTitle",
+      "before": "数据对象",
+      "after": "平台中的数据对象",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "7b5b19a8ffd2711feff1ede6da28e3288ec0a0004f9eaccbe39777befa7e318a"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.schemaTitle",
+      "before": "Datenobjekte",
+      "after": "Datenobjekte der Plattform",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "67ca0b74a2794254271ac49b019b9535ec30c3704d21133a4c3ac76ffbe8ac18"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.description",
+      "before": "从我的数据进入过程，先录入单元过程基本信息。",
+      "after": "在“我的数据”中创建联系人和来源；查找并复用已有的流、流属性和单位组。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "1bc11159aa21bf4038e3678e6ded7972a4e1813dc532d6dbf76b8233c8e1faf1"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.description",
+      "before": "Öffnen Sie „Meine Daten“ und beginnen Sie mit den Grundinformationen zum Prozessmodul.",
+      "after": "Legen Sie unter „Meine Daten“ Kontakte und Quellen an; suchen und verwenden Sie vorhandene Flüsse, Flusseigenschaften und Einheitengruppen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "76100c6d2c2be2afa890ed9238282a42904ae6f4389b9d9a7ee7e8ced71ca33a"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.title",
+      "before": "新建过程",
+      "after": "建立引用数据",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "def20cf9fbeee217bff0df152aa858deecc331c6d0a36dbbad0808fa7818a9d1"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.title",
+      "before": "Prozess erstellen",
+      "after": "Referenzierte Daten anlegen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "024dedb654f558a577358be86b018e1e30789a73ddcfabe5ae4d8b79dde7b34d"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.enterInputsOutputs.description",
+      "before": "记录物料、能源、排放和产品流的方向、数量和单位。",
+      "after": "选择或创建流，填写方向、数量和单位，并将代表该过程产出的交换项设为基准流。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "dfe6095607eab6dadc0111ebbf4904a5e017ba8156a8cb781996d726b933f753"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.enterInputsOutputs.description",
+      "before": "Erfassen Sie Materialien, Energie, Emissionen und Produktflüsse mit Richtung, Menge und Einheit.",
+      "after": "Wählen oder erstellen Sie Flüsse, erfassen Sie Richtung, Menge und Einheit und markieren Sie den Austausch, der den Prozessoutput darstellt, als Referenzfluss.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "4aa57b2da5cc5557780ac8415cce73bdc91fae959dab32860d548b6f31f865ac"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.description",
+      "before": "补充过程名称、边界、年份、地区、来源和产品系统。",
+      "after": "进入“我的数据”→“过程”，点击“+”，填写“过程信息”“建模和验证”和“管理信息”。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "8ee2a636248139fbf6406385ba65056d2dfec807e078b74f9e49aafc3616faac"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.description",
+      "before": "Ergänzen Sie Name, Grenze, Jahr, Region, Quelle und Produktsystem.",
+      "after": "Öffnen Sie „Meine Daten“ → „Prozesse“, wählen Sie „+“ und füllen Sie „Prozessinformationen“, „Modellierung und Validierung“ und „Administrative Informationen“ aus.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "dc32ae5baf885a27404a05202b83df02577bee72cf67811e52b3a72fa318b25f"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.title",
+      "before": "填写基础信息",
+      "after": "新建过程",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "6d6293ded292989c8c7fe95038494333347e4b6c746d34d0073b89370a80b99b"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.title",
+      "before": "Grundinformationen ausfüllen",
+      "after": "Prozess anlegen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "466ff8e861bd47a615c3b70bb6794584a7544d7853208424a322815e643b261f"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.description",
+      "before": "查看新手入口、教学视频和数据对象说明。",
+      "after": "整理工艺流程和输入输出数据，保留文献、报告、调研记录等原始依据。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "f3b82e50803a54f53183ea9cf64fdc90682f8a32996506715aafc71ce7a203b4"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.description",
+      "before": "Sehen Sie sich Einstiegsoptionen, Anleitungsvideos und Datenobjekte an.",
+      "after": "Ordnen Sie Prozessablauf und Input-/Output-Daten und bewahren Sie Literatur, Berichte, Erhebungsprotokolle und weitere Originalbelege auf.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "2ae694b8fb6bdf7526c87f3ed090138dcdf1a99808d221336cafa34251d23c04"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.title",
+      "before": "登录首页",
+      "after": "整理研制资料",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "9d01dafa79f83baeceb2c28b6c0c3e87ae446e6e36a151cdfda6ba09a3fbc5d1"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.title",
+      "before": "Startseite öffnen",
+      "after": "Ausgangsmaterial ordnen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "023a56a445f1db776e11db907592a40e44a684fe8774504cfd76d7939d52b12a"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.description",
+      "before": "平台已有流直接选择；缺少的产品流再新建并关联。",
+      "after": "保存过程数据集，点击“数据校验”，并根据提示修正必填项、单位和引用关系。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "50c25d15a2025b796334743daf1ce669c2af7f807631bb00c3369d590cfcc925"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.description",
+      "before": "Wählen Sie zunächst vorhandene Plattformflüsse aus. Fügen Sie fehlende Produktflüsse nur bei Bedarf hinzu.",
+      "after": "Speichern Sie den Prozessdatensatz, wählen Sie „Daten prüfen“ und korrigieren Sie die gemeldeten Pflichtfelder, Einheiten und Referenzen.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "f0327b21bed3f10e03556a8e5fa123a4935693ff8ae51c1e26b1b67c414f66b5"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.title",
+      "before": "选择或新增流",
+      "after": "数据校验",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "3aed7c5fb16b965e970336d4788a37d563ac6e72f2c2220f423081270229f645"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.title",
+      "before": "Flüsse auswählen oder hinzufügen",
+      "after": "Daten prüfen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "f828ce27848516693a50203167d4069f25d18117461e3386c587d27eaad2f3ee"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.description",
+      "before": "检查必填项、单位和逻辑关系，通过后提交审核。",
+      "after": "校验通过后点击“提交审核”。过程数据集可以独立提交，无需先创建模型。",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "f51dc11f9f5e3658dd294c57ffc9ef17cb0e2aef7d80174fa02ef4b65a14d917"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.description",
+      "before": "Prüfen Sie Pflichtfelder, Einheiten und logische Zusammenhänge, bevor Sie die Daten zur Prüfung einreichen.",
+      "after": "Wählen Sie nach erfolgreicher Datenprüfung „Zur Prüfung einreichen“. Ein Prozessdatensatz kann unabhängig eingereicht werden; ein Modell ist nicht erforderlich.",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "83612cd62c76a35e1ee2aaa3f04a839dc55165a8860bca7ec2f56d667713b509"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.title",
+      "before": "验证与提交",
+      "after": "提交审核",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "6c0a4ff913c7217c6d69d90c856774d8fc932fa61b3046c40e1caa4b1f902291"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.title",
+      "before": "Validieren und einreichen",
+      "after": "Zur Prüfung einreichen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "4e0e69eeb0c87736c4e6324678103ed849e258fe5fe1a19ee0cd47c9334240c7"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.title",
+      "before": "天工生命周期数据库",
+      "after": "生命周期数据研制",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "d8d46965d1c0c41af434b57c6b874409f85be05e7d36c664086fd4ba03c17977"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.title",
+      "before": "TianGong-Lebenszyklusdatenbank",
+      "after": "Entwicklung von Lebenszyklusdaten",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "fea0b87e3cf6d3d7fdaa730a2bbd1fca5d2b8cf7f68c0c43691ce118ef1e5d8b"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.videoTitle",
+      "before": "操作演示视频",
+      "after": "平台操作演示",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "82176a20a3040450efc3c3d289232d345f7170e718e460814cd31d689fdaf9be"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.videoTitle",
+      "before": "Video zur Bedienung",
+      "after": "Plattform-Demo",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "ab16c77fbb737500bbe3ed9bfa2ca5a82589e3962ff4359929fe95cdedee1b96"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.welcome.carbonFootprintGuide.workflowTitle",
+      "before": "过程数据研制流程",
+      "after": "过程数据集研制与提交",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "zh-CN active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "2b799cc32055889139d27ec34178e20a2932e192daa345cd9f038f915acd9e74"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.welcome.carbonFootprintGuide.workflowTitle",
+      "before": "Arbeitsablauf zur Entwicklung von Prozessdaten",
+      "after": "Prozessdatensatz entwickeln und einreichen",
+      "evidence": [
+        "Issue #734 defines a platform-neutral LCA data-development quick start centered on independently reviewable process datasets and optional visual modeling.",
+        "The final zh-CN, en-US, de-DE, and fr-FR route view was reviewed in the local browser preview before publication."
+      ],
+      "affectedClosure": [
+        "Welcome LCA quick-start route view",
+        "de-DE active locale catalog",
+        "Process-dataset authoring workflow and data-object guidance"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/pages/Welcome.test.tsx tests/unit/e2e/carbonFootprintGuideContract.test.ts --runInBand",
+        "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
+      ],
+      "correctionDigest": "7914004ff751186c3957c090d37e2804a9e0e743c14c1811d9f880c275d95e16"
+    }
+  ],
+  "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e"
 }

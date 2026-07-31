@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: generated schema sync, deterministic check mode, secret redaction, and retained v2/FT object counts complement the existing production E2E and release proof without changing gate commands.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed, and external requests and production writes stayed zero; the existing receipt, preflight, and managed-gate flow remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 524ca80ff3fd341450eca0267bffc1fe4b9cedf5
-lastReviewedNote: 'Reviewed for Issue #735 Docker snapshot closure: the generated database snapshot follows the documented sync and validation path, while the managed push, dev PR, promotion, and workspace-integration loop remains unchanged.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the current 60-pass/24-designed-skip receipt follows the existing clean qualification, production-preflight, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

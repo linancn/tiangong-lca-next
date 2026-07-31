@@ -40,7 +40,6 @@ import {
   Spin,
   Statistic,
   StatisticProps,
-  Steps,
   Typography,
   theme,
 } from 'antd';
@@ -87,13 +86,13 @@ const guidePreparationItemKeys: GuidePreparationKey[] = [
   'submitForReview',
 ];
 const guideSchemaItemKeys: SchemaItemKey[] = [
-  'model',
   'process',
   'flow',
   'flowProperty',
   'unitGroup',
   'source',
   'contact',
+  'model',
 ];
 
 const schemaIconMap: Record<SchemaItemKey, React.ReactNode> = {
@@ -624,13 +623,39 @@ const Welcome: React.FC = () => {
         className={styles.welcome_card}
         style={cardBorderRadiusStyle}
       >
-        <Steps
-          current={-1}
-          items={currentGuideContent.teachingSteps.map((item) => ({
-            title: item.title,
-            description: item.description,
-          }))}
-        />
+        <Row gutter={[12, 12]} data-testid='welcome-guide-workflow-grid'>
+          {currentGuideContent.teachingSteps.map((item, index) => (
+            <Col
+              xs={24}
+              sm={12}
+              xl={8}
+              key={item.key}
+              data-testid='welcome-guide-workflow-step'
+              style={{ display: 'flex' }}
+            >
+              <div style={{ ...guidePanelStyle, width: '100%' }}>
+                <Space align='start' size='middle' style={{ width: '100%' }}>
+                  <Avatar style={guideAvatarStyle}>{index + 1}</Avatar>
+                  <Space direction='vertical' size={4} style={{ minWidth: 0, width: '100%' }}>
+                    <Typography.Text strong style={{ whiteSpace: 'normal' }}>
+                      {item.title}
+                    </Typography.Text>
+                    <Typography.Paragraph
+                      type='secondary'
+                      style={{
+                        margin: 0,
+                        color: token.colorTextSecondary,
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {item.description}
+                    </Typography.Paragraph>
+                  </Space>
+                </Space>
+              </div>
+            </Col>
+          ))}
+        </Row>
       </Card>
 
       <Card

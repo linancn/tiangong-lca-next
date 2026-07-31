@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: refreshed verified evidence and the follow-up three-browser receipt still require the normal clean managed gate; production-write authorization remains fail closed.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the generated credential-free receipt closes 49 IDs with zero external requests or production writes and follows the existing managed-push and release trigger policy.'
 ---
 
 # Pre-Push Gate Policy
