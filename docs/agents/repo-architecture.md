@@ -27,7 +27,7 @@ checkPaths:
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-31
 lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: document the Process-only Gate, unified seven-type submit action, database-owned review-kind decision, root-child table, simple decisions, and notification-only rejection display.'
+lastReviewedNote: 'Reviewed for Issues #745 and #748: document the unified dataset-review experience while keeping the scope-closure adapter in the repo testing layer without taking ownership from Database, Edge, Worker, or root orchestration.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -58,6 +58,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
+| `scripts/qualification/**`, `playwright.closure-download.config.ts`, `tests/browser/**` | test-only exact-commit scope-closure Next adapter and loopback browser contract accepted by the Worker provider aggregator |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
@@ -103,6 +104,8 @@ The task-center recovery path is:
 `src/components/LcaTaskCenter/index.tsx -> src/services/dataProducts/taskCenter.ts -> app_data_product_commands:list_task_feed`
 
 Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, and deep-link navigation. It maps the backend's typed artifact states to explicit preparing, available, expired, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+
+The repo-owned qualification adapter runs this actual page from an exact clean detached commit with a loopback-only backend contract. It proves the established anonymous, standard-user, admin/owner, and Data Product Manager route boundary plus artifact lifecycle, metadata, direct-navigation, and localized 410 behavior. Its provider-owned record contributes only Next consumer assertions; root and Worker orchestration remain authoritative for cross-provider aggregation and release qualification.
 
 The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. The Data Processing artifact projection similarly exposes only semantic role/format/filename, integrity, size, lifecycle/expiry, and signed-download metadata; it never exposes bucket or object paths. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 

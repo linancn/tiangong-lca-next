@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
 lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: existing focused unit-test, service-boundary, locale, and final managed-gate patterns remain correct.'
+lastReviewedNote: 'Reviewed for Issues #745 and #748: retain focused unit, service-boundary, locale, semantic localization E2E, and managed-gate patterns while adding the exact-commit loopback-only scope-closure qualification pattern.'
 ---
 
 # Testing Patterns Reference
@@ -147,6 +147,14 @@ Documentation capture profile pattern:
 - prefer role, label, text, and test-id locators; the current profile intentionally rejects CSS
 - never add the generic executor, account secret handling, dynamic origin, screenshot output, or Draft/evidence policy to Next; those belong to workspace tooling
 - use a synthetic local Chromium canary only as cross-repo workspace proof after the exact Next profile and render-target commit are bound
+
+Scope-closure provider qualification pattern:
+
+- run `scripts/qualification/scope-closure-next-qualification.mjs` only from a clean tracked commit and let it export that commit into a temporary detached worktree
+- require explicit isolated-non-production confirmation and loopback frontend/backend targets; reject production fingerprints before browser startup
+- exercise the real Data Processing browser route across every relevant authenticated role plus anonymous routing, and prove all four artifact states, direct document navigation, bounded format presentation, integrity/expiry metadata, and localized expired guidance
+- emit only the exact Worker-owned provider result schema and Next-owned consumer leaves; never include URLs, object locators, response payloads, credentials, cookies, or tokens
+- rerun with the same run ID and commit and require byte-identical canonical JSON before aggregator handoff
 
 Gate-bootstrap pattern:
 
