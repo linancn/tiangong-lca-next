@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
 lastReviewedNote: 'Reviewed for Issues #745 and #748: retain Watchman-free focused Jest and serial managed-gate guidance, and add the shortest clean-commit loopback adapter recovery path without changing release-E2E troubleshooting.'
 ---
 

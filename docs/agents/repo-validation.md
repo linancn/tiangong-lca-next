@@ -30,7 +30,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
 lastReviewedNote: 'Reviewed for Issues #745 and #748: retain focused unified-review proof and the managed full gate, and add exact-clean-commit loopback browser qualification that emits only non-sensitive Next consumer leaves for Worker aggregation.'
 related:
   - ../AGENTS.md
