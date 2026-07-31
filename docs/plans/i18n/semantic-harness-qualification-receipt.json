@@ -29,15 +29,15 @@
   },
   "diagnostics": {
     "retainedOutsideGit": true,
-    "runResultSha256": "8da6cdfe8cce49d89fc9737076e6cca6fa4cbf37b61f30d5a04f7c198ab22394"
+    "runResultSha256": "0a610273e4a23d7c253b424402358d9dfd1a3822f5f87802d8a9872f765d14a6"
   },
-  "environmentManifestSha256": "49a6ced6c668260c9dc7ab2f166de9e8bf43fe9168da2d16221635a72d197f1d",
+  "environmentManifestSha256": "0c6f7d99fbd2c1072a3943da942ed5570c1746886e48ca7f2619955aafb9ca8c",
   "externalRequests": 0,
-  "generatedAt": "2026-07-31T02:08:48.750Z",
+  "generatedAt": "2026-07-31T04:11:30.974Z",
   "productionWrites": 0,
-  "qualificationInputSha256": "ef41eced48bfa405453ba9f05358db30c9e3ef088da4164c6b73d9e75da0636c",
-  "qualifiedCommit": "3ac0ca60a7370d767ca003342180bb51f1b2dd7d",
-  "qualifiedTree": "087d3776916fdf8a25c6ae3aa8f125c91d65a83c",
+  "qualificationInputSha256": "834a4ca3967caac433eb71674ff943f75de5a21335dd947a76c353cc0879ab11",
+  "qualifiedCommit": "1cf3f5accdbf4ef745022ed69d8815e851df833f",
+  "qualifiedTree": "6549269511a66228771f2704d4a5762785f7bf0f",
   "schemaVersion": "tiangong.semantic-harness-qualification.v1",
   "status": "qualified"
 }

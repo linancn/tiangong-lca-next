@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the generated receipt follows the existing dev PR and managed-gate path; production-write authorization, release, and trigger policy remain unchanged.'
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the generated credential-free receipt closes 49 IDs with zero external requests or production writes and follows the existing managed-push and release trigger policy.'
 ---
 
 # Pre-Push Gate Policy

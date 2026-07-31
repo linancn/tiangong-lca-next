@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: a965fee5f94cfdf41a3683b561f486a5eef7bd04
-lastReviewedNote: 'Reviewed for Issue #735 production closure: fresh authenticated evidence preserves the four-locale, 49-assertion, candidate-local/production-backend, exact-write, and zero-leak contracts.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: 2486dc7547fe0f840cba0beb13139a79783024d0
+lastReviewedNote: 'Reviewed for Issue #743 after the authorized authenticated v0.0.64 candidate run at 2486dc7547fe: fresh evidence closes all 49 assertion IDs across four locales and three browsers, with exact production cleanup created=1, cleaned=1, leaked=0; the existing delivery and release contracts remain accurate.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

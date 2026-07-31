@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
-lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the refreshed credential-free receipt does not alter repository ownership, branch policy, delivery rules, production-write authorization, or workspace integration.'
+lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
+lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the 60-pass/24-designed-skip credential-free receipt does not alter repository ownership, branch policy, delivery rules, production-write authorization, or workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
