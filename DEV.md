@@ -30,7 +30,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-07-31
 lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: local bootstrap, focused validation, dev PR, final managed gate, promotion, and workspace-integration sequence remain unchanged.'
+lastReviewedNote: 'Reviewed for Issues #745 and #748: local bootstrap now includes isolated exact-commit browser qualification while retaining the focused validation, dev PR, managed gate, promotion, production-data, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap
@@ -104,6 +104,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
+| scope-closure adapter unit proof | `npm run test:qualification:scope-closure:unit` |
+| scope-closure loopback browser proof | `npm run test:qualification:scope-closure:browser` (normally invoked by the exact-commit adapter) |
 | install the isolated release E2E environment | `npm run e2e:env:install` |
 | read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
 | run an exact committed release candidate | `npm run e2e:release -- <release options>` |

@@ -26,6 +26,7 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
+  - scripts/qualification/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .nvmrc
@@ -33,7 +34,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
 lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: frontend ownership, dev-first branch policy, service boundary, validation gate, and workspace integration remain unchanged.'
+lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated exact-commit scope-closure adapter preserve frontend ownership, dev-first branch policy, production-write authorization, validation gates, and root integration ownership.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -112,6 +113,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while local release proof uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the three-browser GitHub Actions matrix remains credential-free/read-only and release-required
+- scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
@@ -143,6 +145,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - default CI-style test entry: `npm test`
 - direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
+- exact-candidate scope-closure proof: `npm run test:qualification:scope-closure:browser -- --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - credential-free production preflight for main candidates: `npm run release:preflight`

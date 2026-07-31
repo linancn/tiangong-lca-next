@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the change follows the maintained focused-test plus final-gate strategy and requires no testing-strategy expansion.'
+lastReviewedCommit: 31081bd3fbbcaacacd53613860af49941935953c
+lastReviewedNote: 'Reviewed for Issues #745 and #748: both changes follow the maintained focused-test plus final-gate strategy and require no testing-strategy expansion.'
 ---
 
 # Testing Strategy

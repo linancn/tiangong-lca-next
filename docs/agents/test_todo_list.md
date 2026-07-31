@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
 lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: focused service and notification coverage is included in the change and creates no new repository-wide testing backlog item.'
+lastReviewedNote: 'Reviewed for Issues #745 and #748: focused unified-review coverage and isolated Chromium proof for artifact states, direct downloads, localization, and every relevant role create no repository-wide coverage backlog item.'
 ---
 
 # Testing Execution State
@@ -54,6 +54,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
+- Issue #748 adds a git-tracked scope-closure qualification adapter for the Next owner. Its isolated Chromium flow proves preparing, available, expired, and unavailable presentation; direct document navigation for bounded XLSX and machine-readable manifests; integrity/expiry metadata; localized 410 rerun guidance; and anonymous, standard-user, administrator, owner, and data-product-manager routing without production targets or mutation.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`

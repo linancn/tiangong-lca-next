@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the existing dev PR, docpact, lint, coverage, build, and managed-gate policy remains unchanged.'
+lastReviewedCommit: 31081bd3fbbcaacacd53613860af49941935953c
+lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated qualification adapter retain the existing dev PR, docpact, lint, coverage, build, and managed-gate policy.'
 ---
 
 # Pre-Push Gate Policy
