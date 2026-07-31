@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: the Welcome quick-start change follows the existing dev-based work loop, managed push gate, promotion, and workspace-integration sequence.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: the Welcome quick-start change follows the existing dev work loop, clean managed gate, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

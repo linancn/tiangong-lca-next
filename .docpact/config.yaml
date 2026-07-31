@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-30'
-lastReviewedCommit: 'bf14d3e3227e48181ccb540ee66b2dc0da913312'
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: the Welcome LCA quick start, locale artifacts, and focused tests remain within existing frontend, i18n, test-governance, and managed release boundaries.'
+lastReviewedCommit: '30e31e7ad2f69444e80b2a042ec173c7857ce360'
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: the Welcome LCA quick start, locale artifacts, and responsive proof remain within existing frontend, i18n, testing, and managed release boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

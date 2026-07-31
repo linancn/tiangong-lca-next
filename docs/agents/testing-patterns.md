@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: existing route-view assertions plus responsive grid class checks remain the appropriate focused test pattern.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: route-view assertions and responsive grid checks remain the focused Welcome pattern, while exact request keys, digest binding, and ledger-controlled mutation remain the semantic E2E pattern.'
 ---
 
 # Testing Patterns Reference

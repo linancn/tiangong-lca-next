@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: a0ea7d6f7e83d4abe84f783109d67a4b4fe40bfe
-lastReviewedNote: 'Reviewed for Issue #734: the Welcome page remains in the existing route-level UI layer and introduces no architecture or service-boundary change.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 Docker-snapshot closure: the Welcome page remains in the route-level UI layer while the local database artifact retains its current v2 RPC, extracted_md, and embedding_ft contract.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

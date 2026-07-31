@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-30
-lastReviewedCommit: bf14d3e3227e48181ccb540ee66b2dc0da913312
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 qualification refresh: the Welcome and locale-artifact change uses the existing managed push gate and does not change trigger or authorization policy.'
+lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
+lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: Welcome and locale-artifact changes use the existing clean managed gate; production-write authorization, release, and trigger policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
