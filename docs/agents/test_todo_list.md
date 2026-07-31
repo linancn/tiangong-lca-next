@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
 lastReviewedNote: 'Reviewed for Issues #745 and #748: focused unified-review coverage and isolated Chromium proof for artifact states, direct downloads, localization, and every relevant role create no repository-wide coverage backlog item.'
 ---
 

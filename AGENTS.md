@@ -33,7 +33,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
 lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated exact-commit scope-closure adapter preserve frontend ownership, dev-first branch policy, production-write authorization, validation gates, and root integration ownership.'
 related:
   - .docpact/config.yaml
