@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production closure: existing locale-artifact, digest-mismatch, clean-candidate qualification, and serial Umi-test recovery guidance covers the merged state without a new exception.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the existing stale-receipt, clean-candidate, Docker, and serial-gate recovery guidance covers the refreshed qualification without a new exception.'
 ---
 
 # Testing Troubleshooting

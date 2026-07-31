@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: locale audits, focused Welcome tests, responsive browser proof, lint, build, and the clean managed gate remain the applicable validation set.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after the credential-free qualification of dev commit 3ac0ca60: 60 browser cases passed, 24 designed cases skipped, and the existing receipt, PR, preflight, and managed-gate validation flow remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

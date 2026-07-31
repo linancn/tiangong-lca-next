@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 production-evidence and Docker-snapshot closures: Welcome and locale-artifact changes use the existing clean managed gate; production-write authorization, release, and trigger policy remain unchanged.'
+lastReviewedAt: 2026-07-31
+lastReviewedCommit: cbf47c8612a9c7a2fd1386e9bfa161754a3d4d6e
+lastReviewedNote: 'Reviewed for Issue #743 after qualifying dev commit 3ac0ca60: the generated receipt follows the existing dev PR and managed-gate path; production-write authorization, release, and trigger policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
