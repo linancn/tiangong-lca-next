@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "29f7ede794fb24c05e20da02db1b30285357e0319b9300f7b584e407714edf4e",
+    "auditedInputDigest": "d67932f5212ba9ec819334ad21c88674703a1477d1e43faf8b6d04cc7e64c5b4",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -69,13 +69,13 @@
   "summary": {
     "localeCount": 4,
     "localeLeafModuleCounts": { "en-US": 30, "zh-CN": 30, "de-DE": 30, "fr-FR": 30 },
-    "localeUniqueKeyCounts": { "en-US": 3079, "zh-CN": 3079, "de-DE": 3079, "fr-FR": 3079 },
-    "canonicalCandidateKeyCount": 3079,
-    "activeStaticKeyCount": 2081,
+    "localeUniqueKeyCounts": { "en-US": 3096, "zh-CN": 3096, "de-DE": 3096, "fr-FR": 3096 },
+    "canonicalCandidateKeyCount": 3096,
+    "activeStaticKeyCount": 2092,
     "activeDynamicKeyCount": 367,
-    "reservedKeyCount": 631,
-    "productionSourceFileCount": 431,
-    "literalReferenceCount": 4065,
+    "reservedKeyCount": 637,
+    "productionSourceFileCount": 433,
+    "literalReferenceCount": 4082,
     "dynamicCallsiteCount": 39,
     "dynamicCallsiteSummaryCount": 39,
     "registeredDynamicCallsiteCount": 39,
@@ -15960,7 +15960,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 86,
+          "line": 88,
           "column": 18,
           "symbol": "RejectReview",
           "defaultMessage": "Reject",
@@ -15975,7 +15975,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 86,
+              "line": 88,
               "column": 18,
               "kind": "formatMessage"
             }
@@ -16043,7 +16043,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 72,
+          "line": 74,
           "column": 9,
           "symbol": "handleOk",
           "defaultMessage": "Failed to reject, please try again!",
@@ -16067,7 +16067,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 72,
+              "line": 74,
               "column": 9,
               "kind": "formatMessage"
             },
@@ -16141,7 +16141,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 119,
+          "line": 121,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Cancel",
@@ -16156,7 +16156,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 119,
+              "line": 121,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -16224,7 +16224,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 113,
+          "line": 115,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Confirm Reject",
@@ -16239,7 +16239,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 113,
+              "line": 115,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -16307,9 +16307,18 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 103,
+          "line": 105,
           "column": 11,
           "symbol": "RejectReview",
+          "defaultMessage": "Reject Review",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 138,
+          "column": 20,
+          "symbol": "SimpleReviewActions",
           "defaultMessage": "Reject Review",
           "defaultMessageExpression": null
         }
@@ -16322,9 +16331,15 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 103,
+              "line": 105,
               "column": 11,
               "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 138,
+              "column": 20,
+              "kind": "formatMessage"
             }
           ]
         }
@@ -16390,9 +16405,18 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 127,
+          "line": 129,
           "column": 15,
           "symbol": "RejectReview",
+          "defaultMessage": "Reject Reason",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 149,
+          "column": 24,
+          "symbol": "SimpleReviewActions",
           "defaultMessage": "Reject Reason",
           "defaultMessageExpression": null
         }
@@ -16405,9 +16429,15 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 127,
+              "line": 129,
               "column": 15,
               "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 149,
+              "column": 24,
+              "kind": "formatMessage"
             }
           ]
         }
@@ -16473,7 +16503,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 145,
+          "line": 147,
           "column": 19,
           "symbol": "RejectReview",
           "defaultMessage": "Reject reason cannot exceed 1000 characters!",
@@ -16488,7 +16518,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 145,
+              "line": 147,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -16556,7 +16586,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 155,
+          "line": 157,
           "column": 28,
           "symbol": "RejectReview",
           "defaultMessage": "Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...",
@@ -16571,7 +16601,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 155,
+              "line": 157,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -16639,7 +16669,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 136,
+          "line": 138,
           "column": 19,
           "symbol": "RejectReview",
           "defaultMessage": "Please enter the reject reason!",
@@ -16654,7 +16684,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 136,
+              "line": 138,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -16722,7 +16752,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 63,
+          "line": 65,
           "column": 9,
           "symbol": "handleOk",
           "defaultMessage": "Rejected successfully!",
@@ -16746,7 +16776,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 63,
+              "line": 65,
               "column": 9,
               "kind": "formatMessage"
             },
@@ -28471,7 +28501,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 604,
+          "line": 649,
           "column": 17,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Management",
@@ -28495,7 +28525,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 604,
+              "line": 649,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -30932,7 +30962,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 296,
+          "line": 313,
           "column": 20,
           "symbol": "DataNotification",
           "defaultMessage": "Close",
@@ -30947,7 +30977,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 296,
+              "line": 313,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -31015,7 +31045,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 333,
+          "line": 350,
           "column": 13,
           "symbol": "DataNotification",
           "defaultMessage": "No review comment available.",
@@ -31030,7 +31060,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 333,
+              "line": 350,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -31098,7 +31128,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 312,
+          "line": 329,
           "column": 22,
           "symbol": "DataNotification",
           "defaultMessage": "Fix Data",
@@ -31113,7 +31143,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 312,
+              "line": 329,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -31181,7 +31211,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 286,
+          "line": 303,
           "column": 16,
           "symbol": "DataNotification",
           "defaultMessage": "Review Comment",
@@ -31196,7 +31226,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 286,
+              "line": 303,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -31880,7 +31910,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 330,
+          "line": 331,
           "column": 9,
           "symbol": "handleSubmit",
           "defaultMessage": "Data saved successfully.",
@@ -31895,7 +31925,7 @@
           "locations": [
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 330,
+              "line": 331,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -40450,7 +40480,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 653,
+          "line": 655,
           "column": 13,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Action failed",
@@ -40471,7 +40501,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 653,
+              "line": 655,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -40914,7 +40944,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 740,
+          "line": 754,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Cancel",
@@ -40941,7 +40971,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 580,
+          "line": 594,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Cancel",
@@ -40968,7 +40998,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 673,
+          "line": 687,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Cancel",
@@ -41139,7 +41169,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 595,
+          "line": 609,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Cancel",
@@ -41166,7 +41196,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 628,
+          "line": 642,
           "column": 15,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Cancel",
@@ -41226,7 +41256,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 740,
+              "line": 754,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41244,7 +41274,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 580,
+              "line": 594,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41262,7 +41292,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 673,
+              "line": 687,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41376,7 +41406,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 595,
+              "line": 609,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41394,7 +41424,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 628,
+              "line": 642,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41480,7 +41510,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 716,
+          "line": 718,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Data Check",
@@ -41489,7 +41519,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 566,
+          "line": 568,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Data Check",
@@ -41498,7 +41528,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 659,
+          "line": 661,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Data Check",
@@ -41525,7 +41555,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 582,
+          "line": 584,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Data Check",
@@ -41534,7 +41564,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 615,
+          "line": 617,
           "column": 15,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Data Check",
@@ -41549,19 +41579,19 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 716,
+              "line": 718,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 566,
+              "line": 568,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 659,
+              "line": 661,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41579,13 +41609,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 582,
+              "line": 584,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 615,
+              "line": 617,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -41653,7 +41683,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 573,
+          "line": 574,
           "column": 13,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -41662,7 +41692,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 499,
+          "line": 500,
           "column": 13,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -41671,7 +41701,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 565,
+          "line": 566,
           "column": 28,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -41698,7 +41728,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 520,
+          "line": 521,
           "column": 13,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -41707,7 +41737,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 534,
+          "line": 535,
           "column": 28,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -41722,19 +41752,19 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 573,
+              "line": 574,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 499,
+              "line": 500,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 565,
+              "line": 566,
               "column": 28,
               "kind": "formatMessage"
             },
@@ -41752,13 +41782,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 520,
+              "line": 521,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 534,
+              "line": 535,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -41909,7 +41939,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 560,
+          "line": 561,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -41918,7 +41948,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 486,
+          "line": 487,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -41927,7 +41957,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 558,
+          "line": 559,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -41954,7 +41984,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 507,
+          "line": 508,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -41963,7 +41993,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 527,
+          "line": 528,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -41978,19 +42008,19 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 560,
+              "line": 561,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 486,
+              "line": 487,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 558,
+              "line": 559,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -42008,13 +42038,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 507,
+              "line": 508,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 527,
+              "line": 528,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -42164,6 +42194,65 @@
           ]
         }
       ]
+    },
+    {
+      "id": "pages.button.confirm",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Confirm",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 202,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "确认",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 201,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Bestätigen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 202,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Confirmer",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 202,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.button.contribute",
@@ -44758,7 +44847,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 686,
+          "line": 688,
           "column": 27,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit",
@@ -44767,7 +44856,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 697,
+          "line": 699,
           "column": 13,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit",
@@ -44776,7 +44865,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 532,
+          "line": 534,
           "column": 25,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Edit",
@@ -44785,7 +44874,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 543,
+          "line": 545,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Edit",
@@ -44794,7 +44883,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 624,
+          "line": 626,
           "column": 25,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -44803,7 +44892,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 635,
+          "line": 637,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -44812,7 +44901,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 643,
+          "line": 645,
           "column": 16,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -44911,7 +45000,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 552,
+          "line": 554,
           "column": 27,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit",
@@ -44920,7 +45009,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 563,
+          "line": 565,
           "column": 13,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit",
@@ -44929,7 +45018,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 578,
+          "line": 580,
           "column": 15,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Edit",
@@ -44938,7 +45027,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 591,
+          "line": 593,
           "column": 13,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Edit",
@@ -44977,43 +45066,43 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 686,
+              "line": 688,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 697,
+              "line": 699,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 532,
+              "line": 534,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 543,
+              "line": 545,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 624,
+              "line": 626,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 635,
+              "line": 637,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 643,
+              "line": 645,
               "column": 16,
               "kind": "FormattedMessage"
             },
@@ -45079,25 +45168,25 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 552,
+              "line": 554,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 563,
+              "line": 565,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 578,
+              "line": 580,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 591,
+              "line": 593,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -48561,7 +48650,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 584,
+          "line": 598,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Reset",
@@ -48576,7 +48665,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 584,
+              "line": 598,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -48760,7 +48849,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 752,
+          "line": 766,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Save",
@@ -48778,7 +48867,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 593,
+          "line": 607,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Save",
@@ -48796,7 +48885,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 686,
+          "line": 700,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Save",
@@ -48913,7 +49002,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 607,
+          "line": 621,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Save",
@@ -48931,7 +49020,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 640,
+          "line": 654,
           "column": 15,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Save",
@@ -48976,7 +49065,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 752,
+              "line": 766,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -48988,7 +49077,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 593,
+              "line": 607,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49000,7 +49089,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 686,
+              "line": 700,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49078,7 +49167,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 607,
+              "line": 621,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49090,7 +49179,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 640,
+              "line": 654,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49170,7 +49259,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 322,
+          "line": 323,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Saved successfully!",
@@ -49179,7 +49268,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 321,
+          "line": 322,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Saved successfully!",
@@ -49188,7 +49277,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 379,
+          "line": 380,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Saved successfully!",
@@ -49206,7 +49295,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 336,
+          "line": 337,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Saved successfully!",
@@ -49221,19 +49310,19 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 322,
+              "line": 323,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 321,
+              "line": 322,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 379,
+              "line": 380,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -49245,7 +49334,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 336,
+              "line": 337,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -49779,7 +49868,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 723,
+          "line": 725,
           "column": 17,
           "symbol": "ContactEdit",
           "defaultMessage": "Sync to Open Data",
@@ -49794,7 +49883,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 723,
+              "line": 725,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -49969,7 +50058,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 734,
+          "line": 748,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Update Reference",
@@ -49987,7 +50076,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 573,
+          "line": 587,
           "column": 15,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Update Reference",
@@ -50005,7 +50094,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 666,
+          "line": 680,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Update Reference",
@@ -50050,7 +50139,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 589,
+          "line": 603,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Update Reference",
@@ -50068,7 +50157,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 622,
+          "line": 636,
           "column": 15,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Update Reference",
@@ -50092,7 +50181,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 734,
+              "line": 748,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50104,7 +50193,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 573,
+              "line": 587,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50116,7 +50205,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 666,
+              "line": 680,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50146,7 +50235,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 589,
+              "line": 603,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50158,7 +50247,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 622,
+              "line": 636,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -51180,7 +51269,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 458,
+          "line": 459,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51189,7 +51278,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 385,
+          "line": 386,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51198,7 +51287,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 444,
+          "line": 445,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51207,7 +51296,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 406,
+          "line": 407,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51216,7 +51305,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 403,
+          "line": 404,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51231,31 +51320,31 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 458,
+              "line": 459,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 385,
+              "line": 386,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 444,
+              "line": 445,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 406,
+              "line": 407,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 403,
+              "line": 404,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -52866,7 +52955,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 705,
+          "line": 707,
           "column": 11,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit Contact",
@@ -52881,7 +52970,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 705,
+              "line": 707,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -54780,7 +54869,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 404,
+          "line": 405,
           "column": 13,
           "symbol": "validateReferencesForSyncOpenData",
           "defaultMessage": "Contact reference {id}({version}) must match the current contact ID and version.",
@@ -54798,7 +54887,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 404,
+              "line": 405,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -54878,7 +54967,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 435,
+          "line": 436,
           "column": 11,
           "symbol": "validateReferencesForSyncOpenData",
           "defaultMessage": "Referenced data {id}({version}) must be open data.",
@@ -54896,7 +54985,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 435,
+              "line": 436,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -54964,7 +55053,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 609,
+          "line": 611,
           "column": 9,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Current contact data is incomplete. Please fill all required fields before syncing.",
@@ -54979,7 +55068,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 609,
+              "line": 611,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -55047,7 +55136,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 666,
+          "line": 668,
           "column": 7,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Synchronized to open data successfully!",
@@ -55062,7 +55151,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 666,
+              "line": 668,
               "column": 7,
               "kind": "formatMessage"
             }
@@ -84467,7 +84556,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 552,
+          "line": 554,
           "column": 11,
           "symbol": "FlowpropertiesEdit",
           "defaultMessage": "Edit Flow property",
@@ -84491,7 +84580,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 552,
+              "line": 554,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -130118,7 +130207,7 @@
           "placeholders": ["end", "start", "total"],
           "source": {
             "path": "src/locales/en-US/pages_general.ts",
-            "line": 187,
+            "line": 204,
             "column": 3,
             "module": "pages_general"
           }
@@ -130133,7 +130222,7 @@
           "placeholders": ["end", "start", "total"],
           "source": {
             "path": "src/locales/zh-CN/pages_general.ts",
-            "line": 186,
+            "line": 203,
             "column": 3,
             "module": "pages_general"
           }
@@ -130148,7 +130237,7 @@
           "placeholders": ["end", "start", "total"],
           "source": {
             "path": "src/locales/de-DE/pages_general.ts",
-            "line": 187,
+            "line": 204,
             "column": 3,
             "module": "pages_general"
           }
@@ -130163,7 +130252,7 @@
           "placeholders": ["end", "start", "total"],
           "source": {
             "path": "src/locales/fr-FR/pages_general.ts",
-            "line": 187,
+            "line": 204,
             "column": 3,
             "module": "pages_general"
           }
@@ -130173,7 +130262,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 274,
+          "line": 291,
           "column": 13,
           "symbol": "DataNotification",
           "defaultMessage": "Items {start}-{end} of {total}",
@@ -130201,7 +130290,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 274,
+              "line": 291,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -164531,6 +164620,15 @@
       "references": [
         {
           "kind": "formatMessage",
+          "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+          "line": 48,
+          "column": 9,
+          "symbol": "submit",
+          "defaultMessage": "Review submitted successfully",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx",
           "line": 740,
           "column": 9,
@@ -164554,6 +164652,12 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
+            {
+              "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+              "line": 48,
+              "column": 9,
+              "kind": "formatMessage"
+            },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx",
               "line": 740,
@@ -205762,7 +205866,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 95,
+          "line": 97,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Reject Review",
@@ -205777,7 +205881,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 95,
+              "line": 97,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -206334,7 +206438,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 270,
+          "line": 289,
           "column": 14,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206343,7 +206447,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 317,
+          "line": 337,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206352,7 +206456,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 373,
+          "line": 404,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206361,7 +206465,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 449,
+          "line": 493,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206385,25 +206489,25 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 270,
+              "line": 289,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 317,
+              "line": 337,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 373,
+              "line": 404,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 449,
+              "line": 493,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -206673,7 +206777,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 158,
+          "line": 175,
           "column": 17,
           "symbol": "getStatusTag",
           "defaultMessage": "Approved",
@@ -206688,7 +206792,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 158,
+              "line": 175,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -206756,7 +206860,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 150,
+          "line": 167,
           "column": 17,
           "symbol": "getStatusTag",
           "defaultMessage": "Assigned",
@@ -206771,7 +206875,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 150,
+              "line": 167,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -206839,7 +206943,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 166,
+          "line": 183,
           "column": 17,
           "symbol": "getStatusTag",
           "defaultMessage": "No information",
@@ -206854,7 +206958,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 166,
+              "line": 183,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -206922,7 +207026,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 142,
+          "line": 159,
           "column": 17,
           "symbol": "getStatusTag",
           "defaultMessage": "Rejected",
@@ -206937,7 +207041,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 142,
+              "line": 159,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -210381,7 +210485,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 336,
+          "line": 337,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "This data is open data, save failed",
@@ -210390,7 +210494,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 638,
+          "line": 640,
           "column": 11,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "This data is open data, save failed",
@@ -210399,7 +210503,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 336,
+          "line": 337,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "This data is open data, save failed",
@@ -210408,7 +210512,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 394,
+          "line": 395,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "This data is open data, save failed",
@@ -210435,7 +210539,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 344,
+          "line": 345,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "This data is open data, save failed",
@@ -210444,7 +210548,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 351,
+          "line": 352,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "This data is open data, save failed",
@@ -210459,25 +210563,25 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 336,
+              "line": 337,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 638,
+              "line": 640,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 336,
+              "line": 337,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 394,
+              "line": 395,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -210495,13 +210599,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 344,
+              "line": 345,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 351,
+              "line": 352,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -210628,7 +210732,16 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 301,
+          "line": 179,
+          "column": 9,
+          "symbol": "subColumns",
+          "defaultMessage": "Review Progress",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 321,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Progress",
@@ -210643,7 +210756,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 301,
+              "line": 179,
+              "column": 9,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 321,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -211980,6 +212099,587 @@
       ]
     },
     {
+      "id": "pages.review.reference.paths",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Relation paths",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 190,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "引用路径",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 189,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Referenzpfade",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 190,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Chemins de référence",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 190,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 186,
+          "column": 14,
+          "symbol": "subColumns",
+          "defaultMessage": "Relation paths",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Relation paths",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 186,
+              "column": 14,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.status.approved",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Approved",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 191,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "已通过",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 190,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Genehmigt",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 191,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Approuvé",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 191,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 146,
+          "column": 23,
+          "symbol": "status",
+          "defaultMessage": "Approved",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Approved",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 146,
+              "column": 23,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.status.inReview",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "In review",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 193,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "审核中",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 192,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "In Prüfung",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 193,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "En cours de révision",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 193,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 162,
+          "column": 27,
+          "symbol": "status",
+          "defaultMessage": "In review",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "In review",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 162,
+              "column": 27,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.status.rejected",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Rejected",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 192,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "已驳回",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 191,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Abgelehnt",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 192,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Rejeté",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 192,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 154,
+          "column": 25,
+          "symbol": "status",
+          "defaultMessage": "Rejected",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Rejected",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 154,
+              "column": 25,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.status.unassigned",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Unassigned",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 194,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "待分配",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 193,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Nicht zugewiesen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 194,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Non attribué",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 194,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 169,
+          "column": 27,
+          "symbol": "status",
+          "defaultMessage": "Unassigned",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Unassigned",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 169,
+              "column": 27,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.table",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Data type",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 188,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "数据类型",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 187,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Datentyp",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 188,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Type de données",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 188,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 128,
+          "column": 14,
+          "symbol": "subColumns",
+          "defaultMessage": "Data type",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Data type",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 128,
+              "column": 14,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.reference.version",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Data version",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 189,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "数据版本",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 188,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Datenversion",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 189,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Version des données",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 189,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 133,
+          "column": 14,
+          "symbol": "subColumns",
+          "defaultMessage": "Data version",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Data version",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 133,
+              "column": 14,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pages.review.saveError",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -212229,6 +212929,685 @@
       ]
     },
     {
+      "id": "pages.review.simpleDecision.approve",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Approve",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 196,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "通过",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 195,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Genehmigen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 196,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Approuver",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 196,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 89,
+          "column": 16,
+          "symbol": "SimpleReviewActions",
+          "defaultMessage": "Approve",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Approve",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 89,
+              "column": 16,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.simpleDecision.approveConfirm",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Confirm approval?",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 198,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "确认通过该审核？",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 197,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Genehmigung bestätigen?",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 198,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Confirmer l’approbation ?",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 198,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 102,
+          "column": 22,
+          "symbol": "SimpleReviewActions",
+          "defaultMessage": "Confirm approval?",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Confirm approval?",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 102,
+              "column": 22,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.simpleDecision.approveSuccess",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Review approved.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 199,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "审核意见已通过。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 198,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Prüfung genehmigt.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 199,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Révision approuvée.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 199,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 41,
+          "column": 9,
+          "symbol": "approve",
+          "defaultMessage": "Review approved.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Review approved.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 41,
+              "column": 9,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.simpleDecision.error",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Unable to submit the review decision.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 201,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "审核意见提交失败。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 200,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Prüfentscheidung konnte nicht übermittelt werden.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 201,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Impossible d’envoyer la décision de révision.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 201,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 49,
+          "column": 9,
+          "symbol": "approve",
+          "defaultMessage": "Unable to submit the review decision.",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 76,
+          "column": 9,
+          "symbol": "rejectAsReviewer",
+          "defaultMessage": "Unable to submit the review decision.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Unable to submit the review decision.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 49,
+              "column": 9,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 76,
+              "column": 9,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.simpleDecision.reject",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Reject",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 197,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "驳回",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 196,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Ablehnen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 197,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Rejeter",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 197,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 123,
+          "column": 20,
+          "symbol": "SimpleReviewActions",
+          "defaultMessage": "Reject",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Reject",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 123,
+              "column": 20,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.simpleDecision.rejectSuccess",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Review rejection submitted.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 200,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "审核驳回意见已提交。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 199,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Ablehnung wurde übermittelt.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 200,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Rejet soumis.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 200,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+          "line": 66,
+          "column": 9,
+          "symbol": "rejectAsReviewer",
+          "defaultMessage": "Review rejection submitted.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Review rejection submitted.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
+              "line": 66,
+              "column": 9,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.submit.button",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Submit Review",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 186,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "提交审核",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 185,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Zur Prüfung einreichen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 186,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Soumettre à la révision",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 186,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+          "line": 61,
+          "column": 8,
+          "symbol": "DatasetSubmitReviewButton",
+          "defaultMessage": "Submit Review",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Submit Review",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+              "line": 61,
+              "column": 8,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.submit.error",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Submit review failed.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 187,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "提交审核失败。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 186,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Einreichung zur Prüfung fehlgeschlagen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 187,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Échec de la soumission à la révision.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 187,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+          "line": 39,
+          "column": 13,
+          "symbol": "submit",
+          "defaultMessage": "Submit review failed.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Submit review failed.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/components/DatasetSubmitReviewButton/index.tsx",
+              "line": 39,
+              "column": 13,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pages.review.table.actions",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -212288,7 +213667,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 255,
+          "line": 272,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Actions",
@@ -212312,7 +213691,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 255,
+              "line": 272,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -212386,7 +213765,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 259,
+          "line": 278,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "Submitted at",
@@ -212401,7 +213780,90 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 259,
+              "line": 278,
+              "column": 9,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.table.column.dataName",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Data name",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 195,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "数据名称",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 194,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Datenname",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 195,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Nom des données",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 195,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 219,
+          "column": 9,
+          "symbol": "columns",
+          "defaultMessage": "Data name",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Data name",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 219,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -212469,7 +213931,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 292,
+          "line": 312,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -212478,7 +213940,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 365,
+          "line": 396,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -212487,7 +213949,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 441,
+          "line": 485,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -212502,19 +213964,19 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 292,
+              "line": 312,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 365,
+              "line": 396,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 441,
+              "line": 485,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -212524,7 +213986,7 @@
     },
     {
       "id": "pages.review.table.column.processName",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_review"],
@@ -212578,47 +214040,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 145,
-          "column": 9,
-          "symbol": "subColumns",
-          "defaultMessage": "Process Name",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 207,
-          "column": 9,
-          "symbol": "columns",
-          "defaultMessage": "Process Name",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Process Name",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 145,
-              "column": 9,
-              "kind": "FormattedMessage"
-            },
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 207,
-              "column": 9,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.review.table.column.teamName",
@@ -212681,7 +214104,7 @@
     },
     {
       "id": "pages.review.table.column.type",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_review"],
@@ -212735,32 +214158,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 169,
-          "column": 14,
-          "symbol": "subColumns",
-          "defaultMessage": "Type",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Type",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 169,
-              "column": 14,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.review.table.column.userName",
@@ -212822,7 +214221,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 243,
+          "line": 262,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "User Name",
@@ -212837,7 +214236,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 243,
+              "line": 262,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -212905,7 +214304,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 233,
+          "line": 250,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Modified at",
@@ -212929,7 +214328,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 233,
+              "line": 250,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -213003,7 +214402,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 207,
+          "line": 224,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Name",
@@ -213018,7 +214417,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 207,
+              "line": 224,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -213086,9 +214485,18 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 224,
+          "line": 241,
           "column": 14,
           "symbol": "columns",
+          "defaultMessage": "Status",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 138,
+          "column": 14,
+          "symbol": "subColumns",
           "defaultMessage": "Status",
           "defaultMessageExpression": null
         }
@@ -213101,9 +214509,15 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 224,
+              "line": 241,
               "column": 14,
               "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 138,
+              "column": 14,
+              "kind": "FormattedMessage"
             }
           ]
         }
@@ -213169,7 +214583,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 219,
+          "line": 236,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Team",
@@ -213184,7 +214598,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 219,
+              "line": 236,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -213253,7 +214667,7 @@
     },
     {
       "id": "pages.review.table.type.modelNode",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_review"],
@@ -213307,36 +214721,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 176,
-          "column": 13,
-          "symbol": "subColumns",
-          "defaultMessage": "Model Node",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Model Node",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 176,
-              "column": 13,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.review.table.type.primaryProduct",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_review"],
@@ -213390,36 +214780,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 182,
-          "column": 13,
-          "symbol": "subColumns",
-          "defaultMessage": "Primary Product",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Primary Product",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 182,
-              "column": 13,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.review.table.type.secondaryProduct",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_review"],
@@ -213473,32 +214839,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 189,
-          "column": 11,
-          "symbol": "subColumns",
-          "defaultMessage": "Secondary Product",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Secondary Product",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 189,
-              "column": 11,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.review.table.userName",
@@ -213619,7 +214961,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/Notification/DataNotification.tsx",
-          "line": 177,
+          "line": 194,
           "column": 19,
           "symbol": "label",
           "defaultMessage": "View",
@@ -213633,6 +214975,15 @@
           "symbol": "columns",
           "defaultMessage": "View",
           "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 253,
+          "column": 17,
+          "symbol": "columns",
+          "defaultMessage": "View",
+          "defaultMessageExpression": null
         }
       ],
       "defaultMessages": [
@@ -213643,7 +214994,7 @@
           "locations": [
             {
               "path": "src/components/Notification/DataNotification.tsx",
-              "line": 177,
+              "line": 194,
               "column": 19,
               "kind": "formatMessage"
             },
@@ -213652,6 +215003,12 @@
               "line": 260,
               "column": 16,
               "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 253,
+              "column": 17,
+              "kind": "FormattedMessage"
             }
           ]
         }
@@ -213717,7 +215074,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 492,
+          "line": 537,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Assigned Task",
@@ -213741,7 +215098,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 492,
+              "line": 537,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -213901,7 +215258,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 496,
+          "line": 541,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Pending Review",
@@ -213925,7 +215282,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 496,
+              "line": 541,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -213993,7 +215350,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 498,
+          "line": 543,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected",
@@ -214017,7 +215374,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 498,
+              "line": 543,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -214085,7 +215442,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 501,
+          "line": 546,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected Task",
@@ -214109,7 +215466,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 501,
+              "line": 546,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -214177,7 +215534,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 494,
+          "line": 539,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Reviewed",
@@ -214201,7 +215558,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 494,
+              "line": 539,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -214269,7 +215626,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 489,
+          "line": 534,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Unassigned Task",
@@ -214293,7 +215650,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 489,
+              "line": 534,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -214626,7 +215983,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 343,
+          "line": 344,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Data is under review, save failed",
@@ -214635,7 +215992,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 645,
+          "line": 647,
           "column": 11,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Data is under review, save failed",
@@ -214644,7 +216001,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/edit.tsx",
-          "line": 343,
+          "line": 344,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "Data is under review, save failed",
@@ -214653,7 +216010,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 401,
+          "line": 402,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "Data is under review, save failed",
@@ -214680,7 +216037,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 351,
+          "line": 352,
           "column": 11,
           "symbol": "handleSubmit",
           "defaultMessage": "Data is under review, save failed",
@@ -214689,7 +216046,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 358,
+          "line": 359,
           "column": 13,
           "symbol": "handleSubmit",
           "defaultMessage": "Data is under review, save failed",
@@ -214704,25 +216061,25 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 343,
+              "line": 344,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 645,
+              "line": 647,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/edit.tsx",
-              "line": 343,
+              "line": 344,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 401,
+              "line": 402,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -214740,13 +216097,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 351,
+              "line": 352,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 358,
+              "line": 359,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -216059,7 +217416,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 543,
+          "line": 588,
           "column": 30,
           "symbol": "AssignmentReview",
           "defaultMessage": null,
@@ -217214,7 +218571,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 65,
+          "line": 68,
           "column": 5,
           "symbol": "tableAlertOptionRender",
           "defaultMessage": "Clear selection",
@@ -217325,7 +218682,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 65,
+              "line": 68,
               "column": 5,
               "kind": "FormattedMessage"
             },
@@ -221196,7 +222553,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 571,
+          "line": 573,
           "column": 11,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit Source",
@@ -221211,7 +222568,7 @@
           "locations": [
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 571,
+              "line": 573,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -228014,7 +229371,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 200,
+          "line": 212,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Index",
@@ -228239,7 +229596,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 200,
+              "line": 212,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -233908,7 +235265,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/edit.tsx",
-          "line": 599,
+          "line": 601,
           "column": 11,
           "symbol": "UnitGroupEdit",
           "defaultMessage": "Edit Unit group",
@@ -233923,7 +235280,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/edit.tsx",
-              "line": 599,
+              "line": 601,
               "column": 11,
               "kind": "FormattedMessage"
             }

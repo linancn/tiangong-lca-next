@@ -237,6 +237,82 @@ describe('submitDatasetReviewApi', () => {
     });
     expect(result).toBe(commandResult);
   });
+
+  it('submits Flow reviews through the same command without Gate metadata', async () => {
+    mockInvokeDatasetCommand.mockResolvedValue({
+      data: [{ reviewKind: 'root' }],
+      error: null,
+    });
+
+    await reviewsApi.submitDatasetReviewApi(
+      'flows',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      table: 'flows',
+    });
+  });
+});
+
+describe('submitSimpleReviewDecision', () => {
+  it('omits a reason when the reviewer approves', async () => {
+    mockInvokeDatasetCommand.mockResolvedValue({ data: [], error: null });
+
+    await reviewsApi.submitSimpleReviewDecision('11111111-1111-4111-8111-111111111111', 'approve');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_simple_review_submit_decision', {
+      reviewId: '11111111-1111-4111-8111-111111111111',
+      decision: 'approve',
+    });
+  });
+
+  it('trims and submits the rejection reason', async () => {
+    mockInvokeDatasetCommand.mockResolvedValue({ data: [], error: null });
+
+    await reviewsApi.submitSimpleReviewDecision(
+      '11111111-1111-4111-8111-111111111111',
+      'reject',
+      '  needs correction  ',
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_simple_review_submit_decision', {
+      reviewId: '11111111-1111-4111-8111-111111111111',
+      decision: 'reject',
+      reason: 'needs correction',
+    });
+  });
+});
+
+describe('getRootReviewReferenceProgress', () => {
+  it('returns the root review reference rows from the query boundary', async () => {
+    const rows = [
+      {
+        reference_review_id: '22222222-2222-4222-8222-222222222222',
+        target_table: 'flows',
+      },
+    ];
+    mockRpc.mockResolvedValue({ data: rows, error: null });
+
+    await expect(
+      reviewsApi.getRootReviewReferenceProgress('11111111-1111-4111-8111-111111111111'),
+    ).resolves.toEqual({ data: rows, error: null });
+    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress', {
+      p_root_review_id: '11111111-1111-4111-8111-111111111111',
+    });
+  });
+
+  it('normalizes a missing query payload to an empty list', async () => {
+    const error = { message: 'query failed' };
+    mockRpc.mockResolvedValue({ data: null, error });
+
+    await expect(
+      reviewsApi.getRootReviewReferenceProgress('11111111-1111-4111-8111-111111111111'),
+    ).resolves.toEqual({ data: [], error });
+  });
 });
 
 describe('review-submit gate helpers', () => {

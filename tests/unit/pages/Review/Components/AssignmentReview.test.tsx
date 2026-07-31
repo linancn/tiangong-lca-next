@@ -9,6 +9,7 @@ let mockLocale = 'en-US';
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
   useIntl: () => ({
     locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -65,6 +66,13 @@ jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   ),
 }));
 
+jest.mock('@/pages/Review/Components/SimpleReviewActions', () => ({
+  __esModule: true,
+  default: ({ reviewId, role, targetTable }: any) => (
+    <span data-testid='simple-review-actions'>{`${reviewId}:${role}:${targetTable}`}</span>
+  ),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -76,7 +84,7 @@ jest.mock('antd', () => {
   const Table = ({ columns = [], dataSource = [] }: any) => (
     <div data-testid='subtable'>
       {dataSource.map((row: any) => (
-        <div key={row.id}>
+        <div key={row.id ?? row.reference_review_id}>
           {columns.map((column: any, index: number) => (
             <div key={index}>
               {column.render
@@ -103,6 +111,7 @@ jest.mock('antd', () => {
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff', fontSize: 14 } }),
   };
+  const Tag = ({ children, color }: any) => <span data-color={color}>{children}</span>;
 
   return {
     __esModule: true,
@@ -113,6 +122,7 @@ jest.mock('antd', () => {
     Space,
     Spin,
     Table,
+    Tag,
     theme,
   };
 });
@@ -190,14 +200,13 @@ jest.mock('@ant-design/pro-components', () => ({
   ProTable: (props: any) => <MockProTable {...props} />,
 }));
 
-const mockGetLifeCycleModelSubTableDataBatch = jest.fn();
+const mockGetRootReviewReferenceProgress = jest.fn();
 const mockGetReviewsTableDataOfReviewAdmin = jest.fn();
 const mockGetReviewsTableDataOfReviewMember = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
-  getLifeCycleModelSubTableDataBatch: (...args: any[]) =>
-    mockGetLifeCycleModelSubTableDataBatch(...args),
+  getRootReviewReferenceProgress: (...args: any[]) => mockGetRootReviewReferenceProgress(...args),
   getReviewsTableDataOfReviewAdmin: (...args: any[]) =>
     mockGetReviewsTableDataOfReviewAdmin(...args),
   getReviewsTableDataOfReviewMember: (...args: any[]) =>
@@ -208,18 +217,19 @@ describe('AssignmentReview', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocale = 'en-US';
-    mockGetLifeCycleModelSubTableDataBatch.mockResolvedValue({
-      success: true,
-      data: {
-        'review-1': [
-          {
-            id: 'process-1',
-            name: 'Process 1',
-            version: '1.0.0',
-            sourceType: 'processInstance',
-          },
-        ],
-      },
+    mockGetRootReviewReferenceProgress.mockResolvedValue({
+      data: [
+        {
+          reference_review_id: 'reference-review-1',
+          target_table: 'flows',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 1,
+          reviewer_count: 2,
+          relation_paths: [{ path: ['process', 'flow'] }],
+        },
+      ],
+      error: null,
     });
     mockGetReviewsTableDataOfReviewAdmin.mockResolvedValue({
       success: true,
@@ -229,6 +239,8 @@ describe('AssignmentReview', () => {
           name: 'Model Review',
           userName: 'Owner',
           isFromLifeCycle: true,
+          reviewKind: 'root',
+          targetTable: 'lifecyclemodels',
           modelData: { id: 'model-1', version: '1.0.0' },
           json: {
             data: { id: 'model-1', version: '1.0.0' },
@@ -246,6 +258,8 @@ describe('AssignmentReview', () => {
           name: 'Process Review',
           userName: 'Reviewer',
           isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'processes',
           json: {
             data: { id: 'process-2', version: '2.0.0' },
             user: { id: 'user-2' },
@@ -281,7 +295,7 @@ describe('AssignmentReview', () => {
     },
   );
 
-  it('reloads the same table instance and lifecycle sub-table preload after locale changes', async () => {
+  it('reloads the same table instance and clears root-reference expansion after locale changes', async () => {
     const actionRef = { current: undefined };
     const { rerender } = render(
       <AssignmentReview
@@ -299,12 +313,11 @@ describe('AssignmentReview', () => {
         'en',
       ),
     );
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-1' }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
-        [{ reviewId: 'review-1', modelData: { id: 'model-1', version: '1.0.0' } }],
-        'en',
-      ),
+      expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledWith('review-1'),
     );
+    expect(screen.getByTestId('expanded-review-1')).toBeInTheDocument();
 
     mockLocale = 'de-DE';
     rerender(
@@ -323,16 +336,11 @@ describe('AssignmentReview', () => {
         'de',
       ),
     );
-    await waitFor(() =>
-      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
-        [{ reviewId: 'review-1', modelData: { id: 'model-1', version: '1.0.0' } }],
-        'de',
-      ),
-    );
     expect(screen.getAllByTestId('protable')).toHaveLength(1);
+    await waitFor(() => expect(screen.queryByTestId('expanded-review-1')).not.toBeInTheDocument());
   });
 
-  it('loads unassigned admin data, shows reviewer selection toolbar, and expands preloaded sub tables', async () => {
+  it('loads unassigned admin data, shows reviewer selection toolbar, and expands references', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 
     render(
@@ -351,18 +359,6 @@ describe('AssignmentReview', () => {
         'en',
       ),
     );
-    await waitFor(() =>
-      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
-        [
-          {
-            reviewId: 'review-1',
-            modelData: { id: 'model-1', version: '1.0.0' },
-          },
-        ],
-        'en',
-      ),
-    );
-
     expect(screen.getByTestId('search-input')).toHaveAttribute(
       'placeholder',
       'pages.search.keyWord',
@@ -374,7 +370,14 @@ describe('AssignmentReview', () => {
     expect(screen.getByTestId('select-reviewer')).toHaveTextContent('unassigned:["review-1"]');
 
     await userEvent.click(screen.getByRole('button', { name: 'expand-review-1' }));
-    await waitFor(() => expect(screen.getByText('Process 1')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledWith('review-1'),
+    );
+    expect(screen.getByText('flows')).toBeInTheDocument();
+    expect(screen.getByText('1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('In review')).toBeInTheDocument();
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText('{"path":["process","flow"]}')).toBeInTheDocument();
   });
 
   it('loads reviewer pending data without the top search card and renders process review actions', async () => {
@@ -447,7 +450,7 @@ describe('AssignmentReview', () => {
     );
 
     await waitFor(() => expect(screen.getByTestId('row-review-3')).toBeInTheDocument());
-    expect(screen.getByText('1/3')).toBeInTheDocument();
+    expect(screen.getByText('2/3')).toBeInTheDocument();
     expect(screen.getByTestId('review-lifecycle-detail')).toHaveTextContent(
       'view:assigned:review-3',
     );
@@ -487,6 +490,139 @@ describe('AssignmentReview', () => {
       'view:assigned:review-3b:show',
     );
     expect(screen.getByTestId('review-progress')).toHaveTextContent('review-3b:process');
+  });
+
+  it('renders simple root-data actions for an assigned admin review', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-contact',
+          name: 'Contact Review',
+          userName: 'Owner',
+          isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'contacts',
+          json: {
+            data: { id: 'contact-1', version: '1.0.0' },
+            user: { id: 'contact-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='assigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
+      'review-contact:admin:contacts',
+    );
+    expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
+      'href',
+      '/mydata/contacts?id=contact-1&version=1.0.0&mode=view',
+    );
+  });
+
+  it('renders simple actions for a pending reference review', async () => {
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-flow-reference',
+          name: 'Flow Reference Review',
+          userName: 'Reviewer',
+          isFromLifeCycle: false,
+          reviewKind: 'reference',
+          targetTable: 'flows',
+          json: {
+            data: { id: 'flow-1', version: '2.0.0' },
+            user: { id: 'flow-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='pending'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
+      'review-flow-reference:reviewer:flows',
+    );
+  });
+
+  it('keeps reviewed and rejected simple reviews view-only', async () => {
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-source-reference',
+          name: 'Source Reference Review',
+          userName: 'Reviewer',
+          isFromLifeCycle: false,
+          reviewKind: 'reference',
+          targetTable: 'sources',
+          json: {
+            data: { id: 'source-1', version: '3.0.0' },
+            user: { id: 'source-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    const { unmount } = render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='reviewed'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await screen.findByTestId('row-review-source-reference');
+    expect(screen.queryByTestId('simple-review-actions')).not.toBeInTheDocument();
+    unmount();
+
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-source-rejected',
+          name: 'Rejected Source Reference',
+          userName: 'Reviewer',
+          isFromLifeCycle: false,
+          reviewKind: 'reference',
+          targetTable: 'sources',
+          json: {
+            data: { id: 'source-2', version: '3.0.0' },
+            user: { id: 'source-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='reviewer-rejected'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await screen.findByTestId('row-review-source-rejected');
+    expect(screen.queryByTestId('simple-review-actions')).not.toBeInTheDocument();
   });
 
   it('renders rejected review tables as view-only actions for reviewer members', async () => {
@@ -618,11 +754,9 @@ describe('AssignmentReview', () => {
         'zh',
       ),
     );
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-1' }));
     await waitFor(() =>
-      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
-        [{ reviewId: 'review-1', modelData: { id: 'model-1', version: '1.0.0' } }],
-        'zh',
-      ),
+      expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledWith('review-1'),
     );
   });
 
@@ -704,11 +838,15 @@ describe('AssignmentReview', () => {
     expect(details[1]).toHaveTextContent('view:review:review-8b');
   });
 
-  it('logs preload failures, shows loading fallback for lifecycle sub tables, and supports collapsing rows', async () => {
+  it('logs reference query failures, shows loading, and supports collapsing root rows', async () => {
     const actionRef = { current: { reload: jest.fn() } };
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-
-    mockGetLifeCycleModelSubTableDataBatch.mockRejectedValueOnce(new Error('preload failed'));
+    let resolveReferenceRequest: (result: unknown) => void = () => undefined;
+    mockGetRootReviewReferenceProgress.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveReferenceRequest = resolve;
+      }),
+    );
     mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
       success: true,
       data: [
@@ -717,6 +855,8 @@ describe('AssignmentReview', () => {
           name: 'Model Review',
           userName: 'Owner',
           isFromLifeCycle: true,
+          reviewKind: 'root',
+          targetTable: 'lifecyclemodels',
           modelData: { id: 'model-6', version: '6.0.0' },
           json: {
             data: { id: 'model-6', version: '6.0.0' },
@@ -735,12 +875,15 @@ describe('AssignmentReview', () => {
       />,
     );
 
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-6' }));
+    expect(await screen.findByTestId('spin')).toBeInTheDocument();
+    resolveReferenceRequest({ data: [], error: new Error('reference query failed') });
     await waitFor(() =>
-      expect(errorSpy).toHaveBeenCalledWith('Failed to preload sub table data:', expect.any(Error)),
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Failed to load reference review data:',
+        expect.any(Error),
+      ),
     );
-
-    await userEvent.click(screen.getByRole('button', { name: 'expand-review-6' }));
-    expect(screen.getByTestId('spin')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'collapse-review-6' }));
     await waitFor(() => expect(screen.queryByTestId('expanded-review-6')).not.toBeInTheDocument());
@@ -748,28 +891,39 @@ describe('AssignmentReview', () => {
     errorSpy.mockRestore();
   });
 
-  it('renders primary and secondary submodel labels in expanded lifecycle rows', async () => {
+  it('renders every reference status and empty relation-path fallback in expanded root rows', async () => {
     const actionRef = { current: { reload: jest.fn() } };
-    mockGetLifeCycleModelSubTableDataBatch.mockResolvedValueOnce({
-      success: true,
-      data: {
-        'review-7': [
-          {
-            id: 'process-primary',
-            name: 'Primary Process',
-            version: '1.0.0',
-            sourceType: 'submodel',
-            submodelType: 'primary',
-          },
-          {
-            id: 'process-secondary',
-            name: 'Secondary Process',
-            version: '1.0.0',
-            sourceType: 'submodel',
-            submodelType: 'secondary',
-          },
-        ],
-      },
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'reference-approved',
+          target_table: 'processes',
+          data_version: '1.0.0',
+          state_code: 2,
+          completed_reviewer_count: 2,
+          reviewer_count: 2,
+          relation_paths: [],
+        },
+        {
+          reference_review_id: 'reference-rejected',
+          target_table: 'sources',
+          data_version: '2.0.0',
+          state_code: -1,
+          completed_reviewer_count: 1,
+          reviewer_count: 1,
+          relation_paths: null,
+        },
+        {
+          reference_review_id: 'reference-unassigned',
+          target_table: 'contacts',
+          data_version: '3.0.0',
+          state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 0,
+          relation_paths: [{ source: 'reviewer-added' }],
+        },
+      ],
+      error: null,
     });
     mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
       success: true,
@@ -779,6 +933,8 @@ describe('AssignmentReview', () => {
           name: 'Lifecycle Review',
           userName: 'Owner',
           isFromLifeCycle: true,
+          reviewKind: 'root',
+          targetTable: 'lifecyclemodels',
           modelData: { id: 'model-7', version: '7.0.0' },
           json: {
             data: { id: 'model-7', version: '7.0.0' },
@@ -799,8 +955,13 @@ describe('AssignmentReview', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'expand-review-7' }));
 
-    expect(screen.getByText('Primary Product')).toBeInTheDocument();
-    expect(screen.getByText('Secondary Product')).toBeInTheDocument();
+    expect(await screen.findByText('Approved')).toBeInTheDocument();
+    expect(screen.getByText('Rejected')).toBeInTheDocument();
+    expect(screen.getByText('Unassigned')).toBeInTheDocument();
+    expect(screen.getByText('2/2')).toBeInTheDocument();
+    expect(screen.getByText('0/0')).toBeInTheDocument();
+    expect(screen.getAllByText('-')).toHaveLength(2);
+    expect(screen.getByText('{"source":"reviewer-added"}')).toBeInTheDocument();
   });
 
   it('returns an empty success payload when the table type is unsupported and falls back on request errors', async () => {
