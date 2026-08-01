@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated qualification adapter retain the existing dev PR, docpact, lint, coverage, build, and managed-gate policy.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing normal dev PR, managed-push, production-authorization, and release-trigger policy.'
 ---
 
 # Pre-Push Gate Policy

@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: focused unified-review coverage and isolated Chromium proof for artifact states, direct downloads, localization, and every relevant role create no repository-wide coverage backlog item.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: 60 passes, 24 designed skips, complete 49-ID closure, zero external requests, and zero production writes create no repository-wide coverage backlog item.'
 ---
 
 # Testing Execution State
@@ -61,6 +61,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
+- Issue #756 qualifies exact `dev` commit `4680e5a7ab67800268ae1627af999a4480cea646` for the v0.0.65 promotion: 48 canonical cases plus 12 harness-control cases passed across Chromium, Firefox, and WebKit, 24 designed cases skipped, all 49 assertion IDs closed, and external requests and production writes remained zero. The generated receipt must merge through the normal `dev` PR flow before production-readiness proof resumes from the resulting clean candidate.
 - Issue #743 first refreshed the credential-free semantic-harness qualification for exact `dev` commit `3ac0ca60a7370d767ca003342180bb51f1b2dd7d`; that receipt merged through PR #744 before the clean production run. The evidence-bearing v0.0.64 commit `1cf3f5accdbf4ef745022ed69d8815e851df833f` was then requalified with 48 canonical cases plus 12 harness-control cases passed, 24 designed cases skipped, all 49 assertion IDs closed, and external requests, production writes, and cleanup residue all zero. The receipt path remains outside its own qualification digest, so committing this generated receipt preserves the qualified input identity.
 - Issue #704 tracks two harness defects observed during authenticated production evidence refreshes. The evidence-writer repair now resolves the repository-owned Prettier configuration independently of `/e2e-output` and gives the checker a read-only external-artifact path, so raw container bytes can satisfy the same canonical contract without host normalization. The separate argument-free `e2e:release:resume` dispatch defect remains open under #704.
 - Issue #660 keeps production-data E2E fail-closed on real CI hosts while allowing an authorized local run to override only the release image's inherited `CI`/`GITHUB_ACTIONS` markers before the unchanged in-container authorization and ledger checks

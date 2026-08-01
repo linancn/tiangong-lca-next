@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: retain focused unit, service-boundary, locale, semantic localization E2E, and managed-gate patterns while adding the exact-commit loopback-only scope-closure qualification pattern.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt and complete 49-ID binding validate the existing semantic E2E and managed-gate patterns.'
 ---
 
 # Testing Patterns Reference

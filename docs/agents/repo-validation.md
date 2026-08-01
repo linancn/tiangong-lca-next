@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: retain focused unified-review proof and the managed full gate, and add exact-clean-commit loopback browser qualification that emits only non-sensitive Next consumer leaves for Worker aggregation.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed, and external requests and production writes stayed zero; the receipt, preflight, and managed-gate flow remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

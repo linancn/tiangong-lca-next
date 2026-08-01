@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated exact-commit scope-closure adapter preserve frontend ownership, dev-first branch policy, production-write authorization, validation gates, and root integration ownership.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt does not alter frontend ownership, dev-first branch policy, production-write authorization, validation gates, or root integration ownership.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
