@@ -2709,6 +2709,10 @@ describe('DataProcessing page', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Check data completeness' })).not.toBeDisabled(),
     );
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: '?closureCheckId=closure-new&tab=builds',
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
     await waitFor(() => expect(mockCreateClosureCheck).toHaveBeenCalledTimes(2));
     expect(mockCreateClosureCheck.mock.calls[0][0].requestIdempotencyToken).toEqual(

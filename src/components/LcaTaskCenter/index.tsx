@@ -1,3 +1,4 @@
+import ClosureTaskDetail from '@/components/ClosureTaskDetail';
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
 import {
   listDataProductTasks,
@@ -59,6 +60,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Empty,
   Modal,
@@ -2026,9 +2028,13 @@ const LcaTaskCenter: React.FC = () => {
 
   useEffect(() => {
     setExpandedTaskKeys((current) =>
-      current.filter((key) => items.some((item) => taskItemKey(item) === key)),
+      current.filter(
+        (key) =>
+          items.some((item) => taskItemKey(item) === key) ||
+          dataProductTasks.some((task) => `data-product:${task.id}` === key),
+      ),
     );
-  }, [items]);
+  }, [dataProductTasks, items]);
 
   const handleDownload = async (task: TidasPackageBackgroundTask) => {
     try {
@@ -2223,6 +2229,13 @@ const LcaTaskCenter: React.FC = () => {
             ) : (
               <>
                 {visibleDataProductTasks.map((task, index) => {
+                  const itemKey = `data-product:${task.id}`;
+                  const isClosureCheck = task.jobKind === 'lcia.scope_closure_check';
+                  const closureCheckId =
+                    task.deepLink?.routeKey === 'data_product.closure_check'
+                      ? task.deepLink.params.closureCheckId
+                      : task.closureCheckId;
+                  const expanded = expandedTaskKeys.includes(itemKey);
                   const taskHref = `/data-processing?${new URLSearchParams({
                     tab: 'builds',
                     ...(task.deepLink?.routeKey === 'data_product.closure_check' &&
@@ -2307,13 +2320,68 @@ const LcaTaskCenter: React.FC = () => {
                         </div>
                       </Space>
                       <Space size={6} wrap>
-                        <Button size='small' type='link' href={taskHref} icon={<EyeOutlined />}>
-                          {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.openWorkbench',
-                            defaultMessage: 'Open',
-                          })}
-                        </Button>
+                        {isClosureCheck ? (
+                          <Tooltip
+                            title={intl.formatMessage({
+                              id: 'pages.process.lca.taskCenter.view',
+                              defaultMessage: 'View',
+                            })}
+                          >
+                            <Button
+                              aria-label={intl.formatMessage({
+                                id: 'pages.process.lca.taskCenter.view',
+                                defaultMessage: 'View',
+                              })}
+                              icon={<EyeOutlined />}
+                              size='small'
+                              type='text'
+                              style={expanded ? { color: token.colorPrimary } : undefined}
+                              onClick={() => {
+                                setExpandedTaskKeys((current) =>
+                                  current.includes(itemKey)
+                                    ? current.filter((key) => key !== itemKey)
+                                    : [...current, itemKey],
+                                );
+                              }}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Button size='small' type='link' href={taskHref} icon={<EyeOutlined />}>
+                            {intl.formatMessage({
+                              id: 'pages.process.lca.taskCenter.openWorkbench',
+                              defaultMessage: 'Open',
+                            })}
+                          </Button>
+                        )}
                       </Space>
+                      {expanded && isClosureCheck ? (
+                        <div
+                          style={{
+                            background: token.colorFillSecondary,
+                            borderRadius: 6,
+                            gridColumn: '1 / -1',
+                            marginTop: 2,
+                            padding: '12px 14px',
+                          }}
+                        >
+                          {closureCheckId ? (
+                            <ClosureTaskDetail
+                              canDownloadReport={task.capabilities.canDownloadReport}
+                              closureCheckId={closureCheckId}
+                              errorSummary={task.errorSummary}
+                              refreshSignal={`${task.workerStatus}:${task.updatedAt}`}
+                            />
+                          ) : (
+                            <Alert
+                              type='error'
+                              message={intl.formatMessage({
+                                id: 'pages.dataProcessing.closure.detailUnavailable',
+                                defaultMessage: 'Task details are currently unavailable.',
+                              })}
+                            />
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}

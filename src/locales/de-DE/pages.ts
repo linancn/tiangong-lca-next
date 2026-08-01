@@ -232,6 +232,8 @@ export default {
   'pages.dataProcessing.closure.artifact.unavailable': 'Dieses Artefakt ist nicht verfügbar.',
   'pages.dataProcessing.closure.certificate': 'Zertifikat',
   'pages.dataProcessing.closure.completeness': 'Vollständigkeit des Scans',
+  'pages.dataProcessing.closure.detailLoading': 'Aufgabendetails werden geladen …',
+  'pages.dataProcessing.closure.detailUnavailable': 'Die Aufgabendetails sind derzeit nicht verfügbar.',
   'pages.dataProcessing.closure.error.currentReleaseRequired': 'Die aktuelle öffentliche Veröffentlichung oder Momentaufnahme ist nicht verfügbar; ein Zertifikat kann nicht ausgestellt werden.',
   'pages.dataProcessing.closure.error.evidenceHashMismatch': 'Die Integritätsprüfung der Vollständigkeitsnachweise ist fehlgeschlagen.',
   'pages.dataProcessing.closure.error.evidenceUnavailable': 'Die aktuelle öffentliche Veröffentlichung oder Momentaufnahme ist nicht verfügbar; ein Zertifikat kann nicht ausgestellt werden.',
