@@ -29,8 +29,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 31081bd3fbbcaacacd53613860af49941935953c
+lastReviewedAt: 2026-08-01
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
 lastReviewedNote: 'Reviewed for Issues #745 and #748: unified dataset review and the isolated qualification adapter retain the existing dev PR, docpact, lint, coverage, build, and managed-gate policy.'
 ---
 

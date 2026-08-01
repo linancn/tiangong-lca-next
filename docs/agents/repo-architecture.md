@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issues #745 and #748: document the unified dataset-review experience while keeping the scope-closure adapter in the repo testing layer without taking ownership from Database, Edge, Worker, or root orchestration.'
+lastReviewedAt: 2026-08-01
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
+lastReviewedNote: 'Reviewed for Issue #754: document inline Task Center closure-detail recovery and capability-gated artifact downloads without changing backend or result-package ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -103,7 +103,7 @@ The task-center recovery path is:
 
 `src/components/LcaTaskCenter/index.tsx -> src/services/dataProducts/taskCenter.ts -> app_data_product_commands:list_task_feed`
 
-Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, and deep-link navigation. It maps the backend's typed artifact states to explicit preparing, available, expired, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, inline Task Center closure-detail recovery, and result-package deep-link navigation. Expanding a `lcia.scope_closure_check` task resolves its safe `closureCheckId` through `get_closure_check`, keeps lifecycle polling and artifact expiry client-bounded, and exposes only role-specific signed downloads allowed by the task capability projection; it does not decode raw worker or storage data. Next maps the backend's typed artifact states to explicit preparing, available, expired, failed, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
 
 The repo-owned qualification adapter runs this actual page from an exact clean detached commit with a loopback-only backend contract. It proves the established anonymous, standard-user, admin/owner, and Data Product Manager route boundary plus artifact lifecycle, metadata, direct-navigation, and localized 410 behavior. Its provider-owned record contributes only Next consumer assertions; root and Worker orchestration remain authoritative for cross-provider aggregation and release qualification.
 
