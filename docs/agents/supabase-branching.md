@@ -18,13 +18,15 @@ checkPaths:
   - docs/agents/supabase-branching.md
   - config/supabaseEnv.ts
   - src/services/**
+  - contracts/supabase-consumer-manifest.v3*.json
+  - scripts/supabase-consumer-manifest*.cjs
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-31
-lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: frontend environment selection and app-side service ownership remain unchanged; Database and Edge retain review schema, authorization, and command truth.'
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedNote: 'Reviewed for Issue #753: candidate consumer evidence preserves frontend environment selection and app-side ownership; Database and Edge retain schema, ACL, authorization, and hosted truth.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -64,6 +66,7 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- every shipped Supabase call site remains covered by the v3 candidate manifest and committed-delivery zero-drift check; dynamic surfaces stay pending, and the artifact never authorizes consumer-zero, database freeze, hosted mutation, merge, or deployment
 - `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names

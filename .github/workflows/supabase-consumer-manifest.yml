@@ -1,0 +1,33 @@
+name: Supabase Consumer Manifest
+
+on:
+  pull_request:
+    paths:
+      - 'config/**'
+      - 'electron/**'
+      - 'src/**'
+      - 'contracts/supabase-consumer-manifest.v3.json'
+      - 'contracts/supabase-consumer-manifest.v3.schema.json'
+      - 'scripts/supabase-consumer-manifest.cjs'
+      - 'scripts/supabase-consumer-manifest.test.cjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/supabase-consumer-manifest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run supabase-consumer-manifest:check

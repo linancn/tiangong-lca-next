@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-02"
-lastReviewedCommit: "4680e5a7ab67800268ae1627af999a4480cea646"
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the 60-pass/24-designed-skip, zero-external-request, zero-production-write result preserves the existing routing, testing-gate, release, and workspace-integration boundaries.'
+lastReviewedAt: '2026-08-02'
+lastReviewedCommit: '33409ce1336d9cdfb3916d38a155cbf1c73bb7ab'
+lastReviewedNote: 'Reviewed for Issue #753: route and enforce the exact candidate Supabase consumer manifest, canonical schema, AST verifier, adversarial suite, and pull-request gate.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -69,6 +69,10 @@ ownership:
           - scripts/qualification/**
           - scripts/i18n/**
           - scripts/reference-data/**
+          - scripts/supabase-consumer-manifest.cjs
+          - scripts/supabase-consumer-manifest.test.cjs
+          - contracts/supabase-consumer-manifest.v3.json
+          - contracts/supabase-consumer-manifest.v3.schema.json
       ownerRepo: next
 
 coverage:
@@ -82,6 +86,7 @@ coverage:
     - docs/agents/repo-architecture.md
     - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
+    - docs/agents/supabase-consumer-manifest.md
     - docs/agents/test_todo_list.md
     - docs/agents/testing-patterns.md
     - docs/agents/testing-troubleshooting.md
@@ -123,6 +128,10 @@ coverage:
     - scripts/qualification/**
     - scripts/i18n/**
     - scripts/reference-data/**
+    - scripts/supabase-consumer-manifest.cjs
+    - scripts/supabase-consumer-manifest.test.cjs
+    - contracts/supabase-consumer-manifest.v3.json
+    - contracts/supabase-consumer-manifest.v3.schema.json
   exclude:
     - node_modules/**
     - dist/**
@@ -159,6 +168,9 @@ routing:
         - src/services/general/localeRegistry.ts
         - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
+        - contracts/supabase-consumer-manifest.v3.json
+        - contracts/supabase-consumer-manifest.v3.schema.json
+        - scripts/supabase-consumer-manifest.cjs
         - docker/**
     testing-gates:
       paths:
@@ -178,6 +190,10 @@ routing:
         - scripts/qualification/**
         - scripts/i18n/**
         - scripts/reference-data/**
+        - scripts/supabase-consumer-manifest.cjs
+        - scripts/supabase-consumer-manifest.test.cjs
+        - contracts/supabase-consumer-manifest.v3.json
+        - contracts/supabase-consumer-manifest.v3.schema.json
         - tests/**
         - tests/e2e/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -203,6 +219,7 @@ routing:
         - docs/agents/repo-architecture.md
         - docs/agents/i18n-language-delivery-goal.md
         - docs/agents/supabase-branching.md
+        - docs/agents/supabase-consumer-manifest.md
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
         - docs/agents/testing-troubleshooting.md
@@ -303,6 +320,7 @@ docInventory:
     - docs/agents/repo-architecture.md
     - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
+    - docs/agents/supabase-consumer-manifest.md
     - docs/agents/test_todo_list.md
     - docs/agents/testing-patterns.md
     - docs/agents/testing-troubleshooting.md
@@ -498,6 +516,40 @@ rules:
       - path: docs/agents/repo-architecture.md
         mode: review_or_update
     reason: Frontend runtime and app-shell support changes alter the shipped product surface and should refresh the repo routing, proof rules, and architecture map.
+  - id: next-supabase-consumer-manifest-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: src/**
+        kind: governed-shipped-source
+      - path: config/**
+        kind: governed-shipped-config
+      - path: electron/**
+        kind: governed-shipped-desktop-source
+      - path: contracts/supabase-consumer-manifest.v3.json
+        kind: consumer-manifest
+      - path: contracts/supabase-consumer-manifest.v3.schema.json
+        kind: evidence-schema
+      - path: scripts/supabase-consumer-manifest.cjs
+        kind: independent-derivation-gate
+      - path: scripts/supabase-consumer-manifest.test.cjs
+        kind: adversarial-proof
+      - path: .github/workflows/supabase-consumer-manifest.yml
+        kind: pull-request-gate
+      - path: docs/agents/supabase-consumer-manifest.md
+        kind: consumer-manifest-contract
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+      - path: docs/agents/supabase-branching.md
+        mode: review_or_update
+      - path: docs/agents/supabase-consumer-manifest.md
+        mode: review_or_update
+    reason: Shipped Supabase consumers and their candidate evidence must keep exact AST occurrence closure, schema bytes, delivery-tree provenance, non-authorizing residue, CI, and validation guidance aligned.
   - id: next-data-boundary-contract
     scope: repo
     repo: next

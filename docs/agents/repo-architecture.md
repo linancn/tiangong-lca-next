@@ -22,12 +22,14 @@ checkPaths:
   - public/**
   - docker/**
   - scripts/e2e/**
+  - scripts/supabase-consumer-manifest*.cjs
+  - contracts/supabase-consumer-manifest.v3*.json
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issue #754: document inline Task Center closure-detail recovery and capability-gated artifact downloads without changing backend or result-package ownership.'
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedNote: 'Reviewed for Issue #753: the v3 consumer evidence paths describe the existing shipped data boundary and preserve Database, Edge, release, and workspace ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -52,6 +54,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
+| `contracts/supabase-consumer-manifest.v3*.json`, `scripts/supabase-consumer-manifest*.cjs` | non-authorizing exact consumer inventory, canonical schema, Git-tree AST derivation, delivery zero-drift guard, and adversarial proof |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |

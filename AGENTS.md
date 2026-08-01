@@ -27,14 +27,16 @@ checkPaths:
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/qualification/**
+  - scripts/supabase-consumer-manifest*.cjs
+  - contracts/supabase-consumer-manifest.v3*.json
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt does not alter frontend ownership, dev-first branch policy, production-write authorization, validation gates, or root integration ownership.'
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedNote: 'Reviewed for Issue #753: the exact Supabase consumer manifest remains candidate/non-authorizing and does not alter frontend ownership, dev-first branch policy, production-write authorization, or root integration ownership.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -150,6 +152,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - protected-branch parity gate: `npm run prepush:gate`
 - credential-free production preflight for main candidates: `npm run release:preflight`
 - app-side Supabase and API access belongs only in `src/services/**`
+- exact Supabase consumer evidence is owned by `contracts/supabase-consumer-manifest.v3.json`, its canonical JSON Schema, and `scripts/supabase-consumer-manifest.cjs`; it remains candidate/non-authorizing while public residue or pending consumers exist
 
 ## Ownership Boundaries
 
@@ -203,6 +206,7 @@ Use the role table in this file as the update map.
 - do not author schema or migration truth here
 - do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- do not destructure or detach Supabase capability methods, introduce a browser service-role credential, or claim consumer-zero from the candidate consumer manifest
 - do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial
 - do not use the screenshot executor for data creation or mutation; only the explicit authentication/session exchange may use non-GET requests
 - do not treat a merged repo PR here as workspace-delivery complete if the root repo still needs a submodule bump

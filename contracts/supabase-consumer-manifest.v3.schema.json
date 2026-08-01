@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tiangong-lca.dev/contracts/next-supabase-consumer-manifest.v3.schema.json",
+  "title": "TianGong Next Supabase consumer manifest v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema",
+    "version",
+    "repository",
+    "baseCommit",
+    "sourceTreeCommit",
+    "authority",
+    "source",
+    "executionProfiles",
+    "residue",
+    "summary",
+    "occurrences"
+  ],
+  "properties": {
+    "$schema": { "const": "./supabase-consumer-manifest.v3.schema.json" },
+    "schema": { "const": "tiangong.supabase-consumer-manifest.v3" },
+    "version": { "const": 3 },
+    "repository": { "const": "linancn/tiangong-lca-next" },
+    "baseCommit": { "$ref": "#/$defs/commit" },
+    "sourceTreeCommit": { "$ref": "#/$defs/commit" },
+    "authority": {
+      "const": {
+        "status": "candidate",
+        "authorizesConsumerZero": false,
+        "authorizesDatabaseFreeze": false,
+        "authorizesHostedMutation": false
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "derivation",
+        "pathPatterns",
+        "deliveryGuard",
+        "auditToolPathAllowlist",
+        "governedSourceTreeSha256",
+        "symlinkPolicy",
+        "nonRegularFilePolicy",
+        "setEquality",
+        "manifestSelfReference",
+        "schemaPath",
+        "schemaSha256"
+      ],
+      "properties": {
+        "derivation": { "const": "typescript-ast-plus-json-git-tree-v3" },
+        "pathPatterns": {
+          "const": [
+            "config/**/*.{cjs,js,jsx,json,mjs,ts,tsx}",
+            "electron/**/*.{cjs,js,jsx,json,mjs,ts,tsx}",
+            "src/**/*.{cjs,js,jsx,json,mjs,ts,tsx}"
+          ]
+        },
+        "deliveryGuard": { "const": "exact-filtered-tree-entries-equal" },
+        "auditToolPathAllowlist": {
+          "const": [
+            "scripts/supabase-consumer-manifest.cjs",
+            "scripts/supabase-consumer-manifest.test.cjs"
+          ]
+        },
+        "governedSourceTreeSha256": { "$ref": "#/$defs/sha256" },
+        "symlinkPolicy": { "const": "reject" },
+        "nonRegularFilePolicy": { "const": "reject" },
+        "setEquality": { "const": "bidirectional-exact-global-exactly-once" },
+        "manifestSelfReference": { "const": "excluded-by-governed-source-roots" },
+        "schemaPath": { "const": "contracts/supabase-consumer-manifest.v3.schema.json" },
+        "schemaSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "executionProfiles": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "credential", "status"],
+        "properties": {
+          "name": { "enum": ["browser", "ssr", "service-role"] },
+          "credential": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "residue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["consumerZero", "publicResidue", "pendingConsumers", "statement"],
+      "properties": {
+        "consumerZero": { "const": false },
+        "publicResidue": { "$ref": "#/$defs/idList" },
+        "pendingConsumers": { "$ref": "#/$defs/idList" },
+        "statement": {
+          "const": "Candidate inventory only; public residue and pending consumers remain and no authorization is granted."
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["occurrences", "byTransport", "byCredential", "bySchema"],
+      "properties": {
+        "occurrences": { "type": "integer", "minimum": 1 },
+        "byTransport": { "$ref": "#/$defs/countMap" },
+        "byCredential": { "$ref": "#/$defs/countMap" },
+        "bySchema": { "$ref": "#/$defs/countMap" }
+      }
+    },
+    "occurrences": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/occurrence" }
+    }
+  },
+  "$defs": {
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "idList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^occ-[0-9a-f]{24}$" }
+    },
+    "countMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line", "column", "offset"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "offset": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "occurrence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "span",
+        "operation",
+        "transport",
+        "credential",
+        "executionProfile",
+        "schema",
+        "object",
+        "signature",
+        "acl",
+        "semantics",
+        "upstream",
+        "id"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^occ-[0-9a-f]{24}$" },
+        "file": { "type": "string", "pattern": "^(config|electron|src)/" },
+        "span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "$ref": "#/$defs/position" },
+            "end": { "$ref": "#/$defs/position" }
+          }
+        },
+        "operation": { "type": "string", "minLength": 1 },
+        "transport": {
+          "enum": [
+            "edge-function",
+            "postgrest",
+            "postgrest-profile",
+            "postgrest-rpc",
+            "raw-signed-fetch",
+            "realtime",
+            "storage",
+            "supabase-auth",
+            "supabase-client",
+            "supabase-platform-config"
+          ]
+        },
+        "credential": { "type": "string", "minLength": 1 },
+        "executionProfile": { "type": "string", "minLength": 1 },
+        "schema": { "type": "string", "minLength": 1 },
+        "object": { "type": "string", "minLength": 1 },
+        "signature": { "type": "string", "minLength": 1 },
+        "acl": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["expectedRoles", "basis", "verified"],
+          "properties": {
+            "expectedRoles": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "basis": { "type": "string", "minLength": 1 },
+            "verified": { "const": false }
+          }
+        },
+        "semantics": { "type": "string", "minLength": 1 },
+        "upstream": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner", "issue", "status"],
+          "properties": {
+            "owner": { "type": "string", "minLength": 1 },
+            "issue": { "type": ["string", "null"] },
+            "status": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

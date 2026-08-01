@@ -27,11 +27,13 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - scripts/test-runner.cjs
+  - scripts/supabase-consumer-manifest*.cjs
+  - contracts/supabase-consumer-manifest.v3*.json
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed, and external requests and production writes stayed zero; the receipt, preflight, and managed-gate flow remains accurate.'
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedNote: 'Reviewed for Issue #753: candidate Supabase consumer evidence adds exact AST, schema, delivery-tree, adversarial, PR-CI, lint, and build proof without authorizing hosted validation or consumer-zero.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -71,6 +73,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
+| Supabase consumer manifest, schema, derivation, or governed source | `npm run supabase-consumer-manifest:check`; `npm run docpact:gate`; `npm run lint`; `npm run build` | final `npm run prepush:gate`; Database #357 exact-byte external verification and joint browser/SSR/Realtime test | The manifest stays candidate/non-authorizing, retains public residue and pending consumers, and must verify again from the committed delivery HEAD. |
 | Process keyword search service or LCA picker scope | focused `tests/unit/services/processes/api.test.ts` plus the Process full-text data-workflow unit; `npm run lint`; `npm run build` | smoke against the exact non-production Database revision that exposes `search_processes_latest_v2`; cover public, personal, and `public_plus_owner_draft` scopes | Assert explicit `query_terms`, no direct app-side ILIKE field filter, and `owner_draft_only=true` only for the personal branch of the strict calculation scope. Database owns latest-version, owner/team/review, and `extracted_md` index semantics. |
 | Contact, FlowProperty, Source, or UnitGroup Hybrid Search service/page/picker | `npm run lint`; focused shared-helper, four service, four main-page, four picker, locale-contract, and production-request-guard Jest suites; `npm run build` | final `npm run prepush:gate` through `push:checked`; smoke the exact non-production frontend against matching Database and Edge revisions for `tg`/`co`/`my`/`te` | Keep UUID and empty-keyword paths unchanged; verify state/team forwarding and Team Data without a selected team; auth, transport, malformed-response, and mapping failures must remain `success: false` rather than a successful empty result. New read-only Edge paths require an exact production-request-guard allowlist entry. |
 | persisted Calculation Bundle or public release readback | `npm run lint`; focused `lcaReleases`, `CalculationBundlePanel`, `LcaReleaseReadPanel`, Data Processing, Process view, and locale tests; `npm run i18n:audit`; `npm run build` | `npm run prepush:gate`; paired Database RPC, Edge projection, Worker bundle, and deterministic package proof; live smoke only when a deployed environment and user credentials are available | private bundle reads use the user session; raw downloads must verify stored byte size and SHA-256 before Blob save; public release reads expose sanitized projections and short-lived artifact downloads only |
