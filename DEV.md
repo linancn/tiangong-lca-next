@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issues #745 and #748: local bootstrap now includes isolated exact-commit browser qualification while retaining the focused validation, dev PR, managed gate, promotion, production-data, and workspace-integration sequence.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing clean qualification, normal dev PR, production-preflight, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap
