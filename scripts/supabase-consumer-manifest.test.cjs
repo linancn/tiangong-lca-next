@@ -13,11 +13,14 @@ const SCRIPT = path.join(REPO, 'scripts/supabase-consumer-manifest.cjs');
 const SCHEMA = path.join(REPO, 'contracts/supabase-consumer-manifest.v3.schema.json');
 
 function run(cwd, command, args, expected = 0) {
+  const inheritedEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+  );
   const result = spawnSync(command, args, {
     cwd,
     encoding: 'utf8',
     env: {
-      ...process.env,
+      ...inheritedEnv,
       NODE_PATH: [path.join(REPO, 'node_modules'), process.env.NODE_PATH]
         .filter(Boolean)
         .join(path.delimiter),
@@ -125,6 +128,34 @@ test('positive: exact AST occurrence set, schema, and source/delivery trees veri
   } finally {
     cleanup(fixture);
   }
+});
+
+test('positive: hostile outer hook Git environment cannot escape the fixture', () => {
+  const keys = [
+    'GIT_DIR',
+    'GIT_WORK_TREE',
+    'GIT_COMMON_DIR',
+    'GIT_INDEX_FILE',
+    'GIT_OBJECT_DIRECTORY',
+    'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  ];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  const repoHead = git(REPO, 'rev-parse', 'HEAD');
+  const repoStatus = git(REPO, 'status', '--porcelain=v1');
+  let fixture;
+  try {
+    for (const key of keys) process.env[key] = path.join(os.tmpdir(), `hostile-${key}`);
+    fixture = createFixture();
+    verify(fixture);
+  } finally {
+    if (fixture) cleanup(fixture);
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+  assert.equal(git(REPO, 'rev-parse', 'HEAD'), repoHead);
+  assert.equal(git(REPO, 'status', '--porcelain=v1'), repoStatus);
 });
 
 for (const [name, mutate] of [
