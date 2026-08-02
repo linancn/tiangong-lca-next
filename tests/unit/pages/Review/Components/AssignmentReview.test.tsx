@@ -1,5 +1,7 @@
 // @ts-nocheck
-import AssignmentReview from '@/pages/Review/Components/AssignmentReview';
+import AssignmentReview, {
+  isReferenceMatchingReviewTab,
+} from '@/pages/Review/Components/AssignmentReview';
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '../../../../helpers/testUtils';
@@ -68,8 +70,14 @@ jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
 
 jest.mock('@/pages/Review/Components/SimpleReviewActions', () => ({
   __esModule: true,
-  default: ({ reviewId, role, targetTable }: any) => (
-    <span data-testid='simple-review-actions'>{`${reviewId}:${role}:${targetTable}`}</span>
+  default: ({ reviewId, role, targetTable, actionRef }: any) => (
+    <button
+      type='button'
+      data-testid='simple-review-actions'
+      onClick={() => actionRef?.current?.reload?.()}
+    >
+      {`${reviewId}:${role}:${targetTable}`}
+    </button>
   ),
 }));
 
@@ -279,6 +287,21 @@ describe('AssignmentReview', () => {
       ],
       total: 1,
     });
+  });
+
+  it.each([
+    ['unassigned', { state_code: 0 }, true],
+    ['assigned', { state_code: 1 }, true],
+    ['admin-rejected', { state_code: -1 }, true],
+    ['pending', { state_code: 1, actor_comment_state_code: 0 }, true],
+    ['pending', { state_code: 0, actor_comment_state_code: 0 }, false],
+    ['reviewed', { state_code: 1, actor_comment_state_code: 1 }, true],
+    ['reviewed', { state_code: 0, actor_comment_state_code: 1 }, false],
+    ['reviewer-rejected', { state_code: -1, actor_comment_state_code: -1 }, true],
+    ['reviewer-rejected', { state_code: 1, actor_comment_state_code: -1 }, false],
+    ['unsupported', { state_code: 1 }, false],
+  ])('matches reference state against the %s tab', (tableType, record, expected) => {
+    expect(isReferenceMatchingReviewTab(record as any, tableType as any)).toBe(expected);
   });
 
   it.each(
@@ -705,6 +728,43 @@ describe('AssignmentReview', () => {
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'review-flow-reference:reviewer:flows',
     );
+    await userEvent.click(screen.getByTestId('simple-review-actions'));
+    await waitFor(() => expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('expanded-root-for-flow-reference')).not.toBeInTheDocument();
+  });
+
+  it('renders reviewer actions for a matching simple root review', async () => {
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'pending-contact-root',
+          name: 'Contact root',
+          userName: 'Reviewer',
+          isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'contacts',
+          rootMatchesStatus: true,
+          json: {
+            data: { id: 'contact-1', version: '1.0.0' },
+            user: { id: 'contact-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='pending'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
+      'pending-contact-root:reviewer:contacts',
+    );
   });
 
   it('keeps reviewed and rejected simple reviews view-only', async () => {
@@ -828,8 +888,21 @@ describe('AssignmentReview', () => {
             user: { id: 'user-5' },
           },
         },
+        {
+          id: 'review-5-context-only',
+          name: 'Context-only rejected root',
+          userName: 'Owner',
+          isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'processes',
+          rootMatchesStatus: false,
+          json: {
+            data: { id: 'process-context', version: '1.0.0' },
+            user: { id: 'user-context' },
+          },
+        },
       ],
-      total: 1,
+      total: 2,
     });
 
     render(
@@ -857,6 +930,21 @@ describe('AssignmentReview', () => {
 
   it('renders the reviewed subtitle for reviewed member tables', async () => {
     const actionRef = { current: { reload: jest.fn() } };
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'reviewed-reference',
+          target_table: 'sources',
+          data_id: 'source-reviewed',
+          data_version: '1.0.0',
+          state_code: 1,
+          actor_comment_state_code: 1,
+          completed_reviewer_count: 1,
+          reviewer_count: 1,
+        },
+      ],
+      error: null,
+    });
 
     render(
       <AssignmentReview
@@ -877,6 +965,9 @@ describe('AssignmentReview', () => {
     );
 
     expect(screen.getByTestId('header-title')).toHaveTextContent('Review Management / Reviewed');
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-2' }));
+    expect(await screen.findByText('Current tab')).toBeInTheDocument();
+    expect(screen.getByText('-')).toBeInTheDocument();
   });
 
   it('uses zh review APIs when the locale is zh-CN', async () => {

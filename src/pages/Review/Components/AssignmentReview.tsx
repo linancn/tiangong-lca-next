@@ -38,6 +38,30 @@ type AssignmentReviewProps = {
   hideReviewButton?: boolean;
 };
 
+export const isReferenceMatchingReviewTab = (
+  record: RootReviewReferenceProgress,
+  tableType: AssignmentReviewProps['tableType'],
+) => {
+  switch (tableType) {
+    case 'unassigned':
+      return record.state_code === 0;
+    case 'assigned':
+      return record.state_code === 1;
+    case 'admin-rejected':
+      return record.state_code === -1;
+    case 'pending':
+      return record.state_code > 0 && record.actor_comment_state_code === 0;
+    case 'reviewed':
+      return (
+        record.state_code > 0 && [1, 2, -3].includes(record.actor_comment_state_code as number)
+      );
+    case 'reviewer-rejected':
+      return record.state_code === -1 && record.actor_comment_state_code === -1;
+    default:
+      return false;
+  }
+};
+
 const ExpandIconStyle = () => {
   const { token } = theme.useToken();
   return (
@@ -74,28 +98,10 @@ const AssignmentReview = ({
   const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
   const previousLangRef = useRef(lang);
-  const childActionRef = useRef<{ reload: () => void }>({ reload: () => undefined });
+  const childActionRef = useRef<{ reload: () => void }>({} as { reload: () => void });
 
-  const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) => {
-    switch (tableType) {
-      case 'unassigned':
-        return record.state_code === 0;
-      case 'assigned':
-        return record.state_code === 1;
-      case 'admin-rejected':
-        return record.state_code === -1;
-      case 'pending':
-        return record.state_code > 0 && record.actor_comment_state_code === 0;
-      case 'reviewed':
-        return (
-          record.state_code > 0 && [1, 2, -3].includes(record.actor_comment_state_code as number)
-        );
-      case 'reviewer-rejected':
-        return record.state_code === -1 && record.actor_comment_state_code === -1;
-      default:
-        return false;
-    }
-  };
+  const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
+    isReferenceMatchingReviewTab(record, tableType);
 
   const reloadAfterChildAction = () => {
     setSelectedRowKeys([]);
@@ -167,7 +173,7 @@ const AssignmentReview = ({
       ),
       dataIndex: 'data_name',
       key: 'data_name',
-      render: (dataName: any) => genProcessName(dataName ?? {}, lang) || '-',
+      render: (dataName: any) => genProcessName(dataName ?? {}, lang),
     },
     {
       title: <FormattedMessage id='pages.review.reference.table' defaultMessage='Data type' />,
@@ -733,11 +739,10 @@ const AssignmentReview = ({
                 </div>
               );
             }
-            const data = subTableData[record.id] ?? [];
             return (
               <Table
                 columns={subColumns}
-                dataSource={data}
+                dataSource={subTableData[record.id]}
                 pagination={false}
                 rowKey='reference_review_id'
                 size='small'

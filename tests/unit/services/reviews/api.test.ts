@@ -1431,6 +1431,11 @@ describe('getReviewsTableDataOfReviewMember', () => {
       data: [
         {
           id: 'review-1',
+          state_code: -1,
+          review_kind: 'root',
+          target_table: 'lifecyclemodels',
+          root_matches_status: true,
+          root_can_read: true,
           created_at: '2024-04-01T00:00:00.000Z',
           modified_at: '2024-04-02T00:00:00.000Z',
           deadline: '2024-04-20T00:00:00.000Z',
@@ -1506,6 +1511,11 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result.data[0]).toMatchObject({
       id: 'review-1',
       isFromLifeCycle: true,
+      reviewKind: 'root',
+      targetTable: 'lifecyclemodels',
+      stateCode: -1,
+      rootMatchesStatus: true,
+      rootCanRead: true,
       teamName: 'Team A',
       userName: 'reviewer@example.com',
       deadline: '2024-04-20T00:00:00.000Z',
@@ -1908,6 +1918,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       data: [
         {
           id: 'review-admin-model',
+          target_table: 'lifecyclemodels',
           created_at: '2024-06-01T00:00:00.000Z',
           modified_at: '2024-06-03T00:00:00.000Z',
           deadline: '2024-06-20T00:00:00.000Z',
@@ -1966,6 +1977,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           key: 'review-admin-model',
           id: 'review-admin-model',
           isFromLifeCycle: true,
+          targetTable: 'lifecyclemodels',
           name: 'Model Admin Base; Model Admin Route; Model Admin Mix; Model Admin Unit',
           teamName: '-',
           userName: 'admin-fallback@example.com',
