@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
 lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing clean qualification, normal dev PR, production-preflight, promotion, and workspace-integration sequence.'
 ---
 

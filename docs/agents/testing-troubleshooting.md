@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
 lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the existing clean-candidate, stale-receipt, Docker, and serial-gate guidance covered the 60-pass/24-designed-skip run without a new exception.'
 ---
 
