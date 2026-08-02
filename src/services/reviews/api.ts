@@ -154,11 +154,16 @@ type ReviewItemRpcRow = {
   data_id?: string;
   data_version?: string;
   state_code?: number;
+  review_state_code?: number;
+  review_kind?: 'root' | 'reference';
+  target_table?: ReviewSubmitDatasetTable;
   reviewer_id?: string[] | null;
   json: any;
   deadline?: string | null;
   created_at?: string;
   modified_at?: string;
+  root_matches_status?: boolean;
+  root_can_read?: boolean;
 };
 
 export type RootReviewReferenceProgress = {
@@ -166,11 +171,13 @@ export type RootReviewReferenceProgress = {
   target_table: ReviewSubmitDatasetTable;
   data_id: string;
   data_version: string;
+  data_name: any;
   submitted_revision_checksum: string;
   state_code: number;
   reviewer_count: number;
   completed_reviewer_count: number;
-  relation_paths: unknown[];
+  actor_comment_state_code?: number | null;
+  actor_comment_modified_at?: string | null;
 };
 
 type ReviewAdminQueueRpcRow = ReviewItemRpcRow & {
@@ -192,6 +199,10 @@ type ReviewMemberQueueRpcRow = {
   comment_json?: any;
   comment_created_at?: string;
   comment_modified_at?: string;
+  review_kind?: 'root' | 'reference';
+  target_table?: ReviewSubmitDatasetTable;
+  root_matches_status?: boolean;
+  root_can_read?: boolean;
   total_count?: number | string | null;
 };
 
@@ -370,14 +381,21 @@ function mapReviewRowToTableData(
   );
   const modelName =
     model?.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name;
+  const reviewKind = row.review_kind ?? row?.json?.review_kind;
+  const targetTable = row.target_table ?? row?.json?.data?.table;
+  const stateCode = row.state_code ?? row.review_state_code;
 
   return {
     key: row.id,
     id: row.id,
     isFromLifeCycle: Boolean(model),
-    reviewKind: row?.json?.review_kind,
-    targetTable: row?.json?.data?.table,
-    stateCode: row.state_code,
+    ...(reviewKind ? { reviewKind } : {}),
+    ...(targetTable ? { targetTable } : {}),
+    ...(stateCode !== undefined ? { stateCode } : {}),
+    ...(row.root_matches_status !== undefined
+      ? { rootMatchesStatus: row.root_matches_status }
+      : {}),
+    ...(row.root_can_read !== undefined ? { rootCanRead: row.root_can_read } : {}),
     name:
       (model
         ? genProcessName(modelName ?? {}, lang)
@@ -396,7 +414,7 @@ function mapReviewRowToTableData(
 }
 
 export async function getRootReviewReferenceProgress(reviewId: string) {
-  const { data, error } = await supabase.rpc('qry_root_review_reference_progress', {
+  const { data, error } = await supabase.rpc('qry_root_review_reference_progress_v2', {
     p_root_review_id: reviewId,
   });
 
@@ -714,7 +732,7 @@ export async function getReviewsTableDataOfReviewMember(
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items', {
+  const { data, error } = await supabase.rpc('qry_review_get_member_root_queue_items_v2', {
     p_status: type,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 10,
@@ -732,6 +750,11 @@ export async function getReviewsTableDataOfReviewMember(
   }
 
   const processes = rows
+    .filter(
+      (row) =>
+        row.root_can_read !== false &&
+        (!row.target_table || row.target_table === 'lifecyclemodels'),
+    )
     .map((row) => ({
       id: row?.json?.data?.id,
       version: row?.json?.data?.version,
@@ -758,7 +781,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items', {
+  const { data, error } = await supabase.rpc('qry_review_get_admin_root_queue_items_v2', {
     p_status: type,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 10,
@@ -776,6 +799,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   }
 
   const processes = rows
+    .filter((row) => !row.target_table || row.target_table === 'lifecyclemodels')
     .map((row) => ({
       id: row?.json?.data?.id,
       version: row?.json?.data?.version,

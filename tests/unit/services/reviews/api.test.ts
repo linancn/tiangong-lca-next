@@ -300,7 +300,7 @@ describe('getRootReviewReferenceProgress', () => {
     await expect(
       reviewsApi.getRootReviewReferenceProgress('11111111-1111-4111-8111-111111111111'),
     ).resolves.toEqual({ data: rows, error: null });
-    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress_v2', {
       p_root_review_id: '11111111-1111-4111-8111-111111111111',
     });
   });
@@ -1395,7 +1395,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1416,7 +1416,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1489,7 +1489,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewer-rejected',
       p_page: 2,
       p_page_size: 10,
@@ -1553,7 +1553,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1742,7 +1742,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1771,7 +1771,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'unassigned',
       p_page: 1,
       p_page_size: 10,
@@ -1818,7 +1818,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'assigned',
       p_page: 2,
       p_page_size: 10,
@@ -1893,7 +1893,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'admin-rejected',
       p_page: 1,
       p_page_size: 10,
@@ -2118,7 +2118,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'assigned',
       p_page: 1,
       p_page_size: 10,

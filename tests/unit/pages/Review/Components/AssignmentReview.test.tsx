@@ -84,7 +84,10 @@ jest.mock('antd', () => {
   const Table = ({ columns = [], dataSource = [] }: any) => (
     <div data-testid='subtable'>
       {dataSource.map((row: any) => (
-        <div key={row.id ?? row.reference_review_id}>
+        <div
+          key={row.id ?? row.reference_review_id}
+          data-testid={`subrow-${row.id ?? row.reference_review_id}`}
+        >
           {columns.map((column: any, index: number) => (
             <div key={index}>
               {column.render
@@ -172,7 +175,11 @@ const MockProTable = ({
             </div>
           ))}
           {rowSelection && (
-            <button type='button' onClick={() => rowSelection.onChange?.([row.id])}>
+            <button
+              type='button'
+              disabled={rowSelection.getCheckboxProps?.(row)?.disabled}
+              onClick={() => rowSelection.onChange?.([row.id])}
+            >
               {`select-${row.id}`}
             </button>
           )}
@@ -222,7 +229,11 @@ describe('AssignmentReview', () => {
         {
           reference_review_id: 'reference-review-1',
           target_table: 'flows',
+          data_id: 'flow-1',
           data_version: '1.0.0',
+          data_name: {
+            baseName: { en: 'Reference Flow' },
+          },
           state_code: 1,
           completed_reviewer_count: 1,
           reviewer_count: 2,
@@ -377,7 +388,120 @@ describe('AssignmentReview', () => {
     expect(screen.getByText('1.0.0')).toBeInTheDocument();
     expect(screen.getByText('In review')).toBeInTheDocument();
     expect(screen.getByText('1/2')).toBeInTheDocument();
-    expect(screen.getByText('{"path":["process","flow"]}')).toBeInTheDocument();
+    expect(screen.queryByText('{"path":["process","flow"]}')).not.toBeInTheDocument();
+  });
+
+  it('keeps a root in the unassigned tab for a matching child while isolating root actions', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'root-assigned-child-unassigned',
+          name: 'Assigned root',
+          userName: 'Owner',
+          isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'processes',
+          rootMatchesStatus: false,
+          json: {
+            data: { id: 'process-root', version: '1.0.0' },
+            user: { id: 'owner-1' },
+          },
+        },
+      ],
+      total: 1,
+    });
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'reference-unassigned-only',
+          target_table: 'flows',
+          data_id: 'flow-unassigned',
+          data_version: '1.0.0',
+          data_name: { baseName: { en: 'Unassigned flow' } },
+          state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 0,
+        },
+      ],
+      error: null,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    const rootSelection = await screen.findByRole('button', {
+      name: 'select-root-assigned-child-unassigned',
+    });
+    expect(rootSelection).toBeDisabled();
+    expect(screen.queryByTestId('reject-review')).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'expand-root-assigned-child-unassigned' }),
+    );
+
+    expect(await screen.findByText('Current tab')).toBeInTheDocument();
+    expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
+      'unassigned:["reference-unassigned-only"]',
+    );
+    expect(screen.getByTestId('reject-review')).toHaveTextContent('reference-unassigned-only');
+  });
+
+  it('renders one shared reference review under each related root with the same review id', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: ['root-a', 'root-b'].map((id) => ({
+        id,
+        name: id,
+        userName: 'Owner',
+        isFromLifeCycle: false,
+        reviewKind: 'root',
+        targetTable: 'processes',
+        rootMatchesStatus: false,
+        json: {
+          data: { id: `process-${id}`, version: '1.0.0' },
+          user: { id: 'owner-1' },
+        },
+      })),
+      total: 2,
+    });
+    mockGetRootReviewReferenceProgress.mockImplementation(async () => ({
+      data: [
+        {
+          reference_review_id: 'shared-reference-review',
+          target_table: 'sources',
+          data_id: 'shared-source',
+          data_version: '2.0.0',
+          data_name: { baseName: { en: 'Shared source' } },
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+      ],
+      error: null,
+    }));
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='assigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-root-a' }));
+    await userEvent.click(screen.getByRole('button', { name: 'expand-root-b' }));
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId('subrow-shared-reference-review')).toHaveLength(2),
+    );
+    expect(mockGetRootReviewReferenceProgress).toHaveBeenNthCalledWith(1, 'root-a');
+    expect(mockGetRootReviewReferenceProgress).toHaveBeenNthCalledWith(2, 'root-b');
   });
 
   it('loads reviewer pending data without the top search card and renders process review actions', async () => {
@@ -534,19 +658,37 @@ describe('AssignmentReview', () => {
       success: true,
       data: [
         {
-          id: 'review-flow-reference',
-          name: 'Flow Reference Review',
+          id: 'root-for-flow-reference',
+          name: 'Process root',
           userName: 'Reviewer',
           isFromLifeCycle: false,
-          reviewKind: 'reference',
-          targetTable: 'flows',
+          reviewKind: 'root',
+          targetTable: 'processes',
+          rootMatchesStatus: false,
+          rootCanRead: false,
           json: {
-            data: { id: 'flow-1', version: '2.0.0' },
-            user: { id: 'flow-owner' },
+            data: { id: 'process-1', version: '2.0.0' },
+            user: { id: 'process-owner' },
           },
         },
       ],
       total: 1,
+    });
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'review-flow-reference',
+          target_table: 'flows',
+          data_id: 'flow-1',
+          data_version: '2.0.0',
+          data_name: { baseName: { en: 'Flow Reference Review' } },
+          state_code: 1,
+          actor_comment_state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+      ],
+      error: null,
     });
 
     render(
@@ -557,6 +699,9 @@ describe('AssignmentReview', () => {
       />,
     );
 
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'expand-root-for-flow-reference' }),
+    );
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'review-flow-reference:reviewer:flows',
     );
@@ -891,14 +1036,16 @@ describe('AssignmentReview', () => {
     errorSpy.mockRestore();
   });
 
-  it('renders every reference status and empty relation-path fallback in expanded root rows', async () => {
+  it('renders every reference status, prioritizes the matching child, and omits relation paths', async () => {
     const actionRef = { current: { reload: jest.fn() } };
     mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
       data: [
         {
           reference_review_id: 'reference-approved',
           target_table: 'processes',
+          data_id: 'process-reference',
           data_version: '1.0.0',
+          data_name: { baseName: { en: 'Approved reference' } },
           state_code: 2,
           completed_reviewer_count: 2,
           reviewer_count: 2,
@@ -907,7 +1054,9 @@ describe('AssignmentReview', () => {
         {
           reference_review_id: 'reference-rejected',
           target_table: 'sources',
+          data_id: 'source-reference',
           data_version: '2.0.0',
+          data_name: { baseName: { en: 'Rejected reference' } },
           state_code: -1,
           completed_reviewer_count: 1,
           reviewer_count: 1,
@@ -916,7 +1065,9 @@ describe('AssignmentReview', () => {
         {
           reference_review_id: 'reference-unassigned',
           target_table: 'contacts',
+          data_id: 'contact-reference',
           data_version: '3.0.0',
+          data_name: { baseName: { en: 'Unassigned reference' } },
           state_code: 0,
           completed_reviewer_count: 0,
           reviewer_count: 0,
@@ -960,8 +1111,13 @@ describe('AssignmentReview', () => {
     expect(screen.getByText('Unassigned')).toBeInTheDocument();
     expect(screen.getByText('2/2')).toBeInTheDocument();
     expect(screen.getByText('0/0')).toBeInTheDocument();
-    expect(screen.getAllByText('-')).toHaveLength(2);
-    expect(screen.getByText('{"source":"reviewer-added"}')).toBeInTheDocument();
+    expect(screen.getByText('Current tab')).toBeInTheDocument();
+    expect(screen.queryByText('{"source":"reviewer-added"}')).not.toBeInTheDocument();
+    const subtable = screen.getByTestId('subtable');
+    expect(subtable.firstElementChild).toHaveAttribute(
+      'data-testid',
+      'subrow-reference-unassigned',
+    );
   });
 
   it('returns an empty success payload when the table type is unsupported and falls back on request errors', async () => {

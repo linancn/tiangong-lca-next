@@ -10,6 +10,8 @@ export type ReviewsTable = {
   reviewKind?: 'root' | 'reference';
   targetTable?: string;
   stateCode?: number;
+  rootMatchesStatus?: boolean;
+  rootCanRead?: boolean;
   comments?: { state_code: number }[];
   json: {
     data: {
