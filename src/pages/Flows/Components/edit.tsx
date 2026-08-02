@@ -1,5 +1,6 @@
 /* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import AISuggestion from '@/components/AISuggestion';
+import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
@@ -436,7 +437,7 @@ const FlowsEdit: FC<Props> = ({
     },
     [id],
   );
-  const handleCheckData = async (options?: { silent?: boolean }) => {
+  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
       if (!silent) {
@@ -447,7 +448,7 @@ const FlowsEdit: FC<Props> = ({
           }),
         );
       }
-      return;
+      return false;
     }
     setSpinning(true);
     const updateResult = await handleSubmit(false, { silent, langIntent: 'validation' });
@@ -594,6 +595,7 @@ const FlowsEdit: FC<Props> = ({
       }
     }
     setSpinning(false);
+    return feedbackState === 'success';
   };
 
   useEffect(() => {
@@ -658,6 +660,18 @@ const FlowsEdit: FC<Props> = ({
             <Button onClick={() => void handleCheckData()}>
               <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
             </Button>
+            <DatasetSubmitReviewButton
+              table='flows'
+              id={id}
+              version={version}
+              disabled={spinning || detailStateCode !== 0}
+              beforeSubmit={() => handleCheckData()}
+              onSuccess={() => {
+                setDetailStateCode(20);
+                actionRef?.current?.reload();
+                closeDrawer();
+              }}
+            />
             <Button
               onClick={() => {
                 handleUpdateReference();

@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the current 60-pass/24-designed-skip receipt follows the existing clean qualification, production-preflight, promotion, and workspace-integration sequence.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing clean qualification, normal dev PR, production-preflight, promotion, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap
@@ -104,6 +104,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
+| scope-closure adapter unit proof | `npm run test:qualification:scope-closure:unit` |
+| scope-closure loopback browser proof | `npm run test:qualification:scope-closure:browser` (normally invoked by the exact-commit adapter) |
 | install the isolated release E2E environment | `npm run e2e:env:install` |
 | read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
 | run an exact committed release candidate | `npm run e2e:release -- <release options>` |

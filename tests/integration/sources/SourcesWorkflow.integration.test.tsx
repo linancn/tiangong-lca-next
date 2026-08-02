@@ -98,6 +98,11 @@ jest.mock('@ant-design/pro-components', () => {
   return { ...base, ProTable: LocaleAwareProTable };
 });
 
+jest.mock('@/components/DatasetSubmitReviewButton', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
   default: ({ tooltip, onClick }: any) => {

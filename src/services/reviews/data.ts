@@ -7,6 +7,8 @@ export type ReviewsTable = {
   userName: string;
   createAt?: string;
   isFromLifeCycle: boolean;
+  reviewKind?: 'root' | 'reference';
+  targetTable?: string;
   stateCode?: number;
   comments?: { state_code: number }[];
   json: {
@@ -14,6 +16,7 @@ export type ReviewsTable = {
       id: string;
       version: string;
       name: any;
+      table?: string;
     };
     team: {
       name: string;

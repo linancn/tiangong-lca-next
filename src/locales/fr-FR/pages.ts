@@ -232,6 +232,8 @@ export default {
   'pages.dataProcessing.closure.artifact.unavailable': 'Cet artefact est indisponible.',
   'pages.dataProcessing.closure.certificate': 'Certificat',
   'pages.dataProcessing.closure.completeness': 'Exhaustivité de l’analyse',
+  'pages.dataProcessing.closure.detailLoading': 'Chargement des détails de la tâche…',
+  'pages.dataProcessing.closure.detailUnavailable': 'Les détails de la tâche sont actuellement indisponibles.',
   'pages.dataProcessing.closure.error.currentReleaseRequired': 'La version publique actuelle ou l’instantané est indisponible ; aucun certificat ne peut être émis.',
   'pages.dataProcessing.closure.error.evidenceHashMismatch': 'Échec de la vérification de l’intégrité des preuves de complétude.',
   'pages.dataProcessing.closure.error.evidenceUnavailable': 'La version publique actuelle ou l’instantané est indisponible ; aucun certificat ne peut être émis.',

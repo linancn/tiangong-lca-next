@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the existing clean-candidate, stale-receipt, Docker, and serial-gate guidance covered the 60-pass/24-designed-skip qualification without a new exception.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the existing clean-candidate, stale-receipt, Docker, and serial-gate guidance covered the 60-pass/24-designed-skip run without a new exception.'
 ---
 
 # Testing Troubleshooting
@@ -79,6 +79,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | teardown reports that the primary ledger has no matching recovery copy | another invocation is active, a stale teardown is reading a newer run's primary ledger, or the protected external recovery file was removed | stop every older E2E runner, verify the exact UUID through audit/read-only checks, and restore only the matching recovery copy; never let the orphaned primary ledger authorize deletion |
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
 | Playwright browser executable is missing | a direct host run lacks binaries, or the release image is absent/mismatched | for `e2e:dev`, run `npx playwright install chromium firefox webkit`; for release proof, run `npm run e2e:env:install` and do not repair browsers one by one on the host |
+| scope-closure qualification rejects the candidate or target before Playwright | the checkout is dirty, the commit is not exact, isolated-non-production confirmation is absent, a target is non-loopback, or an environment value has a production fingerprint | commit the intended candidate, supply only the documented confirmation and loopback backend target, and rerun the adapter; never weaken the guard or print the rejected value |
+| scope-closure qualification browser assertions pass but provider evidence is rejected | the discovered test-title closure, canonical output, exact SHA/run ID, owned consumer leaves, or sensitive-field scan differs from the Worker schema | compare the adapter against the exact Worker `scope-closure-provider-owned-result.v1` schema and aggregator commit, restore the required browser case/title rather than hand-editing JSON, then run twice with the same run ID |
 | docs capture reports `missing-credentials` or `invalid-authentication` | the secret pointer/file/mode is invalid, identity does not match, or login/MFA/session did not complete | verify only that `DOCS_SCREENSHOT_ENV_FILE` points to the external absolute regular mode-`0600` file; never source or print it, and do not convert this failure into an access-denied Draft |
 | docs capture rejects `--base-url` before browser launch | the caller omitted the run-scoped origin or supplied credentials, a path, query, fragment, or non-HTTP(S) URL | rerun through the workspace runtime wrapper for a local candidate, or pass the explicitly approved production origin; never restore `DOCS_SCREENSHOT_BASE_URL` to the account file |
 | docs capture reports environment failure instead of `verified-access-denied` | the probe returned `401`/`404`/`5xx`, timed out, lacked identity proof, or had only an uncorroborated UI denial | repair the exact authentication/route/locator/environment failure and rerun; only authenticated authoritative denial can enable the Draft exception |

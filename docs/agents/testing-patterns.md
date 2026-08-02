@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the credential-free 60-pass/24-designed-skip receipt, 49-ID binding, and separate authenticated proof validate the existing semantic E2E patterns.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt and complete 49-ID binding validate the existing semantic E2E and managed-gate patterns.'
 ---
 
 # Testing Patterns Reference
@@ -147,6 +147,14 @@ Documentation capture profile pattern:
 - prefer role, label, text, and test-id locators; the current profile intentionally rejects CSS
 - never add the generic executor, account secret handling, dynamic origin, screenshot output, or Draft/evidence policy to Next; those belong to workspace tooling
 - use a synthetic local Chromium canary only as cross-repo workspace proof after the exact Next profile and render-target commit are bound
+
+Scope-closure provider qualification pattern:
+
+- run `scripts/qualification/scope-closure-next-qualification.mjs` only from a clean tracked commit and let it export that commit into a temporary detached worktree
+- require explicit isolated-non-production confirmation and loopback frontend/backend targets; reject production fingerprints before browser startup
+- exercise the real Data Processing browser route across every relevant authenticated role plus anonymous routing, and prove all four artifact states, direct document navigation, bounded format presentation, integrity/expiry metadata, and localized expired guidance
+- emit only the exact Worker-owned provider result schema and Next-owned consumer leaves; never include URLs, object locators, response payloads, credentials, cookies, or tokens
+- rerun with the same run ID and commit and require byte-identical canonical JSON before aggregator handoff
 
 Gate-bootstrap pattern:
 

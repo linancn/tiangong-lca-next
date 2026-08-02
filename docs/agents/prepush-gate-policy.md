@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 1cf3f5accdbf4ef745022ed69d8815e851df833f
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the generated credential-free receipt closes 49 IDs with zero external requests or production writes and follows the existing managed-push and release trigger policy.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing normal dev PR, managed-push, production-authorization, and release-trigger policy.'
 ---
 
 # Pre-Push Gate Policy

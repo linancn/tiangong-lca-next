@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-31"
-lastReviewedCommit: "1cf3f5accdbf4ef745022ed69d8815e851df833f"
-lastReviewedNote: 'Reviewed for Issue #743 after requalifying evidence-bearing v0.0.64 commit 1cf3f5accdbf: the 60-pass/24-designed-skip credential-free result preserves existing routing, testing-gate, release, and workspace-integration boundaries.'
+lastReviewedAt: "2026-08-02"
+lastReviewedCommit: "e0d81988621ef953fcc7b07d1713513cabfc63e8"
+lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the 60-pass/24-designed-skip, zero-external-request, zero-production-write result preserves the existing routing, testing-gate, release, and workspace-integration boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -66,6 +66,7 @@ ownership:
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
           - scripts/e2e/**
+          - scripts/qualification/**
           - scripts/i18n/**
           - scripts/reference-data/**
       ownerRepo: next
@@ -119,6 +120,7 @@ coverage:
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
     - scripts/e2e/**
+    - scripts/qualification/**
     - scripts/i18n/**
     - scripts/reference-data/**
   exclude:
@@ -173,6 +175,7 @@ routing:
         - scripts/test-coverage-report.js
         - scripts/validate-lcia-cache.cjs
         - scripts/prepush-gate-receipt.cjs
+        - scripts/qualification/**
         - scripts/i18n/**
         - scripts/reference-data/**
         - tests/**
@@ -226,6 +229,7 @@ routing:
         - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/prepush-gate-receipt.cjs
+        - scripts/qualification/**
         - scripts/i18n/**
         - scripts/reference-data/**
         - tests/**
@@ -596,6 +600,8 @@ rules:
         kind: test-gate
       - path: scripts/e2e/**
         kind: semantic-e2e-runner
+      - path: scripts/qualification/**
+        kind: qualification-adapter
       - path: config/docs-capture/**
         kind: source-bound-docs-capture-profile
       - path: scripts/i18n/**

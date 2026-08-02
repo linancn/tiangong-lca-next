@@ -232,6 +232,8 @@ export default {
   'pages.dataProcessing.closure.artifact.unavailable': '此产物不可用。',
   'pages.dataProcessing.closure.certificate': '证书',
   'pages.dataProcessing.closure.completeness': '扫描完整性',
+  'pages.dataProcessing.closure.detailLoading': '正在加载任务详情…',
+  'pages.dataProcessing.closure.detailUnavailable': '当前无法获取任务详情。',
   'pages.dataProcessing.closure.error.currentReleaseRequired': '当前公开发布版本或快照不可用，无法签发证书。',
   'pages.dataProcessing.closure.error.evidenceHashMismatch': '完整性证据完整性验证失败。',
   'pages.dataProcessing.closure.error.evidenceUnavailable': '当前公开发布版本或快照不可用，无法签发证书。',

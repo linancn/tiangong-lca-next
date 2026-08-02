@@ -26,6 +26,15 @@ const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
 const mockRefreshDataProductTasks = jest.fn();
 const mockSubscribeDataProductTasks = jest.fn(() => jest.fn());
 
+jest.mock('@/components/ClosureTaskDetail', () => ({
+  __esModule: true,
+  default: ({ canDownloadReport, closureCheckId, refreshSignal }: any) => (
+    <div data-testid={`mock-closure-detail-${closureCheckId}`}>
+      {`${canDownloadReport}:${refreshSignal}`}
+    </div>
+  ),
+}));
+
 const formatWithValues = (message: string, values?: Record<string, any>) =>
   Object.entries(values ?? {}).reduce((text, [key, value]) => {
     return text.replace(`{${key}}`, String(value));
@@ -94,6 +103,8 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('antd', () => {
   const React = require('react');
+
+  const Alert = ({ message: alertMessage }: any) => <div role='alert'>{alertMessage}</div>;
 
   const Badge = ({ count, children }: any) => (
     <div>
@@ -214,6 +225,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Alert,
     Badge,
     Button,
     Empty,
@@ -1604,5 +1616,94 @@ describe('LcaTaskCenter', () => {
     expect(screen.queryByText('Closure passed')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'Data Product' }));
     expect(screen.getByText('Package running')).toBeInTheDocument();
+  });
+
+  it('expands closure details in place and keeps them open across feed refreshes', () => {
+    const closureTask = {
+      schemaVersion: 'task-summary.v2',
+      category: 'data_product',
+      jobId: 'closure-job',
+      id: 'closure-job',
+      jobKind: 'lcia.scope_closure_check',
+      title: 'Recoverable closure check',
+      workerStatus: 'running',
+      runState: 'active',
+      domainValidity: 'pending',
+      projectionUpdatedAt: '2026-07-22T00:00:00Z',
+      progressFraction: 0.25,
+      capabilities: {
+        canCancel: false,
+        canDownloadReport: true,
+        canOpenWorkbench: true,
+        canPreviewResult: false,
+      },
+      deepLink: {
+        routeKey: 'data_product.closure_check',
+        params: { closureCheckId: 'closure-1' },
+      },
+      createdAt: '2026-07-22T00:00:00Z',
+      updatedAt: '2026-07-22T00:00:00Z',
+    };
+    mockDataProductTasks = [closureTask];
+
+    const { rerender } = render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.queryByRole('button', { name: 'Open' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mock-closure-detail-closure-1')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    expect(screen.getByTestId('mock-closure-detail-closure-1')).toHaveTextContent(
+      'true:running:2026-07-22T00:00:00Z',
+    );
+
+    mockDataProductTasks = [
+      {
+        ...closureTask,
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        updatedAt: '2026-07-22T00:01:00Z',
+      },
+    ];
+    rerender(<LcaTaskCenter />);
+
+    expect(screen.getByTestId('mock-closure-detail-closure-1')).toHaveTextContent(
+      'true:completed:2026-07-22T00:01:00Z',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    expect(screen.queryByTestId('mock-closure-detail-closure-1')).not.toBeInTheDocument();
+  });
+
+  it('fails closed in place when a closure task has no safe closure id', () => {
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        category: 'data_product',
+        jobId: 'closure-without-id',
+        id: 'closure-without-id',
+        jobKind: 'lcia.scope_closure_check',
+        title: 'Closure without detail identity',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainValidity: 'valid',
+        projectionUpdatedAt: '2026-07-22T00:00:00Z',
+        capabilities: {
+          canCancel: false,
+          canDownloadReport: false,
+          canOpenWorkbench: true,
+          canPreviewResult: false,
+        },
+        createdAt: '2026-07-22T00:00:00Z',
+        updatedAt: '2026-07-22T00:00:00Z',
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Task details are currently unavailable.');
+    expect(screen.queryByText('Open')).not.toBeInTheDocument();
   });
 });

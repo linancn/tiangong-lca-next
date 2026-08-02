@@ -396,6 +396,32 @@ describe('DataNotification Component', () => {
     );
   });
 
+  it('routes v2 Flow notifications to the Flow edit page', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[1],
+          targetTable: 'flows',
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(await screen.findByText('View'));
+    const fixLink = await screen.findByRole('link', { name: 'Fix Data' });
+    expect(fixLink).toHaveAttribute(
+      'data-umi-to',
+      '/mydata/flows?id=process-2&version=2.0.0&mode=edit',
+    );
+  });
+
   it('uses empty route params when notification data identifiers are missing', async () => {
     mockGetNotifyReviews.mockResolvedValue({
       ...mockReviewData,

@@ -1,4 +1,4 @@
-import { rejectReviewApi } from '@/services/reviews/api';
+import { rejectReviewApi, type ReviewSubmitDatasetTable } from '@/services/reviews/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
@@ -9,6 +9,7 @@ interface RejectReviewProps {
   dataId: string;
   dataVersion: string;
   isModel: boolean;
+  targetTable?: ReviewSubmitDatasetTable;
   actionRef: any;
   buttonType?: 'icon' | 'text';
   onOk?: (reason: string) => void | Promise<void>;
@@ -17,6 +18,7 @@ interface RejectReviewProps {
 const RejectReview: React.FC<RejectReviewProps> = ({
   reviewId,
   isModel,
+  targetTable,
   actionRef,
   buttonType = 'icon',
   onOk,
@@ -52,7 +54,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
       }
       const result = await rejectReviewApi(
         reviewId,
-        isModel ? 'lifecyclemodels' : 'processes',
+        targetTable ?? (isModel ? 'lifecyclemodels' : 'processes'),
         values.reason,
       );
 

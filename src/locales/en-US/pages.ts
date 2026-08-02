@@ -232,6 +232,8 @@ export default {
   'pages.dataProcessing.closure.artifact.unavailable': 'This artifact is unavailable.',
   'pages.dataProcessing.closure.certificate': 'Certificate',
   'pages.dataProcessing.closure.completeness': 'Scan completeness',
+  'pages.dataProcessing.closure.detailLoading': 'Loading task details...',
+  'pages.dataProcessing.closure.detailUnavailable': 'Task details are currently unavailable.',
   'pages.dataProcessing.closure.error.currentReleaseRequired': 'The current public release or snapshot is unavailable; a certificate cannot be issued.',
   'pages.dataProcessing.closure.error.evidenceHashMismatch': 'Closure evidence integrity verification failed.',
   'pages.dataProcessing.closure.error.evidenceUnavailable': 'The current public release or snapshot is unavailable; a certificate cannot be issued.',

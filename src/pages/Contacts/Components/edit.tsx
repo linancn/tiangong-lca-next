@@ -1,4 +1,5 @@
 /* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
+import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
@@ -450,7 +451,7 @@ const ContactEdit: FC<Props> = ({
     return true;
   };
 
-  const handleCheckData = async (options?: { silent?: boolean }) => {
+  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
     const silent = options?.silent ?? false;
     if (typeof currentStateCode === 'number' && currentStateCode >= 20 && currentStateCode < 100) {
       if (!silent) {
@@ -461,7 +462,7 @@ const ContactEdit: FC<Props> = ({
           }),
         );
       }
-      return;
+      return false;
     }
 
     setSpinning(true);
@@ -590,6 +591,7 @@ const ContactEdit: FC<Props> = ({
       }
     }
     setSpinning(false);
+    return feedbackState === 'success';
   };
 
   const handleSyncToOpenData = async () => {
@@ -726,6 +728,18 @@ const ContactEdit: FC<Props> = ({
                 />
               </Button>
             )}
+            <DatasetSubmitReviewButton
+              table='contacts'
+              id={id}
+              version={version}
+              disabled={spinning || currentStateCode !== 0}
+              beforeSubmit={() => handleCheckData()}
+              onSuccess={() => {
+                setCurrentStateCode(20);
+                actionRef?.current?.reload();
+                closeDrawer();
+              }}
+            />
             <Button
               onClick={() => {
                 handleUpdateReference();

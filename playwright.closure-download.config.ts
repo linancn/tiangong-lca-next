@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const appPort = process.env.QUALIFICATION_APP_PORT ?? '8011';
+const baseURL = process.env.QUALIFICATION_BASE_URL ?? `http://127.0.0.1:${appPort}`;
+const supabaseURL = process.env.QUALIFICATION_SUPABASE_URL ?? 'http://127.0.0.1:54321';
+
 export default defineConfig({
   testDir: './tests/browser',
   outputDir: '.e2e-runtime/closure-download',
@@ -9,7 +13,7 @@ export default defineConfig({
   timeout: 60_000,
   reporter: [['line']],
   use: {
-    baseURL: 'http://127.0.0.1:8011',
+    baseURL,
     screenshot: 'off',
     serviceWorkers: 'block',
     trace: 'off',
@@ -22,9 +26,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'cross-env PORT=8011 npm run start:main',
-    url: 'http://127.0.0.1:8011',
+    command: 'npm run build && node scripts/qualification/serve-scope-closure-candidate.mjs',
+    env: {
+      QUALIFICATION_APP_PORT: appPort,
+      SUPABASE_PUBLISHABLE_KEY: 'qualification-public-placeholder',
+      SUPABASE_URL: supabaseURL,
+    },
+    url: baseURL,
     reuseExistingServer: false,
-    timeout: 180_000,
+    timeout: 240_000,
   },
 });

@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-30
-lastReviewedCommit: 30e31e7ad2f69444e80b2a042ec173c7857ce360
-lastReviewedNote: 'Reviewed for Issue #734 after the Issue #735 Docker-snapshot closure: the Welcome page remains in the route-level UI layer while the local database artifact retains its current v2 RPC, extracted_md, and embedding_ft contract.'
+lastReviewedAt: 2026-08-01
+lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
+lastReviewedNote: 'Reviewed for Issue #754: document inline Task Center closure-detail recovery and capability-gated artifact downloads without changing backend or result-package ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -58,6 +58,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
+| `scripts/qualification/**`, `playwright.closure-download.config.ts`, `tests/browser/**` | test-only exact-commit scope-closure Next adapter and loopback browser contract accepted by the Worker provider aggregator |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
@@ -102,7 +103,9 @@ The task-center recovery path is:
 
 `src/components/LcaTaskCenter/index.tsx -> src/services/dataProducts/taskCenter.ts -> app_data_product_commands:list_task_feed`
 
-Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, and deep-link navigation. It maps the backend's typed artifact states to explicit preparing, available, expired, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, inline Task Center closure-detail recovery, and result-package deep-link navigation. Expanding a `lcia.scope_closure_check` task resolves its safe `closureCheckId` through `get_closure_check`, keeps lifecycle polling and artifact expiry client-bounded, and exposes only role-specific signed downloads allowed by the task capability projection; it does not decode raw worker or storage data. Next maps the backend's typed artifact states to explicit preparing, available, expired, failed, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+
+The repo-owned qualification adapter runs this actual page from an exact clean detached commit with a loopback-only backend contract. It proves the established anonymous, standard-user, admin/owner, and Data Product Manager route boundary plus artifact lifecycle, metadata, direct-navigation, and localized 410 behavior. Its provider-owned record contributes only Next consumer assertions; root and Worker orchestration remain authoritative for cross-provider aggregation and release qualification.
 
 The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. The Data Processing artifact projection similarly exposes only semantic role/format/filename, integrity, size, lifecycle/expiry, and signed-download metadata; it never exposes bucket or object paths. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 
@@ -121,6 +124,12 @@ Next owns only the UI orchestration for this job. It enqueues or reads the Edge 
 After enqueue succeeds, the process edit page must stop long blocking loading and route attention to the task center. The task center treats service-returned `worker_jobs` / coordinator rows as the task fact source. The visible task identity and task actions should prefer the canonical root `review_submit.submit` worker job (`submitWorkerJobId` / `rootJobId`), while `review_submit.gate`, `gateWorkerJobId`, `gateRunId`, and retained `reviewSubmitJobId` values remain child evidence or diagnostics. LocalStorage may cache UI projections and dismissals for resume behavior, but it must not be the authority for review-submit job state.
 
 When the job reaches `submitted`, Edge/Database have already validated the gate and called the final submit-review RPC on behalf of the original user. The browser must not call `app_dataset_submit_review` after a gate pass in the main process flow. Database/Edge own the persisted-row checksum, freshness, policy assertion, and final submit idempotency; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
+
+### Unified Root And Reference Review
+
+All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
+
+Review Management consumes the central review projection. A Root row expands to the Reference Reviews stored in its current scope snapshot. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
 
 ### Calculation Bundle And Release Readback
 
