@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issue #754: document inline Task Center closure-detail recovery and capability-gated artifact downloads without changing backend or result-package ownership.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745: document root-only review queues, current-reference child expansion, tab-context presentation, and action isolation without changing database authorization ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -129,7 +129,9 @@ When the job reaches `submitted`, Edge/Database have already validated the gate 
 
 All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
-Review Management consumes the central review projection. A Root row expands to the Reference Reviews stored in its current scope snapshot. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
+Review Management consumes the central review projection. Its top-level paginated queue contains Root Reviews only. A Root enters the selected tab when the Root itself or any current Reference Review matches that tab's state, then expands to the Reference Reviews stored in its current scope snapshot. Matching children are prioritized and marked as current-tab items; other children keep their actual states. A context-only Root cannot be selected or acted on unless the Root itself matches and the actor has permission. The child table shows neither a persisted reference overview nor a reference-path column, and Review Members see only assigned/readable child reviews.
+
+Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
 
 ### Calculation Bundle And Release Readback
 

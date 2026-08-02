@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt does not alter frontend ownership, dev-first branch policy, production-write authorization, validation gates, or root integration ownership.'
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend ownership, dev-first delivery, database authorization, validation gates, and later root integration ownership remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

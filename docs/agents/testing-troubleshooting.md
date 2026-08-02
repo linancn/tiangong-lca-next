@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the existing clean-candidate, stale-receipt, Docker, and serial-gate guidance covered the 60-pass/24-designed-skip run without a new exception.'
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing focused Jest and serial managed-gate recovery guidance remains accurate; no new troubleshooting exception is required.'
 ---
 
 # Testing Troubleshooting
