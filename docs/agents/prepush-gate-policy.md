@@ -30,7 +30,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
 lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the generated credential-free receipt follows the existing normal dev PR, managed-push, production-authorization, and release-trigger policy.'
 ---
 

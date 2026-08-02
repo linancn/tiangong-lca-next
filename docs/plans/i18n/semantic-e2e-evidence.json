@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-31T03:48:30.114Z",
-  "runId": "local-7c16d109-b0d2-4950-94ae-a8400c66cf04",
+  "generatedAt": "2026-08-02T02:06:52.472Z",
+  "runId": "local-50391689-7c03-4314-9a23-7e16781ced71",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "2486dc7547fe0f840cba0beb13139a79783024d0",
-    "packageManifestDigest": "819ec6485f6f10ba732ce1450687f144cfdaaa3e5d1bcd92413562fb1c09b469",
-    "sourceTreeDigest": "b5c361c9083bf1853307e915396a0f41ebc70b35d9fbb1ba90fc84a8bd46270b",
-    "unitTestTreeDigest": "d5f8ef16585fefe533d5ae5adca6d2fe7b127f974c54f1037e395187f899ce3b"
+    "observedHeadCommit": "33409ce1336d9cdfb3916d38a155cbf1c73bb7ab",
+    "packageManifestDigest": "f695fdf08835b9bda3b56c6aea29cab2695c9fa713f2cf2556c1174072f0cf0c",
+    "sourceTreeDigest": "78e01816713f6da31759a1b75c14e520b4678149007e8d34c1d150f198093fad",
+    "unitTestTreeDigest": "3af4a40bf8cbd9a222424aa0d745a1ce04a4442d95fb3e3adc395c2d7ed34058"
   },
   "target": {
     "frontend": "candidate-local",
@@ -237,7 +237,7 @@
       },
       {
         "path": "tests/e2e/i18n/production-request-guard.ts",
-        "sha256": "714dd934f25a6cb234496a3b6f41d2c9d3bb9bb0876270e8ac5222f63818bfda"
+        "sha256": "8cea53f316fe9a29e573ea12fe86d6d56e5326a026a997a41f2dbd01424f8891"
       },
       {
         "path": "tests/e2e/i18n/qualification-reporter.ts",
@@ -377,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "d93017c1d6ca6a9c8d800fefd2236f4b8d51b49e0dcfe04354c02ec04ad623e1"
+        "sha256": "718feff487151b71ad19ad0a508bb56b46bfd8531af05b60477c678b479ade2a"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -425,7 +425,7 @@
       },
       {
         "path": "tests/unit/pages/Review/Components/AssignmentReview.test.tsx",
-        "sha256": "8c54fa6c38588923d961d076b946790a85ef9a018d0a57b785f563b9229cdf64"
+        "sha256": "9fcd7968d2ea9609d66409a710fa57b7c02e94c4aeee249ffcec7019f2f1f672"
       },
       {
         "path": "tests/unit/pages/Review/index.test.tsx",
@@ -519,11 +519,11 @@
       },
       {
         "path": "src/locales/en-US/pages.ts",
-        "sha256": "fa55d56b7a0cb208a9a11d064ae69f7ba8c6d0d55759399e19628a6f70e0fb23"
+        "sha256": "287a5f3f589b5e3138ba05891b6259da4c6da452c800e22456fab4273909b74e"
       },
       {
         "path": "src/locales/en-US/pages_general.ts",
-        "sha256": "7e9d52aaa02a6bd3c87eb289e009be9d227de050baea9770672acb3b1d08c064"
+        "sha256": "0cc6b692a599ef858622bd3ecab78b25b1b17a9869cbc8a03f660cec58555dbe"
       },
       {
         "path": "src/locales/en-US/pages_home.ts",
@@ -543,7 +543,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "3a091d4e615be66d04e347b3baa53bbbe4d2fada93d1986ae469d4cb6f238caf"
+        "sha256": "e395d4baee0870648b3d832bcbc2af3e5449a19dd9bba07d1cbae1ec149e619e"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",
