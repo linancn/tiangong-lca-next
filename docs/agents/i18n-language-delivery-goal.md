@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 8f09c891329717994571de0ca01fa2fdfdebb76b
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
 lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the exact read-only production guard adds only the root-reference progress RPC; four-locale, semantic evidence, explicit-write, and zero-leak contracts remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:

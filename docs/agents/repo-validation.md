@@ -30,7 +30,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
 lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: 60 browser cases passed, 24 designed cases skipped, all 49 IDs closed, and external requests and production writes stayed zero; the receipt, preflight, and managed-gate flow remains accurate.'
 related:
   - ../AGENTS.md

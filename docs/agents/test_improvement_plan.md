@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4680e5a7ab67800268ae1627af999a4480cea646
+lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
 lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip, 49-ID result validates the maintained strategy and requires no testing-strategy expansion.'
 ---
 
