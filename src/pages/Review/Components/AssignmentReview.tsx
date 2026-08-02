@@ -141,12 +141,8 @@ const AssignmentReview = ({
     try {
       const result = await getRootReviewReferenceProgress(record.id);
       if (result.error) throw result.error;
-      const sortedData = [...result.data].sort(
-        (left, right) =>
-          Number(isReferenceMatchingCurrentTab(right)) -
-          Number(isReferenceMatchingCurrentTab(left)),
-      );
-      setSubTableData((prev) => ({ ...prev, [rowKey]: sortedData }));
+      const currentTabData = result.data.filter(isReferenceMatchingCurrentTab);
+      setSubTableData((prev) => ({ ...prev, [rowKey]: currentTabData }));
     } catch (error) {
       console.error('Failed to load reference review data:', error);
       setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
@@ -189,7 +185,7 @@ const AssignmentReview = ({
       title: <FormattedMessage id='pages.review.table.status' defaultMessage='Status' />,
       dataIndex: 'state_code',
       key: 'state_code',
-      render: (stateCode: number, record: RootReviewReferenceProgress) => {
+      render: (stateCode: number) => {
         const status =
           stateCode === 2
             ? {
@@ -222,19 +218,7 @@ const AssignmentReview = ({
                       defaultMessage: 'Unassigned',
                     }),
                   };
-        return (
-          <Space size='small'>
-            <Tag color={status.color}>{status.text}</Tag>
-            {isReferenceMatchingCurrentTab(record) && (
-              <Tag color='blue'>
-                <FormattedMessage
-                  id='pages.review.reference.matchesCurrentTab'
-                  defaultMessage='Current tab'
-                />
-              </Tag>
-            )}
-          </Space>
-        );
+        return <Tag color={status.color}>{status.text}</Tag>;
       },
     },
     {

@@ -242,9 +242,9 @@ describe('AssignmentReview', () => {
           data_name: {
             baseName: { en: 'Reference Flow' },
           },
-          state_code: 1,
-          completed_reviewer_count: 1,
-          reviewer_count: 2,
+          state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 0,
           relation_paths: [{ path: ['process', 'flow'] }],
         },
       ],
@@ -409,8 +409,8 @@ describe('AssignmentReview', () => {
     );
     expect(screen.getByText('flows')).toBeInTheDocument();
     expect(screen.getByText('1.0.0')).toBeInTheDocument();
-    expect(screen.getByText('In review')).toBeInTheDocument();
-    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.getByText('Unassigned')).toBeInTheDocument();
+    expect(screen.getByText('0/0')).toBeInTheDocument();
     expect(screen.queryByText('{"path":["process","flow"]}')).not.toBeInTheDocument();
   });
 
@@ -468,7 +468,7 @@ describe('AssignmentReview', () => {
       screen.getByRole('button', { name: 'expand-root-assigned-child-unassigned' }),
     );
 
-    expect(await screen.findByText('Current tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('subrow-reference-unassigned-only')).toBeInTheDocument();
     expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
       'unassigned:["reference-unassigned-only"]',
     );
@@ -710,6 +710,28 @@ describe('AssignmentReview', () => {
           completed_reviewer_count: 0,
           reviewer_count: 1,
         },
+        {
+          reference_review_id: 'review-flow-reference-completed',
+          target_table: 'flows',
+          data_id: 'flow-2',
+          data_version: '2.0.0',
+          data_name: { baseName: { en: 'Completed Flow Reference Review' } },
+          state_code: 1,
+          actor_comment_state_code: 1,
+          completed_reviewer_count: 1,
+          reviewer_count: 1,
+        },
+        {
+          reference_review_id: 'review-flow-reference-rejected',
+          target_table: 'flows',
+          data_id: 'flow-3',
+          data_version: '2.0.0',
+          data_name: { baseName: { en: 'Rejected Flow Reference Review' } },
+          state_code: -1,
+          actor_comment_state_code: -1,
+          completed_reviewer_count: 1,
+          reviewer_count: 1,
+        },
       ],
       error: null,
     });
@@ -728,6 +750,9 @@ describe('AssignmentReview', () => {
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'review-flow-reference:reviewer:flows',
     );
+    expect(screen.getByTestId('subrow-review-flow-reference')).toBeInTheDocument();
+    expect(screen.queryByTestId('subrow-review-flow-reference-completed')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('subrow-review-flow-reference-rejected')).not.toBeInTheDocument();
     await userEvent.click(screen.getByTestId('simple-review-actions'));
     await waitFor(() => expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledTimes(2));
     expect(screen.queryByTestId('expanded-root-for-flow-reference')).not.toBeInTheDocument();
@@ -966,7 +991,7 @@ describe('AssignmentReview', () => {
 
     expect(screen.getByTestId('header-title')).toHaveTextContent('Review Management / Reviewed');
     await userEvent.click(await screen.findByRole('button', { name: 'expand-review-2' }));
-    expect(await screen.findByText('Current tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('subrow-reviewed-reference')).toBeInTheDocument();
     expect(screen.getByText('-')).toBeInTheDocument();
   });
 
@@ -1127,7 +1152,7 @@ describe('AssignmentReview', () => {
     errorSpy.mockRestore();
   });
 
-  it('renders every reference status, prioritizes the matching child, and omits relation paths', async () => {
+  it('shows only references matching the current admin tab and omits relation paths', async () => {
     const actionRef = { current: { reload: jest.fn() } };
     mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
       data: [
@@ -1197,14 +1222,14 @@ describe('AssignmentReview', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'expand-review-7' }));
 
-    expect(await screen.findByText('Approved')).toBeInTheDocument();
-    expect(screen.getByText('Rejected')).toBeInTheDocument();
-    expect(screen.getByText('Unassigned')).toBeInTheDocument();
-    expect(screen.getByText('2/2')).toBeInTheDocument();
+    expect(await screen.findByText('Unassigned')).toBeInTheDocument();
+    expect(screen.queryByText('Approved')).not.toBeInTheDocument();
+    expect(screen.queryByText('Rejected')).not.toBeInTheDocument();
+    expect(screen.queryByText('2/2')).not.toBeInTheDocument();
     expect(screen.getByText('0/0')).toBeInTheDocument();
-    expect(screen.getByText('Current tab')).toBeInTheDocument();
     expect(screen.queryByText('{"source":"reviewer-added"}')).not.toBeInTheDocument();
     const subtable = screen.getByTestId('subtable');
+    expect(subtable.children).toHaveLength(1);
     expect(subtable.firstElementChild).toHaveAttribute(
       'data-testid',
       'subrow-reference-unassigned',

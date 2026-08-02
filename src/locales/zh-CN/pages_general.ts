@@ -191,7 +191,6 @@ export default {
   'pages.review.reference.status.rejected': '已驳回',
   'pages.review.reference.status.inReview': '审核中',
   'pages.review.reference.status.unassigned': '待分配',
-  'pages.review.reference.matchesCurrentTab': '当前页签',
   'pages.review.table.column.dataName': '数据名称',
   'pages.review.simpleDecision.approve': '通过',
   'pages.review.simpleDecision.reject': '驳回',
