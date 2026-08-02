@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the exact read-only production guard adds only the root-reference progress RPC; four-locale, semantic evidence, explicit-write, and zero-leak contracts remain unchanged.'
+lastReviewedCommit: 4627adfde975869e5ee0642133d8d0175a99bec8
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the exact read-only production guard now matches the three v2 grouped-queue/progress RPCs; prior production evidence is not reused, so fresh authenticated evidence remains required before a release promotion.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

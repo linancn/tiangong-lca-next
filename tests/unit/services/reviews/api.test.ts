@@ -300,7 +300,7 @@ describe('getRootReviewReferenceProgress', () => {
     await expect(
       reviewsApi.getRootReviewReferenceProgress('11111111-1111-4111-8111-111111111111'),
     ).resolves.toEqual({ data: rows, error: null });
-    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress_v2', {
       p_root_review_id: '11111111-1111-4111-8111-111111111111',
     });
   });
@@ -1395,7 +1395,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1416,7 +1416,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1431,6 +1431,11 @@ describe('getReviewsTableDataOfReviewMember', () => {
       data: [
         {
           id: 'review-1',
+          state_code: -1,
+          review_kind: 'root',
+          target_table: 'lifecyclemodels',
+          root_matches_status: true,
+          root_can_read: true,
           created_at: '2024-04-01T00:00:00.000Z',
           modified_at: '2024-04-02T00:00:00.000Z',
           deadline: '2024-04-20T00:00:00.000Z',
@@ -1489,7 +1494,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewer-rejected',
       p_page: 2,
       p_page_size: 10,
@@ -1506,6 +1511,11 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result.data[0]).toMatchObject({
       id: 'review-1',
       isFromLifeCycle: true,
+      reviewKind: 'root',
+      targetTable: 'lifecyclemodels',
+      stateCode: -1,
+      rootMatchesStatus: true,
+      rootCanRead: true,
       teamName: 'Team A',
       userName: 'reviewer@example.com',
       deadline: '2024-04-20T00:00:00.000Z',
@@ -1553,7 +1563,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1742,7 +1752,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_root_queue_items_v2', {
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1771,7 +1781,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'unassigned',
       p_page: 1,
       p_page_size: 10,
@@ -1818,7 +1828,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'assigned',
       p_page: 2,
       p_page_size: 10,
@@ -1893,7 +1903,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'admin-rejected',
       p_page: 1,
       p_page_size: 10,
@@ -1908,6 +1918,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       data: [
         {
           id: 'review-admin-model',
+          target_table: 'lifecyclemodels',
           created_at: '2024-06-01T00:00:00.000Z',
           modified_at: '2024-06-03T00:00:00.000Z',
           deadline: '2024-06-20T00:00:00.000Z',
@@ -1966,6 +1977,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           key: 'review-admin-model',
           id: 'review-admin-model',
           isFromLifeCycle: true,
+          targetTable: 'lifecyclemodels',
           name: 'Model Admin Base; Model Admin Route; Model Admin Mix; Model Admin Unit',
           teamName: '-',
           userName: 'admin-fallback@example.com',
@@ -2118,7 +2130,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_root_queue_items_v2', {
       p_status: 'assigned',
       p_page: 1,
       p_page_size: 10,

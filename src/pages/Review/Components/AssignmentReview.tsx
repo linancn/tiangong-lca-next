@@ -4,6 +4,7 @@ import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
+import { genProcessName } from '@/services/processes/util';
 import {
   getReviewsTableDataOfReviewAdmin,
   getReviewsTableDataOfReviewMember,
@@ -35,6 +36,30 @@ type AssignmentReviewProps = {
   actionRef: any;
   actionFrom?: 'reviewMember';
   hideReviewButton?: boolean;
+};
+
+export const isReferenceMatchingReviewTab = (
+  record: RootReviewReferenceProgress,
+  tableType: AssignmentReviewProps['tableType'],
+) => {
+  switch (tableType) {
+    case 'unassigned':
+      return record.state_code === 0;
+    case 'assigned':
+      return record.state_code === 1;
+    case 'admin-rejected':
+      return record.state_code === -1;
+    case 'pending':
+      return record.state_code > 0 && record.actor_comment_state_code === 0;
+    case 'reviewed':
+      return (
+        record.state_code > 0 && [1, 2, -3].includes(record.actor_comment_state_code as number)
+      );
+    case 'reviewer-rejected':
+      return record.state_code === -1 && record.actor_comment_state_code === -1;
+    default:
+      return false;
+  }
 };
 
 const ExpandIconStyle = () => {
@@ -73,6 +98,19 @@ const AssignmentReview = ({
   const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
   const previousLangRef = useRef(lang);
+  const childActionRef = useRef<{ reload: () => void }>({} as { reload: () => void });
+
+  const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
+    isReferenceMatchingReviewTab(record, tableType);
+
+  const reloadAfterChildAction = () => {
+    setSelectedRowKeys([]);
+    setExpandedRowKeys([]);
+    setSubTableData({});
+    setSubTableLoading({});
+    actionRef.current?.reload?.();
+  };
+  childActionRef.current.reload = reloadAfterChildAction;
 
   useEffect(() => {
     if (previousLangRef.current === lang) {
@@ -103,7 +141,12 @@ const AssignmentReview = ({
     try {
       const result = await getRootReviewReferenceProgress(record.id);
       if (result.error) throw result.error;
-      setSubTableData((prev) => ({ ...prev, [rowKey]: result.data }));
+      const sortedData = [...result.data].sort(
+        (left, right) =>
+          Number(isReferenceMatchingCurrentTab(right)) -
+          Number(isReferenceMatchingCurrentTab(left)),
+      );
+      setSubTableData((prev) => ({ ...prev, [rowKey]: sortedData }));
     } catch (error) {
       console.error('Failed to load reference review data:', error);
       setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
@@ -123,7 +166,15 @@ const AssignmentReview = ({
     }
   };
 
-  const subColumns = [
+  const subColumns: any[] = [
+    {
+      title: (
+        <FormattedMessage id='pages.review.table.column.dataName' defaultMessage='Data name' />
+      ),
+      dataIndex: 'data_name',
+      key: 'data_name',
+      render: (dataName: any) => genProcessName(dataName ?? {}, lang),
+    },
     {
       title: <FormattedMessage id='pages.review.reference.table' defaultMessage='Data type' />,
       dataIndex: 'target_table',
@@ -138,7 +189,7 @@ const AssignmentReview = ({
       title: <FormattedMessage id='pages.review.table.status' defaultMessage='Status' />,
       dataIndex: 'state_code',
       key: 'state_code',
-      render: (stateCode: number) => {
+      render: (stateCode: number, record: RootReviewReferenceProgress) => {
         const status =
           stateCode === 2
             ? {
@@ -171,7 +222,19 @@ const AssignmentReview = ({
                       defaultMessage: 'Unassigned',
                     }),
                   };
-        return <Tag color={status.color}>{status.text}</Tag>;
+        return (
+          <Space size='small'>
+            <Tag color={status.color}>{status.text}</Tag>
+            {isReferenceMatchingCurrentTab(record) && (
+              <Tag color='blue'>
+                <FormattedMessage
+                  id='pages.review.reference.matchesCurrentTab'
+                  defaultMessage='Current tab'
+                />
+              </Tag>
+            )}
+          </Space>
+        );
       },
     },
     {
@@ -182,14 +245,69 @@ const AssignmentReview = ({
       render: (_: unknown, record: RootReviewReferenceProgress) =>
         `${record.completed_reviewer_count}/${record.reviewer_count}`,
     },
-    {
-      title: <FormattedMessage id='pages.review.reference.paths' defaultMessage='Relation paths' />,
-      dataIndex: 'relation_paths',
-      key: 'relation_paths',
-      render: (paths: unknown[]) =>
-        (paths ?? []).map((path) => JSON.stringify(path)).join(', ') || '-',
-    },
   ];
+
+  if (!hideReviewButton) {
+    subColumns.push({
+      title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
+      key: 'actions',
+      render: (_: unknown, record: RootReviewReferenceProgress) => {
+        if (!isReferenceMatchingCurrentTab(record)) return [];
+
+        if (tableType === 'unassigned') {
+          return [
+            <Space key={record.reference_review_id}>
+              <SelectReviewer
+                tabType='unassigned'
+                actionRef={childActionRef}
+                reviewIds={[record.reference_review_id]}
+              />
+              <RejectReview
+                reviewId={record.reference_review_id}
+                dataId={record.data_id}
+                dataVersion={record.data_version}
+                isModel={record.target_table === 'lifecyclemodels'}
+                targetTable={record.target_table}
+                actionRef={childActionRef}
+              />
+            </Space>,
+          ];
+        }
+
+        if (tableType === 'assigned') {
+          return [
+            <Space key={record.reference_review_id}>
+              <SelectReviewer
+                tabType='assigned'
+                actionRef={childActionRef}
+                reviewIds={[record.reference_review_id]}
+              />
+              <SimpleReviewActions
+                reviewId={record.reference_review_id}
+                targetTable={record.target_table}
+                role='admin'
+                actionRef={childActionRef}
+              />
+            </Space>,
+          ];
+        }
+
+        if (tableType === 'pending') {
+          return [
+            <SimpleReviewActions
+              key={record.reference_review_id}
+              reviewId={record.reference_review_id}
+              targetTable={record.target_table}
+              role='reviewer'
+              actionRef={childActionRef}
+            />,
+          ];
+        }
+
+        return [];
+      },
+    });
+  }
 
   const datasetRoutes: Record<ReviewSubmitDatasetTable, string> = {
     contacts: '/mydata/contacts',
@@ -228,10 +346,11 @@ const AssignmentReview = ({
               row.json?.data?.id,
             )}&version=${encodeURIComponent(row.json?.data?.version)}&mode=view`
           : undefined;
+        const canOpenRootData = row.rootCanRead !== false;
         return [
           <div key={0} style={{ display: 'flex' }}>
             {row.name}
-            {targetTable === 'lifecyclemodels' ? (
+            {!canOpenRootData ? null : targetTable === 'lifecyclemodels' ? (
               <LifeCycleModelView
                 id={row?.json?.data?.id}
                 version={row?.json?.data?.version}
@@ -290,6 +409,7 @@ const AssignmentReview = ({
       dataIndex: 'actions',
       search: false,
       render: (_, record) => {
+        if (record.rootMatchesStatus === false) return [];
         return [
           <RejectReview
             isModel={record.isFromLifeCycle}
@@ -338,6 +458,7 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (record.rootMatchesStatus === false) return [];
             if (isSimpleReview(record) && record.targetTable) {
               return [
                 <SimpleReviewActions
@@ -405,6 +526,7 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (record.rootMatchesStatus === false) return [];
             if (isSimpleReview(record)) {
               return tableType === 'pending' && record.targetTable
                 ? [
@@ -494,6 +616,7 @@ const AssignmentReview = ({
           dataIndex: 'actions',
           search: false,
           render: (_: any, record: ReviewsTable) => {
+            if (record.rootMatchesStatus === false) return [];
             if (isSimpleReview(record)) return [];
             return [
               <Space key={0}>
@@ -616,11 +739,10 @@ const AssignmentReview = ({
                 </div>
               );
             }
-            const data = subTableData[record.id];
             return (
               <Table
                 columns={subColumns}
-                dataSource={data}
+                dataSource={subTableData[record.id]}
                 pagination={false}
                 rowKey='reference_review_id'
                 size='small'
@@ -689,6 +811,9 @@ const AssignmentReview = ({
             ? {
                 selectedRowKeys,
                 onChange: handleRowSelectionChange,
+                getCheckboxProps: (record: ReviewsTable) => ({
+                  disabled: record.rootMatchesStatus === false,
+                }),
               }
             : undefined
         }

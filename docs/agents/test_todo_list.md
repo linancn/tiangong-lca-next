@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: 60 passes, 24 designed skips, complete 49-ID closure, zero external requests, and zero production writes create no repository-wide coverage backlog item.'
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the focused passing suites and unchanged full-closure policy create no repository-wide coverage backlog item.'
 ---
 
 # Testing Execution State

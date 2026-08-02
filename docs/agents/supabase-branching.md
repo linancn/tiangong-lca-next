@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: frontend environment selection and app-side service ownership remain unchanged; Database and Edge retain review schema, authorization, and command truth.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend environment selection and app-side service ownership remain unchanged; Database retains grouped-query, review-schema, and authorization truth.'
 ---
 
 # Supabase Environment And Database Workflow
