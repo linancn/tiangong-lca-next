@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "398c1926148f6caf4f3ab34080a46b9b85ea0f62bcefd3eaf153189dcf7f3e2a",
+    "auditedInputDigest": "73c8316bd8b8512b96039fb84a8d98b05b76ddb2eda4e6f332ded677d39e31ff",
     "validatedMessageCount": 3099,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1375,
     "highRiskMessageDigest": "eab50e88d2f1dffcab110e5fbb07887ec0c85d7804f4a2cf71718da02dc346c0",
     "catalogDigest": "00305c7e7430494f165f22c8ad201d153527b665c27928695b7385a60686b720",
-    "dossierDigest": "68cca6e2dbafcf5659708147fc88606a8d1d8bac484f66eafd60f2c03fb935e9",
+    "dossierDigest": "b804ea9d598c7babb54f5d581ae6eb9145823120261d0b0079f629622b9e8474",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "43853fc5b51b3bb92c19e0bcc85fcbc83663a98811ba3d39bc235e2f90ca9117",
+    "routeEvidenceDigest": "0e62160a7f65cb031f5f7031432a32cad99fc56ae09ac6b5a01e593bd48022b8",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "d56f7479fa595c894e1646e9ee0ddb595105fbcc3a792837e3eaf0e4e0123191",
         "highRiskMessageCount": 1375,
         "highRiskMessageDigest": "eab50e88d2f1dffcab110e5fbb07887ec0c85d7804f4a2cf71718da02dc346c0",
-        "dossierDigest": "68cca6e2dbafcf5659708147fc88606a8d1d8bac484f66eafd60f2c03fb935e9",
+        "dossierDigest": "b804ea9d598c7babb54f5d581ae6eb9145823120261d0b0079f629622b9e8474",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "3369c2d956a5c7c0b3d54af80bffea50b59cee75a2d1de5010a79e9fb074af6e"
+  "validationDigest": "4197c15b37b3a0dd0ca19fd0c435819d88067c97e3bc5219e901451b50958804"
 }
