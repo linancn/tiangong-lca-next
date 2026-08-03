@@ -32,8 +32,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
 lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend ownership, dev-first delivery, database authorization, validation gates, and later root integration ownership remain unchanged.'
 related:
   - .docpact/config.yaml

@@ -29,8 +29,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
 lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: focused review-page and service suites, lint, type checking, and production build remain the correct proof; the managed full gate remains unchanged.'
 related:
   - ../AGENTS.md

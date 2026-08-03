@@ -29,8 +29,8 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
 lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: existing component/service patterns cover tab-context grouping, child actions, permissions, and error handling without a new test pattern.'
 ---
 
