@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-03
-lastReviewedCommit: da973eb7ff4a713704bbebeacdd82369652bf1d2
+lastReviewedCommit: e4f804eec2096f8d5910a10a8363a2f3a34c17a7
 lastReviewedNote: 'Reviewed for Issue #763 after binding the self-hosted mirror to Edge commit 8588f1b9dbe5c24dfbad7d704f956a09ba3b7904; environment selection and Database/Edge/Next ownership boundaries remain unchanged.'
 ---
 

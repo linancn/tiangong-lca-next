@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-03
-lastReviewedCommit: da973eb7ff4a713704bbebeacdd82369652bf1d2
+lastReviewedCommit: e4f804eec2096f8d5910a10a8363a2f3a34c17a7
 lastReviewedNote: 'Reviewed for Issue #763: the generated exact-revision Edge mirror remains a Next packaging surface, while Edge retains runtime ownership and the source receipt remains authoritative for mirror provenance.'
 related:
   - ../AGENTS.md

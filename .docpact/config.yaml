@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-03"
-lastReviewedCommit: "da973eb7ff4a713704bbebeacdd82369652bf1d2"
+lastReviewedCommit: "e4f804eec2096f8d5910a10a8363a2f3a34c17a7"
 lastReviewedNote: 'Reviewed for Issue #763 after refreshing the delete-aware self-hosted Edge Functions mirror to one exact approved source commit; the existing data-boundary routing and required-doc set remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
