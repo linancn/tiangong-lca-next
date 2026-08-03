@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: 6c626b590e4884cdbafc3181fd2f79a49b299829
 lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing focused-validation, lint, build, managed-push, dev-PR, and later workspace-integration sequence remains accurate.'
 ---
 
