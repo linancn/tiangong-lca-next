@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "e196f071fdf6512b9495872bf5ac271c264139c6c604bc886ddb7d1f5671f1b2",
+    "auditedInputDigest": "39a837dda93f65f3b72c42b3a03325e123ada2a1af5d63e8c33f6629306d476e",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "075aa55cf0865e8d71ddc4187a94a8046bebae1669fee5dac855c094ada89ebe",
-    "dossierDigest": "419a8e74ba75680fd6677a8cb01e1a322d626492d6db0b74266e8b4fc4259fba",
+    "dossierDigest": "84f0fd6ef3fa6ce621b7a319ef470820f26986eaed3032bd59fa788629c2e2af",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "9a8c1618612db1c73e26c6b5f209c956bf33a0088e955dc6629f5797e89869e3",
+    "routeEvidenceDigest": "28ca885a379a2707fa347d1c5775056bda64ee9c739c5cb2dc2c888ac3e84887",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "419a8e74ba75680fd6677a8cb01e1a322d626492d6db0b74266e8b4fc4259fba",
+        "dossierDigest": "84f0fd6ef3fa6ce621b7a319ef470820f26986eaed3032bd59fa788629c2e2af",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "a6297649eacb89645e5fa7579f58c6c59fbe0c5f0be4b10850bb705e5542fddf"
+  "validationDigest": "56e6e20f30244cdcdca6c5606e7771305d10d43ef7f6683ebe36e53060645974"
 }
