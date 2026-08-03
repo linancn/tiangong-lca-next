@@ -394,8 +394,6 @@ const AssignmentReview = ({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       key: 'actions',
       render: (_: unknown, record: RootReviewReferenceProgress) => {
-        if (!isReferenceMatchingCurrentTab(record)) return [];
-
         if (tableType === 'unassigned') {
           return [
             <Space key={record.reference_review_id}>
