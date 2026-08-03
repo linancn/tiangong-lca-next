@@ -1,4 +1,5 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import { createServiceWorkerCapabilityRepository } from './capabilities/worker_jobs.ts';
 import { corsHeaders } from './cors.ts';
 import {
   enqueueCalculatorWorkerJob,
@@ -31,17 +32,9 @@ export type TidasPackageScope = 'current_user' | 'open_data' | 'current_user_and
 export type TidasPackageManifestScope = TidasPackageScope | 'selected_roots';
 export type TidasPackageJobType = 'export_package' | 'import_package';
 export type TidasPackageJobStatus =
-  | 'queued'
-  | 'running'
-  | 'ready'
-  | 'completed'
-  | 'failed'
-  | 'stale';
+  'queued' | 'running' | 'ready' | 'completed' | 'failed' | 'stale';
 export type TidasPackageArtifactKind =
-  | 'import_source'
-  | 'export_zip'
-  | 'export_report'
-  | 'import_report';
+  'import_source' | 'export_zip' | 'export_report' | 'import_report';
 
 export type TidasPackageRoot = {
   table: SupportedTidasTable;
@@ -1359,30 +1352,33 @@ async function fetchOwnedWorkerPackageJobIfExists(
   workerJobId: string,
   expectedJobKind?: string,
 ): Promise<WorkerPackageJobRow | null> {
-  const { data, error } = await supabase
-    .from('worker_jobs')
-    .select(
-      'id,job_kind,status,requested_by,request_hash,payload_json,diagnostics,error_code,error_message,created_at,started_at,finished_at,updated_at',
-    )
-    .eq('id', workerJobId)
-    .eq('requested_by', userId)
-    .maybeSingle();
+  const result = await createServiceWorkerCapabilityRepository(supabase).read({
+    jobId: workerJobId,
+    includeInternal: true,
+  });
 
-  if (error) {
+  if (!result.ok) {
     console.error('query worker package job failed', {
-      error: error.message,
-      code: error.code,
+      error: result.message,
+      code: result.code,
       worker_job_id: workerJobId,
       user_id: userId,
     });
     throw new TidasPackageError(500, 'JOB_LOOKUP_FAILED', 'Failed to query package worker job');
   }
 
+  const data =
+    result.data && typeof result.data === 'object' && !Array.isArray(result.data)
+      ? (result.data as Record<string, unknown>)
+      : null;
   if (!data) {
     return null;
   }
 
   const row = toWorkerPackageJobRow(data);
+  if (row.requested_by !== userId) {
+    return null;
+  }
   if (expectedJobKind && row.job_kind !== expectedJobKind) {
     return null;
   }
@@ -1443,18 +1439,54 @@ function buildPackageJobRowFromWorkerOrArtifacts(
 function toWorkerPackageJobRow(data: Record<string, unknown>): WorkerPackageJobRow {
   return {
     id: String(data.id),
-    job_kind: String(data.job_kind),
+    job_kind: String(data.jobKind ?? data.job_kind),
     status: String(data.status),
-    requested_by: data.requested_by ? String(data.requested_by) : null,
-    request_hash: data.request_hash ? String(data.request_hash) : null,
-    payload: isJsonRecord(data.payload_json) ? data.payload_json : {},
+    requested_by: data.requestedBy
+      ? String(data.requestedBy)
+      : data.requested_by
+        ? String(data.requested_by)
+        : null,
+    request_hash: data.requestHash
+      ? String(data.requestHash)
+      : data.request_hash
+        ? String(data.request_hash)
+        : null,
+    payload: isJsonRecord(data.payload)
+      ? data.payload
+      : isJsonRecord(data.payload_json)
+        ? data.payload_json
+        : {},
     diagnostics: data.diagnostics ?? {},
-    error_code: data.error_code ? String(data.error_code) : null,
-    error_message: data.error_message ? String(data.error_message) : null,
-    created_at: data.created_at ? String(data.created_at) : null,
-    started_at: data.started_at ? String(data.started_at) : null,
-    finished_at: data.finished_at ? String(data.finished_at) : null,
-    updated_at: data.updated_at ? String(data.updated_at) : null,
+    error_code: data.errorCode
+      ? String(data.errorCode)
+      : data.error_code
+        ? String(data.error_code)
+        : null,
+    error_message: data.errorMessage
+      ? String(data.errorMessage)
+      : data.error_message
+        ? String(data.error_message)
+        : null,
+    created_at: data.createdAt
+      ? String(data.createdAt)
+      : data.created_at
+        ? String(data.created_at)
+        : null,
+    started_at: data.startedAt
+      ? String(data.startedAt)
+      : data.started_at
+        ? String(data.started_at)
+        : null,
+    finished_at: data.finishedAt
+      ? String(data.finishedAt)
+      : data.finished_at
+        ? String(data.finished_at)
+        : null,
+    updated_at: data.updatedAt
+      ? String(data.updatedAt)
+      : data.updated_at
+        ? String(data.updated_at)
+        : null,
   };
 }
 

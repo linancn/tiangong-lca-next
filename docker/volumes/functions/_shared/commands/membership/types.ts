@@ -62,5 +62,4 @@ export type MembershipCommandFailure = {
 };
 
 export type MembershipCommandExecutionResult =
-  | { ok: true; body: unknown; status?: number }
-  | MembershipCommandFailure;
+  { ok: true; body: unknown; status?: number } | MembershipCommandFailure;

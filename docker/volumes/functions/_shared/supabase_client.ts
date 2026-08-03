@@ -1,5 +1,16 @@
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
+declare const requestJwtClientBrand: unique symbol;
+declare const serviceRoleClientBrand: unique symbol;
+
+export type RequestJwtSupabaseClient = SupabaseClient & {
+  readonly [requestJwtClientBrand]: 'request-jwt';
+};
+
+export type ServiceRoleSupabaseClient = SupabaseClient & {
+  readonly [serviceRoleClientBrand]: 'service-role';
+};
+
 function readEnv(name: string): string | undefined {
   try {
     const value = Deno.env.get(name);
@@ -49,16 +60,16 @@ function requireFirstDefinedEnv(candidates: string[], label: string): string {
 
 // Avoid silently targeting localhost or placeholder credentials when runtime env is missing.
 // Some unit tests import handlers before injecting deps, so delay client construction until first use.
-function createDeferredClient(factory: () => SupabaseClient): SupabaseClient {
-  let client: SupabaseClient | undefined;
+function createDeferredClient<Client extends SupabaseClient>(factory: () => Client): Client {
+  let client: Client | undefined;
 
-  return new Proxy({} as SupabaseClient, {
+  return new Proxy({} as Client, {
     get(_target, property) {
       client ??= factory();
       const value = Reflect.get(client as unknown as object, property);
       return typeof value === 'function' ? value.bind(client) : value;
     },
-  });
+  }) as Client;
 }
 
 export function getSupabaseUrl(): string {
@@ -83,8 +94,12 @@ export function createSupabaseAuthClient(): SupabaseClient {
   return createClient(getSupabaseUrl(), getSupabasePublishableKey(), SHARED_CLIENT_OPTIONS);
 }
 
-export function createSupabaseServiceClient(): SupabaseClient {
-  return createClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), SHARED_CLIENT_OPTIONS);
+export function createSupabaseServiceClient(): ServiceRoleSupabaseClient {
+  return createClient(
+    getSupabaseUrl(),
+    getSupabaseServiceRoleKey(),
+    SHARED_CLIENT_OPTIONS,
+  ) as ServiceRoleSupabaseClient;
 }
 
 export function createRequestSupabaseClient(accessToken?: string): SupabaseClient {
@@ -94,10 +109,21 @@ export function createRequestSupabaseClient(accessToken?: string): SupabaseClien
     headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  return createClient(getSupabaseUrl(), getSupabasePublishableKey(), {
+  const client = createClient(getSupabaseUrl(), getSupabasePublishableKey(), {
     ...SHARED_CLIENT_OPTIONS,
     global: Object.keys(headers).length > 0 ? { headers } : undefined,
   });
+
+  return client;
+}
+
+export function createRequestJwtSupabaseClient(accessToken: string): RequestJwtSupabaseClient {
+  const normalizedAccessToken = accessToken.trim();
+  if (normalizedAccessToken.length === 0) {
+    throw new Error('Request-JWT Supabase client requires a non-empty access token');
+  }
+
+  return createRequestSupabaseClient(normalizedAccessToken) as RequestJwtSupabaseClient;
 }
 
 export const supabaseAuthClient = createDeferredClient(createSupabaseAuthClient);

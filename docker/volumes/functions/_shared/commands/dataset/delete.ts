@@ -1,7 +1,10 @@
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertDeletePolicy } from './policy.ts';
-import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
+import {
+  createLegacyDatasetCommandRepository,
+  type LegacyDatasetCommandRepository,
+} from './repository.ts';
 import type { DatasetCommandExecutionResult, DeleteRequest } from './types.ts';
 import { deleteRequestSchema, parseDeleteRequest } from './validation.ts';
 
@@ -14,7 +17,7 @@ export function parseDeleteCommand(body: unknown) {
 export async function executeDeleteCommand(
   request: DeleteRequest,
   actor: ActorContext,
-  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
+  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertDeletePolicy(request);
   if (!policy.ok) {

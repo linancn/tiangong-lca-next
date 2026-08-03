@@ -124,5 +124,4 @@ export type LcaReleaseCommandFailure = {
 };
 
 export type LcaReleaseCommandExecutionResult =
-  | { ok: true; body: unknown; status?: number }
-  | LcaReleaseCommandFailure;
+  { ok: true; body: unknown; status?: number } | LcaReleaseCommandFailure;

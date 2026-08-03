@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745: document root-only review queues, current-reference child expansion, tab-context presentation, and action isolation without changing database authorization ownership.'
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: da973eb7ff4a713704bbebeacdd82369652bf1d2
+lastReviewedNote: 'Reviewed for Issue #763: the generated exact-revision Edge mirror remains a Next packaging surface, while Edge retains runtime ownership and the source receipt remains authoritative for mirror provenance.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

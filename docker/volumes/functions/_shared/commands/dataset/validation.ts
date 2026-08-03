@@ -81,6 +81,18 @@ export const submitReviewRequestSchema = datasetBaseRequestSchema
   .strict()
   .superRefine((value, ctx) => {
     if (value.table !== 'processes') {
+      if (
+        value.reviewSubmitGateRunId !== undefined ||
+        value.revisionChecksum !== undefined ||
+        value.reviewSubmitPolicyProfile !== undefined ||
+        value.reviewSubmitReportSchemaVersion !== undefined
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['reviewSubmitGateRunId'],
+          message: 'review-submit Gate fields are only accepted for processes',
+        });
+      }
       return;
     }
 

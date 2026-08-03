@@ -1,11 +1,14 @@
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertSubmitReviewPolicy } from './policy.ts';
-import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
 import {
+  createLegacyDatasetCommandRepository,
+  type LegacyDatasetCommandRepository,
+} from './repository.ts';
+import {
+  type DatasetCommandExecutionResult,
   REVIEW_SUBMIT_GATE_POLICY_PROFILE,
   REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-  type DatasetCommandExecutionResult,
   type SubmitReviewRequest,
 } from './types.ts';
 import { parseSubmitReviewRequest, submitReviewRequestSchema } from './validation.ts';
@@ -19,7 +22,7 @@ export function parseSubmitReviewCommand(body: unknown) {
 export async function executeSubmitReviewCommand(
   request: SubmitReviewRequest,
   actor: ActorContext,
-  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
+  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertSubmitReviewPolicy(request);
   if (!policy.ok) {
