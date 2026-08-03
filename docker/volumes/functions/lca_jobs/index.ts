@@ -2,22 +2,48 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
+import {
+  createLcaResultFamilyCapabilityRepository,
+  type LcaResultFamilyCapabilityRepository,
+} from '../_shared/capabilities/lca_result_family.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import { callLcaReadJobProjectionRpc } from '../_shared/db_rpc/lca_results.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
+
+const lcaResultRepository = createLcaResultFamilyCapabilityRepository(supabaseClient);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type JobLookupBody = { job_id?: string };
 
-Deno.serve(async (req) => {
+type LcaJobsHandlerDependencies = {
+  authenticateRequest: typeof authenticateRequest;
+  getRedisClient: typeof getRedisClient;
+  resultRepository: LcaResultFamilyCapabilityRepository;
+};
+
+export function createLcaJobsHandler(
+  overrides: Partial<LcaJobsHandlerDependencies> = {},
+): (req: Request) => Promise<Response> {
+  const dependencies: LcaJobsHandlerDependencies = {
+    authenticateRequest,
+    getRedisClient,
+    resultRepository: lcaResultRepository,
+    ...overrides,
+  };
+  return (req) => handleLcaJobsRequest(req, dependencies);
+}
+
+async function handleLcaJobsRequest(
+  req: Request,
+  dependencies: LcaJobsHandlerDependencies,
+): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const redis = await getRedisClient();
+  const redis = await dependencies.getRedisClient();
 
-  const authResult = await authenticateRequest(req, {
+  const authResult = await dependencies.authenticateRequest(req, {
     authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
@@ -50,7 +76,7 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_job_id' }, 400);
   }
 
-  const projection = await callLcaReadJobProjectionRpc(supabaseClient, {
+  const projection = await dependencies.resultRepository.readJobProjection({
     requestedBy: userId,
     legacyJobId: jobId,
     includeInternal: true,
@@ -113,7 +139,11 @@ Deno.serve(async (req) => {
   };
 
   return json(response, 200);
-});
+}
+
+if (import.meta.main) {
+  Deno.serve(createLcaJobsHandler());
+}
 
 async function parseLookupBody(req: Request): Promise<JobLookupBody | null> {
   try {

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-02"
-lastReviewedCommit: "92aeaa72d760ee9121d021b171a8cd7e8715fc35"
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing page, service, review-management, and focused-test routing covers the change without altering gate, release, or workspace-integration governance.'
+lastReviewedAt: "2026-08-03"
+lastReviewedCommit: "e4f804eec2096f8d5910a10a8363a2f3a34c17a7"
+lastReviewedNote: 'Reviewed for Issue #763 after refreshing the delete-aware self-hosted Edge Functions mirror to one exact approved source commit; the existing data-boundary routing and required-doc set remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

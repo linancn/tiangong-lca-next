@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend ownership, dev-first delivery, database authorization, validation gates, and later root integration ownership remain unchanged.'
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: e4f804eec2096f8d5910a10a8363a2f3a34c17a7
+lastReviewedNote: 'Reviewed for Issue #763 after refreshing the generated self-hosted Edge mirror; frontend ownership, dev-first delivery, database authorization, validation gates, and later root integration ownership remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

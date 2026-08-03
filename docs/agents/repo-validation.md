@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: focused review-page and service suites, lint, type checking, and production build remain the correct proof; the managed full gate remains unchanged.'
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: e4f804eec2096f8d5910a10a8363a2f3a34c17a7
+lastReviewedNote: 'Reviewed for Issue #763: exact source-tree parity, delete-aware idempotence, receipt verification, lint, the full test baseline, and production build remain the correct proof for an Edge mirror refresh.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
