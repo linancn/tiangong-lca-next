@@ -57,6 +57,9 @@ export default {
   'pages.review.deadline.placeholder': 'Prüfungsfrist auswählen',
 
   'pages.review.selectReviewer.button': 'Prüfende zuweisen',
+  'pages.review.selection.summary': '{rootCount} Stammprüfungen und {referenceCount} Referenzprüfungen ausgewählt',
+  'pages.review.selection.loading': 'Referenzprüfungen werden geladen...',
+  'pages.review.selection.loadError': 'Referenzprüfungen konnten nicht geladen werden. Wählen Sie die Stammprüfung erneut aus.',
 
   'pages.review.progress.button': 'Prüfungsfortschritt',
   'pages.review.progress.editReviewer': 'Prüfende verwalten',

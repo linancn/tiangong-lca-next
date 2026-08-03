@@ -21,9 +21,15 @@ type SelectReviewerProps = {
   reviewIds: React.Key[];
   actionRef: any;
   tabType: 'unassigned' | 'assigned';
+  disabled?: boolean;
 };
 
-export default function SelectReviewer({ reviewIds, actionRef, tabType }: SelectReviewerProps) {
+export default function SelectReviewer({
+  reviewIds,
+  actionRef,
+  tabType,
+  disabled = false,
+}: SelectReviewerProps) {
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -189,6 +195,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         <Button
           style={{ width: 'inherit' }}
           onClick={() => setDrawerVisible(true)}
+          disabled={disabled}
           type='text'
           icon={<UsergroupAddOutlined />}
           size='large'

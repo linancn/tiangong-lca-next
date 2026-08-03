@@ -57,6 +57,9 @@ export default {
   'pages.review.deadline.placeholder': 'Select review deadline',
 
   'pages.review.selectReviewer.button': 'Assign for review',
+  'pages.review.selection.summary': 'Selected {rootCount} root reviews and {referenceCount} reference reviews',
+  'pages.review.selection.loading': 'Loading referenced reviews...',
+  'pages.review.selection.loadError': 'Failed to load referenced reviews. Reselect the root review to retry.',
 
   'pages.review.progress.button': 'Review Progress',
   'pages.review.progress.editReviewer': 'Edit Reviewer',

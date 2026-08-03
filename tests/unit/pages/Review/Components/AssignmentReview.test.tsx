@@ -10,7 +10,11 @@ let mockLocale = 'en-US';
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  FormattedMessage: ({ defaultMessage, id, values = {} }: any) =>
+    Object.entries(values).reduce(
+      (message, [key, value]) => message.replace(`{${key}}`, String(value)),
+      defaultMessage ?? id,
+    ),
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
   useIntl: () => ({
     locale: mockLocale,
@@ -63,8 +67,10 @@ jest.mock('@/pages/Review/Components/ReviewProgress', () => ({
 
 jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   __esModule: true,
-  default: ({ reviewIds, tabType }: any) => (
-    <div data-testid='select-reviewer'>{`${tabType}:${JSON.stringify(reviewIds)}`}</div>
+  default: ({ reviewIds, tabType, disabled }: any) => (
+    <div data-testid='select-reviewer' data-disabled={String(!!disabled)}>
+      {`${tabType}:${JSON.stringify(reviewIds)}`}
+    </div>
   ),
 }));
 
@@ -89,13 +95,28 @@ jest.mock('antd', () => {
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ children }: any) => <div data-testid='spin'>{children}</div>;
-  const Table = ({ columns = [], dataSource = [] }: any) => (
+  const Table = ({ columns = [], dataSource = [], rowSelection }: any) => (
     <div data-testid='subtable'>
       {dataSource.map((row: any) => (
         <div
           key={row.id ?? row.reference_review_id}
           data-testid={`subrow-${row.id ?? row.reference_review_id}`}
         >
+          {rowSelection && (
+            <button
+              type='button'
+              aria-pressed={rowSelection.selectedRowKeys?.includes(row.reference_review_id)}
+              onClick={() => {
+                const currentKeys = rowSelection.selectedRowKeys ?? [];
+                const nextKeys = currentKeys.includes(row.reference_review_id)
+                  ? currentKeys.filter((id: React.Key) => id !== row.reference_review_id)
+                  : [...currentKeys, row.reference_review_id];
+                rowSelection.onChange?.(nextKeys);
+              }}
+            >
+              {`select-child-${row.reference_review_id}`}
+            </button>
+          )}
           {columns.map((column: any, index: number) => (
             <div key={index}>
               {column.render
@@ -186,7 +207,15 @@ const MockProTable = ({
             <button
               type='button'
               disabled={rowSelection.getCheckboxProps?.(row)?.disabled}
-              onClick={() => rowSelection.onChange?.([row.id])}
+              aria-pressed={rowSelection.selectedRowKeys?.includes(row.id)}
+              onClick={() => {
+                const currentKeys = rowSelection.selectedRowKeys ?? [];
+                rowSelection.onChange?.(
+                  currentKeys.includes(row.id)
+                    ? currentKeys.filter((id: React.Key) => id !== row.id)
+                    : [...currentKeys, row.id],
+                );
+              }}
             >
               {`select-${row.id}`}
             </button>
@@ -401,7 +430,12 @@ describe('AssignmentReview', () => {
     expect(screen.getByTestId('reject-review')).toHaveTextContent('review-1');
 
     await userEvent.click(screen.getByRole('button', { name: 'select-review-1' }));
-    expect(screen.getByTestId('select-reviewer')).toHaveTextContent('unassigned:["review-1"]');
+    await waitFor(() =>
+      expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
+        'unassigned:["review-1","reference-review-1"]',
+      ),
+    );
+    expect(screen.getByText('Selected 1 root reviews and 1 reference reviews')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'expand-review-1' }));
     await waitFor(() =>
@@ -412,6 +446,210 @@ describe('AssignmentReview', () => {
     expect(screen.getByText('Unassigned')).toBeInTheDocument();
     expect(screen.getByText('0/0')).toBeInTheDocument();
     expect(screen.queryByText('{"path":["process","flow"]}')).not.toBeInTheDocument();
+  });
+
+  it('disables batch assignment while selecting a root loads its current-tab references', async () => {
+    let resolveReferences: (value: any) => void = () => undefined;
+    mockGetRootReviewReferenceProgress.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveReferences = resolve;
+      }),
+    );
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
+    expect(screen.getByText('Loading referenced reviews...')).toBeInTheDocument();
+    expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'true');
+
+    resolveReferences({
+      data: [
+        {
+          reference_review_id: 'reference-review-loading',
+          target_table: 'flows',
+          data_id: 'flow-loading',
+          data_version: '1.0.0',
+          data_name: { baseName: { en: 'Loading flow' } },
+          state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 0,
+        },
+      ],
+      error: null,
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
+        'unassigned:["review-1","reference-review-loading"]',
+      ),
+    );
+    expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'false');
+  });
+
+  it('keeps batch assignment disabled when a selected root reference scope fails to load', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockGetRootReviewReferenceProgress.mockRejectedValueOnce(new Error('scope load failed'));
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
+
+    expect(
+      await screen.findByText(
+        'Failed to load referenced reviews. Reselect the root review to retry.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('select-reviewer')).toHaveTextContent('unassigned:["review-1"]');
+    expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'true');
+    consoleError.mockRestore();
+  });
+
+  it('supports selecting a child review independently when its root is not actionable', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'assigned-root',
+          name: 'Assigned root',
+          userName: 'Owner',
+          reviewKind: 'root',
+          targetTable: 'processes',
+          rootMatchesStatus: false,
+          json: {
+            data: { id: 'process-1', version: '1.0.0' },
+            user: { id: 'owner-1' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-assigned-root' }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'select-child-reference-review-1' }),
+    );
+
+    expect(screen.getByText('Selected 0 root reviews and 1 reference reviews')).toBeInTheDocument();
+    expect(
+      screen
+        .getAllByTestId('select-reviewer')
+        .some((item) => item.textContent === 'unassigned:["reference-review-1"]'),
+    ).toBe(true);
+  });
+
+  it('keeps manually selected children when the root is deselected', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    const rootSelection = await screen.findByRole('button', { name: 'select-review-1' });
+    await userEvent.click(rootSelection);
+    await waitFor(() =>
+      expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
+        'unassigned:["review-1","reference-review-1"]',
+      ),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'expand-review-1' }));
+    const childSelection = await screen.findByRole('button', {
+      name: 'select-child-reference-review-1',
+    });
+    expect(childSelection).toHaveAttribute('aria-pressed', 'true');
+
+    await userEvent.click(childSelection);
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('select-reviewer')
+          .some((item) => item.textContent === 'unassigned:["review-1"]'),
+      ).toBe(true),
+    );
+    await userEvent.click(childSelection);
+    await userEvent.click(rootSelection);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByTestId('select-reviewer')
+          .some((item) => item.textContent === 'unassigned:["reference-review-1"]'),
+      ).toBe(true),
+    );
+    expect(screen.getByText('Selected 0 root reviews and 1 reference reviews')).toBeInTheDocument();
+  });
+
+  it('deduplicates a shared reference when multiple roots are selected together', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      data: ['root-a', 'root-b'].map((id) => ({
+        id,
+        name: id,
+        userName: 'Owner',
+        reviewKind: 'root',
+        targetTable: 'processes',
+        rootMatchesStatus: true,
+        json: {
+          data: { id: `process-${id}`, version: '1.0.0' },
+          user: { id: 'owner-1' },
+        },
+      })),
+      total: 2,
+    });
+    mockGetRootReviewReferenceProgress.mockImplementation(async () => ({
+      data: [
+        {
+          reference_review_id: 'shared-reference-review',
+          target_table: 'sources',
+          data_id: 'shared-source',
+          data_version: '1.0.0',
+          data_name: { baseName: { en: 'Shared source' } },
+          state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 0,
+        },
+      ],
+      error: null,
+    }));
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-root-a' }));
+    await userEvent.click(screen.getByRole('button', { name: 'select-root-b' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('select-reviewer')).toHaveTextContent(
+        'unassigned:["root-a","root-b","shared-reference-review"]',
+      ),
+    );
+    expect(screen.getByText('Selected 2 root reviews and 1 reference reviews')).toBeInTheDocument();
   });
 
   it('keeps a root in the unassigned tab for a matching child while isolating root actions', async () => {
