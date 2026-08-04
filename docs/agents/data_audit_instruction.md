@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: record root-only top-level queues, current-reference child expansion, tab-context actions, advisory Reviewer outcomes, and owner-only rejection notifications.'
+lastReviewedAt: 2026-08-03
+lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
+lastReviewedNote: 'Reviewed for Issue #745 follow-up: record Root-only top-level queues, current-tab-only Reference child expansion, no complete-reference-list presentation, advisory Reviewer outcomes, and owner-only rejection notifications.'
 ---
 
 # Audit Status Reference
@@ -101,6 +101,6 @@ Process and Lifecycle Model Root Reviews retain their existing metadata form and
 6. Review Admin makes the final decision and only the data owner receives the result notification
 7. rejection reasons are shown through notifications; dataset detail pages are unchanged
 8. Review Management shows only Root Reviews in its top-level paginated table; a Root appears when itself or any current Reference Review matches the selected tab
-9. expanding the Root shows every current Reference Review, prioritizes and marks children matching the selected tab, and keeps each other child's actual state visible
+9. expanding the Root shows only current Reference Reviews that match the selected tab; this phase does not provide the Root's complete reference list
 10. a context-only Root has no selectable Root action unless the Root itself matches and the actor has permission; Review Members see only assigned/readable children
 11. the child table does not show a reference-path column, and no persisted or visible reference-overview field is required

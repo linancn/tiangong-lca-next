@@ -1187,7 +1187,7 @@ describe('ToolbarEditInfo', () => {
     expect(result).toEqual({ checkResult: false, unReview: [] });
   });
 
-  it('blocks review when referenced data is already under review', async () => {
+  it('allows review when the exact referenced data version is already under review', async () => {
     const ref = React.createRef<any>();
     mockGetLifeCycleModelDetail.mockResolvedValue({
       success: true,
@@ -1214,15 +1214,7 @@ describe('ToolbarEditInfo', () => {
       });
     });
     mockCheckReferences.mockResolvedValue({
-      findProblemNodes: () => [
-        {
-          '@refObjectId': 'flow-1',
-          '@version': '1.0',
-          '@type': 'flow data set',
-          versionUnderReview: true,
-          underReviewVersion: '1.0',
-        },
-      ],
+      findProblemNodes: () => [],
     });
 
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
@@ -1236,17 +1228,11 @@ describe('ToolbarEditInfo', () => {
     expect(mockBuildValidationIssues).toHaveBeenCalledWith(
       expect.objectContaining({
         actionFrom: 'review',
-        problemNodes: expect.arrayContaining([
-          expect.objectContaining({
-            '@refObjectId': 'flow-1',
-            versionUnderReview: true,
-            underReviewVersion: '1.0',
-          }),
-        ]),
+        problemNodes: [],
       }),
     );
-    expect(result.checkResult).toBe(false);
-    expect(result.problemNodes).toHaveLength(1);
+    expect(result.checkResult).toBe(true);
+    expect(result.problemNodes).toEqual([]);
   });
 
   it('blocks review when referenced process or model versions are already under review', async () => {

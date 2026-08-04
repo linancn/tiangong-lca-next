@@ -234,7 +234,7 @@ describe('review helper coverage', () => {
     ]);
   });
 
-  it('builds deduplicated validation issues for sdk, rule, missing, review, and tg-version problems', () => {
+  it('builds deduplicated validation issues while allowing an exact under-review reference', () => {
     const rootRef = {
       '@type': 'lifeCycleModel data set',
       '@refObjectId': 'model-1',
@@ -341,16 +341,6 @@ describe('review helper coverage', () => {
         },
       },
       {
-        code: 'underReview',
-        link: 'http://localhost:8000/#/mydata/processes?id=process-1&version=01.00.000&required=1',
-        ref: {
-          '@type': 'process data set',
-          '@refObjectId': 'process-1',
-          '@version': '01.00.000',
-        },
-        underReviewVersion: '01.00.000',
-      },
-      {
         code: 'versionUnderReview',
         link: 'http://localhost:8000/#/mydata/processes?id=process-2&version=01.00.000&required=1',
         ref: {
@@ -443,11 +433,58 @@ describe('review helper coverage', () => {
         tabName: 'modellingAndValidation',
         tabNames: ['modellingAndValidation'],
       }),
+    ]);
+  });
+
+  it('keeps root and conflicting-version review blockers while allowing an exact reference review', () => {
+    const rootRef = {
+      '@type': 'process data set',
+      '@refObjectId': 'process-root',
+      '@version': '01.00.000',
+    } as const;
+
+    expect(
+      buildValidationIssues({
+        actionFrom: 'review',
+        datasetSdkValid: true,
+        problemNodes: [
+          {
+            ...rootRef,
+            ruleVerification: true,
+            nonExistent: false,
+            versionUnderReview: true,
+            underReviewVersion: '01.00.000',
+          },
+          {
+            '@type': 'contact data set',
+            '@refObjectId': 'contact-exact',
+            '@version': '01.00.000',
+            ruleVerification: true,
+            nonExistent: false,
+            versionUnderReview: true,
+            underReviewVersion: '01.00.000',
+          },
+          {
+            '@type': 'source data set',
+            '@refObjectId': 'source-conflict',
+            '@version': '01.00.000',
+            ruleVerification: true,
+            nonExistent: false,
+            versionUnderReview: true,
+            underReviewVersion: '02.00.000',
+          },
+        ],
+        rootRef,
+      }),
+    ).toEqual([
       expect.objectContaining({
         code: 'underReview',
-        ref: flowRef,
-        tabName: 'exchanges',
-        tabNames: ['exchanges'],
+        ref: rootRef,
+      }),
+      expect.objectContaining({
+        code: 'versionUnderReview',
+        ref: expect.objectContaining({ '@refObjectId': 'source-conflict' }),
+        underReviewVersion: '02.00.000',
       }),
     ]);
   });

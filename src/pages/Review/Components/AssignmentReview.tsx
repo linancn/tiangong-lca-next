@@ -88,26 +88,69 @@ const AssignmentReview = ({
   const { locale } = useIntl();
   const lang = getLang(locale);
   const [tableLoading, setTableLoading] = useState(false);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const tableAlertOptionRender = renderTableSelectionClearAction(
+  const [selectedRootReviewIds, setSelectedRootReviewIds] = useState<React.Key[]>([]);
+  const [manualSelectedReferenceIds, setManualSelectedReferenceIds] = useState<string[]>([]);
+  const [excludedAutoReferenceIds, setExcludedAutoReferenceIds] = useState<string[]>([]);
+  const [autoReferenceIdsByRoot, setAutoReferenceIdsByRoot] = useState<Record<string, string[]>>(
+    {},
+  );
+  const [selectionLoadingRootIds, setSelectionLoadingRootIds] = useState<string[]>([]);
+  const [selectionFailedRootIds, setSelectionFailedRootIds] = useState<string[]>([]);
+  const intl = useIntl();
+  const defaultTableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
-  const intl = useIntl();
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
-  const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
+  const [subTableData, setSubTableData] = useState<Record<string, RootReviewReferenceProgress[]>>(
+    {},
+  );
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
+  const selectedRootReviewIdsRef = useRef<Set<string>>(new Set());
+  const subTableDataRef = useRef<Record<string, RootReviewReferenceProgress[]>>({});
+  const subTableRequestRef = useRef<
+    Record<string, Promise<RootReviewReferenceProgress[]> | undefined>
+  >({});
+  const subTableLoadErrorIdsRef = useRef<Set<string>>(new Set());
   const previousLangRef = useRef(lang);
   const childActionRef = useRef<{ reload: () => void }>({} as { reload: () => void });
 
   const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
     isReferenceMatchingReviewTab(record, tableType);
 
-  const reloadAfterChildAction = () => {
-    setSelectedRowKeys([]);
+  const clearUnifiedSelection = () => {
+    selectedRootReviewIdsRef.current = new Set();
+    setSelectedRootReviewIds([]);
+    setManualSelectedReferenceIds([]);
+    setExcludedAutoReferenceIds([]);
+    setAutoReferenceIdsByRoot({});
+    setSelectionLoadingRootIds([]);
+    setSelectionFailedRootIds([]);
+  };
+  const tableAlertOptionRender = (args: {
+    onCleanSelected?: () => void;
+    selectedRowKeys?: React.Key[];
+  }) =>
+    defaultTableAlertOptionRender({
+      ...args,
+      onCleanSelected: () => {
+        args.onCleanSelected?.();
+        clearUnifiedSelection();
+      },
+    });
+
+  const resetReviewViewState = () => {
+    clearUnifiedSelection();
     setExpandedRowKeys([]);
     setSubTableData({});
     setSubTableLoading({});
+    subTableDataRef.current = {};
+    subTableRequestRef.current = {};
+    subTableLoadErrorIdsRef.current = new Set();
+  };
+
+  const reloadAfterChildAction = () => {
+    resetReviewViewState();
     actionRef.current?.reload?.();
   };
   childActionRef.current.reload = reloadAfterChildAction;
@@ -118,10 +161,7 @@ const AssignmentReview = ({
     }
 
     previousLangRef.current = lang;
-    setSelectedRowKeys([]);
-    setExpandedRowKeys([]);
-    setSubTableData({});
-    setSubTableLoading({});
+    resetReviewViewState();
     actionRef.current?.reload?.();
   }, [actionRef, lang]);
 
@@ -131,27 +171,141 @@ const AssignmentReview = ({
     // actionRef.current?.reload();
   };
 
-  const handleRowSelectionChange = (keys: React.Key[]) => {
-    setSelectedRowKeys(keys);
+  const loadSubTableData = async (rootReviewId: string) => {
+    if (Object.prototype.hasOwnProperty.call(subTableDataRef.current, rootReviewId)) {
+      return subTableDataRef.current[rootReviewId];
+    }
+    if (subTableRequestRef.current[rootReviewId]) {
+      return subTableRequestRef.current[rootReviewId];
+    }
+
+    const rowKey = rootReviewId;
+    subTableLoadErrorIdsRef.current.delete(rootReviewId);
+    setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
+    const request = (async () => {
+      try {
+        const result = await getRootReviewReferenceProgress(rootReviewId);
+        if (result.error) throw result.error;
+        const currentTabData = result.data.filter(isReferenceMatchingCurrentTab);
+        subTableLoadErrorIdsRef.current.delete(rootReviewId);
+        subTableDataRef.current = {
+          ...subTableDataRef.current,
+          [rowKey]: currentTabData,
+        };
+        setSubTableData((prev) => ({ ...prev, [rowKey]: currentTabData }));
+        return currentTabData;
+      } catch (error) {
+        console.error('Failed to load reference review data:', error);
+        subTableLoadErrorIdsRef.current.add(rootReviewId);
+        const remainingSubTableData = { ...subTableDataRef.current };
+        delete remainingSubTableData[rowKey];
+        subTableDataRef.current = remainingSubTableData;
+        setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
+        return [];
+      } finally {
+        delete subTableRequestRef.current[rowKey];
+        setSubTableLoading((prev) => ({ ...prev, [rowKey]: false }));
+      }
+    })();
+    subTableRequestRef.current[rootReviewId] = request;
+    return request;
   };
 
-  const loadSubTableData = async (record: ReviewsTable) => {
-    const rowKey = record.id;
-    setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
-    try {
-      const result = await getRootReviewReferenceProgress(record.id);
-      if (result.error) throw result.error;
-      const sortedData = [...result.data].sort(
-        (left, right) =>
-          Number(isReferenceMatchingCurrentTab(right)) -
-          Number(isReferenceMatchingCurrentTab(left)),
+  const handleRootSelectionChange = (keys: React.Key[]) => {
+    const nextRootIds = keys.map(String);
+    const previousRootIds = selectedRootReviewIdsRef.current;
+    const nextRootIdSet = new Set(nextRootIds);
+    const addedRootIds = nextRootIds.filter((id) => !previousRootIds.has(id));
+    const removedRootIds = [...previousRootIds].filter((id) => !nextRootIdSet.has(id));
+
+    selectedRootReviewIdsRef.current = nextRootIdSet;
+    setSelectedRootReviewIds(keys);
+
+    if (removedRootIds.length > 0) {
+      const nextAutoReferenceIdsByRoot = Object.fromEntries(
+        Object.entries(autoReferenceIdsByRoot).filter(([rootId]) => nextRootIdSet.has(rootId)),
       );
-      setSubTableData((prev) => ({ ...prev, [rowKey]: sortedData }));
-    } catch (error) {
-      console.error('Failed to load reference review data:', error);
-      setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
-    } finally {
-      setSubTableLoading((prev) => ({ ...prev, [rowKey]: false }));
+      const remainingAutoReferenceIds = new Set(Object.values(nextAutoReferenceIdsByRoot).flat());
+      setAutoReferenceIdsByRoot(nextAutoReferenceIdsByRoot);
+      setExcludedAutoReferenceIds((current) =>
+        current.filter((referenceId) => remainingAutoReferenceIds.has(referenceId)),
+      );
+      setSelectionFailedRootIds((current) => current.filter((rootId) => nextRootIdSet.has(rootId)));
+    }
+
+    addedRootIds.forEach((rootReviewId) => {
+      setSelectionFailedRootIds((current) => current.filter((id) => id !== rootReviewId));
+      setSelectionLoadingRootIds((current) =>
+        current.includes(rootReviewId) ? current : [...current, rootReviewId],
+      );
+      void loadSubTableData(rootReviewId)
+        .then((references) => {
+          if (!selectedRootReviewIdsRef.current.has(rootReviewId)) return;
+          if (subTableLoadErrorIdsRef.current.has(rootReviewId)) {
+            setSelectionFailedRootIds((current) =>
+              current.includes(rootReviewId) ? current : [...current, rootReviewId],
+            );
+            return;
+          }
+          const referenceIds = references.map((item) => item.reference_review_id);
+          setAutoReferenceIdsByRoot((current) => ({
+            ...current,
+            [rootReviewId]: referenceIds,
+          }));
+          setExcludedAutoReferenceIds((current) =>
+            current.filter((referenceId) => !referenceIds.includes(referenceId)),
+          );
+        })
+        .finally(() => {
+          setSelectionLoadingRootIds((current) => current.filter((id) => id !== rootReviewId));
+        });
+    });
+  };
+
+  const autoSelectedReferenceIds = new Set(Object.values(autoReferenceIdsByRoot).flat());
+  const effectiveSelectedReferenceIds = Array.from(
+    new Set([
+      ...manualSelectedReferenceIds,
+      ...[...autoSelectedReferenceIds].filter(
+        (referenceId) => !excludedAutoReferenceIds.includes(referenceId),
+      ),
+    ]),
+  );
+  const effectiveSelectedReferenceIdSet = new Set(effectiveSelectedReferenceIds);
+  const selectedReviewIds = Array.from(
+    new Set([...selectedRootReviewIds.map(String), ...effectiveSelectedReferenceIds]),
+  );
+
+  const handleReferenceSelectionChange = (
+    references: RootReviewReferenceProgress[],
+    selectedKeys: React.Key[],
+  ) => {
+    const selectedReferenceIds = new Set(selectedKeys.map(String));
+    const currentTableReferenceIds = references.map((item) => item.reference_review_id);
+    const newlySelectedIds = currentTableReferenceIds.filter(
+      (id) => selectedReferenceIds.has(id) && !effectiveSelectedReferenceIdSet.has(id),
+    );
+    const newlyDeselectedIds = currentTableReferenceIds.filter(
+      (id) => !selectedReferenceIds.has(id) && effectiveSelectedReferenceIdSet.has(id),
+    );
+
+    if (newlySelectedIds.length > 0 || newlyDeselectedIds.length > 0) {
+      setManualSelectedReferenceIds((current) =>
+        Array.from(
+          new Set([
+            ...current.filter((id) => !newlyDeselectedIds.includes(id)),
+            ...newlySelectedIds,
+          ]),
+        ),
+      );
+      setExcludedAutoReferenceIds((current) =>
+        Array.from(
+          new Set([
+            ...current.filter((id) => !newlySelectedIds.includes(id)),
+            ...newlyDeselectedIds.filter((id) => autoSelectedReferenceIds.has(id)),
+          ]),
+        ),
+      );
     }
   };
 
@@ -162,7 +316,7 @@ const AssignmentReview = ({
         : currentKeys.filter((key) => key !== record.id),
     );
     if (expanded && record.reviewKind === 'root') {
-      await loadSubTableData(record);
+      await loadSubTableData(record.id);
     }
   };
 
@@ -189,7 +343,7 @@ const AssignmentReview = ({
       title: <FormattedMessage id='pages.review.table.status' defaultMessage='Status' />,
       dataIndex: 'state_code',
       key: 'state_code',
-      render: (stateCode: number, record: RootReviewReferenceProgress) => {
+      render: (stateCode: number) => {
         const status =
           stateCode === 2
             ? {
@@ -222,19 +376,7 @@ const AssignmentReview = ({
                       defaultMessage: 'Unassigned',
                     }),
                   };
-        return (
-          <Space size='small'>
-            <Tag color={status.color}>{status.text}</Tag>
-            {isReferenceMatchingCurrentTab(record) && (
-              <Tag color='blue'>
-                <FormattedMessage
-                  id='pages.review.reference.matchesCurrentTab'
-                  defaultMessage='Current tab'
-                />
-              </Tag>
-            )}
-          </Space>
-        );
+        return <Tag color={status.color}>{status.text}</Tag>;
       },
     },
     {
@@ -252,8 +394,6 @@ const AssignmentReview = ({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       key: 'actions',
       render: (_: unknown, record: RootReviewReferenceProgress) => {
-        if (!isReferenceMatchingCurrentTab(record)) return [];
-
         if (tableType === 'unassigned') {
           return [
             <Space key={record.reference_review_id}>
@@ -745,6 +885,17 @@ const AssignmentReview = ({
                 dataSource={subTableData[record.id]}
                 pagination={false}
                 rowKey='reference_review_id'
+                rowSelection={
+                  tableType === 'unassigned'
+                    ? {
+                        selectedRowKeys: (subTableData[record.id] ?? [])
+                          .map((item) => item.reference_review_id)
+                          .filter((id) => effectiveSelectedReferenceIdSet.has(id)),
+                        onChange: (keys) =>
+                          handleReferenceSelectionChange(subTableData[record.id] ?? [], keys),
+                      }
+                    : undefined
+                }
                 size='small'
                 style={{ margin: '0 48px' }}
               />
@@ -752,14 +903,42 @@ const AssignmentReview = ({
           },
         }}
         toolBarRender={() => {
-          if (selectedRowKeys && selectedRowKeys?.length > 0 && tableType === 'unassigned') {
+          if (selectedReviewIds.length > 0 && tableType === 'unassigned') {
             return [
-              <SelectReviewer
-                tabType='unassigned'
-                actionRef={actionRef}
-                reviewIds={selectedRowKeys}
-                key={0}
-              />,
+              <Space key='batch-assignment-selection'>
+                <span>
+                  <FormattedMessage
+                    id='pages.review.selection.summary'
+                    defaultMessage='Selected {rootCount} root reviews and {referenceCount} reference reviews'
+                    values={{
+                      rootCount: selectedRootReviewIds.length,
+                      referenceCount: effectiveSelectedReferenceIds.length,
+                    }}
+                  />
+                </span>
+                {selectionLoadingRootIds.length > 0 && (
+                  <span>
+                    <FormattedMessage
+                      id='pages.review.selection.loading'
+                      defaultMessage='Loading referenced reviews...'
+                    />
+                  </span>
+                )}
+                {selectionFailedRootIds.length > 0 && (
+                  <span>
+                    <FormattedMessage
+                      id='pages.review.selection.loadError'
+                      defaultMessage='Failed to load referenced reviews. Reselect the root review to retry.'
+                    />
+                  </span>
+                )}
+                <SelectReviewer
+                  tabType='unassigned'
+                  actionRef={actionRef}
+                  reviewIds={selectedReviewIds}
+                  disabled={selectionLoadingRootIds.length > 0 || selectionFailedRootIds.length > 0}
+                />
+              </Space>,
             ];
           }
           return [];
@@ -790,7 +969,7 @@ const AssignmentReview = ({
               };
             }
             setTableLoading(true);
-            setSelectedRowKeys([]);
+            clearUnifiedSelection();
             const result = await getReviewsTableData(params, sort);
             return result;
           } catch (error) {
@@ -809,8 +988,8 @@ const AssignmentReview = ({
         rowSelection={
           tableType === 'unassigned'
             ? {
-                selectedRowKeys,
-                onChange: handleRowSelectionChange,
+                selectedRowKeys: selectedRootReviewIds,
+                onChange: handleRootSelectionChange,
                 getCheckboxProps: (record: ReviewsTable) => ({
                   disabled: record.rootMatchesStatus === false,
                 }),

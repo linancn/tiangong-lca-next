@@ -56,6 +56,9 @@ export default {
   'pages.review.deadline.placeholder': '选择审核截止时间',
 
   'pages.review.selectReviewer.button': '分配审核',
+  'pages.review.selection.summary': '已选择 {rootCount} 个根审核和 {referenceCount} 个引用审核',
+  'pages.review.selection.loading': '正在加载引用审核…',
+  'pages.review.selection.loadError': '引用审核加载失败，请重新勾选根审核后重试。',
 
   'pages.review.progress.button': '审核进度',
   'pages.review.progress.editReviewer': '编辑审核员',

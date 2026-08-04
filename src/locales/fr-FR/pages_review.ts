@@ -57,6 +57,9 @@ export default {
   'pages.review.deadline.placeholder': "Sélectionner l'échéance de la revue",
 
   'pages.review.selectReviewer.button': 'Attribuer pour revue',
+  'pages.review.selection.summary': '{rootCount} évaluations racines et {referenceCount} évaluations de référence sélectionnées',
+  'pages.review.selection.loading': 'Chargement des évaluations de référence...',
+  'pages.review.selection.loadError': "Échec du chargement des évaluations de référence. Sélectionnez à nouveau l'évaluation racine.",
 
   'pages.review.progress.button': 'Avancement de la revue',
   'pages.review.progress.editReviewer': "Modifier l'évaluateur",

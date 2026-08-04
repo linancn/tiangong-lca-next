@@ -192,7 +192,6 @@ export default {
   'pages.review.reference.status.rejected': 'Abgelehnt',
   'pages.review.reference.status.inReview': 'In Prüfung',
   'pages.review.reference.status.unassigned': 'Nicht zugewiesen',
-  'pages.review.reference.matchesCurrentTab': 'Aktueller Tab',
   'pages.review.table.column.dataName': 'Datenname',
   'pages.review.simpleDecision.approve': 'Genehmigen',
   'pages.review.simpleDecision.reject': 'Ablehnen',

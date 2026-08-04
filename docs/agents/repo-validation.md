@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: e4f804eec2096f8d5910a10a8363a2f3a34c17a7
-lastReviewedNote: 'Reviewed for Issue #763: exact source-tree parity, delete-aware idempotence, receipt verification, lint, the full test baseline, and production build remain the correct proof for an Edge mirror refresh.'
+lastReviewedAt: 2026-08-04
+lastReviewedCommit: 368cc1d9b873123556136d76441ec43447145d4c
+lastReviewedNote: 'Reviewed while resolving PR #765 for Issue #745 against the latest dev baseline: focused review suites, exact source-tree parity, delete-aware idempotence, receipt verification, lint, type checking, the full test gate, and production build remain the correct proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
