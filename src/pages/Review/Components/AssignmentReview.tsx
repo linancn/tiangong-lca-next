@@ -14,9 +14,10 @@ import {
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
+import { ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, Link, useIntl } from '@umijs/max';
-import { Card, Col, Input, Row, Space, Spin, Table, Tag, theme } from 'antd';
+import { FormattedMessage, useIntl } from '@umijs/max';
+import { Button, Card, Col, Input, Row, Space, Spin, Table, Tag, Tooltip, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
@@ -28,6 +29,16 @@ import SelectReviewer from './SelectReviewer';
 import SimpleReviewActions from './SimpleReviewActions';
 
 const { Search } = Input;
+
+const DATASET_ROUTES: Record<ReviewSubmitDatasetTable, string> = {
+  contacts: '/mydata/contacts',
+  sources: '/mydata/sources',
+  unitgroups: '/mydata/unitgroups',
+  flowproperties: '/mydata/flowproperties',
+  flows: '/mydata/flows',
+  processes: '/mydata/processes',
+  lifecyclemodels: '/mydata/models',
+};
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
@@ -117,6 +128,36 @@ const AssignmentReview = ({
 
   const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
     isReferenceMatchingReviewTab(record, tableType);
+
+  const renderDatasetViewButton = (
+    targetTable: ReviewSubmitDatasetTable | undefined,
+    id: string | undefined,
+    version: string | undefined,
+  ) => {
+    if (!targetTable || !id || !version) return null;
+
+    const dataLink = `${DATASET_ROUTES[targetTable]}?id=${encodeURIComponent(
+      id,
+    )}&version=${encodeURIComponent(version)}&mode=view`;
+    const viewLabel = intl.formatMessage({
+      id: 'pages.review.table.view',
+      defaultMessage: 'View',
+    });
+
+    return (
+      <Tooltip title={viewLabel}>
+        <Button
+          aria-label={viewLabel}
+          href={dataLink}
+          target='_blank'
+          rel='noopener noreferrer'
+          shape='circle'
+          size='small'
+          icon={<ProfileOutlined />}
+        />
+      </Tooltip>
+    );
+  };
 
   const clearUnifiedSelection = () => {
     selectedRootReviewIdsRef.current = new Set();
@@ -327,7 +368,12 @@ const AssignmentReview = ({
       ),
       dataIndex: 'data_name',
       key: 'data_name',
-      render: (dataName: any) => genProcessName(dataName ?? {}, lang),
+      render: (dataName: any, record: RootReviewReferenceProgress) => (
+        <Space size='small'>
+          {genProcessName(dataName ?? {}, lang)}
+          {renderDatasetViewButton(record.target_table, record.data_id, record.data_version)}
+        </Space>
+      ),
     },
     {
       title: <FormattedMessage id='pages.review.reference.table' defaultMessage='Data type' />,
@@ -449,16 +495,6 @@ const AssignmentReview = ({
     });
   }
 
-  const datasetRoutes: Record<ReviewSubmitDatasetTable, string> = {
-    contacts: '/mydata/contacts',
-    sources: '/mydata/sources',
-    unitgroups: '/mydata/unitgroups',
-    flowproperties: '/mydata/flowproperties',
-    flows: '/mydata/flows',
-    processes: '/mydata/processes',
-    lifecyclemodels: '/mydata/models',
-  };
-
   const isSimpleReview = (record: ReviewsTable) =>
     record.reviewKind === 'reference' ||
     (record.reviewKind === 'root' &&
@@ -481,14 +517,9 @@ const AssignmentReview = ({
       search: false,
       render: (_, row) => {
         const targetTable = row.targetTable as ReviewSubmitDatasetTable | undefined;
-        const dataLink = targetTable
-          ? `${datasetRoutes[targetTable]}?id=${encodeURIComponent(
-              row.json?.data?.id,
-            )}&version=${encodeURIComponent(row.json?.data?.version)}&mode=view`
-          : undefined;
         const canOpenRootData = row.rootCanRead !== false;
         return [
-          <div key={0} style={{ display: 'flex' }}>
+          <Space key={0} size='small'>
             {row.name}
             {!canOpenRootData ? null : targetTable === 'lifecyclemodels' ? (
               <LifeCycleModelView
@@ -507,12 +538,10 @@ const AssignmentReview = ({
                 disabled={false}
                 buttonTypeProp='text'
               />
-            ) : dataLink ? (
-              <Link to={dataLink} target='_blank' style={{ marginLeft: 8 }}>
-                <FormattedMessage id='pages.review.table.view' defaultMessage='View' />
-              </Link>
-            ) : null}
-          </div>,
+            ) : (
+              renderDatasetViewButton(targetTable, row.json?.data?.id, row.json?.data?.version)
+            )}
+          </Space>,
         ];
       },
     },

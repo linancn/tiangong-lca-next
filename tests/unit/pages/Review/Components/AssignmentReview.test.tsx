@@ -8,6 +8,10 @@ import { render, screen, waitFor } from '../../../../helpers/testUtils';
 
 let mockLocale = 'en-US';
 
+jest.mock('@ant-design/icons', () => ({
+  ProfileOutlined: () => <span data-testid='dataset-view-icon' />,
+}));
+
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id, values = {} }: any) =>
@@ -15,7 +19,6 @@ jest.mock('@umijs/max', () => ({
       (message, [key, value]) => message.replace(`{${key}}`, String(value)),
       defaultMessage ?? id,
     ),
-  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
   useIntl: () => ({
     locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -91,11 +94,18 @@ jest.mock('antd', () => {
   const React = require('react');
 
   const Card = ({ children }: any) => <section>{children}</section>;
-  const Button = ({ children, onClick }: any) => (
-    <button type='button' onClick={onClick}>
-      {children}
-    </button>
-  );
+  const Button = ({ children, onClick, icon, href, target, rel, ...props }: any) =>
+    href ? (
+      <a href={href} target={target} rel={rel} {...props}>
+        {icon}
+        {children}
+      </a>
+    ) : (
+      <button type='button' onClick={onClick} {...props}>
+        {icon}
+        {children}
+      </button>
+    );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
@@ -149,6 +159,7 @@ jest.mock('antd', () => {
     useToken: () => ({ token: { colorPrimary: '#1677ff', fontSize: 14 } }),
   };
   const Tag = ({ children, color }: any) => <span data-color={color}>{children}</span>;
+  const Tooltip = ({ children }: any) => children;
 
   return {
     __esModule: true,
@@ -161,6 +172,7 @@ jest.mock('antd', () => {
     Spin,
     Table,
     Tag,
+    Tooltip,
     theme,
   };
 });
@@ -1158,6 +1170,21 @@ describe('AssignmentReview', () => {
       ],
       total: 1,
     });
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'reference-flow',
+          target_table: 'flows',
+          data_id: 'flow-1',
+          data_version: '1.0.0',
+          data_name: { baseName: { en: 'Reference Flow' } },
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+      ],
+      error: null,
+    });
 
     render(
       <AssignmentReview
@@ -1170,10 +1197,19 @@ describe('AssignmentReview', () => {
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'review-contact:admin:contacts',
     );
-    expect(screen.getByRole('link', { name: 'View' })).toHaveAttribute(
+    const rootViewLink = screen.getByRole('link', { name: 'View' });
+    expect(rootViewLink).toHaveAttribute(
       'href',
       '/mydata/contacts?id=contact-1&version=1.0.0&mode=view',
     );
+    expect(rootViewLink).not.toHaveTextContent('View');
+
+    await userEvent.click(screen.getByRole('button', { name: 'expand-review-contact' }));
+    expect(await screen.findByTestId('subrow-reference-flow')).toBeInTheDocument();
+    const viewLinks = screen.getAllByRole('link', { name: 'View' });
+    expect(viewLinks).toHaveLength(2);
+    expect(viewLinks[1]).toHaveAttribute('href', '/mydata/flows?id=flow-1&version=1.0.0&mode=view');
+    expect(viewLinks[1]).not.toHaveTextContent('View');
   });
 
   it('renders simple actions for a pending reference review', async () => {
