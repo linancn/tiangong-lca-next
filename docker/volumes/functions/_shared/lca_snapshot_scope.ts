@@ -44,10 +44,14 @@ export const LCIA_FACTOR_COVERAGE_COUNT_UNIT = 'exchange_method_pair';
 export const LCIA_UNCHARACTERIZED_ARTIFACT_FORMAT = 'lcia-uncharacterized-jsonl:v2';
 
 export type LcaDataScope =
-  'current_user' | 'open_data' | 'all_data' | typeof PUBLIC_PLUS_OWNER_DRAFT_SCOPE;
+  | 'current_user'
+  | 'open_data'
+  | 'all_data'
+  | typeof PUBLIC_PLUS_OWNER_DRAFT_SCOPE;
 
 export type LcaSnapshotSelectionMode =
-  typeof FILTERED_LIBRARY_SELECTION_MODE | typeof REQUEST_ROOTS_CLOSURE_SELECTION_MODE;
+  | typeof FILTERED_LIBRARY_SELECTION_MODE
+  | typeof REQUEST_ROOTS_CLOSURE_SELECTION_MODE;
 
 export type LcaSnapshotRequestRoot = {
   process_id: string;

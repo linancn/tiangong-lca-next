@@ -1,10 +1,7 @@
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertAssignTeamPolicy } from './policy.ts';
-import {
-  createLegacyDatasetCommandRepository,
-  type LegacyDatasetCommandRepository,
-} from './repository.ts';
+import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
 import type { AssignTeamRequest, DatasetCommandExecutionResult } from './types.ts';
 import { parseAssignTeamRequest } from './validation.ts';
 
@@ -15,7 +12,7 @@ export function parseAssignTeamCommand(body: unknown) {
 export async function executeAssignTeamCommand(
   request: AssignTeamRequest,
   actor: ActorContext,
-  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
+  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertAssignTeamPolicy(request);
   if (!policy.ok) {

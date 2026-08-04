@@ -2,14 +2,6 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
-import {
-  createLcaResultFamilyCapabilityRepository,
-  type LcaResultFamilyCapabilityRepository,
-} from '../_shared/capabilities/lca_result_family.ts';
-import {
-  createLcaSnapshotCapabilityRepository,
-  type LcaSnapshotCapabilityRepository,
-} from '../_shared/capabilities/lca_snapshot_family.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { validateProcessEntriesInDataScope } from '../_shared/lca_process_scope.ts';
 import { ensureLcaSnapshotBuildQueued } from '../_shared/lca_snapshot_build_queue.ts';
@@ -36,9 +28,6 @@ import {
   isWorkerJobsCutoverEnabled,
   workerJobPayloadStringFromRpcData,
 } from '../_shared/worker_jobs_cutover.ts';
-
-const lcaSnapshotRepository = createLcaSnapshotCapabilityRepository(supabaseClient);
-const lcaResultRepository = createLcaResultFamilyCapabilityRepository(supabaseClient);
 
 type ContributionPathRequest = {
   scope?: string;
@@ -107,6 +96,20 @@ type ScopedSnapshotResolution =
   | { kind: 'stale'; snapshot_id: string }
   | { kind: 'none' };
 
+type ResultCacheRow = {
+  id: string;
+  status: string;
+  job_id: string | null;
+  worker_job_id: string | null;
+  result_id: string | null;
+  hit_count: number;
+};
+
+type CacheJobState = {
+  status: string;
+  result_id: string | null;
+};
+
 type ProcessIndexResolution =
   | { ok: true; process_index: number }
   | { ok: false; status: number; body: Record<string, unknown> };
@@ -121,33 +124,7 @@ type ContributionPathOptions = {
 const REQUEST_VERSION = 'lca_contribution_path_v1';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-type LcaContributionPathHandlerDependencies = {
-  authenticateRequest: typeof authenticateRequest;
-  getRedisClient: typeof getRedisClient;
-  isSnapshotFresh: typeof isSnapshotFresh;
-  snapshotRepository: LcaSnapshotCapabilityRepository;
-  resultRepository: LcaResultFamilyCapabilityRepository;
-};
-
-export function createLcaContributionPathHandler(
-  overrides: Partial<LcaContributionPathHandlerDependencies> = {},
-): (req: Request) => Promise<Response> {
-  const dependencies: LcaContributionPathHandlerDependencies = {
-    authenticateRequest,
-    getRedisClient,
-    isSnapshotFresh,
-    snapshotRepository: lcaSnapshotRepository,
-    resultRepository: lcaResultRepository,
-    ...overrides,
-  };
-
-  return (req) => handleLcaContributionPathRequest(req, dependencies);
-}
-
-async function handleLcaContributionPathRequest(
-  req: Request,
-  dependencies: LcaContributionPathHandlerDependencies,
-): Promise<Response> {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -156,8 +133,8 @@ async function handleLcaContributionPathRequest(
     return json({ error: 'method_not_allowed' }, 405);
   }
 
-  const redis = await dependencies.getRedisClient();
-  const authResult = await dependencies.authenticateRequest(req, {
+  const redis = await getRedisClient();
+  const authResult = await authenticateRequest(req, {
     authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
@@ -210,14 +187,7 @@ async function handleLcaContributionPathRequest(
   }
   const options = optionsResult.value;
 
-  const snapshotMeta = await resolveReadySnapshot(
-    scope,
-    body.snapshot_id,
-    userId,
-    dataScope,
-    dependencies.snapshotRepository,
-    dependencies.isSnapshotFresh,
-  );
+  const snapshotMeta = await resolveReadySnapshot(scope, body.snapshot_id, userId, dataScope);
   if (!snapshotMeta.ok) {
     const shouldQueueBuild =
       shouldAutoBuildSnapshot(dataScope) &&
@@ -248,10 +218,7 @@ async function handleLcaContributionPathRequest(
   }
   const snapshotId = snapshotMeta.data.snapshot_id;
 
-  const snapshotArtifact = await fetchSnapshotArtifactMeta(
-    snapshotId,
-    dependencies.snapshotRepository,
-  );
+  const snapshotArtifact = await fetchSnapshotArtifactMeta(snapshotId);
   if (!snapshotArtifact.ok) {
     return json({ error: snapshotArtifact.error }, snapshotArtifact.status);
   }
@@ -318,18 +285,108 @@ async function handleLcaContributionPathRequest(
       : {}),
   };
   const requestKey = await sha256Hex(JSON.stringify(normalizedRequest));
-  const cacheDecision = await resolveContributionPathCache({
-    scope,
-    snapshotId,
-    requestKey,
-    userId,
-    calculationEvidenceBinding,
-    repository: dependencies.resultRepository,
-  });
-  if (cacheDecision.kind === 'respond') {
-    return json(cacheDecision.body, cacheDecision.status);
+  const nowIso = new Date().toISOString();
+  let retryAfterJobId: string | null = null;
+
+  const existingCache = await fetchResultCache(scope, snapshotId, requestKey);
+  if (!existingCache.ok) {
+    return json({ error: 'cache_lookup_failed' }, 500);
   }
-  const retryAfterJobId = cacheDecision.retryAfterJobId;
+
+  if (existingCache.row) {
+    await touchResultCache(existingCache.row, {
+      updated_at: nowIso,
+      last_accessed_at: nowIso,
+      hit_count: existingCache.row.hit_count + 1,
+    });
+
+    if (existingCache.row.status === 'ready' && existingCache.row.result_id) {
+      const cacheHit: ContributionPathResponse = {
+        mode: 'cache_hit',
+        snapshot_id: snapshotId,
+        cache_key: requestKey,
+        result_id: existingCache.row.result_id,
+        ...(calculationEvidenceBinding ? { calculation_evidence: calculationEvidenceBinding } : {}),
+      };
+      return json(cacheHit, 200);
+    }
+
+    if (existingCache.row.status === 'failed' || existingCache.row.status === 'stale') {
+      retryAfterJobId = existingCache.row.job_id ?? 'cache_failed';
+    }
+
+    if (
+      (existingCache.row.status === 'pending' || existingCache.row.status === 'running') &&
+      (existingCache.row.worker_job_id || existingCache.row.job_id)
+    ) {
+      const cacheJobState = await fetchCacheJobState(existingCache.row);
+      if (cacheJobState.ok) {
+        if (
+          (cacheJobState.data.status === 'ready' || cacheJobState.data.status === 'completed') &&
+          cacheJobState.data.result_id
+        ) {
+          await updateResultCacheState(existingCache.row.id, {
+            status: 'ready',
+            result_id: cacheJobState.data.result_id,
+            updated_at: nowIso,
+            last_accessed_at: nowIso,
+            hit_count: existingCache.row.hit_count + 1,
+          });
+          const cacheHit: ContributionPathResponse = {
+            mode: 'cache_hit',
+            snapshot_id: snapshotId,
+            cache_key: requestKey,
+            result_id: cacheJobState.data.result_id,
+            ...(calculationEvidenceBinding
+              ? { calculation_evidence: calculationEvidenceBinding }
+              : {}),
+          };
+          return json(cacheHit, 200);
+        }
+
+        if (
+          cacheJobState.data.status === 'queued' ||
+          cacheJobState.data.status === 'running' ||
+          cacheJobState.data.status === 'waiting' ||
+          cacheJobState.data.status === 'blocked'
+        ) {
+          const inProgress: ContributionPathResponse = {
+            mode: 'in_progress',
+            snapshot_id: snapshotId,
+            cache_key: requestKey,
+            job_id: existingCache.row.job_id ?? undefined,
+            worker_job_id: existingCache.row.worker_job_id,
+            ...(calculationEvidenceBinding
+              ? { calculation_evidence: calculationEvidenceBinding }
+              : {}),
+          };
+          return json(inProgress, 200);
+        }
+
+        if (cacheJobState.data.status === 'failed' || cacheJobState.data.status === 'stale') {
+          retryAfterJobId = existingCache.row.job_id;
+          await updateResultCacheState(existingCache.row.id, {
+            status: 'failed',
+            updated_at: nowIso,
+            last_accessed_at: nowIso,
+            hit_count: existingCache.row.hit_count + 1,
+          });
+        }
+      } else {
+        const inProgress: ContributionPathResponse = {
+          mode: 'in_progress',
+          snapshot_id: snapshotId,
+          cache_key: requestKey,
+          job_id: existingCache.row.job_id ?? undefined,
+          worker_job_id: existingCache.row.worker_job_id,
+          ...(calculationEvidenceBinding
+            ? { calculation_evidence: calculationEvidenceBinding }
+            : {}),
+        };
+        return json(inProgress, 200);
+      }
+    }
+  }
 
   const idempotencyKeyBase = `${userId}:${requestKey}`;
   const idempotencyKey = retryAfterJobId
@@ -392,223 +449,61 @@ async function handleLcaContributionPathRequest(
   const finalJobId = workerJobPayloadStringFromRpcData(workerJob.data, 'job_id') ?? newJobId;
   const finalWorkerJobId = workerJob.workerJobId;
 
-  const admission = await admitContributionPathCache({
-    scope,
-    snapshotId,
-    requestKey,
-    requestPayload: normalizedRequest,
-    legacyJobId: finalJobId,
-    workerJobId: finalWorkerJobId,
-    calculationEvidenceBinding,
-    repository: dependencies.resultRepository,
-  });
-  return json(admission.body, admission.status);
-}
+  if (existingCache.row) {
+    const { error: cacheUpdateError } = await supabaseClient
+      .from('lca_result_cache')
+      .update({
+        status: 'pending',
+        job_id: finalJobId,
+        worker_job_id: finalWorkerJobId,
+        request_payload: normalizedRequest,
+        hit_count: existingCache.row.hit_count + 1,
+        last_accessed_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq('id', existingCache.row.id);
 
-type ContributionCacheDecision =
-  | { kind: 'continue'; retryAfterJobId: string | null }
-  | { kind: 'respond'; status: number; body: Record<string, unknown> };
-
-export async function resolveContributionPathCache(args: {
-  scope: string;
-  snapshotId: string;
-  requestKey: string;
-  userId: string;
-  calculationEvidenceBinding?: LcaCalculationEvidenceBinding | null;
-  repository: LcaResultFamilyCapabilityRepository;
-}): Promise<ContributionCacheDecision> {
-  const existing = await args.repository.readCache({
-    scope: args.scope,
-    snapshotId: args.snapshotId,
-    requestKey: args.requestKey,
-  });
-  if (!existing.ok) {
-    return { kind: 'respond', status: 500, body: { error: 'cache_lookup_failed' } };
-  }
-  if (!existing.data) return { kind: 'continue', retryAfterJobId: null };
-
-  const evidence = args.calculationEvidenceBinding
-    ? { calculation_evidence: args.calculationEvidenceBinding }
-    : {};
-  const row = existing.data;
-  if (row.status === 'ready' && row.resultId) {
-    const touched = await args.repository.touchCache(row.cacheId);
-    if (!touched.ok) {
-      console.warn('touch contribution-path cache failed', {
-        code: touched.code,
-        error: touched.message,
-        cache_id: row.cacheId,
+    if (cacheUpdateError) {
+      console.error('update lca_result_cache failed', {
+        error: cacheUpdateError.message,
+        code: cacheUpdateError.code,
       });
+      return json({ error: 'cache_update_failed' }, 500);
     }
-    return {
-      kind: 'respond',
-      status: 200,
-      body: {
-        mode: 'cache_hit',
-        snapshot_id: args.snapshotId,
-        cache_key: args.requestKey,
-        result_id: row.resultId,
-        ...evidence,
-      },
-    };
-  }
-
-  if (row.status === 'failed' || row.status === 'stale') {
-    return {
-      kind: 'continue',
-      retryAfterJobId: row.legacyJobId ?? 'cache_failed',
-    };
-  }
-
-  if ((row.status === 'pending' || row.status === 'running') && row.workerJobId) {
-    const reconciled = await args.repository.reconcileCache({
-      requestedBy: args.userId,
-      cacheId: row.cacheId,
+  } else {
+    const { error: cacheInsertError } = await supabaseClient.from('lca_result_cache').insert({
+      scope,
+      snapshot_id: snapshotId,
+      request_key: requestKey,
+      request_payload: normalizedRequest,
+      status: 'pending',
+      job_id: finalJobId,
+      worker_job_id: finalWorkerJobId,
+      hit_count: 1,
+      last_accessed_at: nowIso,
+      created_at: nowIso,
+      updated_at: nowIso,
     });
-    if (!reconciled.ok) {
-      console.error('reconcile contribution-path cache failed', {
-        code: reconciled.code,
-        error: reconciled.message,
-        details: reconciled.details,
-        cache_id: row.cacheId,
+
+    if (cacheInsertError && !isDuplicateKey(cacheInsertError.code)) {
+      console.error('insert lca_result_cache failed', {
+        error: cacheInsertError.message,
+        code: cacheInsertError.code,
       });
-      return { kind: 'respond', status: 500, body: { error: 'cache_reconcile_failed' } };
+      return json({ error: 'cache_insert_failed' }, 500);
     }
-    if (reconciled.data.code === 'cache_not_found' || reconciled.data.code === 'job_not_found') {
-      return { kind: 'respond', status: 500, body: { error: 'cache_reconcile_failed' } };
-    }
-
-    const canonical = reconciled.data.cache;
-    if (!canonical) {
-      return { kind: 'respond', status: 500, body: { error: 'cache_reconcile_failed' } };
-    }
-    if (canonical.resultId) {
-      return {
-        kind: 'respond',
-        status: 200,
-        body: {
-          mode: 'cache_hit',
-          snapshot_id: args.snapshotId,
-          cache_key: args.requestKey,
-          result_id: canonical.resultId,
-          ...evidence,
-        },
-      };
-    }
-
-    // The reconciliation command already increments hit_count exactly once.
-    // Terminal failed/stale (including DB-normalized cancelled) intentionally
-    // converges on the next poll, which will take the admission branch.
-    return {
-      kind: 'respond',
-      status: 200,
-      body: {
-        mode: 'in_progress',
-        snapshot_id: args.snapshotId,
-        cache_key: args.requestKey,
-        job_id: canonical.legacyJobId ?? undefined,
-        worker_job_id: canonical.workerJobId,
-        ...evidence,
-      },
-    };
   }
 
-  if ((row.status === 'pending' || row.status === 'running') && row.legacyJobId) {
-    const touched = await args.repository.touchCache(row.cacheId);
-    if (!touched.ok) {
-      console.warn('touch legacy-only contribution-path cache failed', {
-        code: touched.code,
-        error: touched.message,
-        cache_id: row.cacheId,
-      });
-    }
-    return {
-      kind: 'respond',
-      status: 200,
-      body: {
-        mode: 'in_progress',
-        snapshot_id: args.snapshotId,
-        cache_key: args.requestKey,
-        job_id: row.legacyJobId,
-        worker_job_id: null,
-        ...evidence,
-      },
-    };
-  }
-
-  return { kind: 'continue', retryAfterJobId: null };
-}
-
-export async function admitContributionPathCache(args: {
-  scope: string;
-  snapshotId: string;
-  requestKey: string;
-  requestPayload: Record<string, unknown>;
-  legacyJobId: string;
-  workerJobId: string | null;
-  calculationEvidenceBinding?: LcaCalculationEvidenceBinding | null;
-  repository: LcaResultFamilyCapabilityRepository;
-}): Promise<{ status: number; body: Record<string, unknown> }> {
-  const admitted = await args.repository.admitCache({
-    scope: args.scope,
-    snapshotId: args.snapshotId,
-    requestKey: args.requestKey,
-    requestPayload: args.requestPayload,
-    legacyJobId: args.legacyJobId,
-    workerJobId: args.workerJobId,
-    replaceReady: false,
-  });
-  if (!admitted.ok) {
-    console.error('admit contribution-path cache failed', {
-      code: admitted.code,
-      error: admitted.message,
-      details: admitted.details,
-    });
-    return { status: 500, body: { error: 'cache_admission_failed' } };
-  }
-
-  const canonical = admitted.data.cache;
-  const evidence = args.calculationEvidenceBinding
-    ? { calculation_evidence: args.calculationEvidenceBinding }
-    : {};
-  if (admitted.data.outcome === 'reused') {
-    return {
-      status: 200,
-      body: canonical.resultId
-        ? {
-            mode: 'cache_hit',
-            snapshot_id: args.snapshotId,
-            cache_key: args.requestKey,
-            result_id: canonical.resultId,
-            ...evidence,
-          }
-        : {
-            mode: 'in_progress',
-            snapshot_id: args.snapshotId,
-            cache_key: args.requestKey,
-            job_id: canonical.legacyJobId ?? undefined,
-            worker_job_id: canonical.workerJobId,
-            ...evidence,
-          },
-    };
-  }
-
-  return {
-    status: 202,
-    body: {
-      mode: 'queued',
-      snapshot_id: args.snapshotId,
-      cache_key: args.requestKey,
-      job_id: canonical.legacyJobId ?? args.legacyJobId,
-      worker_job_id: canonical.workerJobId,
-      ...evidence,
-    },
+  const response: ContributionPathResponse = {
+    mode: 'queued',
+    snapshot_id: snapshotId,
+    cache_key: requestKey,
+    job_id: finalJobId,
+    worker_job_id: finalWorkerJobId,
+    ...(calculationEvidenceBinding ? { calculation_evidence: calculationEvidenceBinding } : {}),
   };
-}
-
-if (import.meta.main) {
-  Deno.serve(createLcaContributionPathHandler());
-}
+  return json(response, 202);
+});
 
 async function resolveCalculationEvidenceBinding(
   raw: unknown,
@@ -659,13 +554,170 @@ function parseContributionPathOptions(
   };
 }
 
+async function fetchResultCache(
+  scope: string,
+  snapshotId: string,
+  requestKey: string,
+): Promise<{ ok: true; row: ResultCacheRow | null } | { ok: false }> {
+  const { data, error } = await supabaseClient
+    .from('lca_result_cache')
+    .select('id,status,job_id,worker_job_id,result_id,hit_count')
+    .eq('scope', scope)
+    .eq('snapshot_id', snapshotId)
+    .eq('request_key', requestKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('fetch lca_result_cache failed', {
+      error: error.message,
+      scope,
+      snapshot_id: snapshotId,
+      request_key: requestKey,
+    });
+    return { ok: false };
+  }
+
+  if (!data) {
+    return { ok: true, row: null };
+  }
+
+  return {
+    ok: true,
+    row: {
+      id: String(data.id),
+      status: String(data.status),
+      job_id: data.job_id ? String(data.job_id) : null,
+      worker_job_id: data.worker_job_id ? String(data.worker_job_id) : null,
+      result_id: data.result_id ? String(data.result_id) : null,
+      hit_count: Number(data.hit_count ?? 0),
+    },
+  };
+}
+
+async function touchResultCache(
+  row: ResultCacheRow,
+  patch: {
+    updated_at: string;
+    last_accessed_at: string;
+    hit_count: number;
+  },
+): Promise<void> {
+  const { error } = await supabaseClient
+    .from('lca_result_cache')
+    .update({
+      updated_at: patch.updated_at,
+      last_accessed_at: patch.last_accessed_at,
+      hit_count: patch.hit_count,
+    })
+    .eq('id', row.id);
+
+  if (error) {
+    console.warn('touch lca_result_cache failed', {
+      error: error.message,
+      cache_id: row.id,
+    });
+  }
+}
+
+async function updateResultCacheState(
+  cacheId: string,
+  patch: {
+    status: string;
+    updated_at: string;
+    last_accessed_at: string;
+    hit_count: number;
+    result_id?: string | null;
+  },
+): Promise<void> {
+  const updatePayload: Record<string, unknown> = {
+    status: patch.status,
+    updated_at: patch.updated_at,
+    last_accessed_at: patch.last_accessed_at,
+    hit_count: patch.hit_count,
+  };
+  if (patch.result_id !== undefined) {
+    updatePayload.result_id = patch.result_id;
+  }
+
+  const { error } = await supabaseClient
+    .from('lca_result_cache')
+    .update(updatePayload)
+    .eq('id', cacheId);
+
+  if (error) {
+    console.warn('update lca_result_cache state failed', {
+      error: error.message,
+      cache_id: cacheId,
+      next_status: patch.status,
+    });
+  }
+}
+
+async function fetchCacheJobState(
+  row: ResultCacheRow,
+): Promise<{ ok: true; data: CacheJobState } | { ok: false }> {
+  if (row.worker_job_id) {
+    return await fetchWorkerCacheJobState(row.worker_job_id);
+  }
+
+  return { ok: false };
+}
+
+async function fetchWorkerCacheJobState(
+  workerJobId: string,
+): Promise<{ ok: true; data: CacheJobState } | { ok: false }> {
+  const { data: jobData, error: jobError } = await supabaseClient
+    .from('worker_jobs')
+    .select('id,status')
+    .eq('id', workerJobId)
+    .maybeSingle();
+
+  if (jobError) {
+    console.warn('fetch worker cache job state failed', {
+      error: jobError.message,
+      worker_job_id: workerJobId,
+    });
+    return { ok: false };
+  }
+
+  if (!jobData) {
+    return { ok: false };
+  }
+
+  let resultId: string | null = null;
+  if (jobData.status === 'completed') {
+    const { data: resultData, error: resultError } = await supabaseClient
+      .from('lca_results')
+      .select('id')
+      .eq('worker_job_id', workerJobId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (resultError) {
+      console.warn('fetch contribution path result by worker_job_id failed', {
+        error: resultError.message,
+        worker_job_id: workerJobId,
+      });
+      return { ok: false };
+    }
+    resultId = resultData?.id ? String(resultData.id) : null;
+  }
+
+  return {
+    ok: true,
+    data: {
+      status: String(jobData.status),
+      result_id: resultId,
+    },
+  };
+}
+
 async function resolveReadySnapshot(
   scope: string,
   requestedSnapshotId?: string,
-  userId: string = '',
+  userId?: string,
   dataScope: LcaDataScope = 'current_user',
-  repository: LcaSnapshotCapabilityRepository = lcaSnapshotRepository,
-  freshnessCheck: typeof isSnapshotFresh = isSnapshotFresh,
 ): Promise<{ ok: true; data: ReadySnapshotMeta } | { ok: false; error: string; status: number }> {
   const explicit = requestedSnapshotId?.trim();
 
@@ -673,7 +725,7 @@ async function resolveReadySnapshot(
     if (!UUID_RE.test(explicit)) {
       return { ok: false, error: 'invalid_snapshot_id', status: 400 };
     }
-    const ready = await fetchSnapshotArtifactMeta(explicit, repository);
+    const ready = await fetchSnapshotArtifactMeta(explicit);
     if (!ready.ok) {
       return { ok: false, error: ready.error, status: ready.status };
     }
@@ -697,34 +749,72 @@ async function resolveReadySnapshot(
     return { ok: true, data: { snapshot_id: ready.data.snapshot_id } };
   }
 
-  const scopedReady = await fetchReadySnapshotForDataScope(
-    scope,
-    userId,
-    dataScope,
-    repository,
-    freshnessCheck,
-  );
-  if (scopedReady.kind === 'fresh') {
-    return { ok: true, data: scopedReady.data };
+  if (userId) {
+    const scopedReady = await fetchReadySnapshotForDataScope(scope, userId, dataScope);
+    if (scopedReady.kind === 'fresh') {
+      return { ok: true, data: scopedReady.data };
+    }
+    if (scopedReady.kind === 'stale') {
+      return { ok: false, error: 'snapshot_stale_rebuild_required', status: 409 };
+    }
+    return { ok: false, error: 'no_ready_snapshot', status: 404 };
   }
-  if (scopedReady.kind === 'stale') {
-    return { ok: false, error: 'snapshot_stale_rebuild_required', status: 409 };
+
+  const { data: activeRow, error: activeErr } = await supabaseClient
+    .from('lca_active_snapshots')
+    .select('snapshot_id')
+    .eq('scope', scope)
+    .maybeSingle();
+
+  if (activeErr) {
+    console.warn('read lca_active_snapshots failed', { error: activeErr.message, scope });
   }
-  return { ok: false, error: 'no_ready_snapshot', status: 404 };
+
+  if (activeRow?.snapshot_id) {
+    const ready = await fetchSnapshotArtifactMeta(String(activeRow.snapshot_id));
+    if (ready.ok) {
+      return { ok: true, data: { snapshot_id: ready.data.snapshot_id } };
+    }
+  }
+
+  const { data: latestRows, error: latestErr } = await supabaseClient
+    .from('lca_snapshot_artifacts')
+    .select('snapshot_id,status,created_at')
+    .eq('status', 'ready')
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (latestErr) {
+    console.error('read latest ready snapshot failed', { error: latestErr.message });
+    return { ok: false, error: 'snapshot_lookup_failed', status: 500 };
+  }
+
+  if (!latestRows || latestRows.length === 0) {
+    return { ok: false, error: 'no_ready_snapshot', status: 404 };
+  }
+
+  return {
+    ok: true,
+    data: {
+      snapshot_id: String(latestRows[0].snapshot_id),
+    },
+  };
 }
 
 async function fetchReadySnapshotForDataScope(
   scope: string,
   userId: string,
   dataScope: LcaDataScope,
-  repository: LcaSnapshotCapabilityRepository = lcaSnapshotRepository,
-  freshnessCheck: typeof isSnapshotFresh = isSnapshotFresh,
 ): Promise<ScopedSnapshotResolution> {
   const expectedProcessFilter = await buildSnapshotProcessFilter(dataScope, userId);
-  const { data, error } = await repository.resolveReady(
-    scope,
-    buildSnapshotContainsFilter(expectedProcessFilter),
-  );
+  const { data, error } = await supabaseClient
+    .from('lca_network_snapshots')
+    .select('id,created_at,process_filter')
+    .eq('status', 'ready')
+    .in('scope', scope === 'full_library' ? ['full_library'] : ['full_library', scope])
+    .contains('process_filter', buildSnapshotContainsFilter(expectedProcessFilter))
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (error) {
     console.warn('read scoped snapshots failed', {
@@ -747,10 +837,10 @@ async function fetchReadySnapshotForDataScope(
       continue;
     }
 
-    const ready = await fetchSnapshotArtifactMeta(snapshotId, repository);
+    const ready = await fetchSnapshotArtifactMeta(snapshotId);
     if (ready.ok) {
       const snapshotCreatedAt = String((row as { created_at?: unknown }).created_at ?? '');
-      const freshness = await freshnessCheck(snapshotCreatedAt, processFilter);
+      const freshness = await isSnapshotFresh(snapshotCreatedAt, processFilter);
       if (freshness === 'fresh') {
         return { kind: 'fresh', data: { snapshot_id: ready.data.snapshot_id } };
       }
@@ -821,9 +911,11 @@ async function fetchTableMaxModifiedAt(
   table: 'flows' | 'lciamethods',
   filter: ParsedSnapshotProcessFilter,
 ): Promise<string | null> {
-  const relation =
-    table === 'flows' ? supabaseClient.from('flows') : supabaseClient.from('lciamethods');
-  let query = relation.select('modified_at').order('modified_at', { ascending: false }).limit(1);
+  let query = supabaseClient
+    .from(table)
+    .select('modified_at')
+    .order('modified_at', { ascending: false })
+    .limit(1);
 
   const visibilityExpression = buildSnapshotVisibilityOrExpression(filter, {
     supportsCollaborationColumns: table === 'flows',
@@ -842,31 +934,40 @@ async function fetchTableMaxModifiedAt(
 
 async function fetchSnapshotArtifactMeta(
   snapshotId: string,
-  repository: LcaSnapshotCapabilityRepository = lcaSnapshotRepository,
 ): Promise<
   { ok: true; data: SnapshotArtifactMeta } | { ok: false; error: string; status: number }
 > {
-  const { data, error } = await repository.readArtifact(snapshotId);
+  const { data, error } = await supabaseClient
+    .from('lca_snapshot_artifacts')
+    .select('snapshot_id,artifact_url,status,created_at')
+    .eq('snapshot_id', snapshotId)
+    .eq('status', 'ready')
+    .order('created_at', { ascending: false })
+    .limit(1);
 
   if (error) {
-    console.error('read LCA snapshot artifact capability failed', {
+    console.error('query lca_snapshot_artifacts failed', {
       error: error.message,
       snapshot_id: snapshotId,
     });
     return { ok: false, error: 'snapshot_artifact_lookup_failed', status: 500 };
   }
 
-  if (!data) {
+  if (!data || data.length === 0) {
     return { ok: false, error: 'snapshot_not_ready', status: 404 };
   }
 
   return {
     ok: true,
     data: {
-      snapshot_id: String(data.snapshot_id),
-      artifact_url: String(data.artifact_url),
+      snapshot_id: String(data[0].snapshot_id),
+      artifact_url: String(data[0].artifact_url),
     },
   };
+}
+
+function isDuplicateKey(code: string | undefined): boolean {
+  return code === '23505';
 }
 
 function processEntryForIndex(

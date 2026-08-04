@@ -11,9 +11,9 @@ import {
 import type { SaveDraftRequest } from '../_shared/commands/dataset/types.ts';
 
 export function createAppDatasetSaveDraftHandler(
-  overrides: Partial<CommandHandlerOptions<SaveDraftRequest, 'request-jwt'>> = {},
+  overrides: Partial<CommandHandlerOptions<SaveDraftRequest>> = {},
 ) {
-  return createCommandHandler<SaveDraftRequest, 'request-jwt'>({
+  return createCommandHandler<SaveDraftRequest>({
     parse: parseSaveDraftCommand,
     execute: executeSaveDraftCommand,
     ...overrides,

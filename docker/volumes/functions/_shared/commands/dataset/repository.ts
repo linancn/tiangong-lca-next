@@ -1,9 +1,5 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
-import {
-  createDatasetApiV1Repository,
-  type DatasetApiV1Repository,
-} from '../../capabilities/dataset_api_v1.ts';
 import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import {
   callDatasetAssignTeamRpc,
@@ -15,10 +11,10 @@ import {
   callDatasetReviewSubmitJobEnqueueRpc,
   callDatasetReviewSubmitJobReadLatestRpc,
   callDatasetReviewSubmitJobReadRpc,
+  callDatasetSaveDraftRpc,
   callDatasetSubmitReviewRpc,
   type DatasetRpcResult,
 } from '../../db_rpc/dataset_commands.ts';
-import type { RequestJwtSupabaseClient } from '../../supabase_client.ts';
 import type {
   AssignTeamRequest,
   CreateRequest,
@@ -71,33 +67,14 @@ function requireExplicitClient(supabase: RpcClient | null | undefined): RpcClien
   return supabase;
 }
 
-export function createDatasetCommandRepository(
-  supabase: RequestJwtSupabaseClient,
-): DatasetCommandRepository {
-  const client = requireExplicitClient(supabase);
-  const legacy = createLegacyDatasetCommandRepository(client);
-  let apiV1: DatasetApiV1Repository | undefined;
-
-  return {
-    ...legacy,
-    saveDraft(request, audit) {
-      apiV1 ??= createDatasetApiV1Repository(supabase);
-      return apiV1.saveDraft(request, audit);
-    },
-  };
-}
-
-export type LegacyDatasetCommandRepository = Omit<DatasetCommandRepository, 'saveDraft'>;
-
-export function createLegacyDatasetCommandRepository(
-  supabase: RpcClient,
-): LegacyDatasetCommandRepository {
+export function createDatasetCommandRepository(supabase: RpcClient): DatasetCommandRepository {
   const client = requireExplicitClient(supabase);
 
   return {
     create: (request, audit) => callDatasetCreateRpc(client, request, audit),
     createVersion: (request, audit) => callDatasetCreateVersionRpc(client, request, audit),
     delete: (request, audit) => callDatasetDeleteRpc(client, request, audit),
+    saveDraft: (request, audit) => callDatasetSaveDraftRpc(client, request, audit),
     assignTeam: (request, audit) => callDatasetAssignTeamRpc(client, request, audit),
     publish: (request, audit) => callDatasetPublishRpc(client, request, audit),
     submitReview: (request, audit) => callDatasetSubmitReviewRpc(client, request, audit),

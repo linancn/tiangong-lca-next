@@ -3,19 +3,16 @@ import { z } from 'zod';
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import type { CommandParseResult } from '../../command_runtime/command.ts';
-import {
-  createLegacyDatasetCommandRepository,
-  type LegacyDatasetCommandRepository,
-} from './repository.ts';
+import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
 import {
   resolveAuthoritativeReviewSubmitRevision,
   type ReviewSubmitGateRevisionResolver,
 } from './review_submit_gate.ts';
 import {
-  type DatasetCommandExecutionResult,
-  type DatasetCommandFailure,
   REVIEW_SUBMIT_GATE_POLICY_PROFILE,
   REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
+  type DatasetCommandExecutionResult,
+  type DatasetCommandFailure,
   type ReviewSubmitGateRequest,
   type ReviewSubmitJobEnqueueRequest,
   type ReviewSubmitJobRequest,
@@ -173,7 +170,7 @@ async function resolveJobRevision(
 export async function executeReviewSubmitJobCommand(
   request: ReviewSubmitJobRequest,
   actor: ActorContext,
-  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
+  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
   resolveRevision: ReviewSubmitGateRevisionResolver = resolveAuthoritativeReviewSubmitRevision,
 ): Promise<DatasetCommandExecutionResult> {
   if (request.action === 'read') {

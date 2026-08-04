@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-04
-lastReviewedCommit: 368cc1d9b873123556136d76441ec43447145d4c
-lastReviewedNote: 'Reviewed while resolving PR #765 for Issue #745 against the latest dev baseline: focused review validation, exact-source mirror checks, lint, full tests, build, managed push, dev PR, and later workspace-integration steps remain accurate.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing focused-validation, lint, build, managed-push, dev-PR, and later workspace-integration sequence remains accurate.'
 ---
 
 # Development Bootstrap

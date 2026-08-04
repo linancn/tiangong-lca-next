@@ -2,54 +2,23 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
-import {
-  createLcaResultFamilyCapabilityRepository,
-  type LcaResultFamilyCapabilityRepository,
-} from '../_shared/capabilities/lca_result_family.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { callLcaReadResultProjectionRpc } from '../_shared/db_rpc/lca_results.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
-
-const lcaResultRepository = createLcaResultFamilyCapabilityRepository(supabaseClient);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CONTRIBUTION_PATH_FORMAT = 'contribution-path:v1';
 
 type ResultLookupBody = { result_id?: string };
 
-type ArtifactFetchResult =
-  { ok: true; data: Record<string, unknown> } | { ok: false; error: string };
-
-type LcaContributionPathResultHandlerDependencies = {
-  authenticateRequest: typeof authenticateRequest;
-  getRedisClient: typeof getRedisClient;
-  resultRepository: LcaResultFamilyCapabilityRepository;
-  fetchArtifactJson: (url: string) => Promise<ArtifactFetchResult>;
-};
-
-export function createLcaContributionPathResultHandler(
-  overrides: Partial<LcaContributionPathResultHandlerDependencies> = {},
-): (req: Request) => Promise<Response> {
-  const dependencies: LcaContributionPathResultHandlerDependencies = {
-    authenticateRequest,
-    getRedisClient,
-    resultRepository: lcaResultRepository,
-    fetchArtifactJson: (url) => fetchArtifactJson<Record<string, unknown>>(url),
-    ...overrides,
-  };
-  return (req) => handleLcaContributionPathResultRequest(req, dependencies);
-}
-
-async function handleLcaContributionPathResultRequest(
-  req: Request,
-  dependencies: LcaContributionPathResultHandlerDependencies,
-): Promise<Response> {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const redis = await dependencies.getRedisClient();
-  const authResult = await dependencies.authenticateRequest(req, {
+  const redis = await getRedisClient();
+  const authResult = await authenticateRequest(req, {
     authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
@@ -82,7 +51,7 @@ async function handleLcaContributionPathResultRequest(
     return json({ error: 'invalid_result_id' }, 400);
   }
 
-  const projection = await dependencies.resultRepository.readResultProjection({
+  const projection = await callLcaReadResultProjectionRpc(supabaseClient, {
     requestedBy: userId,
     resultId,
     requiredArtifactFormat: CONTRIBUTION_PATH_FORMAT,
@@ -123,7 +92,7 @@ async function handleLcaContributionPathResultRequest(
     return json({ error: 'artifact_missing' }, 500);
   }
 
-  const artifact = await dependencies.fetchArtifactJson(artifactUrl);
+  const artifact = await fetchArtifactJson<Record<string, unknown>>(artifactUrl);
   if (!artifact.ok) {
     return json({ error: 'artifact_fetch_failed', detail: artifact.error }, 502);
   }
@@ -156,11 +125,7 @@ async function handleLcaContributionPathResultRequest(
   };
 
   return json(response, 200);
-}
-
-if (import.meta.main) {
-  Deno.serve(createLcaContributionPathResultHandler());
-}
+});
 
 async function parseLookupBody(req: Request): Promise<ResultLookupBody | null> {
   try {

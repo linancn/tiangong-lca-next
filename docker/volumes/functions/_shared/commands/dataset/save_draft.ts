@@ -1,4 +1,4 @@
-import type { RequestJwtActorContext } from '../../command_runtime/actor_context.ts';
+import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertSaveDraftPolicy } from './policy.ts';
 import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
@@ -13,7 +13,7 @@ export function parseSaveDraftCommand(body: unknown) {
 
 export async function executeSaveDraftCommand(
   request: SaveDraftRequest,
-  actor: RequestJwtActorContext,
+  actor: ActorContext,
   repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertSaveDraftPolicy(request);

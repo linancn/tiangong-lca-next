@@ -24,7 +24,8 @@ export type ProcessScopeEntry = {
 };
 
 export type ProcessScopeValidationResult =
-  { ok: true } | { ok: false; status: number; body: Record<string, unknown> };
+  | { ok: true }
+  | { ok: false; status: number; body: Record<string, unknown> };
 
 export type NormalizedSingleProcessDemand =
   | {

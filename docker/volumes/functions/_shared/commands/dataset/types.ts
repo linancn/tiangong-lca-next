@@ -82,7 +82,12 @@ export type ReviewSubmitGateRequest = {
 };
 
 export type ReviewSubmitGateStatus =
-  'queued' | 'running' | 'passed' | 'blocked' | 'error' | 'stale';
+  | 'queued'
+  | 'running'
+  | 'passed'
+  | 'blocked'
+  | 'error'
+  | 'stale';
 
 export type ReviewSubmitGateResult = {
   status: ReviewSubmitGateStatus;
@@ -118,7 +123,14 @@ export type ReviewSubmitJobStatus =
   | 'cancelled';
 
 export type WorkerJobStatus =
-  'queued' | 'running' | 'waiting' | 'completed' | 'blocked' | 'stale' | 'failed' | 'cancelled';
+  | 'queued'
+  | 'running'
+  | 'waiting'
+  | 'completed'
+  | 'blocked'
+  | 'stale'
+  | 'failed'
+  | 'cancelled';
 
 export type WorkerJobResult = {
   id?: string;
@@ -169,7 +181,9 @@ export type ReviewSubmitJobReadLatestRequest = {
 };
 
 export type ReviewSubmitJobRequest =
-  ReviewSubmitJobEnqueueRequest | ReviewSubmitJobReadRequest | ReviewSubmitJobReadLatestRequest;
+  | ReviewSubmitJobEnqueueRequest
+  | ReviewSubmitJobReadRequest
+  | ReviewSubmitJobReadLatestRequest;
 
 export type ReviewSubmitJobResult = {
   status: ReviewSubmitJobStatus;
@@ -206,4 +220,5 @@ export type DatasetCommandFailure = {
 };
 
 export type DatasetCommandExecutionResult =
-  { ok: true; body: unknown; status?: number } | DatasetCommandFailure;
+  | { ok: true; body: unknown; status?: number }
+  | DatasetCommandFailure;

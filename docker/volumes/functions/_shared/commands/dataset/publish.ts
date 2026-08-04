@@ -1,10 +1,7 @@
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertPublishPolicy } from './policy.ts';
-import {
-  createLegacyDatasetCommandRepository,
-  type LegacyDatasetCommandRepository,
-} from './repository.ts';
+import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
 import type { DatasetCommandExecutionResult, PublishRequest } from './types.ts';
 import { parsePublishRequest } from './validation.ts';
 
@@ -15,7 +12,7 @@ export function parsePublishCommand(body: unknown) {
 export async function executePublishCommand(
   request: PublishRequest,
   actor: ActorContext,
-  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
+  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertPublishPolicy(request);
   if (!policy.ok) {
