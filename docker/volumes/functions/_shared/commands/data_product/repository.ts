@@ -1,5 +1,13 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
+import {
+  createLcaSnapshotCapabilityRepository,
+  type LcaSnapshotCapabilityRepository,
+} from '../../capabilities/lca_snapshot_family.ts';
+import {
+  createServiceWorkerCapabilityRepository,
+  type ServiceWorkerCapabilityRepository,
+} from '../../capabilities/worker_jobs.ts';
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import {
@@ -14,7 +22,10 @@ import {
   callTaskSummaryV2FeedRpc,
   type DataProductRpcResult,
 } from '../../db_rpc/data_product_commands.ts';
-import { createSupabaseServiceClient } from '../../supabase_client.ts';
+import {
+  createSupabaseServiceClient,
+  type ServiceRoleSupabaseClient,
+} from '../../supabase_client.ts';
 import {
   enqueueCalculatorWorkerJob,
   type WorkerJobEnqueueOutcome,
@@ -160,10 +171,11 @@ function requireExplicitActorClient(supabase: RpcClient | null | undefined): Rpc
 
 export function createDataProductCommandRepository(
   actorSupabase: RpcClient,
-  serviceSupabase: SupabaseClient = createSupabaseServiceClient(),
+  serviceSupabase: ServiceRoleSupabaseClient = createSupabaseServiceClient(),
   options: DataProductCommandRepositoryOptions = {},
 ): DataProductCommandRepository {
   const actorClient = requireExplicitActorClient(actorSupabase);
+  const workerRepository = createServiceWorkerCapabilityRepository(serviceSupabase);
   const now = options.now ?? Date.now;
 
   return {
@@ -283,14 +295,16 @@ export function createDataProductCommandRepository(
         visibility: request.workerJob.visibility ?? 'operator',
       }),
     previewPackage: (request) => callDataProductPackagePreviewRpc(actorClient, request),
-    fetchSnapshotArtifactUrl: (snapshotId) => fetchSnapshotArtifactUrl(serviceSupabase, snapshotId),
+    fetchSnapshotArtifactUrl: (snapshotId) =>
+      fetchSnapshotArtifactUrl(createLcaSnapshotCapabilityRepository(serviceSupabase), snapshotId),
     fetchJsonArtifact: (artifactUrl) => fetchArtifactJson(serviceSupabase, artifactUrl),
     fetchPreviewMetadata: (request) => fetchPreviewMetadata(serviceSupabase, request),
     publishPackage: (request, audit) =>
       callLciaResultPackagePublishRpc(actorClient, request, audit),
     unpublishPublication: (request, audit) =>
       callDataProductPackageUnpublishRpc(actorClient, request, audit),
-    listPublications: (request) => listLciaResultPublications(serviceSupabase, request),
+    listPublications: (request) =>
+      listLciaResultPublications(serviceSupabase, workerRepository, request),
   };
 }
 
@@ -685,6 +699,7 @@ function isValidSignedUrl(value: string): boolean {
 
 async function listLciaResultPublications(
   supabase: SupabaseClient,
+  workerRepository: ServiceWorkerCapabilityRepository,
   request: DataProductPublicationListRequest,
 ): Promise<DataProductRpcResult> {
   const { data: publicationRows, error: publicationError } = await supabase
@@ -774,28 +789,28 @@ async function listLciaResultPublications(
       .map((row) => stringValue(row.build_worker_job_id))
       .filter((value): value is string => Boolean(value)),
   );
-  const { data: workerRows, error: workerError } =
+  const workerResult =
     workerJobIds.length === 0
-      ? { data: [], error: null }
-      : await supabase.from('worker_jobs').select('id,payload_json').in('id', workerJobIds);
+      ? ({ ok: true, data: [] } as const)
+      : await workerRepository.readManyInternal(workerJobIds);
 
-  if (workerError) {
+  if (!workerResult.ok) {
     return {
       ok: false,
       code: 'lcia_result_publication_worker_jobs_lookup_failed',
       status: 500,
       message: 'Failed to read LCIA result package worker metadata',
-      details: workerError.message,
+      details: workerResult.message,
     };
   }
 
   const workerPayloadById = new Map<string, Record<string, unknown>>();
-  for (const row of (workerRows ?? []) as unknown[]) {
+  for (const row of (Array.isArray(workerResult.data) ? workerResult.data : []) as unknown[]) {
     if (!isRecord(row)) {
       continue;
     }
     const workerJobId = stringValue(row.id);
-    const payload = recordValue(row, 'payload_json');
+    const payload = recordValue(row, 'payload') ?? recordValue(row, 'payload_json');
     if (workerJobId && payload) {
       workerPayloadById.set(workerJobId, payload);
     }
@@ -837,7 +852,7 @@ async function listLciaResultPublications(
 }
 
 async function fetchSnapshotArtifactUrl(
-  supabase: SupabaseClient,
+  snapshotRepository: LcaSnapshotCapabilityRepository,
   snapshotId: string,
 ): Promise<
   | { ok: true; data: { snapshotId: string; artifactUrl: string } }
@@ -849,14 +864,7 @@ async function fetchSnapshotArtifactUrl(
       details?: unknown;
     }
 > {
-  const { data, error } = await supabase
-    .from('lca_snapshot_artifacts')
-    .select('snapshot_id,artifact_url,status,created_at')
-    .eq('snapshot_id', snapshotId)
-    .eq('status', 'ready')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await snapshotRepository.readArtifact(snapshotId);
 
   if (error) {
     return {

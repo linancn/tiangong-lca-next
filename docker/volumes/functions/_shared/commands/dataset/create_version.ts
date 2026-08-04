@@ -1,7 +1,10 @@
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertCreateVersionPolicy } from './policy.ts';
-import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
+import {
+  createLegacyDatasetCommandRepository,
+  type LegacyDatasetCommandRepository,
+} from './repository.ts';
 import type { CreateVersionRequest, DatasetCommandExecutionResult } from './types.ts';
 import { createVersionRequestSchema, parseCreateVersionRequest } from './validation.ts';
 
@@ -14,7 +17,7 @@ export function parseCreateVersionCommand(body: unknown) {
 export async function executeCreateVersionCommand(
   request: CreateVersionRequest,
   actor: ActorContext,
-  repository: DatasetCommandRepository = createDatasetCommandRepository(actor.supabase),
+  repository: LegacyDatasetCommandRepository = createLegacyDatasetCommandRepository(actor.supabase),
 ): Promise<DatasetCommandExecutionResult> {
   const policy = assertCreateVersionPolicy(request);
   if (!policy.ok) {

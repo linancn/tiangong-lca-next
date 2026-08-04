@@ -2,22 +2,48 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
+import {
+  createLcaResultFamilyCapabilityRepository,
+  type LcaResultFamilyCapabilityRepository,
+} from '../_shared/capabilities/lca_result_family.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import { callLcaReadResultProjectionRpc } from '../_shared/db_rpc/lca_results.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
+
+const lcaResultRepository = createLcaResultFamilyCapabilityRepository(supabaseClient);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type ResultLookupBody = { result_id?: string };
 
-Deno.serve(async (req) => {
+type LcaResultsHandlerDependencies = {
+  authenticateRequest: typeof authenticateRequest;
+  getRedisClient: typeof getRedisClient;
+  resultRepository: LcaResultFamilyCapabilityRepository;
+};
+
+export function createLcaResultsHandler(
+  overrides: Partial<LcaResultsHandlerDependencies> = {},
+): (req: Request) => Promise<Response> {
+  const dependencies: LcaResultsHandlerDependencies = {
+    authenticateRequest,
+    getRedisClient,
+    resultRepository: lcaResultRepository,
+    ...overrides,
+  };
+  return (req) => handleLcaResultsRequest(req, dependencies);
+}
+
+async function handleLcaResultsRequest(
+  req: Request,
+  dependencies: LcaResultsHandlerDependencies,
+): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const redis = await getRedisClient();
+  const redis = await dependencies.getRedisClient();
 
-  const authResult = await authenticateRequest(req, {
+  const authResult = await dependencies.authenticateRequest(req, {
     authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
@@ -50,7 +76,7 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_result_id' }, 400);
   }
 
-  const projection = await callLcaReadResultProjectionRpc(supabaseClient, {
+  const projection = await dependencies.resultRepository.readResultProjection({
     requestedBy: userId,
     resultId,
   });
@@ -112,7 +138,11 @@ Deno.serve(async (req) => {
   };
 
   return json(response, 200);
-});
+}
+
+if (import.meta.main) {
+  Deno.serve(createLcaResultsHandler());
+}
 
 async function parseLookupBody(req: Request): Promise<ResultLookupBody | null> {
   try {

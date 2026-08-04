@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 follow-up: document Root-only top-level queues, current-tab-only Reference child expansion, selection/action isolation, and no complete-reference-list presentation without changing database authorization ownership.'
+lastReviewedAt: 2026-08-04
+lastReviewedCommit: 368cc1d9b873123556136d76441ec43447145d4c
+lastReviewedNote: 'Reviewed while resolving PR #765 for Issue #745 against the latest dev baseline: Root-only queues, current-tab Reference expansion, selection/action isolation, database authorization ownership, and the Issue #763 exact-revision Edge mirror boundary remain consistent.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

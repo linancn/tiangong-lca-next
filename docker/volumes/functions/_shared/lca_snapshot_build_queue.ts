@@ -1,4 +1,5 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import { createLcaSnapshotCapabilityRepository } from './capabilities/lca_snapshot_family.ts';
+import { createServiceWorkerCapabilityRepository } from './capabilities/worker_jobs.ts';
 
 import {
   buildLcaMethodFactorSourceContract,
@@ -12,6 +13,7 @@ import {
   type LciaFactorCoverageContract,
   type SnapshotProcessFilter,
 } from './lca_snapshot_scope.ts';
+import type { ServiceRoleSupabaseClient } from './supabase_client.ts';
 import {
   enqueueCalculatorWorkerJob,
   isWorkerJobsCutoverEnabled,
@@ -44,7 +46,7 @@ const ACTIVE_BUILD_MAX_RUNNING_MS = 2 * 60 * 60 * 1000;
 const ACTIVE_WORKER_STATUSES = ['queued', 'running', 'waiting', 'blocked'];
 
 export async function ensureLcaSnapshotBuildQueued(
-  supabase: SupabaseClient,
+  supabase: ServiceRoleSupabaseClient,
   args: {
     scope: string;
     dataScope: LcaDataScope;
@@ -52,6 +54,7 @@ export async function ensureLcaSnapshotBuildQueued(
     requestRoots?: readonly LcaSnapshotRequestRoot[];
   },
 ): Promise<LcaSnapshotBuildQueueResult> {
+  const snapshotRepository = createLcaSnapshotCapabilityRepository(supabase);
   const processFilter = await buildSnapshotProcessFilter(
     args.dataScope,
     args.userId,
@@ -111,15 +114,14 @@ export async function ensureLcaSnapshotBuildQueued(
     ...buildPayloadFields,
   };
 
-  const { error: snapshotInsertError } = await supabase.from('lca_network_snapshots').insert({
-    id: snapshotId,
+  const { error: snapshotInsertError } = await snapshotRepository.createDraft({
+    snapshotId,
     scope: 'full_library',
-    process_filter: processFilter,
-    status: 'draft',
-    created_by: args.userId,
+    processFilter,
+    createdBy: args.userId,
   });
-  if (snapshotInsertError && snapshotInsertError.code !== '23505') {
-    console.error('insert lca_network_snapshots failed', {
+  if (snapshotInsertError) {
+    console.error('create LCA snapshot draft capability failed', {
       error: snapshotInsertError.message,
       code: snapshotInsertError.code,
       snapshot_id: snapshotId,
@@ -197,40 +199,38 @@ function buildCalculationContract(
 }
 
 async function findActiveSnapshotBuildWorkerJob(
-  supabase: SupabaseClient,
+  supabase: ServiceRoleSupabaseClient,
   concurrencyKey: string,
 ): Promise<
   | { ok: true; job_id: string | null; snapshot_id: string | null; worker_job_id: string | null }
   | { ok: false; error: string; status: number }
 > {
-  const { data: rows, error } = await supabase
-    .from('worker_jobs')
-    .select('id,payload_json,status,created_at,started_at')
-    .eq('job_kind', 'lca.build_snapshot')
-    .eq('concurrency_key', concurrencyKey)
-    .in('status', ACTIVE_WORKER_STATUSES)
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const result = await createServiceWorkerCapabilityRepository(supabase).listByConcurrencyKey({
+    jobKind: 'lca.build_snapshot',
+    statuses: ACTIVE_WORKER_STATUSES,
+    concurrencyKey,
+    limit: 20,
+    includeInternal: true,
+  });
 
-  if (error) {
+  if (!result.ok) {
     console.error('read active build worker_jobs failed', {
-      error: error.message,
-      code: error.code,
+      error: result.message,
+      code: result.code,
       concurrency_key: concurrencyKey,
     });
     return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
   }
 
-  for (const row of rows ?? []) {
-    const status = String((row as { status?: unknown }).status ?? '');
+  for (const row of result.data) {
+    const status = String(row.status ?? '');
     if (isExpiredActiveStatus(status, row)) {
       continue;
     }
 
-    const payload = (row as { payload_json?: unknown }).payload_json;
-    const jobId = payloadString(payload, 'job_id');
-    const snapshotId = payloadString(payload, 'snapshot_id');
-    const workerJobId = String((row as { id?: unknown }).id ?? '').trim();
+    const jobId = payloadString(row.payload, 'job_id');
+    const snapshotId = payloadString(row.payload, 'snapshot_id');
+    const workerJobId = String(row.id ?? '').trim();
     if (jobId && snapshotId && workerJobId) {
       return {
         ok: true,
@@ -246,7 +246,8 @@ async function findActiveSnapshotBuildWorkerJob(
 
 function isExpiredActiveStatus(status: string, row: unknown): boolean {
   const nowMs = Date.now();
-  const createdAtMs = dateMs((row as { created_at?: unknown }).created_at);
+  const candidate = row as { createdAt?: unknown; startedAt?: unknown };
+  const createdAtMs = dateMs(candidate.createdAt);
   if (
     status === 'queued' &&
     Number.isFinite(createdAtMs) &&
@@ -255,7 +256,7 @@ function isExpiredActiveStatus(status: string, row: unknown): boolean {
     return true;
   }
 
-  const startedAtMs = dateMs((row as { started_at?: unknown }).started_at);
+  const startedAtMs = dateMs(candidate.startedAt);
   return (
     status === 'running' &&
     Number.isFinite(startedAtMs) &&
