@@ -52,13 +52,12 @@ function isDatasetCommandFailure(data: unknown): data is DatasetCommandFailure {
   );
 }
 
-export function mapDatasetRpcResponse({
-  data,
-  error,
-}: {
-  data: unknown;
-  error: { code?: string; message?: string; details?: unknown } | null;
-}): DatasetRpcResult {
+async function callDatasetRpc(
+  supabase: RpcClient,
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<DatasetRpcResult> {
+  const { data, error } = await supabase.rpc(fn, args);
   if (error) {
     return mapRpcError(error);
   }
@@ -84,14 +83,6 @@ export function mapDatasetRpcResponse({
     ok: true,
     data,
   };
-}
-
-async function callDatasetRpc(
-  supabase: RpcClient,
-  fn: string,
-  args: Record<string, unknown>,
-): Promise<DatasetRpcResult> {
-  return mapDatasetRpcResponse(await supabase.rpc(fn, args));
 }
 
 export function buildDatasetSaveDraftRpcArgs(
@@ -180,19 +171,15 @@ export function buildDatasetSubmitReviewRpcArgs(
   audit: CommandAuditPayload,
 ): Record<string, unknown> {
   return {
-    p_target_table: request.table,
-    p_target_id: request.id,
-    p_target_version: request.version,
-    p_gate_context:
-      request.table === 'processes'
-        ? {
-            reviewSubmitGateRunId: request.reviewSubmitGateRunId,
-            revisionChecksum: request.revisionChecksum,
-            policyProfile: request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-            reportSchemaVersion:
-              request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-          }
-        : null,
+    p_table: request.table,
+    p_id: request.id,
+    p_version: request.version,
+    p_review_submit_gate_run_id: request.reviewSubmitGateRunId ?? null,
+    p_review_submit_revision_checksum: request.revisionChecksum ?? null,
+    p_review_submit_policy_profile:
+      request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
+    p_review_submit_report_schema_version:
+      request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
     p_audit: audit,
   };
 }
@@ -246,6 +233,18 @@ export function buildDatasetReviewSubmitJobReadLatestRpcArgs(
     p_version: request.version,
     p_revision_checksum: request.revisionChecksum ?? null,
   };
+}
+
+export function callDatasetSaveDraftRpc(
+  supabase: RpcClient,
+  request: SaveDraftRequest,
+  audit: CommandAuditPayload,
+) {
+  return callDatasetRpc(
+    supabase,
+    'cmd_dataset_save_draft',
+    buildDatasetSaveDraftRpcArgs(request, audit),
+  );
 }
 
 export function callDatasetReviewSubmitJobEnqueueRpc(
@@ -341,7 +340,7 @@ export function callDatasetSubmitReviewRpc(
 ) {
   return callDatasetRpc(
     supabase,
-    'cmd_review_submit_v2',
+    'cmd_review_submit',
     buildDatasetSubmitReviewRpcArgs(request, audit),
   );
 }

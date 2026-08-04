@@ -1,11 +1,11 @@
-import { createLcaSnapshotCapabilityRepository } from './capabilities/lca_snapshot_family.ts';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+
 import {
   buildSnapshotProcessFilter,
   matchesSnapshotDataScopeFilter,
   type LcaDataScope,
   type SnapshotProcessFilter,
 } from './lca_snapshot_scope.ts';
-import type { ServiceRoleSupabaseClient } from './supabase_client.ts';
 
 export type SnapshotScopeVerificationResult =
   | { ok: true; matches: true; process_filter: SnapshotProcessFilter }
@@ -13,7 +13,7 @@ export type SnapshotScopeVerificationResult =
   | { ok: false; error: 'snapshot_scope_lookup_failed'; status: 500 };
 
 export async function verifySnapshotMatchesDataScope(
-  supabase: ServiceRoleSupabaseClient,
+  supabase: SupabaseClient,
   args: {
     snapshotId: string;
     dataScope: LcaDataScope;
@@ -21,8 +21,11 @@ export async function verifySnapshotMatchesDataScope(
   },
 ): Promise<SnapshotScopeVerificationResult> {
   const expectedProcessFilter = await buildSnapshotProcessFilter(args.dataScope, args.userId);
-  const snapshotRepository = createLcaSnapshotCapabilityRepository(supabase);
-  const { data, error } = await snapshotRepository.readScope(args.snapshotId);
+  const { data, error } = await supabase
+    .from('lca_network_snapshots')
+    .select('process_filter')
+    .eq('id', args.snapshotId)
+    .maybeSingle();
 
   if (error) {
     console.warn('read explicit snapshot process filter failed', {

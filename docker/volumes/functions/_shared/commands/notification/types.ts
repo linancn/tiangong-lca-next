@@ -18,4 +18,5 @@ export type NotificationCommandFailure = {
 };
 
 export type NotificationCommandExecutionResult =
-  { ok: true; body: unknown; status?: number } | NotificationCommandFailure;
+  | { ok: true; body: unknown; status?: number }
+  | NotificationCommandFailure;

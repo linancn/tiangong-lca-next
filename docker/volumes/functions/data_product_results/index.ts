@@ -20,10 +20,7 @@ import {
 } from '../_shared/commands/data_product/repository.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import type { DataProductRpcResult } from '../_shared/db_rpc/data_product_commands.ts';
-import {
-  createSupabaseServiceClient,
-  type ServiceRoleSupabaseClient,
-} from '../_shared/supabase_client.ts';
+import { createSupabaseServiceClient } from '../_shared/supabase_client.ts';
 
 const versionPattern = /^\d{2}\.\d{2}\.\d{3}$/;
 const DEFAULT_RANKED_LIMIT = 20;
@@ -193,7 +190,7 @@ function processRefsForRequest(request: DataProductPublishedResultsRequest) {
 }
 
 function createPublishedResultsRepository(
-  serviceSupabase: ServiceRoleSupabaseClient = createSupabaseServiceClient(),
+  serviceSupabase: SupabaseClient = createSupabaseServiceClient(),
   artifacts: DataProductCommandRepository = createDataProductCommandRepository(
     serviceSupabase,
     serviceSupabase,

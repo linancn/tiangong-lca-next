@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-04
-lastReviewedCommit: 368cc1d9b873123556136d76441ec43447145d4c
-lastReviewedNote: 'Reviewed while resolving PR #765 for Issue #745 against the latest dev baseline: focused review suites, exact source-tree parity, delete-aware idempotence, receipt verification, lint, type checking, the full test gate, and production build remain the correct proof.'
+lastReviewedAt: 2026-08-02
+lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
+lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: focused review-page and service suites, lint, type checking, and production build remain the correct proof; the managed full gate remains unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

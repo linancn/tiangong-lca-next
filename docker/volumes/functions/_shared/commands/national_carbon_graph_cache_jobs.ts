@@ -1,14 +1,14 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 import { z } from 'zod';
 
+import type { ActorContext } from '../command_runtime/actor_context.ts';
+import type { CommandExecutionResult, CommandParseResult } from '../command_runtime/command.ts';
 import {
   callWorkerJobEnqueueRpc,
   callWorkerJobListRpc,
   callWorkerJobReadRpc,
   type WorkerJobRpcResult,
-} from '../capabilities/worker_jobs.ts';
-import type { ActorContext } from '../command_runtime/actor_context.ts';
-import type { CommandExecutionResult, CommandParseResult } from '../command_runtime/command.ts';
+} from '../db_rpc/worker_jobs.ts';
 import { createSupabaseServiceClient } from '../supabase_client.ts';
 import type { WorkerJobResult, WorkerJobStatus } from './dataset/types.ts';
 

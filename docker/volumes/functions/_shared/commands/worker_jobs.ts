@@ -1,13 +1,14 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 import { z } from 'zod';
 
-import {
-  createServiceWorkerCapabilityRepository,
-  type ServiceWorkerCapabilityRepository,
-  type WorkerJobRpcResult,
-} from '../capabilities/worker_jobs.ts';
 import type { ActorContext } from '../command_runtime/actor_context.ts';
 import type { CommandExecutionResult, CommandParseResult } from '../command_runtime/command.ts';
+import {
+  callWorkerJobCancelRpc,
+  callWorkerJobListRpc,
+  callWorkerJobReadRpc,
+  type WorkerJobRpcResult,
+} from '../db_rpc/worker_jobs.ts';
 import { createSupabaseServiceClient } from '../supabase_client.ts';
 import type { WorkerJobResult, WorkerJobStatus } from './dataset/types.ts';
 
@@ -125,11 +126,7 @@ function dataProductWorkerJobId(job: WorkerJobResult): string | undefined {
 }
 
 function payloadName(row: Record<string, unknown> | undefined): string | undefined {
-  const payload = isRecord(row?.payload)
-    ? row.payload
-    : isRecord(row?.payload_json)
-      ? row.payload_json
-      : {};
+  const payload = isRecord(row?.payload_json) ? row.payload_json : {};
   return firstString(payload.name, payload.packageName, payload.package_name);
 }
 
@@ -211,33 +208,31 @@ export function mergeDataProductWorkerJobMetadata(
 
 async function enrichDataProductWorkerJobMetadata(
   jobs: WorkerJobResult[],
-  workerRepository: ServiceWorkerCapabilityRepository,
   serviceClient: SupabaseClient,
 ): Promise<WorkerJobResult[]> {
-  const jobIds = Array.from(
-    new Set(jobs.map(dataProductWorkerJobId).filter((value): value is string => Boolean(value))),
-  );
+  const jobIds = Array.from(new Set(jobs.map(dataProductWorkerJobId).filter(Boolean)));
   if (jobIds.length === 0) {
     return jobs;
   }
 
-  const [workerResult, { data: packageRows, error: packageError }] = await Promise.all([
-    workerRepository.readManyInternal(jobIds),
-    serviceClient
-      .from('lcia_result_packages')
-      .select(
-        'build_worker_job_id,id,package_version,status,eligible_input_count,included_input_count',
-      )
-      .in('build_worker_job_id', jobIds),
-  ]);
+  const [{ data: workerRows, error: workerError }, { data: packageRows, error: packageError }] =
+    await Promise.all([
+      serviceClient.from('worker_jobs').select('id,payload_json').in('id', jobIds),
+      serviceClient
+        .from('lcia_result_packages')
+        .select(
+          'build_worker_job_id,id,package_version,status,eligible_input_count,included_input_count',
+        )
+        .in('build_worker_job_id', jobIds),
+    ]);
 
-  if (!workerResult.ok || packageError) {
+  if (workerError || packageError) {
     return jobs;
   }
 
   return mergeDataProductWorkerJobMetadata(
     jobs,
-    Array.isArray(workerResult.data) ? workerResult.data.filter(isRecord) : [],
+    Array.isArray(workerRows) ? workerRows : [],
     Array.isArray(packageRows) ? packageRows : [],
   );
 }
@@ -311,8 +306,6 @@ export async function executeWorkerJobCommand(
   actor: ActorContext,
   serviceClient: SupabaseClient = createSupabaseServiceClient(),
 ): Promise<CommandExecutionResult> {
-  const workerRepository = createServiceWorkerCapabilityRepository(serviceClient);
-
   if (request.action === 'list') {
     const visibility = request.visibility ?? 'user';
     if (visibility === 'operator') {
@@ -322,7 +315,7 @@ export async function executeWorkerJobCommand(
       }
     }
 
-    const result = await workerRepository.list({
+    const result = await callWorkerJobListRpc(serviceClient, {
       requestedBy: actor.userId,
       subjectType: request.subjectType ?? null,
       subjectId: request.subjectId ?? null,
@@ -337,7 +330,6 @@ export async function executeWorkerJobCommand(
 
     const jobs = await enrichDataProductWorkerJobMetadata(
       normalizeWorkerJobList(result.data),
-      workerRepository,
       serviceClient,
     );
 
@@ -351,7 +343,7 @@ export async function executeWorkerJobCommand(
     };
   }
 
-  const readResult = await workerRepository.read({
+  const readResult = await callWorkerJobReadRpc(serviceClient, {
     jobId: request.jobId,
     includeInternal: false,
   });
@@ -376,7 +368,7 @@ export async function executeWorkerJobCommand(
     };
   }
 
-  const cancelResult = await workerRepository.cancel({
+  const cancelResult = await callWorkerJobCancelRpc(serviceClient, {
     jobId: request.jobId,
     cancelledBy: actor.userId,
     reason: request.reason ?? null,

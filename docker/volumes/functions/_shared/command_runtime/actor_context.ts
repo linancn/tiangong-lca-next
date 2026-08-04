@@ -1,10 +1,7 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
 import { authenticateRequest, AuthMethod } from '../auth.ts';
-import {
-  createRequestJwtSupabaseClient,
-  type RequestJwtSupabaseClient,
-} from '../supabase_client.ts';
+import { createRequestSupabaseClient } from '../supabase_client.ts';
 import { commandError } from './http.ts';
 
 export type ActorContext = {
@@ -13,16 +10,13 @@ export type ActorContext = {
   supabase: SupabaseClient;
 };
 
-export type RequestJwtActorContext = Omit<ActorContext, 'supabase'> & {
-  supabase: RequestJwtSupabaseClient;
-};
-
-export type ActorContextResult<Actor extends ActorContext = ActorContext> =
-  { ok: true; value: Actor } | { ok: false; response: Response };
+export type ActorContextResult =
+  | { ok: true; value: ActorContext }
+  | { ok: false; response: Response };
 
 export type ResolveActorContextOptions = {
   authenticate?: typeof authenticateRequest;
-  createSupabaseClient?: (accessToken: string) => RequestJwtSupabaseClient;
+  createSupabaseClient?: (accessToken: string) => SupabaseClient;
 };
 
 export function extractBearerToken(req: Request): string | null {
@@ -42,7 +36,7 @@ export function extractBearerToken(req: Request): string | null {
 export async function resolveActorContext(
   req: Request,
   options: ResolveActorContextOptions = {},
-): Promise<ActorContextResult<RequestJwtActorContext>> {
+): Promise<ActorContextResult> {
   const accessToken = extractBearerToken(req);
   if (!accessToken) {
     return {
@@ -51,7 +45,7 @@ export async function resolveActorContext(
     };
   }
 
-  const requestSupabase = (options.createSupabaseClient ?? createRequestJwtSupabaseClient)(
+  const requestSupabase = (options.createSupabaseClient ?? createRequestSupabaseClient)(
     accessToken,
   );
   const authResult = await (options.authenticate ?? authenticateRequest)(req, {

@@ -1,9 +1,6 @@
-import {
-  createLcaResultFamilyCapabilityRepository,
-  type LcaResultFamilyCapabilityRepository,
-} from './capabilities/lca_result_family.ts';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+
 import type { LcaCalculationEvidenceBinding } from './lca_snapshot_scope.ts';
-import type { ServiceRoleSupabaseClient } from './supabase_client.ts';
 
 import {
   enqueueCalculatorWorkerJob,
@@ -16,6 +13,15 @@ import {
 const REQUEST_VERSION = 'lca_solve_v2';
 
 type EnvReader = (key: string) => string | undefined;
+
+type ResultCacheRow = {
+  id: string;
+  status: string;
+  job_id: string | null;
+  worker_job_id: string | null;
+  result_id: string | null;
+  hit_count: number;
+};
 
 type AllUnitSolvePayload = {
   type: 'solve_all_unit';
@@ -48,14 +54,13 @@ export type LcaAllUnitSolveQueueResult =
   | { ok: false; error: string; status: number; details?: unknown };
 
 export async function ensureLcaAllUnitSolveQueued(
-  supabase: ServiceRoleSupabaseClient,
+  supabase: SupabaseClient,
   args: {
     scope: string;
     snapshotId: string;
     userId: string;
     calculationEvidenceBinding?: LcaCalculationEvidenceBinding | null;
     readEnv?: EnvReader;
-    resultRepository?: LcaResultFamilyCapabilityRepository;
   },
 ): Promise<LcaAllUnitSolveQueueResult> {
   const solve = { return_x: false, return_g: false, return_h: true } as const;
@@ -71,38 +76,31 @@ export async function ensureLcaAllUnitSolveQueued(
       : {}),
   };
   const requestKey = await sha256Hex(JSON.stringify(normalizedRequest));
-  const resultRepository =
-    args.resultRepository ?? createLcaResultFamilyCapabilityRepository(supabase);
+  const nowIso = new Date().toISOString();
 
-  const existingCache = await resultRepository.readCache({
-    scope: args.scope,
-    snapshotId: args.snapshotId,
-    requestKey,
-  });
+  const existingCache = await fetchResultCache(supabase, args.scope, args.snapshotId, requestKey);
   if (!existingCache.ok) {
     return { ok: false, error: 'cache_lookup_failed', status: 500 };
   }
 
-  if (existingCache.data) {
+  if (existingCache.row) {
+    await touchResultCache(supabase, existingCache.row, {
+      updated_at: nowIso,
+      last_accessed_at: nowIso,
+      hit_count: existingCache.row.hit_count + 1,
+    });
+
     if (
-      (existingCache.data.status === 'pending' || existingCache.data.status === 'running') &&
-      (existingCache.data.workerJobId || existingCache.data.legacyJobId)
+      (existingCache.row.status === 'pending' || existingCache.row.status === 'running') &&
+      (existingCache.row.worker_job_id || existingCache.row.job_id)
     ) {
-      const touched = await resultRepository.touchCache(existingCache.data.cacheId);
-      if (!touched.ok) {
-        console.warn('touch all-unit result cache failed', {
-          code: touched.code,
-          error: touched.message,
-          cache_id: existingCache.data.cacheId,
-        });
-      }
       return {
         ok: true,
         mode: 'in_progress',
         snapshot_id: args.snapshotId,
         cache_key: requestKey,
-        job_id: existingCache.data.legacyJobId ?? existingCache.data.workerJobId ?? '',
-        worker_job_id: existingCache.data.workerJobId,
+        job_id: existingCache.row.job_id ?? existingCache.row.worker_job_id ?? '',
+        worker_job_id: existingCache.row.worker_job_id,
       };
     }
   }
@@ -167,36 +165,29 @@ export async function ensureLcaAllUnitSolveQueued(
   const finalJobId = workerJobPayloadStringFromRpcData(workerJob.data, 'job_id') ?? newJobId;
   const finalWorkerJobId = workerJob.workerJobId;
 
-  const admitted = await resultRepository.admitCache({
-    scope: args.scope,
-    snapshotId: args.snapshotId,
-    requestKey,
-    requestPayload: normalizedRequest,
-    legacyJobId: finalJobId,
-    workerJobId: finalWorkerJobId,
-    // This branch is reached only because the latest all-unit pointer was absent.
-    // Always replace a concurrently-created ready cache binding as well as the
-    // row observed by the initial read; otherwise the pointer can remain absent.
-    replaceReady: true,
-  });
-  if (!admitted.ok) {
-    console.error('admit all-unit result cache failed', {
-      code: admitted.code,
-      error: admitted.message,
-      snapshot_id: args.snapshotId,
+  if (existingCache.row) {
+    const updated = await updateResultCacheForPending(supabase, existingCache.row, {
+      normalizedRequest,
+      nowIso,
+      finalJobId,
+      finalWorkerJobId,
     });
-    return { ok: false, error: 'cache_admission_failed', status: admitted.status };
-  }
-  if (admitted.data.outcome === 'reused') {
-    const canonical = admitted.data.cache;
-    return {
-      ok: true,
-      mode: 'in_progress',
-      snapshot_id: args.snapshotId,
-      cache_key: requestKey,
-      job_id: canonical.legacyJobId ?? canonical.workerJobId ?? '',
-      worker_job_id: canonical.workerJobId,
-    };
+    if (!updated.ok) {
+      return updated;
+    }
+  } else {
+    const inserted = await insertResultCacheForPending(supabase, {
+      scope: args.scope,
+      snapshotId: args.snapshotId,
+      requestKey,
+      normalizedRequest,
+      nowIso,
+      finalJobId,
+      finalWorkerJobId,
+    });
+    if (!inserted.ok) {
+      return inserted;
+    }
   }
 
   return {
@@ -204,9 +195,149 @@ export async function ensureLcaAllUnitSolveQueued(
     mode: 'queued',
     snapshot_id: args.snapshotId,
     cache_key: requestKey,
-    job_id: admitted.data.cache.legacyJobId ?? finalJobId,
-    worker_job_id: admitted.data.cache.workerJobId,
+    job_id: finalJobId,
+    worker_job_id: finalWorkerJobId,
   };
+}
+
+async function fetchResultCache(
+  supabase: SupabaseClient,
+  scope: string,
+  snapshotId: string,
+  requestKey: string,
+): Promise<{ ok: true; row: ResultCacheRow | null } | { ok: false }> {
+  const { data, error } = await supabase
+    .from('lca_result_cache')
+    .select('id,status,job_id,worker_job_id,result_id,hit_count')
+    .eq('scope', scope)
+    .eq('snapshot_id', snapshotId)
+    .eq('request_key', requestKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('fetch all-unit lca_result_cache failed', {
+      error: error.message,
+      code: error.code,
+      snapshot_id: snapshotId,
+    });
+    return { ok: false };
+  }
+
+  if (!data) {
+    return { ok: true, row: null };
+  }
+
+  return {
+    ok: true,
+    row: {
+      id: String(data.id),
+      status: String(data.status),
+      job_id: data.job_id ? String(data.job_id) : null,
+      worker_job_id: data.worker_job_id ? String(data.worker_job_id) : null,
+      result_id: data.result_id ? String(data.result_id) : null,
+      hit_count: Number(data.hit_count ?? 0),
+    },
+  };
+}
+
+async function touchResultCache(
+  supabase: SupabaseClient,
+  row: ResultCacheRow,
+  patch: {
+    updated_at: string;
+    last_accessed_at: string;
+    hit_count: number;
+  },
+): Promise<void> {
+  const { error } = await supabase
+    .from('lca_result_cache')
+    .update({
+      updated_at: patch.updated_at,
+      last_accessed_at: patch.last_accessed_at,
+      hit_count: patch.hit_count,
+    })
+    .eq('id', row.id);
+
+  if (error) {
+    console.warn('touch all-unit lca_result_cache failed', {
+      error: error.message,
+      code: error.code,
+      row_id: row.id,
+    });
+  }
+}
+
+async function updateResultCacheForPending(
+  supabase: SupabaseClient,
+  row: ResultCacheRow,
+  args: {
+    normalizedRequest: AllUnitSolveNormalizedRequest;
+    nowIso: string;
+    finalJobId: string;
+    finalWorkerJobId: string | null;
+  },
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const { error } = await supabase
+    .from('lca_result_cache')
+    .update({
+      status: 'pending',
+      job_id: args.finalJobId,
+      worker_job_id: args.finalWorkerJobId,
+      request_payload: args.normalizedRequest,
+      hit_count: row.hit_count + 1,
+      last_accessed_at: args.nowIso,
+      updated_at: args.nowIso,
+    })
+    .eq('id', row.id);
+
+  if (error) {
+    console.error('update all-unit lca_result_cache failed', {
+      error: error.message,
+      code: error.code,
+      row_id: row.id,
+    });
+    return { ok: false, error: 'cache_update_failed', status: 500 };
+  }
+
+  return { ok: true };
+}
+
+async function insertResultCacheForPending(
+  supabase: SupabaseClient,
+  args: {
+    scope: string;
+    snapshotId: string;
+    requestKey: string;
+    normalizedRequest: AllUnitSolveNormalizedRequest;
+    nowIso: string;
+    finalJobId: string;
+    finalWorkerJobId: string | null;
+  },
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const { error } = await supabase.from('lca_result_cache').insert({
+    scope: args.scope,
+    snapshot_id: args.snapshotId,
+    request_key: args.requestKey,
+    request_payload: args.normalizedRequest,
+    status: 'pending',
+    job_id: args.finalJobId,
+    worker_job_id: args.finalWorkerJobId,
+    hit_count: 1,
+    last_accessed_at: args.nowIso,
+    created_at: args.nowIso,
+    updated_at: args.nowIso,
+  });
+
+  if (error && error.code !== '23505') {
+    console.error('insert all-unit lca_result_cache failed', {
+      error: error.message,
+      code: error.code,
+      snapshot_id: args.snapshotId,
+    });
+    return { ok: false, error: 'cache_insert_failed', status: 500 };
+  }
+
+  return { ok: true };
 }
 
 async function sha256Hex(input: string): Promise<string> {

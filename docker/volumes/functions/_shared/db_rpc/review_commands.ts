@@ -9,7 +9,6 @@ import type {
   RevokeReviewerRequest,
   SaveAssignmentDraftRequest,
   SaveCommentDraftRequest,
-  SimpleReviewDecisionRequest,
   SubmitCommentRequest,
 } from '../commands/review/types.ts';
 
@@ -140,6 +139,7 @@ export function buildReviewApproveRpcArgs(
   audit: CommandAuditPayload,
 ): Record<string, unknown> {
   return {
+    p_table: request.table,
     p_review_id: request.reviewId,
     p_audit: audit,
   };
@@ -150,20 +150,9 @@ export function buildReviewRejectRpcArgs(
   audit: CommandAuditPayload,
 ): Record<string, unknown> {
   return {
+    p_table: request.table,
     p_review_id: request.reviewId,
     p_reason: request.reason,
-    p_audit: audit,
-  };
-}
-
-export function buildSimpleReviewDecisionRpcArgs(
-  request: SimpleReviewDecisionRequest,
-  audit: CommandAuditPayload,
-): Record<string, unknown> {
-  return {
-    p_review_id: request.reviewId,
-    p_decision: request.decision,
-    p_reason: request.decision === 'reject' ? request.reason : null,
     p_audit: audit,
   };
 }
@@ -233,11 +222,7 @@ export function callReviewApproveRpc(
   request: ApproveReviewRequest,
   audit: CommandAuditPayload,
 ) {
-  return callReviewRpc(
-    supabase,
-    'cmd_review_finalize_approve',
-    buildReviewApproveRpcArgs(request, audit),
-  );
+  return callReviewRpc(supabase, 'cmd_review_approve', buildReviewApproveRpcArgs(request, audit));
 }
 
 export function callReviewRejectRpc(
@@ -245,21 +230,5 @@ export function callReviewRejectRpc(
   request: RejectReviewRequest,
   audit: CommandAuditPayload,
 ) {
-  return callReviewRpc(
-    supabase,
-    'cmd_review_finalize_reject',
-    buildReviewRejectRpcArgs(request, audit),
-  );
-}
-
-export function callSimpleReviewDecisionRpc(
-  supabase: RpcClient,
-  request: SimpleReviewDecisionRequest,
-  audit: CommandAuditPayload,
-) {
-  return callReviewRpc(
-    supabase,
-    'cmd_simple_review_submit_decision',
-    buildSimpleReviewDecisionRpcArgs(request, audit),
-  );
+  return callReviewRpc(supabase, 'cmd_review_reject', buildReviewRejectRpcArgs(request, audit));
 }

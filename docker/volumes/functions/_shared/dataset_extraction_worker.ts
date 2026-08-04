@@ -10,7 +10,12 @@ import {
 
 export type DatasetExtractionKind = 'extracted_md';
 export type DatasetEntityKind =
-  'flow' | 'process' | 'contact' | 'flowproperty' | 'source' | 'unitgroup';
+  | 'flow'
+  | 'process'
+  | 'contact'
+  | 'flowproperty'
+  | 'source'
+  | 'unitgroup';
 export type SupportedDatasetEntityKind = Exclude<DatasetEntityKind, 'process'>;
 
 export interface DatasetExtractionJobMessage {
