@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: focused review-page and service suites, lint, type checking, and production build remain the correct proof; the managed full gate remains unchanged.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: data-workflow target tests plus the existing lint, type, build, coverage, and managed full gate remain the correct proof for the Dev environment rebind.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

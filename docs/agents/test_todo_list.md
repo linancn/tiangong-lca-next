@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the focused passing suites and unchanged full-closure policy create no repository-wide coverage backlog item.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: exact Dev target replacement creates no new testing backlog or coverage exception; the full-closure policy remains unchanged.'
 ---
 
 # Testing Execution State

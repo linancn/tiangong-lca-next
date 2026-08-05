@@ -217,7 +217,7 @@ describe('flowproperties-create-contribute-team-workflow-lib', () => {
           role: 'user',
           runtimeRecordFile,
           supabasePublishableKey: 'sb_publishable_test',
-          supabaseUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+          supabaseUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
           usersFile,
           verifyFrontend: false,
           writeRuntime: true,

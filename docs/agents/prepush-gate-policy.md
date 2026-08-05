@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: focused tests plus the existing Docpact and managed full-gate policy remain sufficient; no trigger or quality-bar change is introduced.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: the mechanical Dev target replacement does not change protected-branch triggers, managed full-gate behavior, or the quality bar.'
 ---
 
 # Pre-Push Gate Policy
