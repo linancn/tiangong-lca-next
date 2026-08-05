@@ -1043,7 +1043,7 @@
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "a9292e662933e53ce9023be2d510151e6b3cb2d0155ab8750a1dc14ce17fa32e",
-          "focusedTestDigest": "8aa00a3dc86fa0851a8dc01ea8e6b367bf58a9908d9c858b04de31cf31e19905",
+          "focusedTestDigest": "2cc8766171708d3fcc105e08c2810a20c3fec2b49bdacb5c97f9798ba2d78a55",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 119,
@@ -1096,7 +1096,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "262a248a4f3ca5ca87bd2b4428c0997931682e47f34da894cfc32c752d8623e9",
+      "rowEvidenceDigest": "6039a8a44e9a963168013d01cdc3db834fd859111b20b9a872771d17c061e391",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1120,5 +1120,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "5bb5f70e46873181fe8846bf6d3f565bcc1e51f1c96ee1ab630ab5d2d8468b05"
+  "contextDigest": "4a3d1709b16027d8245922120cf3bd867c4ca8d9b021e9166f912ec167070b4b"
 }
