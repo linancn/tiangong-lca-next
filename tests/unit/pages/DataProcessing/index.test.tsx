@@ -39,7 +39,7 @@ function contractArtifacts(states: [TestArtifactState, TestArtifactState] = ['re
               mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               size: 1024,
               checksumSha256: 'a'.repeat(64),
-              artifactExpiresAt: '2026-08-05T00:00:00Z',
+              artifactExpiresAt: '2099-08-05T00:00:00Z',
             }
           : {
               filename: 'closure-complete-manifest.json',
@@ -47,7 +47,7 @@ function contractArtifacts(states: [TestArtifactState, TestArtifactState] = ['re
               mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
               size: 2048,
               checksumSha256: 'b'.repeat(64),
-              artifactExpiresAt: '2026-08-05T00:00:00Z',
+              artifactExpiresAt: '2099-08-05T00:00:00Z',
             };
       return state === 'ready'
         ? { ...fixture, ...readyMetadata, artifactState: state }
@@ -2288,7 +2288,7 @@ describe('DataProcessing page', () => {
 
     const report = screen.getByTestId('closure-artifact-closure_report_xlsx');
     const manifest = screen.getByTestId('closure-artifact-closure_issue_manifest');
-    expect(within(report).getByText(/Available until: 2026-08-05 00:00/)).toBeInTheDocument();
+    expect(within(report).getByText(/Available until: 2099-08-05 00:00/)).toBeInTheDocument();
     expect(within(report).getByText('closure-issues.xlsx')).toBeInTheDocument();
     expect(within(report).getByText(/xlsx.*1\.0 KB/)).toBeInTheDocument();
     expect(within(report).getByText('a'.repeat(64))).toBeInTheDocument();
@@ -2610,7 +2610,7 @@ describe('DataProcessing page', () => {
 
   it('expires ready artifacts at the client deadline without another network request', async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(Date.parse('2026-08-04T23:59:59Z'));
+    jest.setSystemTime(Date.parse('2099-08-04T23:59:59Z'));
     mockGetClosureCheck.mockReset().mockResolvedValue({
       data: closureSummary(['ready', 'ready']),
       error: null,
@@ -2874,7 +2874,7 @@ describe('DataProcessing page', () => {
 
     expect(screen.getByText('closure-issues.xlsx')).toBeInTheDocument();
     expect(screen.getByText('closure-complete-manifest.json')).toBeInTheDocument();
-    expect(screen.getAllByText(/Available until: 2026-08-05 00:00/)).toHaveLength(2);
+    expect(screen.getAllByText(/Available until: 2099-08-05 00:00/)).toHaveLength(2);
 
     fireEvent.click(screen.getByRole('button', { name: 'Download machine result manifest' }));
     expect(
