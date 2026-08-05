@@ -194,9 +194,9 @@ describe('team-workflow-shared', () => {
         },
       },
       supabaseTarget: {
-        apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-        dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-        projectId: 'fotofiyqnuyvgtotswie',
+        apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+        dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+        projectId: 'submidrhbtknjxfympna',
         publishableKey: 'sb_publishable_test_key',
       },
       team: {
@@ -220,9 +220,9 @@ describe('team-workflow-shared', () => {
       userId: 'owner-user-id',
     });
     expect(workspace.supabase).toEqual({
-      apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-      dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-      projectId: 'fotofiyqnuyvgtotswie',
+      apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+      dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+      projectId: 'submidrhbtknjxfympna',
     });
     expect(workspace.teamId).toBe('team-id');
     expect(workspace.latestTeamSnapshot).toEqual({

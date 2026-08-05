@@ -384,7 +384,7 @@ export function buildLifeCycleModelSmokeHelp(config: LifeCycleModelWorkflowConfi
   return `${config.helpTitle}
 
 Usage:
-  npm run ${config.command} -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run ${config.command} -- --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
   npm run ${config.command} -- --detail-result --no-keep-data
 
 ${workflowText}

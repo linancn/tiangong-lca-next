@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing focused Jest and serial managed-gate recovery guidance remains accurate; no new troubleshooting exception is required.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: the existing focused Jest and serial managed-gate recovery guidance remains accurate for an environment-target replacement.'
 ---
 
 # Testing Troubleshooting

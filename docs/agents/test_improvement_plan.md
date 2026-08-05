@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: behavior-focused component and service tests protect the changed workflow without expanding the repository testing strategy.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: updating one environment identity and its exact assertions does not expand or change the repository testing strategy.'
 ---
 
 # Testing Strategy

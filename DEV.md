@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing focused-validation, lint, build, managed-push, dev-PR, and later workspace-integration sequence remains accurate.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: `npm start` continues to use the checked-in development environment, now rebound to the recreated persistent Dev; bootstrap and validation commands remain unchanged.'
 ---
 
 # Development Bootstrap

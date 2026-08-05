@@ -39,7 +39,7 @@ export const UNITGROUP_DATA_WORKFLOWS = [
 export const UNITGROUP_ALL_DATA_WORKFLOW_HELP = `UnitGroups data workflow suite
 
 Usage:
-  npm run test:workflows -- --unitgroups:all --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run test:workflows -- --unitgroups:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
   npm run test:workflows -- --unitgroups:all --detail-result --no-keep-data
 
 Behavior:

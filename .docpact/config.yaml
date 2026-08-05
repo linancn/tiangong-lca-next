@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-02"
-lastReviewedCommit: "92aeaa72d760ee9121d021b171a8cd7e8715fc35"
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the existing page, service, review-management, and focused-test routing covers the change without altering gate, release, or workspace-integration governance.'
+lastReviewedAt: "2026-08-05"
+lastReviewedCommit: "d9f581bb98eec6736ea1378bb9f7b00730489522"
+lastReviewedNote: 'Reviewed for Issue #768: replacing the persistent-dev URL, publishable key, and data-workflow target stays within existing frontend environment, test, gate, and workspace-integration ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

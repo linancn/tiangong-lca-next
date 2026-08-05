@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend ownership, dev-first delivery, database authorization, validation gates, and later root integration ownership remain unchanged.'
+lastReviewedAt: 2026-08-05
+lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
+lastReviewedNote: 'Reviewed for Issue #768: the persistent-dev environment identity changed after database recreation; frontend ownership, dev-first delivery, validation gates, and workspace integration remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
