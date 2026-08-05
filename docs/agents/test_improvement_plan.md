@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip, 49-ID result validates the maintained strategy and requires no testing-strategy expansion.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: query/evidence state separation is covered by the existing component-test strategy and requires no broader testing-strategy change.'
 ---
 
 # Testing Strategy

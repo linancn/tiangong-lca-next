@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt and complete 49-ID binding validate the existing semantic E2E and managed-gate patterns.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: the existing mocked-service component pattern cleanly proves that transport failures do not produce evidence-mismatch UI.'
 ---
 
 # Testing Patterns Reference

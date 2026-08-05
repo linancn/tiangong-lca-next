@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the credential-free 60-pass/24-designed-skip receipt does not alter frontend ownership, dev-first branch policy, production-write authorization, validation gates, or root integration ownership.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: separating LCIA query failures from evidence validation remains within existing frontend ownership, production hotfix, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
