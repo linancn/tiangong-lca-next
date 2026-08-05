@@ -1,7 +1,12 @@
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import AccountView from '@/pages/Account/view';
+import ContactView from '@/pages/Contacts/Components/view';
+import FlowpropertyView from '@/pages/Flowproperties/Components/view';
+import FlowView from '@/pages/Flows/Components/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
+import SourceView from '@/pages/Sources/Components/view';
+import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { genProcessName } from '@/services/processes/util';
@@ -14,10 +19,9 @@ import {
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
-import { ProfileOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Card, Col, Input, Row, Space, Spin, Table, Tag, Tooltip, theme } from 'antd';
+import { Card, Col, Input, Row, Space, Spin, Table, Tag, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
@@ -29,16 +33,6 @@ import SelectReviewer from './SelectReviewer';
 import SimpleReviewActions from './SimpleReviewActions';
 
 const { Search } = Input;
-
-const DATASET_ROUTES: Record<ReviewSubmitDatasetTable, string> = {
-  contacts: '/mydata/contacts',
-  sources: '/mydata/sources',
-  unitgroups: '/mydata/unitgroups',
-  flowproperties: '/mydata/flowproperties',
-  flows: '/mydata/flows',
-  processes: '/mydata/processes',
-  lifecyclemodels: '/mydata/models',
-};
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
@@ -136,27 +130,41 @@ const AssignmentReview = ({
   ) => {
     if (!targetTable || !id || !version) return null;
 
-    const dataLink = `${DATASET_ROUTES[targetTable]}?id=${encodeURIComponent(
-      id,
-    )}&version=${encodeURIComponent(version)}&mode=view`;
-    const viewLabel = intl.formatMessage({
-      id: 'pages.review.table.view',
-      defaultMessage: 'View',
-    });
-
-    return (
-      <Tooltip title={viewLabel}>
-        <Button
-          aria-label={viewLabel}
-          href={dataLink}
-          target='_blank'
-          rel='noopener noreferrer'
-          shape='circle'
-          size='small'
-          icon={<ProfileOutlined />}
-        />
-      </Tooltip>
-    );
+    switch (targetTable) {
+      case 'contacts':
+        return <ContactView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'sources':
+        return <SourceView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'unitgroups':
+        return <UnitGroupView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'flowproperties':
+        return <FlowpropertyView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'flows':
+        return <FlowView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'processes':
+        return (
+          <ProcessView
+            id={id}
+            version={version}
+            lang={lang}
+            buttonType='icon'
+            disabled={false}
+            buttonTypeProp='text'
+          />
+        );
+      case 'lifecyclemodels':
+        return (
+          <LifeCycleModelView
+            id={id}
+            version={version}
+            lang={lang}
+            buttonType='icon'
+            buttonTypeProp='text'
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   const clearUnifiedSelection = () => {
@@ -521,26 +529,9 @@ const AssignmentReview = ({
         return [
           <Space key={0} size='small'>
             {row.name}
-            {!canOpenRootData ? null : targetTable === 'lifecyclemodels' ? (
-              <LifeCycleModelView
-                id={row?.json?.data?.id}
-                version={row?.json?.data?.version}
-                lang={lang}
-                buttonType='icon'
-                buttonTypeProp='text'
-              />
-            ) : targetTable === 'processes' ? (
-              <ProcessView
-                id={row?.json?.data?.id}
-                version={row?.json?.data?.version}
-                lang={lang}
-                buttonType='icon'
-                disabled={false}
-                buttonTypeProp='text'
-              />
-            ) : (
-              renderDatasetViewButton(targetTable, row.json?.data?.id, row.json?.data?.version)
-            )}
+            {canOpenRootData
+              ? renderDatasetViewButton(targetTable, row.json?.data?.id, row.json?.data?.version)
+              : null}
           </Space>,
         ];
       },

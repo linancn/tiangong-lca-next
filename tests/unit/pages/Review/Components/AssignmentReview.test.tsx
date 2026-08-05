@@ -8,10 +8,6 @@ import { render, screen, waitFor } from '../../../../helpers/testUtils';
 
 let mockLocale = 'en-US';
 
-jest.mock('@ant-design/icons', () => ({
-  ProfileOutlined: () => <span data-testid='dataset-view-icon' />,
-}));
-
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id, values = {} }: any) =>
@@ -30,14 +26,53 @@ jest.mock('@/pages/Account/view', () => ({
   default: ({ userId }: any) => <span data-testid='account-view'>{userId}</span>,
 }));
 
+jest.mock('@/pages/Contacts/Components/view', () => ({
+  __esModule: true,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='contact-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
+}));
+
+jest.mock('@/pages/Flowproperties/Components/view', () => ({
+  __esModule: true,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='flowproperty-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
+}));
+
+jest.mock('@/pages/Flows/Components/view', () => ({
+  __esModule: true,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='flow-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
+}));
+
 jest.mock('@/pages/LifeCycleModels/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span data-testid='lifecycle-view'>{`${id}:${version}`}</span>,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='lifecycle-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span data-testid='process-view'>{`${id}:${version}`}</span>,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='process-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
+}));
+
+jest.mock('@/pages/Sources/Components/view', () => ({
+  __esModule: true,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='source-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
+}));
+
+jest.mock('@/pages/Unitgroups/Components/view', () => ({
+  __esModule: true,
+  default: ({ id, version, buttonType }: any) => (
+    <span data-testid='unitgroup-view'>{`${id}:${version}:${buttonType}`}</span>
+  ),
 }));
 
 jest.mock('@/pages/Review/Components/RejectReview', () => ({
@@ -94,18 +129,11 @@ jest.mock('antd', () => {
   const React = require('react');
 
   const Card = ({ children }: any) => <section>{children}</section>;
-  const Button = ({ children, onClick, icon, href, target, rel, ...props }: any) =>
-    href ? (
-      <a href={href} target={target} rel={rel} {...props}>
-        {icon}
-        {children}
-      </a>
-    ) : (
-      <button type='button' onClick={onClick} {...props}>
-        {icon}
-        {children}
-      </button>
-    );
+  const Button = ({ children, onClick }: any) => (
+    <button type='button' onClick={onClick}>
+      {children}
+    </button>
+  );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
@@ -159,7 +187,6 @@ jest.mock('antd', () => {
     useToken: () => ({ token: { colorPrimary: '#1677ff', fontSize: 14 } }),
   };
   const Tag = ({ children, color }: any) => <span data-color={color}>{children}</span>;
-  const Tooltip = ({ children }: any) => children;
 
   return {
     __esModule: true,
@@ -172,7 +199,6 @@ jest.mock('antd', () => {
     Spin,
     Table,
     Tag,
-    Tooltip,
     theme,
   };
 });
@@ -1173,11 +1199,56 @@ describe('AssignmentReview', () => {
     mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
       data: [
         {
+          reference_review_id: 'reference-source',
+          target_table: 'sources',
+          data_id: 'source-1',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+        {
+          reference_review_id: 'reference-unitgroup',
+          target_table: 'unitgroups',
+          data_id: 'unitgroup-1',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+        {
+          reference_review_id: 'reference-flowproperty',
+          target_table: 'flowproperties',
+          data_id: 'flowproperty-1',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+        {
           reference_review_id: 'reference-flow',
           target_table: 'flows',
           data_id: 'flow-1',
           data_version: '1.0.0',
           data_name: { baseName: { en: 'Reference Flow' } },
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+        {
+          reference_review_id: 'reference-process',
+          target_table: 'processes',
+          data_id: 'process-1',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+        {
+          reference_review_id: 'reference-lifecyclemodel',
+          target_table: 'lifecyclemodels',
+          data_id: 'model-1',
+          data_version: '1.0.0',
           state_code: 1,
           completed_reviewer_count: 0,
           reviewer_count: 1,
@@ -1197,19 +1268,18 @@ describe('AssignmentReview', () => {
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'review-contact:admin:contacts',
     );
-    const rootViewLink = screen.getByRole('link', { name: 'View' });
-    expect(rootViewLink).toHaveAttribute(
-      'href',
-      '/mydata/contacts?id=contact-1&version=1.0.0&mode=view',
-    );
-    expect(rootViewLink).not.toHaveTextContent('View');
+    expect(screen.getByTestId('contact-view')).toHaveTextContent('contact-1:1.0.0:icon');
+    expect(screen.queryByRole('link', { name: 'View' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'expand-review-contact' }));
     expect(await screen.findByTestId('subrow-reference-flow')).toBeInTheDocument();
-    const viewLinks = screen.getAllByRole('link', { name: 'View' });
-    expect(viewLinks).toHaveLength(2);
-    expect(viewLinks[1]).toHaveAttribute('href', '/mydata/flows?id=flow-1&version=1.0.0&mode=view');
-    expect(viewLinks[1]).not.toHaveTextContent('View');
+    expect(screen.getByTestId('source-view')).toHaveTextContent('source-1:1.0.0:icon');
+    expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('unitgroup-1:1.0.0:icon');
+    expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('flowproperty-1:1.0.0:icon');
+    expect(screen.getByTestId('flow-view')).toHaveTextContent('flow-1:1.0.0:icon');
+    expect(screen.getByTestId('process-view')).toHaveTextContent('process-1:1.0.0:icon');
+    expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('model-1:1.0.0:icon');
+    expect(screen.queryByRole('link', { name: 'View' })).not.toBeInTheDocument();
   });
 
   it('renders simple actions for a pending reference review', async () => {
