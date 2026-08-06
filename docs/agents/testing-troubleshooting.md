@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: the focused serial Jest command and existing gate troubleshooting remain sufficient; no new exception is required.'
+lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
+lastReviewedNote: 'Reviewed for Issue #774: existing gate troubleshooting remains sufficient for the release-only version bump; no new exception is required.'
 ---
 
 # Testing Troubleshooting

@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: query/evidence state separation is covered by the existing component-test strategy and requires no broader testing-strategy change.'
+lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
+lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump requires no broader testing-strategy change.'
 ---
 
 # Testing Strategy
