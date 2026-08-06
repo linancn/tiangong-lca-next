@@ -1253,6 +1253,15 @@ describe('AssignmentReview', () => {
           completed_reviewer_count: 0,
           reviewer_count: 1,
         },
+        {
+          reference_review_id: 'reference-unsupported',
+          target_table: 'unsupported',
+          data_id: 'unsupported-1',
+          data_version: '1.0.0',
+          state_code: 1,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
       ],
       error: null,
     });
@@ -1279,6 +1288,7 @@ describe('AssignmentReview', () => {
     expect(screen.getByTestId('flow-view')).toHaveTextContent('flow-1:1.0.0:icon');
     expect(screen.getByTestId('process-view')).toHaveTextContent('process-1:1.0.0:icon');
     expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('model-1:1.0.0:icon');
+    expect(screen.getByTestId('subrow-reference-unsupported')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'View' })).not.toBeInTheDocument();
   });
 
