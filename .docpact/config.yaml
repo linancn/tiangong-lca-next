@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-06'
-lastReviewedCommit: 'a944c3ab2825aeb2f496621672cb1a378d7bc970'
+lastReviewedCommit: 'e9e5e1f26b0cc9ac32975bfb2df29be133355f31'
 lastReviewedNote: 'Reviewed for Issue #778: version-only release automation may record bounded Docpact review evidence, while promotion keeps the merged dev candidate immutable.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

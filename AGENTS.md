@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
-lastReviewedNote: 'Reviewed for Issue #778: pure version releases may automatically record review-only Docpact evidence; immutable dev-to-main promotion never mutates the candidate.'
+lastReviewedCommit: e9e5e1f26b0cc9ac32975bfb2df29be133355f31
+lastReviewedNote: 'Reviewed for Issue #778: the two deterministic release commands are the preferred normal PR path; pure version releases may automatically record review-only Docpact evidence, while immutable dev-to-main promotion never mutates the candidate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -150,8 +150,9 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - credential-free production preflight for main candidates: `npm run release:preflight`
-- deterministic version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> [--apply]`
-- deterministic merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <number> --issue <number> [--apply]`
+- preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
+- preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
+- omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
 - automatic release review is limited to Docpact `review_or_update` evidence after exact proof that only the three package/lock root version fields changed; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
@@ -185,6 +186,7 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
+- normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
 - PRs targeting `main` run the reusable Release Gate against their exact base/head; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
 - canonical `main` branch pushes read `package.json.version`, run the reusable Release Gate plus exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after both pass, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump

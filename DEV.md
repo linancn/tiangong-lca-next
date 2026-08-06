@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
-lastReviewedNote: 'Reviewed for Issue #778: the version-to-dev command automatically closes review-only Docpact evidence after proving a pure version diff; promotion remains immutable.'
+lastReviewedCommit: e9e5e1f26b0cc9ac32975bfb2df29be133355f31
+lastReviewedNote: 'Reviewed for Issue #778: the two deterministic commands are the preferred normal release-PR flow; version-to-dev may close bounded review-only Docpact evidence, while promotion remains immutable.'
 ---
 
 # Development Bootstrap
@@ -135,8 +135,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | check every active locale's activation boundary | `npm run i18n:locale:all:check` |
 | require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | run the combined credential-free production preflight | `npm run release:preflight` |
-| plan or prepare a version-bump PR into `dev` | `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> [--apply]` |
-| plan or prepare an immutable `dev -> main` promotion after the version PR merges | `npm --silent run release:promote-dev-to-main -- --release-pr <number> --issue <number> [--apply]` |
+| preferred version-bump PR into `dev` | `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply` |
+| preferred immutable `dev -> main` promotion after the version PR merges | `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply` |
 | qualify the semantic release harness locally without production access | `npm run e2e:qualify` |
 | verify the current source has a matching qualification receipt | `npm run e2e:qualification:check` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
@@ -168,7 +168,37 @@ The controller first refuses this production-data command when the host has `CI`
 
 Create the `dev -> main` Promote PR only after that authorized run has produced current checked-in evidence with exact cleanup and the full managed release gate has passed on the immutable candidate. The Promote PR and its credential-free Release Readiness job verify the matching qualification receipt, production evidence, and diff. They do not create production proof: the repository has no protected production actor credential or external recovery ledger in GitHub Actions, by design.
 
-The two release automation commands default to read-only planning. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; full managed-gate output and Docpact reports are retained under `.local/release-automation/`. Before committing, the version-to-dev command proves that `package.json.version`, `package-lock.json.version`, and `package-lock.json`'s root package version are the only semantic changes. It then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point; review marking itself is checked to alter only `lastReviewedAt` and `lastReviewedCommit`. Any other package, dependency, document-body, uncovered, stale, missing, or unsupported finding stops the command. The version branch remains deliberately non-main-semantic so the existing dev gate applies. The promotion command pins the exact merged dev SHA on a `promote` branch, does not modify Docpact evidence, and makes the existing hook run release preflight plus the complete main-semantic gate before opening the main PR. Both commands reuse a matching open PR and fail closed on version, branch, or dev-candidate drift.
+## Preferred Release PR Flow
+
+Use these commands for every normal versioned release. They replace manual package-version editing, release branch/commit/push assembly, and direct PR creation.
+
+1. Preview the version-to-`dev` plan without changing Git or GitHub:
+
+   ```bash
+   npm --silent run release:to-dev -- --version <x.y.z> --issue <number>
+   ```
+
+2. Apply that exact plan. This creates or reuses the version PR targeting `dev`:
+
+   ```bash
+   npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply
+   ```
+
+3. After the returned `dev` PR is merged, preview the immutable promotion using that merged PR number:
+
+   ```bash
+   npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number>
+   ```
+
+4. Apply the promotion plan. This creates or reuses the PR targeting `main`:
+
+   ```bash
+   npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply
+   ```
+
+The commands create or reuse PRs but never merge them. Review required GitHub checks before merging. Use a manual path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
+
+Both release commands default to read-only planning when `--apply` is omitted. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; full managed-gate output and Docpact reports are retained under `.local/release-automation/`. Before committing, the version-to-dev command proves that `package.json.version`, `package-lock.json.version`, and `package-lock.json`'s root package version are the only semantic changes. It then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point; review marking itself is checked to alter only `lastReviewedAt` and `lastReviewedCommit`. Any other package, dependency, document-body, uncovered, stale, missing, or unsupported finding stops the command. The version branch remains deliberately non-main-semantic so the existing dev gate applies. The promotion command pins the exact merged dev SHA on a `promote` branch, does not modify Docpact evidence, and makes the existing hook run release preflight plus the complete main-semantic gate before opening the main PR. Both commands reuse a matching open PR and fail closed on version, branch, or dev-candidate drift.
 
 ## Command Rules
 
