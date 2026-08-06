@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: existing gate troubleshooting remains sufficient for the release-only version bump; no new exception is required.'
+lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
+lastReviewedNote: 'Reviewed for Issues #745 and #780: existing gate and focused-test troubleshooting remains sufficient; no new exception is required.'
 ---
 
 # Testing Troubleshooting

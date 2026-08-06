@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump uses the existing Node 24, managed-push, production-hotfix PR, release, and workspace-integration sequence.'
+lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
+lastReviewedNote: 'Reviewed for Issues #745 and #780: the grouped-review candidate uses the existing Node 24, focused-proof, qualification, managed-push, promote-PR, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump does not change or add a testing pattern.'
+lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
+lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review selection and drawer tests use existing service/UI test patterns and add no new testing pattern.'
 ---
 
 # Testing Patterns Reference

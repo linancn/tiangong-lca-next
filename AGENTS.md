@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump remains within existing frontend ownership, production-hotfix, quality-gate, and root-integration boundaries.'
+lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
+lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review delivery remains within existing frontend ownership, dev-to-main promotion, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
