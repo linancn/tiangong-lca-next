@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: "2026-08-07"
 lastReviewedCommit: "56c7bfca9b851dfa83838e72ac26e131ef170d69"
-lastReviewedNote: 'Reviewed for Issue #778: existing ownership rules cover independent candidate and cumulative promotion-range review evidence.'
+lastReviewedNote: 'Reviewed for Issue #778: existing ownership routes cover automatic qualification evidence, composed-candidate preflight, release orchestration, tests, and governed release docs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
