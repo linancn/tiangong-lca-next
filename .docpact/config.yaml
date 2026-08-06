@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-06'
-lastReviewedCommit: '63814a05d71fb5f2f681659e7cfc51b04ae74deb'
-lastReviewedNote: 'Reviewed for Issue #778: deterministic release-to-dev and dev-to-main promotion scripts are owned and routed as repository testing/release gates.'
+lastReviewedCommit: 'a944c3ab2825aeb2f496621672cb1a378d7bc970'
+lastReviewedNote: 'Reviewed for Issue #778: version-only release automation may record bounded Docpact review evidence, while promotion keeps the merged dev candidate immutable.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

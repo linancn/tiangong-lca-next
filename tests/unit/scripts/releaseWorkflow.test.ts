@@ -9,6 +9,21 @@ const workflow = require('../../../scripts/release/release-workflow.cjs') as {
   parseArguments: (args: string[], command: string) => Record<string, unknown>;
   parseStableVersion: (value: string, label: string) => { text: string; parts: number[] };
   branchHasMainSemantics: (branch: string) => boolean;
+  assertReleaseCandidateScope: (
+    root: string,
+    baseRef: string,
+    targetVersion: string,
+  ) => { changedPaths: string[]; reviewPaths: string[] };
+  automaticDocpactReview: (
+    root: string,
+    options: { baseSha: string; targetVersion: string; reportFile: string },
+  ) => {
+    status: string;
+    reviewed_paths: string[];
+    evidence_paths: string[];
+    rounds: number;
+  };
+  humanResult: (result: Record<string, any>) => string;
   versionsFromDocuments: (
     packageJson: Record<string, any>,
     packageLock: Record<string, any>,
@@ -136,6 +151,48 @@ if (args[0] === 'run' && args[1] === 'push:checked') {
 }
 `,
   );
+  writeExecutable(
+    path.join(fixture.bin, 'docpact'),
+    `#!/usr/bin/env node
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const args = process.argv.slice(2);
+const value = (flag) => args[args.indexOf(flag) + 1];
+const baseSha = process.env.FAKE_DOCPACT_BASE_SHA;
+const mode = process.env.FAKE_DOCPACT_MODE || 'pass';
+const reviewed = (filePath) => fs.readFileSync(filePath, 'utf8').includes('lastReviewedCommit: ' + baseSha);
+if (args[0] === 'lint') {
+  let diagnostics = [];
+  if (mode === 'unsupported') {
+    diagnostics = [{ diagnostic_id: 'd001', type: 'uncovered-change', path: 'package.json', failure_reason: 'unmatched_changed_path', finding_state: 'active' }];
+  } else if (mode === 'review') {
+    const target = !reviewed('AGENTS.md') ? 'AGENTS.md' : !reviewed('docs/gate.md') ? 'docs/gate.md' : null;
+    if (target) diagnostics = [{ diagnostic_id: 'd001', type: 'missing-review', path: target, required_mode: 'review_or_update', failure_reason: 'required_doc_not_touched', finding_state: 'active' }];
+  }
+  const report = { schema_version: 'docpact.lint-report.v1', diagnostics, summary: { total_count: diagnostics.length } };
+  const output = value('--output');
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  fs.writeFileSync(output, JSON.stringify(report));
+  process.stdout.write(JSON.stringify(report));
+  process.exitCode = diagnostics.length > 0 ? 1 : 0;
+} else if (args[0] === 'review' && args[1] === 'mark') {
+  const commit = value('--commit');
+  const paths = [];
+  args.forEach((argument, index) => { if (argument === '--path') paths.push(args[index + 1]); });
+  paths.forEach((filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8')
+      .replace(/^lastReviewedAt:.*$/mu, 'lastReviewedAt: 2026-08-06')
+      .replace(/^lastReviewedCommit:.*$/mu, 'lastReviewedCommit: ' + commit);
+    fs.writeFileSync(filePath, source);
+  });
+  process.stdout.write(JSON.stringify({ paths, commit }));
+} else {
+  process.stderr.write('unsupported fake docpact invocation: ' + JSON.stringify(args));
+  process.exitCode = 94;
+}
+`,
+  );
 };
 
 const createFixture = (devVersion = '1.0.0'): Fixture => {
@@ -156,6 +213,15 @@ const createFixture = (devVersion = '1.0.0'): Fixture => {
   writeJson(path.join(root, 'package.json'), mainDocuments.packageJson);
   writeJson(path.join(root, 'package-lock.json'), mainDocuments.packageLock);
   fs.writeFileSync(path.join(root, '.gitignore'), '.local/\n');
+  fs.writeFileSync(
+    path.join(root, 'AGENTS.md'),
+    '---\nlastReviewedAt: 2026-01-01\nlastReviewedCommit: 0000000000000000000000000000000000000000\n---\n\n# Fixture contract\n',
+  );
+  fs.mkdirSync(path.join(root, 'docs'));
+  fs.writeFileSync(
+    path.join(root, 'docs/gate.md'),
+    '---\nlastReviewedAt: 2026-01-01\nlastReviewedCommit: 0000000000000000000000000000000000000000\n---\n\n# Fixture gate\n',
+  );
   git(root, ['add', '.']);
   git(root, ['commit', '-m', 'main baseline']);
   const mainSha = git(root, ['rev-parse', 'HEAD']);
@@ -206,6 +272,8 @@ const runCli = (
       PATH: `${fixture.bin}${path.delimiter}${process.env.PATH}`,
       FAKE_GH_PACKAGE_JSON: JSON.stringify(fixture.packageJson),
       FAKE_GH_PACKAGE_LOCK: JSON.stringify(fixture.packageLock),
+      FAKE_DOCPACT_BASE_SHA: fixture.devSha,
+      RELEASE_AUTOMATION_DOCPACT_BIN: path.join(fixture.bin, 'docpact'),
       ...environment,
     }),
   });
@@ -246,6 +314,21 @@ describe('release automation public contracts', () => {
     ).toThrow('--apply and --dry-run cannot be combined');
     expect(workflow.branchHasMainSemantics('codex/promote-v1.2.3-dev-to-main')).toBe(true);
     expect(workflow.branchHasMainSemantics('codex/issue-7-version-v1.2.3')).toBe(false);
+    expect(
+      workflow.humanResult({
+        command: 'release-to-dev',
+        status: 'ready_for_review',
+        version: '1.2.3',
+        candidate_sha: 'a'.repeat(40),
+        branch: 'codex/issue-7-version-v1.2.3',
+        docpact_review: {
+          status: 'completed',
+          reviewed_paths: ['AGENTS.md'],
+          evidence_paths: ['AGENTS.md'],
+        },
+        next_action: 'merge_release_pr',
+      }),
+    ).toContain('Docpact review: completed (1 evidence path)');
   });
 
   it('fails closed when package and lock versions disagree', () => {
@@ -334,6 +417,7 @@ describe('release automation public contracts', () => {
       {
         FAKE_NPM_LOG: npmLog,
         FAKE_GH_CREATED_URL: 'https://example.test/pull/51',
+        FAKE_DOCPACT_MODE: 'review',
       },
     );
 
@@ -344,10 +428,18 @@ describe('release automation public contracts', () => {
       reused: false,
       version: '1.0.1',
       pull_request: { url: 'https://example.test/pull/51' },
+      docpact_review: {
+        status: 'completed',
+        reviewed_paths: ['AGENTS.md', 'docs/gate.md'],
+        rounds: 3,
+      },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe('codex/issue-778-version-v1.0.1');
     expect(git(fixture.root, ['show', 'HEAD:package.json'])).toContain('"version": "1.0.1"');
+    expect(git(fixture.root, ['show', 'HEAD:AGENTS.md'])).toContain(
+      `lastReviewedCommit: ${fixture.devSha}`,
+    );
     expect(
       git(fixture.root, [
         'ls-remote',
@@ -357,6 +449,96 @@ describe('release automation public contracts', () => {
       ]),
     ).toContain(output.candidate_sha);
     expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
+
+    const previousBinary = process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
+    const previousMode = process.env.FAKE_DOCPACT_MODE;
+    const previousBase = process.env.FAKE_DOCPACT_BASE_SHA;
+    process.env.RELEASE_AUTOMATION_DOCPACT_BIN = path.join(fixture.bin, 'docpact');
+    process.env.FAKE_DOCPACT_MODE = 'review';
+    process.env.FAKE_DOCPACT_BASE_SHA = fixture.devSha;
+    try {
+      const repeated = workflow.automaticDocpactReview(fixture.root, {
+        baseSha: fixture.devSha,
+        targetVersion: '1.0.1',
+        reportFile: path.join(fixture.root, '.local/repeated-docpact.json'),
+      });
+      expect(repeated).toMatchObject({
+        status: 'previously_completed',
+        reviewed_paths: [],
+        evidence_paths: ['AGENTS.md', 'docs/gate.md'],
+        rounds: 1,
+      });
+      expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(output.candidate_sha);
+    } finally {
+      if (previousBinary === undefined) delete process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
+      else process.env.RELEASE_AUTOMATION_DOCPACT_BIN = previousBinary;
+      if (previousMode === undefined) delete process.env.FAKE_DOCPACT_MODE;
+      else process.env.FAKE_DOCPACT_MODE = previousMode;
+      if (previousBase === undefined) delete process.env.FAKE_DOCPACT_BASE_SHA;
+      else process.env.FAKE_DOCPACT_BASE_SHA = previousBase;
+    }
+  });
+
+  it('refuses to auto-review a non-review Docpact finding', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      { FAKE_DOCPACT_MODE: 'unsupported' },
+    );
+
+    expect(result.status).toBe(workflow.EXIT.gate);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      complete: false,
+      error: { code: 'docpact_review_requires_manual_action' },
+    });
+    expect(
+      git(fixture.root, [
+        'ls-remote',
+        '--refs',
+        'fork',
+        'refs/heads/codex/issue-778-version-v1.0.1',
+      ]),
+    ).toBe('');
+  });
+
+  it('rejects package semantics beyond the three version fields', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'dev']);
+    const documents = versionDocuments('1.0.1');
+    writeJson(path.join(fixture.root, 'package.json'), {
+      ...documents.packageJson,
+      description: 'not a release-only change',
+    });
+    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
+
+    const previousIndex = process.env.GIT_INDEX_FILE;
+    process.env.GIT_INDEX_FILE = path.join(fixture.container, 'unrelated-hook-index');
+    try {
+      expect(() =>
+        workflow.assertReleaseCandidateScope(fixture.root, fixture.devSha, '1.0.1'),
+      ).toThrow('beyond the three root version fields');
+    } finally {
+      if (previousIndex === undefined) delete process.env.GIT_INDEX_FILE;
+      else process.env.GIT_INDEX_FILE = previousIndex;
+    }
+  });
+
+  it('rejects a governed document body change disguised as review evidence', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'dev']);
+    const documents = versionDocuments('1.0.1');
+    writeJson(path.join(fixture.root, 'package.json'), documents.packageJson);
+    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
+    fs.writeFileSync(
+      path.join(fixture.root, 'AGENTS.md'),
+      `---\nlastReviewedAt: 2026-08-06\nlastReviewedCommit: ${fixture.devSha}\n---\n\n# Changed contract body\n`,
+    );
+
+    expect(() =>
+      workflow.assertReleaseCandidateScope(fixture.root, fixture.devSha, '1.0.1'),
+    ).toThrow('may update only lastReviewedAt and lastReviewedCommit');
   });
 
   it('reuses an existing exact release PR without mutating the repository', () => {

@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
-lastReviewedNote: 'Reviewed for Issue #778: deterministic release and promotion commands delegate their only push to the existing branch-sensitive checked-push and receipt policy.'
+lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedNote: 'Reviewed for Issue #778: bounded version-only Docpact review precedes the unchanged branch-sensitive checked-push and receipt policy.'
 ---
 
 # Pre-Push Gate Policy
@@ -63,7 +63,7 @@ Production-effective workflows separately run `npm run reference-data:production
 
 `npm run release:preflight` owns the credential-free production-readiness boundary by running both `npm run i18n:locale:all:production:check` and `npm run reference-data:production:check`. A local push whose source or destination has `main` semantics (`main`, `master`, `hotfix/*`, `promote/*`, `release/*`, or the equivalent `codex/` branch names) runs this preflight between Docpact and the full test gate. A push to `dev` remains governed by Docpact plus the full test gate only.
 
-The deterministic release commands preserve this split by construction. `release:to-dev` rejects main-semantic branch names and delegates its final transport to `push:checked`; `release:promote-dev-to-main` requires a `promote` branch that points exactly at the merged dev candidate before delegating to the same managed push. Neither command owns a gate bypass. The only automatic retry is the existing argument-free `push:retry`, and only when the immediately preceding checked push created a new exact-intent receipt.
+The deterministic release commands preserve this split by construction. `release:to-dev` rejects main-semantic branch names, proves that only the three root version fields changed, and may record only bounded Docpact `review_or_update` evidence before delegating its final transport to `push:checked`. Its review phase is not a gate bypass: unsupported diagnostics or any semantic document/package drift stop before push, and the normal Docpact gate reruns on the committed candidate. `release:promote-dev-to-main` requires a `promote` branch that points exactly at the merged dev candidate and never writes review evidence before delegating to the same managed push. The only automatic retry is the existing argument-free `push:retry`, and only when the immediately preceding checked push created a new exact-intent receipt.
 
 Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 

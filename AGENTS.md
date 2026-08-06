@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
-lastReviewedNote: 'Reviewed for Issue #778: deterministic release-to-dev and dev-to-main promotion commands preserve the existing branch, managed-gate, and root-integration boundaries.'
+lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedNote: 'Reviewed for Issue #778: pure version releases may automatically record review-only Docpact evidence; immutable dev-to-main promotion never mutates the candidate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -152,6 +152,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - credential-free production preflight for main candidates: `npm run release:preflight`
 - deterministic version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> [--apply]`
 - deterministic merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <number> --issue <number> [--apply]`
+- automatic release review is limited to Docpact `review_or_update` evidence after exact proof that only the three package/lock root version fields changed; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries

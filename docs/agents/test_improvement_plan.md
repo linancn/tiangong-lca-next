@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
-lastReviewedNote: 'Reviewed for Issue #778: hermetic release-command contract tests fit the existing risk-proportional strategy; no broader strategy change is required.'
+lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedNote: 'Reviewed for Issue #778: bounded automatic review adds focused hermetic and real-Docpact proof without changing the broader risk-proportional testing strategy.'
 ---
 
 # Testing Strategy

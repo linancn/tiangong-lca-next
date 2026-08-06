@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { isDeepStrictEqual } = require('node:util');
 
 const SCHEMA_VERSION = 'tiangong.next.release-automation.v1';
 const DEFAULT_REPOSITORY = 'linancn/tiangong-lca-next';
@@ -15,6 +16,23 @@ const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v1';
 const MAX_CAPTURE_BYTES = 64 * 1024 * 1024;
 const MAIN_SEMANTIC_BRANCH_PATTERN = /^(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u;
 const PROMOTION_BRANCH_PATTERN = /^(?:codex\/)?promote(?:\/|-)/u;
+const MAX_DOCPACT_REVIEW_ROUNDS = 5;
+const LOCAL_GIT_ENVIRONMENT_KEYS = [
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+];
 
 const EXIT = Object.freeze({
   usage: 2,
@@ -44,12 +62,13 @@ function truncate(value, maximum = 2000) {
   return text.length <= maximum ? text : `${text.slice(0, maximum)}…`;
 }
 
-function run(command, args, { cwd, allowFailure = false } = {}) {
+function run(command, args, { cwd, allowFailure = false, env = process.env } = {}) {
   const result = spawnSync(command, args, {
     cwd,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: MAX_CAPTURE_BYTES,
+    env,
   });
   if (result.error) {
     throw new ReleaseAutomationError('command_unavailable', `${command} could not be executed.`, {
@@ -101,7 +120,9 @@ function runLogged(command, args, { cwd, logFile }) {
 }
 
 function git(root, args, options = {}) {
-  return run('git', args, { cwd: root, ...options });
+  const environment = { ...process.env };
+  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
+  return run('git', args, { cwd: root, env: environment, ...options });
 }
 
 function gh(root, args, options = {}) {
@@ -426,6 +447,355 @@ function writeVersionFiles(root, version) {
   fs.writeFileSync(lockPath, `${JSON.stringify(packageLock, null, 2)}\n`);
 }
 
+function jsonAtRef(root, ref, filePath) {
+  try {
+    return JSON.parse(git(root, ['show', `${ref}:${filePath}`]).stdout);
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'invalid_release_base_file',
+      `${filePath} is missing or invalid at the release base.`,
+      {
+        exitCode: EXIT.drift,
+        details: { ref, file: filePath, reason: error.message },
+      },
+    );
+  }
+}
+
+function changedPathsSince(root, baseRef) {
+  return git(root, ['diff', '--name-only', '--diff-filter=ACMRTUXB', baseRef, '--'])
+    .stdout.trim()
+    .split(/\r?\n/u)
+    .filter(Boolean);
+}
+
+function withoutReviewMetadata(source) {
+  return String(source)
+    .split(/\r?\n/u)
+    .filter((line) => !/^lastReviewed(?:At|Commit):/u.test(line))
+    .join('\n');
+}
+
+function reviewCommitFromDocument(source) {
+  const match = /^lastReviewedCommit:\s*['"]?([0-9a-f]{40})['"]?\s*$/mu.exec(source);
+  return match?.[1] ?? null;
+}
+
+function assertReleaseCandidateScope(root, baseRef, targetVersion) {
+  const changedPaths = changedPathsSince(root, baseRef);
+  const requiredVersionPaths = ['package.json', 'package-lock.json'];
+  if (
+    changedPaths.length < requiredVersionPaths.length ||
+    requiredVersionPaths.some((filePath) => !changedPaths.includes(filePath))
+  ) {
+    throw new ReleaseAutomationError(
+      'release_candidate_not_version_only',
+      'The release candidate must change both package version files.',
+      {
+        exitCode: EXIT.drift,
+        details: { base_ref: baseRef, changed_paths: changedPaths },
+      },
+    );
+  }
+
+  const basePackage = jsonAtRef(root, baseRef, 'package.json');
+  const baseLock = jsonAtRef(root, baseRef, 'package-lock.json');
+  const candidatePackage = readJson(path.join(root, 'package.json'), 'package.json');
+  const candidateLock = readJson(path.join(root, 'package-lock.json'), 'package-lock.json');
+  const candidateVersions = versionsFromDocuments(
+    candidatePackage,
+    candidateLock,
+    'release candidate',
+  );
+  if (candidateVersions.version !== targetVersion) {
+    throw new ReleaseAutomationError(
+      'release_candidate_version_mismatch',
+      'The release candidate version does not match the requested version.',
+      {
+        exitCode: EXIT.drift,
+        details: { expected: targetVersion, actual: candidateVersions.version },
+      },
+    );
+  }
+
+  const normalizedPackage = JSON.parse(JSON.stringify(candidatePackage));
+  const normalizedLock = JSON.parse(JSON.stringify(candidateLock));
+  normalizedPackage.version = basePackage.version;
+  normalizedLock.version = baseLock.version;
+  if (!normalizedLock.packages?.[''] || !baseLock.packages?.['']) {
+    throw new ReleaseAutomationError(
+      'package_lock_root_missing',
+      'package-lock.json has no root package entry.',
+    );
+  }
+  normalizedLock.packages[''].version = baseLock.packages[''].version;
+  if (
+    !isDeepStrictEqual(normalizedPackage, basePackage) ||
+    !isDeepStrictEqual(normalizedLock, baseLock)
+  ) {
+    throw new ReleaseAutomationError(
+      'release_candidate_contains_semantic_changes',
+      'The release candidate changes package content beyond the three root version fields.',
+      {
+        exitCode: EXIT.drift,
+        details: { base_ref: baseRef },
+        nextAction:
+          'Move dependency or package metadata changes to a separately reviewed feature PR.',
+      },
+    );
+  }
+
+  const reviewPaths = changedPaths.filter((filePath) => !requiredVersionPaths.includes(filePath));
+  for (const filePath of reviewPaths) {
+    if (!/\.(?:md|ya?ml)$/u.test(filePath)) {
+      throw new ReleaseAutomationError(
+        'release_candidate_contains_non_review_changes',
+        'The release candidate contains a non-document change outside the version files.',
+        {
+          exitCode: EXIT.drift,
+          details: { path: filePath, changed_paths: changedPaths },
+        },
+      );
+    }
+    const baseDocument = git(root, ['show', `${baseRef}:${filePath}`], {
+      allowFailure: true,
+    });
+    if (baseDocument.status !== 0 || !fs.existsSync(path.join(root, filePath))) {
+      throw new ReleaseAutomationError(
+        'release_review_document_missing',
+        'Automatic review cannot create, remove, or rename governed documents.',
+        {
+          exitCode: EXIT.drift,
+          details: { path: filePath },
+        },
+      );
+    }
+    const candidateDocument = fs.readFileSync(path.join(root, filePath), 'utf8');
+    if (
+      withoutReviewMetadata(candidateDocument) !== withoutReviewMetadata(baseDocument.stdout) ||
+      reviewCommitFromDocument(candidateDocument) !== baseRef
+    ) {
+      throw new ReleaseAutomationError(
+        'release_review_document_changed',
+        'Automatic review may update only lastReviewedAt and lastReviewedCommit.',
+        {
+          exitCode: EXIT.drift,
+          details: { path: filePath, expected_review_commit: baseRef },
+        },
+      );
+    }
+  }
+
+  return { changedPaths, reviewPaths };
+}
+
+function docpactExecutable(root) {
+  const repositoryWrapper = path.join(root, 'scripts', 'docpact');
+  if (fs.existsSync(repositoryWrapper)) return repositoryWrapper;
+  if (process.env.RELEASE_AUTOMATION_DOCPACT_BIN) {
+    return process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
+  }
+  throw new ReleaseAutomationError(
+    'docpact_unavailable',
+    'The repository Docpact wrapper is unavailable.',
+    {
+      exitCode: EXIT.external,
+      nextAction: 'Restore scripts/docpact or set RELEASE_AUTOMATION_DOCPACT_BIN.',
+    },
+  );
+}
+
+function assertAutomaticReviewTarget(root, baseSha, filePath) {
+  const resolved = path.resolve(root, filePath);
+  const relative = path.relative(root, resolved);
+  if (
+    !relative ||
+    relative === '..' ||
+    relative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relative) ||
+    !/\.(?:md|ya?ml)$/u.test(relative)
+  ) {
+    throw new ReleaseAutomationError(
+      'docpact_review_target_unsafe',
+      'Docpact returned a review path outside the supported repository document boundary.',
+      {
+        exitCode: EXIT.gate,
+        details: { path: filePath },
+      },
+    );
+  }
+  const metadata = fs.lstatSync(resolved, { throwIfNoEntry: false });
+  const baseDocument = git(root, ['show', `${baseSha}:${relative}`], { allowFailure: true });
+  if (!metadata?.isFile() || metadata.isSymbolicLink() || baseDocument.status !== 0) {
+    throw new ReleaseAutomationError(
+      'docpact_review_target_unsafe',
+      'Automatic review requires an existing tracked regular Markdown or YAML document.',
+      {
+        exitCode: EXIT.gate,
+        details: { path: filePath },
+      },
+    );
+  }
+  return relative.split(path.sep).join('/');
+}
+
+function automaticDocpactReview(root, { baseSha, targetVersion, reportFile }) {
+  const executable = docpactExecutable(root);
+  const reviewedPaths = new Set();
+  fs.mkdirSync(path.dirname(reportFile), { recursive: true });
+
+  for (let round = 1; round <= MAX_DOCPACT_REVIEW_ROUNDS; round += 1) {
+    const scope = assertReleaseCandidateScope(root, baseSha, targetVersion);
+    const lint = run(
+      executable,
+      [
+        'lint',
+        '--root',
+        root,
+        '--files',
+        scope.changedPaths.join(','),
+        '--mode',
+        'enforce',
+        '--fail-on-uncovered-change',
+        '--fail-on-stale-docs',
+        '--format',
+        'json',
+        '--output',
+        reportFile,
+      ],
+      { cwd: root, allowFailure: true },
+    );
+    if (!fs.existsSync(reportFile)) {
+      throw new ReleaseAutomationError(
+        'docpact_report_missing',
+        'Docpact did not write the requested diagnostics report.',
+        {
+          exitCode: EXIT.external,
+          details: { report_path: relativeLogPath(root, reportFile) },
+        },
+      );
+    }
+    const report = readJson(reportFile, 'Docpact diagnostics report');
+    const active = Array.isArray(report.diagnostics)
+      ? report.diagnostics.filter((diagnostic) => diagnostic.finding_state === 'active')
+      : [];
+    if (active.length === 0) {
+      if (lint.status !== 0) {
+        throw new ReleaseAutomationError(
+          'docpact_lint_failed_without_diagnostics',
+          'Docpact failed without an active diagnostic that can be handled safely.',
+          {
+            exitCode: EXIT.gate,
+            details: {
+              exit_code: lint.status,
+              report_path: relativeLogPath(root, reportFile),
+              stderr: truncate(lint.stderr),
+            },
+          },
+        );
+      }
+      const finalScope = assertReleaseCandidateScope(root, baseSha, targetVersion);
+      return {
+        status:
+          reviewedPaths.size > 0
+            ? 'completed'
+            : finalScope.reviewPaths.length > 0
+              ? 'previously_completed'
+              : 'not_required',
+        reviewed_paths: [...reviewedPaths].sort(),
+        evidence_paths: finalScope.reviewPaths.sort(),
+        rounds: round,
+        report_path: relativeLogPath(root, reportFile),
+      };
+    }
+
+    const unsupported = active.filter(
+      (diagnostic) =>
+        diagnostic.type !== 'missing-review' ||
+        diagnostic.required_mode !== 'review_or_update' ||
+        !['required_doc_not_touched', 'review_metadata_not_refreshed'].includes(
+          diagnostic.failure_reason,
+        ) ||
+        !/\.(?:md|ya?ml)$/u.test(diagnostic.path || ''),
+    );
+    if (unsupported.length > 0) {
+      throw new ReleaseAutomationError(
+        'docpact_review_requires_manual_action',
+        'Docpact reported a finding that a version-only release must not repair automatically.',
+        {
+          exitCode: EXIT.gate,
+          details: {
+            report_path: relativeLogPath(root, reportFile),
+            diagnostics: unsupported.slice(0, 10).map((diagnostic) => ({
+              id: diagnostic.diagnostic_id,
+              type: diagnostic.type,
+              path: diagnostic.path,
+              reason: diagnostic.failure_reason,
+            })),
+          },
+          nextAction: 'Resolve the reported governance finding in a separately reviewed change.',
+        },
+      );
+    }
+
+    const paths = [
+      ...new Set(
+        active.map((diagnostic) => assertAutomaticReviewTarget(root, baseSha, diagnostic.path)),
+      ),
+    ].sort();
+    const newPaths = paths.filter((filePath) => !reviewedPaths.has(filePath));
+    if (newPaths.length === 0) {
+      throw new ReleaseAutomationError(
+        'docpact_review_no_progress',
+        'Docpact repeated the same review findings after review evidence was recorded.',
+        {
+          exitCode: EXIT.gate,
+          details: { report_path: relativeLogPath(root, reportFile), paths },
+        },
+      );
+    }
+    const mark = run(
+      executable,
+      [
+        'review',
+        'mark',
+        '--root',
+        root,
+        ...newPaths.flatMap((filePath) => ['--path', filePath]),
+        '--commit',
+        baseSha,
+        '--format',
+        'json',
+      ],
+      { cwd: root, allowFailure: true },
+    );
+    if (mark.status !== 0) {
+      throw new ReleaseAutomationError(
+        'docpact_review_mark_failed',
+        'Docpact could not record the verified release review.',
+        {
+          exitCode: EXIT.gate,
+          details: { paths: newPaths, stderr: truncate(mark.stderr || mark.stdout) },
+        },
+      );
+    }
+    newPaths.forEach((filePath) => reviewedPaths.add(filePath));
+    assertReleaseCandidateScope(root, baseSha, targetVersion);
+  }
+
+  throw new ReleaseAutomationError(
+    'docpact_review_round_limit',
+    'Docpact review did not reach a fixed point within the bounded round limit.',
+    {
+      exitCode: EXIT.gate,
+      details: {
+        rounds: MAX_DOCPACT_REVIEW_ROUNDS,
+        report_path: relativeLogPath(root, reportFile),
+      },
+    },
+  );
+}
+
 function remoteBranchSha(root, remote, branch) {
   const result = git(root, ['ls-remote', '--refs', remote, `refs/heads/${branch}`]);
   const line = result.stdout.trim();
@@ -633,15 +1003,22 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Create/update the branch, run the managed push gate, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review version-only Docpact findings, commit, gate, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic review boundary:\n  The command proves that only package.json.version, package-lock.json.version,\n  and package-lock.json packages[""].version changed. It may then record only\n  Docpact review_or_update evidence. Every other finding or document-body change fails closed.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
   return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the dev merge SHA, run main-semantic managed gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its required GitHub checks pass.`;
 }
 
-function releasePrBody({ issue, version, baseSha, candidateSha }) {
-  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
+function releasePrBody({ issue, version, baseSha, candidateSha, docpactReview }) {
+  const reviewedPaths = [
+    ...new Set([...(docpactReview.reviewed_paths || []), ...(docpactReview.evidence_paths || [])]),
+  ];
+  const reviewSummary =
+    reviewedPaths.length > 0
+      ? reviewedPaths.map((filePath) => `  - \`${filePath}\``).join('\n')
+      : '  - none required';
+  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
 }
 
 function releaseMarker(body) {
@@ -725,6 +1102,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       branch,
       candidate_sha: existing.headRefOid,
       pull_request: { number: existing.number, url: existing.url },
+      docpact_review: { status: 'previously_completed', report_path: null },
       gate: { status: 'previously_completed', log_path: null },
       next_action: 'merge_release_pr',
     };
@@ -754,6 +1132,11 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     options.logDirectory,
     `release-to-dev-v${target.text}.log`,
   );
+  const docpactReport = resolveLogFile(
+    root,
+    options.logDirectory,
+    `release-to-dev-v${target.text}-docpact.json`,
+  );
   if (!options.apply) {
     return {
       ...baseResult('release-to-dev', options),
@@ -765,6 +1148,11 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       base_sha: remoteDevSha,
       branch,
       pull_request: null,
+      docpact_review: {
+        status: 'planned',
+        automatic_scope: 'review_or_update_for_verified_version_only_candidate',
+        report_path: relativeLogPath(root, docpactReport),
+      },
       gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
       next_action: `rerun_with_apply`,
       warnings: [
@@ -815,25 +1203,17 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   switchToBranch(root, branch, `${options.remote}/dev`);
   assertClean(root);
   let candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
+  let docpactReview;
   if (candidateSha === fetchedDevSha) {
     writeVersionFiles(root, target.text);
-    const changed = git(root, ['status', '--porcelain=v1', '--untracked-files=all'])
-      .stdout.trim()
-      .split(/\r?\n/u)
-      .filter(Boolean);
-    const unexpected = changed.filter(
-      (line) => !/ (?:package\.json|package-lock\.json)$/u.test(line),
-    );
-    if (unexpected.length > 0) {
-      throw new ReleaseAutomationError(
-        'unexpected_version_changes',
-        'Updating the version changed unexpected paths.',
-        {
-          details: { changed_paths: changed },
-        },
-      );
-    }
-    git(root, ['add', '--', 'package.json', 'package-lock.json']);
+    assertReleaseCandidateScope(root, fetchedDevSha, target.text);
+    docpactReview = automaticDocpactReview(root, {
+      baseSha: fetchedDevSha,
+      targetVersion: target.text,
+      reportFile: docpactReport,
+    });
+    const finalScope = assertReleaseCandidateScope(root, fetchedDevSha, target.text);
+    git(root, ['add', '--', ...finalScope.changedPaths]);
     git(root, ['commit', '-m', `chore: prepare v${target.text} (#${options.issue})`]);
     candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
   } else {
@@ -857,6 +1237,36 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
           details: { branch, expected: target.text, actual: branchVersion },
         },
       );
+    }
+    assertReleaseCandidateScope(root, fetchedDevSha, target.text);
+    docpactReview = automaticDocpactReview(root, {
+      baseSha: fetchedDevSha,
+      targetVersion: target.text,
+      reportFile: docpactReport,
+    });
+    if (docpactReview.reviewed_paths.length > 0) {
+      const finalScope = assertReleaseCandidateScope(root, fetchedDevSha, target.text);
+      const allowedReviewPaths = new Set([
+        ...docpactReview.reviewed_paths,
+        ...docpactReview.evidence_paths,
+      ]);
+      if (!finalScope.reviewPaths.every((filePath) => allowedReviewPaths.has(filePath))) {
+        throw new ReleaseAutomationError(
+          'unexpected_release_review_path',
+          'The release branch contains review evidence not recognized by Docpact.',
+          {
+            exitCode: EXIT.drift,
+            details: { review_paths: finalScope.reviewPaths },
+          },
+        );
+      }
+      git(root, ['add', '--', ...docpactReview.reviewed_paths]);
+      git(root, [
+        'commit',
+        '-m',
+        `chore: record v${target.text} documentation review (#${options.issue})`,
+      ]);
+      candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
     }
   }
 
@@ -890,6 +1300,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       version: target.text,
       baseSha: fetchedDevSha,
       candidateSha,
+      docpactReview,
     }),
   });
   return {
@@ -902,6 +1313,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
+    docpact_review: docpactReview,
     gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
     next_action: 'merge_release_pr',
   };
@@ -991,6 +1403,10 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       branch,
       candidate_sha: existing.headRefOid,
       pull_request: { number: existing.number, url: existing.url },
+      docpact_review: {
+        status: 'not_applicable',
+        reason: 'promotion_preserves_the_exact_merged_dev_candidate',
+      },
       gate: { status: 'previously_completed', log_path: null },
       next_action: 'merge_promotion_pr',
     };
@@ -1026,6 +1442,10 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       main_sha: remoteMainSha,
       branch,
       pull_request: null,
+      docpact_review: {
+        status: 'not_applicable',
+        reason: 'promotion_preserves_the_exact_merged_dev_candidate',
+      },
       gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
       warnings: initialStatus
         ? ['The worktree is dirty; --apply will fail until local changes are resolved.']
@@ -1139,6 +1559,10 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
+    docpact_review: {
+      status: 'not_applicable',
+      reason: 'promotion_preserves_the_exact_merged_dev_candidate',
+    },
     gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
     next_action: 'merge_promotion_pr',
   };
@@ -1149,7 +1573,11 @@ function humanResult(result) {
     return `${result.command}: failed\n\nSummary:\n- ${result.error.code}: ${result.error.message}\n\nNext:\n- ${result.next_action || 'Fix the reported precondition and rerun the same command.'}\n`;
   }
   const target = result.pull_request?.url || result.branch || result.repository;
-  return `${result.command}: ${result.status}\n\nSummary:\n- ${target}\n- version: ${result.version ?? 'not resolved'}\n- candidate: ${result.candidate_sha ?? result.dev_merge_sha ?? result.base_sha ?? 'not created'}\n\nNext:\n- ${result.next_action}\n`;
+  const reviewedPathCount = new Set([
+    ...(result.docpact_review?.reviewed_paths || []),
+    ...(result.docpact_review?.evidence_paths || []),
+  ]).size;
+  return `${result.command}: ${result.status}\n\nSummary:\n- ${target}\n- version: ${result.version ?? 'not resolved'}\n- candidate: ${result.candidate_sha ?? result.dev_merge_sha ?? result.base_sha ?? 'not created'}\n- Docpact review: ${result.docpact_review?.status ?? 'not reported'} (${reviewedPathCount} evidence path${reviewedPathCount === 1 ? '' : 's'})\n\nNext:\n- ${result.next_action}\n`;
 }
 
 function emitResult(result, format = 'json') {
@@ -1212,11 +1640,14 @@ module.exports = {
   EXIT,
   ReleaseAutomationError,
   SCHEMA_VERSION,
+  automaticDocpactReview,
+  assertReleaseCandidateScope,
   branchHasMainSemantics,
   compareVersions,
   executePromoteDevToMain,
   executeReleaseToDev,
   failureResult,
+  humanResult,
   parseArguments,
   parseStableVersion,
   promotionHelp,

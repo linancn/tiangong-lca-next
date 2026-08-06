@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
-lastReviewedNote: 'Reviewed for Issue #778: release-command drift and managed-push failures now have bounded JSON diagnostics and local log recovery paths.'
+lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedNote: 'Reviewed for Issue #778: automatic-review boundary failures, release drift, and managed-push failures have bounded JSON and local-report recovery paths.'
 ---
 
 # Testing Troubleshooting
@@ -61,6 +61,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
 | `release:to-dev` or `release:promote-dev-to-main` returns a drift error | the requested version, Issue marker, dev merge SHA, branch candidate, or current remote ref no longer matches the planned identity | read the single JSON error and its `next_action`, inspect the referenced PR/SHA, then rerun dry-run against current remotes; do not force-update or reuse a mismatched release branch |
+| `release:to-dev` returns `docpact_review_requires_manual_action`, `release_review_document_changed`, or another automatic-review boundary error | Docpact found more than review-only evidence, package semantics exceed the three version fields, or review marking would alter governed content | inspect the returned `.local/release-automation/*-docpact.json` report and exact path/reason; move substantive package or documentation work into a separately reviewed PR, and never broaden the automatic allowlist to make the release pass |
 | a deterministic release command returns `managed_push_failed` | Docpact, production preflight, the full gate, or the original transport failed | inspect the returned `.local/release-automation/**` log; if and only if that checked push created a new exact-intent receipt, the command already attempted `push:retry`, so fix the first reported gate/transport cause before rerunning `--apply` |
 | release E2E fails before any browser test | Node/Git/Docker, pinned image, output permissions, candidate identity, browser launch, bundle readiness, backend/auth, recovery ledger, or discovery is invalid | run `npm run e2e:env:doctor -- --format json`, then inspect the first failed check in `preflight-report.json`; use its one next command instead of starting the full suite |
 | release E2E refuses a dirty candidate | release evidence cannot identify a mutable worktree | commit the intended candidate before release proof, or use `npm run e2e:dev` for focused diagnosis; never mount the parent workspace to make the dirty tree appear runnable |
