@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-05
-lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
-lastReviewedNote: 'Reviewed for Issue #768: updating one environment identity and its exact assertions does not expand or change the repository testing strategy.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: query/evidence state separation is covered by the existing component-test strategy and requires no broader testing-strategy change.'
 ---
 
 # Testing Strategy

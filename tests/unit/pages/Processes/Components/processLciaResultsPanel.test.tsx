@@ -9,6 +9,7 @@ const mockQueryLcaResults = jest.fn();
 const mockIsLcaFunctionInvokeError = jest.fn();
 const mockGetPublishedLciaResultPackage = jest.fn();
 const mockUseLocation = jest.fn();
+const mockLcaCalculationEvidenceNotice = jest.fn();
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -78,7 +79,10 @@ jest.mock('@/pages/Processes/Components/lcaProfileSummary', () => ({
 
 jest.mock('@/pages/Processes/Components/lcaCalculationEvidenceNotice', () => ({
   __esModule: true,
-  default: () => <div data-testid='lcia-evidence-notice' />,
+  default: (props: any) => {
+    mockLcaCalculationEvidenceNotice(props);
+    return <div data-testid='lcia-evidence-notice' />;
+  },
 }));
 
 jest.mock('@ant-design/pro-components', () => ({
@@ -551,6 +555,70 @@ describe('ProcessLciaResultsPanel', () => {
 
     expect(mockQueryLcaResults).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
+  });
+
+  it('does not turn a solver query failure into a calculation-evidence mismatch', async () => {
+    mockQueryLcaResults.mockRejectedValueOnce(new Error('unsupported_query_artifact_format'));
+
+    render(
+      <ProcessLciaResultsPanel
+        baseCalculationEvidence={{ schema_version: 'legacy-static-evidence' }}
+        baseRows={[]}
+        lang='en'
+        processId='process-1'
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+
+    expect(screen.queryByTestId('lcia-evidence-notice')).not.toBeInTheDocument();
+    expect(mockLcaCalculationEvidenceNotice).not.toHaveBeenCalled();
+  });
+
+  it('validates evidence only after a solver result was returned successfully', async () => {
+    const calculationEvidence = { schema_version: 'lca.calculation_evidence.v2' };
+    mockQueryLcaResults.mockResolvedValueOnce({
+      snapshot_id: 'snapshot-ready',
+      result_id: 'result-ready',
+      source: 'all_unit',
+      meta: {
+        computed_at: '2026-04-29T00:00:00Z',
+        calculation_evidence: calculationEvidence,
+      },
+      data: { values: [] },
+    });
+
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+
+    await screen.findByTestId('lcia-evidence-notice');
+    expect(mockLcaCalculationEvidenceNotice).toHaveBeenLastCalledWith({ calculationEvidence });
+  });
+
+  it('keeps successful solver responses without evidence fail closed', async () => {
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+
+    await screen.findByTestId('lcia-evidence-notice');
+    expect(mockLcaCalculationEvidenceNotice).toHaveBeenLastCalledWith({
+      calculationEvidence: undefined,
+    });
+  });
+
+  it('still validates static evidence when solver querying is disabled', async () => {
+    const staticEvidence = { report: true };
+    render(
+      <ProcessLciaResultsPanel
+        baseCalculationEvidence={staticEvidence}
+        baseRows={[]}
+        enableSolverRefresh={false}
+        lang='en'
+      />,
+    );
+
+    await screen.findByTestId('lcia-evidence-notice');
+    expect(mockLcaCalculationEvidenceNotice).toHaveBeenLastCalledWith({ staticEvidence });
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
   });
 
   it('skips state updates when base-row enrichment resolves after unmount', async () => {

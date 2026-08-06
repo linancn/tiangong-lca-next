@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-05
-lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
-lastReviewedNote: 'Reviewed for Issue #768: updating environment fixtures and their exact target assertions uses existing test patterns and introduces no new helper or test type.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: the existing mocked-service component pattern cleanly proves that transport failures do not produce evidence-mismatch UI.'
 ---
 
 # Testing Patterns Reference

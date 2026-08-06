@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-05
-lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
-lastReviewedNote: 'Reviewed for Issue #768: the persistent-dev environment identity changed after database recreation; frontend ownership, dev-first delivery, validation gates, and workspace integration remain unchanged.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: separating LCIA query failures from evidence validation remains within existing frontend ownership, production hotfix, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
