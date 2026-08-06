@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-07"
-lastReviewedCommit: "f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc"
-lastReviewedNote: 'Reviewed for Issue #778: existing ownership rules cover independent candidate and cumulative promotion-range review evidence.'
+lastReviewedAt: '2026-08-07'
+lastReviewedCommit: '93d8c0e6f48bb05d5516656479eb6856d3043cf5'
+lastReviewedNote: 'Reviewed for database-engine Issue #422: the existing ownership catalog covers the Next api-facade and explicit public-core consumer boundary.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc
-lastReviewedNote: 'Reviewed for Issue #778: release-to-dev independently preflights candidate and cumulative Docpact obligations before immutable promotion.'
+lastReviewedCommit: 93d8c0e6f48bb05d5516656479eb6856d3043cf5
+lastReviewedNote: 'Reviewed for database-engine Issue #422: Next defaults RPC access to the api facade, limits public relation access to the nine core entities, and mirrors the exact reviewed Edge commit.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
