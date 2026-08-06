@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: document the separation between LCIA transport state and evidence trust state without changing backend authority.'
+lastReviewedCommit: 69b4e73c64c5acc3ee880576c887536ac56d350b
+lastReviewedNote: 'Reviewed for Issues #745 and #780: document the promoted Root/Reference queue, selection, and dataset-view behavior without changing Database review authority.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -130,7 +130,11 @@ When the job reaches `submitted`, Edge/Database have already validated the gate 
 
 All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
-Review Management consumes the central review projection. A Root row expands to the Reference Reviews stored in its current scope snapshot. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
+Review Management consumes the central review projection. Its top-level pagination contains Root rows only. A Root remains visible when either the Root or one of its snapshot References matches the selected tab; expanding the row renders only References that match that same tab. A context-only Root exposes neither a Root checkbox nor Root review actions, while readable matching Roots and References retain their own actions. This keeps pagination and status membership database-owned without duplicating the complete Reference list in every tab.
+
+Batch selection is one Root/Reference selection model. Selecting a Root loads and auto-selects its current-tab References, deduplicates a Reference shared by multiple Roots, preserves independently selected References, and disables submission while child loading is incomplete or failed. Removing a Root removes only the References that are no longer selected manually or through another Root. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes.
+
+Each readable Root or Reference row offers a view icon backed by the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
 
 ### Calculation Bundle And Release Readback
 
