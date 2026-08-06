@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
 lastReviewedNote: 'Reviewed for Issue #778: pure version releases close review-only Docpact evidence under an exact semantic-diff guard; promotion remains exact-candidate validation only.'
 related:
   - ../AGENTS.md
