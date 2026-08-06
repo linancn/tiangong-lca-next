@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-06"
-lastReviewedCommit: "9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648"
-lastReviewedNote: 'Reviewed for Issue #778: version-only release automation may record bounded Docpact review evidence, while promotion keeps the merged dev candidate immutable.'
+lastReviewedAt: '2026-08-06'
+lastReviewedCommit: 'cfe24ec9ecbbf4f647d4de75170b7be2404213ea'
+lastReviewedNote: 'Reviewed for Issue #778: existing ownership rules cover cumulative promotion-range preflight and bounded release review evidence.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

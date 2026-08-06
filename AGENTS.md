@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
-lastReviewedNote: 'Reviewed for Issue #778: the two deterministic release commands are the preferred normal PR path; pure version releases may automatically record review-only Docpact evidence, while immutable dev-to-main promotion never mutates the candidate.'
+lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
+lastReviewedNote: 'Reviewed for Issue #778: release-to-dev preflights cumulative main-to-candidate Docpact obligations while immutable dev-to-main promotion never mutates the candidate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -153,7 +153,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
 - preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
-- automatic release review is limited to Docpact `review_or_update` evidence after exact proof that only the three package/lock root version fields changed; every uncovered, stale, semantic-document, dependency, or other package change fails closed
+- automatic release review checks the complete `main`-to-candidate promotion range and is limited to Docpact `review_or_update` evidence after exact proof that only the three package/lock root version fields changed; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries

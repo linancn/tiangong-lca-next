@@ -16,7 +16,12 @@ const workflow = require('../../../scripts/release/release-workflow.cjs') as {
   ) => { changedPaths: string[]; reviewPaths: string[] };
   automaticDocpactReview: (
     root: string,
-    options: { baseSha: string; targetVersion: string; reportFile: string },
+    options: {
+      baseSha: string;
+      targetVersion: string;
+      reportFile: string;
+      additionalLintPaths?: string[];
+    },
   ) => {
     status: string;
     reviewed_paths: string[];
@@ -169,6 +174,11 @@ if (args[0] === 'lint') {
   } else if (mode === 'review') {
     const target = !reviewed('AGENTS.md') ? 'AGENTS.md' : !reviewed('docs/gate.md') ? 'docs/gate.md' : null;
     if (target) diagnostics = [{ diagnostic_id: 'd001', type: 'missing-review', path: target, required_mode: 'review_or_update', failure_reason: 'required_doc_not_touched', finding_state: 'active' }];
+  } else if (mode === 'promotion-range-review') {
+    const lintPaths = (value('--files') || '').split(',');
+    if (lintPaths.includes('dev.txt') && !reviewed('docs/gate.md')) {
+      diagnostics = [{ diagnostic_id: 'd001', type: 'missing-review', path: 'docs/gate.md', required_mode: 'review_or_update', failure_reason: 'required_doc_not_touched', finding_state: 'active' }];
+    }
   }
   const report = { schema_version: 'docpact.lint-report.v1', diagnostics, summary: { total_count: diagnostics.length } };
   const output = value('--output');
@@ -384,6 +394,7 @@ describe('release automation public contracts', () => {
       status: 'planned',
       version: '1.0.1',
       base_sha: fixture.devSha,
+      main_sha: fixture.mainSha,
       next_action: 'rerun_with_apply',
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(beforeBranch);
@@ -477,6 +488,33 @@ describe('release automation public contracts', () => {
       if (previousBase === undefined) delete process.env.FAKE_DOCPACT_BASE_SHA;
       else process.env.FAKE_DOCPACT_BASE_SHA = previousBase;
     }
+  });
+
+  it('preflights cumulative main-to-dev Docpact obligations before opening the release PR', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_GH_CREATED_URL: 'https://example.test/pull/52',
+        FAKE_DOCPACT_MODE: 'promotion-range-review',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      status: 'ready_for_review',
+      main_sha: fixture.mainSha,
+      docpact_review: {
+        status: 'completed',
+        reviewed_paths: ['docs/gate.md'],
+        rounds: 2,
+      },
+    });
+    expect(git(fixture.root, ['show', 'HEAD:docs/gate.md'])).toContain(
+      `lastReviewedCommit: ${fixture.devSha}`,
+    );
   });
 
   it('refuses to auto-review a non-review Docpact finding', () => {

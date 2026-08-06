@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: document the separation between LCIA transport state and evidence trust state without changing backend authority.'
+lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
+lastReviewedNote: 'Reviewed for Issue #778: cumulative release changes preserve the documented data, frontend runtime, team, and review-management boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
