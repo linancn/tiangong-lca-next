@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
-lastReviewedNote: 'Reviewed for Issue #778: release orchestration combines hermetic command contracts with a real bounded Docpact fixed-point canary.'
+lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
+lastReviewedNote: 'Reviewed for Issue #778: release orchestration proof includes cumulative main-to-dev paths and bounded Docpact fixed-point behavior.'
 ---
 
 # Testing Patterns Reference
@@ -56,7 +56,7 @@ lastReviewedNote: 'Reviewed for Issue #778: release orchestration combines herme
 - do not add snapshots when explicit assertions are clearer
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
-- test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
+- test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, cumulative `main`-to-`dev` path propagation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 
 ## Reusable Helpers
 

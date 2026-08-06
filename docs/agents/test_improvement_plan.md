@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
-lastReviewedNote: 'Reviewed for Issue #778: bounded automatic review adds focused hermetic and real-Docpact proof without changing the broader risk-proportional testing strategy.'
+lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
+lastReviewedNote: 'Reviewed for Issue #778: cumulative main-to-dev path coverage extends bounded release proof without changing the broader testing strategy.'
 ---
 
 # Testing Strategy

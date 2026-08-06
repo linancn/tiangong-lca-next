@@ -469,6 +469,13 @@ function changedPathsSince(root, baseRef) {
     .filter(Boolean);
 }
 
+function changedPathsBetween(root, baseRef, headRef) {
+  return git(root, ['diff', '--name-only', '--diff-filter=ACMRTUXB', baseRef, headRef, '--'])
+    .stdout.trim()
+    .split(/\r?\n/u)
+    .filter(Boolean);
+}
+
 function withoutReviewMetadata(source) {
   return String(source)
     .split(/\r?\n/u)
@@ -639,13 +646,17 @@ function assertAutomaticReviewTarget(root, baseSha, filePath) {
   return relative.split(path.sep).join('/');
 }
 
-function automaticDocpactReview(root, { baseSha, targetVersion, reportFile }) {
+function automaticDocpactReview(
+  root,
+  { baseSha, targetVersion, reportFile, additionalLintPaths = [] },
+) {
   const executable = docpactExecutable(root);
   const reviewedPaths = new Set();
   fs.mkdirSync(path.dirname(reportFile), { recursive: true });
 
   for (let round = 1; round <= MAX_DOCPACT_REVIEW_ROUNDS; round += 1) {
     const scope = assertReleaseCandidateScope(root, baseSha, targetVersion);
+    const lintPaths = [...new Set([...additionalLintPaths, ...scope.changedPaths])].sort();
     const lint = run(
       executable,
       [
@@ -653,7 +664,7 @@ function automaticDocpactReview(root, { baseSha, targetVersion, reportFile }) {
         '--root',
         root,
         '--files',
-        scope.changedPaths.join(','),
+        lintPaths.join(','),
         '--mode',
         'enforce',
         '--fail-on-uncovered-change',
@@ -1003,14 +1014,14 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review version-only Docpact findings, commit, gate, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic review boundary:\n  The command proves that only package.json.version, package-lock.json.version,\n  and package-lock.json packages[""].version changed. It may then record only\n  Docpact review_or_update evidence. Every other finding or document-body change fails closed.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review promotion-range Docpact findings, commit, gate, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic review boundary:\n  The command proves that only package.json.version, package-lock.json.version,\n  and package-lock.json packages[""].version changed. It may then record only\n  Docpact review_or_update evidence required by the complete main-to-dev promotion\n  range. Every other finding or document-body change fails closed.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
   return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the dev merge SHA, run main-semantic managed gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its required GitHub checks pass.`;
 }
 
-function releasePrBody({ issue, version, baseSha, candidateSha, docpactReview }) {
+function releasePrBody({ issue, version, baseSha, mainSha, candidateSha, docpactReview }) {
   const reviewedPaths = [
     ...new Set([...(docpactReview.reviewed_paths || []), ...(docpactReview.evidence_paths || [])]),
   ];
@@ -1018,7 +1029,7 @@ function releasePrBody({ issue, version, baseSha, candidateSha, docpactReview })
     reviewedPaths.length > 0
       ? reviewedPaths.map((filePath) => `  - \`${filePath}\``).join('\n')
       : '  - none required';
-  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
+  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Main baseline: \`${mainSha}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Docpact checked the complete main-to-candidate promotion range before the dev PR was created.\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
 }
 
 function releaseMarker(body) {
@@ -1059,6 +1070,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   validateBranch(root, branch, 'release-to-dev');
   const owner = options.headOwner || remoteOwner(root, options.pushRemote);
   const remoteDevSha = remoteBranchSha(root, options.remote, 'dev');
+  const remoteMainSha = remoteBranchSha(root, options.remote, 'main');
   const existing = findOpenPr(root, {
     repository: options.repository,
     base: 'dev',
@@ -1146,11 +1158,13 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       current_version: baseVersions?.version ?? null,
       base_branch: 'dev',
       base_sha: remoteDevSha,
+      main_sha: remoteMainSha,
       branch,
       pull_request: null,
       docpact_review: {
         status: 'planned',
-        automatic_scope: 'review_or_update_for_verified_version_only_candidate',
+        automatic_scope:
+          'review_or_update_for_verified_version_only_candidate_and_complete_main_to_dev_range',
         report_path: relativeLogPath(root, docpactReport),
       },
       gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
@@ -1168,20 +1182,39 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     };
   }
 
-  git(root, ['fetch', options.remote, 'dev']);
+  git(root, ['fetch', options.remote, 'dev', 'main']);
   const fetchedDevSha = git(root, ['rev-parse', `${options.remote}/dev^{commit}`]).stdout.trim();
-  if (fetchedDevSha !== remoteDevSha) {
+  const fetchedMainSha = git(root, ['rev-parse', `${options.remote}/main^{commit}`]).stdout.trim();
+  if (fetchedDevSha !== remoteDevSha || fetchedMainSha !== remoteMainSha) {
     throw new ReleaseAutomationError(
-      'dev_changed_during_release',
-      'dev changed while the release command was preparing.',
+      'release_refs_changed_during_release',
+      'main or dev changed while the release command was preparing.',
       {
         exitCode: EXIT.drift,
-        details: { observed_before: remoteDevSha, observed_after: fetchedDevSha },
+        details: {
+          main_observed_before: remoteMainSha,
+          main_observed_after: fetchedMainSha,
+          dev_observed_before: remoteDevSha,
+          dev_observed_after: fetchedDevSha,
+        },
         nextAction:
-          'Rerun the dry-run against the new dev head and choose the intended release candidate.',
+          'Rerun the dry-run against the new main/dev heads and choose the intended release candidate.',
       },
     );
   }
+  if (!isAncestor(root, fetchedMainSha, fetchedDevSha)) {
+    throw new ReleaseAutomationError(
+      'release_main_not_ancestor_of_dev',
+      'The current main head is not contained in dev, so a normal promotion candidate is unsafe.',
+      {
+        exitCode: EXIT.drift,
+        details: { main_sha: fetchedMainSha, dev_sha: fetchedDevSha },
+        nextAction:
+          'Complete the governed main-to-dev reconciliation before preparing another version PR.',
+      },
+    );
+  }
+  const promotionRangePaths = changedPathsBetween(root, fetchedMainSha, fetchedDevSha);
   const fetchedCurrent = parseStableVersion(
     readVersionsAtRef(root, `${options.remote}/dev`).version,
     'dev version',
@@ -1211,6 +1244,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       baseSha: fetchedDevSha,
       targetVersion: target.text,
       reportFile: docpactReport,
+      additionalLintPaths: promotionRangePaths,
     });
     const finalScope = assertReleaseCandidateScope(root, fetchedDevSha, target.text);
     git(root, ['add', '--', ...finalScope.changedPaths]);
@@ -1243,6 +1277,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       baseSha: fetchedDevSha,
       targetVersion: target.text,
       reportFile: docpactReport,
+      additionalLintPaths: promotionRangePaths,
     });
     if (docpactReview.reviewed_paths.length > 0) {
       const finalScope = assertReleaseCandidateScope(root, fetchedDevSha, target.text);
@@ -1299,6 +1334,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       issue: options.issue,
       version: target.text,
       baseSha: fetchedDevSha,
+      mainSha: fetchedMainSha,
       candidateSha,
       docpactReview,
     }),
@@ -1310,6 +1346,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     version: target.text,
     base_branch: 'dev',
     base_sha: fetchedDevSha,
+    main_sha: fetchedMainSha,
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
