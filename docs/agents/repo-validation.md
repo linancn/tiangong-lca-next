@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 93d8c0e6f48bb05d5516656479eb6856d3043cf5
-lastReviewedNote: 'Reviewed for database-engine Issue #422: schema-boundary changes require facade-catalog, public-core, exact Edge mirror, workflow, and full-gate proof.'
+lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
+lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: release-to-dev qualification remains intact, and schema-boundary changes require facade-catalog, public-core, exact Edge mirror, workflow, and full-gate proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

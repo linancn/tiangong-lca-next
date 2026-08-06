@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: dd6bbb898c24ec29fb3a1449f2cf2862f6031ca5
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
 lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative Docpact review precedes the unchanged checked-push policy.'
 ---
 
