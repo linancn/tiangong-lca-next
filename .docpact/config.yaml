@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-06'
-lastReviewedCommit: 'cfe24ec9ecbbf4f647d4de75170b7be2404213ea'
-lastReviewedNote: 'Reviewed for Issue #778: existing ownership rules cover cumulative promotion-range preflight and bounded release review evidence.'
+lastReviewedCommit: '269ea042df47fbdca5cda5128d0fe56aa6b2dea6'
+lastReviewedNote: 'Reviewed for Issue #778: existing ownership rules cover independent candidate and cumulative promotion-range review evidence.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
