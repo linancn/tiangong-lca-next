@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
-lastReviewedNote: 'Reviewed for Issue #778: cumulative main-to-dev path coverage extends bounded release proof without changing the broader testing strategy.'
+lastReviewedCommit: 269ea042df47fbdca5cda5128d0fe56aa6b2dea6
+lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative path coverage extends bounded proof without changing test strategy.'
 ---
 
 # Testing Strategy

@@ -179,6 +179,11 @@ if (args[0] === 'lint') {
     if (lintPaths.includes('dev.txt') && !reviewed('docs/gate.md')) {
       diagnostics = [{ diagnostic_id: 'd001', type: 'missing-review', path: 'docs/gate.md', required_mode: 'review_or_update', failure_reason: 'required_doc_not_touched', finding_state: 'active' }];
     }
+  } else if (mode === 'candidate-review-masked-by-cumulative-range') {
+    const lintPaths = (value('--files') || '').split(',');
+    if (lintPaths.includes('package.json') && !lintPaths.includes('dev.txt') && !reviewed('docs/gate.md')) {
+      diagnostics = [{ diagnostic_id: 'd001', type: 'missing-review', path: 'docs/gate.md', required_mode: 'review_or_update', failure_reason: 'required_doc_not_touched', finding_state: 'active' }];
+    }
   }
   const report = { schema_version: 'docpact.lint-report.v1', diagnostics, summary: { total_count: diagnostics.length } };
   const output = value('--output');
@@ -506,6 +511,32 @@ describe('release automation public contracts', () => {
     expect(JSON.parse(result.stdout)).toMatchObject({
       status: 'ready_for_review',
       main_sha: fixture.mainSha,
+      docpact_review: {
+        status: 'completed',
+        reviewed_paths: ['docs/gate.md'],
+        rounds: 2,
+      },
+    });
+    expect(git(fixture.root, ['show', 'HEAD:docs/gate.md'])).toContain(
+      `lastReviewedCommit: ${fixture.devSha}`,
+    );
+  });
+
+  it('checks the version candidate separately so cumulative paths cannot mask its review', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_GH_CREATED_URL: 'https://example.test/pull/53',
+        FAKE_DOCPACT_MODE: 'candidate-review-masked-by-cumulative-range',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      status: 'ready_for_review',
       docpact_review: {
         status: 'completed',
         reviewed_paths: ['docs/gate.md'],

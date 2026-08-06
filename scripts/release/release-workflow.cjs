@@ -656,41 +656,48 @@ function automaticDocpactReview(
 
   for (let round = 1; round <= MAX_DOCPACT_REVIEW_ROUNDS; round += 1) {
     const scope = assertReleaseCandidateScope(root, baseSha, targetVersion);
-    const lintPaths = [...new Set([...additionalLintPaths, ...scope.changedPaths])].sort();
-    const lint = run(
-      executable,
-      [
-        'lint',
-        '--root',
-        root,
-        '--files',
-        lintPaths.join(','),
-        '--mode',
-        'enforce',
-        '--fail-on-uncovered-change',
-        '--fail-on-stale-docs',
-        '--format',
-        'json',
-        '--output',
-        reportFile,
-      ],
-      { cwd: root, allowFailure: true },
-    );
-    if (!fs.existsSync(reportFile)) {
-      throw new ReleaseAutomationError(
-        'docpact_report_missing',
-        'Docpact did not write the requested diagnostics report.',
-        {
-          exitCode: EXIT.external,
-          details: { report_path: relativeLogPath(root, reportFile) },
-        },
+    const candidatePaths = [...scope.changedPaths].sort();
+    const cumulativePaths = [...new Set([...additionalLintPaths, ...candidatePaths])].sort();
+    const lintScopes = [candidatePaths];
+    if (!isDeepStrictEqual(cumulativePaths, candidatePaths)) lintScopes.push(cumulativePaths);
+
+    let lint;
+    let active = [];
+    for (const lintPaths of lintScopes) {
+      lint = run(
+        executable,
+        [
+          'lint',
+          '--root',
+          root,
+          '--files',
+          lintPaths.join(','),
+          '--mode',
+          'enforce',
+          '--fail-on-uncovered-change',
+          '--fail-on-stale-docs',
+          '--format',
+          'json',
+          '--output',
+          reportFile,
+        ],
+        { cwd: root, allowFailure: true },
       );
-    }
-    const report = readJson(reportFile, 'Docpact diagnostics report');
-    const active = Array.isArray(report.diagnostics)
-      ? report.diagnostics.filter((diagnostic) => diagnostic.finding_state === 'active')
-      : [];
-    if (active.length === 0) {
+      if (!fs.existsSync(reportFile)) {
+        throw new ReleaseAutomationError(
+          'docpact_report_missing',
+          'Docpact did not write the requested diagnostics report.',
+          {
+            exitCode: EXIT.external,
+            details: { report_path: relativeLogPath(root, reportFile) },
+          },
+        );
+      }
+      const report = readJson(reportFile, 'Docpact diagnostics report');
+      active = Array.isArray(report.diagnostics)
+        ? report.diagnostics.filter((diagnostic) => diagnostic.finding_state === 'active')
+        : [];
+      if (active.length > 0) break;
       if (lint.status !== 0) {
         throw new ReleaseAutomationError(
           'docpact_lint_failed_without_diagnostics',
@@ -705,6 +712,9 @@ function automaticDocpactReview(
           },
         );
       }
+    }
+
+    if (active.length === 0) {
       const finalScope = assertReleaseCandidateScope(root, baseSha, targetVersion);
       return {
         status:
