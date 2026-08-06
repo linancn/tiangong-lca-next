@@ -21,14 +21,15 @@ checkPaths:
   - tests/**
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump requires no broader testing-strategy change.'
+lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedNote: 'Reviewed for Issue #778: bounded automatic review adds focused hermetic and real-Docpact proof without changing the broader risk-proportional testing strategy.'
 ---
 
 # Testing Strategy

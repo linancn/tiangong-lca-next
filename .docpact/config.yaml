@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-06'
-lastReviewedCommit: 'b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0'
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump remains routed through the existing testing-gate, release, and workspace-integration ownership.'
+lastReviewedCommit: 'e9e5e1f26b0cc9ac32975bfb2df29be133355f31'
+lastReviewedNote: 'Reviewed for Issue #778: version-only release automation may record bounded Docpact review evidence, while promotion keeps the merged dev candidate immutable.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -65,6 +65,7 @@ ownership:
           - scripts/test-coverage-report.js
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
+          - scripts/release/**
           - scripts/e2e/**
           - scripts/qualification/**
           - scripts/i18n/**
@@ -119,6 +120,7 @@ coverage:
     - scripts/test-coverage-report.js
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
+    - scripts/release/**
     - scripts/e2e/**
     - scripts/qualification/**
     - scripts/i18n/**
@@ -175,6 +177,7 @@ routing:
         - scripts/test-coverage-report.js
         - scripts/validate-lcia-cache.cjs
         - scripts/prepush-gate-receipt.cjs
+        - scripts/release/**
         - scripts/qualification/**
         - scripts/i18n/**
         - scripts/reference-data/**
@@ -229,6 +232,7 @@ routing:
         - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/prepush-gate-receipt.cjs
+        - scripts/release/**
         - scripts/qualification/**
         - scripts/i18n/**
         - scripts/reference-data/**
@@ -598,6 +602,8 @@ rules:
         kind: test-gate
       - path: scripts/prepush-gate-receipt.cjs
         kind: test-gate
+      - path: scripts/release/**
+        kind: release-orchestration
       - path: scripts/e2e/**
         kind: semantic-e2e-runner
       - path: scripts/qualification/**
