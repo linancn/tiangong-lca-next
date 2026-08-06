@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4627adfde975869e5ee0642133d8d0175a99bec8
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: dd6bbb898c24ec29fb3a1449f2cf2862f6031ca5
 lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the exact read-only production guard now matches the three v2 grouped-queue/progress RPCs; prior production evidence is not reused, so fresh authenticated evidence remains required before a release promotion.'
 baselineObservedAt: 2026-07-18
 related:

@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc
+lastReviewedCommit: dd6bbb898c24ec29fb3a1449f2cf2862f6031ca5
 lastReviewedNote: 'Reviewed for Issue #778: version-to-dev closes bounded candidate and cumulative promotion-range evidence before immutable promotion.'
 ---
 
