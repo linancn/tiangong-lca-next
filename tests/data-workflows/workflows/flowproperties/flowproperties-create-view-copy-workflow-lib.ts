@@ -1055,6 +1055,7 @@ async function queryFlowpropertyRecord(
   version: string,
 ): Promise<FlowpropertyWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('flowproperties')
     .select('id,json,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

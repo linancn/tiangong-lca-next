@@ -42,13 +42,12 @@ Deno.serve(async (req: Request) => {
   if (!dedupeKey) return json(200, { ok: true, ignored: 'no event id' });
 
   // 幂等:event_id 主键,冲突即重复投递
-  const { error: insertErr } = await supabaseServiceClient
-    .from('identity_center_processed_events')
-    .insert({ event_id: dedupeKey, event_type: envelope.eventType ?? 'unknown' });
-  if (insertErr) {
-    if (insertErr.code === '23505') return json(200, { ok: true, duplicate: true });
-    return json(500, { error: insertErr.message }); // 库故障 → 让平台重试
-  }
+  const { data: claimed, error: claimError } = await supabaseServiceClient.rpc(
+    'svc_identity_event_claim',
+    { p_event_id: dedupeKey, p_event_type: envelope.eventType ?? 'unknown' },
+  );
+  if (claimError) return json(500, { error: claimError.message });
+  if (!claimed) return json(200, { ok: true, duplicate: true });
 
   try {
     const action = decideWebhookAction(envelope, APP_CODE);
@@ -60,10 +59,7 @@ Deno.serve(async (req: Request) => {
     return json(200, { ok: true });
   } catch (e) {
     // 处理失败:删除幂等记录以允许平台重试
-    await supabaseServiceClient
-      .from('identity_center_processed_events')
-      .delete()
-      .eq('event_id', dedupeKey);
+    await supabaseServiceClient.rpc('svc_identity_event_release', { p_event_id: dedupeKey });
     return json(500, { error: e instanceof Error ? e.message : String(e) });
   }
 });

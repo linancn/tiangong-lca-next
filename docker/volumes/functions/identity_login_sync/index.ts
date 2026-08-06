@@ -63,15 +63,10 @@ Deno.serve(async (req: Request) => {
     // assertOk:supabase-js 把 DB 错误以 { error } 带内返回而非抛出;此处显式断言,
     // 使写失败抛入下方 catch → 503 SYNC_PENDING(可重试),而非静默返回 200。
     assertOk(
-      await supabaseServiceClient.from('identity_center_users').upsert(
-        {
-          keycloak_sub: payload.sub,
-          user_id: auth.user.id,
-          status: 'active',
-          modified_at: new Date().toISOString(),
-        },
-        { onConflict: 'keycloak_sub' },
-      ),
+      await supabaseServiceClient.rpc('svc_identity_login_bind', {
+        p_keycloak_sub: payload.sub,
+        p_user_id: auth.user.id,
+      }),
       '绑定映射',
     );
     await materializeForUser(supabaseServiceClient, payload.sub, auth.user.id);

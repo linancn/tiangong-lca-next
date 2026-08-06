@@ -2,13 +2,14 @@ import { z } from 'zod';
 
 import type { CommandParseResult } from '../../command_runtime/command.ts';
 import {
+  REVIEW_DECISION_TABLES,
   type ApproveReviewRequest,
   type AssignReviewersRequest,
   type RejectReviewRequest,
-  REVIEW_DECISION_TABLES,
   type RevokeReviewerRequest,
   type SaveAssignmentDraftRequest,
   type SaveCommentDraftRequest,
+  type SimpleReviewDecisionRequest,
   type SubmitCommentRequest,
 } from './types.ts';
 
@@ -71,6 +72,20 @@ export const rejectReviewRequestSchema = decisionBaseSchema
     reason: z.string().trim().min(1, 'reason is required'),
   })
   .strict();
+
+export const simpleReviewDecisionRequestSchema = z.discriminatedUnion('decision', [
+  reviewBaseSchema
+    .extend({
+      decision: z.literal('approve'),
+    })
+    .strict(),
+  reviewBaseSchema
+    .extend({
+      decision: z.literal('reject'),
+      reason: z.string().trim().min(1, 'reason is required'),
+    })
+    .strict(),
+]);
 
 function invalidPayload<T>(message: string, error: z.ZodError): CommandParseResult<T> {
   return {
@@ -146,6 +161,17 @@ export function parseRejectReviewRequest(body: unknown): CommandParseResult<Reje
   const parsed = rejectReviewRequestSchema.safeParse(body);
   if (!parsed.success) {
     return invalidPayload('Invalid review reject payload', parsed.error);
+  }
+
+  return { ok: true, value: parsed.data };
+}
+
+export function parseSimpleReviewDecisionRequest(
+  body: unknown,
+): CommandParseResult<SimpleReviewDecisionRequest> {
+  const parsed = simpleReviewDecisionRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return invalidPayload('Invalid simple review decision payload', parsed.error);
   }
 
   return { ok: true, value: parsed.data };

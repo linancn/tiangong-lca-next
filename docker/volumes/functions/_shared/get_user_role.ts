@@ -1,29 +1,16 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
-export type UserRoleRow = {
-  role: string;
-  team_id: string | null;
-};
+export async function getReviewAdminStatus(
+  userId: string,
+  supabase: Pick<SupabaseClient, 'rpc'>,
+): Promise<{ data: boolean | null; error: { message?: string; code?: string } | null }> {
+  const { data, error } = await supabase.rpc('svc_membership_is_review_admin', {
+    p_user_id: userId,
+  });
+  const envelope = data && typeof data === 'object' ? (data as Record<string, unknown>) : null;
 
-/**
- * Get the user role from the roles table
- * The role enumarate values are [member, owner, review-member, review-admin ...]
- * Return the role and team_id
- */
-async function getUserRole(id: string, supabase: Pick<SupabaseClient, 'from'>) {
-  const result = await supabase.from('roles').select('role,team_id').eq('user_id', id);
-  return Promise.resolve(result);
+  return {
+    data: envelope?.ok === true && typeof envelope.data === 'boolean' ? envelope.data : null,
+    error,
+  };
 }
-
-export function hasUserRole(
-  roles: UserRoleRow[] | null | undefined,
-  role: string,
-  teamId?: string,
-): boolean {
-  return (
-    Array.isArray(roles) &&
-    roles.some((item) => item.role === role && (teamId === undefined || item.team_id === teamId))
-  );
-}
-
-export default getUserRole;

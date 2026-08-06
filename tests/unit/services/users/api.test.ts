@@ -50,6 +50,45 @@ const { getCurrentUser: mockGetCurrentUser } = jest.requireMock('@/services/auth
 describe('Users API service (src/services/users/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRpc.mockImplementation(async (name: string, args: Record<string, any> = {}) => {
+      if (name === 'qry_identity_get_visible_users') {
+        return mockFrom('users')
+          .select('id, raw_user_meta_data->email,raw_user_meta_data->display_name')
+          .in('id', args.p_user_ids);
+      }
+      if (name === 'qry_system_find_member_candidate_by_email') {
+        const result = await mockFrom('users')
+          .select('id')
+          .eq('raw_user_meta_data->>email', args.p_email)
+          .single();
+        return { ...result, data: result.data ? [result.data] : [] };
+      }
+      if (name === 'qry_review_find_member_candidate_by_email') {
+        const result = await mockFrom('users')
+          .select('id, raw_user_meta_data, contact')
+          .eq('raw_user_meta_data->>email', args.p_email)
+          .single();
+        return {
+          ...result,
+          data: result.data
+            ? [
+                {
+                  id: result.data.id,
+                  email: result.data.raw_user_meta_data?.email,
+                  display_name: result.data.raw_user_meta_data?.display_name,
+                  contact: result.data.contact,
+                },
+              ]
+            : [],
+        };
+      }
+      if (name === 'qry_identity_get_mine') {
+        const user = await mockGetCurrentUser();
+        const result = await mockFrom('users').select('contact').eq('id', user?.userid).single();
+        return { ...result, data: result.data ? [{ contact: result.data.contact }] : [] };
+      }
+      return { data: null, error: null };
+    });
   });
 
   describe('getUsersByIds', () => {

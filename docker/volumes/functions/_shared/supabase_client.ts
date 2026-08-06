@@ -15,6 +15,9 @@ function readEnv(name: string): string | undefined {
 }
 
 const SHARED_CLIENT_OPTIONS = {
+  db: {
+    schema: 'api',
+  },
   auth: {
     autoRefreshToken: false,
     persistSession: false,
@@ -80,11 +83,19 @@ export function getSupabasePublishableKey(): string {
 }
 
 export function createSupabaseAuthClient(): SupabaseClient {
-  return createClient(getSupabaseUrl(), getSupabasePublishableKey(), SHARED_CLIENT_OPTIONS);
+  return createClient(
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
+    SHARED_CLIENT_OPTIONS,
+  ) as unknown as SupabaseClient;
 }
 
 export function createSupabaseServiceClient(): SupabaseClient {
-  return createClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), SHARED_CLIENT_OPTIONS);
+  return createClient(
+    getSupabaseUrl(),
+    getSupabaseServiceRoleKey(),
+    SHARED_CLIENT_OPTIONS,
+  ) as unknown as SupabaseClient;
 }
 
 export function createRequestSupabaseClient(accessToken?: string): SupabaseClient {
@@ -97,7 +108,7 @@ export function createRequestSupabaseClient(accessToken?: string): SupabaseClien
   return createClient(getSupabaseUrl(), getSupabasePublishableKey(), {
     ...SHARED_CLIENT_OPTIONS,
     global: Object.keys(headers).length > 0 ? { headers } : undefined,
-  });
+  }) as unknown as SupabaseClient;
 }
 
 export const supabaseAuthClient = createDeferredClient(createSupabaseAuthClient);

@@ -18,6 +18,7 @@ import {
   type SupportedServiceQueryLanguage,
 } from '@/services/general/contentLanguageRegistry';
 import { supabase } from '@/services/supabase';
+import { publicEntity } from '@/services/supabase/public';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
@@ -467,8 +468,7 @@ export async function updateLifeCycleModel(
     normalizedUpdateResult,
     rawLifeCycleModelJsonOrdered,
   );
-  const currentModelResult = await supabase
-    .from('lifecyclemodels')
+  const currentModelResult = await publicEntity('lifecyclemodels')
     .select('id, json_tg->submodels')
     .eq('id', data.id)
     .eq('version', data.version);
@@ -555,8 +555,7 @@ export async function updateLifeCycleModelJsonApi(
     return buildLangValidationError(validationError);
   }
 
-  const currentModelResult = await supabase
-    .from('lifecyclemodels')
+  const currentModelResult = await publicEntity('lifecyclemodels')
     .select('json_tg, rule_verification')
     .eq('id', id)
     .eq('version', version);
@@ -586,8 +585,7 @@ export async function updateLifeCycleModelJsonApi(
   }> = [];
 
   if (submodelIds.length > 0) {
-    const currentProcessesResult = await supabase
-      .from('processes')
+    const currentProcessesResult = await publicEntity('processes')
       .select('id, version, json_ordered, rule_verification')
       .eq('version', version)
       .in('id', submodelIds);
@@ -968,8 +966,7 @@ export async function getLifeCyclesByIdAndVersion(params: { id: string; version:
 
   const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
 
-  const result = await supabase
-    .from('lifecyclemodels')
+  const result = await publicEntity('lifecyclemodels')
     .select('id, version, json, json_tg, modified_at, team_id')
     .or(orConditions);
 
@@ -996,8 +993,7 @@ export async function getLifeCycleModelDetail(
       success: false;
     }
 > {
-  const result = await supabase
-    .from('lifecyclemodels')
+  const result = await publicEntity('lifecyclemodels')
     .select('json, json_tg,state_code,rule_verification,team_id')
     .eq('id', id)
     .eq('version', version);

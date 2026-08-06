@@ -77,7 +77,7 @@ const createSupabaseMock = (records: any[]) => {
     select: jest.fn(() => builder),
   };
 
-  return {
+  const client = {
     auth: {
       signInWithPassword: jest.fn(async () => ({
         data: {
@@ -92,6 +92,10 @@ const createSupabaseMock = (records: any[]) => {
     functions: {
       invoke: jest.fn(async () => ({ data: {}, error: null })),
     },
+  };
+  return {
+    ...client,
+    schema: jest.fn(() => client),
   };
 };
 

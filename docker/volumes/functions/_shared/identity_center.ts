@@ -1,12 +1,6 @@
 import * as jose from 'https://deno.land/x/jose@v4.14.4/index.ts';
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
-import {
-  assertOk,
-  decideLocalRole,
-  MANAGED_ROLES,
-  SYSTEM_TEAM_ID,
-  type WebhookAction,
-} from './identity_center_core.ts';
+import { assertOk, type WebhookAction } from './identity_center_core.ts';
 
 const ISSUER = Deno.env.get('KEYCLOAK_ISSUER_URL') ?? '';
 const CLIENT_ID = Deno.env.get('KEYCLOAK_CLIENT_ID') ?? 'tiangong-lca-business-app';
@@ -45,62 +39,22 @@ export async function verifyKeycloakToken(token: string): Promise<jose.JWTPayloa
 /** 期望状态落库(webhook 与登录门共用)；user_id 已绑定时同步物化 */
 export async function applyActionToDesiredState(client: SupabaseClient, action: WebhookAction) {
   if (action.kind === 'ignore') return;
-  const { data: row } = assertOk(
-    await client
-      .from('identity_center_users')
-      .upsert(
-        { keycloak_sub: action.keycloakSub },
-        { onConflict: 'keycloak_sub', ignoreDuplicates: true },
-      )
-      .select()
-      .maybeSingle(),
-    'upsert 用户占位',
+  const { data: current } = assertOk(
+    await client.rpc('svc_identity_desired_state_upsert', {
+      p_keycloak_sub: action.keycloakSub,
+      p_status: action.kind === 'set-status' ? action.status : null,
+      p_role_code:
+        action.kind === 'assign-role' || action.kind === 'revoke-role' ? action.roleCode : null,
+      p_role_operation:
+        action.kind === 'assign-role'
+          ? 'set'
+          : action.kind === 'revoke-role'
+            ? 'revoke'
+            : 'preserve',
+      p_metadata: null,
+    }),
+    '更新身份中心期望状态',
   );
-  // ignoreDuplicates 命中已有行时上面 data 为 null(非错误),故回读取当前状态;
-  // maybeSingle + assertOk 区分"真错误(抛)"与"0 行(data:null,由下方 user_id 守卫兜住)"。
-  const current =
-    row ??
-    assertOk(
-      await client
-        .from('identity_center_users')
-        .select('*')
-        .eq('keycloak_sub', action.keycloakSub)
-        .maybeSingle(),
-      '回读用户状态',
-    ).data;
-
-  if (action.kind === 'set-status') {
-    assertOk(
-      await client
-        .from('identity_center_users')
-        .update({ status: action.status, modified_at: new Date().toISOString() })
-        .eq('keycloak_sub', action.keycloakSub),
-      '更新 status',
-    );
-  }
-  if (action.kind === 'assign-role') {
-    assertOk(
-      await client
-        .from('identity_center_users')
-        .update({ desired_role: action.roleCode, modified_at: new Date().toISOString() })
-        .eq('keycloak_sub', action.keycloakSub),
-      '更新 desired_role',
-    );
-  }
-  if (action.kind === 'revoke-role') {
-    if (
-      current?.desired_role &&
-      (action.roleCode === null || current.desired_role === action.roleCode)
-    ) {
-      assertOk(
-        await client
-          .from('identity_center_users')
-          .update({ desired_role: null, modified_at: new Date().toISOString() })
-          .eq('keycloak_sub', action.keycloakSub),
-        '清空 desired_role',
-      );
-    }
-  }
   if (action.kind === 'sync-profile' && current?.user_id && action.displayName) {
     assertOk(
       await client.auth.admin.updateUserById(current.user_id, {
@@ -124,11 +78,7 @@ export async function materializeForUser(
   // maybeSingle + assertOk:真正的 DB 故障抛出(交调用方转 503/500 重试),
   // 而"用户行不存在"是 data:null(非错误)→ 优雅 return,不误当故障。
   const { data: state } = assertOk(
-    await client
-      .from('identity_center_users')
-      .select('*')
-      .eq('keycloak_sub', keycloakSub)
-      .maybeSingle(),
+    await client.rpc('svc_identity_desired_state_read', { p_keycloak_sub: keycloakSub }),
     '读用户状态',
   );
   if (!state) return;
@@ -147,52 +97,13 @@ export async function materializeForUser(
     await revokeAllSessions(client, userId);
   }
 
-  const { data: roleRow } = assertOk(
-    await client
-      .from('roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('team_id', SYSTEM_TEAM_ID)
-      .maybeSingle(),
-    '读系统团队角色',
+  assertOk(
+    await client.rpc('svc_identity_managed_role_materialize', {
+      p_keycloak_sub: keycloakSub,
+      p_user_id: userId,
+    }),
+    '物化系统团队角色',
   );
-  const current = roleRow?.role as string | undefined;
-  const desired = state.desired_role as string | null;
-  if (desired && (MANAGED_ROLES as readonly string[]).includes(desired) && current !== desired) {
-    assertOk(
-      await client.from('roles').upsert(
-        {
-          user_id: userId,
-          team_id: SYSTEM_TEAM_ID,
-          role: desired,
-          modified_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,team_id' },
-      ),
-      '物化角色',
-    );
-  }
-  if (!desired && current && (MANAGED_ROLES as readonly string[]).includes(current)) {
-    const decision = decideLocalRole(current, {
-      kind: 'revoke-role',
-      keycloakSub,
-      roleCode: current,
-    });
-    if (decision.write) {
-      assertOk(
-        await client.from('roles').upsert(
-          {
-            user_id: userId,
-            team_id: SYSTEM_TEAM_ID,
-            role: decision.role,
-            modified_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id,team_id' },
-        ),
-        '降级角色',
-      );
-    }
-  }
 }
 
 /**

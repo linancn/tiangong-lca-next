@@ -360,6 +360,7 @@ export async function createCodexE2EProcess(): Promise<ProductionDataLedger> {
       }
 
       const verification = await client
+        .schema('public')
         .from(PROCESS_TABLE)
         .select('id,version,json,json_ordered,user_id')
         .eq('id', id)
@@ -422,6 +423,7 @@ export async function cleanupCodexE2EProcess(): Promise<ProductionDataResult> {
 
   const result = await withAuthenticatedClient(async ({ accessToken, client, userId }) => {
     const existing = await client
+      .schema('public')
       .from(PROCESS_TABLE)
       .select('id,version,json,json_ordered,user_id')
       .eq('id', ledger.id);
@@ -451,6 +453,7 @@ export async function cleanupCodexE2EProcess(): Promise<ProductionDataResult> {
       },
       countRemaining: async () => {
         const remaining = await client
+          .schema('public')
           .from(PROCESS_TABLE)
           .select('id', { count: 'exact', head: true })
           .eq('id', ledger.id);

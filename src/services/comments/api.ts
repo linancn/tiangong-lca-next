@@ -201,12 +201,34 @@ export async function getRejectedComment(
 }
 
 export async function getUserManageComments() {
-  const result = await supabase
-    .from('comments')
-    .select('review_id,state_code,reviewer_id,reviews!inner(state_code)')
-    .in('state_code', [0, 1, 2])
-    .filter('reviews.state_code', 'gt', 0);
-  return result;
+  const reviewerId = await getUserId();
+  if (!reviewerId) {
+    return { data: [], error: true };
+  }
+
+  const results = await Promise.all(
+    (['pending', 'reviewed', 'reviewer-rejected'] as const).map((status) =>
+      supabase.rpc('qry_review_get_member_queue_items', {
+        p_status: status,
+        p_page: 1,
+        p_page_size: 100,
+        p_sort_by: 'modified_at',
+        p_sort_order: 'desc',
+      }),
+    ),
+  );
+  const error = results.find((result) => result.error)?.error ?? null;
+  const data = results.flatMap((result) =>
+    ((result.data ?? []) as ReviewMemberQueueRpcRow[])
+      .filter((row) => Number(row.review_state_code ?? 0) > 0)
+      .map((row) => ({
+        review_id: row.id,
+        state_code: row.comment_state_code,
+        reviewer_id: reviewerId,
+        reviews: { state_code: row.review_state_code },
+      })),
+  );
+  return { data, error };
 }
 
 export async function getReviewerIdsByReviewId(reviewId: string) {

@@ -891,7 +891,7 @@ export async function getNotifyReviews(
   const modelResult = await getLifeCyclesByIdAndVersion(processIdAndVersions);
   const mappedRows = rows.map((row) => {
     const model = modelResult?.data?.find(
-      (candidate) =>
+      (candidate: { id: string; version: string }) =>
         candidate.id === row?.json?.data?.id && candidate.version === row?.json?.data?.version,
     );
     const name =
@@ -949,15 +949,20 @@ export async function getLatestReviewOfMine() {
     return null;
   }
 
-  const { data } = await supabase
-    .from('reviews')
-    .select('*')
-    .filter('json->user->>id', 'eq', userId)
-    .in('state_code', [1, 2, -1])
-    .order('modified_at', { ascending: false })
-    .limit(1);
+  const { data } = await supabase.rpc('qry_review_get_items', {
+    p_data_id: null,
+    p_data_version: null,
+    p_review_ids: null,
+    p_state_codes: [1, 2, -1],
+  });
 
-  return data;
+  return (data ?? [])
+    .filter((review: any) => review?.json?.user?.id === userId)
+    .sort(
+      (left: any, right: any) =>
+        new Date(right.modified_at).getTime() - new Date(left.modified_at).getTime(),
+    )
+    .slice(0, 1);
 }
 
 /**

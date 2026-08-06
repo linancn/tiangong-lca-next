@@ -16,7 +16,6 @@ export const NATIONAL_CARBON_GRAPH_CACHE_JOB_KIND =
   'national_carbon.process_flow_graph_cache_build';
 export const NATIONAL_CARBON_GRAPH_CACHE_SUBJECT_TYPE = 'national_carbon_process_flow_graph_cache';
 
-const SYSTEM_TEAM_ID = '00000000-0000-0000-0000-000000000000';
 const SYSTEM_MANAGER_ROLES = ['owner', 'admin', 'member'];
 const DEFAULT_JOB_ENVIRONMENT = 'main';
 
@@ -162,16 +161,9 @@ function isNationalCarbonGraphCacheJob(job: WorkerJobResult): boolean {
 
 async function ensureSystemManager(
   actor: ActorContext,
-  serviceClient: SupabaseClient,
+  _serviceClient: SupabaseClient,
 ): Promise<CommandExecutionResult | null> {
-  const { data, error } = await serviceClient
-    .from('roles')
-    .select('user_id')
-    .eq('user_id', actor.userId)
-    .eq('team_id', SYSTEM_TEAM_ID)
-    .in('role', SYSTEM_MANAGER_ROLES)
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await actor.supabase.rpc('qry_membership_get_mine');
 
   if (error) {
     return {
@@ -183,7 +175,15 @@ async function ensureSystemManager(
     };
   }
 
-  if (!data) {
+  const isSystemManager = Array.isArray(data)
+    ? data.some(
+        (membership) =>
+          membership?.team_id === '00000000-0000-0000-0000-000000000000' &&
+          SYSTEM_MANAGER_ROLES.includes(String(membership?.role ?? '')),
+      )
+    : false;
+
+  if (!isSystemManager) {
     return {
       ok: false,
       code: 'SYSTEM_MANAGER_REQUIRED',

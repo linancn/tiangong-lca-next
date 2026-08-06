@@ -904,6 +904,7 @@ export async function runFlowpropertyCreateSmoke(
   }
 
   const recordResult = await supabase
+    .schema('public')
     .from(runtimeFixture.fixture.table)
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', runtimeFixture.runtimeId)

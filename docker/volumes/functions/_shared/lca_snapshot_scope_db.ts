@@ -1,4 +1,5 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import { queryLcaSnapshotCandidates } from './lca_snapshot_capabilities.ts';
 
 import {
   buildSnapshotProcessFilter,
@@ -21,16 +22,15 @@ export async function verifySnapshotMatchesDataScope(
   },
 ): Promise<SnapshotScopeVerificationResult> {
   const expectedProcessFilter = await buildSnapshotProcessFilter(args.dataScope, args.userId);
-  const { data, error } = await supabase
-    .from('lca_network_snapshots')
-    .select('process_filter')
-    .eq('id', args.snapshotId)
-    .maybeSingle();
+  const result = await queryLcaSnapshotCandidates(supabase, {
+    scope: 'full_library',
+    snapshotId: args.snapshotId,
+    limit: 1,
+  });
 
-  if (error) {
+  if (!result.ok) {
     console.warn('read explicit snapshot process filter failed', {
-      error: error.message,
-      code: error.code,
+      code: result.code,
       snapshot_id: args.snapshotId,
       data_scope: args.dataScope,
       user_id: args.userId,
@@ -38,7 +38,7 @@ export async function verifySnapshotMatchesDataScope(
     return { ok: false, error: 'snapshot_scope_lookup_failed', status: 500 };
   }
 
-  const processFilter = (data as { process_filter?: unknown } | null)?.process_filter;
+  const processFilter = result.data[0]?.processFilter;
   if (!matchesSnapshotDataScopeFilter(processFilter, expectedProcessFilter)) {
     return { ok: true, matches: false };
   }

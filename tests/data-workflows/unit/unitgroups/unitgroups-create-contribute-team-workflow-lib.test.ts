@@ -460,6 +460,7 @@ describe('unitgroups-create-contribute-team-workflow-lib', () => {
                   signInWithPassword,
                   signOut,
                 },
+                schema: jest.fn().mockReturnValue({ from }),
                 from,
                 functions: {
                   invoke: functionsInvoke,

@@ -170,17 +170,21 @@ export function buildWorkerJobCancelRpcArgs(
 }
 
 export function callWorkerJobEnqueueRpc(supabase: RpcClient, request: WorkerJobEnqueueRequest) {
-  return callWorkerJobRpc(supabase, 'worker_enqueue_job', buildWorkerJobEnqueueRpcArgs(request));
+  return callWorkerJobRpc(
+    supabase,
+    'svc_worker_enqueue_job',
+    buildWorkerJobEnqueueRpcArgs(request),
+  );
 }
 
 export function callWorkerJobReadRpc(supabase: RpcClient, request: WorkerJobReadRequest) {
-  return callWorkerJobRpc(supabase, 'worker_read_job', buildWorkerJobReadRpcArgs(request));
+  return callWorkerJobRpc(supabase, 'svc_worker_read_job', buildWorkerJobReadRpcArgs(request));
 }
 
 export function callWorkerJobListRpc(supabase: RpcClient, request: WorkerJobListRequest) {
-  return callWorkerJobRpc(supabase, 'worker_list_jobs', buildWorkerJobListRpcArgs(request));
+  return callWorkerJobRpc(supabase, 'svc_worker_list_jobs', buildWorkerJobListRpcArgs(request));
 }
 
 export function callWorkerJobCancelRpc(supabase: RpcClient, request: WorkerJobCancelRequest) {
-  return callWorkerJobRpc(supabase, 'worker_cancel_job', buildWorkerJobCancelRpcArgs(request));
+  return callWorkerJobRpc(supabase, 'svc_worker_cancel_job', buildWorkerJobCancelRpcArgs(request));
 }

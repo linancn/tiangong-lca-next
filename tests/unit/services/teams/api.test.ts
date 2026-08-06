@@ -16,6 +16,7 @@ import {
 jest.mock('@/services/supabase', () => ({
   supabase: {
     from: jest.fn(),
+    rpc: jest.fn(),
     auth: {
       getSession: jest.fn(),
     },
@@ -73,6 +74,7 @@ const createTeamsQueryBuilder = createQueryBuilder;
 describe('teams api task-4 boundaries', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    supabase.rpc.mockReset();
     supabase.auth.getSession.mockResolvedValue({
       data: {
         session: {
@@ -82,6 +84,42 @@ describe('teams api task-4 boundaries', () => {
     });
     getUserIdsByTeamIds.mockResolvedValue([]);
     getUserEmailByUserIds.mockResolvedValue([]);
+    supabase.rpc.mockImplementation((name: string, args: Record<string, any>) => {
+      if (name === 'qry_team_get') {
+        return supabase.from('teams').select('*').eq('id', args.p_team_id);
+      }
+      if (name !== 'qry_team_list') {
+        return Promise.resolve({ data: [], error: null });
+      }
+      let query = args.p_keyword
+        ? supabase.from('teams').select('*')
+        : supabase.from('teams').select('*', { count: 'exact' });
+      if (args.p_keyword) {
+        query = query.or(
+          `json->title->0->>#text.ilike.%${args.p_keyword}%,json->title->1->>#text.ilike.%${args.p_keyword}%`,
+        );
+      }
+      if (args.p_mode === 'public') query = query.eq('is_public', true);
+      if (args.p_mode === 'ranked') query = query.gt('rank', 0);
+      if (args.p_mode === 'unranked') query = query.eq('rank', 0);
+      query = query.order(args.p_mode === 'unranked' ? 'created_at' : 'rank', {
+        ascending: args.p_mode !== 'unranked',
+      });
+      if (args.p_page_size !== 100) {
+        query = query.range(
+          (args.p_page - 1) * args.p_page_size,
+          args.p_page * args.p_page_size - 1,
+        );
+      }
+      return Promise.resolve(query).then((result: any) => ({
+        ...result,
+        data: (result.data ?? []).map((row: any, index: number) =>
+          index === 0 && (row.total_count === null || row.total_count === undefined)
+            ? { ...row, total_count: result.count ?? 0 }
+            : row,
+        ),
+      }));
+    });
   });
 
   it('returns null when command routing lacks a session', async () => {

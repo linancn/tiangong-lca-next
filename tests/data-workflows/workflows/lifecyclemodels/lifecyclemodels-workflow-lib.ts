@@ -1236,6 +1236,7 @@ async function queryLifeCycleModelRecord(
   version: string,
 ): Promise<LifeCycleModelRecord> {
   const result = await supabase
+    .schema('public')
     .from('lifecyclemodels')
     .select('id,json,json_tg,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

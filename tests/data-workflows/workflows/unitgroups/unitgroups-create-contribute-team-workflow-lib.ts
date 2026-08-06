@@ -864,6 +864,7 @@ async function queryUnitGroupRecord(
   version: string,
 ): Promise<UnitGroupWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('unitgroups')
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

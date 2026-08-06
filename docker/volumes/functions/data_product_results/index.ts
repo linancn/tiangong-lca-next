@@ -198,42 +198,26 @@ function createPublishedResultsRepository(
 ): DataProductPublishedResultsRepository {
   return {
     async queryCurrentPublicResults(request) {
-      const { data: publicationRow, error: publicationError } = await serviceSupabase
-        .from('lcia_result_publications')
-        .select(
-          [
-            'id',
-            'package_id',
-            'publication_series_key',
-            'publication_channel',
-            'visibility_scope',
-            'is_current',
-            'status',
-            'display_default_impact_category',
-            'published_at',
-            'created_at',
-          ].join(','),
-        )
-        .eq('publication_series_key', 'global')
-        .eq('publication_channel', 'public')
-        .eq('visibility_scope', 'public')
-        .eq('is_current', true)
-        .eq('status', 'current')
-        .order('published_at', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (publicationError) {
+      const { data, error } = await serviceSupabase.rpc('svc_data_product_current_public_package');
+      if (error) {
         return commandFailure(
           'published_lcia_publication_lookup_failed',
           500,
           'Failed to read current public LCIA result publication',
-          publicationError.message,
+          error.message,
         );
       }
-
-      const publication = recordValue(publicationRow);
+      const envelope = recordValue(data);
+      if (!envelope || envelope.ok !== true) {
+        return commandFailure(
+          stringValue(envelope?.code) ?? 'published_lcia_publication_lookup_failed',
+          Number(envelope?.status ?? 500),
+          'Failed to read current public LCIA result publication',
+          envelope,
+        );
+      }
+      const current = recordValue(envelope.data);
+      const publication = recordValue(current?.publication);
       const packageId = stringValue(publication?.package_id);
       if (!publication || !packageId) {
         return commandFailure(
@@ -243,39 +227,7 @@ function createPublishedResultsRepository(
         );
       }
 
-      const { data: packageRowRaw, error: packageError } = await serviceSupabase
-        .from('lcia_result_packages')
-        .select(
-          [
-            'id',
-            'package_version',
-            'eligible_input_count',
-            'included_input_count',
-            'input_manifest',
-            'snapshot_id',
-            'result_id',
-            'result_artifact_ref',
-            'query_artifact_ref',
-            'artifact_manifest',
-            'available_impact_categories',
-            'default_impact_category',
-            'status',
-          ].join(','),
-        )
-        .eq('id', packageId)
-        .eq('status', 'preview_ready')
-        .maybeSingle();
-
-      if (packageError) {
-        return commandFailure(
-          'published_lcia_package_lookup_failed',
-          500,
-          'Failed to read current public LCIA result package',
-          packageError.message,
-        );
-      }
-
-      const packageRow = recordValue(packageRowRaw);
+      const packageRow = recordValue(current?.package);
       if (!packageRow) {
         return commandFailure(
           'published_lcia_package_not_ready',

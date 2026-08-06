@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     return json(permission.error, permissionErrorStatusCode(permission.error));
   }
 
-  const { data, error } = await supabaseClient.rpc('delete_lifecycle_model_bundle', {
+  const { data, error } = await supabaseClient.rpc('cmd_lifecycle_model_bundle_delete', {
     p_model_id: payload.modelId,
     p_version: payload.version,
   });

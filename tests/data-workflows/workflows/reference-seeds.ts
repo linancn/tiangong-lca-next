@@ -571,6 +571,7 @@ async function findExistingSeedRecord(
 ) {
   const meta = DATASET_META[key];
   const result = await supabase
+    .schema('public')
     .from(meta.table)
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification')
     .eq('user_id', currentUserId)
@@ -595,6 +596,7 @@ async function querySeedRecord(
   version: string,
 ): Promise<ExistingSeedRecord> {
   const result = await supabase
+    .schema('public')
     .from(table)
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification')
     .eq('id', id)

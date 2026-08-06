@@ -39,11 +39,10 @@ export const reviewSubmitGateRequestSchema = z
   })
   .strict();
 
-type RevisionLookupClient = Pick<ActorContext['supabase'], 'from'>;
+type RevisionLookupClient = Pick<ActorContext['supabase'], 'schema'>;
 
 type ReviewSubmitGateRevisionResult =
-  | { ok: true; revisionChecksum: string }
-  | DatasetCommandFailure;
+  { ok: true; revisionChecksum: string } | DatasetCommandFailure;
 
 export type ReviewSubmitGateRevisionResolver = (
   request: ReviewSubmitGateRequest,
@@ -148,6 +147,7 @@ export async function resolveAuthoritativeReviewSubmitRevision(
 ): Promise<ReviewSubmitGateRevisionResult> {
   const supabase = actor.supabase as RevisionLookupClient;
   const { data, error } = await supabase
+    .schema('public')
     .from(request.table)
     .select('id,version,json_ordered')
     .eq('id', request.id)
