@@ -120,13 +120,22 @@ const shouldFailOnActWarning =
 
 const actWarningRecords = [];
 let actWarningsThisTest = 0;
+let dataProcessingDateNowSpy;
 
 beforeEach(() => {
   actWarningsThisTest = 0;
+  const testPath = global.expect?.getState?.().testPath;
+  if (testPath?.endsWith('/tests/unit/pages/DataProcessing/index.test.tsx')) {
+    dataProcessingDateNowSpy = jest
+      .spyOn(Date, 'now')
+      .mockReturnValue(Date.parse('2026-08-04T00:00:00Z'));
+  }
 });
 
 afterEach(() => {
   cleanup();
+  dataProcessingDateNowSpy?.mockRestore();
+  dataProcessingDateNowSpy = undefined;
   jest.useRealTimers();
 
   if (!shouldFailOnActWarning || actWarningsThisTest === 0) {

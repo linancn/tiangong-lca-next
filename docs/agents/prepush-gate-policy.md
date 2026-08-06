@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-05
-lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
-lastReviewedNote: 'Reviewed for Issue #768: the mechanical Dev target replacement does not change protected-branch triggers, managed full-gate behavior, or the quality bar.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: the focused component regression test does not alter managed-push, protected-branch, release-trigger, or retry-receipt policy.'
 ---
 
 # Pre-Push Gate Policy

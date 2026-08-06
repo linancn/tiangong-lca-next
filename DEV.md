@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-05
-lastReviewedCommit: d9f581bb98eec6736ea1378bb9f7b00730489522
-lastReviewedNote: 'Reviewed for Issue #768: `npm start` continues to use the checked-in development environment, now rebound to the recreated persistent Dev; bootstrap and validation commands remain unchanged.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: the LCIA result-panel hotfix uses the existing Node 24, focused-test, managed-push, production-hotfix PR, and workspace-integration sequence.'
 ---
 
 # Development Bootstrap

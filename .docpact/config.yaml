@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-05"
-lastReviewedCommit: "d9f581bb98eec6736ea1378bb9f7b00730489522"
-lastReviewedNote: 'Reviewed for Issue #768: replacing the persistent-dev URL, publishable key, and data-workflow target stays within existing frontend environment, test, gate, and workspace-integration ownership.'
+lastReviewedAt: '2026-08-06'
+lastReviewedCommit: '21a66d230858179097bba98e114f2aca9eefc9da'
+lastReviewedNote: 'Reviewed for Issue #771: the LCIA result-panel state fix remains routed through the existing frontend runtime, testing-gate, and workspace-integration ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

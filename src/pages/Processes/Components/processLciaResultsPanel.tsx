@@ -570,11 +570,11 @@ const ProcessLciaResultsPanel: FC<Props> = ({
           )}
         </Space>
       )}
-      {!shouldUsePublishedPackage && (
-        <LcaCalculationEvidenceNotice
-          staticEvidence={solverLciaMeta ? undefined : baseCalculationEvidence}
-          calculationEvidence={solverLciaMeta?.calculationEvidence}
-        />
+      {!shouldUsePublishedPackage && !canQuerySolver && (
+        <LcaCalculationEvidenceNotice staticEvidence={baseCalculationEvidence} />
+      )}
+      {!shouldUsePublishedPackage && canQuerySolver && solverLciaMeta && (
+        <LcaCalculationEvidenceNotice calculationEvidence={solverLciaMeta.calculationEvidence} />
       )}
       <LcaProfileSummary
         rows={rows}
