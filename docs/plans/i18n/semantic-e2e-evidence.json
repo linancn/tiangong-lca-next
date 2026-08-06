@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-02T02:06:52.472Z",
-  "runId": "local-50391689-7c03-4314-9a23-7e16781ced71",
+  "generatedAt": "2026-08-06T09:08:19.974Z",
+  "runId": "local-e8c1b473-0a3d-40b8-bf77-ee1fb7459a25",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "33409ce1336d9cdfb3916d38a155cbf1c73bb7ab",
-    "packageManifestDigest": "f695fdf08835b9bda3b56c6aea29cab2695c9fa713f2cf2556c1174072f0cf0c",
-    "sourceTreeDigest": "78e01816713f6da31759a1b75c14e520b4678149007e8d34c1d150f198093fad",
-    "unitTestTreeDigest": "3af4a40bf8cbd9a222424aa0d745a1ce04a4442d95fb3e3adc395c2d7ed34058"
+    "observedHeadCommit": "2f93b82777895ef6d8385541afdbafd0e6a68dc7",
+    "packageManifestDigest": "d61d34c844644c1c909b0e15bd6100652acdf84a48f4f65e4d1ef37c6e585f6d",
+    "sourceTreeDigest": "36e2297799830c54b1d876c2371f734aec6126891e5f20676eb8965963a8fd3d",
+    "unitTestTreeDigest": "5909d12bf840c557add94e3bb2e0b1b42a52d909ce749a698e6ff8fb1b29719e"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "428dade726f924751cccac4f8cadb2675d3a9bd138c7adba11262a06542011cd"
+      "sha256": "f5a319df878a0b538ed21adce7f3a6d07abeb150d99cdb7ce77cc16c7d827e5d"
     },
     "runtimeAssets": [
       {
@@ -237,7 +237,7 @@
       },
       {
         "path": "tests/e2e/i18n/production-request-guard.ts",
-        "sha256": "8cea53f316fe9a29e573ea12fe86d6d56e5326a026a997a41f2dbd01424f8891"
+        "sha256": "6138f61dc1841eecd64fb56e1e31034fcec52fd74345b298fbb28e68a413ed3e"
       },
       {
         "path": "tests/e2e/i18n/qualification-reporter.ts",
@@ -425,7 +425,7 @@
       },
       {
         "path": "tests/unit/pages/Review/Components/AssignmentReview.test.tsx",
-        "sha256": "9fcd7968d2ea9609d66409a710fa57b7c02e94c4aeee249ffcec7019f2f1f672"
+        "sha256": "c954bb3f04c94f94aeb5d651166f09554a579439bd6f94dffabbeabead57e24e"
       },
       {
         "path": "tests/unit/pages/Review/index.test.tsx",
