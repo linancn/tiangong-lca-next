@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
 lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative path coverage extends bounded proof without changing test strategy.'
 ---
 
