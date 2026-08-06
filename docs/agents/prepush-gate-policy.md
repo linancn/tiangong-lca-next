@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: the focused component regression test does not alter managed-push, protected-branch, release-trigger, or retry-receipt policy.'
+lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
+lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump follows the existing managed-push, protected-branch, release-trigger, and retry-receipt policy.'
 ---
 
 # Pre-Push Gate Policy

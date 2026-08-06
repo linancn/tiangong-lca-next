@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: separating LCIA query failures from evidence validation remains within existing frontend ownership, production hotfix, quality-gate, and root-integration boundaries.'
+lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
+lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump remains within existing frontend ownership, production-hotfix, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
