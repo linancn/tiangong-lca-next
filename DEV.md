@@ -22,6 +22,7 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
@@ -29,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump uses the existing Node 24, managed-push, production-hotfix PR, release, and workspace-integration sequence.'
+lastReviewedCommit: 63814a05d71fb5f2f681659e7cfc51b04ae74deb
+lastReviewedNote: 'Reviewed for Issue #778: normal version-to-dev and immutable dev-to-main promotion are exposed as deterministic, JSON-first managed-gate commands.'
 ---
 
 # Development Bootstrap
@@ -134,6 +135,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | check every active locale's activation boundary | `npm run i18n:locale:all:check` |
 | require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | run the combined credential-free production preflight | `npm run release:preflight` |
+| plan or prepare a version-bump PR into `dev` | `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> [--apply]` |
+| plan or prepare an immutable `dev -> main` promotion after the version PR merges | `npm --silent run release:promote-dev-to-main -- --release-pr <number> --issue <number> [--apply]` |
 | qualify the semantic release harness locally without production access | `npm run e2e:qualify` |
 | verify the current source has a matching qualification receipt | `npm run e2e:qualification:check` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
@@ -164,6 +167,8 @@ npm run e2e:release -- \
 The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
 Create the `dev -> main` Promote PR only after that authorized run has produced current checked-in evidence with exact cleanup and the full managed release gate has passed on the immutable candidate. The Promote PR and its credential-free Release Readiness job verify the matching qualification receipt, production evidence, and diff. They do not create production proof: the repository has no protected production actor credential or external recovery ledger in GitHub Actions, by design.
+
+The two release automation commands default to read-only planning. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; full managed-gate output is retained under `.local/release-automation/`. The version-to-dev command deliberately uses a non-main-semantic branch so the existing dev gate applies. The promotion command pins the exact merged dev SHA on a `promote` branch, which makes the existing hook run release preflight and the complete main-semantic gate before it opens the main PR. Both commands reuse a matching open PR and fail closed on version, branch, or dev-candidate drift.
 
 ## Command Rules
 

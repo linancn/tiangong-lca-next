@@ -21,14 +21,15 @@ checkPaths:
   - scripts/test-runner.cjs
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: existing gate troubleshooting remains sufficient for the release-only version bump; no new exception is required.'
+lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
+lastReviewedNote: 'Reviewed for Issue #778: release-command drift and managed-push failures now have bounded JSON diagnostics and local log recovery paths.'
 ---
 
 # Testing Troubleshooting
@@ -59,6 +60,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
+| `release:to-dev` or `release:promote-dev-to-main` returns a drift error | the requested version, Issue marker, dev merge SHA, branch candidate, or current remote ref no longer matches the planned identity | read the single JSON error and its `next_action`, inspect the referenced PR/SHA, then rerun dry-run against current remotes; do not force-update or reuse a mismatched release branch |
+| a deterministic release command returns `managed_push_failed` | Docpact, production preflight, the full gate, or the original transport failed | inspect the returned `.local/release-automation/**` log; if and only if that checked push created a new exact-intent receipt, the command already attempted `push:retry`, so fix the first reported gate/transport cause before rerunning `--apply` |
 | release E2E fails before any browser test | Node/Git/Docker, pinned image, output permissions, candidate identity, browser launch, bundle readiness, backend/auth, recovery ledger, or discovery is invalid | run `npm run e2e:env:doctor -- --format json`, then inspect the first failed check in `preflight-report.json`; use its one next command instead of starting the full suite |
 | release E2E refuses a dirty candidate | release evidence cannot identify a mutable worktree | commit the intended candidate before release proof, or use `npm run e2e:dev` for focused diagnosis; never mount the parent workspace to make the dirty tree appear runnable |
 | release E2E reports a stale qualification receipt, then refuses the dirty candidate after `e2e:qualify` succeeds | qualification correctly generated a new tracked receipt, so the worktree is no longer a releasable immutable candidate | review the receipt, land it through a tracked `dev` PR, and retry from the clean merged candidate; do not discard the result, hand-edit its hashes, or use `e2e:dev` as release evidence |

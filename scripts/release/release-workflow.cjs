@@ -1,0 +1,1226 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const SCHEMA_VERSION = 'tiangong.next.release-automation.v1';
+const DEFAULT_REPOSITORY = 'linancn/tiangong-lca-next';
+const DEFAULT_CANONICAL_REMOTE = 'origin';
+const DEFAULT_PUSH_REMOTE = 'fork';
+const DEFAULT_LOG_DIRECTORY = '.local/release-automation';
+const TRANSPORT_RECEIPT_PATH = '.local/prepush-gate/failed-transport-receipt.json';
+const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v1';
+const MAX_CAPTURE_BYTES = 64 * 1024 * 1024;
+const MAIN_SEMANTIC_BRANCH_PATTERN = /^(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u;
+const PROMOTION_BRANCH_PATTERN = /^(?:codex\/)?promote(?:\/|-)/u;
+
+const EXIT = Object.freeze({
+  usage: 2,
+  precondition: 10,
+  drift: 20,
+  gate: 30,
+  external: 40,
+});
+
+class ReleaseAutomationError extends Error {
+  constructor(
+    code,
+    message,
+    { exitCode = EXIT.precondition, details = {}, nextAction = null } = {},
+  ) {
+    super(message);
+    this.name = 'ReleaseAutomationError';
+    this.code = code;
+    this.exitCode = exitCode;
+    this.details = details;
+    this.nextAction = nextAction;
+  }
+}
+
+function truncate(value, maximum = 2000) {
+  const text = String(value ?? '').trim();
+  return text.length <= maximum ? text : `${text.slice(0, maximum)}…`;
+}
+
+function run(command, args, { cwd, allowFailure = false } = {}) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: MAX_CAPTURE_BYTES,
+  });
+  if (result.error) {
+    throw new ReleaseAutomationError('command_unavailable', `${command} could not be executed.`, {
+      exitCode: EXIT.external,
+      details: { command, reason: result.error.message },
+      nextAction: `Install or repair ${command}, then rerun the same command.`,
+    });
+  }
+  if (result.status !== 0 && !allowFailure) {
+    throw new ReleaseAutomationError('command_failed', `${command} ${args.join(' ')} failed.`, {
+      exitCode: EXIT.external,
+      details: {
+        command: [command, ...args],
+        exit_code: result.status,
+        stderr: truncate(result.stderr || result.stdout),
+      },
+    });
+  }
+  return result;
+}
+
+function appendLogHeader(logFile, command, args) {
+  fs.mkdirSync(path.dirname(logFile), { recursive: true });
+  fs.appendFileSync(logFile, `\n[${new Date().toISOString()}] ${[command, ...args].join(' ')}\n`, {
+    mode: 0o600,
+  });
+  fs.chmodSync(logFile, 0o600);
+}
+
+function runLogged(command, args, { cwd, logFile }) {
+  appendLogHeader(logFile, command, args);
+  const descriptor = fs.openSync(logFile, 'a', 0o600);
+  try {
+    const result = spawnSync(command, args, {
+      cwd,
+      stdio: ['ignore', descriptor, descriptor],
+      env: process.env,
+    });
+    if (result.error) {
+      throw new ReleaseAutomationError('command_unavailable', `${command} could not be executed.`, {
+        exitCode: EXIT.external,
+        details: { command, reason: result.error.message, log_path: logFile },
+      });
+    }
+    return result;
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function git(root, args, options = {}) {
+  return run('git', args, { cwd: root, ...options });
+}
+
+function gh(root, args, options = {}) {
+  return run('gh', args, { cwd: root, ...options });
+}
+
+function parseJsonOutput(result, description) {
+  try {
+    return JSON.parse(result.stdout || 'null');
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'invalid_external_json',
+      `${description} returned invalid JSON.`,
+      {
+        exitCode: EXIT.external,
+        details: { reason: error.message, output: truncate(result.stdout) },
+      },
+    );
+  }
+}
+
+function repositoryRoot(cwd = process.cwd()) {
+  return git(cwd, ['rev-parse', '--show-toplevel']).stdout.trim();
+}
+
+function assertClean(root) {
+  const status = worktreeStatus(root);
+  if (status) {
+    throw new ReleaseAutomationError(
+      'worktree_not_clean',
+      'The repository worktree is not clean.',
+      {
+        details: { changed_paths: status.split(/\r?\n/u).slice(0, 20) },
+        nextAction: 'Commit, stash, or remove the listed changes, then rerun the command.',
+      },
+    );
+  }
+}
+
+function worktreeStatus(root) {
+  return git(root, ['status', '--porcelain=v1', '--untracked-files=all']).stdout.trim();
+}
+
+function branchHasMainSemantics(branch) {
+  return MAIN_SEMANTIC_BRANCH_PATTERN.test(branch);
+}
+
+function validateBranch(root, branch, command) {
+  const validation = git(root, ['check-ref-format', '--branch', branch], { allowFailure: true });
+  if (validation.status !== 0) {
+    throw new ReleaseAutomationError('invalid_branch', '--branch is not a valid Git branch name.', {
+      exitCode: EXIT.usage,
+      details: { branch },
+    });
+  }
+  if (command === 'release-to-dev' && branchHasMainSemantics(branch)) {
+    throw new ReleaseAutomationError(
+      'release_branch_has_main_semantics',
+      'The release-to-dev branch name would select the main release gate.',
+      {
+        exitCode: EXIT.usage,
+        details: { branch },
+        nextAction: 'Use the deterministic default branch or another non-release-semantic branch.',
+      },
+    );
+  }
+  if (command === 'promote-dev-to-main' && !PROMOTION_BRANCH_PATTERN.test(branch)) {
+    throw new ReleaseAutomationError(
+      'promotion_branch_lacks_main_semantics',
+      'The promotion branch name would not select the main release gate.',
+      {
+        exitCode: EXIT.usage,
+        details: { branch },
+        nextAction: 'Use the deterministic default branch or a promote/... branch.',
+      },
+    );
+  }
+}
+
+function resolveLogFile(root, configuredDirectory, fileName) {
+  const directory = path.resolve(root, configuredDirectory);
+  const relativeDirectory = path.relative(root, directory);
+  if (
+    !relativeDirectory ||
+    relativeDirectory === '..' ||
+    relativeDirectory.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeDirectory)
+  ) {
+    throw new ReleaseAutomationError(
+      'invalid_log_directory',
+      '--log-dir must resolve to a directory inside the repository.',
+      {
+        exitCode: EXIT.usage,
+        details: { log_directory: configuredDirectory },
+      },
+    );
+  }
+  return path.join(directory, fileName);
+}
+
+function parseStableVersion(value, label) {
+  const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u.exec(String(value ?? ''));
+  if (!match) {
+    throw new ReleaseAutomationError(
+      'invalid_version',
+      `${label} must be a stable x.y.z version.`,
+      {
+        exitCode: EXIT.usage,
+        details: { value },
+        nextAction: 'Pass a stable version such as --version 0.0.67.',
+      },
+    );
+  }
+  return { text: match[0], parts: match.slice(1).map(Number) };
+}
+
+function compareVersions(left, right) {
+  for (let index = 0; index < 3; index += 1) {
+    if (left.parts[index] !== right.parts[index]) return left.parts[index] - right.parts[index];
+  }
+  return 0;
+}
+
+function parsePositiveInteger(value, label) {
+  if (!/^[1-9]\d*$/u.test(String(value ?? ''))) {
+    throw new ReleaseAutomationError('invalid_identifier', `${label} must be a positive integer.`, {
+      exitCode: EXIT.usage,
+      details: { value },
+    });
+  }
+  return Number(value);
+}
+
+function parseArguments(argv, command) {
+  const options = {
+    apply: false,
+    format: 'json',
+    repository: DEFAULT_REPOSITORY,
+    remote: DEFAULT_CANONICAL_REMOTE,
+    pushRemote: DEFAULT_PUSH_REMOTE,
+    logDirectory: DEFAULT_LOG_DIRECTORY,
+    help: false,
+  };
+  let mutationModeSeen = null;
+  const valueFlags = new Map([
+    ['--repo', 'repository'],
+    ['--remote', 'remote'],
+    ['--push-remote', 'pushRemote'],
+    ['--head-owner', 'headOwner'],
+    ['--branch', 'branch'],
+    ['--format', 'format'],
+    ['--log-dir', 'logDirectory'],
+    ['--issue', 'issue'],
+    ['--version', 'version'],
+    ['--release-pr', 'releasePr'],
+  ]);
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (argument === '--help' || argument === '-h') {
+      options.help = true;
+      continue;
+    }
+    if (argument === '--apply' || argument === '--dry-run') {
+      if (mutationModeSeen && mutationModeSeen !== argument) {
+        throw new ReleaseAutomationError(
+          'conflicting_modes',
+          '--apply and --dry-run cannot be combined.',
+          {
+            exitCode: EXIT.usage,
+          },
+        );
+      }
+      mutationModeSeen = argument;
+      options.apply = argument === '--apply';
+      continue;
+    }
+    const key = valueFlags.get(argument);
+    if (!key) {
+      throw new ReleaseAutomationError('unknown_argument', `Unsupported argument: ${argument}`, {
+        exitCode: EXIT.usage,
+        nextAction: 'Run the command with --help to inspect supported arguments.',
+      });
+    }
+    const value = argv[index + 1];
+    if (!value || value.startsWith('--')) {
+      throw new ReleaseAutomationError('missing_argument_value', `${argument} requires a value.`, {
+        exitCode: EXIT.usage,
+      });
+    }
+    options[key] = value;
+    index += 1;
+  }
+
+  if (!['json', 'human'].includes(options.format)) {
+    throw new ReleaseAutomationError('invalid_format', '--format must be json or human.', {
+      exitCode: EXIT.usage,
+    });
+  }
+  if (!options.help) {
+    options.issue = parsePositiveInteger(options.issue, '--issue');
+    if (command === 'release-to-dev') {
+      if (options.releasePr !== undefined) {
+        throw new ReleaseAutomationError(
+          'irrelevant_argument',
+          '--release-pr is only valid for promote-dev-to-main.',
+          { exitCode: EXIT.usage },
+        );
+      }
+      options.version = parseStableVersion(options.version, '--version').text;
+    } else {
+      if (options.version !== undefined) {
+        throw new ReleaseAutomationError(
+          'irrelevant_argument',
+          '--version is only valid for release-to-dev.',
+          { exitCode: EXIT.usage },
+        );
+      }
+      options.releasePr = parsePositiveInteger(options.releasePr, '--release-pr');
+    }
+  }
+  return options;
+}
+
+function readJson(filePath, description) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'invalid_repository_file',
+      `${description} is missing or invalid.`,
+      {
+        details: { path: filePath, reason: error.message },
+      },
+    );
+  }
+}
+
+function versionsFromDocuments(packageJson, packageLock, source) {
+  const values = {
+    package_json: packageJson.version,
+    package_lock: packageLock.version,
+    package_lock_root: packageLock.packages?.['']?.version,
+  };
+  if (!values.package_json || new Set(Object.values(values)).size !== 1) {
+    throw new ReleaseAutomationError(
+      'version_fields_mismatch',
+      `Version fields do not agree in ${source}.`,
+      {
+        details: { source, versions: values },
+        nextAction:
+          'Repair package.json and both package-lock.json root version fields before continuing.',
+      },
+    );
+  }
+  parseStableVersion(values.package_json, `${source} version`);
+  return { version: values.package_json, fields: values };
+}
+
+function readVersionsAtRef(root, ref) {
+  const packageJson = JSON.parse(git(root, ['show', `${ref}:package.json`]).stdout);
+  const packageLock = JSON.parse(git(root, ['show', `${ref}:package-lock.json`]).stdout);
+  return versionsFromDocuments(packageJson, packageLock, ref);
+}
+
+function readGithubJsonFile(root, repository, ref, filePath) {
+  const endpoint = `repos/${repository}/contents/${filePath}?ref=${encodeURIComponent(ref)}`;
+  let payload = parseJsonOutput(gh(root, ['api', endpoint]), `GitHub ${filePath}`);
+  if (payload.encoding === 'none' && /^[0-9a-f]{40}$/u.test(payload.sha || '')) {
+    payload = parseJsonOutput(
+      gh(root, ['api', `repos/${repository}/git/blobs/${payload.sha}`]),
+      `GitHub ${filePath} blob`,
+    );
+  }
+  if (payload.encoding !== 'base64' || typeof payload.content !== 'string') {
+    throw new ReleaseAutomationError(
+      'unsupported_github_content',
+      `GitHub returned unsupported ${filePath} content.`,
+      {
+        exitCode: EXIT.external,
+        details: { file: filePath, encoding: payload.encoding ?? null },
+      },
+    );
+  }
+  try {
+    return JSON.parse(Buffer.from(payload.content.replace(/\s/gu, ''), 'base64').toString('utf8'));
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'invalid_github_content',
+      `GitHub ${filePath} is invalid JSON.`,
+      {
+        exitCode: EXIT.external,
+        details: { file: filePath, reason: error.message },
+      },
+    );
+  }
+}
+
+function readGithubVersions(root, repository, ref) {
+  return versionsFromDocuments(
+    readGithubJsonFile(root, repository, ref, 'package.json'),
+    readGithubJsonFile(root, repository, ref, 'package-lock.json'),
+    `${repository}@${ref}`,
+  );
+}
+
+function writeVersionFiles(root, version) {
+  const packagePath = path.join(root, 'package.json');
+  const lockPath = path.join(root, 'package-lock.json');
+  const packageJson = readJson(packagePath, 'package.json');
+  const packageLock = readJson(lockPath, 'package-lock.json');
+  packageJson.version = version;
+  packageLock.version = version;
+  if (!packageLock.packages || !packageLock.packages['']) {
+    throw new ReleaseAutomationError(
+      'package_lock_root_missing',
+      'package-lock.json has no root package entry.',
+    );
+  }
+  packageLock.packages[''].version = version;
+  fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  fs.writeFileSync(lockPath, `${JSON.stringify(packageLock, null, 2)}\n`);
+}
+
+function remoteBranchSha(root, remote, branch) {
+  const result = git(root, ['ls-remote', '--refs', remote, `refs/heads/${branch}`]);
+  const line = result.stdout.trim();
+  if (!line) {
+    throw new ReleaseAutomationError(
+      'remote_branch_missing',
+      `${remote}/${branch} does not exist.`,
+      {
+        exitCode: EXIT.external,
+        details: { remote, branch },
+      },
+    );
+  }
+  return line.split(/\s+/u)[0];
+}
+
+function optionalRemoteBranchSha(root, remote, branch) {
+  const result = git(root, ['ls-remote', '--refs', remote, `refs/heads/${branch}`], {
+    allowFailure: true,
+  });
+  if (result.status !== 0 || !result.stdout.trim()) return null;
+  return result.stdout.trim().split(/\s+/u)[0];
+}
+
+function remoteOwner(root, remote) {
+  const url = git(root, ['remote', 'get-url', remote]).stdout.trim();
+  const match = /github\.com(?::|\/)([^/]+)\/[^/]+?(?:\.git)?$/u.exec(url);
+  if (!match) {
+    throw new ReleaseAutomationError(
+      'unsupported_push_remote',
+      `Cannot derive a GitHub owner from remote ${remote}.`,
+      {
+        details: { remote, url },
+        nextAction: 'Pass --head-owner <github-login> explicitly.',
+      },
+    );
+  }
+  return match[1];
+}
+
+function localBranchExists(root, branch) {
+  return (
+    git(root, ['show-ref', '--verify', '--quiet', `refs/heads/${branch}`], {
+      allowFailure: true,
+    }).status === 0
+  );
+}
+
+function currentBranch(root) {
+  const result = git(root, ['symbolic-ref', '--quiet', '--short', 'HEAD'], { allowFailure: true });
+  if (result.status !== 0 || !result.stdout.trim()) {
+    throw new ReleaseAutomationError(
+      'detached_head',
+      'The release command requires a named local branch.',
+      {
+        nextAction: 'Switch to a clean named branch and rerun the command.',
+      },
+    );
+  }
+  return result.stdout.trim();
+}
+
+function switchToBranch(root, branch, startRef) {
+  if (currentBranch(root) === branch) return;
+  if (localBranchExists(root, branch)) {
+    git(root, ['switch', branch]);
+  } else {
+    git(root, ['switch', '-c', branch, startRef]);
+  }
+}
+
+function isAncestor(root, ancestor, descendant) {
+  return (
+    git(root, ['merge-base', '--is-ancestor', ancestor, descendant], {
+      allowFailure: true,
+    }).status === 0
+  );
+}
+
+function findOpenPr(root, { repository, base, owner, branch }) {
+  const payload = parseJsonOutput(
+    gh(root, [
+      'pr',
+      'list',
+      '--repo',
+      repository,
+      '--state',
+      'open',
+      '--base',
+      base,
+      '--head',
+      `${owner}:${branch}`,
+      '--json',
+      'number,url,state,headRefOid,baseRefName,headRefName,body',
+    ]),
+    'gh pr list',
+  );
+  if (!Array.isArray(payload)) {
+    throw new ReleaseAutomationError('invalid_pr_list', 'gh pr list returned a non-array result.', {
+      exitCode: EXIT.external,
+    });
+  }
+  if (payload.length > 1) {
+    throw new ReleaseAutomationError(
+      'ambiguous_pull_requests',
+      'Multiple open pull requests match the release identity.',
+      {
+        exitCode: EXIT.drift,
+        details: { pull_requests: payload.map(({ number, url }) => ({ number, url })) },
+      },
+    );
+  }
+  return payload[0] ?? null;
+}
+
+function viewPullRequest(root, repository, number) {
+  return parseJsonOutput(
+    gh(root, [
+      'pr',
+      'view',
+      String(number),
+      '--repo',
+      repository,
+      '--json',
+      'number,url,state,mergedAt,mergeCommit,baseRefName,baseRefOid,headRefName,headRefOid,body,title',
+    ]),
+    'gh pr view',
+  );
+}
+
+function createPullRequest(root, { repository, base, owner, branch, title, body }) {
+  const result = gh(root, [
+    'pr',
+    'create',
+    '--repo',
+    repository,
+    '--base',
+    base,
+    '--head',
+    `${owner}:${branch}`,
+    '--title',
+    title,
+    '--body',
+    body,
+  ]);
+  const url = result.stdout
+    .trim()
+    .split(/\r?\n/u)
+    .find((line) => /^https:\/\//u.test(line));
+  if (!url) {
+    throw new ReleaseAutomationError(
+      'pull_request_url_missing',
+      'gh pr create did not return a PR URL.',
+      {
+        exitCode: EXIT.external,
+        details: { output: truncate(result.stdout) },
+      },
+    );
+  }
+  const numberMatch = /\/pull\/(\d+)(?:\/)?$/u.exec(url);
+  return { url, number: numberMatch ? Number(numberMatch[1]) : null };
+}
+
+function relativeLogPath(root, logFile) {
+  return path.relative(root, logFile).split(path.sep).join('/');
+}
+
+function checkedPush(root, { pushRemote, branch, logFile }) {
+  const args = ['run', 'push:checked', '--', pushRemote, `${branch}:refs/heads/${branch}`];
+  const receiptFile = path.join(root, TRANSPORT_RECEIPT_PATH);
+  const receiptBefore = fs.existsSync(receiptFile) ? fs.readFileSync(receiptFile) : null;
+  let result = runLogged('npm', args, { cwd: root, logFile });
+  let retried = false;
+  const receiptAfter = fs.existsSync(receiptFile) ? fs.readFileSync(receiptFile) : null;
+  const newReceipt =
+    receiptAfter !== null && (receiptBefore === null || !receiptBefore.equals(receiptAfter));
+  if (result.status !== 0 && newReceipt) {
+    retried = true;
+    result = runLogged('npm', ['run', 'push:retry'], { cwd: root, logFile });
+  }
+  if (result.status !== 0) {
+    throw new ReleaseAutomationError(
+      'managed_push_failed',
+      'The repository-managed push did not complete.',
+      {
+        exitCode: EXIT.gate,
+        details: { log_path: relativeLogPath(root, logFile), transport_retry_attempted: retried },
+        nextAction: `Inspect ${relativeLogPath(root, logFile)} and fix the first failing gate or transport error.`,
+      },
+    );
+  }
+  return { status: 'passed', transport_retry_attempted: retried };
+}
+
+function baseResult(command, options) {
+  return {
+    schema_version: SCHEMA_VERSION,
+    command,
+    mode: options.apply ? 'apply' : 'dry-run',
+    complete: true,
+    repository: options.repository,
+    issue: options.issue,
+    warnings: [],
+  };
+}
+
+function releaseHelp() {
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Create/update the branch, run the managed push gate, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
+}
+
+function promotionHelp() {
+  return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the dev merge SHA, run main-semantic managed gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its required GitHub checks pass.`;
+}
+
+function releasePrBody({ issue, version, baseSha, candidateSha }) {
+  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
+}
+
+function releaseMarker(body) {
+  const pattern = new RegExp(
+    `<!-- ${RELEASE_MARKER_PREFIX.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')} issue=(\\d+) version=(\\d+\\.\\d+\\.\\d+) base=([0-9a-f]{40}) candidate=([0-9a-f]{40}) -->`,
+    'u',
+  );
+  const match = pattern.exec(String(body || ''));
+  if (!match) {
+    throw new ReleaseAutomationError(
+      'release_pr_identity_missing',
+      'The merged PR was not created by release-to-dev or its identity marker is invalid.',
+      {
+        exitCode: EXIT.drift,
+        nextAction:
+          'Pass the merged PR returned by release-to-dev; do not use a feature or back-merge PR.',
+      },
+    );
+  }
+  return {
+    issue: Number(match[1]),
+    version: match[2],
+    baseSha: match[3],
+    candidateSha: match[4],
+  };
+}
+
+function promotionPrBody({ issue, version, releasePr, devSha, mainSha }) {
+  return `## Promotion Contract\n\n- base branch: \`main\`\n- source identity: exact dev commit \`${devSha}\` from Release PR #${releasePr}\n- back-merge required after merge: No; this is the normal dev-to-main path\n- root workspace integration expected: Yes, after promotion\n\n## Linked Issue\n\nCloses #${issue}\n\n## Promotion Facts\n\n- Promote version \`${version}\` from immutable dev candidate \`${devSha}\`.\n- Main baseline observed before promotion: \`${mainSha}\`.\n\n## Validation Facts\n\n- The promotion branch points exactly at the merged dev candidate.\n- The repository-managed main-semantic push ran release preflight and the complete local gate before this PR was created.\n- GitHub Release Gate remains authoritative for the exact PR base/head.\n\n## Integration And Follow-Up\n\n- After merge, verify the canonical main release/tag workflow and update the root workspace pointer to the eligible main commit.\n`;
+}
+
+function executeReleaseToDev(options, cwd = process.cwd()) {
+  const root = repositoryRoot(cwd);
+  const initialStatus = worktreeStatus(root);
+  if (options.apply) assertClean(root);
+  const target = parseStableVersion(options.version, '--version');
+  const branch = options.branch || `codex/issue-${options.issue}-version-v${target.text}`;
+  validateBranch(root, branch, 'release-to-dev');
+  const owner = options.headOwner || remoteOwner(root, options.pushRemote);
+  const remoteDevSha = remoteBranchSha(root, options.remote, 'dev');
+  const existing = findOpenPr(root, {
+    repository: options.repository,
+    base: 'dev',
+    owner,
+    branch,
+  });
+  if (existing) {
+    const marker = releaseMarker(existing.body);
+    const existingVersions = readGithubVersions(root, options.repository, existing.headRefOid);
+    if (
+      marker.issue !== options.issue ||
+      marker.version !== target.text ||
+      marker.baseSha !== remoteDevSha ||
+      marker.candidateSha !== existing.headRefOid ||
+      existingVersions.version !== target.text
+    ) {
+      throw new ReleaseAutomationError(
+        'release_pr_identity_mismatch',
+        'The existing Release PR does not match the requested Issue, version, dev base, or candidate.',
+        {
+          exitCode: EXIT.drift,
+          details: {
+            expected_issue: options.issue,
+            expected_version: target.text,
+            current_dev_sha: remoteDevSha,
+            marker,
+            pr_head_sha: existing.headRefOid,
+            candidate_version: existingVersions.version,
+          },
+          nextAction:
+            'Review the existing PR and dev drift; use a new version/candidate only after resolving the mismatch.',
+        },
+      );
+    }
+    return {
+      ...baseResult('release-to-dev', options),
+      status: 'ready_for_review',
+      reused: true,
+      version: target.text,
+      base_branch: 'dev',
+      branch,
+      candidate_sha: existing.headRefOid,
+      pull_request: { number: existing.number, url: existing.url },
+      gate: { status: 'previously_completed', log_path: null },
+      next_action: 'merge_release_pr',
+    };
+  }
+
+  const baseVersions = readGithubVersions(root, options.repository, remoteDevSha);
+  const localRemoteDev = git(
+    root,
+    ['rev-parse', '--verify', `refs/remotes/${options.remote}/dev`],
+    {
+      allowFailure: true,
+    },
+  );
+  const current = parseStableVersion(baseVersions.version, 'current dev version');
+  if (compareVersions(target, current) <= 0) {
+    throw new ReleaseAutomationError(
+      'version_not_incremented',
+      'The target version must be greater than the current dev version.',
+      {
+        details: { current_version: current.text, target_version: target.text },
+      },
+    );
+  }
+
+  const plannedLog = resolveLogFile(
+    root,
+    options.logDirectory,
+    `release-to-dev-v${target.text}.log`,
+  );
+  if (!options.apply) {
+    return {
+      ...baseResult('release-to-dev', options),
+      status: 'planned',
+      reused: false,
+      version: target.text,
+      current_version: baseVersions?.version ?? null,
+      base_branch: 'dev',
+      base_sha: remoteDevSha,
+      branch,
+      pull_request: null,
+      gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
+      next_action: `rerun_with_apply`,
+      warnings: [
+        ...(localRemoteDev.stdout?.trim() !== remoteDevSha
+          ? [
+              `${options.remote}/dev is stale locally; --apply will fetch and revalidate the exact remote SHA.`,
+            ]
+          : []),
+        ...(initialStatus
+          ? ['The worktree is dirty; --apply will fail until local changes are resolved.']
+          : []),
+      ],
+    };
+  }
+
+  git(root, ['fetch', options.remote, 'dev']);
+  const fetchedDevSha = git(root, ['rev-parse', `${options.remote}/dev^{commit}`]).stdout.trim();
+  if (fetchedDevSha !== remoteDevSha) {
+    throw new ReleaseAutomationError(
+      'dev_changed_during_release',
+      'dev changed while the release command was preparing.',
+      {
+        exitCode: EXIT.drift,
+        details: { observed_before: remoteDevSha, observed_after: fetchedDevSha },
+        nextAction:
+          'Rerun the dry-run against the new dev head and choose the intended release candidate.',
+      },
+    );
+  }
+  const fetchedCurrent = parseStableVersion(
+    readVersionsAtRef(root, `${options.remote}/dev`).version,
+    'dev version',
+  );
+  if (compareVersions(target, fetchedCurrent) <= 0) {
+    throw new ReleaseAutomationError(
+      'version_not_incremented',
+      'The target version must be greater than the current dev version.',
+      {
+        details: { current_version: fetchedCurrent.text, target_version: target.text },
+      },
+    );
+  }
+
+  const pushRemoteSha = optionalRemoteBranchSha(root, options.pushRemote, branch);
+  if (!localBranchExists(root, branch) && pushRemoteSha) {
+    git(root, ['fetch', options.pushRemote, `${branch}:refs/heads/${branch}`]);
+  }
+  switchToBranch(root, branch, `${options.remote}/dev`);
+  assertClean(root);
+  let candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
+  if (candidateSha === fetchedDevSha) {
+    writeVersionFiles(root, target.text);
+    const changed = git(root, ['status', '--porcelain=v1', '--untracked-files=all'])
+      .stdout.trim()
+      .split(/\r?\n/u)
+      .filter(Boolean);
+    const unexpected = changed.filter(
+      (line) => !/ (?:package\.json|package-lock\.json)$/u.test(line),
+    );
+    if (unexpected.length > 0) {
+      throw new ReleaseAutomationError(
+        'unexpected_version_changes',
+        'Updating the version changed unexpected paths.',
+        {
+          details: { changed_paths: changed },
+        },
+      );
+    }
+    git(root, ['add', '--', 'package.json', 'package-lock.json']);
+    git(root, ['commit', '-m', `chore: prepare v${target.text} (#${options.issue})`]);
+    candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
+  } else {
+    if (!isAncestor(root, fetchedDevSha, candidateSha)) {
+      throw new ReleaseAutomationError(
+        'release_branch_diverged',
+        'The existing release branch is not based on the selected dev SHA.',
+        {
+          exitCode: EXIT.drift,
+          details: { branch, dev_sha: fetchedDevSha, branch_sha: candidateSha },
+        },
+      );
+    }
+    const branchVersion = readVersionsAtRef(root, 'HEAD').version;
+    if (branchVersion !== target.text) {
+      throw new ReleaseAutomationError(
+        'release_branch_version_mismatch',
+        'The existing release branch has a different version.',
+        {
+          exitCode: EXIT.drift,
+          details: { branch, expected: target.text, actual: branchVersion },
+        },
+      );
+    }
+  }
+
+  let gate = { status: 'previously_completed', transport_retry_attempted: false };
+  if (optionalRemoteBranchSha(root, options.pushRemote, branch) !== candidateSha) {
+    gate = checkedPush(root, {
+      pushRemote: options.pushRemote,
+      branch,
+      logFile: plannedLog,
+    });
+  }
+  const verifiedRemoteSha = remoteBranchSha(root, options.pushRemote, branch);
+  if (verifiedRemoteSha !== candidateSha) {
+    throw new ReleaseAutomationError(
+      'remote_candidate_mismatch',
+      'The pushed release branch does not match the local candidate.',
+      {
+        exitCode: EXIT.drift,
+        details: { local_sha: candidateSha, remote_sha: verifiedRemoteSha },
+      },
+    );
+  }
+  const pullRequest = createPullRequest(root, {
+    repository: options.repository,
+    base: 'dev',
+    owner,
+    branch,
+    title: `chore: prepare v${target.text} on dev`,
+    body: releasePrBody({
+      issue: options.issue,
+      version: target.text,
+      baseSha: fetchedDevSha,
+      candidateSha,
+    }),
+  });
+  return {
+    ...baseResult('release-to-dev', options),
+    status: 'ready_for_review',
+    reused: false,
+    version: target.text,
+    base_branch: 'dev',
+    base_sha: fetchedDevSha,
+    branch,
+    candidate_sha: candidateSha,
+    pull_request: pullRequest,
+    gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
+    next_action: 'merge_release_pr',
+  };
+}
+
+function executePromoteDevToMain(options, cwd = process.cwd()) {
+  const root = repositoryRoot(cwd);
+  const initialStatus = worktreeStatus(root);
+  if (options.apply) assertClean(root);
+  const releasePr = viewPullRequest(root, options.repository, options.releasePr);
+  if (releasePr.state !== 'MERGED' || !releasePr.mergedAt || !releasePr.mergeCommit?.oid) {
+    throw new ReleaseAutomationError(
+      'release_pr_not_merged',
+      `Release PR #${options.releasePr} is not merged.`,
+      {
+        details: { state: releasePr.state, merged_at: releasePr.mergedAt ?? null },
+        nextAction: `Merge ${releasePr.url || `Release PR #${options.releasePr}`} into dev before promotion.`,
+      },
+    );
+  }
+  if (releasePr.baseRefName !== 'dev') {
+    throw new ReleaseAutomationError(
+      'release_pr_wrong_base',
+      `Release PR #${options.releasePr} did not target dev.`,
+      {
+        exitCode: EXIT.drift,
+        details: { base_branch: releasePr.baseRefName },
+      },
+    );
+  }
+  const devMergeSha = releasePr.mergeCommit.oid;
+  const versions = readGithubVersions(root, options.repository, devMergeSha);
+  const version = parseStableVersion(versions.version, 'merged release version').text;
+  const marker = releaseMarker(releasePr.body);
+  if (
+    marker.issue !== options.issue ||
+    marker.version !== version ||
+    marker.baseSha !== releasePr.baseRefOid ||
+    marker.candidateSha !== releasePr.headRefOid
+  ) {
+    throw new ReleaseAutomationError(
+      'release_pr_identity_mismatch',
+      'The merged Release PR marker does not match its Issue, version, or head SHA.',
+      {
+        exitCode: EXIT.drift,
+        details: {
+          expected_issue: options.issue,
+          marker,
+          merged_version: version,
+          pr_base_sha: releasePr.baseRefOid,
+          pr_head_sha: releasePr.headRefOid,
+        },
+      },
+    );
+  }
+  const branch = options.branch || `codex/promote-v${version}-dev-to-main-issue-${options.issue}`;
+  validateBranch(root, branch, 'promote-dev-to-main');
+  const owner = options.headOwner || remoteOwner(root, options.pushRemote);
+  const existing = findOpenPr(root, {
+    repository: options.repository,
+    base: 'main',
+    owner,
+    branch,
+  });
+  if (existing) {
+    if (existing.headRefOid !== devMergeSha) {
+      throw new ReleaseAutomationError(
+        'promotion_pr_candidate_mismatch',
+        'The existing promotion PR points at a different candidate.',
+        {
+          exitCode: EXIT.drift,
+          details: {
+            expected_sha: devMergeSha,
+            actual_sha: existing.headRefOid,
+            url: existing.url,
+          },
+        },
+      );
+    }
+    return {
+      ...baseResult('promote-dev-to-main', options),
+      status: 'ready_for_review',
+      reused: true,
+      version,
+      release_pr: { number: releasePr.number, url: releasePr.url },
+      dev_merge_sha: devMergeSha,
+      branch,
+      candidate_sha: existing.headRefOid,
+      pull_request: { number: existing.number, url: existing.url },
+      gate: { status: 'previously_completed', log_path: null },
+      next_action: 'merge_promotion_pr',
+    };
+  }
+
+  const remoteDevSha = remoteBranchSha(root, options.remote, 'dev');
+  const remoteMainSha = remoteBranchSha(root, options.remote, 'main');
+  if (remoteDevSha !== devMergeSha) {
+    throw new ReleaseAutomationError(
+      'dev_advanced_after_release',
+      'dev no longer points at the merged Release PR candidate.',
+      {
+        exitCode: EXIT.drift,
+        details: { release_merge_sha: devMergeSha, current_dev_sha: remoteDevSha },
+        nextAction:
+          'Choose whether the newer dev commits belong in this release; then prepare a new Release PR/candidate.',
+      },
+    );
+  }
+  const plannedLog = resolveLogFile(
+    root,
+    options.logDirectory,
+    `promote-v${version}-dev-to-main.log`,
+  );
+  if (!options.apply) {
+    return {
+      ...baseResult('promote-dev-to-main', options),
+      status: 'planned',
+      reused: false,
+      version,
+      release_pr: { number: releasePr.number, url: releasePr.url },
+      dev_merge_sha: devMergeSha,
+      main_sha: remoteMainSha,
+      branch,
+      pull_request: null,
+      gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
+      warnings: initialStatus
+        ? ['The worktree is dirty; --apply will fail until local changes are resolved.']
+        : [],
+      next_action: 'rerun_with_apply',
+    };
+  }
+
+  git(root, ['fetch', options.remote, 'dev', 'main']);
+  const fetchedDevSha = git(root, ['rev-parse', `${options.remote}/dev^{commit}`]).stdout.trim();
+  const fetchedMainSha = git(root, ['rev-parse', `${options.remote}/main^{commit}`]).stdout.trim();
+  if (fetchedDevSha !== devMergeSha || fetchedMainSha !== remoteMainSha) {
+    throw new ReleaseAutomationError(
+      'promotion_refs_changed',
+      'dev or main changed while promotion was preparing.',
+      {
+        exitCode: EXIT.drift,
+        details: {
+          expected_dev_sha: devMergeSha,
+          actual_dev_sha: fetchedDevSha,
+          expected_main_sha: remoteMainSha,
+          actual_main_sha: fetchedMainSha,
+        },
+        nextAction: 'Rerun the dry-run and review the new dev/main identities.',
+      },
+    );
+  }
+  if (!isAncestor(root, `${options.remote}/main`, `${options.remote}/dev`)) {
+    throw new ReleaseAutomationError(
+      'main_not_ancestor_of_dev',
+      'main is not an ancestor of the release candidate on dev.',
+      {
+        exitCode: EXIT.drift,
+        details: { main_sha: fetchedMainSha, dev_sha: fetchedDevSha },
+        nextAction:
+          'Reconcile main into dev through the governed hotfix back-merge path before promotion.',
+      },
+    );
+  }
+  const fetchedVersions = readVersionsAtRef(root, `${options.remote}/dev`);
+  if (fetchedVersions.version !== version) {
+    throw new ReleaseAutomationError(
+      'promotion_version_changed',
+      'The fetched dev candidate version differs from the merged PR identity.',
+      {
+        exitCode: EXIT.drift,
+        details: { expected: version, actual: fetchedVersions.version },
+      },
+    );
+  }
+
+  const remotePromotionSha = optionalRemoteBranchSha(root, options.pushRemote, branch);
+  if (!localBranchExists(root, branch) && remotePromotionSha) {
+    git(root, ['fetch', options.pushRemote, `${branch}:refs/heads/${branch}`]);
+  }
+  switchToBranch(root, branch, `${options.remote}/dev`);
+  assertClean(root);
+  const candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
+  if (candidateSha !== devMergeSha) {
+    throw new ReleaseAutomationError(
+      'promotion_branch_candidate_mismatch',
+      'The promotion branch does not point exactly at the dev merge candidate.',
+      {
+        exitCode: EXIT.drift,
+        details: { branch, expected_sha: devMergeSha, actual_sha: candidateSha },
+      },
+    );
+  }
+
+  let gate = { status: 'previously_completed', transport_retry_attempted: false };
+  if (optionalRemoteBranchSha(root, options.pushRemote, branch) !== candidateSha) {
+    gate = checkedPush(root, {
+      pushRemote: options.pushRemote,
+      branch,
+      logFile: plannedLog,
+    });
+  }
+  const verifiedRemoteSha = remoteBranchSha(root, options.pushRemote, branch);
+  if (verifiedRemoteSha !== candidateSha) {
+    throw new ReleaseAutomationError(
+      'remote_promotion_mismatch',
+      'The pushed promotion branch does not match the dev candidate.',
+      {
+        exitCode: EXIT.drift,
+        details: { local_sha: candidateSha, remote_sha: verifiedRemoteSha },
+      },
+    );
+  }
+  const pullRequest = createPullRequest(root, {
+    repository: options.repository,
+    base: 'main',
+    owner,
+    branch,
+    title: `chore: promote v${version} dev to main`,
+    body: promotionPrBody({
+      issue: options.issue,
+      version,
+      releasePr: options.releasePr,
+      devSha: devMergeSha,
+      mainSha: fetchedMainSha,
+    }),
+  });
+  return {
+    ...baseResult('promote-dev-to-main', options),
+    status: 'ready_for_review',
+    reused: false,
+    version,
+    release_pr: { number: releasePr.number, url: releasePr.url },
+    dev_merge_sha: devMergeSha,
+    main_sha: fetchedMainSha,
+    branch,
+    candidate_sha: candidateSha,
+    pull_request: pullRequest,
+    gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
+    next_action: 'merge_promotion_pr',
+  };
+}
+
+function humanResult(result) {
+  if (result.status === 'failed') {
+    return `${result.command}: failed\n\nSummary:\n- ${result.error.code}: ${result.error.message}\n\nNext:\n- ${result.next_action || 'Fix the reported precondition and rerun the same command.'}\n`;
+  }
+  const target = result.pull_request?.url || result.branch || result.repository;
+  return `${result.command}: ${result.status}\n\nSummary:\n- ${target}\n- version: ${result.version ?? 'not resolved'}\n- candidate: ${result.candidate_sha ?? result.dev_merge_sha ?? result.base_sha ?? 'not created'}\n\nNext:\n- ${result.next_action}\n`;
+}
+
+function emitResult(result, format = 'json') {
+  process.stdout.write(
+    format === 'human' ? humanResult(result) : `${JSON.stringify(result, null, 2)}\n`,
+  );
+}
+
+function failureResult(command, options, error) {
+  const normalized =
+    error instanceof ReleaseAutomationError
+      ? error
+      : new ReleaseAutomationError('unexpected_error', error.message || String(error), {
+          exitCode: EXIT.external,
+        });
+  return {
+    result: {
+      schema_version: SCHEMA_VERSION,
+      command,
+      mode: options?.apply ? 'apply' : 'dry-run',
+      complete: false,
+      status: 'failed',
+      error: {
+        code: normalized.code,
+        message: normalized.message,
+        details: normalized.details,
+      },
+      next_action: normalized.nextAction,
+    },
+    exitCode: normalized.exitCode,
+  };
+}
+
+function runCli(command, argv, cwd = process.cwd()) {
+  let options;
+  try {
+    options = parseArguments(argv, command);
+    if (options.help) {
+      process.stdout.write(`${command === 'release-to-dev' ? releaseHelp() : promotionHelp()}\n`);
+      return 0;
+    }
+    const result =
+      command === 'release-to-dev'
+        ? executeReleaseToDev(options, cwd)
+        : executePromoteDevToMain(options, cwd);
+    emitResult(result, options.format);
+    return 0;
+  } catch (error) {
+    const failure = failureResult(command, options, error);
+    emitResult(failure.result, options?.format || 'json');
+    return failure.exitCode;
+  }
+}
+
+module.exports = {
+  DEFAULT_CANONICAL_REMOTE,
+  DEFAULT_LOG_DIRECTORY,
+  DEFAULT_PUSH_REMOTE,
+  DEFAULT_REPOSITORY,
+  EXIT,
+  ReleaseAutomationError,
+  SCHEMA_VERSION,
+  branchHasMainSemantics,
+  compareVersions,
+  executePromoteDevToMain,
+  executeReleaseToDev,
+  failureResult,
+  parseArguments,
+  parseStableVersion,
+  promotionHelp,
+  releaseHelp,
+  runCli,
+  versionsFromDocuments,
+};

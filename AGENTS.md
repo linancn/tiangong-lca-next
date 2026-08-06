@@ -26,6 +26,7 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
+  - scripts/release/**
   - scripts/qualification/**
   - docker/e2e/**
   - tests/e2e/i18n/**
@@ -33,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump remains within existing frontend ownership, production-hotfix, quality-gate, and root-integration boundaries.'
+lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
+lastReviewedNote: 'Reviewed for Issue #778: deterministic release-to-dev and dev-to-main promotion commands preserve the existing branch, managed-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -149,6 +150,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - credential-free production preflight for main candidates: `npm run release:preflight`
+- deterministic version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> [--apply]`
+- deterministic merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <number> --issue <number> [--apply]`
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries

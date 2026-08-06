@@ -19,6 +19,7 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
@@ -29,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump creates no new repository-wide test backlog item.'
+lastReviewedCommit: 5230dce5fe83e39e0e9cfd66280a6baebace60df
+lastReviewedNote: 'Reviewed for Issue #778: deterministic release-command proof is closed by focused hermetic contracts and creates no repository-wide test backlog.'
 ---
 
 # Testing Execution State
@@ -53,6 +54,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
+- Issue #778 adds hermetic contract coverage for the two deterministic release commands: JSON purity, non-mutating dry-run, exact version fields, large-lockfile blob fallback, checked-push delegation, idempotent PR reuse, immutable promotion identity, and fail-closed branch/dev/marker drift. It creates no open coverage queue.
 - Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - Issue #748 adds a git-tracked scope-closure qualification adapter for the Next owner. Its isolated Chromium flow proves preparing, available, expired, and unavailable presentation; direct document navigation for bounded XLSX and machine-readable manifests; integrity/expiry metadata; localized 410 rerun guidance; and anonymous, standard-user, administrator, owner, and data-product-manager routing without production targets or mutation.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
