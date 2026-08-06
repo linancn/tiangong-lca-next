@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e9e5e1f26b0cc9ac32975bfb2df29be133355f31
+lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
 lastReviewedNote: 'Reviewed for Issue #778: the two deterministic commands are the preferred normal release-PR flow; version-to-dev may close bounded review-only Docpact evidence, while promotion remains immutable.'
 ---
 

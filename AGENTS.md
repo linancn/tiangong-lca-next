@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: e9e5e1f26b0cc9ac32975bfb2df29be133355f31
+lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
 lastReviewedNote: 'Reviewed for Issue #778: the two deterministic release commands are the preferred normal PR path; pure version releases may automatically record review-only Docpact evidence, while immutable dev-to-main promotion never mutates the candidate.'
 related:
   - .docpact/config.yaml

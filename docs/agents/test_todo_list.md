@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: a944c3ab2825aeb2f496621672cb1a378d7bc970
+lastReviewedCommit: 9e21c68e29c49a9ed7fc0f8311d52a5c21a4e648
 lastReviewedNote: 'Reviewed for Issue #778: automatic release review is closed by bounded fixed-point, semantic-diff, and real-Docpact proof without opening a test backlog.'
 ---
 
