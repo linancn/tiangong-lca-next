@@ -30,8 +30,8 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 269ea042df47fbdca5cda5128d0fe56aa6b2dea6
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc
 lastReviewedNote: 'Reviewed for Issue #778: release proof evaluates candidate and cumulative paths independently with bounded Docpact behavior.'
 ---
 
