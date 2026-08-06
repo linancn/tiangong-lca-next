@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f11fd05c9704ae8621f2fd35f7e3d5fb00f44ffc
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
 lastReviewedNote: 'Reviewed for Issue #778: release-to-dev independently preflights candidate and cumulative Docpact obligations before immutable promotion.'
 related:
   - .docpact/config.yaml
