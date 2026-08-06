@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative path coverage extends bounded proof without changing test strategy.'
+lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
+lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: release qualification plus schema-boundary, façade, workflow, and mirror regressions close the change without altering the long-term test strategy.'
 ---
 
 # Testing Strategy

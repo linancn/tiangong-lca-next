@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: version-to-dev closes bounded candidate and cumulative promotion-range evidence before immutable promotion.'
+lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
+lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: version-to-dev qualification remains intact, and the schema façade cutover uses the existing full checked-push validation contract.'
 ---
 
 # Development Bootstrap

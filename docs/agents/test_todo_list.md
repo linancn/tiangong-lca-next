@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: dual-scope release preflight is closed by hermetic regression proof without opening a test backlog.'
+lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
+lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: release preflight and the schema façade regression matrix are closed by hermetic proof without opening a test backlog.'
 ---
 
 # Testing Execution State
