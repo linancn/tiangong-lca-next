@@ -27,9 +27,9 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Added the persisted Calculation Bundle and canonical release readback contract for Issue #606 without changing the reviewed static LCIA method bundle.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: distinguish LCIA result transport state from calculation-evidence trust while retaining fail-closed validation after successful responses.'
 ---
 
 # LCIA Method Bundle and Calculation Evidence Contract
@@ -72,6 +72,8 @@ Only `lca.calculation_evidence.v2` can establish service-result completeness. It
 `lcia_factor_coverage` is the single embedded truth source and uses `lcia.method_factor_coverage.matrix.v1`. It must include source, method, factor, and method-identity hashes; `count_unit=exchange_method_pair`; the four key dimensions; global counts; exactly one unique row for each of the 25 reviewed method identities; the same non-empty exchange observation count in every method row; and an evidence artifact when any pair is unmatched, invalid, or unsupported. Every count and derived aggregate must be a non-negative JavaScript safe integer. Global counts must equal the sum of method rows, and the global pair total must equal the per-method pair total times 25. A parallel coverage matrix, a missing identity hash, or any mismatch fails closed. Version 1 evidence remains displayable as legacy evidence but can never be labeled complete.
 
 Frontend inline gap evidence uses `lcia-uncharacterized-jsonl:v1`; Worker v2 evidence must use the external artifact format `lcia-uncharacterized-jsonl:v2`. Raw Worker/S3 artifact URLs are not trusted browser download links. Until Edge provides an authenticated or signed projection, the UI hides the production URL, shows immutable artifact hash/count, and permits downloading the evidence JSON. Explicit development loopback URLs may remain clickable. The UI shows localized complete, incomplete, failure, or source-mismatch notices plus method descriptions and IDs.
+
+Result-query state is not evidence state. A pending or failed Edge query shows only its calculation/query status and must not substitute absent response evidence with static Process evidence or label the transport failure as method-source drift. After a numerical service response succeeds, the returned calculation evidence is still mandatory and is validated fail closed; a successful response without valid evidence remains a genuine trust failure.
 
 ## Private-draft analysis scope
 

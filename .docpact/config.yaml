@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-02"
-lastReviewedCommit: "e0d81988621ef953fcc7b07d1713513cabfc63e8"
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the 60-pass/24-designed-skip, zero-external-request, zero-production-write result preserves the existing routing, testing-gate, release, and workspace-integration boundaries.'
+lastReviewedAt: '2026-08-06'
+lastReviewedCommit: '21a66d230858179097bba98e114f2aca9eefc9da'
+lastReviewedNote: 'Reviewed for Issue #771: the LCIA result-panel state fix remains routed through the existing frontend runtime, testing-gate, and workspace-integration ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

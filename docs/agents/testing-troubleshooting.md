@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: e0d81988621ef953fcc7b07d1713513cabfc63e8
-lastReviewedNote: 'Reviewed for Issue #756 after qualifying the current dev candidate: the existing clean-candidate, stale-receipt, Docker, and serial-gate guidance covered the 60-pass/24-designed-skip run without a new exception.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
+lastReviewedNote: 'Reviewed for Issue #771: the focused serial Jest command and existing gate troubleshooting remain sufficient; no new exception is required.'
 ---
 
 # Testing Troubleshooting
