@@ -394,6 +394,19 @@ describe('Users API service (src/services/users/api.ts)', () => {
   });
 
   describe('getUserInfoByEmail', () => {
+    it('returns a structured not-found result when the facade returns no candidate', async () => {
+      mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+      const result = await getUserInfoByEmail('missing@example.com');
+
+      expect(result).toEqual({
+        user: null,
+        contact: null,
+        success: false,
+        error: expect.any(Error),
+      });
+    });
+
     it('fetches user info including contact details', async () => {
       const mockUserData = {
         id: 'user-123',
@@ -525,6 +538,12 @@ describe('Users API service (src/services/users/api.ts)', () => {
   });
 
   describe('getUserDetail', () => {
+    it('returns null data when the identity facade has no current-user row', async () => {
+      mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+      await expect(getUserDetail()).resolves.toEqual({ data: null, error: null });
+    });
+
     it('fetches contact details for the current user', async () => {
       mockGetCurrentUser.mockResolvedValue({
         userid: 'current-user-id',

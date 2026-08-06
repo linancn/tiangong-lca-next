@@ -1145,4 +1145,86 @@ describe('teams api task-4 boundaries', () => {
       },
     });
   });
+
+  it('maps direct facade owner fields and normalizes null list payloads', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'team-owned',
+            owner_user_id: 'owner-1',
+            owner_email: 'owner@example.com',
+            total_count: 1,
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(getTeams()).resolves.toEqual({
+      data: [
+        {
+          id: 'team-owned',
+          user_id: 'owner-1',
+          ownerEmail: 'owner@example.com',
+        },
+      ],
+      success: true,
+    });
+    await expect(getTeams()).resolves.toEqual({ data: [], success: true });
+    await expect(getTeamsByKeyword('none')).resolves.toEqual({ data: [], success: true });
+  });
+
+  it('handles direct facade errors and null payloads for paged team lists', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({ data: null, error: { message: 'ranked unavailable' } })
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: 'unranked unavailable' } })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(getAllTableTeams({ current: 1, pageSize: 10 }, 'manageSystem')).resolves.toEqual({
+      data: [],
+      success: false,
+      total: 0,
+    });
+    await expect(getAllTableTeams({ current: 1, pageSize: 10 }, 'joinTeam')).resolves.toEqual({
+      data: [],
+      success: true,
+      total: 0,
+    });
+    await expect(getUnrankedTeams({ current: 1, pageSize: 10 })).resolves.toEqual({
+      data: [],
+      success: true,
+      total: 0,
+    });
+    await expect(getUnrankedTeams({ current: 1, pageSize: 10 })).resolves.toEqual({
+      data: [],
+      success: true,
+      total: 0,
+    });
+  });
+
+  it('preserves a non-zero total from the direct unranked-team facade', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({
+        data: [{ id: 'team-unranked', rank: 0, total_count: 3 }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: 'team-unranked-without-total', rank: 0 }],
+        error: null,
+      });
+
+    await expect(getUnrankedTeams({ current: 1, pageSize: 10 })).resolves.toEqual({
+      data: [{ id: 'team-unranked', rank: 0 }],
+      success: true,
+      total: 3,
+    });
+    await expect(getUnrankedTeams({ current: 1, pageSize: 10 })).resolves.toEqual({
+      data: [{ id: 'team-unranked-without-total', rank: 0 }],
+      success: true,
+      total: 0,
+    });
+  });
 });

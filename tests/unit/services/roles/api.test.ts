@@ -1488,4 +1488,68 @@ describe('roles api task-4 boundaries', () => {
     });
     consoleSpy.mockRestore();
   });
+
+  it('covers fail-closed and sparse membership facade responses', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({ data: null, error: { message: 'team-a failed' } })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(getUserIdsByTeamIds(['team-a', 'team-b'])).resolves.toEqual([]);
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: { message: 'membership failed' } });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({
+      data: null,
+      error: { message: 'membership failed' },
+    });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({
+      data: [
+        { user_id: 'self-user', team_id: SYSTEM_TEAM_ID, role: 'member' },
+        { user_id: 'self-user', team_id: 'team-1', role: 'admin' },
+      ],
+      error: null,
+    });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({
+      data: [{ user_id: 'self-user', team_id: 'team-1', role: 'admin' }],
+      error: null,
+    });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({ data: [], error: null });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'another-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByuserId('target-user')).resolves.toEqual({ data: [], error: null });
+  });
+
+  it('normalizes empty system and current-user membership results', async () => {
+    supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
+    await expect(getSystemUserRoleApi()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getLatestRolesOfMine()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({
+      data: [{ user_id: 'another-user', team_id: 'team-1', role: 'member' }],
+      error: null,
+    });
+    await expect(getLatestRolesOfMine()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByUserId()).resolves.toEqual([]);
+  });
 });

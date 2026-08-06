@@ -2093,6 +2093,12 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   describe('getTeamIdByUserId', () => {
+    it('returns null when the membership RPC omits its data payload', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+      await expect(generalApi.getTeamIdByUserId()).resolves.toBeNull();
+    });
+
     it('should return null when user has no team', async () => {
       mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
       const payload = { data: [] };
@@ -4112,6 +4118,23 @@ describe('Edge Cases and Error Handling', () => {
       );
 
       expect(result).toEqual({ data: [], success: false, total: 0 });
+    });
+
+    it('normalizes a null errored query payload before returning failure', async () => {
+      const builder = createQueryBuilder({ data: null, error: { message: 'query failed' } });
+      mockFrom.mockReturnValueOnce(builder);
+
+      await expect(
+        generalApi.getAllVersions(
+          'name',
+          'contacts',
+          sampleId,
+          { pageSize: 10, current: 1 },
+          {},
+          'en',
+          'tg',
+        ),
+      ).resolves.toEqual({ data: [], success: false, total: 0 });
     });
   });
 

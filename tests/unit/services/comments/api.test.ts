@@ -429,6 +429,23 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
   });
 
   describe('getUserManageComments', () => {
+    it('returns an empty failure without querying when the reviewer id is unavailable', async () => {
+      mockGetUserId.mockResolvedValueOnce('');
+
+      await expect(getUserManageComments()).resolves.toEqual({ data: [], error: true });
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('handles null queue payloads, query errors, and rows without review state codes', async () => {
+      const queryError = { message: 'queue unavailable' };
+      mockRpc
+        .mockResolvedValueOnce({ data: null, error: queryError })
+        .mockResolvedValueOnce({ data: [{ id: 'review-without-state' }], error: null })
+        .mockResolvedValueOnce({ data: [], error: null });
+
+      await expect(getUserManageComments()).resolves.toEqual({ data: [], error: queryError });
+    });
+
     it('fetches all user management comments with specific state codes', async () => {
       mockRpc
         .mockResolvedValueOnce({

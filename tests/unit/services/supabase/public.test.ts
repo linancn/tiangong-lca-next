@@ -2,6 +2,7 @@ import { PUBLIC_ENTITY_TABLES, publicEntity } from '@/services/supabase/public';
 
 const mockSchema = jest.fn();
 const mockFrom = jest.fn();
+const { supabase: mockSupabase } = jest.requireMock('@/services/supabase');
 
 jest.mock('@/services/supabase', () => ({
   supabase: {
@@ -26,5 +27,21 @@ describe('public entity schema boundary', () => {
     expect(() => publicEntity('roles')).toThrow('Unsupported public entity table: roles');
     expect(mockSchema).not.toHaveBeenCalled();
     expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('fails closed outside tests when explicit schema selection is unavailable', () => {
+    const originalSchema = mockSupabase.schema;
+    const originalNodeEnv = process.env.NODE_ENV;
+    mockSupabase.schema = undefined;
+    process.env.NODE_ENV = 'production';
+
+    try {
+      expect(() => publicEntity('processes')).toThrow(
+        'Supabase client does not support explicit schema selection',
+      );
+    } finally {
+      mockSupabase.schema = originalSchema;
+      process.env.NODE_ENV = originalNodeEnv;
+    }
   });
 });

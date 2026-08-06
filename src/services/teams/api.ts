@@ -177,7 +177,7 @@ export async function getAllTableTeams(
     const rows = (data ?? []) as TeamListRpcRow[];
     const teams = await enrichMissingTeamOwners(mapTeamListRows(rows));
     return Promise.resolve({
-      data: teams ?? [],
+      data: teams,
       success: true,
       total: Number(rows[0]?.total_count ?? 0) || 0,
     });
@@ -363,7 +363,7 @@ export async function getUnrankedTeams(params: { pageSize?: number; current?: nu
     return Promise.resolve({
       data: teams,
       success: true,
-      total: Number(rows[0]?.total_count ?? 0) || 0,
+      total: Number(rows[0].total_count ?? 0) || 0,
     });
   } catch (error) {
     return Promise.resolve({

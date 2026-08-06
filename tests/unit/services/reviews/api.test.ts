@@ -2493,6 +2493,11 @@ describe('getLatestReviewOfMine', () => {
           modified_at: '2026-08-07T02:00:00Z',
           json: { user: { id: 'user-2' } },
         },
+        {
+          id: 'review-older',
+          modified_at: '2026-08-06T01:00:00Z',
+          json: { user: { id: 'user-1' } },
+        },
       ],
       error: null,
     });
@@ -2508,6 +2513,13 @@ describe('getLatestReviewOfMine', () => {
     expect(result).toEqual([
       expect.objectContaining({ id: 'review-1', json: { user: { id: 'user-1' } } }),
     ]);
+  });
+
+  it('returns an empty list when the review query has no data payload', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(reviewsApi.getLatestReviewOfMine()).resolves.toEqual([]);
   });
 });
 
