@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: the existing mocked-service component pattern cleanly proves that transport failures do not produce evidence-mismatch UI.'
+lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
+lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump does not change or add a testing pattern.'
 ---
 
 # Testing Patterns Reference
