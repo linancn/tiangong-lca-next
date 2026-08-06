@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: focused Process LCIA result-panel tests cover query/evidence state separation while the existing lint, build, and managed-gate requirements remain accurate.'
+lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
+lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump uses the existing release preflight, full gate, and version-driven publication requirements.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
