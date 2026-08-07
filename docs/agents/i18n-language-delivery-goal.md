@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 115cc3eaf0d09657c7d6a91acd7b5128f5e639eb
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 24bcbe3f969618dc5ad45961c654111717312a67
 lastReviewedNote: 'Reviewed for Issues #745 and #780: fresh authenticated production evidence covers the three v2 grouped-queue/progress RPCs with created=cleaned=1 and leaked=0; no digest-compatibility skip was used, and the matching credential-free qualification also passed.'
 baselineObservedAt: 2026-07-18
 related:
