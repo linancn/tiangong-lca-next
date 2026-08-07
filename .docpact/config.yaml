@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: "2026-08-07"
 lastReviewedCommit: "d5a00e96462fa9feb74bc91e752b3d1e8e7004b8"
-lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged release automation and grouped-review candidate preserve the existing ownership and integration routes.'
+lastReviewedNote: 'Reviewed for Issues #778 and #780: existing ownership routes cover the merged grouped-review candidate plus automatic qualification evidence, composed-candidate preflight, release orchestration, tests, and governed release docs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

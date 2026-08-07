@@ -153,6 +153,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
 - preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
+- `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
