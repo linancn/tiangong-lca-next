@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: dual-scope release preflight is closed by hermetic regression proof without opening a test backlog.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: hermetic release-preflight and grouped-review regression proof leave no new repository-wide test backlog.'
 ---
 
 # Testing Execution State

@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
-lastReviewedNote: 'Reviewed for Issue #778: cumulative release changes preserve the documented data, frontend runtime, team, and review-management boundaries.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: release automation preserves existing runtime boundaries while grouped-review queue, selection, and dataset views remain database-authority consumers.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
