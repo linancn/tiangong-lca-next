@@ -376,7 +376,7 @@ export async function getSystemUserRoleApi() {
     const membership = data?.find(
       (membership: MemberListRow) =>
         membership.team_id === SYSTEM_TEAM_ID &&
-        ['owner', 'admin', 'member'].includes(membership.role),
+        ['owner', 'admin', 'member', 'data_product_manager'].includes(membership.role),
     );
     return membership ? { user_id: membership.user_id, role: membership.role } : null;
   } catch (error) {
