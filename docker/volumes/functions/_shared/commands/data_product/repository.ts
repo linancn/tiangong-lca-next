@@ -14,6 +14,7 @@ import {
   callTaskSummaryV2FeedRpc,
   type DataProductRpcResult,
 } from '../../db_rpc/data_product_commands.ts';
+import { queryLcaSnapshotCandidates } from '../../lca_snapshot_capabilities.ts';
 import { createSupabaseServiceClient } from '../../supabase_client.ts';
 import {
   enqueueCalculatorWorkerJob,
@@ -290,7 +291,7 @@ export function createDataProductCommandRepository(
       callLciaResultPackagePublishRpc(actorClient, request, audit),
     unpublishPublication: (request, audit) =>
       callDataProductPackageUnpublishRpc(actorClient, request, audit),
-    listPublications: (request) => listLciaResultPublications(serviceSupabase, request),
+    listPublications: (request) => listLciaResultPublications(actorClient, request),
   };
 }
 
@@ -684,155 +685,35 @@ function isValidSignedUrl(value: string): boolean {
 }
 
 async function listLciaResultPublications(
-  supabase: SupabaseClient,
+  supabase: RpcClient,
   request: DataProductPublicationListRequest,
 ): Promise<DataProductRpcResult> {
-  const { data: publicationRows, error: publicationError } = await supabase
-    .from('lcia_result_publications')
-    .select(
-      [
-        'id',
-        'package_id',
-        'publication_series_key',
-        'publication_channel',
-        'visibility_scope',
-        'is_current',
-        'status',
-        'display_default_impact_category',
-        'published_at',
-        'unpublished_at',
-        'reason',
-        'created_at',
-        'updated_at',
-      ].join(','),
-    )
-    .order('is_current', { ascending: false })
-    .order('published_at', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(request.limit ?? 50);
-
-  if (publicationError) {
+  const { data, error } = await supabase.rpc('svc_data_product_publication_list', {
+    p_limit: request.limit ?? 50,
+  });
+  if (error) {
     return {
       ok: false,
       code: 'lcia_result_publications_lookup_failed',
       status: 500,
       message: 'Failed to read LCIA result publications',
-      details: publicationError.message,
+      details: error.message,
     };
   }
-
-  const publications = ((publicationRows ?? []) as unknown[]).filter(isRecord);
-  const packageIds = uniqueStrings(
-    publications
-      .map((publication) => stringValue(publication.package_id))
-      .filter((value): value is string => Boolean(value)),
-  );
-  const { data: packageRows, error: packageError } =
-    packageIds.length === 0
-      ? { data: [], error: null }
-      : await supabase
-          .from('lcia_result_packages')
-          .select(
-            [
-              'id',
-              'build_worker_job_id',
-              'package_version',
-              'coverage_mode',
-              'eligible_input_count',
-              'included_input_count',
-              'default_impact_category',
-              'status',
-              'created_at',
-              'updated_at',
-            ].join(','),
-          )
-          .in('id', packageIds);
-
-  if (packageError) {
+  if (!isRecord(data) || data.ok !== true) {
     return {
       ok: false,
-      code: 'lcia_result_publication_packages_lookup_failed',
-      status: 500,
-      message: 'Failed to read LCIA result package metadata for publications',
-      details: packageError.message,
+      code:
+        stringValue(isRecord(data) ? data.code : null) ?? 'lcia_result_publications_lookup_failed',
+      status: numberValue(isRecord(data) ? data.status : null) ?? 500,
+      message: 'Failed to read LCIA result publications',
+      details: data,
     };
-  }
-
-  const packagesById = new Map<string, Record<string, unknown>>();
-  for (const row of (packageRows ?? []) as unknown[]) {
-    if (!isRecord(row)) {
-      continue;
-    }
-    const packageId = stringValue(row.id);
-    if (packageId) {
-      packagesById.set(packageId, row);
-    }
-  }
-
-  const workerJobIds = uniqueStrings(
-    Array.from(packagesById.values())
-      .map((row) => stringValue(row.build_worker_job_id))
-      .filter((value): value is string => Boolean(value)),
-  );
-  const { data: workerRows, error: workerError } =
-    workerJobIds.length === 0
-      ? { data: [], error: null }
-      : await supabase.from('worker_jobs').select('id,payload_json').in('id', workerJobIds);
-
-  if (workerError) {
-    return {
-      ok: false,
-      code: 'lcia_result_publication_worker_jobs_lookup_failed',
-      status: 500,
-      message: 'Failed to read LCIA result package worker metadata',
-      details: workerError.message,
-    };
-  }
-
-  const workerPayloadById = new Map<string, Record<string, unknown>>();
-  for (const row of (workerRows ?? []) as unknown[]) {
-    if (!isRecord(row)) {
-      continue;
-    }
-    const workerJobId = stringValue(row.id);
-    const payload = recordValue(row, 'payload_json');
-    if (workerJobId && payload) {
-      workerPayloadById.set(workerJobId, payload);
-    }
   }
 
   return {
     ok: true,
-    data: publications.map((publication) => {
-      const packageId = stringValue(publication.package_id);
-      const packageRow = packageId ? packagesById.get(packageId) : undefined;
-      const workerPayload = packageRow
-        ? workerPayloadById.get(stringValue(packageRow.build_worker_job_id) ?? '')
-        : undefined;
-      const packageName = firstStringValue(
-        workerPayload?.name,
-        workerPayload?.packageName,
-        workerPayload?.package_name,
-      );
-      return {
-        publicationId: stringValue(publication.id),
-        packageId,
-        packageName,
-        packageVersion: stringValue(packageRow?.package_version),
-        status: stringValue(publication.status),
-        isCurrent: Boolean(publication.is_current),
-        publicationSeriesKey: stringValue(publication.publication_series_key),
-        publicationChannel: stringValue(publication.publication_channel),
-        visibilityScope: stringValue(publication.visibility_scope),
-        displayDefaultImpactCategory: stringValue(publication.display_default_impact_category),
-        publishedAt: stringValue(publication.published_at),
-        unpublishedAt: stringValue(publication.unpublished_at),
-        reason: stringValue(publication.reason),
-        eligibleInputCount: numberValue(packageRow?.eligible_input_count),
-        includedInputCount: numberValue(packageRow?.included_input_count),
-        packageStatus: stringValue(packageRow?.status),
-      };
-    }),
+    data: Array.isArray(data.data) ? data.data : [],
   };
 }
 
@@ -849,26 +730,22 @@ async function fetchSnapshotArtifactUrl(
       details?: unknown;
     }
 > {
-  const { data, error } = await supabase
-    .from('lca_snapshot_artifacts')
-    .select('snapshot_id,artifact_url,status,created_at')
-    .eq('snapshot_id', snapshotId)
-    .eq('status', 'ready')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
+  const result = await queryLcaSnapshotCandidates(supabase, {
+    scope: 'data_product',
+    snapshotId,
+    limit: 1,
+  });
+  if (!result.ok) {
     return {
       ok: false,
       code: 'snapshot_artifact_lookup_failed',
       status: 500,
       message: 'Failed to read snapshot artifact metadata',
-      details: error.message,
+      details: result,
     };
   }
-
-  if (!data?.artifact_url) {
+  const candidate = result.data[0];
+  if (!candidate?.artifact.artifactUrl) {
     return {
       ok: false,
       code: 'snapshot_not_ready',
@@ -880,8 +757,8 @@ async function fetchSnapshotArtifactUrl(
   return {
     ok: true,
     data: {
-      snapshotId: String(data.snapshot_id),
-      artifactUrl: String(data.artifact_url),
+      snapshotId: candidate.snapshotId,
+      artifactUrl: candidate.artifact.artifactUrl,
     },
   };
 }
@@ -1010,6 +887,7 @@ async function fetchProcessMetadata(
     processRefs.map((process) => processLookupKey(process.processId, process.processVersion)),
   );
   const { data, error } = await supabase
+    .schema('public')
     .from('processes')
     .select('id,version,json,json_ordered')
     .in('id', processIds)
@@ -1061,6 +939,7 @@ async function fetchImpactMetadata(
     }
 > {
   const { data, error } = await supabase
+    .schema('public')
     .from('lciamethods')
     .select('id,version,json,json_ordered')
     .in('id', impactCategoryIds)

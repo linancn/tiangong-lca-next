@@ -834,6 +834,7 @@ Deno.serve(async (req) => {
       if (!markdown) throw new Error(`batch index ${index}: Empty extracted markdown`);
 
       const { error: updateError } = await supabaseClient
+        .schema('public')
         .from('processes')
         .update({
           extracted_md: markdown,

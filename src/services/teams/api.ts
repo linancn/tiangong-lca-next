@@ -22,6 +22,53 @@ type TeamMemberRpcRow = {
 
 type TeamTableType = 'joinTeam' | 'manageSystem';
 
+type TeamListRpcRow = {
+  id: string;
+  json: any;
+  rank: number;
+  is_public: boolean;
+  created_at?: string;
+  modified_at?: string;
+  owner_user_id?: string;
+  owner_email?: string;
+  total_count?: number | string;
+};
+
+const mapTeamListRows = (rows: TeamListRpcRow[]) =>
+  rows.map(({ owner_user_id, owner_email, ...team }) => {
+    delete team.total_count;
+    return {
+      ...team,
+      ...(owner_user_id ? { user_id: owner_user_id } : {}),
+      ...(owner_email ? { ownerEmail: owner_email } : {}),
+    };
+  });
+
+const enrichMissingTeamOwners = async (teams: ReturnType<typeof mapTeamListRows>) => {
+  const missingOwnerTeams = teams.filter((team) => !team.user_id);
+  if (missingOwnerTeams.length === 0) {
+    return teams;
+  }
+
+  const memberships = await getUserIdsByTeamIds(missingOwnerTeams.map((team) => team.id));
+  memberships.forEach((membership) => {
+    if (membership.role !== 'owner') return;
+    const team = teams.find((item) => item.id === membership.team_id);
+    if (team) team.user_id = membership.user_id;
+  });
+  const identities = await getUserEmailByUserIds(
+    memberships.map((membership) => membership.user_id),
+  );
+  identities.forEach((identity) => {
+    const team = teams.find((item) => item.user_id === identity.id);
+    if (team) team.ownerEmail = identity.email;
+  });
+  return teams;
+};
+
+const getTeamListMode = (tableType?: TeamTableType) =>
+  tableType === 'joinTeam' ? 'public' : 'ranked';
+
 async function invokeTeamCommand(command: string, body: Record<string, unknown>) {
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
@@ -73,42 +120,31 @@ const normalizeTeamInviteError = (error: any) => {
 };
 
 export async function getTeams() {
-  const result = await supabase
-    .from('teams')
-    .select(
-      `
-      id,
-      json,
-      rank
-      `,
-    )
-    .gt('rank', 0)
-    .order('rank', { ascending: true });
-  if (result.error) {
+  const { data, error } = await supabase.rpc('qry_team_list', {
+    p_mode: 'ranked',
+    p_keyword: null,
+    p_page: 1,
+    p_page_size: 100,
+  });
+  if (error) {
     return Promise.resolve({
       data: [],
       success: false,
     });
   }
   return Promise.resolve({
-    data: result.data ?? [],
+    data: mapTeamListRows((data ?? []) as TeamListRpcRow[]),
     success: true,
   });
 }
 
 export async function getTeamsByKeyword(keyword: string, tableType?: TeamTableType) {
-  const query = supabase
-    .from('teams')
-    .select('*')
-    .or(`json->title->0->>#text.ilike.%${keyword}%,json->title->1->>#text.ilike.%${keyword}%`);
-
-  if (tableType === 'joinTeam') {
-    query.eq('is_public', true);
-  } else if (tableType === 'manageSystem') {
-    query.gt('rank', 0);
-  }
-
-  const result = await query;
+  const result = await supabase.rpc('qry_team_list', {
+    p_mode: getTeamListMode(tableType),
+    p_keyword: keyword,
+    p_page: 1,
+    p_page_size: 100,
+  });
 
   if (result.error) {
     return Promise.resolve({
@@ -118,7 +154,7 @@ export async function getTeamsByKeyword(keyword: string, tableType?: TeamTableTy
   }
 
   return Promise.resolve({
-    data: result.data ?? [],
+    data: mapTeamListRows((result.data ?? []) as TeamListRpcRow[]),
     success: true,
   });
 }
@@ -129,42 +165,21 @@ export async function getAllTableTeams(
   // sort: Record<string, SortOrder>,
 ) {
   try {
-    const query = supabase
-      .from('teams')
-      .select('*', { count: 'exact' })
-      .order('rank', { ascending: true })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
-    if (tableType === 'joinTeam') {
-      query.eq('is_public', true);
-    } else {
-      query.gt('rank', 0);
+    const { data, error } = await supabase.rpc('qry_team_list', {
+      p_mode: getTeamListMode(tableType),
+      p_keyword: null,
+      p_page: params.current ?? 1,
+      p_page_size: params.pageSize ?? 10,
+    });
+    if (error) {
+      throw error;
     }
-    const { data: teams, count } = await query;
-
-    if (teams && teams.length > 0) {
-      const teamIds = teams.map((item) => item.id);
-      const users = await getUserIdsByTeamIds(teamIds);
-      users.forEach((user) => {
-        const team = teams.find((item) => item.id === user.team_id);
-        if (team && user.role === 'owner') {
-          team.user_id = user.user_id;
-        }
-      });
-      const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
-      userEmails.forEach((user) => {
-        const team = teams.find((item) => item.user_id === user.id);
-        if (team) {
-          team.ownerEmail = user.email;
-        }
-      });
-    }
+    const rows = (data ?? []) as TeamListRpcRow[];
+    const teams = await enrichMissingTeamOwners(mapTeamListRows(rows));
     return Promise.resolve({
-      data: teams ?? [],
+      data: teams,
       success: true,
-      total: count ?? 0,
+      total: Number(rows[0]?.total_count ?? 0) || 0,
     });
   } catch (error) {
     return Promise.resolve({
@@ -215,16 +230,7 @@ export async function getTeamById(id: string) {
       success: false,
     });
   }
-  const result = await supabase
-    .from('teams')
-    .select(
-      `
-      id,
-      json,
-      rank
-      `,
-    )
-    .eq('id', id);
+  const result = await supabase.rpc('qry_team_get', { p_team_id: id });
   return Promise.resolve({
     data: result.data ?? [],
     success: true,
@@ -257,21 +263,8 @@ export async function editTeamMessage(id: string, data: any, rank?: number, is_p
 }
 
 export async function getTeamMessageApi(id: string) {
-  const result = await supabase.from('teams').select('*').eq('id', id);
-  return result;
+  return supabase.rpc('qry_team_get', { p_team_id: id });
 }
-
-// const getTeamsByIds = async (teamIds: string[]) => {
-//   try {
-//     const { error, data: result } = await supabase.from('teams').select('*').in('id', teamIds);
-//     if (error) {
-//       throw error;
-//     }
-//     return result;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
 export async function getTeamMembersApi(
   params: { pageSize: number; current: number },
@@ -352,41 +345,25 @@ export async function addTeam(id: string, data: any, rank: number, is_public: bo
 
 export async function getUnrankedTeams(params: { pageSize?: number; current?: number }) {
   try {
-    const { data: teams, count } = await supabase
-      .from('teams')
-      .select('*', { count: 'exact' })
-      .eq('rank', 0)
-      .order('created_at', { ascending: false })
-      .range(
-        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-      );
-
-    if (teams && teams.length > 0) {
-      const teamIds = teams.map((item) => item.id);
-      const users = await getUserIdsByTeamIds(teamIds);
-      users.forEach((user) => {
-        const team = teams.find((item) => item.id === user.team_id);
-        if (team && user.role === 'owner') {
-          team.user_id = user.user_id;
-        }
-      });
-      const userEmails = await getUserEmailByUserIds(users.map((item) => item.user_id));
-
-      userEmails.forEach((user) => {
-        const team = teams.find((item) => item.user_id === user.id);
-        if (team) {
-          team.ownerEmail = user.email;
-        }
-      });
-    } else {
+    const { data, error } = await supabase.rpc('qry_team_list', {
+      p_mode: 'unranked',
+      p_keyword: null,
+      p_page: params.current ?? 1,
+      p_page_size: params.pageSize ?? 10,
+    });
+    if (error) {
+      throw error;
+    }
+    const rows = (data ?? []) as TeamListRpcRow[];
+    const teams = await enrichMissingTeamOwners(mapTeamListRows(rows));
+    if (teams.length === 0) {
       throw new Error('No teams found');
     }
 
     return Promise.resolve({
       data: teams,
       success: true,
-      total: count || 0,
+      total: Number(rows[0].total_count ?? 0) || 0,
     });
   } catch (error) {
     return Promise.resolve({

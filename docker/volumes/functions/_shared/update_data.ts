@@ -8,6 +8,7 @@ async function updateData(
   supabase: SupabaseClient,
 ) {
   const updateResult = await supabase
+    .schema('public')
     .from(table)
     .update(data)
     .eq('id', id)

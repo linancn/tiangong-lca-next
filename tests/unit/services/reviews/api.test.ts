@@ -93,23 +93,6 @@ jest.mock('@/services/users/api', () => ({
 
 import * as reviewsApi from '@/services/reviews/api';
 
-const createQueryBuilder = <T>(resolvedValue: T) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    gt: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(resolvedValue),
-    then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
-  };
-  builder.in = jest.fn().mockReturnThis();
-  return builder;
-};
-
 beforeAll(() => {
   realGenProcessName = jest.requireActual('@/services/processes/util').genProcessName;
 });
@@ -2498,17 +2481,45 @@ describe('getLatestReviewOfMine', () => {
 
   it('returns latest review when user exists', async () => {
     mockGetUserId.mockResolvedValueOnce('user-1');
-    const supabaseResult = { data: [{ id: 'review-1' }] };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-1',
+          modified_at: '2026-08-07T01:00:00Z',
+          json: { user: { id: 'user-1' } },
+        },
+        {
+          id: 'review-other',
+          modified_at: '2026-08-07T02:00:00Z',
+          json: { user: { id: 'user-2' } },
+        },
+        {
+          id: 'review-older',
+          modified_at: '2026-08-06T01:00:00Z',
+          json: { user: { id: 'user-1' } },
+        },
+      ],
+      error: null,
+    });
 
     const result = await reviewsApi.getLatestReviewOfMine();
 
-    expect(builder.filter).toHaveBeenCalledWith('json->user->>id', 'eq', 'user-1');
-    expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -1]);
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(builder.limit).toHaveBeenCalledWith(1);
-    expect(result).toEqual([{ id: 'review-1' }]);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_data_id: null,
+      p_data_version: null,
+      p_review_ids: null,
+      p_state_codes: [1, 2, -1],
+    });
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'review-1', json: { user: { id: 'user-1' } } }),
+    ]);
+  });
+
+  it('returns an empty list when the review query has no data payload', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(reviewsApi.getLatestReviewOfMine()).resolves.toEqual([]);
   });
 });
 

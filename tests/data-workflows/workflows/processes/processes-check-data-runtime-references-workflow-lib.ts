@@ -1994,6 +1994,7 @@ async function queryDatasetRecord(
   version: string,
 ): Promise<WorkflowDatasetRecord> {
   const result = await supabase
+    .schema('public')
     .from(table)
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

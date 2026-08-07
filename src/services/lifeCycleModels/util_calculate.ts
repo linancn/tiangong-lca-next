@@ -12,7 +12,7 @@ import {
 } from '../general/util';
 import { serializeStaticLciaReport } from '../lciaMethods/evidence';
 import { LCIAResultCalculationWithEvidence } from '../lciaMethods/util';
-import { supabase } from '../supabase';
+import { publicEntity } from '../supabase/public';
 import { Up2DownEdge } from './data';
 import { toReferenceProcessKey } from './referenceProcess';
 import { allocateSupplyToDemand } from './util_allocate_supply_demand';
@@ -1259,8 +1259,7 @@ export async function genLifeCycleModelProcesses(
     processKeys.length === 0
       ? []
       : ((
-          await supabase
-            .from('processes')
+          await publicEntity('processes')
             .select(
               `
       id,

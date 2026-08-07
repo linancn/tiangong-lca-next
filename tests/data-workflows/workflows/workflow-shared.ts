@@ -403,6 +403,9 @@ export async function createSignedInUserSession(
   credential: ResolvedCredential,
 ): Promise<SignedInUserSession> {
   const client = createClient(supabaseTarget.apiUrl, supabaseTarget.publishableKey, {
+    db: {
+      schema: 'api',
+    },
     auth: {
       autoRefreshToken: false,
       detectSessionInUrl: false,

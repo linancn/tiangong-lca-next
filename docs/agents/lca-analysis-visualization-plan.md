@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: dd6bbb898c24ec29fb3a1449f2cf2862f6031ca5
 lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change the proposed analysis views, chart rules, or traceability contract.'
 ---
 

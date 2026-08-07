@@ -13,6 +13,7 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedFlowCategorizationAll } from '../classifications/cache';
@@ -818,8 +819,7 @@ export async function getFlowProperties(params: { id: string; version: string }[
   let ids = _ids.filter((id) => id && id.length === 36);
 
   if (ids.length > 0) {
-    const { data } = await supabase
-      .from('flows')
+    const { data } = await publicEntity('flows')
       .select(selectStr)
       .in('id', ids)
       .order('version', { ascending: false });
@@ -869,18 +869,16 @@ export async function getReferenceProperty(id: string, version: string) {
     `;
   if (id && id.length === 36) {
     if (version && version.length === 9) {
-      result = await supabase.from('flows').select(selectStr).eq('id', id).eq('version', version);
+      result = await publicEntity('flows').select(selectStr).eq('id', id).eq('version', version);
       if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from('flows')
+        result = await publicEntity('flows')
           .select(selectStr)
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
       }
     } else {
-      result = await supabase
-        .from('flows')
+      result = await publicEntity('flows')
         .select(selectStr)
         .eq('id', id)
         .order('version', { ascending: false })
@@ -913,13 +911,21 @@ export async function getReferenceProperty(id: string, version: string) {
 export async function getFlowStateCodeByIdsAndVersions(
   params: { id: string; version: string }[],
   lang: string,
-) {
+): Promise<{
+  error: unknown;
+  data: Array<{
+    id: string;
+    version?: string;
+    stateCode?: number;
+    classification?: string;
+    locationOfSupply?: string;
+  }>;
+}> {
   if (!params || params.length === 0) {
     return { error: null, data: [] };
   }
   const filter = params.map((p) => `and(id.eq.${p.id},version.eq.${p.version})`).join(',');
-  const result = await supabase
-    .from('flows')
+  const result = await publicEntity('flows')
     .select(
       `
       state_code,

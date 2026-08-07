@@ -92,6 +92,10 @@ const createRolesQueryBuilder = createQueryBuilder;
 describe('roles api task-4 boundaries', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    supabase.rpc.mockReset();
+    supabase.rpc.mockResolvedValue({ data: [], error: null });
+    getUserId.mockReset();
+    getUserIdByEmail.mockReset();
     supabase.auth.getSession.mockResolvedValue({
       data: {
         session: {
@@ -136,12 +140,42 @@ describe('roles api task-4 boundaries', () => {
       data: [{ team_id: 'team-id', role: 'admin' }],
     });
 
-    supabase.from
-      .mockReturnValueOnce(userTeamBuilder)
-      .mockReturnValueOnce(userRolesBuilder)
-      .mockReturnValueOnce(byUserBuilder)
-      .mockReturnValueOnce(byTeamIdsBuilder)
-      .mockReturnValueOnce(roleByCurrentUserBuilder);
+    void userTeamBuilder;
+    void userRolesBuilder;
+    void byUserBuilder;
+    void byTeamIdsBuilder;
+    void roleByCurrentUserBuilder;
+    supabase.rpc
+      .mockResolvedValueOnce({ data: [{ team_id: 'team-id', role: 'admin' }], error: null })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: '11111111-1111-1111-1111-111111111111',
+            team_id: 'team-id',
+            role: 'admin',
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: [{ team_id: 'team-id', role: 'admin' }], error: null })
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-id', team_id: 'team-id', role: 'member' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-a', team_id: 'team-a', role: 'owner' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: '11111111-1111-1111-1111-111111111111',
+            team_id: 'team-id',
+            role: 'admin',
+          },
+        ],
+        error: null,
+      });
 
     const teamId = await getUserTeamId();
     const userRoles = await getUserRoles();
@@ -602,11 +636,21 @@ describe('roles api task-4 boundaries', () => {
       data: null,
       error: { message: 'review failed' },
     });
-    supabase.from
-      .mockReturnValueOnce(systemSuccessBuilder)
-      .mockReturnValueOnce(systemFailureBuilder)
-      .mockReturnValueOnce(reviewSuccessBuilder)
-      .mockReturnValueOnce(reviewFailureBuilder);
+    void systemSuccessBuilder;
+    void systemFailureBuilder;
+    void reviewSuccessBuilder;
+    void reviewFailureBuilder;
+    supabase.rpc
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-id', team_id: SYSTEM_TEAM_ID, role: 'member' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'system failed' } })
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-id', team_id: SYSTEM_TEAM_ID, role: 'review-member' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: { message: 'review failed' } });
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const systemSuccess = await getSystemUserRoleApi();
@@ -867,16 +911,25 @@ describe('roles api task-4 boundaries', () => {
   });
 
   it('loads the latest non-system role rows for the current user and short-circuits missing ids', async () => {
-    const latestRolesBuilder = createQueryBuilder({
-      data: { team_id: 'team-id', role: 'member' },
+    supabase.rpc.mockResolvedValueOnce({
+      data: [
+        {
+          user_id: '11111111-1111-1111-1111-111111111111',
+          team_id: 'team-id',
+          role: 'member',
+        },
+      ],
+      error: null,
     });
-    supabase.from.mockReturnValueOnce(latestRolesBuilder);
 
     const successResult = await getLatestRolesOfMine();
 
-    expect(latestRolesBuilder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(latestRolesBuilder.limit).toHaveBeenCalledWith(1);
-    expect(successResult).toEqual({ team_id: 'team-id', role: 'member' });
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_membership_get_mine');
+    expect(successResult).toEqual({
+      user_id: '11111111-1111-1111-1111-111111111111',
+      team_id: 'team-id',
+      role: 'member',
+    });
 
     getUserId.mockResolvedValueOnce(null);
 
@@ -1013,13 +1066,13 @@ describe('roles api task-4 boundaries', () => {
   });
 
   it('loads non-system roles for specific users and the current user', async () => {
-    const byUserBuilder = createRolesQueryBuilder({
-      data: [{ user_id: 'user-1', team_id: 'team-1', role: 'member' }],
-    });
-    const currentUserBuilder = createRolesQueryBuilder({
-      data: null,
-    });
-    supabase.from.mockReturnValueOnce(byUserBuilder).mockReturnValueOnce(currentUserBuilder);
+    supabase.rpc
+      .mockResolvedValueOnce({ data: [{ team_id: 'team-1', role: 'member' }], error: null })
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-1', team_id: 'team-1', role: 'member' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: null });
 
     const byUser = await getRoleByuserId('user-1');
     const mine = await getUserRoles();
@@ -1029,8 +1082,11 @@ describe('roles api task-4 boundaries', () => {
         data: [{ user_id: 'user-1', team_id: 'team-1', role: 'member' }],
       }),
     );
-    expect(byUserBuilder.eq).toHaveBeenCalledWith('user_id', 'user-1');
-    expect(byUserBuilder.neq).toHaveBeenCalledWith('team_id', SYSTEM_TEAM_ID);
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_membership_get_mine');
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'qry_team_get_member_list',
+      expect.objectContaining({ p_team_id: 'team-1' }),
+    );
     expect(mine).toEqual({
       data: [],
       success: true,
@@ -1038,23 +1094,33 @@ describe('roles api task-4 boundaries', () => {
   });
 
   it('returns raw role rows for team-id lookups and role-by-user queries', async () => {
-    const idsBuilder = createRolesQueryBuilder({
-      data: null,
-    });
-    const byUserBuilder = createRolesQueryBuilder({
-      data: [{ team_id: 'team-1', role: 'member' }],
-    });
-    supabase.from.mockReturnValueOnce(idsBuilder).mockReturnValueOnce(byUserBuilder);
+    supabase.rpc
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: '11111111-1111-1111-1111-111111111111',
+            team_id: 'team-1',
+            role: 'member',
+          },
+        ],
+        error: null,
+      });
 
     const ids = await getUserIdsByTeamIds(['team-1', 'team-2']);
     const byUser = await getRoleByUserId();
 
-    expect(idsBuilder.in).toHaveBeenCalledWith('team_id', ['team-1', 'team-2']);
-    expect(ids).toEqual([]);
-    expect(byUserBuilder.eq).toHaveBeenCalledWith(
-      'user_id',
-      '11111111-1111-1111-1111-111111111111',
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'qry_team_get_member_list',
+      expect.objectContaining({ p_team_id: 'team-1' }),
     );
+    expect(supabase.rpc).toHaveBeenCalledWith(
+      'qry_team_get_member_list',
+      expect.objectContaining({ p_team_id: 'team-2' }),
+    );
+    expect(ids).toEqual([]);
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_membership_get_mine');
     expect(byUser).toEqual([{ team_id: 'team-1', role: 'member' }]);
   });
 
@@ -1083,11 +1149,21 @@ describe('roles api task-4 boundaries', () => {
       data: null,
       error: new Error('query failed'),
     });
-    supabase.from
-      .mockReturnValueOnce(systemSuccessBuilder)
-      .mockReturnValueOnce(systemFailureBuilder)
-      .mockReturnValueOnce(reviewSuccessBuilder)
-      .mockReturnValueOnce(reviewFailureBuilder);
+    void systemSuccessBuilder;
+    void systemFailureBuilder;
+    void reviewSuccessBuilder;
+    void reviewFailureBuilder;
+    supabase.rpc
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-id', team_id: SYSTEM_TEAM_ID, role: 'admin' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: new Error('query failed') })
+      .mockResolvedValueOnce({
+        data: [{ user_id: 'user-id', team_id: SYSTEM_TEAM_ID, role: 'review-member' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: null, error: new Error('query failed') });
 
     expect(await getSystemUserRoleApi()).toEqual({ user_id: 'user-id', role: 'admin' });
     expect(await getSystemUserRoleApi()).toBeNull();
@@ -1180,22 +1256,23 @@ describe('roles api task-4 boundaries', () => {
     const noUser = await getLatestRolesOfMine();
 
     expect(noUser).toBeNull();
-    expect(supabase.from).not.toHaveBeenCalled();
+    expect(supabase.rpc).not.toHaveBeenCalled();
 
     getUserId.mockResolvedValueOnce('user-9');
-    const latestBuilder = createRolesQueryBuilder({
-      data: { id: 'role-1', role: 'admin' },
+    supabase.rpc.mockResolvedValueOnce({
+      data: [{ id: 'role-1', user_id: 'user-9', team_id: 'team-1', role: 'admin' }],
+      error: null,
     });
-    supabase.from.mockReturnValueOnce(latestBuilder);
 
     const latest = await getLatestRolesOfMine();
 
-    expect(latestBuilder.select).toHaveBeenCalledWith('*');
-    expect(latestBuilder.eq).toHaveBeenCalledWith('user_id', 'user-9');
-    expect(latestBuilder.in).toHaveBeenCalledWith('role', ['admin', 'member', 'is_invited']);
-    expect(latestBuilder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(latestBuilder.limit).toHaveBeenCalledWith(1);
-    expect(latest).toEqual({ id: 'role-1', role: 'admin' });
+    expect(supabase.rpc).toHaveBeenCalledWith('qry_membership_get_mine');
+    expect(latest).toEqual({
+      id: 'role-1',
+      user_id: 'user-9',
+      team_id: 'team-1',
+      role: 'admin',
+    });
   });
 
   it('routes addRoleApi through review, system, and team commands with sparse auth headers', async () => {
@@ -1410,5 +1487,69 @@ describe('roles api task-4 boundaries', () => {
       message: 'blocked',
     });
     consoleSpy.mockRestore();
+  });
+
+  it('covers fail-closed and sparse membership facade responses', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({ data: null, error: { message: 'team-a failed' } })
+      .mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(getUserIdsByTeamIds(['team-a', 'team-b'])).resolves.toEqual([]);
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: { message: 'membership failed' } });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({
+      data: null,
+      error: { message: 'membership failed' },
+    });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({
+      data: [
+        { user_id: 'self-user', team_id: SYSTEM_TEAM_ID, role: 'member' },
+        { user_id: 'self-user', team_id: 'team-1', role: 'admin' },
+      ],
+      error: null,
+    });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({
+      data: [{ user_id: 'self-user', team_id: 'team-1', role: 'admin' }],
+      error: null,
+    });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'self-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByuserId('self-user')).resolves.toEqual({ data: [], error: null });
+
+    supabase.auth.getSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'another-user' } } },
+    });
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByuserId('target-user')).resolves.toEqual({ data: [], error: null });
+  });
+
+  it('normalizes empty system and current-user membership results', async () => {
+    supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
+    await expect(getSystemUserRoleApi()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getLatestRolesOfMine()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({
+      data: [{ user_id: 'another-user', team_id: 'team-1', role: 'member' }],
+      error: null,
+    });
+    await expect(getLatestRolesOfMine()).resolves.toBeNull();
+
+    getUserId.mockResolvedValueOnce('user-empty');
+    supabase.rpc.mockResolvedValueOnce({ data: null, error: null });
+    await expect(getRoleByUserId()).resolves.toEqual([]);
   });
 });

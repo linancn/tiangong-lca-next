@@ -429,30 +429,60 @@ describe('Comments API service (src/services/comments/api.ts)', () => {
   });
 
   describe('getUserManageComments', () => {
+    it('returns an empty failure without querying when the reviewer id is unavailable', async () => {
+      mockGetUserId.mockResolvedValueOnce('');
+
+      await expect(getUserManageComments()).resolves.toEqual({ data: [], error: true });
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it('handles null queue payloads, query errors, and rows without review state codes', async () => {
+      const queryError = { message: 'queue unavailable' };
+      mockRpc
+        .mockResolvedValueOnce({ data: null, error: queryError })
+        .mockResolvedValueOnce({ data: [{ id: 'review-without-state' }], error: null })
+        .mockResolvedValueOnce({ data: [], error: null });
+
+      await expect(getUserManageComments()).resolves.toEqual({ data: [], error: queryError });
+    });
+
     it('fetches all user management comments with specific state codes', async () => {
-      const mockData = [
-        { review_id: 'review-1', state_code: 0, reviewer_id: 'user-1' },
-        { review_id: 'review-2', state_code: 1, reviewer_id: 'user-2' },
-      ];
-
-      const mockFilter = jest.fn().mockResolvedValue({ data: mockData, error: null });
-      const builder: any = {
-        select: jest.fn().mockReturnThis(),
-        in: jest.fn().mockReturnThis(),
-        filter: mockFilter,
-      };
-
-      mockFrom.mockReturnValue(builder);
+      mockRpc
+        .mockResolvedValueOnce({
+          data: [{ id: 'review-1', review_state_code: 1, comment_state_code: 0 }],
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: [{ id: 'review-2', review_state_code: 2, comment_state_code: 1 }],
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: [], error: null });
 
       const result = await getUserManageComments();
 
-      expect(mockFrom).toHaveBeenCalledWith('comments');
-      expect(builder.select).toHaveBeenCalledWith(
-        'review_id,state_code,reviewer_id,reviews!inner(state_code)',
+      expect(mockRpc).toHaveBeenCalledTimes(3);
+      expect(mockRpc).toHaveBeenNthCalledWith(
+        1,
+        'qry_review_get_member_queue_items',
+        expect.objectContaining({ p_status: 'pending', p_page_size: 100 }),
       );
-      expect(builder.in).toHaveBeenCalledWith('state_code', [0, 1, 2]);
-      expect(mockFilter).toHaveBeenCalledWith('reviews.state_code', 'gt', 0);
-      expect(result).toEqual({ data: mockData, error: null });
+      expect(result).toEqual({
+        data: [
+          {
+            review_id: 'review-1',
+            state_code: 0,
+            reviewer_id: 'current-user-id',
+            reviews: { state_code: 1 },
+          },
+          {
+            review_id: 'review-2',
+            state_code: 1,
+            reviewer_id: 'current-user-id',
+            reviews: { state_code: 2 },
+          },
+        ],
+        error: null,
+      });
     });
   });
 

@@ -11,8 +11,7 @@ export type ActorContext = {
 };
 
 export type ActorContextResult =
-  | { ok: true; value: ActorContext }
-  | { ok: false; response: Response };
+  { ok: true; value: ActorContext } | { ok: false; response: Response };
 
 export type ResolveActorContextOptions = {
   authenticate?: typeof authenticateRequest;

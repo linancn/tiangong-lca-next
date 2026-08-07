@@ -1,6 +1,7 @@
 import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { message } from 'antd';
@@ -127,7 +128,7 @@ export async function attachStateCodesToRows<
     new Set(missingStateRows.map((row) => row.id).filter(Boolean)),
   ) as string[];
 
-  const { data, error } = await supabase.from(table).select('id,version,state_code').in('id', ids);
+  const { data, error } = await publicEntity(table).select('id,version,state_code').in('id', ids);
 
   if (error || !data) {
     return rows;
@@ -165,13 +166,12 @@ export async function attachStateCodesToRows<
 export async function exportDataApi(tableName: string, id: string, version: string) {
   let query;
   if (tableName === 'lifecyclemodels') {
-    query = supabase
-      .from(tableName)
+    query = publicEntity(tableName)
       .select(`json_ordered,json_tg`)
       .eq('id', id)
       .eq('version', version);
   } else {
-    query = supabase.from(tableName).select(`json_ordered`).eq('id', id).eq('version', version);
+    query = publicEntity(tableName).select(`json_ordered`).eq('id', id).eq('version', version);
   }
 
   const result = await query;
@@ -1017,8 +1017,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
     });
   }
 
-  const query = supabase
-    .from(table)
+  const query = publicEntity(table)
     .select('json,version, modified_at,id,state_code,rule_verification,user_id')
     .eq('id', id);
 
@@ -1053,8 +1052,7 @@ export async function getDataDetail(id: string, version: string, table: string) 
 export async function getDataDetailById(id: string, table: string) {
   let result: any = {};
   if (id && id.length === 36) {
-    result = await supabase
-      .from(table)
+    result = await publicEntity(table)
       .select('json,version, modified_at,id,state_code,rule_verification,user_id')
       .eq('id', id);
     return result;
@@ -1076,8 +1074,7 @@ export async function getRefData(
     });
   }
 
-  let query = supabase
-    .from(table)
+  let query = publicEntity(table)
     .select('id,version,state_code,json,rule_verification,user_id,team_id')
     .eq('id', id);
 
@@ -1126,7 +1123,7 @@ export async function getRefDataByIds(ids: string[], table: string) {
     });
   }
 
-  const result = await supabase.from(table).select('state_code,id,version').in('id', ids);
+  const result = await publicEntity(table).select('state_code,id,version').in('id', ids);
 
   return Promise.resolve({
     data: result.data,
@@ -1150,7 +1147,7 @@ export async function updateStateCodeApi(
 }
 
 export async function getReviewsOfData(id: string, version: string, table: string) {
-  let result = await supabase.from(table).select('reviews').eq('id', id).eq('version', version);
+  const result = await publicEntity(table).select('reviews').eq('id', id).eq('version', version);
   return result.data?.[0]?.reviews ?? [];
 }
 export async function updateDateToReviewState(
@@ -1170,21 +1167,18 @@ export async function updateDateToReviewState(
 
 // Get the team id of the user when the user is not an invited user and  is not a rejected user
 export async function getTeamIdByUserId() {
-  const session = await supabase.auth.getSession();
-  const { data } = await supabase
-    .from('roles')
-    .select(
-      ` 
-      user_id,
-      team_id,
-      role
-      `,
-    )
-    .eq('user_id', session?.data?.session?.user?.id)
-    .neq('team_id', '00000000-0000-0000-0000-000000000000');
+  const { data } = await supabase.rpc('qry_membership_get_mine');
+  const memberships = (data ?? []).filter(
+    (membership: { team_id: string }) =>
+      membership.team_id !== '00000000-0000-0000-0000-000000000000',
+  );
 
-  if (data && data.length > 0 && data[0].role !== 'is_invited' && data[0].role !== 'rejected') {
-    return data[0].team_id;
+  if (
+    memberships.length > 0 &&
+    memberships[0].role !== 'is_invited' &&
+    memberships[0].role !== 'rejected'
+  ) {
+    return memberships[0].team_id;
   }
   return null;
 }
@@ -1236,8 +1230,7 @@ export async function getAllVersions(
   const sortBy = Object.keys(sort)[0] ?? 'version';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  let query = supabase
-    .from(tableName)
+  let query = publicEntity(tableName)
     .select(
       `
     id,

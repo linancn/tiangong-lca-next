@@ -1039,6 +1039,7 @@ async function queryContactRecord(
   version: string,
 ): Promise<ContactWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('contacts')
     .select('id,json,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

@@ -577,6 +577,7 @@ describe('sources-edit-workflow-lib', () => {
                   signInWithPassword,
                   signOut,
                 },
+                schema: jest.fn().mockReturnValue({ from }),
                 from,
                 functions: {
                   invoke: functionsInvoke,

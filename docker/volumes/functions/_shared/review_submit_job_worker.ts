@@ -184,7 +184,7 @@ async function claimJobs(
   batchSize: number,
   staleSubmittingSeconds: number,
 ): Promise<ReviewSubmitJobResult[]> {
-  const { data, error } = await supabase.rpc('cmd_dataset_review_submit_job_claim', {
+  const { data, error } = await supabase.rpc('svc_dataset_review_submit_job_claim', {
     p_qty: batchSize,
     p_stale_submitting_seconds: staleSubmittingSeconds,
   });
@@ -206,7 +206,7 @@ async function recordJobResult(
   error?: { code?: string; message?: string; details?: unknown },
 ): Promise<void> {
   const { data, error: rpcError } = await supabase.rpc(
-    'cmd_dataset_review_submit_job_record_result',
+    'svc_dataset_review_submit_job_record_result',
     {
       p_job_id: job.reviewSubmitJobId,
       p_status: status,
@@ -241,7 +241,7 @@ async function submitFromJob(
   supabase: RpcClient,
   job: ReviewSubmitJobResult,
 ): Promise<{ ok: boolean; data?: unknown; code?: string; message?: string }> {
-  const { data, error } = await supabase.rpc('cmd_review_submit_from_job', {
+  const { data, error } = await supabase.rpc('svc_review_submit_from_job', {
     p_job_id: job.reviewSubmitJobId,
     p_audit: {
       command: 'review_submit_job_worker_submit',

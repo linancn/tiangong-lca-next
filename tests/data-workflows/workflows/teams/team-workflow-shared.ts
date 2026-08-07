@@ -760,7 +760,11 @@ export async function inviteTeamMember(input: {
   ownerSession: SignedInUserSession;
   teamId: string;
 }) {
-  const userId = await resolveUserIdByEmail(input.ownerSession.client, input.inviteeEmail);
+  const userId = await resolveUserIdByEmail(
+    input.ownerSession.client,
+    input.teamId,
+    input.inviteeEmail,
+  );
   if (!userId) {
     throw new Error(`Invite target email was not found: ${input.inviteeEmail}`);
   }
@@ -980,13 +984,10 @@ export async function queryTeamRow(
   client: SignedInUserSession['client'],
   teamId: string,
 ): Promise<TeamRowSnapshot> {
-  const result = await client
-    .from('teams')
-    .select('id,json,rank,is_public')
-    .eq('id', teamId)
-    .maybeSingle();
+  const result = await client.rpc('qry_team_get', { p_team_id: teamId });
+  const row = Array.isArray(result.data) ? result.data[0] : null;
 
-  if (result.error || !result.data) {
+  if (result.error || !row) {
     return {
       exists: false,
       id: null,
@@ -998,10 +999,10 @@ export async function queryTeamRow(
 
   return {
     exists: true,
-    id: result.data.id,
-    is_public: typeof result.data.is_public === 'boolean' ? result.data.is_public : null,
-    json: (result.data.json ?? null) as TeamJson | null,
-    rank: typeof result.data.rank === 'number' ? result.data.rank : null,
+    id: row.id,
+    is_public: typeof row.is_public === 'boolean' ? row.is_public : null,
+    json: (row.json ?? null) as TeamJson | null,
+    rank: typeof row.rank === 'number' ? row.rank : null,
   };
 }
 
@@ -1010,14 +1011,18 @@ export async function queryTeamRole(
   teamId: string,
   userId: string,
 ): Promise<TeamRoleSnapshot> {
-  const result = await client
-    .from('roles')
-    .select('user_id,team_id,role')
-    .eq('team_id', teamId)
-    .eq('user_id', userId)
-    .maybeSingle();
+  const result = await client.rpc('qry_team_get_member_list', {
+    p_page: 1,
+    p_page_size: 100,
+    p_sort_by: 'created_at',
+    p_sort_order: 'asc',
+    p_team_id: teamId,
+  });
+  const row = Array.isArray(result.data)
+    ? result.data.find((item: { user_id?: string }) => item.user_id === userId)
+    : null;
 
-  if (result.error || !result.data) {
+  if (result.error || !row) {
     return emptyTeamRoleSnapshot();
   }
 
@@ -1025,9 +1030,9 @@ export async function queryTeamRole(
     display_name: null,
     email: null,
     exists: true,
-    role: typeof result.data.role === 'string' ? result.data.role : null,
-    team_id: typeof result.data.team_id === 'string' ? result.data.team_id : null,
-    user_id: typeof result.data.user_id === 'string' ? result.data.user_id : null,
+    role: typeof row.role === 'string' ? row.role : null,
+    team_id: typeof row.team_id === 'string' ? row.team_id : null,
+    user_id: typeof row.user_id === 'string' ? row.user_id : null,
   };
 }
 
@@ -1106,13 +1111,9 @@ export async function queryHomepageVisibility(
   client: SignedInUserSession['client'],
   teamId: string,
 ) {
-  const result = await client
-    .from('teams')
-    .select('id')
-    .eq('id', teamId)
-    .gt('rank', 0)
-    .maybeSingle();
-  return Boolean(result.data?.id);
+  const result = await client.rpc('qry_team_get', { p_team_id: teamId });
+  const row = Array.isArray(result.data) ? result.data[0] : null;
+  return Boolean(row?.id && Number(row.rank) > 0);
 }
 
 export async function readTeamWorkspaceRecord(
@@ -1494,18 +1495,22 @@ function isWorkspaceRecordCompatible(record: TeamWorkspaceRecord, supabaseTarget
   return record.supabase.apiUrl === supabaseTarget.apiUrl;
 }
 
-async function resolveUserIdByEmail(client: SignedInUserSession['client'], email: string) {
-  const result = await client
-    .from('users')
-    .select('id')
-    .eq('raw_user_meta_data->>email', email)
-    .single();
+async function resolveUserIdByEmail(
+  client: SignedInUserSession['client'],
+  teamId: string,
+  email: string,
+) {
+  const result = await client.rpc('qry_team_find_invitable_user_by_email', {
+    p_team_id: teamId,
+    p_email: email,
+  });
 
   if (result.error) {
     return null;
   }
 
-  return typeof result.data.id === 'string' ? result.data.id : null;
+  const payload = (result.data as any)?.data ?? result.data;
+  return typeof payload?.id === 'string' ? payload.id : null;
 }
 
 async function invokeTeamCommand(

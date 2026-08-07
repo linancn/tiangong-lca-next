@@ -86,9 +86,7 @@ export async function executeReviewChangeMemberRoleCommand(
 async function executeChangeRoleByScope(
   scope: ChangeMemberRoleScope,
   request:
-    | TeamChangeMemberRoleRequest
-    | SystemChangeMemberRoleRequest
-    | ReviewChangeMemberRoleRequest,
+    TeamChangeMemberRoleRequest | SystemChangeMemberRoleRequest | ReviewChangeMemberRoleRequest,
   actor: ActorContext,
   repository: MembershipCommandRepository,
 ): Promise<MembershipCommandExecutionResult> {

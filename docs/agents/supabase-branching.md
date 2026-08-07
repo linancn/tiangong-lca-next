@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 92aeaa72d760ee9121d021b171a8cd7e8715fc35
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: frontend environment selection and app-side service ownership remain unchanged; Database retains grouped-query, review-schema, and authorization truth.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 93d8c0e6f48bb05d5516656479eb6856d3043cf5
+lastReviewedNote: 'Reviewed for database-engine Issue #422: Next defaults RPC calls to api, keeps only nine core entities on explicit public access, and consumes the exact reviewed Edge mirror.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -64,6 +64,9 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- the shared shipped client defaults to `db.schema = api`; non-core reads use Database-owned query facades and mutations use established command/Edge boundaries
+- direct relation access is fail-closed through `src/services/supabase/public.ts` and is limited to `processes`, `flows`, `contacts`, `sources`, `unitgroups`, `flowproperties`, `lciamethods`, `lifecyclemodels`, and `ilcd`; callers must not broaden this list to regain access to implementation tables
+- test-only Supabase clients used by live data workflows must select `public` explicitly before reading a core entity; mocks must implement the same schema-selection step
 - `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
@@ -87,6 +90,7 @@ Rules:
 | Process keyword search or strict calculation picker scope | change the app-side request here, pair it with the matching database v2 RPC revision, and validate public plus owner-draft results against a non-production environment; do not add direct app-side field filtering |
 | translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
+| database schema-boundary cutover | pair the exact Database and Edge revisions, default shipped RPC calls to `api`, route only the nine public core entities through `publicEntity()`, audit every literal RPC against the Database facade catalog, and run the schema-boundary plus data-workflow proof |
 | self-hosted Edge Function mirror refresh | first review and promote the owning Edge commit, then run the Next helper with that full SHA, verify byte-for-byte parity/source receipt/stale deletion, and require a no-diff second run |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
 | semantic localization release evidence | run the local candidate with the tracked `main` backend only inside the guarded Playwright workflow; use user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |

@@ -12,11 +12,7 @@ import {
   type LciaFactorCoverageContract,
   type SnapshotProcessFilter,
 } from './lca_snapshot_scope.ts';
-import {
-  enqueueCalculatorWorkerJob,
-  isWorkerJobsCutoverEnabled,
-  workerJobPayloadStringFromRpcData,
-} from './worker_jobs_cutover.ts';
+import { isWorkerJobsCutoverEnabled } from './worker_jobs_cutover.ts';
 
 export type LcaSnapshotBuildQueueResult =
   | {
@@ -39,10 +35,6 @@ export type LcaSnapshotCalculationContract = {
 
 const SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v1';
 const VERSIONED_SCOPE_SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v2';
-const ACTIVE_BUILD_MAX_QUEUED_MS = 10 * 60 * 1000;
-const ACTIVE_BUILD_MAX_RUNNING_MS = 2 * 60 * 60 * 1000;
-const ACTIVE_WORKER_STATUSES = ['queued', 'running', 'waiting', 'blocked'];
-
 export async function ensureLcaSnapshotBuildQueued(
   supabase: SupabaseClient,
   args: {
@@ -78,22 +70,6 @@ export async function ensureLcaSnapshotBuildQueued(
       payload: buildPayloadFields,
     }),
   );
-  const concurrencyKey = `lca.build_snapshot:${args.scope}:${requestKey}`;
-
-  const activeBuild = await findActiveSnapshotBuildWorkerJob(supabase, concurrencyKey);
-  if (!activeBuild.ok) {
-    return activeBuild;
-  }
-  if (activeBuild.job_id && activeBuild.snapshot_id) {
-    return {
-      ok: true,
-      job_id: activeBuild.job_id,
-      snapshot_id: activeBuild.snapshot_id,
-      worker_job_id: activeBuild.worker_job_id,
-      calculation_contract: calculationContract,
-    };
-  }
-
   if (!isWorkerJobsCutoverEnabled('LCA_WORKER_JOBS_ENABLED')) {
     console.error('legacy lca snapshot queue fallback is disabled before worker job enqueue', {
       request_key: requestKey,
@@ -106,77 +82,49 @@ export async function ensureLcaSnapshotBuildQueued(
   const jobId = crypto.randomUUID();
   const payload = {
     type: 'build_snapshot',
-    job_id: jobId,
-    snapshot_id: snapshotId,
     ...buildPayloadFields,
   };
 
-  const { error: snapshotInsertError } = await supabase.from('lca_network_snapshots').insert({
-    id: snapshotId,
-    scope: 'full_library',
-    process_filter: processFilter,
-    status: 'draft',
-    created_by: args.userId,
-  });
-  if (snapshotInsertError && snapshotInsertError.code !== '23505') {
-    console.error('insert lca_network_snapshots failed', {
-      error: snapshotInsertError.message,
-      code: snapshotInsertError.code,
-      snapshot_id: snapshotId,
-    });
-    return { ok: false, error: 'snapshot_build_seed_failed', status: 500 };
-  }
-
-  const workerJob = await enqueueCalculatorWorkerJob(supabase, {
-    jobKind: 'lca.build_snapshot',
-    payload,
-    payloadSchemaVersion: processFilter.scope_manifest
+  const { data, error } = await supabase.rpc('svc_lca_snapshot_build_enqueue', {
+    p_scope: args.scope,
+    p_process_filter: processFilter,
+    p_requested_by: args.userId,
+    p_request_key: requestKey,
+    p_job_id: jobId,
+    p_snapshot_id: snapshotId,
+    p_payload: payload,
+    p_payload_schema_version: processFilter.scope_manifest
       ? 'lca.build_snapshot.request.v2'
       : 'lca.build_snapshot.request.v1',
-    subjectType: 'lca_job',
-    subjectId: jobId,
-    subjectVersion: snapshotId,
-    requestedBy: args.userId,
-    requesterType: 'user',
-    idempotencyKey: `${args.userId}:${requestKey}`,
-    requestHash: requestKey,
-    concurrencyKey,
-    queueKey: args.scope,
-    visibility: 'user',
   });
-  if (!workerJob.ok) {
-    if (workerJob.error === 'WORKER_JOB_CONCURRENCY_CONFLICT') {
-      const activeAfterConflict = await findActiveSnapshotBuildWorkerJob(supabase, concurrencyKey);
-      if (activeAfterConflict.ok && activeAfterConflict.job_id && activeAfterConflict.snapshot_id) {
-        return {
-          ok: true,
-          job_id: activeAfterConflict.job_id,
-          snapshot_id: activeAfterConflict.snapshot_id,
-          worker_job_id: activeAfterConflict.worker_job_id,
-          calculation_contract: calculationContract,
-        };
-      }
-    }
-
-    console.error('enqueue build snapshot worker_jobs job failed', {
-      error: workerJob.error,
-      status: workerJob.status,
-      details: workerJob.details,
+  if (error) {
+    console.error('enqueue snapshot build capability failed', {
+      error: error.message,
+      code: error.code,
       lca_job_id: jobId,
       snapshot_id: snapshotId,
     });
     return {
       ok: false,
       error: 'snapshot_build_worker_jobs_enqueue_failed',
-      status: workerJob.status,
+      status: 500,
+    };
+  }
+
+  const result = data as Record<string, unknown> | null;
+  if (!result || result.ok !== true) {
+    return {
+      ok: false,
+      error: String(result?.code ?? 'snapshot_build_worker_jobs_enqueue_failed'),
+      status: Number(result?.status ?? 500),
     };
   }
 
   return {
     ok: true,
-    job_id: workerJobPayloadStringFromRpcData(workerJob.data, 'job_id') ?? jobId,
-    snapshot_id: workerJobPayloadStringFromRpcData(workerJob.data, 'snapshot_id') ?? snapshotId,
-    worker_job_id: workerJob.workerJobId,
+    job_id: String(result.job_id ?? jobId),
+    snapshot_id: String(result.snapshot_id ?? snapshotId),
+    worker_job_id: result.worker_job_id ? String(result.worker_job_id) : null,
     calculation_contract: calculationContract,
   };
 }
@@ -194,86 +142,6 @@ function buildCalculationContract(
     lcia_method_factor_source: isVersionedScope ? buildLcaMethodFactorSourceContract() : null,
     lcia_factor_coverage_contract: isVersionedScope ? buildLciaFactorCoverageContract() : null,
   };
-}
-
-async function findActiveSnapshotBuildWorkerJob(
-  supabase: SupabaseClient,
-  concurrencyKey: string,
-): Promise<
-  | { ok: true; job_id: string | null; snapshot_id: string | null; worker_job_id: string | null }
-  | { ok: false; error: string; status: number }
-> {
-  const { data: rows, error } = await supabase
-    .from('worker_jobs')
-    .select('id,payload_json,status,created_at,started_at')
-    .eq('job_kind', 'lca.build_snapshot')
-    .eq('concurrency_key', concurrencyKey)
-    .in('status', ACTIVE_WORKER_STATUSES)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (error) {
-    console.error('read active build worker_jobs failed', {
-      error: error.message,
-      code: error.code,
-      concurrency_key: concurrencyKey,
-    });
-    return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
-  }
-
-  for (const row of rows ?? []) {
-    const status = String((row as { status?: unknown }).status ?? '');
-    if (isExpiredActiveStatus(status, row)) {
-      continue;
-    }
-
-    const payload = (row as { payload_json?: unknown }).payload_json;
-    const jobId = payloadString(payload, 'job_id');
-    const snapshotId = payloadString(payload, 'snapshot_id');
-    const workerJobId = String((row as { id?: unknown }).id ?? '').trim();
-    if (jobId && snapshotId && workerJobId) {
-      return {
-        ok: true,
-        job_id: jobId,
-        snapshot_id: snapshotId,
-        worker_job_id: workerJobId,
-      };
-    }
-  }
-
-  return { ok: true, job_id: null, snapshot_id: null, worker_job_id: null };
-}
-
-function isExpiredActiveStatus(status: string, row: unknown): boolean {
-  const nowMs = Date.now();
-  const createdAtMs = dateMs((row as { created_at?: unknown }).created_at);
-  if (
-    status === 'queued' &&
-    Number.isFinite(createdAtMs) &&
-    nowMs - createdAtMs > ACTIVE_BUILD_MAX_QUEUED_MS
-  ) {
-    return true;
-  }
-
-  const startedAtMs = dateMs((row as { started_at?: unknown }).started_at);
-  return (
-    status === 'running' &&
-    Number.isFinite(startedAtMs) &&
-    nowMs - startedAtMs > ACTIVE_BUILD_MAX_RUNNING_MS
-  );
-}
-
-function payloadString(payload: unknown, field: string): string | null {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return null;
-  }
-
-  const value = (payload as Record<string, unknown>)[field];
-  return typeof value === 'string' && value.length > 0 ? value : null;
-}
-
-function dateMs(value: unknown): number {
-  return value === null || value === undefined ? Number.NaN : Date.parse(String(value));
 }
 
 async function sha256Hex(input: string): Promise<string> {

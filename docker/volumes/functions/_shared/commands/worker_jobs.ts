@@ -215,25 +215,17 @@ async function enrichDataProductWorkerJobMetadata(
     return jobs;
   }
 
-  const [{ data: workerRows, error: workerError }, { data: packageRows, error: packageError }] =
-    await Promise.all([
-      serviceClient.from('worker_jobs').select('id,payload_json').in('id', jobIds),
-      serviceClient
-        .from('lcia_result_packages')
-        .select(
-          'build_worker_job_id,id,package_version,status,eligible_input_count,included_input_count',
-        )
-        .in('build_worker_job_id', jobIds),
-    ]);
-
-  if (workerError || packageError) {
+  const { data, error } = await serviceClient.rpc('svc_data_product_worker_metadata', {
+    p_worker_job_ids: jobIds,
+  });
+  if (error || !isRecord(data) || data.ok !== true) {
     return jobs;
   }
 
   return mergeDataProductWorkerJobMetadata(
     jobs,
-    Array.isArray(workerRows) ? workerRows : [],
-    Array.isArray(packageRows) ? packageRows : [],
+    Array.isArray(data.worker_rows) ? data.worker_rows.filter(isRecord) : [],
+    Array.isArray(data.package_rows) ? data.package_rows.filter(isRecord) : [],
   );
 }
 
@@ -255,16 +247,9 @@ function ensureUserCanRead(
 
 async function ensureDataProductManager(
   actor: ActorContext,
-  serviceClient: SupabaseClient,
+  _serviceClient: SupabaseClient,
 ): Promise<CommandExecutionResult | null> {
-  const { data, error } = await serviceClient
-    .from('roles')
-    .select('user_id')
-    .eq('user_id', actor.userId)
-    .eq('team_id', SYSTEM_TEAM_ID)
-    .in('role', [...DATA_PRODUCT_MANAGER_ROLES])
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await actor.supabase.rpc('qry_membership_get_mine');
 
   if (error) {
     return {
@@ -276,7 +261,15 @@ async function ensureDataProductManager(
     };
   }
 
-  if (!data) {
+  const memberships = Array.isArray(data) ? data.filter(isRecord) : [];
+  const isManager = memberships.some(
+    (membership) =>
+      membership.team_id === SYSTEM_TEAM_ID &&
+      DATA_PRODUCT_MANAGER_ROLES.includes(
+        String(membership.role) as (typeof DATA_PRODUCT_MANAGER_ROLES)[number],
+      ),
+  );
+  if (!isManager) {
     return {
       ok: false,
       code: 'DATA_PRODUCT_MANAGER_REQUIRED',

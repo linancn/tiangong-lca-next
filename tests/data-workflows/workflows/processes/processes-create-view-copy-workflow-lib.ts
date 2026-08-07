@@ -1039,6 +1039,7 @@ async function queryProcessRecord(
   version: string,
 ): Promise<ProcessWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('processes')
     .select('id,json,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)
