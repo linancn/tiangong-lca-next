@@ -1,7 +1,12 @@
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import AccountView from '@/pages/Account/view';
+import ContactView from '@/pages/Contacts/Components/view';
+import FlowpropertyView from '@/pages/Flowproperties/Components/view';
+import FlowView from '@/pages/Flows/Components/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
+import SourceView from '@/pages/Sources/Components/view';
+import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { ListPagination } from '@/services/general/data';
 import { getLang } from '@/services/general/util';
 import { genProcessName } from '@/services/processes/util';
@@ -15,7 +20,7 @@ import {
 import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, Link, useIntl } from '@umijs/max';
+import { FormattedMessage, useIntl } from '@umijs/max';
 import { Card, Col, Input, Row, Space, Spin, Table, Tag, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
@@ -117,6 +122,50 @@ const AssignmentReview = ({
 
   const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
     isReferenceMatchingReviewTab(record, tableType);
+
+  const renderDatasetViewButton = (
+    targetTable: ReviewSubmitDatasetTable | undefined,
+    id: string | undefined,
+    version: string | undefined,
+  ) => {
+    if (!targetTable || !id || !version) return null;
+
+    switch (targetTable) {
+      case 'contacts':
+        return <ContactView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'sources':
+        return <SourceView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'unitgroups':
+        return <UnitGroupView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'flowproperties':
+        return <FlowpropertyView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'flows':
+        return <FlowView id={id} version={version} lang={lang} buttonType='icon' />;
+      case 'processes':
+        return (
+          <ProcessView
+            id={id}
+            version={version}
+            lang={lang}
+            buttonType='icon'
+            disabled={false}
+            buttonTypeProp='text'
+          />
+        );
+      case 'lifecyclemodels':
+        return (
+          <LifeCycleModelView
+            id={id}
+            version={version}
+            lang={lang}
+            buttonType='icon'
+            buttonTypeProp='text'
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const clearUnifiedSelection = () => {
     selectedRootReviewIdsRef.current = new Set();
@@ -327,7 +376,12 @@ const AssignmentReview = ({
       ),
       dataIndex: 'data_name',
       key: 'data_name',
-      render: (dataName: any) => genProcessName(dataName ?? {}, lang),
+      render: (dataName: any, record: RootReviewReferenceProgress) => (
+        <Space size='small'>
+          {genProcessName(dataName ?? {}, lang)}
+          {renderDatasetViewButton(record.target_table, record.data_id, record.data_version)}
+        </Space>
+      ),
     },
     {
       title: <FormattedMessage id='pages.review.reference.table' defaultMessage='Data type' />,
@@ -449,16 +503,6 @@ const AssignmentReview = ({
     });
   }
 
-  const datasetRoutes: Record<ReviewSubmitDatasetTable, string> = {
-    contacts: '/mydata/contacts',
-    sources: '/mydata/sources',
-    unitgroups: '/mydata/unitgroups',
-    flowproperties: '/mydata/flowproperties',
-    flows: '/mydata/flows',
-    processes: '/mydata/processes',
-    lifecyclemodels: '/mydata/models',
-  };
-
   const isSimpleReview = (record: ReviewsTable) =>
     record.reviewKind === 'reference' ||
     (record.reviewKind === 'root' &&
@@ -481,38 +525,14 @@ const AssignmentReview = ({
       search: false,
       render: (_, row) => {
         const targetTable = row.targetTable as ReviewSubmitDatasetTable | undefined;
-        const dataLink = targetTable
-          ? `${datasetRoutes[targetTable]}?id=${encodeURIComponent(
-              row.json?.data?.id,
-            )}&version=${encodeURIComponent(row.json?.data?.version)}&mode=view`
-          : undefined;
         const canOpenRootData = row.rootCanRead !== false;
         return [
-          <div key={0} style={{ display: 'flex' }}>
+          <Space key={0} size='small'>
             {row.name}
-            {!canOpenRootData ? null : targetTable === 'lifecyclemodels' ? (
-              <LifeCycleModelView
-                id={row?.json?.data?.id}
-                version={row?.json?.data?.version}
-                lang={lang}
-                buttonType='icon'
-                buttonTypeProp='text'
-              />
-            ) : targetTable === 'processes' ? (
-              <ProcessView
-                id={row?.json?.data?.id}
-                version={row?.json?.data?.version}
-                lang={lang}
-                buttonType='icon'
-                disabled={false}
-                buttonTypeProp='text'
-              />
-            ) : dataLink ? (
-              <Link to={dataLink} target='_blank' style={{ marginLeft: 8 }}>
-                <FormattedMessage id='pages.review.table.view' defaultMessage='View' />
-              </Link>
-            ) : null}
-          </div>,
+            {canOpenRootData
+              ? renderDatasetViewButton(targetTable, row.json?.data?.id, row.json?.data?.version)
+              : null}
+          </Space>,
         ];
       },
     },

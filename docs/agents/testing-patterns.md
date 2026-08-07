@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
-lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: release proof remains bounded, while schema façade tests use the existing service-mock, boundary, and full-coverage patterns.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: release proof and grouped-review tests continue to use existing bounded Docpact and service/UI testing patterns.'
 ---
 
 # Testing Patterns Reference
@@ -124,7 +124,9 @@ Browser semantic E2E pattern:
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
-- when release proof reports a missing or stale qualification receipt, run `npm run e2e:qualify`, review its generated tracked receipt, merge it through the normal `dev` PR flow, and retry only from the clean merged candidate; the receipt file is excluded from its own semantic input digest
+- normal release orchestration checks qualification before version mutation: dry-run reports `valid` or `regeneration_required`, while `release:to-dev --apply` reuses the receipt or generates the exact provenance-bound receipt, includes it in the same Release PR, and runs `release:preflight` on the composed commit before checked push
+- direct release proof outside that deterministic flow still requires `npm run e2e:qualify`, a separately reviewed receipt PR, and retry from the clean merged candidate; the receipt file and root version fields are excluded from the qualification input digest
+- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, and the rule that no failed qualification/preflight path reaches push or PR creation
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence

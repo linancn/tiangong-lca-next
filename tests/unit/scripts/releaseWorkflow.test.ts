@@ -13,7 +13,11 @@ const workflow = require('../../../scripts/release/release-workflow.cjs') as {
     root: string,
     baseRef: string,
     targetVersion: string,
-  ) => { changedPaths: string[]; reviewPaths: string[] };
+  ) => {
+    changedPaths: string[];
+    reviewPaths: string[];
+    qualification?: Record<string, unknown> | null;
+  };
   automaticDocpactReview: (
     root: string,
     options: {
@@ -142,7 +146,27 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const args = process.argv.slice(2);
 if (process.env.FAKE_NPM_LOG) fs.appendFileSync(process.env.FAKE_NPM_LOG, JSON.stringify(args) + '\\n');
-if (args[0] === 'run' && args[1] === 'push:checked') {
+const qualificationReceipt = 'docs/plans/i18n/semantic-harness-qualification-receipt.json';
+if (args[0] === 'run' && args[1] === 'e2e:qualification:check') {
+  const mustRegenerate = process.env.FAKE_QUALIFICATION_STATUS === 'invalid' && !fs.existsSync(qualificationReceipt);
+  process.exitCode = mustRegenerate ? 10 : 0;
+} else if (args[0] === 'run' && args[1] === 'e2e:qualify') {
+  if (process.env.FAKE_QUALIFICATION_FAIL === '1') {
+    process.exitCode = 11;
+  } else {
+    const commit = spawnSync('git', ['rev-parse', 'HEAD^{commit}'], { cwd: process.cwd(), encoding: 'utf8' }).stdout.trim();
+    const tree = spawnSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: process.cwd(), encoding: 'utf8' }).stdout.trim();
+    fs.mkdirSync(require('node:path').dirname(qualificationReceipt), { recursive: true });
+    fs.writeFileSync(qualificationReceipt, JSON.stringify({
+      schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+      qualifiedCommit: commit,
+      qualifiedTree: tree,
+      qualificationInputSha256: 'fixture-input',
+    }, null, 2) + '\\n');
+  }
+} else if (args[0] === 'run' && args[1] === 'release:preflight') {
+  process.exitCode = process.env.FAKE_RELEASE_PREFLIGHT_FAIL === '1' ? 12 : 0;
+} else if (args[0] === 'run' && args[1] === 'push:checked') {
   const separator = args.indexOf('--');
   const remote = args[separator + 1];
   const ref = args[separator + 2];
@@ -400,6 +424,7 @@ describe('release automation public contracts', () => {
       version: '1.0.1',
       base_sha: fixture.devSha,
       main_sha: fixture.mainSha,
+      qualification: { status: 'valid', action: 'reuse' },
       next_action: 'rerun_with_apply',
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(beforeBranch);
@@ -449,6 +474,7 @@ describe('release automation public contracts', () => {
         reviewed_paths: ['AGENTS.md', 'docs/gate.md'],
         rounds: 3,
       },
+      qualification: { status: 'reused', preflight_status: 'passed' },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe('codex/issue-778-version-v1.0.1');
@@ -464,7 +490,10 @@ describe('release automation public contracts', () => {
         'refs/heads/codex/issue-778-version-v1.0.1',
       ]),
     ).toContain(output.candidate_sha);
-    expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
+    const npmInvocations = fs.readFileSync(npmLog, 'utf8');
+    expect(npmInvocations).toContain('e2e:qualification:check');
+    expect(npmInvocations).toContain('release:preflight');
+    expect(npmInvocations).toContain('push:checked');
 
     const previousBinary = process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
     const previousMode = process.env.FAKE_DOCPACT_MODE;
@@ -493,6 +522,92 @@ describe('release automation public contracts', () => {
       if (previousBase === undefined) delete process.env.FAKE_DOCPACT_BASE_SHA;
       else process.env.FAKE_DOCPACT_BASE_SHA = previousBase;
     }
+  });
+
+  it('generates a stale qualification receipt and includes it in the same release PR', () => {
+    const fixture = createFixture();
+    const npmLog = path.join(fixture.container, 'npm.log');
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_NPM_LOG: npmLog,
+        FAKE_QUALIFICATION_STATUS: 'invalid',
+        FAKE_GH_CREATED_URL: 'https://example.test/pull/54',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    const output = JSON.parse(result.stdout);
+    expect(output).toMatchObject({
+      status: 'ready_for_review',
+      qualification: {
+        status: 'generated',
+        action: 'included_in_release_pr',
+        qualified_commit: fixture.devSha,
+        preflight_status: 'passed',
+      },
+      pull_request: { url: 'https://example.test/pull/54' },
+    });
+    expect(
+      git(fixture.root, [
+        'show',
+        'HEAD:docs/plans/i18n/semantic-harness-qualification-receipt.json',
+      ]),
+    ).toContain(`"qualifiedCommit": "${fixture.devSha}"`);
+    expect(fs.readFileSync(npmLog, 'utf8')).toContain('e2e:qualify');
+  });
+
+  it('fails before push when semantic qualification cannot be generated', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_QUALIFICATION_STATUS: 'invalid',
+        FAKE_QUALIFICATION_FAIL: '1',
+      },
+    );
+
+    expect(result.status).toBe(workflow.EXIT.gate);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      complete: false,
+      error: { code: 'semantic_qualification_failed' },
+    });
+    expect(
+      git(fixture.root, [
+        'ls-remote',
+        '--refs',
+        'fork',
+        'refs/heads/codex/issue-778-version-v1.0.1',
+      ]),
+    ).toBe('');
+  });
+
+  it('fails before push when the composed release candidate fails preflight', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      { FAKE_RELEASE_PREFLIGHT_FAIL: '1' },
+    );
+
+    expect(result.status).toBe(workflow.EXIT.gate);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      complete: false,
+      error: { code: 'release_preflight_failed' },
+    });
+    expect(
+      git(fixture.root, [
+        'ls-remote',
+        '--refs',
+        'fork',
+        'refs/heads/codex/issue-778-version-v1.0.1',
+      ]),
+    ).toBe('');
   });
 
   it('preflights cumulative main-to-dev Docpact obligations before opening the release PR', () => {
@@ -610,6 +725,19 @@ describe('release automation public contracts', () => {
     ).toThrow('may update only lastReviewedAt and lastReviewedCommit');
   });
 
+  it('rejects arbitrary JSON in a release candidate', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'dev']);
+    const documents = versionDocuments('1.0.1');
+    writeJson(path.join(fixture.root, 'package.json'), documents.packageJson);
+    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
+    writeJson(path.join(fixture.root, 'unexpected.json'), { release: true });
+
+    expect(() =>
+      workflow.assertReleaseCandidateScope(fixture.root, fixture.devSha, '1.0.1'),
+    ).toThrow('non-document change outside the version files');
+  });
+
   it('reuses an existing exact release PR without mutating the repository', () => {
     const fixture = createFixture();
     const candidateSha = 'a'.repeat(40);
@@ -669,6 +797,7 @@ describe('release automation public contracts', () => {
       dev_merge_sha: fixture.devSha,
       candidate_sha: fixture.devSha,
       pull_request: { url: 'https://example.test/pull/53' },
+      qualification: { status: 'verified_by_main_semantic_gate' },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(

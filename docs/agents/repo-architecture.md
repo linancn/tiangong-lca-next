@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 93d8c0e6f48bb05d5516656479eb6856d3043cf5
-lastReviewedNote: 'Reviewed for database-engine Issue #422: app-side data access now uses the api facade by default and an explicit nine-table public entity boundary.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: release automation preserves existing runtime boundaries while grouped-review queue, selection, and dataset views remain database-authority consumers.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -51,7 +51,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/**` | route-level product pages |
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
-| `src/services/**` | app-side Supabase/API access, `api`-schema facade calls, the explicit nine-table `public` entity boundary, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
+| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
@@ -75,8 +75,6 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
-- the shared Supabase client defaults to the `api` schema; RPCs are the capability facade for non-core data, while `publicEntity()` is the only shipped relation-access helper and accepts exactly `processes`, `flows`, `contacts`, `sources`, `unitgroups`, `flowproperties`, `lciamethods`, `lifecyclemodels`, and `ilcd`
-- direct app-side reads of private implementation relations such as users, roles, memberships, teams, comments, and reviews are prohibited; their consumer contracts must be expressed through Database-owned `api` functions
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
 - language behavior is split across typed owners: `localeRegistry.ts` owns UI locale/adapters, `contentLanguageRegistry.ts` owns TIDAS/ILCD reading and authoring plus service-query resolution, `referenceResources/manifest.ts` owns classification/location availability and provenance, and `localeCapabilities.ts` is the derived joined view. The current canonical UI keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`; business consumers and parameterized capability tests discover them from the registries. A fixed locale array may appear only in an explicitly labeled fail-closed product-contract test whose purpose is to force deliberate review when that snapshot changes
@@ -132,7 +130,11 @@ When the job reaches `submitted`, Edge/Database have already validated the gate 
 
 All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
-Review Management consumes the central review projection. A Root row expands to the Reference Reviews stored in its current scope snapshot. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
+Review Management consumes the central review projection. Its top-level pagination contains Root rows only. A Root remains visible when either the Root or one of its snapshot References matches the selected tab; expanding the row renders only References that match that same tab. A context-only Root exposes neither a Root checkbox nor Root review actions, while readable matching Roots and References retain their own actions. This keeps pagination and status membership database-owned without duplicating the complete Reference list in every tab.
+
+Batch selection is one Root/Reference selection model. Selecting a Root loads and auto-selects its current-tab References, deduplicates a Reference shared by multiple Roots, preserves independently selected References, and disables submission while child loading is incomplete or failed. Removing a Root removes only the References that are no longer selected manually or through another Root. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes.
+
+Each readable Root or Reference row offers a view icon backed by the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
 
 ### Calculation Bundle And Release Readback
 

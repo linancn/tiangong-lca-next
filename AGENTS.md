@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: f3cb5bc82f6964b0d4950d0c74af10831ea216a3
-lastReviewedNote: 'Reviewed for Issue #778 and database-engine Issue #422: release qualification remains intact while Next defaults RPC access to the api facade, limits public relation access to the nine core entities, and mirrors the exact reviewed Edge commit.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: deterministic release preflight and grouped-review delivery remain within the documented dev-to-main, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -153,6 +153,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
 - preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
+- `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
