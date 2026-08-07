@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: release proof evaluates candidate and cumulative paths independently with bounded Docpact behavior.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: release proof and grouped-review tests continue to use existing bounded Docpact and service/UI testing patterns.'
 ---
 
 # Testing Patterns Reference

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: version-to-dev closes bounded candidate and cumulative promotion-range evidence before immutable promotion.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged candidate keeps the Node 24, focused-proof, semantic qualification, managed-push, and deterministic release-command workflow.'
 ---
 
 # Development Bootstrap

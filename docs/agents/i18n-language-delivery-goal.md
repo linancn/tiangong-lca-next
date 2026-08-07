@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 4627adfde975869e5ee0642133d8d0175a99bec8
-lastReviewedNote: 'Reviewed for Issue #745 root-grouped review queues: the exact read-only production guard now matches the three v2 grouped-queue/progress RPCs; prior production evidence is not reused, so fresh authenticated evidence remains required before a release promotion.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 115cc3eaf0d09657c7d6a91acd7b5128f5e639eb
+lastReviewedNote: 'Reviewed for Issues #745 and #780: fresh authenticated production evidence covers the three v2 grouped-queue/progress RPCs with created=cleaned=1 and leaked=0; no digest-compatibility skip was used, and the matching credential-free qualification also passed.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

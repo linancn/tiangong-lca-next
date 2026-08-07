@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 follow-up: record Root-only top-level queues, current-tab-only Reference child expansion, no complete-reference-list presentation, advisory Reviewer outcomes, and owner-only rejection notifications.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 115cc3eaf0d09657c7d6a91acd7b5128f5e639eb
+lastReviewedNote: 'Reviewed for Issues #745 and #780: retain Root-only/current-tab queue semantics and record the seven-type read-only dataset drawers available from readable Root and Reference rows.'
 ---
 
 # Audit Status Reference
@@ -104,3 +104,4 @@ Process and Lifecycle Model Root Reviews retain their existing metadata form and
 9. expanding the Root shows only current Reference Reviews that match the selected tab; this phase does not provide the Root's complete reference list
 10. a context-only Root has no selectable Root action unless the Root itself matches and the actor has permission; Review Members see only assigned/readable children
 11. the child table does not show a reference-path column, and no persisted or visible reference-overview field is required
+12. every readable Root or Reference row exposes a view icon that opens the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer; viewing does not alter review state or access
