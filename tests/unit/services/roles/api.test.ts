@@ -667,6 +667,47 @@ describe('roles api task-4 boundaries', () => {
     consoleSpy.mockRestore();
   });
 
+  it('returns a system data product manager without selecting cross-team or unsupported roles', async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: 'manager-user',
+            team_id: SYSTEM_TEAM_ID,
+            role: 'data_product_manager',
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: 'cross-team-manager',
+            team_id: 'team-id',
+            role: 'data_product_manager',
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            user_id: 'review-user',
+            team_id: SYSTEM_TEAM_ID,
+            role: 'review-member',
+          },
+        ],
+        error: null,
+      });
+
+    await expect(getSystemUserRoleApi()).resolves.toEqual({
+      user_id: 'manager-user',
+      role: 'data_product_manager',
+    });
+    await expect(getSystemUserRoleApi()).resolves.toBeNull();
+    await expect(getSystemUserRoleApi()).resolves.toBeNull();
+  });
+
   it('loads system members via qry_system_get_member_list and falls back on rpc errors', async () => {
     supabase.rpc
       .mockResolvedValueOnce({

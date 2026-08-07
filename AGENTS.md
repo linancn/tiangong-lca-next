@@ -33,8 +33,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-07
-lastReviewedCommit: 0140c2fc2ac0f5388eb1de64fcc6c7fafc9f5fe6
+lastReviewedAt: 2026-08-08
+lastReviewedCommit: ef0329caa888ce93b8b3fa097d3a53908c27a431
 lastReviewedNote: 'Reviewed for Issues #778 and #780: deterministic release preflight and grouped-review delivery remain within the documented dev-to-main, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml
