@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-03
-lastReviewedCommit: ff84088124ed4ab54c09b0179af813888bdb6cc1
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: team owner/admin do not participate in review; existing membership only constrains already-authorized reference visibility and never expands access.'
+lastReviewedAt: 2026-08-06
+lastReviewedCommit: 115cc3eaf0d09657c7d6a91acd7b5128f5e639eb
+lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review view drawers do not change team roles or review authority; membership still constrains only already-authorized dataset visibility.'
 ---
 
 # Team Management Reference

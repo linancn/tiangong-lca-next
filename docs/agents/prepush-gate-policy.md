@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-07
-lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
-lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative Docpact review precedes the unchanged checked-push policy.'
+lastReviewedCommit: d5a00e96462fa9feb74bc91e752b3d1e8e7004b8
+lastReviewedNote: 'Reviewed for Issues #778 and #780: dual-scope Docpact review and the grouped-review candidate continue through the unchanged checked-push and retry-receipt policy.'
 ---
 
 # Pre-Push Gate Policy

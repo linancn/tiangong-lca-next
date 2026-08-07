@@ -51,6 +51,11 @@ jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   ),
 }));
 
+jest.mock('@/pages/Review/Components/SimpleReviewActions', () => ({
+  __esModule: true,
+  default: ({ reviewId }: any) => <span data-testid={`simple-review-${reviewId}`}>Review</span>,
+}));
+
 jest.mock('@/pages/Account/view', () => ({
   __esModule: true,
   default: ({ userId }: any) => <span data-testid={`account-${userId}`}>Account</span>,
@@ -422,6 +427,40 @@ describe('Review workflow integration', () => {
         ),
       ).toBe(true);
     });
+  });
+
+  it('omits the dataset view trigger for an unsupported review table', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'unsupported-review',
+          name: 'Unsupported review',
+          userName: 'Owner',
+          isFromLifeCycle: false,
+          reviewKind: 'root',
+          targetTable: 'unsupported',
+          json: {
+            data: { id: 'unsupported-1', version: '1.0.0' },
+            user: { id: 'owner-1' },
+          },
+        },
+      ],
+      success: true,
+      total: 1,
+    } as any);
+
+    renderWithProviders(
+      <AssignmentReview
+        actionRef={React.createRef<any>()}
+        tableType='assigned'
+        userData={{ user_id: 'user-admin', role: 'review-admin' }}
+      />,
+    );
+
+    const nameCell = await screen.findByTestId('pro-table-cell-processName-unsupported-review');
+    expect(within(nameCell).getByText('Unsupported review')).toBeInTheDocument();
+    expect(within(nameCell).queryByText('ProcessView')).not.toBeInTheDocument();
+    expect(within(nameCell).queryByText('LCMView')).not.toBeInTheDocument();
   });
 
   it('opens reviewed drawer entries with member-specific filters', async () => {
