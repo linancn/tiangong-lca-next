@@ -26,15 +26,16 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
+  - scripts/release/**
   - scripts/qualification/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
-lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review delivery remains within existing frontend ownership, dev-to-main promotion, quality-gate, and root-integration boundaries.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
+lastReviewedNote: 'Reviewed for Issue #778: release-to-dev independently preflights candidate and cumulative Docpact obligations before immutable promotion.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -149,6 +150,10 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - credential-free production preflight for main candidates: `npm run release:preflight`
+- preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
+- preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
+- omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
+- automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries
@@ -181,6 +186,7 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
+- normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
 - PRs targeting `main` run the reusable Release Gate against their exact base/head; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
 - canonical `main` branch pushes read `package.json.version`, run the reusable Release Gate plus exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after both pass, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump

@@ -21,14 +21,15 @@ checkPaths:
   - tests/**
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
-lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review queue, selection, and drawer coverage require no broader testing-strategy change.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
+lastReviewedNote: 'Reviewed for Issue #778: independent candidate and cumulative path coverage extends bounded proof without changing test strategy.'
 ---
 
 # Testing Strategy

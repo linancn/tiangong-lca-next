@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-06
-lastReviewedCommit: 69b4e73c64c5acc3ee880576c887536ac56d350b
-lastReviewedNote: 'Reviewed for Issues #745 and #780: document the promoted Root/Reference queue, selection, and dataset-view behavior without changing Database review authority.'
+lastReviewedCommit: cfe24ec9ecbbf4f647d4de75170b7be2404213ea
+lastReviewedNote: 'Reviewed for Issue #778: cumulative release changes preserve the documented data, frontend runtime, team, and review-management boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -21,14 +21,15 @@ checkPaths:
   - scripts/test-runner.cjs
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
-lastReviewedNote: 'Reviewed for Issues #745 and #780: existing gate and focused-test troubleshooting remains sufficient; no new exception is required.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
+lastReviewedNote: 'Reviewed for Issue #778: dual-scope review is automatic for new releases and immutable candidates retain bounded recovery.'
 ---
 
 # Testing Troubleshooting
@@ -59,6 +60,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
+| `release:to-dev` or `release:promote-dev-to-main` returns a drift error | the requested version, Issue marker, dev merge SHA, branch candidate, or current remote ref no longer matches the planned identity | read the single JSON error and its `next_action`, inspect the referenced PR/SHA, then rerun dry-run against current remotes; do not force-update or reuse a mismatched release branch |
+| `release:to-dev` returns `docpact_review_requires_manual_action`, `release_review_document_changed`, or another automatic-review boundary error | Docpact found more than review-only evidence, package semantics exceed the three version fields, or review marking would alter governed content | inspect the returned `.local/release-automation/*-docpact.json` report and exact path/reason; move substantive package or documentation work into a separately reviewed PR, and never broaden the automatic allowlist to make the release pass |
+| a deterministic release command returns `managed_push_failed` | Docpact, production preflight, the full gate, or the original transport failed | inspect the returned `.local/release-automation/**` log; if and only if that checked push created a new exact-intent receipt, the command already attempted `push:retry`, so fix the first reported gate/transport cause before rerunning `--apply` |
 | release E2E fails before any browser test | Node/Git/Docker, pinned image, output permissions, candidate identity, browser launch, bundle readiness, backend/auth, recovery ledger, or discovery is invalid | run `npm run e2e:env:doctor -- --format json`, then inspect the first failed check in `preflight-report.json`; use its one next command instead of starting the full suite |
 | release E2E refuses a dirty candidate | release evidence cannot identify a mutable worktree | commit the intended candidate before release proof, or use `npm run e2e:dev` for focused diagnosis; never mount the parent workspace to make the dirty tree appear runnable |
 | release E2E reports a stale qualification receipt, then refuses the dirty candidate after `e2e:qualify` succeeds | qualification correctly generated a new tracked receipt, so the worktree is no longer a releasable immutable candidate | review the receipt, land it through a tracked `dev` PR, and retry from the clean merged candidate; do not discard the result, hand-edit its hashes, or use `e2e:dev` as release evidence |
@@ -91,7 +95,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | locale artifact idempotence fails only in CI with `invalid object name 'origin/main'` | the isolated clone did not reproduce the remote ref consumed by the semantic backend-target check; a detached checkout has no accidental local `main` branch to mask it | copy the exact source `refs/remotes/origin/main` commit into the isolated clone before generation; do not weaken the backend-target check or depend on a local branch |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
-| feature/dev Docpact passed but the post-merge Release Gate reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while the release gate checks the complete `main` promotion range | reproduce from the intended candidate with `DOCPACT_BASE_REF=origin/main npm run docpact:gate`, genuinely review every required document, publish a new patch version if an immutable release tag already exists, and backmerge the `main` hotfix to `dev` |
+| a manually assembled or historical feature/dev candidate passed Docpact but the post-merge Release Gate reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while the release gate checks the complete `main` promotion range | use `release:to-dev`, which independently preflights the version candidate and cumulative `main`-to-candidate path sets and records only bounded review evidence; for an already immutable candidate, genuinely review every required document in a separate `dev` PR and publish a new patch version rather than mutating the old candidate |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
 | language-platform or hardcoding audit reports a new locale/language finding | a registry/Manifest join is incomplete, an alias/adapter conflicts, or business code owns a language literal outside the typed boundary | update the owning registry/Manifest and derive the consumer; use only an exact, issue-owned adapter exception when the literal is an unavoidable external boundary |
 | activation reports `platformContractValid` but `productionActivationReady` is false | the platform structure is valid but a required reference resource is missing, development-only, or not yet official/project-reviewed | inspect `referenceResourceBlockers` and complete the owner Issue; do not relabel an English development base as localized data |

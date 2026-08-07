@@ -24,14 +24,15 @@ checkPaths:
   - scripts/i18n/**
   - scripts/test-runner.cjs
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 9115efeef92a648a544ba0e27b12d7c0559f4acc
-lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review selection and drawer tests use existing service/UI test patterns and add no new testing pattern.'
+lastReviewedAt: 2026-08-07
+lastReviewedCommit: 56c7bfca9b851dfa83838e72ac26e131ef170d69
+lastReviewedNote: 'Reviewed for Issue #778: release proof evaluates candidate and cumulative paths independently with bounded Docpact behavior.'
 ---
 
 # Testing Patterns Reference
@@ -55,6 +56,7 @@ lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review selection a
 - do not add snapshots when explicit assertions are clearer
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
+- test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 
 ## Reusable Helpers
 
