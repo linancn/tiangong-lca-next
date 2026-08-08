@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "a8cc23b311aec26dd4fa9c663216c17859fa6335b99d7c5861ffd159502f305c",
+    "auditedInputDigest": "0845c55abaa41c4a11a597c9204fed58c4ec6a768f1c0a9be039eb08d9f925c1",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -11884,7 +11884,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 278,
+          "line": 290,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -11911,7 +11911,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 278,
+              "line": 290,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -23694,7 +23694,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 261,
+          "line": 273,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Logout",
@@ -23709,7 +23709,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 261,
+              "line": 273,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -23895,7 +23895,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 235,
+          "line": 245,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Account Profile",
@@ -23919,7 +23919,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 235,
+              "line": 245,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -23993,7 +23993,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 252,
+          "line": 264,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Review Management",
@@ -24008,7 +24008,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 252,
+              "line": 264,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -24135,7 +24135,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 240,
+          "line": 250,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "My Team",
@@ -24168,7 +24168,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 240,
+              "line": 250,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -27048,7 +27048,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 245,
+          "line": 255,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "System Management",
@@ -27081,7 +27081,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 245,
+              "line": 255,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -256074,7 +256074,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 133,
+          "line": 143,
           "column": 22,
           "symbol": "onMenuClick",
           "defaultMessage": "You can create a team or join an existing team.",
@@ -256089,7 +256089,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 133,
+              "line": 143,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -256157,7 +256157,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 172,
+          "line": 182,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "Create Team",
@@ -256172,7 +256172,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 172,
+              "line": 182,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -256240,7 +256240,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 147,
+          "line": 157,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "Join Team",
@@ -256255,7 +256255,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 147,
+              "line": 157,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -256323,7 +256323,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 129,
+          "line": 139,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "You are not in any team",
@@ -256338,7 +256338,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 129,
+              "line": 139,
               "column": 20,
               "kind": "formatMessage"
             }
