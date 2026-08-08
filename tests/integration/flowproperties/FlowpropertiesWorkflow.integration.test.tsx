@@ -1,10 +1,10 @@
 /**
- * Flowproperties read-only workflow integration test.
+ * Flowproperties role-gated workflow integration test.
  * Covers page at: src/pages/Flowproperties/index.tsx
  *
  * Journey:
  * 1. Owner opens My Data / Flow Properties list (ProTable request -> getFlowpropertyTableAll).
- * 2. My Data shows existing rows without create/edit/delete controls.
+ * 2. System admins can create/import while existing My Data rows remain read-only.
  * 3. Open-data users land on /tgdata flow properties and only see the read-only source matrix.
  *
  * Services mocked:
@@ -384,7 +384,7 @@ describe('Flowproperties workflow integration', () => {
     });
   };
 
-  it('renders my-data flow properties read-only while preserving filters', async () => {
+  it('lets system admins create and import while rows remain read-only', async () => {
     await renderFlowproperties();
     const user = userEvent.setup();
 
@@ -392,9 +392,9 @@ describe('Flowproperties workflow integration', () => {
     expect(await screen.findByText('Water mass')).toBeInTheDocument();
 
     expect(
-      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+      within(screen.getByTestId('pro-table-toolbar')).getByRole('button', { name: /create/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'import' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /edit fp-1/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /delete fp-1/i })).not.toBeInTheDocument();

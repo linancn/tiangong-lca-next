@@ -176,15 +176,22 @@ jest.mock('@/pages/Unitgroups/Components/create', () => ({
   __esModule: true,
   default: (props: any) => {
     mockUnitGroupCreateCalls.push(props);
-    const { actionType = 'create', importData, newVersion, disabled } = props;
+    const { actionType = 'create', importData, newVersion, disabled, onClose } = props;
     return (
-      <div data-testid='unitgroup-create'>
-        {JSON.stringify({
-          actionType,
-          importCount: importData?.length ?? 0,
-          newVersion,
-          disabled: !!disabled,
-        })}
+      <div>
+        <div data-testid='unitgroup-create'>
+          {JSON.stringify({
+            actionType,
+            importCount: importData?.length ?? 0,
+            newVersion,
+            disabled: !!disabled,
+          })}
+        </div>
+        {onClose ? (
+          <button type='button' onClick={() => onClose()}>
+            unitgroup-create-close
+          </button>
+        ) : null}
       </div>
     );
   },
@@ -487,8 +494,8 @@ describe('UnitgroupsPage', () => {
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
     expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":true');
     expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
@@ -497,7 +504,7 @@ describe('UnitgroupsPage', () => {
     expect(mockAllVersionsOperationWidths).toContain(104);
   });
 
-  it('loads admin my data read-only and supports pgroonga search', async () => {
+  it('allows system admins to create and import while keeping existing rows read-only', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -524,9 +531,17 @@ describe('UnitgroupsPage', () => {
     );
     expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
     expect(mockAllVersionsOperationWidths).toContain(104);
+
+    await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":1');
+    await userEvent.click(screen.getByRole('button', { name: /unitgroup-create-close/i }));
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
@@ -630,7 +645,7 @@ describe('UnitgroupsPage', () => {
     );
   });
 
-  it('uses compact mobile controls for my data rows without import actions', async () => {
+  it('keeps admin create and import controls available on mobile', async () => {
     mockBreakpointScreens = { md: false };
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -643,7 +658,8 @@ describe('UnitgroupsPage', () => {
 
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
     await waitFor(() => expect(mockAllVersionsOperationWidths).toContain(88));
   });
 
@@ -699,7 +715,7 @@ describe('UnitgroupsPage', () => {
     expect(mockContributeSource).not.toHaveBeenCalled();
   });
 
-  it('reloads when the state filter changes without import or create actions', async () => {
+  it('reloads when the state filter changes with admin create and import actions', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -713,8 +729,8 @@ describe('UnitgroupsPage', () => {
       expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument(),
     );
 
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>

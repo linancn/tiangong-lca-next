@@ -465,8 +465,8 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
     expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('flowproperty-create')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"disabled":true');
     expect(screen.queryByTestId('flowproperty-delete')).not.toBeInTheDocument();
     expect(screen.queryByTestId('flowproperty-edit')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
@@ -474,7 +474,7 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
   });
 
-  it('loads the default table with read-only my-data actions', async () => {
+  it('allows system admins to create and import while keeping existing rows read-only', async () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
@@ -503,16 +503,22 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
     expect(screen.queryByTestId('flowproperty-delete')).not.toBeInTheDocument();
     expect(screen.queryByTestId('flowproperty-edit')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('flowproperty-create')).not.toBeInTheDocument();
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"disabled":false');
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"importCount":0');
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
     expect(screen.getByTestId('table-dropdown')).toBeInTheDocument();
     expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
 
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"importCount":1');
+    await userEvent.click(screen.getByRole('button', { name: /flowproperty-create-close/i }));
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"importCount":0');
   });
 
-  it('uses compact mobile controls for my data rows without import actions', async () => {
+  it('keeps admin create and import controls available on mobile', async () => {
     mockBreakpointScreens = { md: false };
 
     renderWithProviders(<FlowpropertiesPage />);
@@ -520,7 +526,8 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
     expect(await screen.findByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"disabled":false');
   });
 
   it('reloads the table with the selected state filter', async () => {
@@ -573,7 +580,7 @@ describe('FlowpropertiesPage', () => {
   });
 
   it('uses non-my option branches without my-data write controls', async () => {
-    const { rerender } = renderWithProviders(<FlowpropertiesPage />);
+    const { unmount } = renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
     await screen.findByTestId('flowproperty-view');
@@ -586,7 +593,8 @@ describe('FlowpropertiesPage', () => {
       search: '',
     };
 
-    rerender(<FlowpropertiesPage />);
+    unmount();
+    renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(

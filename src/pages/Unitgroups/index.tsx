@@ -1,6 +1,7 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -35,7 +36,7 @@ import {
   getUnitGroupTableUuidMentionSearch,
   unitgroup_hybrid_search,
 } from '@/services/unitgroups/api';
-import { UnitGroupTable } from '@/services/unitgroups/data';
+import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, theme } from 'antd';
@@ -62,6 +63,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
@@ -84,7 +86,7 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const shouldShowUnitGroupTip = dataSource === 'my' || dataSource === 'te';
+  const shouldShowUnitGroupTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -305,6 +307,10 @@ const TableList: FC = () => {
     actionRef.current?.reload();
   };
 
+  const handleImportData = (jsonData: UnitGroupImportItem[]) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -393,6 +399,15 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
+              <UnitGroupCreate
+                disabled={!isSystemAdmin}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];

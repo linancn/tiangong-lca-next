@@ -3,7 +3,7 @@ import {
   getFlowpropertyTableAll,
   getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
 import { attachStateCodesToRows } from '@/services/general/api';
 import {
   guardLocaleMaterializedTableRequest,
@@ -30,6 +30,7 @@ import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -64,6 +65,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
@@ -86,7 +88,7 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const shouldShowFlowpropertyTip = dataSource === 'my' || dataSource === 'te';
+  const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -319,6 +321,11 @@ const TableList: FC = () => {
     }
     actionRef.current?.reload();
   };
+
+  const handleImportData = (jsonData: FlowpropertyImportData) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -407,6 +414,15 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
+              <FlowpropertiesCreate
+                disabled={!isSystemAdmin}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
