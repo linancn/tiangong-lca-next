@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8705763d8afecd25cd301172a83f1b6197b8df2a2970191cc5817e19f02e4c0a",
+    "auditedInputDigest": "cd7190e34b6d974b460e0c9612fa0188417339ee9b417f95e01f25abe6bc3a64",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "e2cf068bacfb65a87b837cf2a756accee40333aa79f3378ae3a270ebe73a394e",
-    "dossierDigest": "ef61f07b2adb96e9eaef8d029324581a142d5a541acd8d6a2aae5e98db390777",
+    "dossierDigest": "adff8c41aaa88defec417ba5b5ae2aaa6df8076134fd21b6ab6e919b91482f12",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "ea46ee411d510f3a80157de004d0cd7137cd36a7d42155b1c1643d93d2775d11",
+    "routeEvidenceDigest": "da4acf775da34bc3a803f05c5dc5ab1aecb0b7b83e91e65acc4d45c5e595f5bf",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "ef61f07b2adb96e9eaef8d029324581a142d5a541acd8d6a2aae5e98db390777",
+        "dossierDigest": "adff8c41aaa88defec417ba5b5ae2aaa6df8076134fd21b6ab6e919b91482f12",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "2fe0a8ca046d2fbcc743b32d174594a695b7089ec0b439420b369deabe4a91ed"
+  "validationDigest": "5c4965cef7a6ed53f1bb4dab87f53c42c74e8b858cb071cf554214733165d926"
 }

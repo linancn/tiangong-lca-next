@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-08"
-lastReviewedCommit: "d0f78f65e6a6a22b0f3a8fe4fa599dec60ef3eb5"
+lastReviewedCommit: "7a53d181cfb9d53d875bf241ca6ac8d6fb39b78b"
 lastReviewedNote: 'Reviewed for Issues #778 and #780: existing ownership routes cover the merged grouped-review candidate plus automatic qualification evidence, composed-candidate preflight, release orchestration, tests, and governed release docs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

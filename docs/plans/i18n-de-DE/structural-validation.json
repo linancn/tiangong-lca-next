@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8705763d8afecd25cd301172a83f1b6197b8df2a2970191cc5817e19f02e4c0a",
+    "auditedInputDigest": "cd7190e34b6d974b460e0c9612fa0188417339ee9b417f95e01f25abe6bc3a64",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "63cfae8373d6063d35883832fd2b3c2c06f24000529b6b60f257164ee76f14ba",
-    "dossierDigest": "9d3d0fa4af7772a322b55f5ff0f6a08246c7fb5e9cb2a6aca3d05ab3fb7fc588",
+    "dossierDigest": "50546b32dac10d197c65c0f051ea494abff737807af90649d07ea9ca465a1595",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "ea46ee411d510f3a80157de004d0cd7137cd36a7d42155b1c1643d93d2775d11",
+    "routeEvidenceDigest": "da4acf775da34bc3a803f05c5dc5ab1aecb0b7b83e91e65acc4d45c5e595f5bf",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "9d3d0fa4af7772a322b55f5ff0f6a08246c7fb5e9cb2a6aca3d05ab3fb7fc588",
+        "dossierDigest": "50546b32dac10d197c65c0f051ea494abff737807af90649d07ea9ca465a1595",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "84f64175c90f3c2f192b780e07f826dc459149430059fce6a5b9d9ee7df9a4aa"
+  "validationDigest": "659c39e8d42175fdd62f9296d2d1fe5d18ebc3e16a94d27f8a67d6057da5277d"
 }
