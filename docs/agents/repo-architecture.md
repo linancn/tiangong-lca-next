@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-08
-lastReviewedCommit: f26b54d064f8f408982a169a0ddda0381395826d
+lastReviewedCommit: 59e505a28d2c599a3c2c0d06dc71551292ee8d3a
 lastReviewedNote: 'Reviewed for Issues #778 and #780: release automation preserves existing runtime boundaries while grouped-review queue, selection, and dataset views remain database-authority consumers.'
 related:
   - ../AGENTS.md

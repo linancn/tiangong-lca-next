@@ -15,8 +15,8 @@ jest.mock('@/services/reviews/api', () => ({
 }));
 
 jest.mock('@ant-design/icons', () => ({
-  CheckOutlined: () => <span>approve-icon</span>,
   CloseOutlined: () => <span>reject-icon</span>,
+  SafetyCertificateOutlined: () => <span>approve-icon</span>,
 }));
 
 jest.mock('@umijs/max', () => ({
@@ -90,6 +90,9 @@ jest.mock('antd', () => {
     Button: ({
       icon,
       onClick,
+      shape,
+      size,
+      type,
     }: {
       icon?: import('react').ReactNode;
       onClick?: () => void;
@@ -99,7 +102,13 @@ jest.mock('antd', () => {
       type?: string;
       danger?: boolean;
     }) => (
-      <button type='button' onClick={onClick}>
+      <button
+        type='button'
+        data-button-shape={shape}
+        data-button-size={size}
+        data-button-type={type ?? 'default'}
+        onClick={onClick}
+      >
         {icon}
       </button>
     ),
@@ -146,7 +155,11 @@ describe('SimpleReviewActions', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('approve-icon'));
+    const approveButton = screen.getByText('approve-icon').closest('button');
+    expect(approveButton).toHaveAttribute('data-button-shape', 'circle');
+    expect(approveButton).toHaveAttribute('data-button-size', 'small');
+    expect(approveButton).toHaveAttribute('data-button-type', 'default');
+    fireEvent.click(approveButton!);
 
     await waitFor(() =>
       expect(approveReviewApiMock).toHaveBeenCalledWith('review-id', 'lifecyclemodels'),

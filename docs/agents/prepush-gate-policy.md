@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-08
-lastReviewedCommit: f26b54d064f8f408982a169a0ddda0381395826d
+lastReviewedCommit: 59e505a28d2c599a3c2c0d06dc71551292ee8d3a
 lastReviewedNote: 'Reviewed for Issues #778 and #780: dual-scope Docpact review and the grouped-review candidate continue through the unchanged checked-push and retry-receipt policy.'
 ---
 

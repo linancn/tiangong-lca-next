@@ -3,7 +3,7 @@ import {
   submitSimpleReviewDecision,
   type ReviewSubmitDatasetTable,
 } from '@/services/reviews/api';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import { Button, Form, Input, message, Modal, Space, Tooltip } from 'antd';
 import { useState } from 'react';
@@ -94,8 +94,7 @@ const SimpleReviewActions = ({
         <Button
           size='small'
           shape='circle'
-          type='primary'
-          icon={<CheckOutlined />}
+          icon={<SafetyCertificateOutlined />}
           loading={loading}
           onClick={() =>
             Modal.confirm({
