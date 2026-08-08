@@ -3,7 +3,7 @@ import {
   getFlowpropertyTableAll,
   getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
 import { attachStateCodesToRows } from '@/services/general/api';
 import {
   guardLocaleMaterializedTableRequest,
@@ -14,7 +14,13 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
-import { getDataSource, getLang, getLangText, getUnitData } from '@/services/general/util';
+import {
+  getDataSource,
+  getLang,
+  getLangText,
+  getUnitData,
+  isDataUnderReview,
+} from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -30,6 +36,7 @@ import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -56,6 +63,7 @@ import {
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import FlowpropertiesCreate from './Components/create';
+import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
 
 const { Search } = Input;
@@ -64,6 +72,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
+  const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
@@ -86,7 +95,7 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const shouldShowFlowpropertyTip = dataSource === 'my' || dataSource === 'te';
+  const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -144,6 +153,16 @@ const TableList: FC = () => {
             id={row.id}
             version={row.version}
           />
+          {isSystemAdmin && (
+            <FlowpropertiesEdit
+              disabled={isDataUnderReview(row.stateCode)}
+              id={row.id}
+              version={row.version}
+              buttonType='icon'
+              actionRef={listActionRef}
+              lang={lang}
+            />
+          )}
         </ResponsiveDataListActions>,
       ];
     }
@@ -274,7 +293,9 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderFlowpropertyActions(versionRow as FlowpropertyTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
+              operationColumnWidth={
+                isMobileDataList ? 88 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 184
+              }
             ></AllVersionsList>
           </Space>
         );
@@ -290,7 +311,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<FlowpropertyTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 152,
       ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
@@ -319,6 +340,11 @@ const TableList: FC = () => {
     }
     actionRef.current?.reload();
   };
+
+  const handleImportData = (jsonData: FlowpropertyImportData) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -407,6 +433,15 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
+              <FlowpropertiesCreate
+                disabled={!isSystemAdmin}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];

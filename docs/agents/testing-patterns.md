@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-08
-lastReviewedCommit: 6e0eacef1d999381e6c6aef8e49001847a3c29b5
+lastReviewedCommit: f26b54d064f8f408982a169a0ddda0381395826d
 lastReviewedNote: 'Reviewed for Issues #778 and #780: release proof and grouped-review tests continue to use existing bounded Docpact and service/UI testing patterns.'
 ---
 

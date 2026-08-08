@@ -1,9 +1,9 @@
 /**
- * Unitgroups read-only workflow integration test.
+ * Unitgroups role-gated workflow integration test.
  * Covers src/pages/Unitgroups/index.tsx with focus on:
  * - Initial table load via getUnitGroupTableAll.
  * - Search behaviour delegating to unitgroup_hybrid_search.
- * - My Data unit groups expose existing rows without create/edit/delete controls.
+ * - System admins can create/import/edit while destructive My Data actions remain closed.
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
@@ -379,7 +379,7 @@ describe('Unitgroups Workflow Integration', () => {
     });
   });
 
-  it('renders my-data unit groups read-only while preserving search and filters', async () => {
+  it('lets system admins create, import, and edit while destructive actions remain closed', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<UnitgroupsPage />);
@@ -409,14 +409,14 @@ describe('Unitgroups Workflow Integration', () => {
     });
 
     const toolbar = screen.getByTestId('pro-table-toolbar');
-    expect(within(toolbar).queryByRole('button', { name: /create/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: /create/i })).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: 'import' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute/i })).not.toBeInTheDocument();
 
     const dataRow = screen.getByText('Heat units').closest('tr') as HTMLElement;
     expect(within(dataRow).getByRole('button', { name: 'view' })).toBeInTheDocument();
     expect(screen.getByText('export')).toBeInTheDocument();
-    expect(within(dataRow).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(within(dataRow).getByRole('button', { name: /edit/i })).toBeInTheDocument();
     expect(within(dataRow).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('state-filter'), '100');

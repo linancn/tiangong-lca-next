@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "a8cc23b311aec26dd4fa9c663216c17859fa6335b99d7c5861ffd159502f305c",
+    "auditedInputDigest": "535ecbfeedd44d62bc95ba01c98ad10307ec4b54b3ecb3edc29a4dba8543b858",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -11884,7 +11884,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 278,
+          "line": 290,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -11911,7 +11911,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 278,
+              "line": 290,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -23694,7 +23694,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 261,
+          "line": 273,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Logout",
@@ -23709,7 +23709,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 261,
+              "line": 273,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -23895,7 +23895,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 235,
+          "line": 245,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Account Profile",
@@ -23919,7 +23919,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 235,
+              "line": 245,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -23993,7 +23993,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 252,
+          "line": 264,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Review Management",
@@ -24008,7 +24008,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 252,
+              "line": 264,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -24135,7 +24135,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 240,
+          "line": 250,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "My Team",
@@ -24168,7 +24168,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 240,
+              "line": 250,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -27048,7 +27048,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 245,
+          "line": 255,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "System Management",
@@ -27081,7 +27081,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 245,
+              "line": 255,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -29379,7 +29379,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 366,
+          "line": 392,
           "column": 15,
           "symbol": "TableList",
           "defaultMessage": "Flow Properties",
@@ -29394,7 +29394,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 366,
+              "line": 392,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -29853,7 +29853,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 352,
+          "line": 372,
           "column": 15,
           "symbol": "TableList",
           "defaultMessage": "Unit Groups",
@@ -29868,7 +29868,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 352,
+              "line": 372,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -85204,7 +85204,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 209,
+          "line": 228,
           "column": 9,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Reference unit",
@@ -85315,7 +85315,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 209,
+              "line": 228,
               "column": 9,
               "kind": "FormattedMessage"
             },
@@ -85443,7 +85443,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 381,
+          "line": 407,
           "column": 17,
           "symbol": "TableList",
           "defaultMessage": "Need to add or supplement flow properties? Contact an administrator.",
@@ -85458,7 +85458,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 381,
+              "line": 407,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -217921,7 +217921,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 334,
+          "line": 360,
           "column": 28,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -218137,7 +218137,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 320,
+          "line": 340,
           "column": 28,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -218565,7 +218565,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 349,
+          "line": 375,
           "column": 17,
           "symbol": "TableList",
           "defaultMessage": "Reference Lookup",
@@ -218610,7 +218610,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 335,
+          "line": 355,
           "column": 17,
           "symbol": "TableList",
           "defaultMessage": "Reference Lookup",
@@ -218631,7 +218631,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 349,
+              "line": 375,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -218661,7 +218661,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 335,
+              "line": 355,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -218738,7 +218738,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 334,
+          "line": 360,
           "column": 28,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -218783,7 +218783,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 320,
+          "line": 340,
           "column": 28,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -229325,7 +229325,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 197,
+          "line": 216,
           "column": 9,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Classification",
@@ -229433,7 +229433,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 201,
+          "line": 215,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Classification",
@@ -229466,7 +229466,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 197,
+              "line": 216,
               "column": 9,
               "kind": "FormattedMessage"
             },
@@ -229538,7 +229538,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 201,
+              "line": 215,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -229849,7 +229849,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 183,
+          "line": 202,
           "column": 14,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Index",
@@ -230092,7 +230092,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 170,
+          "line": 184,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Index",
@@ -230125,7 +230125,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 183,
+              "line": 202,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -230287,7 +230287,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 170,
+              "line": 184,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -230489,7 +230489,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 189,
+          "line": 208,
           "column": 14,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Name",
@@ -230660,7 +230660,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 177,
+          "line": 191,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Name",
@@ -230699,7 +230699,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 189,
+              "line": 208,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -230813,7 +230813,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 177,
+              "line": 191,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -230917,7 +230917,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 295,
+          "line": 316,
           "column": 14,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Actions",
@@ -231133,7 +231133,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 281,
+          "line": 297,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Actions",
@@ -231172,7 +231172,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 295,
+              "line": 316,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -231316,7 +231316,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 281,
+              "line": 297,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -231402,7 +231402,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 285,
+          "line": 306,
           "column": 14,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Updated at",
@@ -231474,7 +231474,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 266,
+          "line": 282,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Updated at",
@@ -231501,7 +231501,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 285,
+              "line": 306,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -231549,7 +231549,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 266,
+              "line": 282,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -231653,7 +231653,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/index.tsx",
-          "line": 234,
+          "line": 253,
           "column": 14,
           "symbol": "flowpropertiesColumns",
           "defaultMessage": "Version",
@@ -231842,7 +231842,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 215,
+          "line": 229,
           "column": 14,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Version",
@@ -231881,7 +231881,7 @@
             },
             {
               "path": "src/pages/Flowproperties/index.tsx",
-              "line": 234,
+              "line": 253,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -232007,7 +232007,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 215,
+              "line": 229,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -238948,7 +238948,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 367,
+          "line": 387,
           "column": 17,
           "symbol": "TableList",
           "defaultMessage": "Need to add or supplement unit groups? Contact an administrator.",
@@ -238963,7 +238963,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 367,
+              "line": 387,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -239657,7 +239657,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/index.tsx",
-          "line": 186,
+          "line": 200,
           "column": 9,
           "symbol": "unitGroupColumns",
           "defaultMessage": "Quantitative reference",
@@ -239714,7 +239714,7 @@
             },
             {
               "path": "src/pages/Unitgroups/index.tsx",
-              "line": 186,
+              "line": 200,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -256074,7 +256074,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 133,
+          "line": 143,
           "column": 22,
           "symbol": "onMenuClick",
           "defaultMessage": "You can create a team or join an existing team.",
@@ -256089,7 +256089,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 133,
+              "line": 143,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -256157,7 +256157,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 172,
+          "line": 182,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "Create Team",
@@ -256172,7 +256172,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 172,
+              "line": 182,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -256240,7 +256240,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 147,
+          "line": 157,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "Join Team",
@@ -256255,7 +256255,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 147,
+              "line": 157,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -256323,7 +256323,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 129,
+          "line": 139,
           "column": 20,
           "symbol": "onMenuClick",
           "defaultMessage": "You are not in any team",
@@ -256338,7 +256338,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 129,
+              "line": 139,
               "column": 20,
               "kind": "formatMessage"
             }
