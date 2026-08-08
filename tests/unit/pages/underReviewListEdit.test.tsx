@@ -383,7 +383,7 @@ describe('under review list actions', () => {
     );
   });
 
-  it('does not render unit group edit and delete buttons for rows under review', async () => {
+  it('disables system-admin unit group editing and keeps delete closed for rows under review', async () => {
     mockLocation = {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
@@ -418,7 +418,7 @@ describe('under review list actions', () => {
         ]),
       ),
     );
-    expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-edit')).toBeDisabled();
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
   });
 
