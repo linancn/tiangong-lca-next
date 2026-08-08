@@ -1,4 +1,3 @@
-import { getSystemUserRoleApi } from '@/services/roles/api';
 import {
   AuditOutlined,
   LogoutOutlined,
@@ -10,7 +9,7 @@ import { history, useIntl, useLocation, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { logout } from '@/services/auth';
-import { getUserRoles } from '@/services/roles/api';
+import { getReviewUserRoleApi, getSystemUserRoleApi, getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import { flushSync } from 'react-dom';
@@ -50,7 +49,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const [isLoadingHovered, setIsLoadingHovered] = useState(false);
   // const [isUserInTeam, setIsUserInTeam] = useState(false);
   const [showAllTeamsModal, setShowAllTeamsModal] = useState(false);
-  const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
+  const [systemUserData, setSystemUserData] = useState<{
+    user_id: string;
+    role: string;
+  } | null>(null);
+  const [reviewUserData, setReviewUserData] = useState<{
+    user_id: string;
+    role: string;
+  } | null>(null);
 
   const getUserRole = async () => {
     const { data } = await getUserRoles();
@@ -64,14 +70,18 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     }
   };
 
-  const getSystemUserRole = async () => {
-    const userData = await getSystemUserRoleApi();
-    setUserData(userData);
+  const getMenuUserRoles = async () => {
+    const [systemUserData, reviewUserData] = await Promise.all([
+      getSystemUserRoleApi(),
+      getReviewUserRoleApi(),
+    ]);
+    setSystemUserData(systemUserData);
+    setReviewUserData(reviewUserData);
   };
 
   useEffect(() => {
     // getUserRole();
-    getSystemUserRole();
+    getMenuUserRoles();
   }, []);
   /**
    * Logout and save the current URL
@@ -244,13 +254,15 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       icon: <SettingOutlined />,
       label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
       hidden:
-        userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
+        systemUserData?.role !== 'admin' &&
+        systemUserData?.role !== 'owner' &&
+        systemUserData?.role !== 'member',
     },
     {
       key: 'review',
       icon: <AuditOutlined />,
       label: <FormattedMessage id='menu.account.review' defaultMessage='Review Management' />,
-      hidden: userData?.role !== 'review-admin' && userData?.role !== 'review-member',
+      hidden: reviewUserData?.role !== 'review-admin' && reviewUserData?.role !== 'review-member',
     },
     {
       type: 'divider' as const,
