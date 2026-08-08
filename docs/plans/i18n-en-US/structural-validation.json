@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "cd7190e34b6d974b460e0c9612fa0188417339ee9b417f95e01f25abe6bc3a64",
+    "auditedInputDigest": "535ecbfeedd44d62bc95ba01c98ad10307ec4b54b3ecb3edc29a4dba8543b858",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "7f0b344ed5cce17b04cbb9bf83ba8839e9d2863c549899470b0bbf1c52841c8b",
-    "dossierDigest": "c1085b371c5f58bf58b2769b64566658827f189cb0e0abb795f141d6ccd5f5c1",
+    "dossierDigest": "637555d5e12222d2e311dde8e39b081ebbab2fe8dd7206344d7890d98ef49dbb",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "da4acf775da34bc3a803f05c5dc5ab1aecb0b7b83e91e65acc4d45c5e595f5bf",
+    "routeEvidenceDigest": "cd01022077766804ccf2b63ce8c25328adcf8dc692ac930685c6c528d6d844bf",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "c1085b371c5f58bf58b2769b64566658827f189cb0e0abb795f141d6ccd5f5c1",
+        "dossierDigest": "637555d5e12222d2e311dde8e39b081ebbab2fe8dd7206344d7890d98ef49dbb",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "21432a0508dbff36a9c805edd61d146752c4382b3b2820c4e314a9fe5781021d"
+  "validationDigest": "2de8d9f884455beb28590b14ea5ed52947d1bf0756b964a2737e301fe4ffbdac"
 }

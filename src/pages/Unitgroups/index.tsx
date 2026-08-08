@@ -148,7 +148,7 @@ const TableList: FC = () => {
               buttonType='icon'
               lang={lang}
               actionRef={listActionRef}
-              setViewDrawerVisible={() => {}}
+              setViewDrawerVisible={setViewDrawerVisible}
             />
           )}
         </ResponsiveDataListActions>,
