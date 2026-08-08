@@ -35,6 +35,7 @@ const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
 const mockGetUnitGroupTableUuidMentionSearch = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
+const mockIsDataUnderReview = jest.fn((stateCode: number | undefined) => stateCode === 20);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -57,7 +58,7 @@ jest.mock('@/services/general/util', () => ({
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
-  isDataUnderReview: () => false,
+  isDataUnderReview: (...args: any[]) => mockIsDataUnderReview(...args),
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -209,7 +210,11 @@ jest.mock('@/pages/Unitgroups/Components/edit', () => ({
   __esModule: true,
   default: (props: any) => {
     mockUnitGroupEditCalls.push(props);
-    return <div data-testid='unitgroup-edit'>{`edit:${props.id}`}</div>;
+    return (
+      <div data-testid='unitgroup-edit'>
+        {JSON.stringify({ id: props.id, version: props.version, disabled: props.disabled })}
+      </div>
+    );
   },
 }));
 
@@ -504,7 +509,7 @@ describe('UnitgroupsPage', () => {
     expect(mockAllVersionsOperationWidths).toContain(104);
   });
 
-  it('allows system admins to create and import while keeping existing rows read-only', async () => {
+  it('allows system admins to create, import, and edit while keeping other row actions closed', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -529,14 +534,15 @@ describe('UnitgroupsPage', () => {
     await waitFor(() =>
       expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-1'),
     );
-    expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"id":"ug-1"');
+    expect(screen.getByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
     expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
-    expect(mockAllVersionsOperationWidths).toContain(104);
+    expect(mockAllVersionsOperationWidths).toContain(144);
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":1');
@@ -567,6 +573,31 @@ describe('UnitgroupsPage', () => {
         'team-1',
       ),
     );
+  });
+
+  it('keeps system-admin editing disabled while a unit group is under review', async () => {
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+    mockGetUnitGroupTableAll.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-review',
+          version: '1.0.0',
+          name: 'Under-review units',
+          stateCode: 20,
+        },
+      ],
+      success: true,
+    });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":true');
+    expect(mockIsDataUnderReview).toHaveBeenCalledWith(20);
   });
 
   it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
@@ -645,7 +676,7 @@ describe('UnitgroupsPage', () => {
     );
   });
 
-  it('keeps admin create and import controls available on mobile', async () => {
+  it('keeps admin create, import, and edit controls available on mobile', async () => {
     mockBreakpointScreens = { md: false };
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -660,6 +691,7 @@ describe('UnitgroupsPage', () => {
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     await waitFor(() => expect(mockAllVersionsOperationWidths).toContain(88));
   });
 

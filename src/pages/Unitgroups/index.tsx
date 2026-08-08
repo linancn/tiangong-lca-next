@@ -27,7 +27,7 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -55,6 +55,7 @@ import {
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import UnitGroupCreate from './Components/create';
+import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
 const { Search } = Input;
@@ -139,6 +140,17 @@ const TableList: FC = () => {
             version={row.version}
             buttonType={'icon'}
           />
+          {isSystemAdmin && (
+            <UnitGroupEdit
+              disabled={isDataUnderReview(row.stateCode)}
+              id={row.id}
+              version={row.version}
+              buttonType='icon'
+              lang={lang}
+              actionRef={listActionRef}
+              setViewDrawerVisible={() => {}}
+            />
+          )}
         </ResponsiveDataListActions>,
       ];
     }
@@ -256,7 +268,9 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderUnitGroupActions(versionRow as UnitGroupTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
+              operationColumnWidth={
+                isMobileDataList ? 88 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 184
+              }
             ></AllVersionsList>
           </Space>
         );
@@ -277,7 +291,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<UnitGroupTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 152,
       ),
       title: (
         <FormattedMessage id='pages.table.title.option' defaultMessage='Actions'></FormattedMessage>

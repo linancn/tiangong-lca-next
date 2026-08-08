@@ -4,7 +4,7 @@
  *
  * Journey:
  * 1. Owner opens My Data / Flow Properties list (ProTable request -> getFlowpropertyTableAll).
- * 2. System admins can create/import while existing My Data rows remain read-only.
+ * 2. System admins can create/import/edit while destructive My Data actions remain closed.
  * 3. Open-data users land on /tgdata flow properties and only see the read-only source matrix.
  *
  * Services mocked:
@@ -298,9 +298,10 @@ jest.mock('@/pages/Flowproperties/Components/edit', () => {
   const { updateFlowproperties } = jest.requireMock('@/services/flowproperties/api');
   return {
     __esModule: true,
-    default: ({ id, version, actionRef }: any) => (
+    default: ({ id, version, disabled, actionRef }: any) => (
       <button
         type='button'
+        disabled={disabled}
         onClick={async () => {
           await updateFlowproperties(id, version, { updated: true });
           message.success?.('Saved successfully!');
@@ -384,7 +385,7 @@ describe('Flowproperties workflow integration', () => {
     });
   };
 
-  it('lets system admins create and import while rows remain read-only', async () => {
+  it('lets system admins create, import, and edit while destructive actions remain closed', async () => {
     await renderFlowproperties();
     const user = userEvent.setup();
 
@@ -396,10 +397,15 @@ describe('Flowproperties workflow integration', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'import' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /edit fp-1/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /edit fp-1/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /delete fp-1/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'view fp-1:1.0.0' })).toBeInTheDocument();
     expect(screen.getByText('export')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /edit fp-1/i }));
+    await waitFor(() =>
+      expect(mockUpdateFlowproperties).toHaveBeenCalledWith('fp-1', '1.0.0', { updated: true }),
+    );
 
     await user.selectOptions(screen.getByRole('combobox'), '100');
 

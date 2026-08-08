@@ -3,7 +3,7 @@
  * Covers src/pages/Unitgroups/index.tsx with focus on:
  * - Initial table load via getUnitGroupTableAll.
  * - Search behaviour delegating to unitgroup_hybrid_search.
- * - System admins can create/import while existing My Data rows remain read-only.
+ * - System admins can create/import/edit while destructive My Data actions remain closed.
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
@@ -379,7 +379,7 @@ describe('Unitgroups Workflow Integration', () => {
     });
   });
 
-  it('lets system admins create and import while rows remain read-only', async () => {
+  it('lets system admins create, import, and edit while destructive actions remain closed', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<UnitgroupsPage />);
@@ -416,7 +416,7 @@ describe('Unitgroups Workflow Integration', () => {
     const dataRow = screen.getByText('Heat units').closest('tr') as HTMLElement;
     expect(within(dataRow).getByRole('button', { name: 'view' })).toBeInTheDocument();
     expect(screen.getByText('export')).toBeInTheDocument();
-    expect(within(dataRow).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(within(dataRow).getByRole('button', { name: /edit/i })).toBeInTheDocument();
     expect(within(dataRow).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('state-filter'), '100');

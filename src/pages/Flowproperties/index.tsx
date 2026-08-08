@@ -14,7 +14,13 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
-import { getDataSource, getLang, getLangText, getUnitData } from '@/services/general/util';
+import {
+  getDataSource,
+  getLang,
+  getLangText,
+  getUnitData,
+  isDataUnderReview,
+} from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -57,6 +63,7 @@ import {
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import FlowpropertiesCreate from './Components/create';
+import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
 
 const { Search } = Input;
@@ -146,6 +153,16 @@ const TableList: FC = () => {
             id={row.id}
             version={row.version}
           />
+          {isSystemAdmin && (
+            <FlowpropertiesEdit
+              disabled={isDataUnderReview(row.stateCode)}
+              id={row.id}
+              version={row.version}
+              buttonType='icon'
+              actionRef={listActionRef}
+              lang={lang}
+            />
+          )}
         </ResponsiveDataListActions>,
       ];
     }
@@ -276,7 +293,9 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderFlowpropertyActions(versionRow as FlowpropertyTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
+              operationColumnWidth={
+                isMobileDataList ? 88 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 184
+              }
             ></AllVersionsList>
           </Space>
         );
@@ -292,7 +311,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<FlowpropertyTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 152,
       ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
