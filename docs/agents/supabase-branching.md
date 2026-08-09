@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: 4f96234f03418295df7b27badefc2958f9c18c37
+lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
 lastReviewedNote: 'Reviewed for database-engine Issue #422: Next defaults RPC calls to api, keeps only nine core entities on explicit public access, and consumes the exact reviewed Edge mirror.'
 ---
 
@@ -76,6 +76,7 @@ Rules:
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
 - Process keyword searches call `search_processes_latest_v2` through `src/services/processes/api.ts`, pass explicit query terms, and use no app-side ILIKE field filter. The `public_plus_owner_draft` picker asks the database for strict personal drafts and public rows separately; database-engine owns the exact `state_code=0`, null-team, null-review, latest-version, and `extracted_md` index constraints
+- LCA solve, result-query, and contribution-path requests use the shared `LcaScope` contract from `src/services/lca/scope.ts`. The default snapshot family is `full_library`; `data_product` is the only alternate value. Deployment names and cache namespaces are not valid LCA scope values, and persisted task recovery normalizes historical non-canonical values before resubmission
 - the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`

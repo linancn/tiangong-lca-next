@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "c76d01b205e1e4f58f0b5129ad7fad97327c4b27f03b245cb4ee7ed5b718ea88",
+    "auditedInputDigest": "03c019c43ff4114decfa1ea6ea60b2cd61ac02bab5ed9d81adccd70ee9717bb9",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -74,7 +74,7 @@
     "activeStaticKeyCount": 2096,
     "activeDynamicKeyCount": 367,
     "reservedKeyCount": 638,
-    "productionSourceFileCount": 435,
+    "productionSourceFileCount": 436,
     "literalReferenceCount": 4101,
     "dynamicCallsiteCount": 39,
     "dynamicCallsiteSummaryCount": 39,
@@ -141609,7 +141609,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 53,
+          "line": 52,
           "column": 9,
           "symbol": "onSubmit",
           "defaultMessage": "Failed to submit the calculation request: {message}",
@@ -141624,7 +141624,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 53,
+              "line": 52,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -141692,7 +141692,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 41,
+          "line": 40,
           "column": 9,
           "symbol": "onSubmit",
           "defaultMessage": "Task submitted ({taskId}). Track progress in the task center at the top right.",
@@ -141707,7 +141707,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 41,
+              "line": 40,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -141793,7 +141793,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 87,
+          "line": 86,
           "column": 21,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Close",
@@ -141820,7 +141820,7 @@
             },
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 87,
+              "line": 86,
               "column": 21,
               "kind": "formatMessage"
             }
@@ -141888,7 +141888,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 83,
+          "line": 82,
           "column": 17,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Run Calculation",
@@ -141903,7 +141903,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 83,
+              "line": 82,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -142030,7 +142030,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 78,
+          "line": 77,
           "column": 16,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Run LCA Calculation",
@@ -142045,7 +142045,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 78,
+              "line": 77,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -142122,7 +142122,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 107,
+          "line": 106,
           "column": 14,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "All Processes (Reference Flow = 1)",
@@ -142143,7 +142143,7 @@
             },
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 107,
+              "line": 106,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -142353,7 +142353,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 113,
+          "line": 112,
           "column": 14,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Calculate all processes in the current snapshot with a fixed demand of 1 reference flow.",
@@ -142368,7 +142368,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 113,
+              "line": 112,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -155376,7 +155376,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 122,
+          "line": 121,
           "column": 12,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Progress is shown in the task center at the top right.",
@@ -155391,7 +155391,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 122,
+              "line": 121,
               "column": 12,
               "kind": "formatMessage"
             }
@@ -158641,7 +158641,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-          "line": 70,
+          "line": 69,
           "column": 18,
           "symbol": "LcaSolveToolbar",
           "defaultMessage": "Run LCA",
@@ -158656,7 +158656,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/lcaSolveToolbar.tsx",
-              "line": 70,
+              "line": 69,
               "column": 18,
               "kind": "formatMessage"
             }
@@ -189061,7 +189061,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 239,
+          "line": 240,
           "column": 11,
           "symbol": "columns",
           "defaultMessage": "Mean amount",
@@ -189076,7 +189076,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 239,
+              "line": 240,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -189853,7 +189853,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 124,
+          "line": 125,
           "column": 16,
           "symbol": "lciaDiagnostics",
           "defaultMessage": "Published result details",
@@ -189868,7 +189868,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 124,
+              "line": 125,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -189936,7 +189936,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 174,
+          "line": 175,
           "column": 11,
           "symbol": "lciaProfileNotice",
           "defaultMessage": "No published LCIA result rows are available for this process.",
@@ -189951,7 +189951,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 174,
+              "line": 175,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -190019,7 +190019,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 190,
+          "line": 191,
           "column": 20,
           "symbol": "lciaProfileNotice",
           "defaultMessage": "Detail: {message}",
@@ -190034,7 +190034,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 190,
+              "line": 191,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -190102,7 +190102,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 156,
+          "line": 157,
           "column": 37,
           "symbol": "publishedErrorDetailLabel",
           "defaultMessage": "Published result error details",
@@ -190117,7 +190117,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 156,
+              "line": 157,
               "column": 37,
               "kind": "formatMessage"
             }
@@ -190185,7 +190185,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 184,
+          "line": 185,
           "column": 13,
           "symbol": "lciaProfileNotice",
           "defaultMessage": "Published LCIA results are unavailable.",
@@ -190200,7 +190200,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 184,
+              "line": 185,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -190268,7 +190268,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 260,
+          "line": 261,
           "column": 11,
           "symbol": "columns",
           "defaultMessage": "Version",
@@ -190283,7 +190283,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 260,
+              "line": 261,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -190351,7 +190351,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 221,
+          "line": 222,
           "column": 11,
           "symbol": "columns",
           "defaultMessage": "LCIA",
@@ -190366,7 +190366,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 221,
+              "line": 222,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -190434,7 +190434,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 564,
+          "line": 565,
           "column": 15,
           "symbol": "ProcessLciaResultsPanel",
           "defaultMessage": "LCIA results are being calculated (job {jobId}). Retrying automatically...",
@@ -190449,7 +190449,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 564,
+              "line": 565,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -190517,7 +190517,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 134,
+          "line": 135,
           "column": 16,
           "symbol": "lciaDiagnostics",
           "defaultMessage": "Calculated result details",
@@ -190532,7 +190532,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 134,
+              "line": 135,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -190600,7 +190600,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 165,
+          "line": 166,
           "column": 11,
           "symbol": "lciaProfileNotice",
           "defaultMessage": "Result query failed: {message}",
@@ -190615,7 +190615,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 165,
+              "line": 166,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -190683,7 +190683,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 548,
+          "line": 549,
           "column": 13,
           "symbol": "ProcessLciaResultsPanel",
           "defaultMessage": "Refresh latest calculated results",
@@ -190698,7 +190698,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 548,
+              "line": 549,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -190766,7 +190766,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 555,
+          "line": 556,
           "column": 15,
           "symbol": "ProcessLciaResultsPanel",
           "defaultMessage": "Snapshot is rebuilding (job {jobId}). Retrying automatically...",
@@ -190781,7 +190781,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 555,
+              "line": 556,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -190867,7 +190867,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 251,
+          "line": 252,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Unit",
@@ -190894,7 +190894,7 @@
             },
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 251,
+              "line": 252,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -229984,7 +229984,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-          "line": 213,
+          "line": 214,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Index",
@@ -230215,7 +230215,7 @@
             },
             {
               "path": "src/pages/Processes/Components/processLciaResultsPanel.tsx",
-              "line": 213,
+              "line": 214,
               "column": 16,
               "kind": "FormattedMessage"
             },

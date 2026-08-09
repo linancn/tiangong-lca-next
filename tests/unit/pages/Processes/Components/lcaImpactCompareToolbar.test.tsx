@@ -277,7 +277,7 @@ describe('lcaImpactCompareToolbar', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
         impact_id: 'impact-1',
@@ -339,7 +339,7 @@ describe('lcaImpactCompareToolbar', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2'],

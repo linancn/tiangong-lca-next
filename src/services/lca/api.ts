@@ -1,10 +1,13 @@
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
+import type { LcaScope } from './scope';
+
+export * from './scope';
 
 export type LcaJobStatus = 'queued' | 'running' | 'ready' | 'completed' | 'failed' | 'stale';
 
 type LcaSolveRequestBase = {
-  scope?: string;
+  scope?: LcaScope;
   snapshot_id?: string;
   data_scope?: LcaDataScope;
   solve?: {
@@ -127,7 +130,7 @@ export type LcaDataScope = 'public_plus_owner_draft' | 'current_user' | 'open_da
 
 export type LcaQueryRequest =
   | {
-      scope?: string;
+      scope?: LcaScope;
       snapshot_id?: string;
       data_scope?: LcaDataScope;
       mode: 'process_all_impacts';
@@ -136,7 +139,7 @@ export type LcaQueryRequest =
       allow_fallback?: boolean;
     }
   | {
-      scope?: string;
+      scope?: LcaScope;
       snapshot_id?: string;
       data_scope?: LcaDataScope;
       mode: 'processes_one_impact';
@@ -149,7 +152,7 @@ export type LcaQueryRequest =
       sort_direction?: never;
     }
   | {
-      scope?: string;
+      scope?: LcaScope;
       snapshot_id?: string;
       data_scope?: LcaDataScope;
       mode: 'processes_one_impact';
@@ -177,7 +180,7 @@ export type LcaQueryResponse = {
 };
 
 export type LcaContributionPathRequest = {
-  scope?: string;
+  scope?: LcaScope;
   snapshot_id?: string;
   data_scope?: LcaDataScope;
   process_id: string;

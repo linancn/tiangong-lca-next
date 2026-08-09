@@ -414,7 +414,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
         top_n: 10,
@@ -444,7 +444,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
         top_n: 10,
@@ -490,7 +490,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
@@ -776,7 +776,7 @@ describe('lcaImpactHotspotToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
         top_n: 20,

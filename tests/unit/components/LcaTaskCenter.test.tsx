@@ -296,7 +296,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-running',
         sequence: 1,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'solving',
         message: 'running message',
@@ -324,7 +324,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-completed',
         sequence: 2,
         mode: 'all_unit',
-        scope: 'prod',
+        scope: 'full_library',
         state: 'completed',
         phase: 'completed',
         message: 'cache hit for recent result',
@@ -379,7 +379,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('Demand type')).toBeInTheDocument();
     expect(screen.getByText('Single-Process Calculation')).toBeInTheDocument();
     expect(screen.getByText('Data scope')).toBeInTheDocument();
-    expect(screen.getByText('team')).toBeInTheDocument();
+    expect(screen.getByText('data_product')).toBeInTheDocument();
     expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
     fireEvent.click(viewButtons[1]);
     expect(screen.queryByText('Cache hit; result is ready')).not.toBeInTheDocument();
@@ -423,7 +423,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-build',
         sequence: 3,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'building_snapshot',
         message: 'build message',
@@ -458,7 +458,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-failed',
         sequence: 5,
         mode: 'all_unit',
-        scope: 'prod',
+        scope: 'full_library',
         state: 'failed',
         phase: 'failed',
         message: 'failed message',
@@ -986,7 +986,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-running-completed',
         sequence: 7,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'completed',
         message: 'running with completed phase',
@@ -998,7 +998,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-build-no-id',
         sequence: 8,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'building_snapshot',
         message: 'build without id',
@@ -1010,7 +1010,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-running-failed-phase',
         sequence: 8.5,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'failed',
         message: 'failed phase while still running',
@@ -1022,7 +1022,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-solve-no-id',
         sequence: 9,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'solving',
         message: 'solve without id',
@@ -1034,7 +1034,7 @@ describe('LcaTaskCenter', () => {
         id: 'task-completed-result',
         sequence: 10,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'completed',
         phase: 'completed',
         message: 'completed normally',
@@ -1072,7 +1072,7 @@ describe('LcaTaskCenter', () => {
       {
         id: '',
         mode: 'single',
-        scope: 'prod',
+        scope: 'full_library',
         state: 'completed',
         phase: 'completed',
         workerJobId: '   ',
@@ -1083,7 +1083,7 @@ describe('LcaTaskCenter', () => {
       {
         id: 'lca-building-filter',
         mode: 'all_unit',
-        scope: 'prod',
+        scope: 'full_library',
         state: 'running',
         phase: 'building_snapshot',
         createdAt: '2026-03-12T12:00:00.000Z',
@@ -1226,7 +1226,7 @@ describe('LcaTaskCenter', () => {
         id: 'lca-task-running',
         sequence: 1,
         mode: 'single',
-        scope: 'team',
+        scope: 'data_product',
         state: 'running',
         phase: 'submitting',
         message: 'lca running',

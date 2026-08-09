@@ -474,7 +474,7 @@ describe('ProcessLciaResultsPanel', () => {
 
     await waitFor(() =>
       expect(mockQueryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         allow_fallback: false,

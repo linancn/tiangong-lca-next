@@ -4,6 +4,7 @@ import {
   type WorkerJobStatus,
 } from '@/services/workerJobs/api';
 import { submitLcaSolve, type LcaSolveRequest, type LcaSolveSubmitResponse } from './api';
+import { DEFAULT_LCA_SCOPE, type LcaScope } from './scope';
 
 export type LcaTaskState = 'running' | 'completed' | 'failed';
 export type LcaTaskPhase = 'submitting' | 'building_snapshot' | 'solving' | 'completed' | 'failed';
@@ -21,7 +22,7 @@ export type LcaBackgroundTask = {
   sequence: number;
   request?: LcaSolveRequest;
   mode: LcaTaskMode;
-  scope: string;
+  scope: LcaScope;
   state: LcaTaskState;
   phase: LcaTaskPhase;
   message: string;
@@ -122,6 +123,10 @@ function normalizeMode(value: unknown): LcaTaskMode | null {
   return null;
 }
 
+function normalizeStoredScope(value: unknown): LcaScope {
+  return value === 'data_product' ? 'data_product' : DEFAULT_LCA_SCOPE;
+}
+
 function normalizeState(value: unknown): LcaTaskState | null {
   if (value === 'running' || value === 'completed' || value === 'failed') {
     return value;
@@ -174,17 +179,21 @@ function normalizeRequest(value: unknown): LcaSolveRequest | undefined {
   if (!value || typeof value !== 'object') {
     return undefined;
   }
-  const request = value as { demand_mode?: unknown; demand?: unknown };
+  const request = value as { scope?: unknown; demand_mode?: unknown; demand?: unknown };
+  const normalizedRequest = {
+    ...request,
+    scope: normalizeStoredScope(request.scope),
+  } as LcaSolveRequest;
   if (request.demand_mode === 'all_unit') {
-    return value as LcaSolveRequest;
+    return normalizedRequest;
   }
   const demand = request.demand as
     { process_index?: unknown; process_id?: unknown; process_version?: unknown } | undefined;
   if (demand && Number.isInteger(demand.process_index) && Number(demand.process_index) >= 0) {
-    return value as LcaSolveRequest;
+    return normalizedRequest;
   }
   if (demand && typeof demand.process_id === 'string' && demand.process_id.trim()) {
-    return value as LcaSolveRequest;
+    return normalizedRequest;
   }
   return undefined;
 }
@@ -271,7 +280,7 @@ function normalizeTask(raw: unknown, fallbackSequence: number): LcaBackgroundTas
   const now = nowIso();
   const createdAt = normalizeIso(item.createdAt, now);
   const updatedAt = normalizeIso(item.updatedAt, createdAt);
-  const scope = typeof item.scope === 'string' && item.scope.trim() ? item.scope.trim() : 'prod';
+  const scope = normalizeStoredScope(item.scope);
   const sequence = Number.isInteger(item.sequence)
     ? Math.max(1, Number(item.sequence))
     : fallbackSequence;
@@ -632,7 +641,7 @@ function taskFromWorkerJob(
     id: workerJobId,
     sequence: fallbackSequence,
     mode: modeFromWorkerJob(job),
-    scope: 'prod',
+    scope: DEFAULT_LCA_SCOPE,
     state,
     phase,
     message: messageFromWorkerJob(job, phase, displayJobId),
@@ -1088,7 +1097,7 @@ export function submitLcaTask(request: LcaSolveRequest): LcaBackgroundTask {
     sequence,
     request,
     mode: resolveMode(request),
-    scope: request.scope ?? 'prod',
+    scope: request.scope ?? DEFAULT_LCA_SCOPE,
     state: 'running',
     phase: 'submitting',
     message: 'Submitting task',

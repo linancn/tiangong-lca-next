@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: 5becd3ae1ffdaa75d8d326534f61b2bf992ed941
+lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
 lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged candidate keeps the Node 24, focused-proof, semantic qualification, managed-push, and deterministic release-command workflow.'
 ---
 

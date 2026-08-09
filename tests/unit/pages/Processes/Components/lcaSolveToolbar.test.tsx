@@ -312,7 +312,7 @@ describe('LcaSolveToolbar component', () => {
 
     await waitFor(() => {
       expect(mockSubmitLcaTask).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         demand_mode: 'all_unit',
         solve: {
           return_x: false,

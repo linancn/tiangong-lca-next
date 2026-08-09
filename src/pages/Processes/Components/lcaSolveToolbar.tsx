@@ -1,12 +1,11 @@
 import ToolBarButton from '@/components/ToolBarButton';
 import type { LcaSolveRequest } from '@/services/lca';
+import { DEFAULT_LCA_SCOPE } from '@/services/lca/scope';
 import { submitLcaTask } from '@/services/lca/taskCenter';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { Modal, Typography, message, theme } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
-
-const SCOPE = 'dev-v1';
 
 const LcaSolveToolbar = () => {
   const [open, setOpen] = useState(false);
@@ -24,7 +23,7 @@ const LcaSolveToolbar = () => {
 
   const onSubmit = async () => {
     const request: LcaSolveRequest = {
-      scope: SCOPE,
+      scope: DEFAULT_LCA_SCOPE,
       demand_mode: 'all_unit',
       solve: {
         return_x: false,

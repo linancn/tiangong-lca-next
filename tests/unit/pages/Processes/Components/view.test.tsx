@@ -676,7 +676,7 @@ describe('ProcessView component', () => {
 
     await waitFor(() =>
       expect(mockQueryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'process_all_impacts',
         process_id: 'process-1',
