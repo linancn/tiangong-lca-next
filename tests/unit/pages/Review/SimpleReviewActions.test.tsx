@@ -84,7 +84,12 @@ jest.mock('antd', () => {
         </button>
       </section>
     ) : null;
-  Modal.confirm = (options: { onOk?: () => void }) => mockConfirm(options);
+  Modal.useModal = () => [
+    {
+      confirm: (options: { onOk?: () => void }) => mockConfirm(options),
+    },
+    <span key='approval-modal-context' data-testid='approval-modal-context' />,
+  ];
 
   return {
     Button: ({
@@ -162,6 +167,15 @@ describe('SimpleReviewActions', () => {
     expect(approveButton).toHaveAttribute('data-button-size', 'small');
     expect(approveButton).toHaveAttribute('data-button-type', 'default');
     fireEvent.click(approveButton!);
+
+    expect(screen.getByTestId('approval-modal-context')).toBeInTheDocument();
+    expect(mockConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Confirm approval?',
+        okButtonProps: { type: 'primary' },
+        onOk: expect.any(Function),
+      }),
+    );
 
     await waitFor(() =>
       expect(approveReviewApiMock).toHaveBeenCalledWith('review-id', 'lifecyclemodels'),

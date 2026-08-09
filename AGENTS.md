@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: b184f74e4989088f83d371e0e0d9eb2bcd857cb4
+lastReviewedCommit: be18e70370533dce97086185378a3e5bf2602a18
 lastReviewedNote: 'Reviewed for Issues #778 and #780: deterministic release preflight and grouped-review delivery remain within the documented dev-to-main, quality-gate, and root-integration boundaries.'
 related:
   - .docpact/config.yaml

@@ -20,7 +20,7 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: b1c1cfedc6bfaeeaaddaee0564e0c0c04d5212e3
+lastReviewedCommit: be18e70370533dce97086185378a3e5bf2602a18
 lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review view drawers do not change team roles or review authority; membership still constrains only already-authorized dataset visibility.'
 ---
 

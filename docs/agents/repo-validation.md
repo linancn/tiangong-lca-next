@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: b184f74e4989088f83d371e0e0d9eb2bcd857cb4
+lastReviewedCommit: be18e70370533dce97086185378a3e5bf2602a18
 lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged proof matrix covers independent release paths plus the seven-type Root/Reference queue, selection, and dataset-view behavior.'
 related:
   - ../AGENTS.md
