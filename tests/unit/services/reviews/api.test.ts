@@ -83,12 +83,14 @@ jest.mock('@/services/general/util', () => {
 });
 
 const mockGetUserId = jest.fn();
+const mockGetUsersByIds = jest.fn();
 let realGenProcessName: (...args: any[]) => any;
 const originalCrypto = globalThis.crypto;
 
 jest.mock('@/services/users/api', () => ({
   __esModule: true,
   getUserId: (...args: any[]) => mockGetUserId.apply(null, args),
+  getUsersByIds: (...args: any[]) => mockGetUsersByIds.apply(null, args),
 }));
 
 import * as reviewsApi from '@/services/reviews/api';
@@ -138,6 +140,8 @@ beforeEach(() => {
     return '-';
   });
   mockGetUserId.mockReset();
+  mockGetUsersByIds.mockReset();
+  mockGetUsersByIds.mockResolvedValue([]);
   mockGetUserId.mockResolvedValue('user-default');
 });
 
@@ -1409,6 +1413,76 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
+  it.each([
+    { type: 'pending' as const },
+    { type: 'reviewed' as const },
+    { type: 'reviewer-rejected' as const },
+  ])('enriches $type rows from the current visible identity profile', async ({ type }) => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: `review-member-${type}`,
+          target_table: 'contacts',
+          json: {
+            data: { id: `contact-${type}`, version: '01.00.000' },
+            user: { id: 'submitter-1', name: 'Stale Snapshot Name' },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce([
+      {
+        id: 'submitter-1',
+        email: 'submitter@example.com',
+        display_name: 'Current Submitter',
+      },
+    ]);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      type,
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledTimes(1);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-1']);
+    expect(result.data[0].userName).toBe('Current Submitter');
+  });
+
+  it('keeps the retained review snapshot when identity enrichment fails', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-profile-failure',
+          target_table: 'contacts',
+          json: {
+            data: { id: 'contact-profile-failure', version: '01.00.000' },
+            user: {
+              id: 'submitter-profile-failure',
+              name: 'Snapshot Submitter',
+              email: 'snapshot@example.com',
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockRejectedValueOnce(new Error('identity lookup failed'));
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(result.data[0].userName).toBe('Snapshot Submitter');
+  });
+
   it('maps reviewer-rejected comments with lifecycle model enrichment', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [
@@ -1772,6 +1846,69 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       p_sort_order: 'descend',
     });
     expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it.each([
+    { type: 'unassigned' as const },
+    { type: 'assigned' as const },
+    { type: 'admin-rejected' as const },
+  ])('batch-enriches and deduplicates submitters for $type rows', async ({ type }) => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: `review-admin-${type}-1`,
+          target_table: 'contacts',
+          json: {
+            data: { id: `contact-${type}-1`, version: '01.00.000' },
+            user: { id: 'submitter-1', name: 'Stale Snapshot Name' },
+          },
+        },
+        {
+          id: `review-admin-${type}-2`,
+          target_table: 'sources',
+          json: {
+            data: { id: `source-${type}-2`, version: '01.00.000' },
+            user: { id: 'submitter-2' },
+          },
+        },
+        {
+          id: `review-admin-${type}-3`,
+          target_table: 'flows',
+          json: {
+            data: { id: `flow-${type}-3`, version: '01.00.000' },
+            user: { id: 'submitter-1' },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce([
+      {
+        id: 'submitter-1',
+        email: 'submitter-1@example.com',
+        display_name: 'Current Submitter',
+      },
+      {
+        id: 'submitter-2',
+        email: 'submitter-2@example.com',
+        display_name: '   ',
+      },
+    ]);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      type,
+      'en',
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledTimes(1);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-1', 'submitter-2']);
+    expect(result.data.map((row: any) => row.userName)).toEqual([
+      'Current Submitter',
+      'submitter-2@example.com',
+      'Current Submitter',
+    ]);
   });
 
   it('applies assigned query filters and maps table data', async () => {

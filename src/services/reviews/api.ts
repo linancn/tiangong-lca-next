@@ -6,7 +6,7 @@ import {
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
-import { getUserId } from '@/services/users/api';
+import { getUserId, getUsersByIds } from '@/services/users/api';
 import type { WorkerJobResult } from '@/services/workerJobs/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText, jsonToList } from '../general/util';
@@ -206,6 +206,12 @@ type ReviewMemberQueueRpcRow = {
   total_count?: number | string | null;
 };
 
+type VisibleReviewUser = {
+  id?: string | null;
+  email?: string | null;
+  display_name?: string | null;
+};
+
 function compareStableHashKeys(left: string, right: string): number {
   const leftBytes = STABLE_HASH_KEY_ENCODER.encode(left);
   const rightBytes = STABLE_HASH_KEY_ENCODER.encode(right);
@@ -369,11 +375,50 @@ function normalizeTotalCount(value: number | string | null | undefined) {
   return Number(value ?? 0) || 0;
 }
 
+function normalizeReviewUserText(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function getReviewSubmitterId(row: Pick<ReviewItemRpcRow, 'json'>) {
+  return normalizeReviewUserText(row?.json?.user?.id);
+}
+
+async function getReviewSubmitterNamesById(rows: Array<Pick<ReviewItemRpcRow, 'json'>>) {
+  const userIds = [...new Set(rows.map(getReviewSubmitterId).filter((id): id is string => !!id))];
+  const namesById = new Map<string, string>();
+
+  if (userIds.length === 0) {
+    return namesById;
+  }
+
+  try {
+    const users = (await getUsersByIds(userIds)) as VisibleReviewUser[] | null;
+    (users ?? []).forEach((user) => {
+      const userId = normalizeReviewUserText(user.id);
+      const userName =
+        normalizeReviewUserText(user.display_name) ?? normalizeReviewUserText(user.email);
+      if (userId && userName) {
+        namesById.set(userId, userName);
+      }
+    });
+  } catch (_error) {
+    // Identity enrichment is best-effort; retained review snapshots remain the safe fallback.
+  }
+
+  return namesById;
+}
+
 function mapReviewRowToTableData(
   row: ReviewItemRpcRow,
   lang: string,
   lifecycleModels: any[],
-  comments: { state_code: number }[] = [],
+  {
+    comments = [],
+    submitterNamesById = new Map(),
+  }: {
+    comments?: { state_code: number }[];
+    submitterNamesById?: ReadonlyMap<string, string>;
+  } = {},
 ) {
   const model = lifecycleModels?.find(
     (candidate) =>
@@ -384,6 +429,12 @@ function mapReviewRowToTableData(
   const reviewKind = row.review_kind ?? row?.json?.review_kind;
   const targetTable = row.target_table ?? row?.json?.data?.table;
   const stateCode = row.state_code ?? row.review_state_code;
+  const submitterId = getReviewSubmitterId(row);
+  const submitterName =
+    (submitterId ? submitterNamesById.get(submitterId) : undefined) ??
+    normalizeReviewUserText(row?.json?.user?.name) ??
+    normalizeReviewUserText(row?.json?.user?.email) ??
+    '-';
 
   return {
     key: row.id,
@@ -401,7 +452,7 @@ function mapReviewRowToTableData(
         ? genProcessName(modelName ?? {}, lang)
         : genProcessName(row?.json?.data?.name ?? {}, lang)) || '-',
     teamName: getLangText(row?.json?.team?.name ?? {}, lang),
-    userName: row?.json?.user?.name ?? row?.json?.user?.email ?? '-',
+    userName: submitterName,
     createAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
     modifiedAt: row.modified_at ? new Date(row.modified_at).toISOString() : undefined,
     deadline: row.deadline ? new Date(row.deadline).toISOString() : row.deadline,
@@ -760,11 +811,16 @@ export async function getReviewsTableDataOfReviewMember(
       version: row?.json?.data?.version,
     }))
     .filter((item) => item.id);
-  const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const [modelResult, submitterNamesById] = await Promise.all([
+    getLifeCyclesByIdAndVersion(processes),
+    getReviewSubmitterNamesById(rows),
+  ]);
   const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
 
   return Promise.resolve({
-    data: rows.map((row) => mapReviewRowToTableData(row, lang, lifecycleModels)),
+    data: rows.map((row) =>
+      mapReviewRowToTableData(row, lang, lifecycleModels, { submitterNamesById }),
+    ),
     page: params?.current ?? 1,
     success: true,
     total: normalizeTotalCount(rows[0]?.total_count),
@@ -805,21 +861,22 @@ export async function getReviewsTableDataOfReviewAdmin(
       version: row?.json?.data?.version,
     }))
     .filter((item) => item.id);
-  const modelResult = await getLifeCyclesByIdAndVersion(processes);
+  const [modelResult, submitterNamesById] = await Promise.all([
+    getLifeCyclesByIdAndVersion(processes),
+    getReviewSubmitterNamesById(rows),
+  ]);
   const lifecycleModels = Array.isArray(modelResult?.data) ? modelResult.data : [];
 
   return Promise.resolve({
     data: rows.map((row) =>
-      mapReviewRowToTableData(
-        row,
-        lang,
-        lifecycleModels,
-        Array.isArray(row.comment_state_codes)
+      mapReviewRowToTableData(row, lang, lifecycleModels, {
+        comments: Array.isArray(row.comment_state_codes)
           ? row.comment_state_codes
               .map((stateCode) => ({ state_code: Number(stateCode) }))
               .filter((comment) => isCurrentAssignedReviewerCommentState(comment.state_code))
           : [],
-      ),
+        submitterNamesById,
+      }),
     ),
     page: params?.current ?? 1,
     success: true,
