@@ -414,11 +414,11 @@ function mapReviewRowToTableData(
   lifecycleModels: any[],
   {
     comments = [],
-    submitterNamesById = new Map(),
+    submitterNamesById,
   }: {
     comments?: { state_code: number }[];
-    submitterNamesById?: ReadonlyMap<string, string>;
-  } = {},
+    submitterNamesById: ReadonlyMap<string, string>;
+  },
 ) {
   const model = lifecycleModels?.find(
     (candidate) =>

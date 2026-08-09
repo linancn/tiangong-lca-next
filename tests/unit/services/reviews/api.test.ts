@@ -1483,6 +1483,37 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result.data[0].userName).toBe('Snapshot Submitter');
   });
 
+  it('keeps the retained review snapshot when no visible identity rows are returned', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-profile-missing',
+          target_table: 'contacts',
+          json: {
+            data: { id: 'contact-profile-missing', version: '01.00.000' },
+            user: {
+              id: 'submitter-profile-missing',
+              email: 'snapshot-missing@example.com',
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce(null);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-profile-missing']);
+    expect(result.data[0].userName).toBe('snapshot-missing@example.com');
+  });
+
   it('maps reviewer-rejected comments with lifecycle model enrichment', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [
