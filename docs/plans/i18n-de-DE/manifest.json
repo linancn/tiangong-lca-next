@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "535ecbfeedd44d62bc95ba01c98ad10307ec4b54b3ecb3edc29a4dba8543b858",
+    "auditedInputDigest": "34776090965e8adc231707122e565992b8331b9c54b5a97242cccb9c91974fcb",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -16316,8 +16316,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 138,
-          "column": 20,
+          "line": 143,
+          "column": 22,
           "symbol": "SimpleReviewActions",
           "defaultMessage": "Reject Review",
           "defaultMessageExpression": null
@@ -16337,8 +16337,8 @@
             },
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 138,
-              "column": 20,
+              "line": 143,
+              "column": 22,
               "kind": "formatMessage"
             }
           ]
@@ -16414,8 +16414,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 149,
-          "column": 24,
+          "line": 154,
+          "column": 26,
           "symbol": "SimpleReviewActions",
           "defaultMessage": "Reject Reason",
           "defaultMessageExpression": null
@@ -16435,8 +16435,8 @@
             },
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 149,
-              "column": 24,
+              "line": 154,
+              "column": 26,
               "kind": "formatMessage"
             }
           ]
@@ -213619,8 +213619,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 89,
-          "column": 16,
+          "line": 92,
+          "column": 18,
           "symbol": "SimpleReviewActions",
           "defaultMessage": "Approve",
           "defaultMessageExpression": null
@@ -213634,8 +213634,8 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 89,
-              "column": 16,
+              "line": 92,
+              "column": 18,
               "kind": "formatMessage"
             }
           ]
@@ -213702,8 +213702,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 102,
-          "column": 22,
+          "line": 104,
+          "column": 24,
           "symbol": "SimpleReviewActions",
           "defaultMessage": "Confirm approval?",
           "defaultMessageExpression": null
@@ -213717,8 +213717,8 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 102,
-              "column": 22,
+              "line": 104,
+              "column": 24,
               "kind": "formatMessage"
             }
           ]
@@ -213785,7 +213785,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 41,
+          "line": 42,
           "column": 9,
           "symbol": "approve",
           "defaultMessage": "Review approved.",
@@ -213800,7 +213800,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 41,
+              "line": 42,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -213868,7 +213868,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 49,
+          "line": 50,
           "column": 9,
           "symbol": "approve",
           "defaultMessage": "Unable to submit the review decision.",
@@ -213877,7 +213877,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 76,
+          "line": 77,
           "column": 9,
           "symbol": "rejectAsReviewer",
           "defaultMessage": "Unable to submit the review decision.",
@@ -213892,13 +213892,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 49,
+              "line": 50,
               "column": 9,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 76,
+              "line": 77,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -213966,8 +213966,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 123,
-          "column": 20,
+          "line": 128,
+          "column": 22,
           "symbol": "SimpleReviewActions",
           "defaultMessage": "Reject",
           "defaultMessageExpression": null
@@ -213981,8 +213981,8 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 123,
-              "column": 20,
+              "line": 128,
+              "column": 22,
               "kind": "formatMessage"
             }
           ]
@@ -214049,7 +214049,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-          "line": 66,
+          "line": 67,
           "column": 9,
           "symbol": "rejectAsReviewer",
           "defaultMessage": "Review rejection submitted.",
@@ -214064,7 +214064,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/SimpleReviewActions.tsx",
-              "line": 66,
+              "line": 67,
               "column": 9,
               "kind": "formatMessage"
             }

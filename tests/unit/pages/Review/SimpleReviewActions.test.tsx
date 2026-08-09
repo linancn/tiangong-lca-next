@@ -15,8 +15,8 @@ jest.mock('@/services/reviews/api', () => ({
 }));
 
 jest.mock('@ant-design/icons', () => ({
-  CheckOutlined: () => <span>approve-icon</span>,
-  CloseOutlined: () => <span>reject-icon</span>,
+  FileExcelOutlined: () => <span>reject-icon</span>,
+  SafetyCertificateOutlined: () => <span>approve-icon</span>,
 }));
 
 jest.mock('@umijs/max', () => ({
@@ -84,12 +84,21 @@ jest.mock('antd', () => {
         </button>
       </section>
     ) : null;
-  Modal.confirm = (options: { onOk?: () => void }) => mockConfirm(options);
+  Modal.useModal = () => [
+    {
+      confirm: (options: { onOk?: () => void }) => mockConfirm(options),
+    },
+    <span key='approval-modal-context' data-testid='approval-modal-context' />,
+  ];
 
   return {
     Button: ({
       icon,
       onClick,
+      shape,
+      size,
+      type,
+      danger,
     }: {
       icon?: import('react').ReactNode;
       onClick?: () => void;
@@ -99,7 +108,14 @@ jest.mock('antd', () => {
       type?: string;
       danger?: boolean;
     }) => (
-      <button type='button' onClick={onClick}>
+      <button
+        type='button'
+        data-button-shape={shape}
+        data-button-size={size}
+        data-button-type={type ?? 'default'}
+        data-button-danger={danger ? 'true' : 'false'}
+        onClick={onClick}
+      >
         {icon}
       </button>
     ),
@@ -146,7 +162,20 @@ describe('SimpleReviewActions', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('approve-icon'));
+    const approveButton = screen.getByText('approve-icon').closest('button');
+    expect(approveButton).toHaveAttribute('data-button-shape', 'circle');
+    expect(approveButton).toHaveAttribute('data-button-size', 'small');
+    expect(approveButton).toHaveAttribute('data-button-type', 'default');
+    fireEvent.click(approveButton!);
+
+    expect(screen.getByTestId('approval-modal-context')).toBeInTheDocument();
+    expect(mockConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Confirm approval?',
+        okButtonProps: { type: 'primary' },
+        onOk: expect.any(Function),
+      }),
+    );
 
     await waitFor(() =>
       expect(approveReviewApiMock).toHaveBeenCalledWith('review-id', 'lifecyclemodels'),
@@ -219,7 +248,12 @@ describe('SimpleReviewActions', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('reject-icon'));
+    const rejectButton = screen.getByText('reject-icon').closest('button');
+    expect(rejectButton).toHaveAttribute('data-button-shape', 'circle');
+    expect(rejectButton).toHaveAttribute('data-button-size', 'small');
+    expect(rejectButton).toHaveAttribute('data-button-type', 'default');
+    expect(rejectButton).toHaveAttribute('data-button-danger', 'false');
+    fireEvent.click(rejectButton!);
     fireEvent.click(screen.getByRole('button', { name: 'cancel-rejection' }));
     fireEvent.click(screen.getByText('reject-icon'));
     fireEvent.click(screen.getByRole('button', { name: 'confirm-rejection' }));
