@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-08
-lastReviewedCommit: 6e0eacef1d999381e6c6aef8e49001847a3c29b5
+lastReviewedAt: 2026-08-09
+lastReviewedCommit: 4f96234f03418295df7b27badefc2958f9c18c37
 lastReviewedNote: 'Reviewed for database-engine Issue #422: Next defaults RPC calls to api, keeps only nine core entities on explicit public access, and consumes the exact reviewed Edge mirror.'
 ---
 
