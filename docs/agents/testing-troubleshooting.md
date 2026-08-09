@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: be18e70370533dce97086185378a3e5bf2602a18
+lastReviewedCommit: aa70fe66d5cbfbc23d6ff50fce05f945177c48d3
 lastReviewedNote: 'Reviewed for Issues #778 and #780: automatic dual-scope release review and focused grouped-review proof require no new recovery exception.'
 ---
 
