@@ -15,7 +15,7 @@ jest.mock('@/services/reviews/api', () => ({
 }));
 
 jest.mock('@ant-design/icons', () => ({
-  CloseOutlined: () => <span>reject-icon</span>,
+  FileExcelOutlined: () => <span>reject-icon</span>,
   SafetyCertificateOutlined: () => <span>approve-icon</span>,
 }));
 
@@ -93,6 +93,7 @@ jest.mock('antd', () => {
       shape,
       size,
       type,
+      danger,
     }: {
       icon?: import('react').ReactNode;
       onClick?: () => void;
@@ -107,6 +108,7 @@ jest.mock('antd', () => {
         data-button-shape={shape}
         data-button-size={size}
         data-button-type={type ?? 'default'}
+        data-button-danger={danger ? 'true' : 'false'}
         onClick={onClick}
       >
         {icon}
@@ -232,7 +234,12 @@ describe('SimpleReviewActions', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('reject-icon'));
+    const rejectButton = screen.getByText('reject-icon').closest('button');
+    expect(rejectButton).toHaveAttribute('data-button-shape', 'circle');
+    expect(rejectButton).toHaveAttribute('data-button-size', 'small');
+    expect(rejectButton).toHaveAttribute('data-button-type', 'default');
+    expect(rejectButton).toHaveAttribute('data-button-danger', 'false');
+    fireEvent.click(rejectButton!);
     fireEvent.click(screen.getByRole('button', { name: 'cancel-rejection' }));
     fireEvent.click(screen.getByText('reject-icon'));
     fireEvent.click(screen.getByRole('button', { name: 'confirm-rejection' }));

@@ -18,8 +18,8 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-08
-lastReviewedCommit: 59e505a28d2c599a3c2c0d06dc71551292ee8d3a
+lastReviewedAt: 2026-08-09
+lastReviewedCommit: b1c1cfedc6bfaeeaaddaee0564e0c0c04d5212e3
 lastReviewedNote: 'Reviewed for Issues #745 and #780: retain Root-only/current-tab queue semantics and record the seven-type read-only dataset drawers available from readable Root and Reference rows.'
 ---
 
