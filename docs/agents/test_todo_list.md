@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: aa70fe66d5cbfbc23d6ff50fce05f945177c48d3
+lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
 lastReviewedNote: 'Reviewed for Issues #778 and #780: hermetic release-preflight and grouped-review regression proof leave no new repository-wide test backlog.'
 ---
 

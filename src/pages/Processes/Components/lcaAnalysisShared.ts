@@ -1,5 +1,6 @@
 import { CANONICAL_CONTENT_LANGUAGE } from '@/services/general/contentLanguageRegistry';
 import { getDataSource, getLangJson } from '@/services/general/util';
+import { DEFAULT_LCA_SCOPE } from '@/services/lca/scope';
 import type { LCIAResultTable, LciaMethodListData } from '@/services/lciaMethods/data';
 import {
   resolveReviewedLciaMethodIdentity,
@@ -9,7 +10,7 @@ import {
 import { getVerifiedDecompressedMethodEntry } from '@/services/lciaMethods/util';
 import type { ProcessTable } from '@/services/processes/data';
 
-export const LCA_SCOPE = 'dev-v1';
+export const LCA_SCOPE = DEFAULT_LCA_SCOPE;
 export const VALUE_EPSILON = 1e-12;
 export const UNKNOWN_LCIA_UNIT = 'unknown';
 

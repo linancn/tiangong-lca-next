@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-09
-lastReviewedCommit: aa70fe66d5cbfbc23d6ff50fce05f945177c48d3
+lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
 lastReviewedNote: 'Reviewed for Issues #778 and #780: release-path and grouped-review coverage extend bounded proof without changing the repository testing strategy.'
 ---
 

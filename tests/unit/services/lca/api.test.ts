@@ -465,7 +465,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       });
 
       await queryLcaResults({
-        scope: 'prod',
+        scope: 'full_library',
         data_scope: 'current_user',
         mode: 'process_all_impacts',
         process_id: 'process-1',
@@ -475,7 +475,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('lca_query_results', {
         method: 'POST',
         body: {
-          scope: 'prod',
+          scope: 'full_library',
           data_scope: 'current_user',
           mode: 'process_all_impacts',
           process_id: 'process-1',
@@ -509,7 +509,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       });
 
       await queryLcaResults({
-        scope: 'prod',
+        scope: 'full_library',
         data_scope: 'all_data',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
@@ -523,7 +523,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('lca_query_results', {
         method: 'POST',
         body: {
-          scope: 'prod',
+          scope: 'full_library',
           data_scope: 'all_data',
           mode: 'processes_one_impact',
           impact_id: 'impact-1',
@@ -701,7 +701,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
 
       await submitLcaContributionPath(
         {
-          scope: 'prod',
+          scope: 'full_library',
           process_id: 'process-1',
           process_version: '1.0.0',
           impact_id: 'impact-1',
@@ -716,7 +716,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
       expect(supabaseMock.functions.invoke).toHaveBeenCalledWith('lca_contribution_path', {
         method: 'POST',
         body: {
-          scope: 'prod',
+          scope: 'full_library',
           process_id: 'process-1',
           process_version: '1.0.0',
           impact_id: 'impact-1',

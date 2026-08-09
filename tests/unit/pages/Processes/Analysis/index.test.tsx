@@ -613,7 +613,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'process_all_impacts',
         process_id: 'process-1',
@@ -695,7 +695,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
@@ -730,7 +730,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
@@ -890,7 +890,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         process_id: 'process-1',
         process_version: '01.00.000',
@@ -1141,7 +1141,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         process_id: 'process-blank-version',
         process_version: undefined,
@@ -1276,7 +1276,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         process_id: 'process-shared',
         process_version: '01.00.000',
@@ -1305,7 +1305,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
@@ -1338,7 +1338,7 @@ describe('LcaAnalysisPage', () => {
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'current_user',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
@@ -1366,7 +1366,7 @@ describe('LcaAnalysisPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
-        scope: 'dev-v1',
+        scope: 'full_library',
         data_scope: 'all_data',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],

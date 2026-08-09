@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-08-07
-lastReviewedCommit: dd6bbb898c24ec29fb3a1449f2cf2862f6031ca5
+lastReviewedAt: 2026-08-09
+lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
 lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change allocation, scaling, submodel, or LCIA semantics.'
 ---
 
