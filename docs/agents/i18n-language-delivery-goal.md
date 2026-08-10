@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-07
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: qualification-only non-English lexical search proof stays within the credential-free local browser contract and does not alter the production-data evidence boundary.'
 baselineObservedAt: 2026-07-18
 related:

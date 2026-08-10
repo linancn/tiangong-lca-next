@@ -1,13 +1,16 @@
-import { expect, test, type Page } from './fixtures';
+import { expect, test, type Page } from '../fixtures';
 
-import { signInViaUi } from './auth';
+import { signInViaUi } from '../auth';
 import {
   annotateEvidence,
   findRouteAssertion,
   getLocaleMessage,
   PLAYWRIGHT_BROWSER_PROJECTS,
   selectAppLocaleThroughUi,
-} from './contracts';
+} from '../contracts';
+
+// This qualification-only browser contract lives under the evidence collector's runtime
+// exclusion because it proves deterministic mock/contract behavior, not production evidence.
 
 const processAssertion = findRouteAssertion('/mydata/processes');
 const flowAssertion = findRouteAssertion('/mydata/flows');

@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical search RPC callers remain Next-owned, preserve the existing auth/data boundary, and require the existing dev PR and Database A integration gate.'
 related:
   - .docpact/config.yaml

@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: focused serial Jest plus qualification-only Chromium diagnosis covers formal lexical RPC and detail-navigation failures.'
 ---
 

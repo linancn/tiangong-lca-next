@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: seven formal lexical callers use focused service/data-workflow proof, production request guards, qualification browser E2E, lint, TypeScript, and build.'
 related:
   - ../AGENTS.md
