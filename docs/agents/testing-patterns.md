@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical task aliases, deferred async results, and user-switch isolation use the focused service-unit pattern.'
+lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical RPC payloads use focused service/data-workflow contracts, while Process, Flow, and FlowProperty use a qualification-only semantic browser flow.'
 ---
 
 # Testing Patterns Reference

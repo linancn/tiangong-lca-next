@@ -16,11 +16,7 @@ import {
   type LangNormalizationMetadata,
   type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
-import {
-  getServiceQueryLanguage,
-  type SupportedContentLanguage,
-  type SupportedServiceQueryLanguage,
-} from '@/services/general/contentLanguageRegistry';
+import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import {
@@ -139,28 +135,6 @@ function normalizeProcessSortBy(sortBy: string): string {
 
 function normalizeProcessSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
-}
-
-function resolveProcessSearchOrderBy(orderBy?: ProcessSearchOrderBy): Partial<
-  Omit<ProcessSearchOrderBy, 'lang'> & {
-    lang?: SupportedServiceQueryLanguage;
-  }
-> {
-  if (!orderBy) {
-    return {};
-  }
-
-  if (!orderBy.lang) {
-    return {
-      key: orderBy.key,
-      order: orderBy.order,
-    };
-  }
-
-  return {
-    ...orderBy,
-    lang: getServiceQueryLanguage(orderBy.lang),
-  };
 }
 
 function getLocalizedProcessClassification(
@@ -827,7 +801,7 @@ export async function getProcessTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
-  orderBy?: ProcessSearchOrderBy,
+  _orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
   ownerDraftOnly = false,
 ) {
@@ -850,7 +824,6 @@ export async function getProcessTablePgroongaSearch(
   const requestParams: { [key: string]: any } = {
     query_text: queryText,
     filter_condition: filterCondition,
-    order_by: resolveProcessSearchOrderBy(orderBy),
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
     data_source: dataSource,
@@ -861,7 +834,7 @@ export async function getProcessTablePgroongaSearch(
     query_terms: [queryText],
     owner_draft_only: ownerDraftOnly,
   };
-  const result = await supabase.rpc('search_processes_latest_v2', requestParams);
+  const result = await supabase.rpc('search_processes', requestParams);
   if (result.error) {
     console.log('error', result.error);
   }

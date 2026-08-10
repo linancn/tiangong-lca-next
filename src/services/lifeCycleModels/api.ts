@@ -12,11 +12,7 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
-import {
-  getServiceQueryLanguage,
-  type SupportedContentLanguage,
-  type SupportedServiceQueryLanguage,
-} from '@/services/general/contentLanguageRegistry';
+import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { supabase } from '@/services/supabase';
 import { publicEntity } from '@/services/supabase/public';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
@@ -97,28 +93,6 @@ function normalizeLifeCycleModelSortBy(sortBy: string): string {
 
 function normalizeLifeCycleModelSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
-}
-
-function resolveLifeCycleModelSearchOrderBy(orderBy?: LifeCycleModelSearchOrderBy): Partial<
-  Omit<LifeCycleModelSearchOrderBy, 'lang'> & {
-    lang?: SupportedServiceQueryLanguage;
-  }
-> {
-  if (!orderBy) {
-    return {};
-  }
-
-  if (!orderBy.lang) {
-    return {
-      key: orderBy.key,
-      order: orderBy.order,
-    };
-  }
-
-  return {
-    ...orderBy,
-    lang: getServiceQueryLanguage(orderBy.lang),
-  };
 }
 
 function getLocalizedLifeCycleModelClassification(
@@ -758,11 +732,10 @@ export async function getLifeCycleModelTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
-  orderBy?: LifeCycleModelSearchOrderBy,
+  _orderBy?: LifeCycleModelSearchOrderBy,
   tid?: string | [],
 ) {
   let result: any = {};
-  const serviceOrderBy = resolveLifeCycleModelSearchOrderBy(orderBy);
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     const teamId = await getLifeCycleModelTeamFilter(dataSource, tid);
@@ -774,12 +747,11 @@ export async function getLifeCycleModelTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_lifecyclemodels_latest',
+      'search_lifecyclemodels',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
             filter_condition: filterCondition,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -790,7 +762,6 @@ export async function getLifeCycleModelTablePgroongaSearch(
         : {
             query_text: queryText,
             filter_condition: filterCondition,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,

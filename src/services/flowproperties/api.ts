@@ -370,7 +370,7 @@ export async function getFlowpropertyTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_flowproperties_latest',
+      'search_flowproperties',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,

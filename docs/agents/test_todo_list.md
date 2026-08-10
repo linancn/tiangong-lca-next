@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused canonical task-alias/timestamp proof closes the regression without opening a repository-wide test backlog.'
+lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical caller proof adds no repository-wide coverage queue; the existing full-closure baseline remains the gate.'
 ---
 
 # Testing Execution State

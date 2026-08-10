@@ -27,7 +27,7 @@ export const DEFAULT_UNITGROUP_FULL_TEXT_SEARCH_FIXTURE_PATH =
 export const DEFAULT_UNITGROUP_FULL_TEXT_SEARCH_EXPECTED_PATH =
   'tests/data-workflows/fixtures/result/unitgroups/007_full_text_search.md';
 
-const UNITGROUP_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
+export const UNITGROUP_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   computeRuleVerification: computeUnitGroupRuleVerification,
   dataType: 'unit group',
   defaultExpectedPath: DEFAULT_UNITGROUP_FULL_TEXT_SEARCH_EXPECTED_PATH,
@@ -44,7 +44,7 @@ const UNITGROUP_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'search_unitgroups_latest',
+  rpcName: 'search_unitgroups',
   table: 'unitgroups',
   workflowName: 'Unit group full-text search',
 };

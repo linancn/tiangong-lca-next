@@ -427,7 +427,7 @@ describe('lifecyclemodels-workflow-lib', () => {
     }
   });
 
-  it('runs full-text search without the lifecyclemodel stateCode RPC argument', async () => {
+  it('runs full-text search through the formal lifecycle RPC service without stateCode or order_by', async () => {
     const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'lifecyclemodels-search-'));
     const expectedFile = path.join(tempRoot, 'expected.md');
     const runtimeRecordFile = path.join(tempRoot, 'runtime.json');
