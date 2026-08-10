@@ -1,5 +1,7 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
+import type { LcaSnapshotScope } from './lca_snapshot_capabilities.ts';
+
 import {
   buildLcaMethodFactorSourceContract,
   buildLciaFactorCoverageContract,
@@ -38,7 +40,7 @@ const VERSIONED_SCOPE_SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v2';
 export async function ensureLcaSnapshotBuildQueued(
   supabase: SupabaseClient,
   args: {
-    scope: string;
+    scope: LcaSnapshotScope;
     dataScope: LcaDataScope;
     userId: string;
     requestRoots?: readonly LcaSnapshotRequestRoot[];

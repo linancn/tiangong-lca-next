@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
-lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged candidate keeps the Node 24, focused-proof, semantic qualification, managed-push, and deterministic release-command workflow.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: Node 24, focused Jest, Umi setup, TypeScript, mirror sync, and managed-push workflow remain unchanged.'
 ---
 
 # Development Bootstrap

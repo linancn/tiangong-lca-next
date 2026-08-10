@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
-lastReviewedNote: 'Reviewed for Issues #778 and #780: the merged proof matrix covers independent release paths plus the seven-type Root/Reference queue, selection, and dataset-view behavior.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused auth/task-center tests, lint, generated Umi types, TypeScript, and exact-mirror checks remain the proof path.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

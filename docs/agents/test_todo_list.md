@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
-lastReviewedNote: 'Reviewed for Issues #778 and #780: hermetic release-preflight and grouped-review regression proof leave no new repository-wide test backlog.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused task-center/auth proof closes the regression without opening a repository-wide test backlog.'
 ---
 
 # Testing Execution State

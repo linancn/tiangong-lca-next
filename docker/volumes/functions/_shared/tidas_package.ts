@@ -701,6 +701,24 @@ export function buildPackageJobDiagnosticsSummary(args: {
     normalizeNullableNumber(exportArtifact.artifact_byte_size);
   const stage = normalizeNullableString(diagnostics.stage ?? diagnostics.phase);
   const uploadMode = normalizeNullableString(diagnostics.upload_mode);
+
+  // A successful terminal status is authoritative. Diagnostics and request
+  // cache rows can outlive an earlier failed attempt, but must not make the
+  // completed job look failed to API consumers.
+  if (args.status === 'ready' || args.status === 'completed') {
+    return {
+      error_code: null,
+      message: null,
+      stage,
+      upload_mode: uploadMode,
+      artifact_byte_size: artifactByteSize,
+      http_status: null,
+      storage_error_code: null,
+      is_oversize: false,
+      source: 'none',
+    };
+  }
+
   const httpStatus = normalizeNullableNumber(diagnostics.http_status);
   const isOversize = normalizedErrorCode === 'artifact_too_large';
   const message =

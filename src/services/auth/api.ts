@@ -1,4 +1,5 @@
 import { supabase } from '@/services/supabase';
+import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 
 /**
  * Get current authenticated user information
@@ -50,6 +51,7 @@ export async function login(body: Auth.LoginParams): Promise<Auth.LoginResult> {
  * @returns Error if logout failed, null if successful
  */
 export async function logout() {
+  bindTidasPackageTaskCenterOwner(null);
   const { error } = await supabase.auth.signOut();
   return error;
 }

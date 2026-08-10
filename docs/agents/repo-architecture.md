@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
-lastReviewedNote: 'Reviewed for Issues #778 and #780: release automation preserves existing runtime boundaries while grouped-review queue, selection, and dataset views remain database-authority consumers.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center state is bound to authenticated user identity and the Edge runtime remains an exact generated mirror.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
