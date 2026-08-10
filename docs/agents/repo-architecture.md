@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center state is bound to authenticated user identity and the Edge runtime remains an exact generated mirror.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center aliases now reconcile to canonical backend identity and timestamps while the Edge runtime remains an exact generated mirror.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -93,6 +93,10 @@ Rules:
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
 - semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `npm run start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Its direct Supabase client remains a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
+
+### TIDAS Package Export Task Identity
+
+`src/services/tidasPackage/taskCenter.ts` owns the authenticated user's local UI projection for TIDAS package exports. The backend `workerJobId` is the canonical execution identity and `jobId` is the canonical package-request identity. Queue responses, persisted local aliases, polling results, and Worker refreshes that share either identity must reconcile into one visible task, retain the earliest local presentation identity, and adopt authoritative backend timestamps and lifecycle state. Local submission time and localStorage aliases must never replace backend identity, revive a removed alias, or make an old completed package appear to be a new export.
 
 ### Data Product Closure Preflight And Task Feed
 

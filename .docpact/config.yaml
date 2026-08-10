@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-10'
-lastReviewedCommit: 'c281df6e2fbdf3de23eea2da588e2c94420add2b'
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: authenticated task ownership, async generation guards, focused tests, and the exact Edge mirror remain covered by existing routes.'
+lastReviewedCommit: '93821284b4ac9d4ed08ac6f42498e48bd2d15fda'
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical TIDAS export identity reconciliation, backend timestamps, focused tests, and the unchanged Edge mirror remain covered by existing routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

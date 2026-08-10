@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: deferred async results and user-switch isolation are covered with the existing focused service-unit pattern.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical task aliases, deferred async results, and user-switch isolation use the focused service-unit pattern.'
 ---
 
 # Testing Patterns Reference
@@ -91,6 +91,7 @@ Special cases:
 - permission and URL-state pattern: use when behavior depends on auth, query params, or navigation state
 - data workflow fixture pattern: keep each `tests/data-workflows/fixtures/result/**` expected-result file aligned with its same-scope `fixtures/data/**` payload, workflow lib default path, and unit proof; the fixture relationship map lives in `tests/data-workflows/fixtures/result/README.md`
 - strict command-contract pattern: type the complete client payload, assert its exact serialized shape at the service boundary, and preserve versioned dataset identities as `{ id, version }` rather than weakening tests to identifier-only fixtures
+- canonical async-task pattern: create multiple local projections for one backend worker/package identity, resolve queue and poll promises out of order, and assert one retained task, one poller, backend timestamps, and error delivery to the retained identity
 - escalate to E2E only when browser-only behavior cannot be proved in Jest
 
 ## Component Pattern

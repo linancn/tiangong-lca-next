@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: the database namespace boundary is unchanged and Next consumes the exact reviewed Edge commit through the mirror helper.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: TIDAS task alias reconciliation stays app-side, the database owns export cache lifecycle, and the Edge mirror is unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -70,6 +70,7 @@ Rules:
 - `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
+- TIDAS package task reconciliation in `src/services/tidasPackage/taskCenter.ts` may coalesce local aliases by backend `workerJobId` or package `jobId` and adopt backend timestamps, but `database-engine` remains authoritative for mutable-scope cache lifecycle, fresh Worker job creation, package contents, and authorization
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
