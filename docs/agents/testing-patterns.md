@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: deferred async results and user-switch isolation are covered with the existing focused service-unit pattern.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed the Issue #799 Dev regression follow-up: a deferred queue and full-history fixture use the focused service-unit pattern; locale evidence stays generator-owned.'
 ---
 
 # Testing Patterns Reference

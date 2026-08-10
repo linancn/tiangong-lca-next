@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "03c019c43ff4114decfa1ea6ea60b2cd61ac02bab5ed9d81adccd70ee9717bb9",
+    "auditedInputDigest": "afa22c8fb401c3ef023a064eb231b297091bfd5a563a090229ff269a4e1413bf",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "075aa55cf0865e8d71ddc4187a94a8046bebae1669fee5dac855c094ada89ebe",
-    "dossierDigest": "0978e31e4471aabbe741b1fa68412d40318bac349413f9d75d4238871b781ad5",
+    "dossierDigest": "273f268f5283cee91230f0d35aca7ed3dd07b453aa0420243449add88028d95f",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "2895fd4f8bea1929f57ae1db7df4e1005286f945aa01db2768f45b61e05c0b84",
+    "routeEvidenceDigest": "0ea6455459814bce0d1e4d103d0ce8643d95f72b765623021b3d8c797545f2ea",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "0978e31e4471aabbe741b1fa68412d40318bac349413f9d75d4238871b781ad5",
+        "dossierDigest": "273f268f5283cee91230f0d35aca7ed3dd07b453aa0420243449add88028d95f",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "6da52ef5bde1fa05b9a67434f161d9b30805bb9bca90be4335570042223ba1a0"
+  "validationDigest": "3b00239d104ae10e7777cdac7f3634bb20d4edd79d1a6f919b670456e5b1e589"
 }

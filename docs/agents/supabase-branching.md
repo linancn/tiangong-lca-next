@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: the database namespace boundary is unchanged and Next consumes the exact reviewed Edge commit through the mirror helper.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed the Issue #799 Dev regression follow-up: optimistic task retention is app-side merge behavior and does not change the database, authentication, or Edge ownership boundary.'
 ---
 
 # Supabase Environment And Database Workflow

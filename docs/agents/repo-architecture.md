@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center state is bound to authenticated user identity and the Edge runtime remains an exact generated mirror.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed the Issue #799 Dev regression follow-up: an optimistic package task stays visible until canonical Worker reconciliation, without changing service ownership or the Edge mirror.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

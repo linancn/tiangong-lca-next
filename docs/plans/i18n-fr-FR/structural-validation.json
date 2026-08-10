@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "03c019c43ff4114decfa1ea6ea60b2cd61ac02bab5ed9d81adccd70ee9717bb9",
+    "auditedInputDigest": "afa22c8fb401c3ef023a064eb231b297091bfd5a563a090229ff269a4e1413bf",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "e2cf068bacfb65a87b837cf2a756accee40333aa79f3378ae3a270ebe73a394e",
-    "dossierDigest": "ab7cc0eb5379d66225cd35417904817c9fde1a22ec0e0f4bb46846d6b9d720b1",
+    "dossierDigest": "34b470d3b287e170beba08d457a5fad813b3508572fd72921991649f280e8c2d",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "2895fd4f8bea1929f57ae1db7df4e1005286f945aa01db2768f45b61e05c0b84",
+    "routeEvidenceDigest": "0ea6455459814bce0d1e4d103d0ce8643d95f72b765623021b3d8c797545f2ea",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "ab7cc0eb5379d66225cd35417904817c9fde1a22ec0e0f4bb46846d6b9d720b1",
+        "dossierDigest": "34b470d3b287e170beba08d457a5fad813b3508572fd72921991649f280e8c2d",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "98122a0d94e0462d24ef87170326603aa3d26f758eb9dbf35549af2fa55432c3"
+  "validationDigest": "6cf626336ea15306b8c239c74ee15caaf05c8c0f3d29be6b712fffc5ace72377"
 }

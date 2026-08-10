@@ -52,6 +52,7 @@ type PersistedTaskStore = {
 const MAX_TASK_ITEMS = 30;
 const LEGACY_STORAGE_KEY = 'tg_tidas_package_task_center_v1';
 const STORAGE_KEY_PREFIX = `${LEGACY_STORAGE_KEY}:user`;
+const LOCAL_TASK_ID_PREFIX = 'tidas-package-task-';
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 1500;
@@ -74,6 +75,7 @@ let taskOwnerId: string | null = null;
 let taskGeneration = 0;
 const listeners = new Set<() => void>();
 const activePollers = new Set<string>();
+const tasksAwaitingServerReconciliation = new Set<string>();
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -91,7 +93,7 @@ function nextTaskSequence(): number {
 }
 
 function makeTaskId(sequence: number): string {
-  return `tidas-package-task-${Date.now()}-${sequence}`;
+  return `${LOCAL_TASK_ID_PREFIX}${Date.now()}-${sequence}`;
 }
 
 function emitChange(): void {
@@ -146,10 +148,26 @@ function setTasks(next: TidasPackageBackgroundTask[], generation = taskGeneratio
   if (!isActiveGeneration(generation)) {
     return;
   }
-  tasks = next
+  const sorted = next
     .slice()
-    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
-    .slice(0, MAX_TASK_ITEMS);
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+  // A full server page may use timestamps ahead of the browser clock. Keep
+  // optimistic submissions inside the bounded list until Worker confirms them.
+  const awaitingServer = sorted.filter(
+    (task) => task.state === 'running' && tasksAwaitingServerReconciliation.has(task.id),
+  );
+  const retainedIds = new Set(awaitingServer.slice(0, MAX_TASK_ITEMS).map((task) => task.id));
+  tasks = [
+    ...awaitingServer.slice(0, MAX_TASK_ITEMS),
+    ...sorted.filter((task) => !retainedIds.has(task.id)),
+  ]
+    .slice(0, MAX_TASK_ITEMS)
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+  for (const taskId of tasksAwaitingServerReconciliation) {
+    if (!tasks.some((task) => task.id === taskId && task.state === 'running')) {
+      tasksAwaitingServerReconciliation.delete(taskId);
+    }
+  }
   persistTasksToStorage();
   emitChange();
 }
@@ -336,7 +354,7 @@ function readTasksFromStorage(): TidasPackageBackgroundTask[] {
 function upsertTask(
   taskId: string,
   patch: Partial<TidasPackageBackgroundTask>,
-  generation = taskGeneration,
+  generation: number,
 ): void {
   if (!isActiveGeneration(generation)) {
     return;
@@ -602,14 +620,7 @@ function mergeWorkerJobTask(serverTask: TidasPackageBackgroundTask): TidasPackag
   };
 }
 
-function applyJobToTask(
-  taskId: string,
-  job: TidasPackageJobResponse,
-  generation = taskGeneration,
-): void {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
+function applyJobToTask(taskId: string, job: TidasPackageJobResponse, generation: number): void {
   const current = tasks.find((item) => item.id === taskId);
   const phase = phaseFromJob(job);
   const isCompleted = phase === 'completed';
@@ -644,11 +655,7 @@ function applyJobToTask(
   );
 }
 
-async function pollTask(taskId: string, jobId: string, generation = taskGeneration): Promise<void> {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
-
+async function pollTask(taskId: string, jobId: string, generation: number): Promise<void> {
   const pollerKey = `${generation}:${taskId}`;
   if (activePollers.has(pollerKey)) {
     return;
@@ -807,6 +814,7 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
   const merged = tasks.slice();
   for (const serverTask of serverTasks) {
     const nextTask = mergeWorkerJobTask(serverTask);
+    tasksAwaitingServerReconciliation.delete(nextTask.id);
     const existingIndex = merged.findIndex((item) => item.id === nextTask.id);
     if (existingIndex >= 0) {
       merged[existingIndex] = nextTask;
@@ -824,11 +832,11 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
 }
 
 function hydrateTasksFromStorage(generation: number): void {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
   const restored = readTasksFromStorage();
   if (restored.length > 0) {
+    restored
+      .filter((task) => task.state === 'running' && task.id.startsWith(LOCAL_TASK_ID_PREFIX))
+      .forEach((task) => tasksAwaitingServerReconciliation.add(task.id));
     setTasks(restored, generation);
     const maxSequence = restored.reduce((max, item) => Math.max(max, item.sequence), 0);
     if (maxSequence > taskSequence) {
@@ -856,6 +864,7 @@ export function bindTidasPackageTaskCenterOwner(ownerId: string | null | undefin
   taskSequence = 0;
   tasks = [];
   activePollers.clear();
+  tasksAwaitingServerReconciliation.clear();
   emitChange();
 
   if (!normalizedOwnerId) {
@@ -897,6 +906,7 @@ export function submitTidasPackageExportTask(
     rootCount: request.roots?.length ?? 0,
   };
 
+  tasksAwaitingServerReconciliation.add(task.id);
   setTasks([task, ...tasks], generation);
   void runExportTask(task.id, request, generation);
   return task;

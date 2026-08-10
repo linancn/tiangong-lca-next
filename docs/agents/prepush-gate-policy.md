@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center tests and mirror sync use the unchanged checked-push, Docpact, and full-gate policy.'
+lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedNote: 'Reviewed the Issue #799 Dev regression follow-up: the task-retention fix and canonical locale-artifact refresh use the unchanged checked-push, Docpact, and full-gate policy.'
 ---
 
 # Pre-Push Gate Policy
