@@ -11,7 +11,11 @@ import {
   type NormalizedSingleProcessDemand,
 } from '../_shared/lca_process_scope.ts';
 import { ensureLcaSnapshotBuildQueued } from '../_shared/lca_snapshot_build_queue.ts';
-import { queryLcaSnapshotCandidates } from '../_shared/lca_snapshot_capabilities.ts';
+import {
+  parseLcaSnapshotScope,
+  queryLcaSnapshotCandidates,
+  type LcaSnapshotScope,
+} from '../_shared/lca_snapshot_capabilities.ts';
 import {
   buildLcaCalculationEvidenceBinding,
   buildSnapshotContainsFilter,
@@ -128,7 +132,10 @@ Deno.serve(async (req) => {
     return json({ error: 'request_roots_not_allowed' }, 400);
   }
 
-  const scope = (body.scope ?? 'prod').trim() || 'prod';
+  const scope = parseLcaSnapshotScope(body.scope);
+  if (!scope) {
+    return json({ error: 'invalid_scope' }, 400);
+  }
   const requestedSnapshotId = body.snapshot_id?.trim() || undefined;
   const dataScope = parseLcaDataScope(body.data_scope);
   const demandMode = body.demand_mode ?? 'single';
@@ -245,7 +252,7 @@ Deno.serve(async (req) => {
   let normalizedRequest:
     | {
         version: string;
-        scope: string;
+        scope: LcaSnapshotScope;
         snapshot_id: string;
         demand_mode: 'single';
         demand: { process_index: number; amount: number };
@@ -255,7 +262,7 @@ Deno.serve(async (req) => {
       }
     | {
         version: string;
-        scope: string;
+        scope: LcaSnapshotScope;
         snapshot_id: string;
         demand_mode: 'all_unit';
         solve: { return_x: boolean; return_g: boolean; return_h: boolean };
@@ -499,7 +506,7 @@ async function resolveCalculationEvidenceBinding(input: {
 }
 
 async function resolveReadySnapshot(
-  scope: string,
+  scope: LcaSnapshotScope,
   dataScope: LcaDataScope,
   requestedSnapshotId?: string,
   userId?: string,
@@ -544,7 +551,7 @@ async function resolveReadySnapshot(
   }
 
   const candidates = await queryLcaSnapshotCandidates(supabaseClient, {
-    scope: scope === 'data_product' ? 'data_product' : 'full_library',
+    scope,
     limit: 1,
   });
   if (!candidates.ok) {
@@ -566,14 +573,14 @@ async function resolveReadySnapshot(
 }
 
 async function fetchScopedReadySnapshot(
-  scope: string,
+  scope: LcaSnapshotScope,
   dataScope: LcaDataScope,
   userId: string,
   requestRoots: readonly LcaSnapshotRequestRoot[] = [],
 ): Promise<ScopedSnapshotResolution> {
   const expectedProcessFilter = await buildSnapshotProcessFilter(dataScope, userId, requestRoots);
   const result = await queryLcaSnapshotCandidates(supabaseClient, {
-    scope: scope === 'data_product' ? 'data_product' : 'full_library',
+    scope,
     processFilterContains: buildSnapshotContainsFilter(expectedProcessFilter),
     limit: 100,
   });

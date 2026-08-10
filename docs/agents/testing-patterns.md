@@ -30,9 +30,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: 9b5d05e7ad315db37002c44b0b012f2a84beec5d
-lastReviewedNote: 'Reviewed for Issues #778 and #780: release proof and grouped-review tests continue to use existing bounded Docpact and service/UI testing patterns.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: deferred async results and user-switch isolation are covered with the existing focused service-unit pattern.'
 ---
 
 # Testing Patterns Reference

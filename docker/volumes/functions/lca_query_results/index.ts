@@ -18,7 +18,11 @@ import {
   validateProcessEntriesInDataScope,
 } from '../_shared/lca_process_scope.ts';
 import { ensureLcaSnapshotBuildQueued } from '../_shared/lca_snapshot_build_queue.ts';
-import { queryLcaSnapshotCandidates } from '../_shared/lca_snapshot_capabilities.ts';
+import {
+  parseLcaSnapshotScope,
+  queryLcaSnapshotCandidates,
+  type LcaSnapshotScope,
+} from '../_shared/lca_snapshot_capabilities.ts';
 import {
   buildLcaCalculationEvidenceBinding,
   buildSnapshotContainsFilter,
@@ -165,7 +169,10 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_payload' }, 400);
   }
 
-  const scope = (body.scope ?? 'prod').trim() || 'prod';
+  const scope = parseLcaSnapshotScope(body.scope);
+  if (!scope) {
+    return json({ error: 'invalid_scope' }, 400);
+  }
   const dataScope = parseLcaDataScope(body.data_scope);
   const mode = body.mode;
   const allowFallback = body.allow_fallback ?? true;
@@ -608,7 +615,7 @@ async function resolveCalculationEvidenceBinding(
 }
 
 async function resolveReadySnapshot(
-  scope: string,
+  scope: LcaSnapshotScope,
   requestedSnapshotId?: string,
   userId?: string,
   dataScope: LcaDataScope = 'current_user',
@@ -655,7 +662,7 @@ async function resolveReadySnapshot(
   }
 
   const candidates = await queryLcaSnapshotCandidates(supabaseClient, {
-    scope: scope === 'data_product' ? 'data_product' : 'full_library',
+    scope,
     limit: 1,
   });
   if (!candidates.ok) {
@@ -675,13 +682,13 @@ async function resolveReadySnapshot(
 }
 
 async function fetchReadySnapshotForDataScope(
-  scope: string,
+  scope: LcaSnapshotScope,
   userId: string,
   dataScope: LcaDataScope,
 ): Promise<ScopedSnapshotResolution> {
   const expectedProcessFilter = await buildSnapshotProcessFilter(dataScope, userId);
   const result = await queryLcaSnapshotCandidates(supabaseClient, {
-    scope: scope === 'data_product' ? 'data_product' : 'full_library',
+    scope,
     processFilterContains: buildSnapshotContainsFilter(expectedProcessFilter),
     limit: 100,
   });

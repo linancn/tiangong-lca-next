@@ -1,5 +1,22 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
+export const DEFAULT_LCA_SNAPSHOT_SCOPE = 'full_library' as const;
+export type LcaSnapshotScope = typeof DEFAULT_LCA_SNAPSHOT_SCOPE | 'data_product';
+
+export function parseLcaSnapshotScope(value: unknown): LcaSnapshotScope | null {
+  if (value === undefined || value === null) {
+    return DEFAULT_LCA_SNAPSHOT_SCOPE;
+  }
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const scope = value.trim();
+  if (!scope) {
+    return DEFAULT_LCA_SNAPSHOT_SCOPE;
+  }
+  return scope === 'full_library' || scope === 'data_product' ? scope : null;
+}
+
 export type LcaSnapshotCandidate = {
   snapshotId: string;
   scope: string;
@@ -31,7 +48,7 @@ export type LcaSnapshotCandidatesResult =
 export async function queryLcaSnapshotCandidates(
   client: Pick<SupabaseClient, 'rpc'>,
   request: {
-    scope: 'full_library' | 'data_product';
+    scope: LcaSnapshotScope;
     snapshotId?: string | null;
     processFilterContains?: unknown;
     limit?: number;

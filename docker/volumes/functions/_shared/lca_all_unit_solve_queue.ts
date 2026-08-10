@@ -1,5 +1,6 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
+import type { LcaSnapshotScope } from './lca_snapshot_capabilities.ts';
 import type { LcaCalculationEvidenceBinding } from './lca_snapshot_scope.ts';
 
 import {
@@ -23,7 +24,7 @@ type AllUnitSolvePayload = {
 
 type AllUnitSolveNormalizedRequest = {
   version: string;
-  scope: string;
+  scope: LcaSnapshotScope;
   snapshot_id: string;
   demand_mode: 'all_unit';
   solve: { return_x: false; return_g: false; return_h: true };
@@ -45,7 +46,7 @@ export type LcaAllUnitSolveQueueResult =
 export async function ensureLcaAllUnitSolveQueued(
   supabase: SupabaseClient,
   args: {
-    scope: string;
+    scope: LcaSnapshotScope;
     snapshotId: string;
     userId: string;
     calculationEvidenceBinding?: LcaCalculationEvidenceBinding | null;

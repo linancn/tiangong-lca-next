@@ -5,6 +5,7 @@ const mockQueryCurrentUser = jest.fn();
 const mockGetSystemUserRoleApi = jest.fn();
 const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
 const mockResolveBrowserRuntimeLocale = jest.fn(() => 'de-DE');
+const mockBindTidasPackageTaskCenterOwner = jest.fn();
 const mockHistory = {
   location: {
     pathname: '/tgdata',
@@ -69,6 +70,11 @@ jest.mock('@/services/auth', () => ({
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
   getSystemUserRoleApi: (...args: any[]) => mockGetSystemUserRoleApi(...args),
+}));
+
+jest.mock('@/services/tidasPackage/taskCenter', () => ({
+  __esModule: true,
+  bindTidasPackageTaskCenterOwner: (...args: any[]) => mockBindTidasPackageTaskCenterOwner(...args),
 }));
 
 jest.mock('@/services/general/runtimeLocale', () => ({
@@ -178,6 +184,15 @@ describe('app runtime config', () => {
     });
   });
 
+  it('binds the package task center to the authenticated user before rendering', async () => {
+    const { getInitialState } = require('@/app');
+    mockQueryCurrentUser.mockResolvedValueOnce({ name: 'Current User', userid: 'user-a' });
+
+    await getInitialState();
+
+    expect(mockBindTidasPackageTaskCenterOwner).toHaveBeenCalledWith('user-a');
+  });
+
   it('getInitialState loads dashboard users so admin route access can gate the page', async () => {
     const { getInitialState } = require('@/app');
     mockHistory.location.pathname = '/dashboard/national-carbon';
@@ -236,6 +251,7 @@ describe('app runtime config', () => {
     const state = await getInitialState();
 
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+    expect(mockBindTidasPackageTaskCenterOwner).toHaveBeenCalledWith(null);
     expect(state.currentUser).toBeNull();
   });
 
@@ -273,6 +289,7 @@ describe('app runtime config', () => {
       const state = await getInitialState();
 
       expect(mockQueryCurrentUser).not.toHaveBeenCalled();
+      expect(mockBindTidasPackageTaskCenterOwner).toHaveBeenCalledWith(null);
       expect(state.currentUser).toBeUndefined();
       expect(typeof state.fetchUserInfo).toBe('function');
     },

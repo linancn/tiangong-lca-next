@@ -1,6 +1,10 @@
 import { waitFor } from '@testing-library/react';
 
-const STORAGE_KEY = 'tg_tidas_package_task_center_v1';
+const LEGACY_STORAGE_KEY = 'tg_tidas_package_task_center_v1';
+const DEFAULT_OWNER_ID = 'user-a';
+const storageKeyForOwner = (ownerId: string) =>
+  `${LEGACY_STORAGE_KEY}:user:${encodeURIComponent(ownerId)}`;
+const STORAGE_KEY = storageKeyForOwner(DEFAULT_OWNER_ID);
 
 const mockQueueExportTidasPackageApi = jest.fn();
 const mockGetTidasPackageJobApi = jest.fn();
@@ -19,12 +23,28 @@ jest.mock('@/services/workerJobs/api', () => ({
   requestWorkerJobsApi: (...args: any[]) => mockRequestWorkerJobsApi(...args),
 }));
 
-function loadTaskCenterModule() {
+function loadUnboundTaskCenterModule() {
   let loaded: any;
   jest.isolateModules(() => {
     loaded = require('@/services/tidasPackage/taskCenter');
   });
   return loaded as typeof import('@/services/tidasPackage/taskCenter');
+}
+
+function loadTaskCenterModule(ownerId = DEFAULT_OWNER_ID) {
+  const loaded = loadUnboundTaskCenterModule();
+  loaded.bindTidasPackageTaskCenterOwner(ownerId);
+  return loaded;
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
 }
 
 const flushPromises = async () => {
@@ -42,6 +62,151 @@ describe('tidasPackage/taskCenter', () => {
     mockRequestWorkerJobsApi.mockResolvedValue({ data: [], error: null });
     jest.useRealTimers();
     localStorage.clear();
+  });
+
+  it('stays inert until an authenticated owner is bound and discards legacy global storage', async () => {
+    localStorage.setItem(
+      LEGACY_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: new Date().toISOString(),
+        tasks: [
+          {
+            id: 'legacy-task',
+            state: 'completed',
+            phase: 'completed',
+            message: 'must not hydrate',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            sequence: 1,
+          },
+        ],
+      }),
+    );
+
+    const taskCenter = loadUnboundTaskCenterModule();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+    expect(mockRequestWorkerJobsApi).not.toHaveBeenCalled();
+
+    taskCenter.bindTidasPackageTaskCenterOwner(DEFAULT_OWNER_ID);
+    expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
+  });
+
+  it('keeps persisted task snapshots isolated when authenticated users switch', async () => {
+    const firstQueue = createDeferred<any>();
+    mockQueueExportTidasPackageApi
+      .mockReturnValueOnce(firstQueue.promise)
+      .mockResolvedValueOnce({ data: null, error: new Error('user-b fixture') });
+
+    const taskCenter = loadTaskCenterModule('user-a');
+    const userATask = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    expect(JSON.parse(localStorage.getItem(storageKeyForOwner('user-a')) ?? '{}').tasks).toEqual([
+      expect.objectContaining({ id: userATask.id }),
+    ]);
+
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+    const userBTask = taskCenter.submitTidasPackageExportTask({ scope: 'open_data' });
+    await waitFor(() => {
+      expect(taskCenter.listTidasPackageTasks()).toEqual([
+        expect.objectContaining({ id: userBTask.id, state: 'failed' }),
+      ]);
+    });
+
+    firstQueue.resolve({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'user-a-job',
+        scope: 'current_user',
+        root_count: 0,
+      },
+      error: null,
+    });
+    await flushPromises();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([
+      expect.objectContaining({ id: userBTask.id }),
+    ]);
+    expect(localStorage.getItem(storageKeyForOwner('user-b'))).not.toBeNull();
+
+    taskCenter.bindTidasPackageTaskCenterOwner('user-a');
+    expect(taskCenter.listTidasPackageTasks()).toEqual([
+      expect.objectContaining({ id: userATask.id, phase: 'submitting' }),
+    ]);
+  });
+
+  it('ignores a worker refresh that resolves after the authenticated user changes', async () => {
+    const userARefresh = createDeferred<any>();
+    mockRequestWorkerJobsApi.mockReturnValueOnce(userARefresh.promise).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'user-b-worker-job',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectId: 'user-b-package-job',
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule('user-a');
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    await waitFor(() => {
+      expect(taskCenter.listTidasPackageTasks()).toEqual([
+        expect.objectContaining({ id: 'user-b-worker-job' }),
+      ]);
+    });
+
+    userARefresh.resolve({
+      data: [
+        {
+          id: 'user-a-worker-job',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectId: 'user-a-package-job',
+        },
+      ],
+      error: null,
+    });
+    await flushPromises();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([
+      expect.objectContaining({ id: 'user-b-worker-job' }),
+    ]);
+  });
+
+  it('ignores a package poll that resolves after the authenticated user changes', async () => {
+    const userAPoll = createDeferred<any>();
+    mockQueueExportTidasPackageApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'user-a-package-job',
+        scope: 'current_user',
+        root_count: 0,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockReturnValueOnce(userAPoll.promise);
+
+    const taskCenter = loadTaskCenterModule('user-a');
+    taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    await waitFor(() => expect(mockGetTidasPackageJobApi).toHaveBeenCalledTimes(1));
+
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    userAPoll.resolve({
+      data: {
+        ok: true,
+        status: 'completed',
+        job_id: 'user-a-package-job',
+        diagnostics: {},
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+    await flushPromises();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
   });
 
   it('hydrates normalized tasks from storage and resumes running jobs', async () => {

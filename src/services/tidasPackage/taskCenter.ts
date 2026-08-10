@@ -50,7 +50,8 @@ type PersistedTaskStore = {
 };
 
 const MAX_TASK_ITEMS = 30;
-const STORAGE_KEY = 'tg_tidas_package_task_center_v1';
+const LEGACY_STORAGE_KEY = 'tg_tidas_package_task_center_v1';
+const STORAGE_KEY_PREFIX = `${LEGACY_STORAGE_KEY}:user`;
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 1500;
@@ -69,6 +70,8 @@ const TIDAS_PACKAGE_WORKER_JOB_STATUSES: WorkerJobStatus[] = [
 
 let taskSequence = 0;
 let tasks: TidasPackageBackgroundTask[] = [];
+let taskOwnerId: string | null = null;
+let taskGeneration = 0;
 const listeners = new Set<() => void>();
 const activePollers = new Set<string>();
 
@@ -101,8 +104,25 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
+function normalizeTaskOwnerId(ownerId: string | null | undefined): string | null {
+  const normalized = typeof ownerId === 'string' ? ownerId.trim() : '';
+  return normalized || null;
+}
+
+export function getTidasPackageTaskStorageKey(ownerId: string): string {
+  const normalized = normalizeTaskOwnerId(ownerId);
+  if (!normalized) {
+    throw new Error('TIDAS package task storage requires an authenticated user id');
+  }
+  return `${STORAGE_KEY_PREFIX}:${encodeURIComponent(normalized)}`;
+}
+
+function isActiveGeneration(generation: number): boolean {
+  return taskOwnerId !== null && generation === taskGeneration;
+}
+
 function persistTasksToStorage(): void {
-  if (!canUseStorage()) {
+  if (!canUseStorage() || !taskOwnerId) {
     return;
   }
 
@@ -113,13 +133,19 @@ function persistTasksToStorage(): void {
   };
 
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    window.localStorage.setItem(
+      getTidasPackageTaskStorageKey(taskOwnerId),
+      JSON.stringify(payload),
+    );
   } catch (_error) {
     // Ignore storage failures.
   }
 }
 
-function setTasks(next: TidasPackageBackgroundTask[]): void {
+function setTasks(next: TidasPackageBackgroundTask[], generation = taskGeneration): void {
+  if (!isActiveGeneration(generation)) {
+    return;
+  }
   tasks = next
     .slice()
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
@@ -270,25 +296,26 @@ function normalizeTask(raw: unknown, fallbackSequence: number): TidasPackageBack
 }
 
 function readTasksFromStorage(): TidasPackageBackgroundTask[] {
-  if (!canUseStorage()) {
+  if (!canUseStorage() || !taskOwnerId) {
     return [];
   }
 
+  const storageKey = getTidasPackageTaskStorageKey(taskOwnerId);
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
       return [];
     }
 
     const parsed = JSON.parse(raw) as PersistedTaskStore;
     if (!parsed || parsed.version !== STORAGE_SCHEMA_VERSION) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(storageKey);
       return [];
     }
 
     const savedAtMs = Date.parse(String(parsed.savedAt ?? ''));
     if (Number.isFinite(savedAtMs) && Date.now() - savedAtMs > STORAGE_TTL_MS) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(storageKey);
       return [];
     }
 
@@ -306,7 +333,14 @@ function readTasksFromStorage(): TidasPackageBackgroundTask[] {
   }
 }
 
-function upsertTask(taskId: string, patch: Partial<TidasPackageBackgroundTask>): void {
+function upsertTask(
+  taskId: string,
+  patch: Partial<TidasPackageBackgroundTask>,
+  generation = taskGeneration,
+): void {
+  if (!isActiveGeneration(generation)) {
+    return;
+  }
   const index = tasks.findIndex((item) => item.id === taskId);
   if (index < 0) {
     return;
@@ -326,7 +360,7 @@ function upsertTask(taskId: string, patch: Partial<TidasPackageBackgroundTask>):
 
   const next = tasks.slice();
   next[index] = updated;
-  setTasks(next);
+  setTasks(next, generation);
 }
 
 function toErrorMessage(error: unknown): string {
@@ -568,80 +602,110 @@ function mergeWorkerJobTask(serverTask: TidasPackageBackgroundTask): TidasPackag
   };
 }
 
-function applyJobToTask(taskId: string, job: TidasPackageJobResponse): void {
+function applyJobToTask(
+  taskId: string,
+  job: TidasPackageJobResponse,
+  generation = taskGeneration,
+): void {
+  if (!isActiveGeneration(generation)) {
+    return;
+  }
   const current = tasks.find((item) => item.id === taskId);
   const phase = phaseFromJob(job);
   const isCompleted = phase === 'completed';
   const isFailed = phase === 'failed';
 
-  upsertTask(taskId, {
-    phase,
-    state: isCompleted ? 'completed' : isFailed ? 'failed' : 'running',
-    message: messageFromJob(job, current?.request),
-    jobId: job.job_id,
-    scope: job.scope,
-    rootCount:
-      typeof job.root_count === 'number' && Number.isFinite(job.root_count) ? job.root_count : 0,
-    filename: filenameFromJob(job, current?.request),
-    error: isFailed
-      ? (current?.error ??
-        normalizeTidasPackageExportErrorMessage(
-          typeof job.request_cache?.error_message === 'string'
-            ? job.request_cache.error_message
-            : typeof job.diagnostics?.error === 'string'
-              ? job.diagnostics.error
-              : typeof job.diagnostics?.message === 'string'
-                ? job.diagnostics.message
-                : null,
-          'TIDAS package export failed',
-        ))
-      : undefined,
-  });
+  upsertTask(
+    taskId,
+    {
+      phase,
+      state: isCompleted ? 'completed' : isFailed ? 'failed' : 'running',
+      message: messageFromJob(job, current?.request),
+      jobId: job.job_id,
+      scope: job.scope,
+      rootCount:
+        typeof job.root_count === 'number' && Number.isFinite(job.root_count) ? job.root_count : 0,
+      filename: filenameFromJob(job, current?.request),
+      error: isFailed
+        ? (current?.error ??
+          normalizeTidasPackageExportErrorMessage(
+            typeof job.request_cache?.error_message === 'string'
+              ? job.request_cache.error_message
+              : typeof job.diagnostics?.error === 'string'
+                ? job.diagnostics.error
+                : typeof job.diagnostics?.message === 'string'
+                  ? job.diagnostics.message
+                  : null,
+            'TIDAS package export failed',
+          ))
+        : undefined,
+    },
+    generation,
+  );
 }
 
-async function pollTask(taskId: string, jobId: string): Promise<void> {
-  if (activePollers.has(taskId)) {
+async function pollTask(taskId: string, jobId: string, generation = taskGeneration): Promise<void> {
+  if (!isActiveGeneration(generation)) {
     return;
   }
 
-  activePollers.add(taskId);
+  const pollerKey = `${generation}:${taskId}`;
+  if (activePollers.has(pollerKey)) {
+    return;
+  }
+
+  activePollers.add(pollerKey);
   const startedAt = Date.now();
   let consecutiveErrors = 0;
   try {
     while (Date.now() - startedAt <= POLL_TIMEOUT_MS) {
+      if (!isActiveGeneration(generation)) {
+        return;
+      }
       const task = tasks.find((item) => item.id === taskId);
       if (!task || task.state !== 'running') {
         return;
       }
 
       const { data, error } = await getTidasPackageJobApi(jobId);
+      if (!isActiveGeneration(generation)) {
+        return;
+      }
       if (error || !data?.ok) {
         consecutiveErrors += 1;
         if (consecutiveErrors >= POLL_TRANSIENT_ERROR_RETRY_LIMIT) {
-          upsertTask(taskId, {
-            phase: 'failed',
-            state: 'failed',
-            message: 'Export task failed',
-            error: normalizeTidasPackageExportErrorMessage(
-              error?.message,
-              'Failed to load TIDAS package job status',
-            ),
-          });
+          upsertTask(
+            taskId,
+            {
+              phase: 'failed',
+              state: 'failed',
+              message: 'Export task failed',
+              error: normalizeTidasPackageExportErrorMessage(
+                error?.message,
+                'Failed to load TIDAS package job status',
+              ),
+            },
+            generation,
+          );
           return;
         }
 
-        upsertTask(taskId, {
-          phase: task.phase === 'submitting' ? 'queued' : task.phase,
-          state: 'running',
-          message: `Connection interrupted while checking export status, retrying (${consecutiveErrors}/${POLL_TRANSIENT_ERROR_RETRY_LIMIT})`,
-          error: undefined,
-        });
+        upsertTask(
+          taskId,
+          {
+            phase: task.phase === 'submitting' ? 'queued' : task.phase,
+            state: 'running',
+            message: `Connection interrupted while checking export status, retrying (${consecutiveErrors}/${POLL_TRANSIENT_ERROR_RETRY_LIMIT})`,
+            error: undefined,
+          },
+          generation,
+        );
         await delay(POLL_INTERVAL_MS);
         continue;
       }
 
       consecutiveErrors = 0;
-      applyJobToTask(taskId, data);
+      applyJobToTask(taskId, data, generation);
       if (data.status === 'failed' || data.status === 'stale') {
         return;
       }
@@ -652,57 +716,83 @@ async function pollTask(taskId: string, jobId: string): Promise<void> {
       await delay(POLL_INTERVAL_MS);
     }
 
-    upsertTask(taskId, {
-      phase: 'failed',
-      state: 'failed',
-      message: 'Export task timed out',
-      error: 'tidas_package_export_timeout',
-    });
+    upsertTask(
+      taskId,
+      {
+        phase: 'failed',
+        state: 'failed',
+        message: 'Export task timed out',
+        error: 'tidas_package_export_timeout',
+      },
+      generation,
+    );
   } finally {
-    activePollers.delete(taskId);
+    activePollers.delete(pollerKey);
   }
 }
 
-async function runExportTask(taskId: string, request: ExportTidasPackageRequest): Promise<void> {
+async function runExportTask(
+  taskId: string,
+  request: ExportTidasPackageRequest,
+  generation: number,
+): Promise<void> {
   try {
     const queued = await queueExportTidasPackageApi(request);
+    if (!isActiveGeneration(generation)) {
+      return;
+    }
     if (queued.error || !queued.data?.ok) {
       throw queued.error ?? new Error((queued.data as any)?.message ?? 'Export failed');
     }
 
-    upsertTask(taskId, {
-      phase: queued.data.mode === 'queued' ? 'queued' : 'submitting',
-      state: 'running',
-      message:
-        queued.data.mode === 'cache_hit'
-          ? 'Checking cached export package'
-          : `Export task queued (${queued.data.job_id})`,
-      workerJobId: queued.data.worker_job_id ?? undefined,
-      jobId: queued.data.job_id,
-      scope: queued.data.scope,
-      rootCount: queued.data.root_count ?? 0,
-    });
+    upsertTask(
+      taskId,
+      {
+        phase: queued.data.mode === 'queued' ? 'queued' : 'submitting',
+        state: 'running',
+        message:
+          queued.data.mode === 'cache_hit'
+            ? 'Checking cached export package'
+            : `Export task queued (${queued.data.job_id})`,
+        workerJobId: queued.data.worker_job_id ?? undefined,
+        jobId: queued.data.job_id,
+        scope: queued.data.scope,
+        rootCount: queued.data.root_count ?? 0,
+      },
+      generation,
+    );
 
-    await pollTask(taskId, queued.data.job_id);
+    await pollTask(taskId, queued.data.job_id, generation);
   } catch (error) {
-    upsertTask(taskId, {
-      phase: 'failed',
-      state: 'failed',
-      message: 'Export task failed',
-      error: toErrorMessage(error),
-    });
+    upsertTask(
+      taskId,
+      {
+        phase: 'failed',
+        state: 'failed',
+        message: 'Export task failed',
+        error: toErrorMessage(error),
+      },
+      generation,
+    );
   }
 }
 
 export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
   TidasPackageBackgroundTask[]
 > {
+  const generation = taskGeneration;
+  if (!isActiveGeneration(generation)) {
+    return tasks;
+  }
   const result = await requestWorkerJobsApi({
     action: 'list',
     subjectType: 'lca_package_job',
     statuses: TIDAS_PACKAGE_WORKER_JOB_STATUSES,
     limit: MAX_TASK_ITEMS,
   });
+  if (!isActiveGeneration(generation)) {
+    return tasks;
+  }
   if (result.error) {
     throw new Error(result.error.message || 'Failed to refresh TIDAS package worker jobs');
   }
@@ -725,7 +815,7 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
     }
   }
 
-  setTasks(merged);
+  setTasks(merged, generation);
   const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
   if (maxSequence > taskSequence) {
     taskSequence = maxSequence;
@@ -733,10 +823,13 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
   return tasks;
 }
 
-function hydrateTasksFromStorage(): void {
+function hydrateTasksFromStorage(generation: number): void {
+  if (!isActiveGeneration(generation)) {
+    return;
+  }
   const restored = readTasksFromStorage();
   if (restored.length > 0) {
-    setTasks(restored);
+    setTasks(restored, generation);
     const maxSequence = restored.reduce((max, item) => Math.max(max, item.sequence), 0);
     if (maxSequence > taskSequence) {
       taskSequence = maxSequence;
@@ -745,16 +838,50 @@ function hydrateTasksFromStorage(): void {
     restored
       .filter((item) => item.state === 'running' && item.jobId)
       .forEach((item) => {
-        void pollTask(item.id, item.jobId!);
+        void pollTask(item.id, item.jobId!, generation);
       });
   }
 
   void refreshTidasPackageTasksFromWorkerJobs().catch(() => undefined);
 }
 
+export function bindTidasPackageTaskCenterOwner(ownerId: string | null | undefined): void {
+  const normalizedOwnerId = normalizeTaskOwnerId(ownerId);
+  if (normalizedOwnerId === taskOwnerId) {
+    return;
+  }
+
+  taskGeneration += 1;
+  taskOwnerId = normalizedOwnerId;
+  taskSequence = 0;
+  tasks = [];
+  activePollers.clear();
+  emitChange();
+
+  if (!normalizedOwnerId) {
+    return;
+  }
+
+  if (canUseStorage()) {
+    try {
+      // The pre-fix global snapshot cannot be attributed to an authenticated
+      // owner, so it is deliberately discarded rather than migrated.
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch (_error) {
+      // Ignore storage failures.
+    }
+  }
+
+  hydrateTasksFromStorage(taskGeneration);
+}
+
 export function submitTidasPackageExportTask(
   request: ExportTidasPackageRequest,
 ): TidasPackageBackgroundTask {
+  if (!taskOwnerId) {
+    throw new Error('TIDAS package task center requires an authenticated user');
+  }
+  const generation = taskGeneration;
   const createdAt = nowIso();
   const sequence = nextTaskSequence();
   const task: TidasPackageBackgroundTask = {
@@ -770,14 +897,15 @@ export function submitTidasPackageExportTask(
     rootCount: request.roots?.length ?? 0,
   };
 
-  setTasks([task, ...tasks]);
-  void runExportTask(task.id, request);
+  setTasks([task, ...tasks], generation);
+  void runExportTask(task.id, request, generation);
   return task;
 }
 
 export async function downloadTidasPackageExportTask(
   taskId: string,
 ): Promise<ExportTidasPackageResponse> {
+  const generation = taskGeneration;
   const task = tasks.find((item) => item.id === taskId);
   if (!task?.jobId) {
     throw new Error('Package export task is missing job information');
@@ -791,10 +919,18 @@ export async function downloadTidasPackageExportTask(
     throw result.error ?? new Error('Failed to download TIDAS package');
   }
 
-  upsertTask(taskId, {
-    filename: result.data.filename,
-    message: `Export package ready (${result.data.filename})`,
-  });
+  if (!isActiveGeneration(generation)) {
+    return result.data;
+  }
+
+  upsertTask(
+    taskId,
+    {
+      filename: result.data.filename,
+      message: `Export package ready (${result.data.filename})`,
+    },
+    generation,
+  );
 
   return result.data;
 }
@@ -817,5 +953,3 @@ export function subscribeTidasPackageTasks(listener: () => void): () => void {
     listeners.delete(listener);
   };
 }
-
-hydrateTasksFromStorage();
