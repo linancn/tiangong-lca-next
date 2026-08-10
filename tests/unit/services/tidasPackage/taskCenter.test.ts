@@ -326,6 +326,166 @@ describe('tidasPackage/taskCenter', () => {
     expect(taskCenter.listTidasPackageTasks()).toHaveLength(30);
   });
 
+  it('keeps a locally completed task until server history can reconcile it', async () => {
+    mockQueueExportTidasPackageApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'fast-package-job',
+        scope: 'current_user',
+        root_count: 1,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        status: 'completed',
+        job_id: 'fast-package-job',
+        scope: 'current_user',
+        root_count: 1,
+        diagnostics: {},
+        artifacts_by_kind: {
+          export_zip: {
+            metadata: { filename: 'tidas-package-current_user-fast.zip' },
+          },
+        },
+      },
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
+
+    const submittedTask = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    await waitFor(() =>
+      expect(taskCenter.listTidasPackageTasks()).toContainEqual(
+        expect.objectContaining({
+          id: submittedTask.id,
+          state: 'completed',
+          filename: 'tidas-package-current_user-fast.zip',
+        }),
+      ),
+    );
+
+    const futureUpdatedAt = new Date(Date.now() + 60_000).toISOString();
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: Array.from({ length: 30 }, (_, index) => ({
+        id: `server-worker-job-${index}`,
+        jobKind: 'tidas.export_package',
+        status: 'completed',
+        subjectId: `server-package-job-${index}`,
+        createdAt: futureUpdatedAt,
+        updatedAt: futureUpdatedAt,
+      })),
+      error: null,
+    });
+
+    await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+
+    expect(taskCenter.listTidasPackageTasks()).toContainEqual(
+      expect.objectContaining({ id: submittedTask.id, state: 'completed' }),
+    );
+    expect(taskCenter.listTidasPackageTasks()).toHaveLength(30);
+
+    expect(
+      JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').awaitingServerReconciliation,
+    ).toContain(submittedTask.id);
+
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: Array.from({ length: 30 }, (_, index) => ({
+        id: `reloaded-server-worker-job-${index}`,
+        jobKind: 'tidas.export_package',
+        status: 'completed',
+        subjectId: `reloaded-server-package-job-${index}`,
+        createdAt: futureUpdatedAt,
+        updatedAt: futureUpdatedAt,
+      })),
+      error: null,
+    });
+    taskCenter.bindTidasPackageTaskCenterOwner(null);
+    taskCenter.bindTidasPackageTaskCenterOwner(DEFAULT_OWNER_ID);
+
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(3));
+    await waitFor(() =>
+      expect(taskCenter.listTidasPackageTasks()).toContainEqual(
+        expect.objectContaining({ id: submittedTask.id, state: 'completed' }),
+      ),
+    );
+  });
+
+  it('releases a locally completed task after canonical worker history reconciles it', async () => {
+    mockQueueExportTidasPackageApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        mode: 'queued',
+        job_id: 'reconciled-package-job',
+        worker_job_id: 'reconciled-worker-job',
+        scope: 'current_user',
+        root_count: 1,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        status: 'completed',
+        job_id: 'reconciled-package-job',
+        scope: 'current_user',
+        root_count: 1,
+        diagnostics: {},
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
+    const submittedTask = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    await waitFor(() =>
+      expect(taskCenter.listTidasPackageTasks()).toContainEqual(
+        expect.objectContaining({ id: submittedTask.id, state: 'completed' }),
+      ),
+    );
+
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'reconciled-worker-job',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectId: 'reconciled-package-job',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      error: null,
+    });
+    await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+
+    expect(
+      JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').awaitingServerReconciliation,
+    ).not.toContain(submittedTask.id);
+
+    const futureUpdatedAt = new Date(Date.now() + 60_000).toISOString();
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: Array.from({ length: 30 }, (_, index) => ({
+        id: `later-worker-job-${index}`,
+        jobKind: 'tidas.export_package',
+        status: 'completed',
+        subjectId: `later-package-job-${index}`,
+        createdAt: futureUpdatedAt,
+        updatedAt: futureUpdatedAt,
+      })),
+      error: null,
+    });
+    await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+
+    expect(taskCenter.listTidasPackageTasks()).not.toContainEqual(
+      expect.objectContaining({ id: submittedTask.id }),
+    );
+  });
+
   it('releases the reserved server-history slot when submission fails', async () => {
     mockQueueExportTidasPackageApi.mockResolvedValueOnce({
       data: null,

@@ -47,6 +47,12 @@ type PersistedTaskStore = {
   version: number;
   savedAt: string;
   tasks: TidasPackageBackgroundTask[];
+  awaitingServerReconciliation?: string[];
+};
+
+type RestoredTaskStore = {
+  tasks: TidasPackageBackgroundTask[];
+  awaitingServerReconciliation: string[];
 };
 
 const MAX_TASK_ITEMS = 30;
@@ -132,6 +138,9 @@ function persistTasksToStorage(): void {
     version: STORAGE_SCHEMA_VERSION,
     savedAt: nowIso(),
     tasks,
+    awaitingServerReconciliation: Array.from(tasksAwaitingServerReconciliation).filter((taskId) =>
+      tasks.some((task) => task.id === taskId && task.state !== 'failed'),
+    ),
   };
 
   try {
@@ -152,9 +161,10 @@ function setTasks(next: TidasPackageBackgroundTask[], generation = taskGeneratio
     .slice()
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
   // A full server page may use timestamps ahead of the browser clock. Keep
-  // optimistic submissions inside the bounded list until Worker confirms them.
+  // optimistic submissions, including locally completed ones, inside the
+  // bounded list until Worker confirms them.
   const awaitingServer = sorted.filter(
-    (task) => task.state === 'running' && tasksAwaitingServerReconciliation.has(task.id),
+    (task) => task.state !== 'failed' && tasksAwaitingServerReconciliation.has(task.id),
   );
   const retainedIds = new Set(awaitingServer.slice(0, MAX_TASK_ITEMS).map((task) => task.id));
   tasks = [
@@ -164,7 +174,7 @@ function setTasks(next: TidasPackageBackgroundTask[], generation = taskGeneratio
     .slice(0, MAX_TASK_ITEMS)
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
   for (const taskId of tasksAwaitingServerReconciliation) {
-    if (!tasks.some((task) => task.id === taskId && task.state === 'running')) {
+    if (!tasks.some((task) => task.id === taskId && task.state !== 'failed')) {
       tasksAwaitingServerReconciliation.delete(taskId);
     }
   }
@@ -313,28 +323,28 @@ function normalizeTask(raw: unknown, fallbackSequence: number): TidasPackageBack
   };
 }
 
-function readTasksFromStorage(): TidasPackageBackgroundTask[] {
+function readTasksFromStorage(): RestoredTaskStore {
   if (!canUseStorage() || !taskOwnerId) {
-    return [];
+    return { tasks: [], awaitingServerReconciliation: [] };
   }
 
   const storageKey = getTidasPackageTaskStorageKey(taskOwnerId);
   try {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
-      return [];
+      return { tasks: [], awaitingServerReconciliation: [] };
     }
 
     const parsed = JSON.parse(raw) as PersistedTaskStore;
     if (!parsed || parsed.version !== STORAGE_SCHEMA_VERSION) {
       window.localStorage.removeItem(storageKey);
-      return [];
+      return { tasks: [], awaitingServerReconciliation: [] };
     }
 
     const savedAtMs = Date.parse(String(parsed.savedAt ?? ''));
     if (Number.isFinite(savedAtMs) && Date.now() - savedAtMs > STORAGE_TTL_MS) {
       window.localStorage.removeItem(storageKey);
-      return [];
+      return { tasks: [], awaitingServerReconciliation: [] };
     }
 
     const rawTasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
@@ -345,9 +355,18 @@ function readTasksFromStorage(): TidasPackageBackgroundTask[] {
         normalized.push(task);
       }
     });
-    return normalized;
+    const normalizedById = new Map(normalized.map((task) => [task.id, task]));
+    const awaitingServerReconciliation = (
+      Array.isArray(parsed.awaitingServerReconciliation) ? parsed.awaitingServerReconciliation : []
+    )
+      .filter((taskId): taskId is string => typeof taskId === 'string')
+      .filter((taskId) => {
+        const task = normalizedById.get(taskId);
+        return Boolean(task && task.state !== 'failed');
+      });
+    return { tasks: normalized, awaitingServerReconciliation };
   } catch (_error) {
-    return [];
+    return { tasks: [], awaitingServerReconciliation: [] };
   }
 }
 
@@ -832,8 +851,12 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
 }
 
 function hydrateTasksFromStorage(generation: number): void {
-  const restored = readTasksFromStorage();
+  const restoredStore = readTasksFromStorage();
+  const restored = restoredStore.tasks;
   if (restored.length > 0) {
+    restoredStore.awaitingServerReconciliation.forEach((taskId) =>
+      tasksAwaitingServerReconciliation.add(taskId),
+    );
     restored
       .filter((task) => task.state === 'running' && task.id.startsWith(LOCAL_TASK_ID_PREFIX))
       .forEach((task) => tasksAwaitingServerReconciliation.add(task.id));
