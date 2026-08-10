@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused task-center/auth proof closes the regression without opening a repository-wide test backlog.'
+lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused canonical task-alias/timestamp proof closes the regression without opening a repository-wide test backlog.'
 ---
 
 # Testing Execution State
@@ -54,6 +54,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
+- Issue #799 adds focused TIDAS task-center coverage for duplicate queue aliases, persisted alias hydration, canonical backend timestamps, one active poller, and post-coalescing failure routing; it creates no open coverage queue
 - Issue #778 adds hermetic contract coverage for the two deterministic release commands: JSON purity, non-mutating dry-run, qualification reuse and automatic exact-receipt generation, qualification/preflight failure before transport, rejection of unexpected untracked JSON, exact version fields, large-lockfile blob fallback, checked-push delegation, idempotent PR reuse, immutable promotion identity, independent version-candidate and cumulative `main`-to-candidate Docpact preflight, bounded automatic review, and fail-closed package/document/diagnostic/branch/dev/marker drift. A real isolated clone also proves the current review closure reaches a bounded fixed point without document-body changes. It creates no open coverage queue.
 - Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - Issue #748 adds a git-tracked scope-closure qualification adapter for the Next owner. Its isolated Chromium flow proves preparing, available, expired, and unavailable presentation; direct document navigation for bounded XLSX and machine-readable manifests; integrity/expiry metadata; localized 410 rerun guidance; and anonymous, standard-user, administrator, owner, and data-product-manager routing without production targets or mutation.

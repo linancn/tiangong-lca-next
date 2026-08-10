@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: user-scoped task persistence and the generated Edge mirror stay within existing frontend, auth, and integration boundaries.'
+lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical TIDAS task reconciliation and the unchanged Edge mirror stay within existing frontend, auth, and integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

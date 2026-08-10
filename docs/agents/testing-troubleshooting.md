@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: c281df6e2fbdf3de23eea2da588e2c94420add2b
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: the focused serial Jest and Umi setup flow remains sufficient; no new recovery exception is needed.'
+lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
+lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: focused serial Jest remains sufficient for canonical task-alias and timestamp diagnosis.'
 ---
 
 # Testing Troubleshooting
@@ -58,6 +58,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | a visible action exists but the expected request never starts | the control is present but still disabled while prerequisite data loads | wait for the control to become enabled, then interact; do not replace the product guard with an arbitrary delay |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
+| Task Center shows duplicate TIDAS exports or keeps an old completion timestamp after a new request | local submission/persisted aliases were treated as separate facts instead of reconciling the backend worker/package identity | run the focused `tests/unit/services/tidasPackage/taskCenter.test.ts` suite, compare `workerJobId` and `jobId`, and verify hydration, queue, polling, and Worker refresh all retain one canonical task with backend timestamps |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
 | `release:to-dev` or `release:promote-dev-to-main` returns a drift error | the requested version, Issue marker, dev merge SHA, branch candidate, or current remote ref no longer matches the planned identity | read the single JSON error and its `next_action`, inspect the referenced PR/SHA, then rerun dry-run against current remotes; do not force-update or reuse a mismatched release branch |

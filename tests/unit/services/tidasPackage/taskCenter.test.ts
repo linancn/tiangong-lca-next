@@ -94,6 +94,40 @@ describe('tidasPackage/taskCenter', () => {
     await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
   });
 
+  it('rejects invalid owner-bound operations and keeps unbound helpers inert', async () => {
+    const taskCenter = loadUnboundTaskCenterModule();
+
+    expect(() => taskCenter.getTidasPackageTaskStorageKey(undefined as any)).toThrow(
+      'authenticated user id',
+    );
+    expect(() => taskCenter.getTidasPackageTaskStorageKey('   ')).toThrow('authenticated user id');
+    expect(() => taskCenter.submitTidasPackageExportTask({ scope: 'current_user' })).toThrow(
+      'requires an authenticated user',
+    );
+    await expect(taskCenter.refreshTidasPackageTasksFromWorkerJobs()).resolves.toEqual([]);
+
+    taskCenter.removeTidasPackageTask('missing');
+    taskCenter.clearFinishedTidasPackageTasks();
+    taskCenter.bindTidasPackageTaskCenterOwner(null);
+    taskCenter.bindTidasPackageTaskCenterOwner(DEFAULT_OWNER_ID);
+    taskCenter.bindTidasPackageTaskCenterOwner(null);
+    taskCenter.bindTidasPackageTaskCenterOwner(null);
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+  });
+
+  it('absorbs background refresh errors while hydrating an authenticated owner', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'background refresh failed' },
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await flushPromises();
+
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+    expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps persisted task snapshots isolated when authenticated users switch', async () => {
     const firstQueue = createDeferred<any>();
     mockQueueExportTidasPackageApi
@@ -206,6 +240,68 @@ describe('tidasPackage/taskCenter', () => {
       error: null,
     });
     await flushPromises();
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+  });
+
+  it('ignores queue rejection updates after the authenticated user changes', async () => {
+    const queue = createDeferred<any>();
+    mockQueueExportTidasPackageApi.mockReturnValueOnce(queue.promise);
+
+    const taskCenter = loadTaskCenterModule('user-a');
+    taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+
+    queue.reject(new Error('stale queue rejection'));
+    await flushPromises();
+
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+  });
+
+  it('stops polling after an owner switch or local task removal', async () => {
+    jest.useFakeTimers();
+    mockQueueExportTidasPackageApi
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          mode: 'queued',
+          job_id: 'stale-owner-job',
+          scope: 'current_user',
+          root_count: 0,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          mode: 'queued',
+          job_id: 'removed-task-job',
+          scope: 'current_user',
+          root_count: 0,
+        },
+        error: null,
+      });
+    mockGetTidasPackageJobApi.mockResolvedValue({
+      data: {
+        ok: true,
+        status: 'running',
+        job_id: 'running-job',
+        diagnostics: {},
+        artifacts_by_kind: {},
+      },
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule('user-a');
+    taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    await flushPromises();
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    await jest.advanceTimersByTimeAsync(1600);
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
+
+    const removed = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    await flushPromises();
+    taskCenter.removeTidasPackageTask(removed.id);
+    await jest.advanceTimersByTimeAsync(1600);
     expect(taskCenter.listTidasPackageTasks()).toEqual([]);
   });
 
@@ -520,6 +616,269 @@ describe('tidasPackage/taskCenter', () => {
         message: 'Import task queued (package-import-1)',
       }),
     ]);
+  });
+
+  it('coalesces repeated local submissions that resolve to one canonical backend job', async () => {
+    const pendingPoll = createDeferred<any>();
+    mockQueueExportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        mode: 'in_progress',
+        job_id: 'shared-package-job',
+        worker_job_id: 'shared-worker-job',
+        scope: 'current_user',
+        root_count: 0,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockReturnValue(pendingPoll.promise);
+
+    const taskCenter = loadTaskCenterModule();
+    const first = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    const second = taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+
+    await waitFor(() => {
+      expect(taskCenter.listTidasPackageTasks()).toEqual([
+        expect.objectContaining({
+          id: first.id,
+          workerJobId: 'shared-worker-job',
+          jobId: 'shared-package-job',
+          state: 'running',
+        }),
+      ]);
+    });
+    expect(taskCenter.listTidasPackageTasks()[0].id).not.toBe(second.id);
+    expect(mockGetTidasPackageJobApi).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies a post-coalescing poll rejection to the retained canonical task', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: new Date().toISOString(),
+        tasks: [
+          {
+            id: 'retained-canonical-task',
+            sequence: 1,
+            kind: 'tidas_package_export',
+            request: { scope: 'current_user' },
+            state: 'completed',
+            phase: 'completed',
+            message: 'cached',
+            createdAt: '2026-08-10T07:14:41.590Z',
+            updatedAt: '2026-08-10T07:14:44.000Z',
+            workerJobId: 'coalesced-worker-job',
+            jobId: 'coalesced-package-job',
+            scope: 'current_user',
+            rootCount: 0,
+          },
+        ],
+      }),
+    );
+    mockQueueExportTidasPackageApi.mockResolvedValue({
+      data: {
+        ok: true,
+        mode: 'cache_hit',
+        job_id: 'coalesced-package-job',
+        worker_job_id: 'coalesced-worker-job',
+        scope: 'current_user',
+        root_count: 0,
+      },
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockRejectedValue(new Error('coalesced poll rejected'));
+
+    const taskCenter = loadTaskCenterModule();
+    taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+
+    await waitFor(() => {
+      expect(taskCenter.listTidasPackageTasks()).toEqual([
+        expect.objectContaining({
+          id: 'retained-canonical-task',
+          state: 'failed',
+          phase: 'failed',
+          error: 'coalesced poll rejected',
+        }),
+      ]);
+    });
+  });
+
+  it('collapses persisted aliases and restores canonical Worker timestamps on refresh', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: '2026-08-10T15:20:00.000Z',
+        tasks: [
+          {
+            id: 'original-local-task',
+            sequence: 1,
+            kind: 'tidas_package_export',
+            request: { scope: 'current_user' },
+            state: 'completed',
+            phase: 'completed',
+            message: 'original',
+            createdAt: '2026-08-10T15:14:41.590Z',
+            updatedAt: '2026-08-10T15:14:44.000Z',
+            workerJobId: 'canonical-worker-job',
+            jobId: 'canonical-package-job',
+            scope: 'current_user',
+            rootCount: 0,
+          },
+          {
+            id: 'later-local-alias',
+            sequence: 1,
+            kind: 'tidas_package_export',
+            request: { scope: 'current_user' },
+            state: 'completed',
+            phase: 'completed',
+            message: 'alias',
+            createdAt: '2026-08-10T15:20:00.000Z',
+            updatedAt: '2026-08-10T15:20:00.000Z',
+            workerJobId: 'canonical-worker-job',
+            jobId: 'canonical-package-job',
+            scope: 'current_user',
+            rootCount: 0,
+          },
+        ],
+      }),
+    );
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [
+        {
+          id: 'canonical-worker-job',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectType: 'lca_package_job',
+          subjectId: 'canonical-package-job',
+          subjectVersion: 'current_user',
+          createdAt: '2026-08-10T15:14:41.590Z',
+          updatedAt: '2026-08-10T15:14:44.000Z',
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    expect(taskCenter.listTidasPackageTasks()).toHaveLength(1);
+
+    await waitFor(() => {
+      expect(taskCenter.listTidasPackageTasks()).toEqual([
+        expect.objectContaining({
+          id: 'original-local-task',
+          workerJobId: 'canonical-worker-job',
+          jobId: 'canonical-package-job',
+          createdAt: '2026-08-10T15:14:41.590Z',
+          updatedAt: '2026-08-10T15:14:44.000Z',
+          state: 'completed',
+        }),
+      ]);
+    });
+  });
+
+  it('reconciles partial aliases and clamps impossible Worker timestamps', async () => {
+    const workerRefresh = createDeferred<any>();
+    mockRequestWorkerJobsApi.mockReturnValueOnce(workerRefresh.promise);
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: '2026-08-10T11:05:00.000Z',
+        tasks: [
+          {
+            id: 'later-job-alias',
+            sequence: 1,
+            kind: 'tidas_package_export',
+            request: { scope: 'open_data' },
+            state: 'completed',
+            phase: 'completed',
+            message: 'later job alias',
+            createdAt: '2026-08-10T10:05:00.000Z',
+            updatedAt: '2026-08-10T10:05:00.000Z',
+            jobId: 'shared-package-job',
+          },
+          {
+            id: 'canonical-job-task',
+            sequence: 1,
+            kind: 'tidas_package_export',
+            state: 'completed',
+            phase: 'completed',
+            message: 'canonical job task',
+            createdAt: '2026-08-10T10:00:00.000Z',
+            updatedAt: '2026-08-10T10:00:00.000Z',
+            workerJobId: 'fallback-worker-job',
+            jobId: 'shared-package-job',
+            scope: 'current_user',
+          },
+          {
+            id: 'canonical-worker-task',
+            sequence: 2,
+            kind: 'tidas_package_export',
+            state: 'completed',
+            phase: 'completed',
+            message: 'canonical worker task',
+            createdAt: '2026-08-10T11:00:00.000Z',
+            updatedAt: '2026-08-10T11:00:00.000Z',
+            workerJobId: 'shared-worker-job',
+            jobId: 'fallback-package-job',
+            scope: 'open_data',
+          },
+          {
+            id: 'later-worker-alias',
+            sequence: 3,
+            kind: 'tidas_package_export',
+            state: 'completed',
+            phase: 'completed',
+            message: 'later worker alias',
+            createdAt: '2026-08-10T11:01:00.000Z',
+            updatedAt: '2026-08-10T11:01:00.000Z',
+            workerJobId: 'shared-worker-job',
+          },
+        ],
+      }),
+    );
+
+    const taskCenter = loadTaskCenterModule();
+    expect(taskCenter.listTidasPackageTasks()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'canonical-job-task',
+          request: { scope: 'open_data' },
+          workerJobId: 'fallback-worker-job',
+          jobId: 'shared-package-job',
+          scope: 'current_user',
+        }),
+        expect.objectContaining({
+          id: 'canonical-worker-task',
+          workerJobId: 'shared-worker-job',
+          jobId: 'fallback-package-job',
+          scope: 'open_data',
+        }),
+      ]),
+    );
+
+    workerRefresh.resolve({
+      data: [
+        {
+          id: 'shared-worker-job',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectType: 'lca_package_job',
+          subjectId: 'fallback-package-job',
+          createdAt: '2026-08-10T11:00:00.000Z',
+          updatedAt: '2026-08-10T10:59:00.000Z',
+        },
+      ],
+      error: null,
+    });
+
+    await waitFor(() => {
+      expect(
+        taskCenter.listTidasPackageTasks().find((item) => item.id === 'canonical-worker-task')
+          ?.updatedAt,
+      ).toBe('2026-08-10T11:00:00.000Z');
+    });
   });
 
   it('maps canonical export worker_jobs phase and artifact fallback branches', async () => {
@@ -1392,6 +1751,43 @@ describe('tidasPackage/taskCenter', () => {
     listener.mockClear();
     taskCenter.removeTidasPackageTask('running-task');
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('returns a completed download without mutating the next authenticated owner', async () => {
+    const download = createDeferred<any>();
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: new Date().toISOString(),
+        tasks: [
+          {
+            id: 'stale-download-task',
+            state: 'completed',
+            phase: 'completed',
+            message: 'ready',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            sequence: 1,
+            jobId: 'stale-download-job',
+          },
+        ],
+      }),
+    );
+    mockDownloadReadyTidasPackageExportApi.mockReturnValueOnce(download.promise);
+
+    const taskCenter = loadTaskCenterModule();
+    const pending = taskCenter.downloadTidasPackageExportTask('stale-download-task');
+    taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    download.resolve({
+      data: { ok: true, filename: 'stale-owner.zip', job_id: 'stale-download-job' },
+      error: null,
+    });
+
+    await expect(pending).resolves.toEqual(
+      expect.objectContaining({ filename: 'stale-owner.zip' }),
+    );
+    expect(taskCenter.listTidasPackageTasks()).toEqual([]);
   });
 
   it('uses the default filename when downloading tasks that never recorded one locally', async () => {

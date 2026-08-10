@@ -1,5 +1,6 @@
 // @ts-nocheck
 import AssignmentReview, {
+  SELECTED_REVIEW_ROW_BUTTON_STYLE,
   isReferenceMatchingReviewTab,
 } from '@/pages/Review/Components/AssignmentReview';
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
@@ -325,6 +326,15 @@ jest.mock('@/services/reviews/api', () => ({
 }));
 
 describe('AssignmentReview', () => {
+  it('keeps icon buttons transparent only inside selected review rows', () => {
+    expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain(
+      '.review-table-with-expand-icon .ant-table-row-selected .ant-btn',
+    );
+    expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain('background: transparent !important');
+    expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain('border-color: transparent !important');
+    expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain('box-shadow: none');
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocale = 'en-US';

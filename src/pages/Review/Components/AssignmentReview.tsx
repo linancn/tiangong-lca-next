@@ -34,6 +34,14 @@ import SimpleReviewActions from './SimpleReviewActions';
 
 const { Search } = Input;
 
+export const SELECTED_REVIEW_ROW_BUTTON_STYLE = `
+  .review-table-with-expand-icon .ant-table-row-selected .ant-btn {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none;
+  }
+`;
+
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
   tableType:
@@ -78,6 +86,7 @@ const ExpandIconStyle = () => {
       .review-table-with-expand-icon .ant-table-row-expand-icon-expanded:focus {
         color: ${token.colorPrimary} !important;
       }
+      ${SELECTED_REVIEW_ROW_BUTTON_STYLE}
     `}</style>
   );
 };

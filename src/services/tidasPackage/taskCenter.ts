@@ -121,6 +121,85 @@ function isActiveGeneration(generation: number): boolean {
   return taskOwnerId !== null && generation === taskGeneration;
 }
 
+function runForActiveGeneration<T>(generation: number, operation: () => T, inactiveResult: T): T {
+  if (!isActiveGeneration(generation)) {
+    return inactiveResult;
+  }
+  return operation();
+}
+
+function sharesCanonicalTaskIdentity(
+  left: TidasPackageBackgroundTask,
+  right: TidasPackageBackgroundTask,
+): boolean {
+  return Boolean(
+    (left.workerJobId && right.workerJobId && left.workerJobId === right.workerJobId) ||
+    (left.jobId && right.jobId && left.jobId === right.jobId),
+  );
+}
+
+function earlierTask(
+  left: TidasPackageBackgroundTask,
+  right: TidasPackageBackgroundTask,
+): TidasPackageBackgroundTask {
+  if (left.sequence !== right.sequence) {
+    return left.sequence < right.sequence ? left : right;
+  }
+  return Date.parse(left.createdAt) <= Date.parse(right.createdAt) ? left : right;
+}
+
+function earlierIso(left: string, right: string): string {
+  return Date.parse(left) <= Date.parse(right) ? left : right;
+}
+
+function laterTask(
+  left: TidasPackageBackgroundTask,
+  right: TidasPackageBackgroundTask,
+): TidasPackageBackgroundTask {
+  return Date.parse(left.updatedAt) >= Date.parse(right.updatedAt) ? left : right;
+}
+
+function mergeLocalTaskAliases(
+  left: TidasPackageBackgroundTask,
+  right: TidasPackageBackgroundTask,
+): TidasPackageBackgroundTask {
+  const canonical = earlierTask(left, right);
+  const latest = laterTask(left, right);
+  const fallback = latest === left ? right : left;
+
+  return {
+    ...canonical,
+    ...latest,
+    id: canonical.id,
+    sequence: canonical.sequence,
+    kind: canonical.kind,
+    request: canonical.request ?? latest.request,
+    createdAt: earlierIso(left.createdAt, right.createdAt),
+    workerJobId: latest.workerJobId ?? fallback.workerJobId,
+    jobKind: latest.jobKind ?? fallback.jobKind,
+    jobId: latest.jobId ?? fallback.jobId,
+    scope: latest.scope ?? fallback.scope,
+    rootCount: latest.rootCount || fallback.rootCount,
+    filename: latest.filename ?? fallback.filename,
+    error: latest.error ?? fallback.error,
+  };
+}
+
+function coalesceCanonicalTaskAliases(
+  next: TidasPackageBackgroundTask[],
+): TidasPackageBackgroundTask[] {
+  const coalesced: TidasPackageBackgroundTask[] = [];
+  for (const task of next) {
+    const matchingIndex = coalesced.findIndex((item) => sharesCanonicalTaskIdentity(item, task));
+    if (matchingIndex < 0) {
+      coalesced.push(task);
+      continue;
+    }
+    coalesced[matchingIndex] = mergeLocalTaskAliases(coalesced[matchingIndex], task);
+  }
+  return coalesced;
+}
+
 function persistTasksToStorage(): void {
   if (!canUseStorage() || !taskOwnerId) {
     return;
@@ -146,7 +225,7 @@ function setTasks(next: TidasPackageBackgroundTask[], generation = taskGeneratio
   if (!isActiveGeneration(generation)) {
     return;
   }
-  tasks = next
+  tasks = coalesceCanonicalTaskAliases(next)
     .slice()
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
     .slice(0, MAX_TASK_ITEMS);
@@ -333,14 +412,11 @@ function readTasksFromStorage(): TidasPackageBackgroundTask[] {
   }
 }
 
-function upsertTask(
+function upsertActiveTask(
   taskId: string,
   patch: Partial<TidasPackageBackgroundTask>,
-  generation = taskGeneration,
+  generation: number,
 ): void {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
   const index = tasks.findIndex((item) => item.id === taskId);
   if (index < 0) {
     return;
@@ -361,6 +437,14 @@ function upsertTask(
   const next = tasks.slice();
   next[index] = updated;
   setTasks(next, generation);
+}
+
+function upsertTask(
+  taskId: string,
+  patch: Partial<TidasPackageBackgroundTask>,
+  generation: number,
+): void {
+  runForActiveGeneration(generation, () => upsertActiveTask(taskId, patch, generation), undefined);
 }
 
 function toErrorMessage(error: unknown): string {
@@ -577,8 +661,11 @@ function taskFromWorkerJob(
   };
 }
 
-function mergeWorkerJobTask(serverTask: TidasPackageBackgroundTask): TidasPackageBackgroundTask {
-  const current = tasks.find((item) =>
+function mergeWorkerJobTask(
+  serverTask: TidasPackageBackgroundTask,
+  currentTasks: TidasPackageBackgroundTask[],
+): TidasPackageBackgroundTask {
+  const matches = currentTasks.filter((item) =>
     Boolean(
       (serverTask.workerJobId && item.workerJobId === serverTask.workerJobId) ||
       item.id === serverTask.id ||
@@ -586,9 +673,17 @@ function mergeWorkerJobTask(serverTask: TidasPackageBackgroundTask): TidasPackag
     ),
   );
 
-  if (!current) {
+  if (matches.length === 0) {
     return serverTask;
   }
+
+  const current = matches.reduce(earlierTask);
+  const createdAt = matches.reduce(
+    (earliest, item) => earlierIso(earliest, item.createdAt),
+    serverTask.createdAt,
+  );
+  const updatedAt =
+    Date.parse(serverTask.updatedAt) >= Date.parse(createdAt) ? serverTask.updatedAt : createdAt;
 
   return {
     ...current,
@@ -596,20 +691,18 @@ function mergeWorkerJobTask(serverTask: TidasPackageBackgroundTask): TidasPackag
     id: current.id,
     sequence: current.sequence,
     request: current.request,
-    createdAt: current.createdAt,
+    createdAt,
+    updatedAt,
     scope: current.scope ?? serverTask.scope,
     rootCount: current.rootCount || serverTask.rootCount,
   };
 }
 
-function applyJobToTask(
+function applyJobToActiveTask(
   taskId: string,
   job: TidasPackageJobResponse,
-  generation = taskGeneration,
+  generation: number,
 ): void {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
   const current = tasks.find((item) => item.id === taskId);
   const phase = phaseFromJob(job);
   const isCompleted = phase === 'completed';
@@ -644,11 +737,15 @@ function applyJobToTask(
   );
 }
 
-async function pollTask(taskId: string, jobId: string, generation = taskGeneration): Promise<void> {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
+function applyJobToTask(taskId: string, job: TidasPackageJobResponse, generation: number): void {
+  runForActiveGeneration(
+    generation,
+    () => applyJobToActiveTask(taskId, job, generation),
+    undefined,
+  );
+}
 
+async function pollActiveTask(taskId: string, jobId: string, generation: number): Promise<void> {
   const pollerKey = `${generation}:${taskId}`;
   if (activePollers.has(pollerKey)) {
     return;
@@ -731,11 +828,20 @@ async function pollTask(taskId: string, jobId: string, generation = taskGenerati
   }
 }
 
+function pollTask(taskId: string, jobId: string, generation: number): Promise<void> {
+  return runForActiveGeneration(
+    generation,
+    () => pollActiveTask(taskId, jobId, generation),
+    Promise.resolve(),
+  );
+}
+
 async function runExportTask(
   taskId: string,
   request: ExportTidasPackageRequest,
   generation: number,
 ): Promise<void> {
+  let activeTaskId = taskId;
   try {
     const queued = await queueExportTidasPackageApi(request);
     if (!isActiveGeneration(generation)) {
@@ -744,28 +850,40 @@ async function runExportTask(
     if (queued.error || !queued.data?.ok) {
       throw queued.error ?? new Error((queued.data as any)?.message ?? 'Export failed');
     }
+    const queuedData = queued.data;
 
     upsertTask(
       taskId,
       {
-        phase: queued.data.mode === 'queued' ? 'queued' : 'submitting',
+        phase: queuedData.mode === 'queued' ? 'queued' : 'submitting',
         state: 'running',
         message:
-          queued.data.mode === 'cache_hit'
+          queuedData.mode === 'cache_hit'
             ? 'Checking cached export package'
-            : `Export task queued (${queued.data.job_id})`,
-        workerJobId: queued.data.worker_job_id ?? undefined,
-        jobId: queued.data.job_id,
-        scope: queued.data.scope,
-        rootCount: queued.data.root_count ?? 0,
+            : `Export task queued (${queuedData.job_id})`,
+        workerJobId: queuedData.worker_job_id ?? undefined,
+        jobId: queuedData.job_id,
+        scope: queuedData.scope,
+        rootCount: queuedData.root_count ?? 0,
       },
       generation,
     );
 
-    await pollTask(taskId, queued.data.job_id, generation);
+    const canonicalTaskId = tasks.find((item) =>
+      Boolean(
+        (queuedData.worker_job_id && item.workerJobId === queuedData.worker_job_id) ||
+        item.jobId === queuedData.job_id,
+      ),
+    )?.id;
+    if (!canonicalTaskId) {
+      return;
+    }
+
+    activeTaskId = canonicalTaskId;
+    await pollTask(canonicalTaskId, queuedData.job_id, generation);
   } catch (error) {
     upsertTask(
-      taskId,
+      activeTaskId,
       {
         phase: 'failed',
         state: 'failed',
@@ -806,13 +924,16 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
 
   const merged = tasks.slice();
   for (const serverTask of serverTasks) {
-    const nextTask = mergeWorkerJobTask(serverTask);
-    const existingIndex = merged.findIndex((item) => item.id === nextTask.id);
-    if (existingIndex >= 0) {
-      merged[existingIndex] = nextTask;
-    } else {
-      merged.push(nextTask);
-    }
+    const matchingIds = new Set(
+      merged
+        .filter(
+          (item) => item.id === serverTask.id || sharesCanonicalTaskIdentity(item, serverTask),
+        )
+        .map((item) => item.id),
+    );
+    const nextTask = mergeWorkerJobTask(serverTask, merged);
+    const remaining = merged.filter((item) => !matchingIds.has(item.id));
+    merged.splice(0, merged.length, ...remaining, nextTask);
   }
 
   setTasks(merged, generation);
@@ -823,10 +944,7 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
   return tasks;
 }
 
-function hydrateTasksFromStorage(generation: number): void {
-  if (!isActiveGeneration(generation)) {
-    return;
-  }
+function hydrateActiveTasksFromStorage(generation: number): void {
   const restored = readTasksFromStorage();
   if (restored.length > 0) {
     setTasks(restored, generation);
@@ -843,6 +961,10 @@ function hydrateTasksFromStorage(generation: number): void {
   }
 
   void refreshTidasPackageTasksFromWorkerJobs().catch(() => undefined);
+}
+
+function hydrateTasksFromStorage(generation: number): void {
+  runForActiveGeneration(generation, () => hydrateActiveTasksFromStorage(generation), undefined);
 }
 
 export function bindTidasPackageTaskCenterOwner(ownerId: string | null | undefined): void {
