@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
 lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: task-center aliases now reconcile to canonical backend identity and timestamps while the Edge runtime remains an exact generated mirror.'
 related:
   - ../AGENTS.md

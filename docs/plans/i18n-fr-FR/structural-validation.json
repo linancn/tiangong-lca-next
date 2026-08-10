@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "c7af7b7d21d5c2b04355c06db06a06786fa92cd45b4a70382d4ef39c39a08b97",
+    "auditedInputDigest": "836fc7ce8356e556fecfe8028b92488246bd3db3a008aed877c484cee4aa3be5",
     "validatedMessageCount": 3101,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1377,
     "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
     "catalogDigest": "e2cf068bacfb65a87b837cf2a756accee40333aa79f3378ae3a270ebe73a394e",
-    "dossierDigest": "557c1dc2a043ea4b618de1655e9940ef10ceab6ec1e8ea0f14c523ec3f9ece29",
+    "dossierDigest": "4bbfe3d119a344c72fa9f98609d6ce324b2bf8ef902a7059762fdbd6e3e7851d",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "0ea6455459814bce0d1e4d103d0ce8643d95f72b765623021b3d8c797545f2ea",
+    "routeEvidenceDigest": "23e3965a34ed8e052a20931b09c52f10945712c47577a9909dcec5f5fb3b4783",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "0cf569e55e92ec781e8f9959d392d07117c20ce894f405eb73ee6268fba747cc",
         "highRiskMessageCount": 1377,
         "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
-        "dossierDigest": "557c1dc2a043ea4b618de1655e9940ef10ceab6ec1e8ea0f14c523ec3f9ece29",
+        "dossierDigest": "4bbfe3d119a344c72fa9f98609d6ce324b2bf8ef902a7059762fdbd6e3e7851d",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "6edc677372c8a339d706898b91b034377ab6c4a07545a7afcba291bddf9d0ec2"
+  "validationDigest": "368d4e7b10a2c6ee8378a15674063c6a09b90a01d1a2432bf910931455263460"
 }

@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
 lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical task aliases, deferred async results, and user-switch isolation use the focused service-unit pattern.'
 ---
 
