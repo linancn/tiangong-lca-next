@@ -1,9 +1,5 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
-import {
-  getServiceQueryLanguage,
-  type SupportedContentLanguage,
-  type SupportedServiceQueryLanguage,
-} from '@/services/general/contentLanguageRegistry';
+import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import {
   classificationToString,
   genLocalizedClassification,
@@ -132,28 +128,6 @@ function normalizeFlowSortBy(sortBy: string): string {
 
 function normalizeFlowSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
-}
-
-function resolveFlowSearchOrderBy(orderBy?: FlowSearchOrderBy): Partial<
-  Omit<FlowSearchOrderBy, 'lang'> & {
-    lang?: SupportedServiceQueryLanguage;
-  }
-> {
-  if (!orderBy) {
-    return {};
-  }
-
-  if (!orderBy.lang) {
-    return {
-      key: orderBy.key,
-      order: orderBy.order,
-    };
-  }
-
-  return {
-    ...orderBy,
-    lang: getServiceQueryLanguage(orderBy.lang),
-  };
 }
 
 function getLocalizedFlowClassification(
@@ -497,11 +471,10 @@ export async function getFlowTablePgroongaSearch(
   queryText: string,
   filter: FlowSearchFilters,
   stateCode?: string | number,
-  orderBy?: FlowSearchOrderBy,
+  _orderBy?: FlowSearchOrderBy,
   tid: string | [] = [],
 ) {
   let result: any = {};
-  const serviceOrderBy = resolveFlowSearchOrderBy(orderBy);
   const session = await supabase.auth.getSession();
 
   if (session.data.session) {
@@ -514,12 +487,11 @@ export async function getFlowTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_flows_latest',
+      'search_flows',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
             filter_condition: filter,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -530,7 +502,6 @@ export async function getFlowTablePgroongaSearch(
         : {
             query_text: queryText,
             filter_condition: filter,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,

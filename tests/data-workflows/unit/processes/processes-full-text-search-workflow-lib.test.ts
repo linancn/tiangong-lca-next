@@ -215,7 +215,7 @@ describe('processes-full-text-search-workflow-lib', () => {
       );
       expect(rpc).toHaveBeenNthCalledWith(
         1,
-        'search_processes_latest_v2',
+        'search_processes',
         expect.objectContaining({
           data_source: 'my',
           owner_draft_only: false,

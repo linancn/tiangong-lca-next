@@ -54,14 +54,14 @@ export const AUDITED_READ_ONLY_RPC_NAMES = [
   'qry_team_get',
   'qry_team_get_member_list',
   'qry_team_list',
-  'search_contacts_latest',
+  'search_contacts',
   'search_dataset_json_uuid_mentions',
-  'search_flowproperties_latest',
-  'search_flows_latest',
-  'search_lifecyclemodels_latest',
-  'search_processes_latest_v2',
-  'search_sources_latest',
-  'search_unitgroups_latest',
+  'search_flowproperties',
+  'search_flows',
+  'search_lifecyclemodels',
+  'search_processes',
+  'search_sources',
+  'search_unitgroups',
 ] as const;
 const READ_ONLY_RPC_NAMES = new Set<string>(AUDITED_READ_ONLY_RPC_NAMES);
 const READ_ONLY_EDGE_FUNCTIONS = new Set([

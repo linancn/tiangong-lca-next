@@ -1269,7 +1269,7 @@ describe('listProcessesForLcaAnalysis', () => {
     expect(result).toMatchObject({ success: true, total: 0 });
   });
 
-  it('uses indexed v2 search with strict owner-draft scope for keyword filtering', async () => {
+  it('uses indexed formal search with strict owner-draft scope for keyword filtering', async () => {
     mockAuthGetSession.mockResolvedValue({
       data: { session: { user: { id: 'owner-2' } } },
     });
@@ -1300,7 +1300,7 @@ describe('listProcessesForLcaAnalysis', () => {
 
     expect(mockRpc).toHaveBeenNthCalledWith(
       1,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         query_terms: ['battery'],
@@ -1311,7 +1311,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       2,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         query_terms: ['battery'],
@@ -1641,7 +1641,7 @@ describe('listProcessesForLcaAnalysis', () => {
 
     expect(mockRpc).toHaveBeenNthCalledWith(
       1,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1652,7 +1652,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       2,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -1663,7 +1663,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       3,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1674,7 +1674,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       4,
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -2256,7 +2256,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -3793,19 +3793,18 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_processes_latest_v2',
+      'search_processes',
       expect.objectContaining({
         query_text: 'search term',
         query_terms: ['search term'],
         owner_draft_only: false,
-        order_by: {},
         type_of_data_set_filter: 'all',
       }),
     );
     expect(result).toBeDefined();
   });
 
-  it('preserves a process sort key and direction when no sort language is provided', async () => {
+  it('does not send the unsupported process sort payload to the formal RPC', async () => {
     mockAuthGetSession.mockResolvedValue({
       data: { session: { access_token: 'token-xyz', user: { id: 'user-1' } } },
     });
@@ -3823,10 +3822,8 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_processes_latest_v2',
-      expect.objectContaining({
-        order_by: { key: 'baseName', order: 'desc' },
-      }),
+      'search_processes',
+      expect.not.objectContaining({ order_by: expect.anything() }),
     );
   });
 
@@ -3868,7 +3865,7 @@ describe('getProcessTablePgroongaSearch', () => {
       'foreground',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_processes_latest_v2', {
+    expect(mockRpc).toHaveBeenCalledWith('search_processes', {
       query_text: 'keyword',
       query_terms: ['keyword'],
       owner_draft_only: false,
@@ -3876,7 +3873,6 @@ describe('getProcessTablePgroongaSearch', () => {
       page_size: 10,
       page_current: 1,
       data_source: 'my',
-      order_by: {},
       state_code_filter: 400,
       team_id_filter: null,
       this_user_id: undefined,
@@ -3885,7 +3881,7 @@ describe('getProcessTablePgroongaSearch', () => {
   });
 
   it.each(['de', 'fr'] as const)(
-    'loads %s process classifications and resolves RPC sort language',
+    'loads %s process classifications without sending an RPC sort payload',
     async (lang) => {
       mockAuthGetSession.mockResolvedValueOnce({
         data: { session: { access_token: 'token-xyz', user: { id: 'user-1' } } },
@@ -3928,10 +3924,8 @@ describe('getProcessTablePgroongaSearch', () => {
       expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', lang, ['all']);
       expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
       expect(mockRpc).toHaveBeenCalledWith(
-        'search_processes_latest_v2',
-        expect.objectContaining({
-          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
-        }),
+        'search_processes',
+        expect.not.objectContaining({ order_by: expect.anything() }),
       );
     },
   );

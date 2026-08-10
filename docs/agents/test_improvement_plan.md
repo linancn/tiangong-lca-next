@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
-lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: canonical task-alias and delayed-async regression coverage follows the existing maintenance strategy.'
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
+lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical caller coverage adds risk-proportional service, data-workflow, request-guard, and qualification browser proof without changing the maintenance strategy.'
 ---
 
 # Testing Strategy

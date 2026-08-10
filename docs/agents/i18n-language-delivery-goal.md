@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-07
-lastReviewedCommit: 24bcbe3f969618dc5ad45961c654111717312a67
-lastReviewedNote: 'Reviewed for Issues #745 and #780: fresh authenticated production evidence covers the three v2 grouped-queue/progress RPCs with created=cleaned=1 and leaked=0; no digest-compatibility skip was used, and the matching credential-free qualification also passed.'
+lastReviewedAt: 2026-08-10
+lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
+lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: qualification-only non-English lexical search proof stays within the credential-free local browser contract and does not alter the production-data evidence boundary.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

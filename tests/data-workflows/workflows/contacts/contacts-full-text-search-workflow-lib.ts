@@ -27,7 +27,7 @@ export const DEFAULT_CONTACT_FULL_TEXT_SEARCH_FIXTURE_PATH =
 export const DEFAULT_CONTACT_FULL_TEXT_SEARCH_EXPECTED_PATH =
   'tests/data-workflows/fixtures/result/contacts/007_full_text_search.md';
 
-const CONTACT_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
+export const CONTACT_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   computeRuleVerification: computeContactRuleVerification,
   dataType: 'contact',
   defaultExpectedPath: DEFAULT_CONTACT_FULL_TEXT_SEARCH_EXPECTED_PATH,
@@ -44,7 +44,7 @@ const CONTACT_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'search_contacts_latest',
+  rpcName: 'search_contacts',
   table: 'contacts',
   workflowName: 'Contact full-text search',
 };

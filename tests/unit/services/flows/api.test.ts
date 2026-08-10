@@ -1242,14 +1242,13 @@ describe('getFlowTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_flows_latest',
+      'search_flows',
       expect.objectContaining({
         query_text: 'water',
         data_source: 'tg',
         filter_condition: { flowType: '' },
         page_size: 5,
         page_current: 1,
-        order_by: {},
       }),
     );
     expect(result).toEqual({
@@ -1395,7 +1394,7 @@ describe('getFlowTablePgroongaSearch', () => {
     expect(mockRpc).not.toHaveBeenCalled();
   });
 
-  it('passes state_code and order_by to PGroonga flow search', async () => {
+  it('passes state_code without the unsupported order_by to the formal flow RPC', async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
 
     await getFlowTablePgroongaSearch(
@@ -1408,7 +1407,7 @@ describe('getFlowTablePgroongaSearch', () => {
       { key: 'baseName', lang: 'zh', order: 'asc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows', {
       query_text: 'steel',
       filter_condition: { flowType: 'Product flow' },
       page_size: 15,
@@ -1417,11 +1416,10 @@ describe('getFlowTablePgroongaSearch', () => {
       state_code_filter: 300,
       team_id_filter: null,
       this_user_id: 'user-id',
-      order_by: { key: 'baseName', lang: 'zh', order: 'asc' },
     });
   });
 
-  it('preserves a flow sort key and direction when no sort language is provided', async () => {
+  it('does not send the unsupported flow sort payload to the formal RPC', async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
 
     await getFlowTablePgroongaSearch(
@@ -1435,15 +1433,13 @@ describe('getFlowTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_flows_latest',
-      expect.objectContaining({
-        order_by: { key: 'baseName', order: 'desc' },
-      }),
+      'search_flows',
+      expect.not.objectContaining({ order_by: expect.anything() }),
     );
   });
 
   it.each(['de', 'fr'] as const)(
-    'loads %s flow classifications and resolves RPC sort language',
+    'loads %s flow classifications without sending an RPC sort payload',
     async (lang) => {
       mockRpc.mockResolvedValue({
         data: [
@@ -1485,10 +1481,8 @@ describe('getFlowTablePgroongaSearch', () => {
       expect(mockGetCachedFlowCategorizationAll).toHaveBeenCalledWith(lang);
       expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
       expect(mockRpc).toHaveBeenCalledWith(
-        'search_flows_latest',
-        expect.objectContaining({
-          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
-        }),
+        'search_flows',
+        expect.not.objectContaining({ order_by: expect.anything() }),
       );
     },
   );
@@ -1737,7 +1731,7 @@ describe('getFlowTablePgroongaSearch', () => {
     });
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_flows_latest',
+      'search_flows',
       expect.objectContaining({
         filter_condition: {
           flowType: 'Product flow',
@@ -1779,7 +1773,7 @@ describe('getFlowTablePgroongaSearch', () => {
 
     const result = await getFlowTablePgroongaSearch({}, 'zh', 'my', 'steel', {}, 300);
 
-    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows', {
       query_text: 'steel',
       filter_condition: {},
       page_size: 10,
@@ -1788,7 +1782,6 @@ describe('getFlowTablePgroongaSearch', () => {
       state_code_filter: 300,
       team_id_filter: null,
       this_user_id: 'user-id',
-      order_by: {},
     });
     expect(result).toEqual({
       data: [
@@ -1817,7 +1810,7 @@ describe('getFlowTablePgroongaSearch', () => {
 
     await getFlowTablePgroongaSearch({}, 'en', 'tg', 'default-query', {});
 
-    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows', {
       query_text: 'default-query',
       filter_condition: {},
       page_size: 10,
@@ -1826,7 +1819,6 @@ describe('getFlowTablePgroongaSearch', () => {
       state_code_filter: null,
       team_id_filter: null,
       this_user_id: 'user-id',
-      order_by: {},
     });
   });
 

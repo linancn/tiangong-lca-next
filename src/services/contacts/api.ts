@@ -358,7 +358,7 @@ export async function getContactTablePgroongaSearch(
       });
     }
 
-    result = await supabase.rpc('search_contacts_latest', {
+    result = await supabase.rpc('search_contacts', {
       query_text: queryText,
       filter_condition: filterCondition,
       page_size: params.pageSize ?? 10,
