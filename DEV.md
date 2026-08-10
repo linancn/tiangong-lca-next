@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-10
-lastReviewedCommit: 93821284b4ac9d4ed08ac6f42498e48bd2d15fda
+lastReviewedCommit: ecfb613e477c230cbe084c126b6b56c554f7be8b
 lastReviewedNote: 'Reviewed for Next Issue #799 / workspace Issue #566: Node 24, focused TIDAS task-center Jest, Umi setup, TypeScript, mirror sync, and managed-push workflow remain unchanged.'
 ---
 
