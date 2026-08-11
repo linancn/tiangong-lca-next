@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: keep integration mocks aligned and exercise both all/type and Admin/Member filter branches before rerunning the strict 100% coverage gate.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: no new troubleshooting path is required; toolbar regressions remain covered by focused serial component tests before the managed full gate.'
 ---
 
 # Testing Troubleshooting

@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review-filter unit/integration tests close all AssignmentReview branches and continue through the unchanged checked-push policy.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: review-toolbar unit coverage continues through the unchanged Docpact-first and full-gate-last checked-push policy.'
 ---
 
 # Pre-Push Gate Policy

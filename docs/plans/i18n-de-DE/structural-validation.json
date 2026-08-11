@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "87f3df83f41836dd1f32b5e25335ff71b23cc831bd0fa7c944d490cdb9345d6a",
+    "auditedInputDigest": "080859aeb4d45b26df1cc45e87a010ed0360e3c40de1f45b80867a1aa2168a45",
     "validatedMessageCount": 3114,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1390,
     "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
     "catalogDigest": "05d9ac48d37d0eafb48ec463e6b33e2be831295ef25d4afba5dfce8ff96ff832",
-    "dossierDigest": "9f05dfc8fafbc61c6362e009df503bc35bec74738f2eb0e743590d61abc3a9e2",
+    "dossierDigest": "40eeb06fbcbd6d8117990936d5c05df76e548704745c6bdb5e2b1a61ca3cc6bd",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "41c96657d29d1e29e7abf90448aaf3ccb2c30445cd39ce5357a3e3459f6b4953",
+    "routeEvidenceDigest": "9a8bd81d545e15cd030fc875b986073d3b48ef980af1635b8e7fa94931ec44f3",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "7e7b1cc9be2d7f7c8b74f069bddc34a36f242da8b1e5626f00a289473cc58ef2",
         "highRiskMessageCount": 1390,
         "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
-        "dossierDigest": "9f05dfc8fafbc61c6362e009df503bc35bec74738f2eb0e743590d61abc3a9e2",
+        "dossierDigest": "40eeb06fbcbd6d8117990936d5c05df76e548704745c6bdb5e2b1a61ca3cc6bd",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "6118ee8339b197b381515b19fe022e72b1bf4f434b62e1fded88e574df90c4fc"
+  "validationDigest": "72c9db167063da4db62888dbe0e41f3918b6cb6b6e2449c211a1234735530272"
 }

@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat-queue tests cover controls, forwarding, reset, 50-row defaults, integration mocks, and both sides of every new branch.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: existing component-mock and behavior-assertion patterns cover toolbar icons, spacing, selection summaries, and fixed localized filter labels.'
 ---
 
 # Testing Patterns Reference

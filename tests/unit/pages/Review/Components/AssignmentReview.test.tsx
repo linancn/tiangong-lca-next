@@ -1,5 +1,7 @@
 // @ts-nocheck
 import AssignmentReview, {
+  REVIEW_DATA_TYPE_FILTER_WIDTH,
+  REVIEW_DISPLAY_MODE_FILTER_WIDTH,
   SELECTED_REVIEW_ROW_BUTTON_STYLE,
   isExpandableRootReview,
   isReferenceMatchingReviewTab,
@@ -148,15 +150,26 @@ jest.mock('antd', () => {
   );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
-  const Select = ({ value, onChange, options = [], 'aria-label': ariaLabel }: any) => (
-    <select aria-label={ariaLabel} value={value} onChange={(event) => onChange(event.target.value)}>
-      {options.map((option: any) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
+  const Select = ({ value, onChange, options = [], labelRender, 'aria-label': ariaLabel }: any) => {
+    const selectedOption = options.find((option: any) => option.value === value);
+
+    return (
+      <div>
+        {labelRender?.({ label: selectedOption?.label })}
+        <select
+          aria-label={ariaLabel}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          {options.map((option: any) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
   const Space = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ children }: any) => <div data-testid='spin'>{children}</div>;
   const Table = ({ columns = [], dataSource = [], rowSelection }: any) => (
@@ -208,6 +221,7 @@ jest.mock('antd', () => {
     useToken: () => ({ token: { colorPrimary: '#1677ff', fontSize: 14 } }),
   };
   const Tag = ({ children, color }: any) => <span data-color={color}>{children}</span>;
+  const Tooltip = ({ children, title }: any) => <span title={title}>{children}</span>;
 
   return {
     __esModule: true,
@@ -222,6 +236,7 @@ jest.mock('antd', () => {
     Table,
     Tag,
     theme,
+    Tooltip,
   };
 });
 
@@ -233,6 +248,7 @@ const MockProTable = ({
   headerTitle,
   columns,
   expandable,
+  tableAlertRender,
   tableAlertOptionRender,
   pagination,
 }: any) => {
@@ -261,11 +277,25 @@ const MockProTable = ({
     reload();
   }, []);
 
+  tableAlertRender?.({
+    intl: {
+      getMessage: (_id: string, defaultMessage: string) => defaultMessage,
+    },
+    selectedRowKeys: undefined,
+  });
+
   return (
     <section data-testid='protable'>
       <div data-testid='header-title'>{headerTitle}</div>
       <div data-testid='toolbar'>{toolBarRender?.()}</div>
       <div data-testid='table-alert'>
+        {(rowSelection?.selectedRowKeys?.length ?? 0) > 0 &&
+          tableAlertRender?.({
+            selectedRowKeys: rowSelection?.selectedRowKeys ?? [],
+            intl: {
+              getMessage: (id: string, defaultMessage: string) => defaultMessage,
+            },
+          })}
         {tableAlertOptionRender?.({
           selectedRowKeys: rowSelection?.selectedRowKeys ?? [],
           onCleanSelected: () => rowSelection?.onChange?.([]),
@@ -351,9 +381,14 @@ jest.mock('@/services/reviews/api', () => ({
 }));
 
 describe('AssignmentReview', () => {
-  it('keeps icon buttons transparent only inside selected review rows', () => {
+  it('keeps review filters at their Chinese-option widths across locales', () => {
+    expect(REVIEW_DISPLAY_MODE_FILTER_WIDTH).toBe('10.5em');
+    expect(REVIEW_DATA_TYPE_FILTER_WIDTH).toBe('9.5em');
+  });
+
+  it('removes button rings outside action columns', () => {
     expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain(
-      '.review-table-with-expand-icon .ant-table-row-selected .ant-btn',
+      '.ant-table-cell:not(.review-action-column)',
     );
     expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain('background: transparent !important');
     expect(SELECTED_REVIEW_ROW_BUTTON_STYLE).toContain('border-color: transparent !important');
@@ -559,6 +594,12 @@ describe('AssignmentReview', () => {
       ),
     );
     expect(screen.getByText('Selected 1 root reviews and 1 reference reviews')).toBeInTheDocument();
+    expect(screen.getByTestId('toolbar')).not.toHaveTextContent(
+      'Selected 1 root reviews and 1 reference reviews',
+    );
+    expect(screen.getByTestId('table-alert')).toHaveTextContent(
+      'Selected 2 itemsSelected 1 root reviews and 1 reference reviews',
+    );
     expect(screen.getByTestId('batch-review-actions')).toHaveTextContent(
       'admin:false:["review-1","reference-review-1"]',
     );
@@ -761,7 +802,7 @@ describe('AssignmentReview', () => {
     );
 
     await userEvent.click(await screen.findByRole('button', { name: 'select-duplicate-review-1' }));
-    expect(screen.getByText('Loading referenced reviews...')).toBeInTheDocument();
+    expect(screen.queryByText('Loading referenced reviews...')).not.toBeInTheDocument();
     expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledTimes(1);
 
     resolveReferences({ data: [], error: new Error('duplicate selection load failed') });
@@ -816,7 +857,7 @@ describe('AssignmentReview', () => {
 
     const rootSelection = await screen.findByRole('button', { name: 'select-review-1' });
     await userEvent.click(rootSelection);
-    expect(screen.getByText('Loading referenced reviews...')).toBeInTheDocument();
+    expect(screen.queryByText('Loading referenced reviews...')).not.toBeInTheDocument();
     await userEvent.click(rootSelection);
 
     resolveReferences({
@@ -870,7 +911,7 @@ describe('AssignmentReview', () => {
     );
 
     await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
-    expect(screen.getByText('Loading referenced reviews...')).toBeInTheDocument();
+    expect(screen.queryByText('Loading referenced reviews...')).not.toBeInTheDocument();
     expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'true');
 
     resolveReferences({

@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queues expose display-mode and exact data-type controls, delegate filtering/counts to Database, default to 50 rows, and retain unfiltered relationship child tables.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: selection summaries, icon spacing, action-column rings, and fixed filter widths remain presentation details inside the existing unified Root/Reference Review UI.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

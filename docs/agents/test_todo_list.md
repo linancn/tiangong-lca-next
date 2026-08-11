@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: AssignmentReview filters/default pagination have canonical artifacts, integration proof, and explicit 100% branch closure.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: the added review-toolbar presentation assertions preserve full closure and create no active coverage queue.'
 ---
 
 # Testing Execution State

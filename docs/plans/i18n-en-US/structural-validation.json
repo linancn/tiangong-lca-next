@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "87f3df83f41836dd1f32b5e25335ff71b23cc831bd0fa7c944d490cdb9345d6a",
+    "auditedInputDigest": "080859aeb4d45b26df1cc45e87a010ed0360e3c40de1f45b80867a1aa2168a45",
     "validatedMessageCount": 3114,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1390,
     "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
     "catalogDigest": "aa8b61be8b056c7640170905371ff7564d95a4b3c11b2dd6dfbb0c43faf71a29",
-    "dossierDigest": "78fa368841d6d6e672bb2ea8a3624564d6d0600f6994247403c6f0ef532df0e6",
+    "dossierDigest": "c0ebcceb1366f775242128d9ff02b8b9b433cad1d0740a8975d2b5db743d62d3",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "41c96657d29d1e29e7abf90448aaf3ccb2c30445cd39ce5357a3e3459f6b4953",
+    "routeEvidenceDigest": "9a8bd81d545e15cd030fc875b986073d3b48ef980af1635b8e7fa94931ec44f3",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "7e7b1cc9be2d7f7c8b74f069bddc34a36f242da8b1e5626f00a289473cc58ef2",
         "highRiskMessageCount": 1390,
         "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
-        "dossierDigest": "78fa368841d6d6e672bb2ea8a3624564d6d0600f6994247403c6f0ef532df0e6",
+        "dossierDigest": "c0ebcceb1366f775242128d9ff02b8b9b433cad1d0740a8975d2b5db743d62d3",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "b8b462253169d16715d3970c5622306aa7ba6c3488f1b21e134e35087f7ff882"
+  "validationDigest": "e769c34db641a0bb6ba561d13856ac22406b2a1fd45fbde924114bd12a241e31"
 }

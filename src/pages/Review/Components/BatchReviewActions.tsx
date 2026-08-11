@@ -4,8 +4,9 @@ import {
   type ReviewBatchDecision,
   type ReviewBatchDecisionResult,
 } from '@/services/reviews/api';
+import { FileExcelOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Button, Form, Input, message, Modal, Space } from 'antd';
+import { Button, Form, Input, message, Modal, Space, theme, Tooltip } from 'antd';
 import { useState } from 'react';
 
 type BatchReviewActionsProps = {
@@ -24,6 +25,7 @@ const BatchReviewActions = ({
   onFinished,
 }: BatchReviewActionsProps) => {
   const intl = useIntl();
+  const { token } = theme.useToken();
   const [form] = Form.useForm<{ reason: string }>();
   const [modal, modalContextHolder] = Modal.useModal();
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -103,31 +105,57 @@ const BatchReviewActions = ({
   return (
     <>
       {modalContextHolder}
-      <Space>
+      <Space size={token.marginXS}>
         {allowApprove && (
-          <Button
-            type='primary'
-            loading={loading}
-            disabled={disabled || reviewIds.length === 0}
-            onClick={confirmApprove}
-          >
-            {intl.formatMessage({
+          <Tooltip
+            title={intl.formatMessage({
               id: 'pages.review.batch.approve',
               defaultMessage: 'Batch approve',
             })}
-          </Button>
+          >
+            <Button
+              type='text'
+              size='large'
+              style={{
+                width: token.controlHeightSM,
+                height: token.controlHeight,
+                paddingInline: 0,
+              }}
+              aria-label={intl.formatMessage({
+                id: 'pages.review.batch.approve',
+                defaultMessage: 'Batch approve',
+              })}
+              icon={<SafetyCertificateOutlined />}
+              loading={loading}
+              disabled={disabled || reviewIds.length === 0}
+              onClick={confirmApprove}
+            />
+          </Tooltip>
         )}
-        <Button
-          danger
-          loading={loading}
-          disabled={disabled || reviewIds.length === 0}
-          onClick={() => setRejectOpen(true)}
-        >
-          {intl.formatMessage({
+        <Tooltip
+          title={intl.formatMessage({
             id: 'pages.review.batch.reject',
             defaultMessage: 'Batch reject',
           })}
-        </Button>
+        >
+          <Button
+            type='text'
+            size='large'
+            style={{
+              width: token.controlHeightSM,
+              height: token.controlHeight,
+              paddingInline: 0,
+            }}
+            aria-label={intl.formatMessage({
+              id: 'pages.review.batch.reject',
+              defaultMessage: 'Batch reject',
+            })}
+            icon={<FileExcelOutlined />}
+            loading={loading}
+            disabled={disabled || reviewIds.length === 0}
+            onClick={() => setRejectOpen(true)}
+          />
+        </Tooltip>
       </Space>
       <Modal
         open={rejectOpen}
