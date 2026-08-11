@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Node 24, deterministic artifacts, 100%-branch-covered review tests, TypeScript, build, and managed checked-push remain the delivery path.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: toolbar-only review UI changes preserve the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
 ---
 
 # Development Bootstrap
