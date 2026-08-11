@@ -23,7 +23,7 @@ import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Card, Col, Input, Row, Select, Space, Spin, Table, Tag, theme } from 'antd';
+import { Card, Col, Input, Row, Select, Space, Spin, Table, Tag, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
@@ -38,12 +38,32 @@ import SimpleReviewActions from './SimpleReviewActions';
 const { Search } = Input;
 
 export const SELECTED_REVIEW_ROW_BUTTON_STYLE = `
-  .review-table-with-expand-icon .ant-table-row-selected .ant-btn {
+  .review-table-with-expand-icon
+    .ant-table-cell:not(.review-action-column)
+    .ant-btn {
     background: transparent !important;
     border-color: transparent !important;
     box-shadow: none;
   }
 `;
+
+export const REVIEW_DISPLAY_MODE_FILTER_WIDTH = '10.5em';
+export const REVIEW_DATA_TYPE_FILTER_WIDTH = '9.5em';
+
+const ReviewFilterLabel = ({ label }: { label: React.ReactNode }) => (
+  <Tooltip title={label}>
+    <span
+      style={{
+        display: 'block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {label}
+    </span>
+  </Tooltip>
+);
 
 type AssignmentReviewProps = {
   userData: { user_id: string; role: string } | null;
@@ -105,6 +125,11 @@ const ExpandIconStyle = () => {
         color: ${token.colorPrimary} !important;
       }
       ${SELECTED_REVIEW_ROW_BUTTON_STYLE}
+      .review-table-with-expand-icon .review-action-column .ant-btn {
+        background: ${token.colorBgContainer} !important;
+        border-color: ${token.colorBorder} !important;
+        border-radius: 50%;
+      }
     `}</style>
   );
 };
@@ -348,7 +373,6 @@ const AssignmentReview = ({
       isReviewTargetTableCompatible(displayMode, value),
     ),
   ];
-
   const onSearch: SearchProps['onSearch'] = () => {
     // setKeyWord(value);
     // actionRef.current?.setPageInfo?.({ current: 1 });
@@ -609,6 +633,7 @@ const AssignmentReview = ({
     subColumns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       key: 'actions',
+      className: 'review-action-column',
       render: (_: unknown, record: RootReviewReferenceProgress) => {
         if (tableType === 'unassigned') {
           return [
@@ -729,6 +754,7 @@ const AssignmentReview = ({
     columns.push({
       title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
       dataIndex: 'actions',
+      className: 'review-action-column',
       search: false,
       render: (_, record) => {
         if (record.rootMatchesStatus === false) return [];
@@ -778,6 +804,7 @@ const AssignmentReview = ({
         {
           title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
           dataIndex: 'actions',
+          className: 'review-action-column',
           search: false,
           render: (_: any, record: ReviewsTable) => {
             if (record.rootMatchesStatus === false) return [];
@@ -846,6 +873,7 @@ const AssignmentReview = ({
         {
           title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
           dataIndex: 'actions',
+          className: 'review-action-column',
           search: false,
           render: (_: any, record: ReviewsTable) => {
             if (record.rootMatchesStatus === false) return [];
@@ -936,6 +964,7 @@ const AssignmentReview = ({
         {
           title: <FormattedMessage id='pages.review.actions' defaultMessage='Actions' />,
           dataIndex: 'actions',
+          className: 'review-action-column',
           search: false,
           render: (_: any, record: ReviewsTable) => {
             if (record.rootMatchesStatus === false) return [];
@@ -1101,8 +1130,9 @@ const AssignmentReview = ({
                 })}
                 value={displayMode}
                 options={displayModeOptions}
+                labelRender={({ label }) => <ReviewFilterLabel label={label} />}
                 onChange={handleDisplayModeChange}
-                style={{ minWidth: 200 }}
+                style={{ width: REVIEW_DISPLAY_MODE_FILTER_WIDTH }}
               />
               <Select<ReviewSubmitDatasetTable | 'all'>
                 aria-label={intl.formatMessage({
@@ -1111,8 +1141,9 @@ const AssignmentReview = ({
                 })}
                 value={targetTable ?? 'all'}
                 options={targetTableOptions}
+                labelRender={({ label }) => <ReviewFilterLabel label={label} />}
                 onChange={handleTargetTableChange}
-                style={{ minWidth: 180 }}
+                style={{ width: REVIEW_DATA_TYPE_FILTER_WIDTH }}
               />
             </Space>
           );
@@ -1120,24 +1151,6 @@ const AssignmentReview = ({
             return [
               filterControls,
               <Space key='batch-assignment-selection'>
-                <span>
-                  <FormattedMessage
-                    id='pages.review.selection.summary'
-                    defaultMessage='Selected {rootCount} root reviews and {referenceCount} reference reviews'
-                    values={{
-                      rootCount: selectedRootReviewIds.length,
-                      referenceCount: effectiveSelectedReferenceIds.length,
-                    }}
-                  />
-                </span>
-                {selectionLoadingRootIds.length > 0 && (
-                  <span>
-                    <FormattedMessage
-                      id='pages.review.selection.loading'
-                      defaultMessage='Loading referenced reviews...'
-                    />
-                  </span>
-                )}
                 {selectionFailedRootIds.length > 0 && (
                   <span>
                     <FormattedMessage
@@ -1212,6 +1225,24 @@ const AssignmentReview = ({
           }
         }}
         actionRef={actionRef}
+        tableAlertRender={({ intl: tableIntl, selectedRowKeys = [] }) => (
+          <Space>
+            <span>
+              {tableIntl.getMessage('alert.selected', 'Selected')} {selectedRowKeys.length}{' '}
+              {tableIntl.getMessage('alert.item', 'items')}
+            </span>
+            <span>
+              <FormattedMessage
+                id='pages.review.selection.summary'
+                defaultMessage='Selected {rootCount} root reviews and {referenceCount} reference reviews'
+                values={{
+                  rootCount: selectedRootReviewIds.length,
+                  referenceCount: effectiveSelectedReferenceIds.length,
+                }}
+              />
+            </span>
+          </Space>
+        )}
         tableAlertOptionRender={tableAlertOptionRender}
         rowSelection={
           supportsBatchSelection

@@ -12,6 +12,11 @@ const mockSuccess = jest.fn();
 const mockWarning = jest.fn();
 const mockError = jest.fn();
 
+jest.mock('@ant-design/icons', () => ({
+  FileExcelOutlined: () => <span data-testid='batch-reject-icon' />,
+  SafetyCertificateOutlined: () => <span data-testid='batch-approve-icon' />,
+}));
+
 jest.mock('@/services/reviews/api', () => ({
   submitAdminReviewBatchDecision: jest.fn(),
   submitReviewerBatchDecision: jest.fn(),
@@ -78,13 +83,38 @@ jest.mock('antd', () => {
     Button: ({
       children,
       disabled,
+      icon,
       onClick,
+      type,
+      size,
+      shape,
+      style,
+      danger,
+      'aria-label': ariaLabel,
     }: {
       children: import('react').ReactNode;
       disabled?: boolean;
+      icon?: import('react').ReactNode;
       onClick?: () => void;
+      type?: string;
+      size?: string;
+      shape?: string;
+      style?: import('react').CSSProperties;
+      danger?: boolean;
+      'aria-label'?: string;
     }) => (
-      <button type='button' disabled={disabled} onClick={onClick}>
+      <button
+        type='button'
+        disabled={disabled}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        data-button-type={type}
+        data-button-size={size}
+        data-button-shape={shape}
+        data-button-danger={danger ? 'true' : 'false'}
+        style={style}
+      >
+        {icon}
         {children}
       </button>
     ),
@@ -96,7 +126,21 @@ jest.mock('antd', () => {
       error: (...args: unknown[]) => mockError(...args),
     },
     Modal,
-    Space: ({ children }: { children: import('react').ReactNode }) => <div>{children}</div>,
+    Space: ({ children, size }: { children: import('react').ReactNode; size?: number }) => (
+      <div data-space-size={size}>{children}</div>
+    ),
+    theme: {
+      useToken: () => ({
+        token: {
+          marginXS: 8,
+          controlHeightSM: 24,
+          controlHeight: 32,
+        },
+      }),
+    },
+    Tooltip: ({ children, title }: { children: import('react').ReactNode; title?: string }) => (
+      <span title={title}>{children}</span>
+    ),
   };
 });
 
@@ -125,7 +169,15 @@ describe('BatchReviewActions', () => {
         onFinished={onFinished}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Batch approve' }));
+    const approveButton = screen.getByRole('button', { name: 'Batch approve' });
+    expect(screen.getByTestId('batch-approve-icon')).toBeInTheDocument();
+    expect(approveButton).toHaveAttribute('data-button-type', 'text');
+    expect(approveButton).toHaveAttribute('data-button-size', 'large');
+    expect(approveButton).not.toHaveAttribute('data-button-shape');
+    expect(approveButton).toHaveAttribute('data-button-danger', 'false');
+    expect(approveButton).toHaveStyle({ width: '24px', height: '32px', paddingInline: 0 });
+    expect(approveButton.parentElement?.parentElement).toHaveAttribute('data-space-size', '8');
+    fireEvent.click(approveButton);
 
     await waitFor(() =>
       expect(adminDecisionMock).toHaveBeenCalledWith(
@@ -160,7 +212,14 @@ describe('BatchReviewActions', () => {
       />,
     );
     expect(screen.queryByRole('button', { name: 'Batch approve' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Batch reject' }));
+    expect(screen.getByTestId('batch-reject-icon')).toBeInTheDocument();
+    const rejectButton = screen.getByRole('button', { name: 'Batch reject' });
+    expect(rejectButton).toHaveAttribute('data-button-type', 'text');
+    expect(rejectButton).toHaveAttribute('data-button-size', 'large');
+    expect(rejectButton).not.toHaveAttribute('data-button-shape');
+    expect(rejectButton).toHaveAttribute('data-button-danger', 'false');
+    expect(rejectButton).toHaveStyle({ width: '24px', height: '32px', paddingInline: 0 });
+    fireEvent.click(rejectButton);
     expect(screen.getByRole('region', { name: 'Reject 2 selected reviews' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
