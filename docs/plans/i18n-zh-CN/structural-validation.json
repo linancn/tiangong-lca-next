@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "87f3df83f41836dd1f32b5e25335ff71b23cc831bd0fa7c944d490cdb9345d6a",
+    "auditedInputDigest": "080859aeb4d45b26df1cc45e87a010ed0360e3c40de1f45b80867a1aa2168a45",
     "validatedMessageCount": 3114,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1390,
     "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
     "catalogDigest": "ff6938d40f9eaf1179a1deae1da9474d2bc42478773be577c9fe4b97b98afd88",
-    "dossierDigest": "6793fa192e1db7d59fbc383d08b4ad71546d20562641484703b77c5ef1da52f0",
+    "dossierDigest": "d3b7a085387db948900bb12b4f1ae604c3de6a354f198cb5310b4ee7191add28",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "41c96657d29d1e29e7abf90448aaf3ccb2c30445cd39ce5357a3e3459f6b4953",
+    "routeEvidenceDigest": "6241a103e7340fe5a95f20eac992a8991988ae78b237c46df8b6daddf1da94de",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "7e7b1cc9be2d7f7c8b74f069bddc34a36f242da8b1e5626f00a289473cc58ef2",
         "highRiskMessageCount": 1390,
         "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
-        "dossierDigest": "6793fa192e1db7d59fbc383d08b4ad71546d20562641484703b77c5ef1da52f0",
+        "dossierDigest": "d3b7a085387db948900bb12b4f1ae604c3de6a354f198cb5310b4ee7191add28",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "4f09df5149a5fc0399a0ffffcde51d26e8abec2f380c1fd34d5f94d6830ab159"
+  "validationDigest": "85e84d460579deca2989783804c09ff1743d36ae718b1672931ad4c5cf0795de"
 }
