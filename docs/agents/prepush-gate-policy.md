@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review queue v3 request-guard coverage and regenerated locale artifacts continue to use the unchanged checked-push, Docpact, and full-gate policy.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review queue v3 request guards, regenerated locale artifacts, and 100% AssignmentReview coverage use the unchanged checked-push and full-gate policy.'
 ---
 
 # Pre-Push Gate Policy

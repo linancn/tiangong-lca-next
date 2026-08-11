@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review rows use focused component/service contracts while v3 RPC exposure stays pinned by the exact read-only production request guard.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat rows, concurrent child loading, child reload, visibility guards, and sparse payloads use focused component contracts with 100% closure.'
 ---
 
 # Testing Patterns Reference

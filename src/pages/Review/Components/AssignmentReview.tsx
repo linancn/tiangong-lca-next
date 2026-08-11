@@ -298,21 +298,16 @@ const AssignmentReview = ({
     }
 
     addedRootIds
-      .filter((rootReviewId) => {
-        const record = mainReviewRowsRef.current[rootReviewId];
-        return record ? isExpandableRootReview(record) : false;
-      })
+      .filter((rootReviewId) => isExpandableRootReview(mainReviewRowsRef.current[rootReviewId]))
       .forEach((rootReviewId) => {
         setSelectionFailedRootIds((current) => current.filter((id) => id !== rootReviewId));
-        setSelectionLoadingRootIds((current) =>
-          current.includes(rootReviewId) ? current : [...current, rootReviewId],
-        );
+        setSelectionLoadingRootIds((current) => Array.from(new Set([...current, rootReviewId])));
         void loadSubTableData(rootReviewId)
           .then((references) => {
             if (!selectedRootReviewIdsRef.current.has(rootReviewId)) return;
             if (subTableLoadErrorIdsRef.current.has(rootReviewId)) {
               setSelectionFailedRootIds((current) =>
-                current.includes(rootReviewId) ? current : [...current, rootReviewId],
+                Array.from(new Set([...current, rootReviewId])),
               );
               return;
             }

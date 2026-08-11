@@ -21,7 +21,7 @@ checkPaths:
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Issues #745 and #780: grouped-review view drawers do not change team roles or review authority; membership still constrains only already-authorized dataset visibility.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat queue selection and child actions do not change team roles or review authority; membership still constrains already-authorized dataset visibility.'
 ---
 
 # Team Management Reference

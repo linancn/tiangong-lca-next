@@ -58,7 +58,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: the exact read-only review queue v3 RPC allowlist and deterministic locale artifact regeneration do not change locale delivery or production-data authorization boundaries.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: regenerating deterministic locale artifacts after the final flat-queue interaction closure does not change locale delivery or production-data authorization boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

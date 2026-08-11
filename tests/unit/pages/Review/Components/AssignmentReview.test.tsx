@@ -630,6 +630,30 @@ describe('AssignmentReview', () => {
     consoleError.mockRestore();
   });
 
+  it('shares one in-flight reference request between expansion and root selection', async () => {
+    let resolveReferences: (value: any) => void = () => undefined;
+    mockGetRootReviewReferenceProgress.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveReferences = resolve;
+      }),
+    );
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-1' }));
+    await userEvent.click(screen.getByRole('button', { name: 'select-review-1' }));
+    expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledTimes(1);
+
+    resolveReferences({ data: [], error: null });
+    await waitFor(() => expect(screen.getByTestId('expanded-review-1')).toBeInTheDocument());
+  });
+
   it('does not auto-select references when a root is deselected before loading completes', async () => {
     let resolveReferences: (value: any) => void = () => undefined;
     mockGetRootReviewReferenceProgress.mockReturnValueOnce(
@@ -1276,6 +1300,94 @@ describe('AssignmentReview', () => {
     expect(mockGetRootReviewReferenceProgress).not.toHaveBeenCalled();
   });
 
+  it('renders unit-group and flow-property views for flat reference rows', async () => {
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'review-unitgroup-reference',
+          name: 'Unit group reference',
+          reviewKind: 'reference',
+          targetTable: 'unitgroups',
+          json: {
+            data: { id: 'unitgroup-1', version: '1.0.0' },
+            user: { id: 'owner-1' },
+          },
+        },
+        {
+          id: 'review-flowproperty-reference',
+          name: 'Flow property reference',
+          reviewKind: 'reference',
+          targetTable: 'flowproperties',
+          json: {
+            data: { id: 'flowproperty-1', version: '2.0.0' },
+            user: { id: 'owner-2' },
+          },
+        },
+        {
+          id: 'review-unknown-reference',
+          name: 'Unknown reference',
+          reviewKind: 'reference',
+          targetTable: 'unknown-table',
+          json: {
+            data: { id: 'unknown-1', version: '3.0.0' },
+            user: { id: 'owner-3' },
+          },
+        },
+      ],
+      total: 3,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='reviewed'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    expect(await screen.findByTestId('unitgroup-view')).toHaveTextContent('unitgroup-1:1.0.0:icon');
+    expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('flowproperty-1:2.0.0:icon');
+    expect(await screen.findByTestId('row-review-unknown-reference')).toHaveTextContent(
+      'Unknown reference',
+    );
+  });
+
+  it('reloads and resets the main table after a pending child action', async () => {
+    mockGetRootReviewReferenceProgress.mockResolvedValueOnce({
+      data: [
+        {
+          reference_review_id: 'pending-child-review',
+          target_table: 'flows',
+          data_id: 'flow-child',
+          data_version: '1.0.0',
+          state_code: 1,
+          actor_comment_state_code: 0,
+          completed_reviewer_count: 0,
+          reviewer_count: 1,
+        },
+      ],
+      error: null,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='pending'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'expand-review-2' }));
+    const childAction = await screen.findByRole('button', {
+      name: 'pending-child-review:reviewer:flows',
+    });
+    await userEvent.click(childAction);
+
+    await waitFor(() => expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('expanded-review-2')).not.toBeInTheDocument();
+  });
+
   it('renders simple actions for a pending reference review', async () => {
     mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
       success: true,
@@ -1348,6 +1460,39 @@ describe('AssignmentReview', () => {
     expect(await screen.findByTestId('simple-review-actions')).toHaveTextContent(
       'pending-contact-root:reviewer:contacts',
     );
+  });
+
+  it('suppresses pending actions when the root does not match the current status', async () => {
+    mockGetReviewsTableDataOfReviewMember.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          id: 'pending-nonmatching-reference',
+          name: 'Nonmatching reference',
+          reviewKind: 'reference',
+          targetTable: 'sources',
+          rootMatchesStatus: false,
+          rootCanRead: false,
+          json: {
+            data: { id: 'source-hidden', version: '1.0.0' },
+            user: { id: 'source-owner' },
+          },
+        },
+      ],
+      total: 1,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='pending'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await screen.findByTestId('row-pending-nonmatching-reference');
+    expect(screen.queryByTestId('simple-review-actions')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('source-view')).not.toBeInTheDocument();
   });
 
   it('keeps reviewed and rejected simple reviews view-only', async () => {
@@ -1831,6 +1976,24 @@ describe('AssignmentReview', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'expand-review-1' }));
     expect(await screen.findByText('Rejected')).toBeInTheDocument();
+  });
+
+  it('treats a successful queue response without data as an empty page', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      success: true,
+      total: 0,
+    });
+
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('row-review-1')).not.toBeInTheDocument();
   });
 
   it('returns an empty success payload when the table type is unsupported and falls back on request errors', async () => {

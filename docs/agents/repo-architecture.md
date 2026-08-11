@@ -27,7 +27,7 @@ checkPaths:
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical RPC callers preserve existing visibility, owner-draft, filter, pagination, mapping, and detail-navigation boundaries.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat Root/Reference queue rows and Process/Lifecycle Model child tables preserve existing visibility, pagination, mapping, and action boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

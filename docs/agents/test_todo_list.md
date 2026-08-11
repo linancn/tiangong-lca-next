@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue and v3 request-guard proof add no repository-wide coverage queue; the existing full-closure baseline remains the gate.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: AssignmentReview returns to 100% statements, branches, functions, and lines without opening a repository-wide coverage queue.'
 ---
 
 # Testing Execution State

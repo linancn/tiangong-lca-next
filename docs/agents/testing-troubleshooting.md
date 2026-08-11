@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: focused serial Jest isolates flat-list, v3 request-guard, and locale-artifact contract failures before rerunning the full gate.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: focused serial Jest and exact-file coverage isolate flat-list branch gaps before rerunning the managed full gate.'
 ---
 
 # Testing Troubleshooting
