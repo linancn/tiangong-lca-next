@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-10
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: Next calls the formal lexical RPC names without invalid order_by; Database A remains authoritative for deployment and search semantics.'
 ---
 

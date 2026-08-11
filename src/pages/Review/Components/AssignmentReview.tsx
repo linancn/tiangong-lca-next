@@ -75,6 +75,11 @@ export const isReferenceMatchingReviewTab = (
   }
 };
 
+export const isExpandableRootReview = (record: Pick<ReviewsTable, 'reviewKind' | 'targetTable'>) =>
+  record.reviewKind === 'root' &&
+  Boolean(record.targetTable) &&
+  ['processes', 'lifecyclemodels'].includes(record.targetTable as string);
+
 const ExpandIconStyle = () => {
   const { token } = theme.useToken();
   return (
@@ -121,6 +126,7 @@ const AssignmentReview = ({
   );
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
   const selectedRootReviewIdsRef = useRef<Set<string>>(new Set());
+  const mainReviewRowsRef = useRef<Record<string, ReviewsTable>>({});
   const subTableDataRef = useRef<Record<string, RootReviewReferenceProgress[]>>({});
   const subTableRequestRef = useRef<
     Record<string, Promise<RootReviewReferenceProgress[]> | undefined>
@@ -291,33 +297,38 @@ const AssignmentReview = ({
       setSelectionFailedRootIds((current) => current.filter((rootId) => nextRootIdSet.has(rootId)));
     }
 
-    addedRootIds.forEach((rootReviewId) => {
-      setSelectionFailedRootIds((current) => current.filter((id) => id !== rootReviewId));
-      setSelectionLoadingRootIds((current) =>
-        current.includes(rootReviewId) ? current : [...current, rootReviewId],
-      );
-      void loadSubTableData(rootReviewId)
-        .then((references) => {
-          if (!selectedRootReviewIdsRef.current.has(rootReviewId)) return;
-          if (subTableLoadErrorIdsRef.current.has(rootReviewId)) {
-            setSelectionFailedRootIds((current) =>
-              current.includes(rootReviewId) ? current : [...current, rootReviewId],
+    addedRootIds
+      .filter((rootReviewId) => {
+        const record = mainReviewRowsRef.current[rootReviewId];
+        return record ? isExpandableRootReview(record) : false;
+      })
+      .forEach((rootReviewId) => {
+        setSelectionFailedRootIds((current) => current.filter((id) => id !== rootReviewId));
+        setSelectionLoadingRootIds((current) =>
+          current.includes(rootReviewId) ? current : [...current, rootReviewId],
+        );
+        void loadSubTableData(rootReviewId)
+          .then((references) => {
+            if (!selectedRootReviewIdsRef.current.has(rootReviewId)) return;
+            if (subTableLoadErrorIdsRef.current.has(rootReviewId)) {
+              setSelectionFailedRootIds((current) =>
+                current.includes(rootReviewId) ? current : [...current, rootReviewId],
+              );
+              return;
+            }
+            const referenceIds = references.map((item) => item.reference_review_id);
+            setAutoReferenceIdsByRoot((current) => ({
+              ...current,
+              [rootReviewId]: referenceIds,
+            }));
+            setExcludedAutoReferenceIds((current) =>
+              current.filter((referenceId) => !referenceIds.includes(referenceId)),
             );
-            return;
-          }
-          const referenceIds = references.map((item) => item.reference_review_id);
-          setAutoReferenceIdsByRoot((current) => ({
-            ...current,
-            [rootReviewId]: referenceIds,
-          }));
-          setExcludedAutoReferenceIds((current) =>
-            current.filter((referenceId) => !referenceIds.includes(referenceId)),
-          );
-        })
-        .finally(() => {
-          setSelectionLoadingRootIds((current) => current.filter((id) => id !== rootReviewId));
-        });
-    });
+          })
+          .finally(() => {
+            setSelectionLoadingRootIds((current) => current.filter((id) => id !== rootReviewId));
+          });
+      });
   };
 
   const autoSelectedReferenceIds = new Set(Object.values(autoReferenceIdsByRoot).flat());
@@ -367,13 +378,40 @@ const AssignmentReview = ({
     }
   };
 
+  const handleMainSelectionChange = (keys: React.Key[]) => {
+    const selectedIds = new Set(keys.map(String));
+    const visibleRecords = Object.values(mainReviewRowsRef.current);
+    const visibleRootIds = new Set(
+      visibleRecords.filter((record) => record.reviewKind === 'root').map((record) => record.id),
+    );
+    const nextRootIds = [
+      ...[...selectedRootReviewIdsRef.current].filter(
+        (id) => !visibleRootIds.has(id) || selectedIds.has(id),
+      ),
+      ...visibleRecords
+        .filter((record) => record.reviewKind === 'root' && selectedIds.has(record.id))
+        .map((record) => record.id),
+    ];
+    handleRootSelectionChange(Array.from(new Set(nextRootIds)));
+
+    const visibleReferences = visibleRecords
+      .filter((record) => record.reviewKind === 'reference')
+      .map((record) => ({ reference_review_id: record.id }) as RootReviewReferenceProgress);
+    handleReferenceSelectionChange(
+      visibleReferences,
+      visibleReferences
+        .filter((record) => selectedIds.has(record.reference_review_id))
+        .map((record) => record.reference_review_id),
+    );
+  };
+
   const handleExpand = async (expanded: boolean, record: ReviewsTable) => {
     setExpandedRowKeys((currentKeys) =>
       expanded
         ? Array.from(new Set([...currentKeys, record.id]))
         : currentKeys.filter((key) => key !== record.id),
     );
-    if (expanded && record.reviewKind === 'root') {
+    if (expanded && isExpandableRootReview(record)) {
       await loadSubTableData(record.id);
     }
   };
@@ -899,7 +937,7 @@ const AssignmentReview = ({
         expandable={{
           expandedRowKeys,
           onExpand: handleExpand,
-          rowExpandable: (record) => record.reviewKind === 'root',
+          rowExpandable: isExpandableRootReview,
           expandedRowRender: (record) => {
             if (subTableLoading[record.id]) {
               return (
@@ -1000,6 +1038,9 @@ const AssignmentReview = ({
             setTableLoading(true);
             clearUnifiedSelection();
             const result = await getReviewsTableData(params, sort);
+            mainReviewRowsRef.current = Object.fromEntries(
+              (result.data ?? []).map((record) => [record.id, record]),
+            );
             return result;
           } catch (error) {
             console.error(error);
@@ -1017,8 +1058,9 @@ const AssignmentReview = ({
         rowSelection={
           tableType === 'unassigned'
             ? {
-                selectedRowKeys: selectedRootReviewIds,
-                onChange: handleRootSelectionChange,
+                selectedRowKeys: selectedReviewIds,
+                preserveSelectedRowKeys: true,
+                onChange: handleMainSelectionChange,
                 getCheckboxProps: (record: ReviewsTable) => ({
                   disabled: record.rootMatchesStatus === false,
                 }),

@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-10
-lastReviewedCommit: 7aac4c832c151516276fc5b397497181b39288f6
-lastReviewedNote: 'Reviewed for Issues #745 and #780: retain Root-only/current-tab queue semantics and record the seven-type read-only dataset drawers available from readable Root and Reference rows.'
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedNote: 'Reviewed for Issue #807: flatten Root and Reference reviews into the paginated queue and retain child tables only for Process/Lifecycle Model Roots.'
 ---
 
 # Audit Status Reference
@@ -100,8 +100,8 @@ Process and Lifecycle Model Root Reviews retain their existing metadata form and
 5. Review Members record advisory opinions
 6. Review Admin makes the final decision and only the data owner receives the result notification
 7. rejection reasons are shown through notifications; dataset detail pages are unchanged
-8. Review Management shows only Root Reviews in its top-level paginated table; a Root appears when itself or any current Reference Review matches the selected tab
-9. expanding the Root shows only current Reference Reviews that match the selected tab; this phase does not provide the Root's complete reference list
-10. a context-only Root has no selectable Root action unless the Root itself matches and the actor has permission; Review Members see only assigned/readable children
+8. Review Management shows every matching Root and Reference Review as its own row in the top-level paginated table
+9. only Process and Lifecycle Model Root rows can expand; their child table shows current Reference Reviews that match the selected tab
+10. every top-level row keeps its own selectable action when the actor has permission; Review Members see only their assigned/readable reviews
 11. the child table does not show a reference-path column, and no persisted or visible reference-overview field is required
 12. every readable Root or Reference row exposes a view icon that opens the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer; viewing does not alter review state or access

@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-10
-lastReviewedCommit: a5b530068c23c52b6ba81f5a9775d8e3eb9f2a37
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
 lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical caller proof adds no repository-wide coverage queue; the existing full-closure baseline remains the gate.'
 ---
 

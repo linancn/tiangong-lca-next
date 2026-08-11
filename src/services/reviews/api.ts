@@ -783,7 +783,7 @@ export async function getReviewsTableDataOfReviewMember(
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_member_root_queue_items_v2', {
+  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items_v3', {
     p_status: type,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 10,
@@ -837,7 +837,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_admin_root_queue_items_v2', {
+  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items_v3', {
     p_status: type,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 10,
