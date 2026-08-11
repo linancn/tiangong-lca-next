@@ -60,6 +60,12 @@ export default {
   'pages.review.selection.summary': '{rootCount} évaluations racines et {referenceCount} évaluations de référence sélectionnées',
   'pages.review.selection.loading': 'Chargement des évaluations de référence...',
   'pages.review.selection.loadError': "Échec du chargement des évaluations de référence. Sélectionnez à nouveau l'évaluation racine.",
+  'pages.review.filters.displayMode.label': "Mode d'affichage",
+  'pages.review.filters.displayMode.all': 'Toutes les évaluations',
+  'pages.review.filters.displayMode.modelProcess': 'Évaluations de processus et de modèles',
+  'pages.review.filters.displayMode.other': 'Autres évaluations',
+  'pages.review.filters.dataType.label': 'Type de données',
+  'pages.review.filters.dataType.all': 'Tous les types de données',
 
   'pages.review.progress.button': 'Avancement de la revue',
   'pages.review.progress.editReviewer': "Modifier l'évaluateur",

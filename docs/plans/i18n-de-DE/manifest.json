@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "6499f26916c44654f3353c44900d8df8a19e0fc7811197c2b3fcba7e41cdb9b0",
+    "auditedInputDigest": "863ddedfc01a4dac3be5369d0d6115ead307bed96cd385a05b427a2fcad15b7d",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -69,13 +69,13 @@
   "summary": {
     "localeCount": 4,
     "localeLeafModuleCounts": { "en-US": 30, "zh-CN": 30, "de-DE": 30, "fr-FR": 30 },
-    "localeUniqueKeyCounts": { "en-US": 3101, "zh-CN": 3101, "de-DE": 3101, "fr-FR": 3101 },
-    "canonicalCandidateKeyCount": 3101,
-    "activeStaticKeyCount": 2096,
+    "localeUniqueKeyCounts": { "en-US": 3107, "zh-CN": 3107, "de-DE": 3107, "fr-FR": 3107 },
+    "canonicalCandidateKeyCount": 3107,
+    "activeStaticKeyCount": 2109,
     "activeDynamicKeyCount": 367,
-    "reservedKeyCount": 638,
+    "reservedKeyCount": 631,
     "productionSourceFileCount": 436,
-    "literalReferenceCount": 4101,
+    "literalReferenceCount": 4114,
     "dynamicCallsiteCount": 39,
     "dynamicCallsiteSummaryCount": 39,
     "registeredDynamicCallsiteCount": 39,
@@ -26376,7 +26376,7 @@
     },
     {
       "id": "menu.lifeCycleModels",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -26430,7 +26430,17 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 313,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
@@ -27298,7 +27308,7 @@
     },
     {
       "id": "menu.mydata.contacts",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27352,12 +27362,22 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 333,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
       "id": "menu.mydata.flowproperties",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27411,12 +27431,22 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 321,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
       "id": "menu.mydata.flows",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27470,7 +27500,17 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 317,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
@@ -27711,7 +27751,7 @@
     },
     {
       "id": "menu.mydata.sources",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27765,12 +27805,22 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 329,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
       "id": "menu.mydata.unitgroups",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27824,7 +27874,17 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 325,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
@@ -27912,7 +27972,7 @@
     },
     {
       "id": "menu.processes",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -27966,7 +28026,17 @@
           }
         }
       },
-      "references": [],
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 309,
+          "column": 14,
+          "symbol": "targetTableOptionCandidates",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
       "defaultMessages": []
     },
     {
@@ -28501,7 +28571,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 979,
+          "line": 1162,
           "column": 17,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Management",
@@ -28525,7 +28595,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 979,
+              "line": 1162,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -206033,7 +206103,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 96,
+            "line": 102,
             "column": 3,
             "module": "pages_review"
           }
@@ -206044,7 +206114,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 96,
+            "line": 102,
             "column": 3,
             "module": "pages_review"
           }
@@ -206055,7 +206125,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 96,
+            "line": 102,
             "column": 3,
             "module": "pages_review"
           }
@@ -206066,7 +206136,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 96,
+            "line": 102,
             "column": 3,
             "module": "pages_review"
           }
@@ -206116,7 +206186,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 97,
+            "line": 103,
             "column": 3,
             "module": "pages_review"
           }
@@ -206127,7 +206197,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 97,
+            "line": 103,
             "column": 3,
             "module": "pages_review"
           }
@@ -206138,7 +206208,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 97,
+            "line": 103,
             "column": 3,
             "module": "pages_review"
           }
@@ -206149,7 +206219,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 97,
+            "line": 103,
             "column": 3,
             "module": "pages_review"
           }
@@ -206199,7 +206269,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 93,
+            "line": 99,
             "column": 3,
             "module": "pages_review"
           }
@@ -206210,7 +206280,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 93,
+            "line": 99,
             "column": 3,
             "module": "pages_review"
           }
@@ -206221,7 +206291,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 93,
+            "line": 99,
             "column": 3,
             "module": "pages_review"
           }
@@ -206232,7 +206302,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 93,
+            "line": 99,
             "column": 3,
             "module": "pages_review"
           }
@@ -206282,7 +206352,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 94,
+            "line": 100,
             "column": 3,
             "module": "pages_review"
           }
@@ -206293,7 +206363,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 94,
+            "line": 100,
             "column": 3,
             "module": "pages_review"
           }
@@ -206304,7 +206374,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 94,
+            "line": 100,
             "column": 3,
             "module": "pages_review"
           }
@@ -206315,7 +206385,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 94,
+            "line": 100,
             "column": 3,
             "module": "pages_review"
           }
@@ -206341,7 +206411,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 90,
+            "line": 96,
             "column": 3,
             "module": "pages_review"
           }
@@ -206352,7 +206422,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 90,
+            "line": 96,
             "column": 3,
             "module": "pages_review"
           }
@@ -206363,7 +206433,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 90,
+            "line": 96,
             "column": 3,
             "module": "pages_review"
           }
@@ -206374,7 +206444,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 90,
+            "line": 96,
             "column": 3,
             "module": "pages_review"
           }
@@ -206424,7 +206494,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 91,
+            "line": 97,
             "column": 3,
             "module": "pages_review"
           }
@@ -206435,7 +206505,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 91,
+            "line": 97,
             "column": 3,
             "module": "pages_review"
           }
@@ -206446,7 +206516,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 91,
+            "line": 97,
             "column": 3,
             "module": "pages_review"
           }
@@ -206457,7 +206527,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 91,
+            "line": 97,
             "column": 3,
             "module": "pages_review"
           }
@@ -206507,7 +206577,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 88,
+            "line": 94,
             "column": 3,
             "module": "pages_review"
           }
@@ -206518,7 +206588,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 88,
+            "line": 94,
             "column": 3,
             "module": "pages_review"
           }
@@ -206529,7 +206599,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 88,
+            "line": 94,
             "column": 3,
             "module": "pages_review"
           }
@@ -206540,7 +206610,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 88,
+            "line": 94,
             "column": 3,
             "module": "pages_review"
           }
@@ -206605,7 +206675,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 86,
+            "line": 92,
             "column": 3,
             "module": "pages_review"
           }
@@ -206616,7 +206686,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 86,
+            "line": 92,
             "column": 3,
             "module": "pages_review"
           }
@@ -206627,7 +206697,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 86,
+            "line": 92,
             "column": 3,
             "module": "pages_review"
           }
@@ -206638,7 +206708,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 86,
+            "line": 92,
             "column": 3,
             "module": "pages_review"
           }
@@ -206688,7 +206758,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 87,
+            "line": 93,
             "column": 3,
             "module": "pages_review"
           }
@@ -206699,7 +206769,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 87,
+            "line": 93,
             "column": 3,
             "module": "pages_review"
           }
@@ -206710,7 +206780,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 87,
+            "line": 93,
             "column": 3,
             "module": "pages_review"
           }
@@ -206721,7 +206791,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 87,
+            "line": 93,
             "column": 3,
             "module": "pages_review"
           }
@@ -206782,7 +206852,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 82,
+            "line": 88,
             "column": 3,
             "module": "pages_review"
           }
@@ -206814,7 +206884,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 457,
+          "line": 608,
           "column": 14,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206823,7 +206893,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 577,
+          "line": 728,
           "column": 14,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206832,7 +206902,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 626,
+          "line": 777,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206841,7 +206911,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 694,
+          "line": 845,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206850,7 +206920,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 784,
+          "line": 935,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206874,31 +206944,31 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 457,
+              "line": 608,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 577,
+              "line": 728,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 626,
+              "line": 777,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 694,
+              "line": 845,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 784,
+              "line": 935,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -206929,7 +206999,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 84,
+            "line": 90,
             "column": 3,
             "module": "pages_review"
           }
@@ -206940,7 +207010,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 84,
+            "line": 90,
             "column": 3,
             "module": "pages_review"
           }
@@ -206951,7 +207021,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 84,
+            "line": 90,
             "column": 3,
             "module": "pages_review"
           }
@@ -206962,7 +207032,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 84,
+            "line": 90,
             "column": 3,
             "module": "pages_review"
           }
@@ -207027,7 +207097,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 83,
+            "line": 89,
             "column": 3,
             "module": "pages_review"
           }
@@ -207038,7 +207108,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 83,
+            "line": 89,
             "column": 3,
             "module": "pages_review"
           }
@@ -207049,7 +207119,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 83,
+            "line": 89,
             "column": 3,
             "module": "pages_review"
           }
@@ -207060,7 +207130,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 83,
+            "line": 89,
             "column": 3,
             "module": "pages_review"
           }
@@ -207690,6 +207760,504 @@
       ]
     },
     {
+      "id": "pages.review.filters.dataType.all",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "All data types",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 68,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "全部数据类型",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 67,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Alle Datentypen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 68,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Tous les types de données",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 68,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 340,
+          "column": 14,
+          "symbol": "targetTableOptions",
+          "defaultMessage": "All data types",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "All data types",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 340,
+              "column": 14,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.filters.dataType.label",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Data type",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 67,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "数据类型",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 66,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Datentyp",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 67,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Type de données",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 67,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 1106,
+          "column": 29,
+          "symbol": "filterControls",
+          "defaultMessage": "Data type",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Data type",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 1106,
+              "column": 29,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.filters.displayMode.all",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "All reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 64,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "全部审核",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 63,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Alle Prüfungen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 64,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Toutes les évaluations",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 64,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 282,
+          "column": 14,
+          "symbol": "displayModeOptions",
+          "defaultMessage": "All reviews",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "All reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 282,
+              "column": 14,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.filters.displayMode.label",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Display mode",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 63,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "展示模式",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 62,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Anzeigemodus",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 63,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Mode d'affichage",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 63,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 1096,
+          "column": 29,
+          "symbol": "filterControls",
+          "defaultMessage": "Display mode",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Display mode",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 1096,
+              "column": 29,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.filters.displayMode.modelProcess",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Process and model reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 65,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "过程和模型审核",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 64,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Prozess- und Modellprüfungen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 65,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Évaluations de processus et de modèles",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 65,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 289,
+          "column": 14,
+          "symbol": "displayModeOptions",
+          "defaultMessage": "Process and model reviews",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Process and model reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 289,
+              "column": 14,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.review.filters.displayMode.other",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_review"],
+        "zh-CN": ["pages_review"],
+        "de-DE": ["pages_review"],
+        "fr-FR": ["pages_review"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Other reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_review.ts",
+            "line": 66,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "zh-CN": {
+          "value": "其他类型审核",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_review.ts",
+            "line": 65,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "de-DE": {
+          "value": "Andere Prüfungen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_review.ts",
+            "line": 66,
+            "column": 3,
+            "module": "pages_review"
+          }
+        },
+        "fr-FR": {
+          "value": "Autres évaluations",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_review.ts",
+            "line": 66,
+            "column": 3,
+            "module": "pages_review"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/AssignmentReview.tsx",
+          "line": 296,
+          "column": 14,
+          "symbol": "displayModeOptions",
+          "defaultMessage": "Other reviews",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Other reviews",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/Review/Components/AssignmentReview.tsx",
+              "line": 296,
+              "column": 14,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pages.review.members.actionError",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -208308,7 +208876,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 130,
+            "line": 136,
             "column": 3,
             "module": "pages_review"
           }
@@ -208319,7 +208887,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 130,
+            "line": 136,
             "column": 3,
             "module": "pages_review"
           }
@@ -208330,7 +208898,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 130,
+            "line": 136,
             "column": 3,
             "module": "pages_review"
           }
@@ -208341,7 +208909,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 130,
+            "line": 136,
             "column": 3,
             "module": "pages_review"
           }
@@ -208391,7 +208959,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 119,
+            "line": 125,
             "column": 3,
             "module": "pages_review"
           }
@@ -208402,7 +208970,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 119,
+            "line": 125,
             "column": 3,
             "module": "pages_review"
           }
@@ -208413,7 +208981,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 119,
+            "line": 125,
             "column": 3,
             "module": "pages_review"
           }
@@ -208424,7 +208992,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 119,
+            "line": 125,
             "column": 3,
             "module": "pages_review"
           }
@@ -208489,7 +209057,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 127,
+            "line": 133,
             "column": 3,
             "module": "pages_review"
           }
@@ -208500,7 +209068,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 127,
+            "line": 133,
             "column": 3,
             "module": "pages_review"
           }
@@ -208511,7 +209079,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 127,
+            "line": 133,
             "column": 3,
             "module": "pages_review"
           }
@@ -208522,7 +209090,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 127,
+            "line": 133,
             "column": 3,
             "module": "pages_review"
           }
@@ -208572,7 +209140,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 128,
+            "line": 134,
             "column": 3,
             "module": "pages_review"
           }
@@ -208583,7 +209151,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 128,
+            "line": 134,
             "column": 3,
             "module": "pages_review"
           }
@@ -208594,7 +209162,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 128,
+            "line": 134,
             "column": 3,
             "module": "pages_review"
           }
@@ -208605,7 +209173,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 128,
+            "line": 134,
             "column": 3,
             "module": "pages_review"
           }
@@ -208631,7 +209199,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 129,
+            "line": 135,
             "column": 3,
             "module": "pages_review"
           }
@@ -208642,7 +209210,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 129,
+            "line": 135,
             "column": 3,
             "module": "pages_review"
           }
@@ -208653,7 +209221,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 129,
+            "line": 135,
             "column": 3,
             "module": "pages_review"
           }
@@ -208664,7 +209232,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 129,
+            "line": 135,
             "column": 3,
             "module": "pages_review"
           }
@@ -208935,7 +209503,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 126,
+            "line": 132,
             "column": 3,
             "module": "pages_review"
           }
@@ -208946,7 +209514,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 126,
+            "line": 132,
             "column": 3,
             "module": "pages_review"
           }
@@ -208957,7 +209525,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 126,
+            "line": 132,
             "column": 3,
             "module": "pages_review"
           }
@@ -208968,7 +209536,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 126,
+            "line": 132,
             "column": 3,
             "module": "pages_review"
           }
@@ -209229,7 +209797,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 132,
+            "line": 138,
             "column": 3,
             "module": "pages_review"
           }
@@ -209240,7 +209808,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 132,
+            "line": 138,
             "column": 3,
             "module": "pages_review"
           }
@@ -209251,7 +209819,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 132,
+            "line": 138,
             "column": 3,
             "module": "pages_review"
           }
@@ -209262,7 +209830,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 132,
+            "line": 138,
             "column": 3,
             "module": "pages_review"
           }
@@ -209508,7 +210076,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 121,
+            "line": 127,
             "column": 3,
             "module": "pages_review"
           }
@@ -209519,7 +210087,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 121,
+            "line": 127,
             "column": 3,
             "module": "pages_review"
           }
@@ -209530,7 +210098,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 121,
+            "line": 127,
             "column": 3,
             "module": "pages_review"
           }
@@ -209541,7 +210109,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 121,
+            "line": 127,
             "column": 3,
             "module": "pages_review"
           }
@@ -209674,7 +210242,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 117,
+            "line": 123,
             "column": 3,
             "module": "pages_review"
           }
@@ -209685,7 +210253,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 117,
+            "line": 123,
             "column": 3,
             "module": "pages_review"
           }
@@ -209696,7 +210264,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 117,
+            "line": 123,
             "column": 3,
             "module": "pages_review"
           }
@@ -209707,7 +210275,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 117,
+            "line": 123,
             "column": 3,
             "module": "pages_review"
           }
@@ -209733,7 +210301,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 123,
+            "line": 129,
             "column": 3,
             "module": "pages_review"
           }
@@ -209744,7 +210312,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 123,
+            "line": 129,
             "column": 3,
             "module": "pages_review"
           }
@@ -209755,7 +210323,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 123,
+            "line": 129,
             "column": 3,
             "module": "pages_review"
           }
@@ -209766,7 +210334,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 123,
+            "line": 129,
             "column": 3,
             "module": "pages_review"
           }
@@ -209816,7 +210384,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 122,
+            "line": 128,
             "column": 3,
             "module": "pages_review"
           }
@@ -209827,7 +210395,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 122,
+            "line": 128,
             "column": 3,
             "module": "pages_review"
           }
@@ -209838,7 +210406,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 122,
+            "line": 128,
             "column": 3,
             "module": "pages_review"
           }
@@ -209849,7 +210417,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 122,
+            "line": 128,
             "column": 3,
             "module": "pages_review"
           }
@@ -210276,7 +210844,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 131,
+            "line": 137,
             "column": 3,
             "module": "pages_review"
           }
@@ -210287,7 +210855,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 131,
+            "line": 137,
             "column": 3,
             "module": "pages_review"
           }
@@ -210298,7 +210866,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 131,
+            "line": 137,
             "column": 3,
             "module": "pages_review"
           }
@@ -210309,7 +210877,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 131,
+            "line": 137,
             "column": 3,
             "module": "pages_review"
           }
@@ -210359,7 +210927,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 120,
+            "line": 126,
             "column": 3,
             "module": "pages_review"
           }
@@ -210370,7 +210938,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 120,
+            "line": 126,
             "column": 3,
             "module": "pages_review"
           }
@@ -210381,7 +210949,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 120,
+            "line": 126,
             "column": 3,
             "module": "pages_review"
           }
@@ -210392,7 +210960,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 120,
+            "line": 126,
             "column": 3,
             "module": "pages_review"
           }
@@ -210584,7 +211152,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 125,
+            "line": 131,
             "column": 3,
             "module": "pages_review"
           }
@@ -210595,7 +211163,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 125,
+            "line": 131,
             "column": 3,
             "module": "pages_review"
           }
@@ -210606,7 +211174,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 125,
+            "line": 131,
             "column": 3,
             "module": "pages_review"
           }
@@ -210617,7 +211185,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 125,
+            "line": 131,
             "column": 3,
             "module": "pages_review"
           }
@@ -210667,7 +211235,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 118,
+            "line": 124,
             "column": 3,
             "module": "pages_review"
           }
@@ -210678,7 +211246,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 118,
+            "line": 124,
             "column": 3,
             "module": "pages_review"
           }
@@ -210689,7 +211257,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 118,
+            "line": 124,
             "column": 3,
             "module": "pages_review"
           }
@@ -210700,7 +211268,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 118,
+            "line": 124,
             "column": 3,
             "module": "pages_review"
           }
@@ -210750,7 +211318,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 124,
+            "line": 130,
             "column": 3,
             "module": "pages_review"
           }
@@ -210761,7 +211329,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 124,
+            "line": 130,
             "column": 3,
             "module": "pages_review"
           }
@@ -210772,7 +211340,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 124,
+            "line": 130,
             "column": 3,
             "module": "pages_review"
           }
@@ -210783,7 +211351,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 124,
+            "line": 130,
             "column": 3,
             "module": "pages_review"
           }
@@ -211021,7 +211589,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 72,
+            "line": 78,
             "column": 3,
             "module": "pages_review"
           }
@@ -211032,7 +211600,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 71,
+            "line": 77,
             "column": 3,
             "module": "pages_review"
           }
@@ -211043,7 +211611,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 72,
+            "line": 78,
             "column": 3,
             "module": "pages_review"
           }
@@ -211054,7 +211622,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 72,
+            "line": 78,
             "column": 3,
             "module": "pages_review"
           }
@@ -211080,7 +211648,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 64,
+            "line": 70,
             "column": 3,
             "module": "pages_review"
           }
@@ -211091,7 +211659,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 63,
+            "line": 69,
             "column": 3,
             "module": "pages_review"
           }
@@ -211102,7 +211670,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 64,
+            "line": 70,
             "column": 3,
             "module": "pages_review"
           }
@@ -211113,7 +211681,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 64,
+            "line": 70,
             "column": 3,
             "module": "pages_review"
           }
@@ -211123,7 +211691,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 447,
+          "line": 598,
           "column": 9,
           "symbol": "subColumns",
           "defaultMessage": "Review Progress",
@@ -211132,7 +211700,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 610,
+          "line": 761,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Progress",
@@ -211147,13 +211715,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 447,
+              "line": 598,
               "column": 9,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 610,
+              "line": 761,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -211178,7 +211746,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 80,
+            "line": 86,
             "column": 3,
             "module": "pages_review"
           }
@@ -211189,7 +211757,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 79,
+            "line": 85,
             "column": 3,
             "module": "pages_review"
           }
@@ -211200,7 +211768,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 80,
+            "line": 86,
             "column": 3,
             "module": "pages_review"
           }
@@ -211211,7 +211779,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 80,
+            "line": 86,
             "column": 3,
             "module": "pages_review"
           }
@@ -211261,7 +211829,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 79,
+            "line": 85,
             "column": 3,
             "module": "pages_review"
           }
@@ -211272,7 +211840,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 78,
+            "line": 84,
             "column": 3,
             "module": "pages_review"
           }
@@ -211283,7 +211851,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 79,
+            "line": 85,
             "column": 3,
             "module": "pages_review"
           }
@@ -211294,7 +211862,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 79,
+            "line": 85,
             "column": 3,
             "module": "pages_review"
           }
@@ -211344,7 +211912,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 74,
+            "line": 80,
             "column": 3,
             "module": "pages_review"
           }
@@ -211355,7 +211923,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 73,
+            "line": 79,
             "column": 3,
             "module": "pages_review"
           }
@@ -211366,7 +211934,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 74,
+            "line": 80,
             "column": 3,
             "module": "pages_review"
           }
@@ -211377,7 +211945,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 74,
+            "line": 80,
             "column": 3,
             "module": "pages_review"
           }
@@ -211427,7 +211995,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 73,
+            "line": 79,
             "column": 3,
             "module": "pages_review"
           }
@@ -211438,7 +212006,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 72,
+            "line": 78,
             "column": 3,
             "module": "pages_review"
           }
@@ -211449,7 +212017,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 73,
+            "line": 79,
             "column": 3,
             "module": "pages_review"
           }
@@ -211460,7 +212028,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 73,
+            "line": 79,
             "column": 3,
             "module": "pages_review"
           }
@@ -211510,7 +212078,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 66,
+            "line": 72,
             "column": 3,
             "module": "pages_review"
           }
@@ -211521,7 +212089,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 65,
+            "line": 71,
             "column": 3,
             "module": "pages_review"
           }
@@ -211532,7 +212100,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 66,
+            "line": 72,
             "column": 3,
             "module": "pages_review"
           }
@@ -211543,7 +212111,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 66,
+            "line": 72,
             "column": 3,
             "module": "pages_review"
           }
@@ -211593,7 +212161,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 65,
+            "line": 71,
             "column": 3,
             "module": "pages_review"
           }
@@ -211604,7 +212172,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 64,
+            "line": 70,
             "column": 3,
             "module": "pages_review"
           }
@@ -211615,7 +212183,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 65,
+            "line": 71,
             "column": 3,
             "module": "pages_review"
           }
@@ -211626,7 +212194,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 65,
+            "line": 71,
             "column": 3,
             "module": "pages_review"
           }
@@ -211676,7 +212244,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 75,
+            "line": 81,
             "column": 3,
             "module": "pages_review"
           }
@@ -211687,7 +212255,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 74,
+            "line": 80,
             "column": 3,
             "module": "pages_review"
           }
@@ -211698,7 +212266,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 75,
+            "line": 81,
             "column": 3,
             "module": "pages_review"
           }
@@ -211709,7 +212277,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 75,
+            "line": 81,
             "column": 3,
             "module": "pages_review"
           }
@@ -211759,7 +212327,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 76,
+            "line": 82,
             "column": 3,
             "module": "pages_review"
           }
@@ -211770,7 +212338,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 75,
+            "line": 81,
             "column": 3,
             "module": "pages_review"
           }
@@ -211781,7 +212349,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 76,
+            "line": 82,
             "column": 3,
             "module": "pages_review"
           }
@@ -211792,7 +212360,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 76,
+            "line": 82,
             "column": 3,
             "module": "pages_review"
           }
@@ -211842,7 +212410,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 77,
+            "line": 83,
             "column": 3,
             "module": "pages_review"
           }
@@ -211853,7 +212421,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 76,
+            "line": 82,
             "column": 3,
             "module": "pages_review"
           }
@@ -211864,7 +212432,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 77,
+            "line": 83,
             "column": 3,
             "module": "pages_review"
           }
@@ -211875,7 +212443,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 77,
+            "line": 83,
             "column": 3,
             "module": "pages_review"
           }
@@ -211925,7 +212493,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 78,
+            "line": 84,
             "column": 3,
             "module": "pages_review"
           }
@@ -211936,7 +212504,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 77,
+            "line": 83,
             "column": 3,
             "module": "pages_review"
           }
@@ -211947,7 +212515,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 78,
+            "line": 84,
             "column": 3,
             "module": "pages_review"
           }
@@ -211958,7 +212526,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 78,
+            "line": 84,
             "column": 3,
             "module": "pages_review"
           }
@@ -212008,7 +212576,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 71,
+            "line": 77,
             "column": 3,
             "module": "pages_review"
           }
@@ -212019,7 +212587,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 70,
+            "line": 76,
             "column": 3,
             "module": "pages_review"
           }
@@ -212030,7 +212598,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 71,
+            "line": 77,
             "column": 3,
             "module": "pages_review"
           }
@@ -212041,7 +212609,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 71,
+            "line": 77,
             "column": 3,
             "module": "pages_review"
           }
@@ -212091,7 +212659,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 69,
+            "line": 75,
             "column": 3,
             "module": "pages_review"
           }
@@ -212102,7 +212670,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 68,
+            "line": 74,
             "column": 3,
             "module": "pages_review"
           }
@@ -212113,7 +212681,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 69,
+            "line": 75,
             "column": 3,
             "module": "pages_review"
           }
@@ -212124,7 +212692,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 69,
+            "line": 75,
             "column": 3,
             "module": "pages_review"
           }
@@ -212174,7 +212742,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 67,
+            "line": 73,
             "column": 3,
             "module": "pages_review"
           }
@@ -212185,7 +212753,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 66,
+            "line": 72,
             "column": 3,
             "module": "pages_review"
           }
@@ -212196,7 +212764,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 67,
+            "line": 73,
             "column": 3,
             "module": "pages_review"
           }
@@ -212207,7 +212775,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 67,
+            "line": 73,
             "column": 3,
             "module": "pages_review"
           }
@@ -212257,7 +212825,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 68,
+            "line": 74,
             "column": 3,
             "module": "pages_review"
           }
@@ -212268,7 +212836,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 67,
+            "line": 73,
             "column": 3,
             "module": "pages_review"
           }
@@ -212279,7 +212847,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 68,
+            "line": 74,
             "column": 3,
             "module": "pages_review"
           }
@@ -212290,7 +212858,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 68,
+            "line": 74,
             "column": 3,
             "module": "pages_review"
           }
@@ -212340,7 +212908,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 70,
+            "line": 76,
             "column": 3,
             "module": "pages_review"
           }
@@ -212351,7 +212919,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 69,
+            "line": 75,
             "column": 3,
             "module": "pages_review"
           }
@@ -212362,7 +212930,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 70,
+            "line": 76,
             "column": 3,
             "module": "pages_review"
           }
@@ -212373,7 +212941,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 70,
+            "line": 76,
             "column": 3,
             "module": "pages_review"
           }
@@ -212423,7 +212991,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 81,
+            "line": 87,
             "column": 3,
             "module": "pages_review"
           }
@@ -212434,7 +213002,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 80,
+            "line": 86,
             "column": 3,
             "module": "pages_review"
           }
@@ -212445,7 +213013,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 81,
+            "line": 87,
             "column": 3,
             "module": "pages_review"
           }
@@ -212456,7 +213024,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 81,
+            "line": 87,
             "column": 3,
             "module": "pages_review"
           }
@@ -212608,7 +213176,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 414,
+          "line": 565,
           "column": 23,
           "symbol": "status",
           "defaultMessage": "Approved",
@@ -212623,7 +213191,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 414,
+              "line": 565,
               "column": 23,
               "kind": "formatMessage"
             }
@@ -212691,7 +213259,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 430,
+          "line": 581,
           "column": 27,
           "symbol": "status",
           "defaultMessage": "In review",
@@ -212706,7 +213274,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 430,
+              "line": 581,
               "column": 27,
               "kind": "formatMessage"
             }
@@ -212774,7 +213342,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 422,
+          "line": 573,
           "column": 25,
           "symbol": "status",
           "defaultMessage": "Rejected",
@@ -212789,7 +213357,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 422,
+              "line": 573,
               "column": 25,
               "kind": "formatMessage"
             }
@@ -212857,7 +213425,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 437,
+          "line": 588,
           "column": 27,
           "symbol": "status",
           "defaultMessage": "Unassigned",
@@ -212872,7 +213440,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 437,
+              "line": 588,
               "column": 27,
               "kind": "formatMessage"
             }
@@ -212940,7 +213508,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 396,
+          "line": 547,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Data type",
@@ -212955,7 +213523,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 396,
+              "line": 547,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -213023,7 +213591,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 401,
+          "line": 552,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Data version",
@@ -213038,7 +213606,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 401,
+              "line": 552,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -213355,7 +213923,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 958,
+          "line": 1141,
           "column": 21,
           "symbol": "AssignmentReview",
           "defaultMessage": "Failed to load referenced reviews. Reselect the root review to retry.",
@@ -213370,7 +213938,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 958,
+              "line": 1141,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -213438,7 +214006,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 950,
+          "line": 1133,
           "column": 21,
           "symbol": "AssignmentReview",
           "defaultMessage": "Loading referenced reviews...",
@@ -213453,7 +214021,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 950,
+              "line": 1133,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -213533,7 +214101,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 939,
+          "line": 1122,
           "column": 19,
           "symbol": "AssignmentReview",
           "defaultMessage": "Selected {rootCount} root reviews and {referenceCount} reference reviews",
@@ -213551,7 +214119,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 939,
+              "line": 1122,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -214396,7 +214964,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 566,
+          "line": 717,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "Submitted at",
@@ -214411,7 +214979,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 566,
+              "line": 717,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -214479,7 +215047,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 384,
+          "line": 535,
           "column": 9,
           "symbol": "subColumns",
           "defaultMessage": "Data name",
@@ -214488,7 +215056,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 530,
+          "line": 681,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "Data name",
@@ -214503,13 +215071,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 384,
+              "line": 535,
               "column": 9,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 530,
+              "line": 681,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -214577,7 +215145,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 601,
+          "line": 752,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214586,7 +215154,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 686,
+          "line": 837,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214595,7 +215163,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 776,
+          "line": 927,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214610,19 +215178,19 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 601,
+              "line": 752,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 686,
+              "line": 837,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 776,
+              "line": 927,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -214867,7 +215435,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 550,
+          "line": 701,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "User Name",
@@ -214882,7 +215450,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 550,
+              "line": 701,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -215140,7 +215708,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 406,
+          "line": 557,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Status",
@@ -215161,7 +215729,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 406,
+              "line": 557,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -215705,7 +216273,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 829,
+          "line": 980,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Assigned Task",
@@ -215729,7 +216297,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 829,
+              "line": 980,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -215889,7 +216457,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 833,
+          "line": 984,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Pending Review",
@@ -215913,7 +216481,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 833,
+              "line": 984,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -215981,7 +216549,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 835,
+          "line": 986,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected",
@@ -216005,7 +216573,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 835,
+              "line": 986,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -216073,7 +216641,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 838,
+          "line": 989,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected Task",
@@ -216097,7 +216665,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 838,
+              "line": 989,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -216165,7 +216733,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 831,
+          "line": 982,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Reviewed",
@@ -216189,7 +216757,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 831,
+              "line": 982,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -216257,7 +216825,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 826,
+          "line": 977,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Unassigned Task",
@@ -216281,7 +216849,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 826,
+              "line": 977,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -216759,7 +217327,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 104,
+            "line": 110,
             "column": 3,
             "module": "pages_review"
           }
@@ -216770,7 +217338,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 104,
+            "line": 110,
             "column": 3,
             "module": "pages_review"
           }
@@ -216781,7 +217349,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 104,
+            "line": 110,
             "column": 3,
             "module": "pages_review"
           }
@@ -216792,7 +217360,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 104,
+            "line": 110,
             "column": 3,
             "module": "pages_review"
           }
@@ -216842,7 +217410,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 115,
+            "line": 121,
             "column": 3,
             "module": "pages_review"
           }
@@ -216853,7 +217421,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 115,
+            "line": 121,
             "column": 3,
             "module": "pages_review"
           }
@@ -216864,7 +217432,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 115,
+            "line": 121,
             "column": 3,
             "module": "pages_review"
           }
@@ -216875,7 +217443,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 115,
+            "line": 121,
             "column": 3,
             "module": "pages_review"
           }
@@ -216901,7 +217469,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 109,
+            "line": 115,
             "column": 3,
             "module": "pages_review"
           }
@@ -216912,7 +217480,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 109,
+            "line": 115,
             "column": 3,
             "module": "pages_review"
           }
@@ -216923,7 +217491,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 109,
+            "line": 115,
             "column": 3,
             "module": "pages_review"
           }
@@ -216934,7 +217502,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 109,
+            "line": 115,
             "column": 3,
             "module": "pages_review"
           }
@@ -216960,7 +217528,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 108,
+            "line": 114,
             "column": 3,
             "module": "pages_review"
           }
@@ -216971,7 +217539,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 108,
+            "line": 114,
             "column": 3,
             "module": "pages_review"
           }
@@ -216982,7 +217550,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 108,
+            "line": 114,
             "column": 3,
             "module": "pages_review"
           }
@@ -216993,7 +217561,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 108,
+            "line": 114,
             "column": 3,
             "module": "pages_review"
           }
@@ -217019,7 +217587,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 102,
+            "line": 108,
             "column": 3,
             "module": "pages_review"
           }
@@ -217030,7 +217598,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 102,
+            "line": 108,
             "column": 3,
             "module": "pages_review"
           }
@@ -217041,7 +217609,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 102,
+            "line": 108,
             "column": 3,
             "module": "pages_review"
           }
@@ -217052,7 +217620,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 102,
+            "line": 108,
             "column": 3,
             "module": "pages_review"
           }
@@ -217102,7 +217670,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 114,
+            "line": 120,
             "column": 3,
             "module": "pages_review"
           }
@@ -217113,7 +217681,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 114,
+            "line": 120,
             "column": 3,
             "module": "pages_review"
           }
@@ -217124,7 +217692,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 114,
+            "line": 120,
             "column": 3,
             "module": "pages_review"
           }
@@ -217135,7 +217703,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 114,
+            "line": 120,
             "column": 3,
             "module": "pages_review"
           }
@@ -217161,7 +217729,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 110,
+            "line": 116,
             "column": 3,
             "module": "pages_review"
           }
@@ -217172,7 +217740,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 110,
+            "line": 116,
             "column": 3,
             "module": "pages_review"
           }
@@ -217183,7 +217751,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 110,
+            "line": 116,
             "column": 3,
             "module": "pages_review"
           }
@@ -217194,7 +217762,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 110,
+            "line": 116,
             "column": 3,
             "module": "pages_review"
           }
@@ -217220,7 +217788,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 111,
+            "line": 117,
             "column": 3,
             "module": "pages_review"
           }
@@ -217231,7 +217799,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 111,
+            "line": 117,
             "column": 3,
             "module": "pages_review"
           }
@@ -217242,7 +217810,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 111,
+            "line": 117,
             "column": 3,
             "module": "pages_review"
           }
@@ -217253,7 +217821,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 111,
+            "line": 117,
             "column": 3,
             "module": "pages_review"
           }
@@ -217279,7 +217847,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 113,
+            "line": 119,
             "column": 3,
             "module": "pages_review"
           }
@@ -217290,7 +217858,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 113,
+            "line": 119,
             "column": 3,
             "module": "pages_review"
           }
@@ -217301,7 +217869,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 113,
+            "line": 119,
             "column": 3,
             "module": "pages_review"
           }
@@ -217312,7 +217880,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 113,
+            "line": 119,
             "column": 3,
             "module": "pages_review"
           }
@@ -217338,7 +217906,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 112,
+            "line": 118,
             "column": 3,
             "module": "pages_review"
           }
@@ -217349,7 +217917,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 112,
+            "line": 118,
             "column": 3,
             "module": "pages_review"
           }
@@ -217360,7 +217928,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 112,
+            "line": 118,
             "column": 3,
             "module": "pages_review"
           }
@@ -217371,7 +217939,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 112,
+            "line": 118,
             "column": 3,
             "module": "pages_review"
           }
@@ -217397,7 +217965,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 107,
+            "line": 113,
             "column": 3,
             "module": "pages_review"
           }
@@ -217408,7 +217976,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 107,
+            "line": 113,
             "column": 3,
             "module": "pages_review"
           }
@@ -217419,7 +217987,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 107,
+            "line": 113,
             "column": 3,
             "module": "pages_review"
           }
@@ -217430,7 +217998,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 107,
+            "line": 113,
             "column": 3,
             "module": "pages_review"
           }
@@ -217456,7 +218024,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 103,
+            "line": 109,
             "column": 3,
             "module": "pages_review"
           }
@@ -217467,7 +218035,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 103,
+            "line": 109,
             "column": 3,
             "module": "pages_review"
           }
@@ -217478,7 +218046,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 103,
+            "line": 109,
             "column": 3,
             "module": "pages_review"
           }
@@ -217489,7 +218057,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 103,
+            "line": 109,
             "column": 3,
             "module": "pages_review"
           }
@@ -217539,7 +218107,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 101,
+            "line": 107,
             "column": 3,
             "module": "pages_review"
           }
@@ -217550,7 +218118,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 101,
+            "line": 107,
             "column": 3,
             "module": "pages_review"
           }
@@ -217561,7 +218129,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 101,
+            "line": 107,
             "column": 3,
             "module": "pages_review"
           }
@@ -217572,7 +218140,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 101,
+            "line": 107,
             "column": 3,
             "module": "pages_review"
           }
@@ -217622,7 +218190,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 100,
+            "line": 106,
             "column": 3,
             "module": "pages_review"
           }
@@ -217633,7 +218201,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 100,
+            "line": 106,
             "column": 3,
             "module": "pages_review"
           }
@@ -217644,7 +218212,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 100,
+            "line": 106,
             "column": 3,
             "module": "pages_review"
           }
@@ -217655,7 +218223,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 100,
+            "line": 106,
             "column": 3,
             "module": "pages_review"
           }
@@ -217705,7 +218273,7 @@
           "placeholders": ["action"],
           "source": {
             "path": "src/locales/en-US/pages_review.ts",
-            "line": 105,
+            "line": 111,
             "column": 3,
             "module": "pages_review"
           }
@@ -217716,7 +218284,7 @@
           "placeholders": ["action"],
           "source": {
             "path": "src/locales/zh-CN/pages_review.ts",
-            "line": 105,
+            "line": 111,
             "column": 3,
             "module": "pages_review"
           }
@@ -217727,7 +218295,7 @@
           "placeholders": ["action"],
           "source": {
             "path": "src/locales/de-DE/pages_review.ts",
-            "line": 105,
+            "line": 111,
             "column": 3,
             "module": "pages_review"
           }
@@ -217738,7 +218306,7 @@
           "placeholders": ["action"],
           "source": {
             "path": "src/locales/fr-FR/pages_review.ts",
-            "line": 105,
+            "line": 111,
             "column": 3,
             "module": "pages_review"
           }
@@ -218047,7 +218615,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 880,
+          "line": 1038,
           "column": 30,
           "symbol": "AssignmentReview",
           "defaultMessage": null,
@@ -219202,7 +219770,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 115,
+          "line": 134,
           "column": 5,
           "symbol": "defaultTableAlertOptionRender",
           "defaultMessage": "Clear selection",
@@ -219313,7 +219881,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 115,
+              "line": 134,
               "column": 5,
               "kind": "FormattedMessage"
             },
@@ -230002,7 +230570,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 523,
+          "line": 674,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Index",
@@ -230227,7 +230795,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 523,
+              "line": 674,
               "column": 14,
               "kind": "FormattedMessage"
             },

@@ -177,6 +177,15 @@ jest.mock('antd', () => {
       </button>
     </div>
   );
+  const Select = ({ value, options = [], onChange, ...rest }: any) => (
+    <select value={value} onChange={(event) => onChange?.(event.target.value)} {...rest}>
+      {options.map((option: any) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
@@ -191,6 +200,7 @@ jest.mock('antd', () => {
     Input,
     Modal: ModalComponent,
     Row,
+    Select,
     Space,
     Spin,
     Tabs,

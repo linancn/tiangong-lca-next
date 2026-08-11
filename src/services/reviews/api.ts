@@ -15,6 +15,11 @@ import { genProcessName } from '../processes/util';
 import { isCurrentAssignedReviewerCommentState } from './util';
 
 export type ReviewSubmitDatasetTable = TidasPackageRootTable;
+export type ReviewDisplayMode = 'model_process' | 'other' | 'all';
+export type ReviewQueueFilters = {
+  displayMode?: ReviewDisplayMode;
+  targetTable?: ReviewSubmitDatasetTable;
+};
 export type ReviewSubmitGateDatasetTable = Extract<ReviewSubmitDatasetTable, 'processes'>;
 export const REVIEW_SUBMIT_GATE_POLICY_PROFILE = 'review_submit_fast.v1';
 export const REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION = 'review_submit_gate_report.v1';
@@ -769,6 +774,7 @@ export async function getReviewsTableDataOfReviewMember(
   type: 'reviewed' | 'pending' | 'reviewer-rejected',
   lang: string,
   userData?: { user_id: string | undefined },
+  filters: ReviewQueueFilters = {},
 ) {
   const userId = userData?.user_id ?? (await getUserId());
   if (!userId) {
@@ -783,12 +789,14 @@ export async function getReviewsTableDataOfReviewMember(
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_member_root_queue_items_v2', {
+  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items_v3', {
     p_status: type,
     p_page: params.current ?? 1,
-    p_page_size: params.pageSize ?? 10,
+    p_page_size: params.pageSize ?? 50,
     p_sort_by: sortBy,
     p_sort_order: orderBy,
+    ...(filters.displayMode ? { p_display_mode: filters.displayMode } : {}),
+    ...(filters.targetTable ? { p_target_table: filters.targetTable } : {}),
   });
 
   const rows = (data ?? []) as ReviewMemberQueueRpcRow[];
@@ -832,17 +840,20 @@ export async function getReviewsTableDataOfReviewAdmin(
   sort: any,
   type: 'unassigned' | 'assigned' | 'admin-rejected',
   lang: string,
+  filters: ReviewQueueFilters = {},
 ) {
   const normalizedSort = sort ?? {};
   const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
   const orderBy = normalizedSort[sortBy] ?? 'descend';
 
-  const { data, error } = await supabase.rpc('qry_review_get_admin_root_queue_items_v2', {
+  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items_v3', {
     p_status: type,
     p_page: params.current ?? 1,
-    p_page_size: params.pageSize ?? 10,
+    p_page_size: params.pageSize ?? 50,
     p_sort_by: sortBy,
     p_sort_order: orderBy,
+    ...(filters.displayMode ? { p_display_mode: filters.displayMode } : {}),
+    ...(filters.targetTable ? { p_target_table: filters.targetTable } : {}),
   });
 
   const rows = (data ?? []) as ReviewAdminQueueRpcRow[];

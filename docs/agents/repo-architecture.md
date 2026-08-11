@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-10
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical RPC callers preserve existing visibility, owner-draft, filter, pagination, mapping, and detail-navigation boundaries.'
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queues expose display-mode and exact data-type controls, delegate filtering/counts to Database, default to 50 rows, and retain unfiltered relationship child tables.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -134,9 +134,9 @@ When the job reaches `submitted`, Edge/Database have already validated the gate 
 
 All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
-Review Management consumes the central review projection. Its top-level pagination contains Root rows only. A Root remains visible when either the Root or one of its snapshot References matches the selected tab; expanding the row renders only References that match that same tab. A context-only Root exposes neither a Root checkbox nor Root review actions, while readable matching Roots and References retain their own actions. This keeps pagination and status membership database-owned without duplicating the complete Reference list in every tab.
+Review Management consumes the central review projection. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
 
-Batch selection is one Root/Reference selection model. Selecting a Root loads and auto-selects its current-tab References, deduplicates a Reference shared by multiple Roots, preserves independently selected References, and disables submission while child loading is incomplete or failed. Removing a Root removes only the References that are no longer selected manually or through another Root. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes.
+Batch selection is one Root/Reference selection model. A top-level Reference can be selected directly. Selecting an expandable Process or Lifecycle Model Root loads and auto-selects its current-tab References, deduplicates a Reference shared by multiple Roots, preserves independently selected References, and disables submission while child loading is incomplete or failed. Selecting another Root type does not issue a child query. Removing a Root removes only the References that are no longer selected manually or through another Root. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes.
 
 Each readable Root or Reference row offers a view icon backed by the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer. Rejection reasons remain in owner notifications and do not change dataset detail pages. Existing Contact `Sync to Open Data` behavior remains a separate entrypoint.
 
