@@ -31,7 +31,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: final post-format canonical artifacts, Node 24, 100% AssignmentReview coverage, TypeScript, build, and managed checked-push remain the delivery path.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Node 24, deterministic locale artifacts, focused review-filter tests, TypeScript, build, and managed checked-push remain the delivery path.'
 ---
 
 # Development Bootstrap

@@ -24,7 +24,7 @@ checkPaths:
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: Next calls the formal lexical RPC names without invalid order_by; Database A remains authoritative for deployment and search semantics.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Next forwards review display mode and exact target type to v3 queue RPCs; Database remains authoritative for filtering, totals, pagination, validation, and the 50-row default.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -75,6 +75,7 @@ Rules:
 - closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
+- review queue services forward display mode and exact target type to the Database-owned v3 RPCs. Database applies their intersection before count and pagination and validates values; Next owns the controls, compatible-option presentation, state reset, and matching 50-row UI default.
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
 - Process keyword searches call `search_processes` through `src/services/processes/api.ts`, pass explicit query terms, and use no app-side ILIKE field filter. The `public_plus_owner_draft` picker asks the database for strict personal drafts and public rows separately; database-engine owns the exact `state_code=0`, null-team, null-review, latest-version, and `extracted_md` index constraints
 - LCA solve, result-query, and contribution-path requests use the shared `LcaScope` contract from `src/services/lca/scope.ts`. The default snapshot family is `full_library`; `data_product` is the only alternate value. Deployment names and cache namespaces are not valid LCA scope values, and persisted task recovery normalizes historical non-canonical values before resubmission

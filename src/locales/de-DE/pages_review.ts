@@ -60,6 +60,12 @@ export default {
   'pages.review.selection.summary': '{rootCount} Stammprüfungen und {referenceCount} Referenzprüfungen ausgewählt',
   'pages.review.selection.loading': 'Referenzprüfungen werden geladen...',
   'pages.review.selection.loadError': 'Referenzprüfungen konnten nicht geladen werden. Wählen Sie die Stammprüfung erneut aus.',
+  'pages.review.filters.displayMode.label': 'Anzeigemodus',
+  'pages.review.filters.displayMode.all': 'Alle Prüfungen',
+  'pages.review.filters.displayMode.modelProcess': 'Prozess- und Modellprüfungen',
+  'pages.review.filters.displayMode.other': 'Andere Prüfungen',
+  'pages.review.filters.dataType.label': 'Datentyp',
+  'pages.review.filters.dataType.all': 'Alle Datentypen',
 
   'pages.review.progress.button': 'Prüfungsfortschritt',
   'pages.review.progress.editReviewer': 'Prüfende verwalten',

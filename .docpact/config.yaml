@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: "2026-08-11"
 lastReviewedCommit: "07467b98423473223d84f5169415062d33eaaa15"
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: post-format canonical locale artifacts now bind the final 100%-covered flat review queue checkpoint within existing boundaries.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: canonical locale artifacts and focused tests cover server-backed review display-mode/data-type filters, intersection behavior, and the 50-row default.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

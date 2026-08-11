@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: focused flat-queue contracts retain 100% closure while canonical locale artifacts bind the final formatted test input.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: focused flat-queue contracts cover mode/type compatibility, server forwarding, reset behavior, 50-row defaults, and canonical locale artifacts.'
 ---
 
 # Testing Patterns Reference

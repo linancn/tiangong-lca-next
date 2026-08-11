@@ -3,12 +3,12 @@
   "locale": "fr-FR",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "a231d790f93e3aa48ca171e4db6ee844464ecb0eb9e86f3a4221efb712106246",
-    "contextDigest": "fa91d9d3d290be3f1e4f9aa33a10cbc2f1e7b6af52e97f22407e0b11225551f9"
+    "sourceManifestDigest": "4f27bcf3501430f5928d5aedb722795ce73ce53f899d0898648e11db3c4603ab",
+    "contextDigest": "bc9a77d17fa46a1148063ecf2d20c87df4a94f4c15512b14c2d7aaa838a3e0c7"
   },
   "catalog": {
-    "messageCount": 3101,
-    "catalogDigest": "e2cf068bacfb65a87b837cf2a756accee40333aa79f3378ae3a270ebe73a394e",
+    "messageCount": 3107,
+    "catalogDigest": "85e41a13054efa933957b71731315f26ea8d34c527baaf3a900d9c2f43467a5d",
     "emptyTranslationCount": 0,
     "acceptedSourceEmptyCount": 1,
     "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
@@ -41,16 +41,16 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-fr-FR/structural-validation.json",
-    "digest": "b88327d798c9af6c6a38d8529277e4fecf33baf31f5e268574fa3bd1c0b31973",
-    "validationDigest": "11fe1c8b928960c5eacfa3901cd97a7653a325c717a28e48ea52d4a8a53c0447",
+    "digest": "9be07757b90debbf4f7e5463585f9f0f27b2334f3a998403c1ba00b3a976d225",
+    "validationDigest": "64f7cb4679d3e813e0f178cc8431bbfe3af32e7bf456d9245f1e48fc691b31be",
     "laneCount": 1,
-    "validatedMessageCount": 3101,
+    "validatedMessageCount": 3107,
     "validatedModuleCount": 31,
-    "highRiskMessageCount": 1377,
-    "highRiskMessageDigest": "0788e9c540202d234af605e47cd663819dfb4b2a424e007ead40a1b8fe2e68cc",
+    "highRiskMessageCount": 1383,
+    "highRiskMessageDigest": "8040e7c73965f644e0d0d592ff4de3476d0ff83ce6db175003e6524274cedebd",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635",
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "60967bce45175d0a91088c7947efae220a9b3106a65351928c5e028a5148c264"
+  "qualityDigest": "4571a5fa352ba15a96ab71d1f82f398c3ade331a49a7a22eac4a12b28fbeae20"
 }

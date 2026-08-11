@@ -59,6 +59,12 @@ export default {
   'pages.review.selection.summary': '已选择 {rootCount} 个根审核和 {referenceCount} 个引用审核',
   'pages.review.selection.loading': '正在加载引用审核…',
   'pages.review.selection.loadError': '引用审核加载失败，请重新勾选根审核后重试。',
+  'pages.review.filters.displayMode.label': '展示模式',
+  'pages.review.filters.displayMode.all': '全部审核',
+  'pages.review.filters.displayMode.modelProcess': '过程和模型审核',
+  'pages.review.filters.displayMode.other': '其他类型审核',
+  'pages.review.filters.dataType.label': '数据类型',
+  'pages.review.filters.dataType.all': '全部数据类型',
 
   'pages.review.progress.button': '审核进度',
   'pages.review.progress.editReviewer': '编辑审核员',

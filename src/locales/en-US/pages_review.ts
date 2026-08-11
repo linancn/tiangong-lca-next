@@ -60,6 +60,12 @@ export default {
   'pages.review.selection.summary': 'Selected {rootCount} root reviews and {referenceCount} reference reviews',
   'pages.review.selection.loading': 'Loading referenced reviews...',
   'pages.review.selection.loadError': 'Failed to load referenced reviews. Reselect the root review to retry.',
+  'pages.review.filters.displayMode.label': 'Display mode',
+  'pages.review.filters.displayMode.all': 'All reviews',
+  'pages.review.filters.displayMode.modelProcess': 'Process and model reviews',
+  'pages.review.filters.displayMode.other': 'Other reviews',
+  'pages.review.filters.dataType.label': 'Data type',
+  'pages.review.filters.dataType.all': 'All data types',
 
   'pages.review.progress.button': 'Review Progress',
   'pages.review.progress.editReviewer': 'Edit Reviewer',

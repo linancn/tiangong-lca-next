@@ -1357,6 +1357,30 @@ describe('getRejectReviewsByProcess', () => {
 });
 
 describe('getReviewsTableDataOfReviewMember', () => {
+  it('forwards queue filters and defaults the page size to fifty', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: undefined as any, current: undefined as any },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+      { displayMode: 'other', targetTable: 'sources' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+      p_status: 'pending',
+      p_page: 1,
+      p_page_size: 50,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+      p_display_mode: 'other',
+      p_target_table: 'sources',
+    });
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
   it('returns empty table when reviewer user id cannot be resolved', async () => {
     mockGetUserId.mockResolvedValueOnce(undefined);
 
@@ -1654,7 +1678,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'reviewed',
       p_page: 1,
-      p_page_size: 10,
+      p_page_size: 50,
       p_sort_by: 'modified_at',
       p_sort_order: 'descend',
     });
@@ -1859,6 +1883,29 @@ describe('getReviewsTableDataOfReviewMember', () => {
 });
 
 describe('getReviewsTableDataOfReviewAdmin', () => {
+  it('forwards queue filters and defaults the page size to fifty', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: undefined as any, current: undefined as any },
+      {},
+      'unassigned',
+      'en',
+      { displayMode: 'model_process', targetTable: 'processes' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+      p_status: 'unassigned',
+      p_page: 1,
+      p_page_size: 50,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+      p_display_mode: 'model_process',
+      p_target_table: 'processes',
+    });
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
   it('returns empty table for unassigned type when no rows exist', async () => {
     mockRpc.mockResolvedValueOnce({ data: [], error: null });
 

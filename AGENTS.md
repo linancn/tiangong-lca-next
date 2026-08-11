@@ -35,7 +35,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: the final post-format canonical artifact checkpoint remains Next-owned, preserves flat-queue auth/data boundaries, and requires coordinated Database A delivery.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review queues add server-backed display-mode and exact data-type filters plus a 50-row default while preserving flat-queue authorization and Database-owned totals.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

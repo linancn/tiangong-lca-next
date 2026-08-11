@@ -3,6 +3,7 @@ import AssignmentReview, {
   SELECTED_REVIEW_ROW_BUTTON_STYLE,
   isExpandableRootReview,
   isReferenceMatchingReviewTab,
+  isReviewTargetTableCompatible,
 } from '@/pages/Review/Components/AssignmentReview';
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import userEvent from '@testing-library/user-event';
@@ -138,6 +139,15 @@ jest.mock('antd', () => {
   );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
+  const Select = ({ value, onChange, options = [], 'aria-label': ariaLabel }: any) => (
+    <select aria-label={ariaLabel} value={value} onChange={(event) => onChange(event.target.value)}>
+      {options.map((option: any) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
   const Space = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ children }: any) => <div data-testid='spin'>{children}</div>;
   const Table = ({ columns = [], dataSource = [], rowSelection }: any) => (
@@ -197,6 +207,7 @@ jest.mock('antd', () => {
     Col,
     Input,
     Row,
+    Select,
     Space,
     Spin,
     Table,
@@ -214,6 +225,7 @@ const MockProTable = ({
   columns,
   expandable,
   tableAlertOptionRender,
+  pagination,
 }: any) => {
   const React = require('react');
   const [rows, setRows] = React.useState<any[]>([]);
@@ -225,7 +237,10 @@ const MockProTable = ({
 
   React.useEffect(() => {
     const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
+      const result = await requestRef.current?.(
+        { pageSize: pagination?.pageSize ?? 50, current: 1 },
+        {},
+      );
       setRows(result?.data ?? []);
       return result;
     });
@@ -345,6 +360,18 @@ describe('AssignmentReview', () => {
     expect(isExpandableRootReview(record as any)).toBe(expected);
   });
 
+  it.each([
+    ['all', 'processes', true],
+    ['all', 'sources', true],
+    ['model_process', 'processes', true],
+    ['model_process', 'lifecyclemodels', true],
+    ['model_process', 'sources', false],
+    ['other', 'sources', true],
+    ['other', 'processes', false],
+  ])('matches %s display mode compatibility for %s', (displayMode, targetTable, expected) => {
+    expect(isReviewTargetTableCompatible(displayMode as any, targetTable as any)).toBe(expected);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocale = 'en-US';
@@ -436,7 +463,7 @@ describe('AssignmentReview', () => {
 
       await waitFor(() =>
         expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-          { pageSize: 10, current: 1 },
+          { pageSize: 50, current: 1 },
           {},
           'unassigned',
           languageCode,
@@ -457,7 +484,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'unassigned',
         'en',
@@ -480,7 +507,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'unassigned',
         'de',
@@ -503,7 +530,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'unassigned',
         'en',
@@ -533,6 +560,66 @@ describe('AssignmentReview', () => {
     expect(screen.getByText('Unassigned')).toBeInTheDocument();
     expect(screen.getByText('0/0')).toBeInTheDocument();
     expect(screen.queryByText('{"path":["process","flow"]}')).not.toBeInTheDocument();
+  });
+
+  it('filters server-side by display mode and data type while clearing incompatible state', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    const displayModeSelect = await screen.findByRole('combobox', { name: 'Display mode' });
+    const dataTypeSelect = screen.getByRole('combobox', { name: 'Data type' });
+    expect(displayModeSelect).toHaveValue('all');
+    expect(dataTypeSelect).toHaveValue('all');
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
+    expect(
+      await screen.findByText('Selected 1 root reviews and 1 reference reviews'),
+    ).toBeInTheDocument();
+
+    await userEvent.selectOptions(displayModeSelect, 'model_process');
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
+        { pageSize: 50, current: 1 },
+        {},
+        'unassigned',
+        'en',
+        { displayMode: 'model_process' },
+      ),
+    );
+    expect(
+      screen.queryByText('Selected 1 root reviews and 1 reference reviews'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'menu.mydata.sources' })).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(dataTypeSelect, 'processes');
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
+        { pageSize: 50, current: 1 },
+        {},
+        'unassigned',
+        'en',
+        { displayMode: 'model_process', targetTable: 'processes' },
+      ),
+    );
+
+    await userEvent.selectOptions(displayModeSelect, 'other');
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
+        { pageSize: 50, current: 1 },
+        {},
+        'unassigned',
+        'en',
+        { displayMode: 'other' },
+      ),
+    );
+    expect(dataTypeSelect).toHaveValue('all');
+    expect(screen.queryByRole('option', { name: 'menu.processes' })).not.toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'menu.mydata.sources' })).toBeInTheDocument();
   });
 
   it('selects a flat reference row directly without loading a child table', async () => {
@@ -1165,7 +1252,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'pending',
         'en',
@@ -1213,7 +1300,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'assigned',
         'en',
@@ -1587,7 +1674,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'reviewer-rejected',
         'en',
@@ -1643,7 +1730,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'admin-rejected',
         'en',
@@ -1668,7 +1755,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'reviewed',
         'en',
@@ -1694,7 +1781,7 @@ describe('AssignmentReview', () => {
 
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'unassigned',
         'zh',

@@ -20,7 +20,7 @@ checkPaths:
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Issue #807: flatten Root and Reference reviews into the paginated queue, retain child tables only for Process/Lifecycle Model Roots, and close all resulting interaction branches.'
+lastReviewedNote: 'Reviewed for Issue #807: flat Root/Reference queues add display-mode and exact data-type controls with server-owned filtering and a 50-row default; Process/Lifecycle Model relationship child tables remain unfiltered.'
 ---
 
 # Audit Status Reference
