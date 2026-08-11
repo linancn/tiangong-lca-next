@@ -150,15 +150,26 @@ jest.mock('antd', () => {
   );
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
-  const Select = ({ value, onChange, options = [], 'aria-label': ariaLabel }: any) => (
-    <select aria-label={ariaLabel} value={value} onChange={(event) => onChange(event.target.value)}>
-      {options.map((option: any) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
+  const Select = ({ value, onChange, options = [], labelRender, 'aria-label': ariaLabel }: any) => {
+    const selectedOption = options.find((option: any) => option.value === value);
+
+    return (
+      <div>
+        {labelRender?.({ label: selectedOption?.label })}
+        <select
+          aria-label={ariaLabel}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          {options.map((option: any) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
   const Space = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ children }: any) => <div data-testid='spin'>{children}</div>;
   const Table = ({ columns = [], dataSource = [], rowSelection }: any) => (
@@ -265,6 +276,13 @@ const MockProTable = ({
 
     reload();
   }, []);
+
+  tableAlertRender?.({
+    intl: {
+      getMessage: (_id: string, defaultMessage: string) => defaultMessage,
+    },
+    selectedRowKeys: undefined,
+  });
 
   return (
     <section data-testid='protable'>
