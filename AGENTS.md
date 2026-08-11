@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review queues add server-backed filters and a 50-row default with 100% AssignmentReview branch coverage, while preserving Database-owned authorization and totals.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: compact review-queue toolbar styling does not change repository ownership, service boundaries, branch policy, or delivery rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

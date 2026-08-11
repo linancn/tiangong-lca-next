@@ -20,8 +20,8 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review display/type filters and the 50-row default do not change team roles, review authority, or membership-constrained visibility.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: review-toolbar styling does not change team roles, review authority, or membership-constrained visibility.'
 ---
 
 # Team Management Reference

@@ -19,8 +19,8 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Issue #807: flat Root/Reference queues add display-mode and exact data-type controls with server-owned filtering and a 50-row default; Process/Lifecycle Model relationship child tables remain unfiltered.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Issue #811: toolbar presentation changes do not alter Root/Reference state codes, transition rules, or the Admin-versus-Member batch decision boundary.'
 ---
 
 # Audit Status Reference

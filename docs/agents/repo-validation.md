@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review queue proof covers forwarding, compatibility/intersections, reset, 50-row defaults, deterministic artifacts, integration rendering, and 100% AssignmentReview branches.'
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: focused AssignmentReview and BatchReviewActions proof plus the unchanged managed pre-push gate remain the correct validation path for toolbar-only UI refinements.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
