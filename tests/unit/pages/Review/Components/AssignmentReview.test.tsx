@@ -115,6 +115,15 @@ jest.mock('@/pages/Review/Components/SelectReviewer', () => ({
   ),
 }));
 
+jest.mock('@/pages/Review/Components/BatchReviewActions', () => ({
+  __esModule: true,
+  default: ({ role, reviewIds, allowApprove, disabled }: any) => (
+    <div data-testid='batch-review-actions' data-disabled={String(!!disabled)}>
+      {`${role}:${String(allowApprove)}:${JSON.stringify(reviewIds)}`}
+    </div>
+  ),
+}));
+
 jest.mock('@/pages/Review/Components/SimpleReviewActions', () => ({
   __esModule: true,
   default: ({ reviewId, role, targetTable, actionRef }: any) => (
@@ -550,6 +559,9 @@ describe('AssignmentReview', () => {
       ),
     );
     expect(screen.getByText('Selected 1 root reviews and 1 reference reviews')).toBeInTheDocument();
+    expect(screen.getByTestId('batch-review-actions')).toHaveTextContent(
+      'admin:false:["review-1","reference-review-1"]',
+    );
 
     await userEvent.click(screen.getByRole('button', { name: 'expand-review-1' }));
     await waitFor(() =>
@@ -674,6 +686,39 @@ describe('AssignmentReview', () => {
       screen.queryByRole('button', { name: 'expand-flat-reference-review' }),
     ).not.toBeInTheDocument();
     expect(mockGetRootReviewReferenceProgress).not.toHaveBeenCalled();
+  });
+
+  it('shows review-admin batch approve and reject actions for assigned selections', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='assigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
+
+    expect(await screen.findByTestId('batch-review-actions')).toHaveTextContent(
+      'admin:true:["review-1"]',
+    );
+    expect(screen.queryByTestId('select-reviewer')).not.toBeInTheDocument();
+  });
+
+  it('shows reviewer opinion batch actions for pending selections', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'member-1', role: 'review-member' }}
+        tableType='pending'
+        actionRef={{ current: { reload: jest.fn() } }}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'select-review-2' }));
+
+    expect(await screen.findByTestId('batch-review-actions')).toHaveTextContent(
+      'reviewer:true:["review-2"]',
+    );
   });
 
   it('clears the unified root and reference selection from the table alert', async () => {

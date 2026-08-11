@@ -19,7 +19,7 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
 lastReviewedNote: 'Reviewed for Issue #807: flat Root/Reference queues add display-mode and exact data-type controls with server-owned filtering and a 50-row default; Process/Lifecycle Model relationship child tables remain unfiltered.'
 ---
 
@@ -41,7 +41,7 @@ lastReviewedNote: 'Reviewed for Issue #807: flat Root/Reference queues add displ
 | `reviews`         | Root, Reference, and immutable legacy review tasks |
 | `comments`        | assigned Review Member opinions                    |
 
-New reviews use `review_kind = root | reference`. Migrated legacy source rows retain `review_kind = null` and remain read-only history. A Root Review stores its append-only reference relation in `scope_history`; a Reference Review is shared by every Root Review that uses the same exact dataset revision.
+New reviews use `review_kind = root | reference`. Migrated legacy source rows retain `review_kind = null` and remain read-only history. Root-to-Reference relationships are derived from the current dataset JSON and formally submitted Reviewer comments; a Reference Review is shared by every Root Review that uses the same exact dataset revision.
 
 ## Status Codes
 
@@ -88,6 +88,14 @@ New reviews use `review_kind = root | reference`. Migrated legacy source rows re
 | Review Admin finally approves | after all current Review Members have completed, `comments.state_code -> 2`, `reviews.state_code -> 2`, and only the exact review target moves `20 -> 100` |
 
 Review Member outcomes are advisory. Review Admin may finally approve even when every Review Member used `-3`, and may reject before every Review Member has completed. A Root Review may be approved while its Reference Reviews are still pending; this does not approve or release those references. Conversely, a Reference Review continues independently when its only Root Review is rejected.
+
+## Batch Decision Boundary
+
+- Review Admin `unassigned` selections expose batch reject only; this is a final admin rejection.
+- Review Admin `assigned` selections expose batch approve and reject; both are final admin decisions.
+- Review Member `pending` selections expose batch approve and reject; these submit only that member's advisory Comment outcome and never finalize the Review.
+- Every selected Review is processed independently. A stale or unauthorized row is reported as an item failure without rolling back successful rows.
+- Batch actions reuse the same state transitions, authorization, rejection-reason rules, and Process/Lifecycle Model metadata requirements as the corresponding single-item command.
 
 Process and Lifecycle Model Root Reviews retain their existing metadata form and metadata writeback. Contact, Source, Unit Group, Flow Property, Flow, and every Reference Review use only approve/reject actions: approve requires no opinion; reject requires a reason.
 

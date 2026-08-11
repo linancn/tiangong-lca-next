@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat-queue tests cover controls, forwarding, reset, 50-row defaults, integration mocks, and both sides of every new branch.'
 ---
 

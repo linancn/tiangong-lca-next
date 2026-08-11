@@ -66,6 +66,13 @@ export default {
   'pages.review.filters.displayMode.other': 'Andere Prüfungen',
   'pages.review.filters.dataType.label': 'Datentyp',
   'pages.review.filters.dataType.all': 'Alle Datentypen',
+  'pages.review.batch.approve': 'Auswahl genehmigen',
+  'pages.review.batch.reject': 'Auswahl ablehnen',
+  'pages.review.batch.approve.confirm': '{count} ausgewählte Prüfungen genehmigen?',
+  'pages.review.batch.reject.confirm': '{count} ausgewählte Prüfungen ablehnen',
+  'pages.review.batch.success': '{count} Prüfungen wurden erfolgreich verarbeitet.',
+  'pages.review.batch.partial': '{succeeded} erfolgreich, {failed} fehlgeschlagen.',
+  'pages.review.batch.error': 'Die ausgewählten Prüfungen konnten nicht verarbeitet werden.',
 
   'pages.review.progress.button': 'Prüfungsfortschritt',
   'pages.review.progress.editReviewer': 'Prüfende verwalten',
