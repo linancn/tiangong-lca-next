@@ -35,7 +35,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical search RPC callers remain Next-owned, preserve the existing auth/data boundary, and require the existing dev PR and Database A integration gate.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue v3 callers and their exact read-only request guard remain Next-owned, preserve existing auth/data boundaries, and require coordinated Database A delivery.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

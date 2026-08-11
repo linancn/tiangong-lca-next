@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: "2026-08-11"
 lastReviewedCommit: "07467b98423473223d84f5169415062d33eaaa15"
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical search RPC callers, request guards, data-workflow contracts, and qualification browser proof remain within the existing Next data boundary and gate ownership.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue v3 RPC callers, their exact production read-only request allowlist, and regenerated locale artifacts remain within existing data and gate boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "6499f26916c44654f3353c44900d8df8a19e0fc7811197c2b3fcba7e41cdb9b0",
+    "auditedInputDigest": "a07942bd7cf9d65cc67e06f071543de5a5a3bd3e47cb85ac895bc91c244af6c3",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -28501,7 +28501,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 979,
+          "line": 1017,
           "column": 17,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Management",
@@ -28525,7 +28525,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 979,
+              "line": 1017,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -206814,7 +206814,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 457,
+          "line": 495,
           "column": 14,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206823,7 +206823,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 577,
+          "line": 615,
           "column": 14,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206832,7 +206832,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 626,
+          "line": 664,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206841,7 +206841,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 694,
+          "line": 732,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206850,7 +206850,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 784,
+          "line": 822,
           "column": 18,
           "symbol": "AssignmentReview",
           "defaultMessage": "Actions",
@@ -206874,31 +206874,31 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 457,
+              "line": 495,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 577,
+              "line": 615,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 626,
+              "line": 664,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 694,
+              "line": 732,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 784,
+              "line": 822,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -211123,7 +211123,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 447,
+          "line": 485,
           "column": 9,
           "symbol": "subColumns",
           "defaultMessage": "Review Progress",
@@ -211132,7 +211132,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 610,
+          "line": 648,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Review Progress",
@@ -211147,13 +211147,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 447,
+              "line": 485,
               "column": 9,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 610,
+              "line": 648,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -212608,7 +212608,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 414,
+          "line": 452,
           "column": 23,
           "symbol": "status",
           "defaultMessage": "Approved",
@@ -212623,7 +212623,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 414,
+              "line": 452,
               "column": 23,
               "kind": "formatMessage"
             }
@@ -212691,7 +212691,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 430,
+          "line": 468,
           "column": 27,
           "symbol": "status",
           "defaultMessage": "In review",
@@ -212706,7 +212706,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 430,
+              "line": 468,
               "column": 27,
               "kind": "formatMessage"
             }
@@ -212774,7 +212774,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 422,
+          "line": 460,
           "column": 25,
           "symbol": "status",
           "defaultMessage": "Rejected",
@@ -212789,7 +212789,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 422,
+              "line": 460,
               "column": 25,
               "kind": "formatMessage"
             }
@@ -212857,7 +212857,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 437,
+          "line": 475,
           "column": 27,
           "symbol": "status",
           "defaultMessage": "Unassigned",
@@ -212872,7 +212872,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 437,
+              "line": 475,
               "column": 27,
               "kind": "formatMessage"
             }
@@ -212940,7 +212940,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 396,
+          "line": 434,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Data type",
@@ -212955,7 +212955,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 396,
+              "line": 434,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -213023,7 +213023,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 401,
+          "line": 439,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Data version",
@@ -213038,7 +213038,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 401,
+              "line": 439,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -213355,7 +213355,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 958,
+          "line": 996,
           "column": 21,
           "symbol": "AssignmentReview",
           "defaultMessage": "Failed to load referenced reviews. Reselect the root review to retry.",
@@ -213370,7 +213370,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 958,
+              "line": 996,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -213438,7 +213438,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 950,
+          "line": 988,
           "column": 21,
           "symbol": "AssignmentReview",
           "defaultMessage": "Loading referenced reviews...",
@@ -213453,7 +213453,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 950,
+              "line": 988,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -213533,7 +213533,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 939,
+          "line": 977,
           "column": 19,
           "symbol": "AssignmentReview",
           "defaultMessage": "Selected {rootCount} root reviews and {referenceCount} reference reviews",
@@ -213551,7 +213551,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 939,
+              "line": 977,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -214396,7 +214396,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 566,
+          "line": 604,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "Submitted at",
@@ -214411,7 +214411,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 566,
+              "line": 604,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -214479,7 +214479,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 384,
+          "line": 422,
           "column": 9,
           "symbol": "subColumns",
           "defaultMessage": "Data name",
@@ -214488,7 +214488,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 530,
+          "line": 568,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "Data name",
@@ -214503,13 +214503,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 384,
+              "line": 422,
               "column": 9,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 530,
+              "line": 568,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -214577,7 +214577,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 601,
+          "line": 639,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214586,7 +214586,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 686,
+          "line": 724,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214595,7 +214595,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 776,
+          "line": 814,
           "column": 13,
           "symbol": "AssignmentReview",
           "defaultMessage": "Deadline",
@@ -214610,19 +214610,19 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 601,
+              "line": 639,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 686,
+              "line": 724,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 776,
+              "line": 814,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -214867,7 +214867,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 550,
+          "line": 588,
           "column": 9,
           "symbol": "columns",
           "defaultMessage": "User Name",
@@ -214882,7 +214882,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 550,
+              "line": 588,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -215140,7 +215140,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 406,
+          "line": 444,
           "column": 14,
           "symbol": "subColumns",
           "defaultMessage": "Status",
@@ -215161,7 +215161,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 406,
+              "line": 444,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -215705,7 +215705,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 829,
+          "line": 867,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Assigned Task",
@@ -215729,7 +215729,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 829,
+              "line": 867,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -215889,7 +215889,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 833,
+          "line": 871,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Pending Review",
@@ -215913,7 +215913,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 833,
+              "line": 871,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -215981,7 +215981,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 835,
+          "line": 873,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected",
@@ -216005,7 +216005,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 835,
+              "line": 873,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -216073,7 +216073,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 838,
+          "line": 876,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Rejected Task",
@@ -216097,7 +216097,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 838,
+              "line": 876,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -216165,7 +216165,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 831,
+          "line": 869,
           "column": 16,
           "symbol": "getSubTitle",
           "defaultMessage": "Reviewed",
@@ -216189,7 +216189,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 831,
+              "line": 869,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -216257,7 +216257,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 826,
+          "line": 864,
           "column": 11,
           "symbol": "getSubTitle",
           "defaultMessage": "Unassigned Task",
@@ -216281,7 +216281,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 826,
+              "line": 864,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -218047,7 +218047,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 880,
+          "line": 918,
           "column": 30,
           "symbol": "AssignmentReview",
           "defaultMessage": null,
@@ -219202,7 +219202,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 115,
+          "line": 120,
           "column": 5,
           "symbol": "defaultTableAlertOptionRender",
           "defaultMessage": "Clear selection",
@@ -219313,7 +219313,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 115,
+              "line": 120,
               "column": 5,
               "kind": "FormattedMessage"
             },
@@ -230002,7 +230002,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/AssignmentReview.tsx",
-          "line": 523,
+          "line": 561,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Index",
@@ -230227,7 +230227,7 @@
             },
             {
               "path": "src/pages/Review/Components/AssignmentReview.tsx",
-              "line": 523,
+              "line": 561,
               "column": 14,
               "kind": "FormattedMessage"
             },

@@ -29,7 +29,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: formal lexical caller coverage adds risk-proportional service, data-workflow, request-guard, and qualification browser proof without changing the maintenance strategy.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue behavior, v3 request-guard coverage, and regenerated locale contracts fit the existing risk-proportional maintenance strategy.'
 ---
 
 # Testing Strategy

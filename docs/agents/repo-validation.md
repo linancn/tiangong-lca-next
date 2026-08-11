@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: seven formal lexical callers use focused service/data-workflow proof, production request guards, qualification browser E2E, lint, TypeScript, and build.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue v3 callers require focused list/service proof, exact production read-only request guards, deterministic locale artifacts, and the existing full gate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

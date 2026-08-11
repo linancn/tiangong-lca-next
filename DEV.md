@@ -31,7 +31,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: Node 24, focused service/data-workflow Jest, qualification browser E2E, TypeScript, build, and managed-push workflow remain the applicable delivery path.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Node 24, focused flat-list and request-guard Jest, deterministic locale artifacts, TypeScript, build, and the managed full gate remain the delivery path.'
 ---
 
 # Development Bootstrap
