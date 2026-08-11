@@ -607,6 +607,18 @@ describe('AssignmentReview', () => {
       ),
     );
 
+    await userEvent.selectOptions(dataTypeSelect, 'all');
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
+        { pageSize: 50, current: 1 },
+        {},
+        'unassigned',
+        'en',
+        { displayMode: 'model_process' },
+      ),
+    );
+    await userEvent.selectOptions(dataTypeSelect, 'processes');
+
     await userEvent.selectOptions(displayModeSelect, 'other');
     await waitFor(() =>
       expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
@@ -1267,6 +1279,18 @@ describe('AssignmentReview', () => {
     );
     expect(screen.getAllByTestId('review-process-detail')[1]).toHaveTextContent(
       'view:review:review-2:hide',
+    );
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Display mode' }), 'other');
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewMember).toHaveBeenLastCalledWith(
+        { pageSize: 50, current: 1 },
+        {},
+        'pending',
+        'en',
+        { user_id: 'member-1' },
+        { displayMode: 'other' },
+      ),
     );
   });
 

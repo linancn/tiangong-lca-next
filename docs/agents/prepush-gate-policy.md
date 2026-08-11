@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review-filter tests and regenerated locale artifacts continue through the unchanged checked-push and full-gate policy.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review-filter unit/integration tests close all AssignmentReview branches and continue through the unchanged checked-push policy.'
 ---
 
 # Pre-Push Gate Policy

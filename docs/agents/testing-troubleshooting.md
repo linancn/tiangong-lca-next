@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: regenerate canonical locale artifacts after review-filter message changes before rerunning the managed full gate.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: keep integration mocks aligned and exercise both all/type and Admin/Member filter branches before rerunning the strict 100% coverage gate.'
 ---
 
 # Testing Troubleshooting

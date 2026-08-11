@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: focused flat-queue contracts cover mode/type compatibility, server forwarding, reset behavior, 50-row defaults, and canonical locale artifacts.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat-queue tests cover controls, forwarding, reset, 50-row defaults, integration mocks, and both sides of every new branch.'
 ---
 
 # Testing Patterns Reference
