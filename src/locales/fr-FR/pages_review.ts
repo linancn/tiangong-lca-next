@@ -66,6 +66,13 @@ export default {
   'pages.review.filters.displayMode.other': 'Autres évaluations',
   'pages.review.filters.dataType.label': 'Type de données',
   'pages.review.filters.dataType.all': 'Tous les types de données',
+  'pages.review.batch.approve': 'Approuver la sélection',
+  'pages.review.batch.reject': 'Rejeter la sélection',
+  'pages.review.batch.approve.confirm': 'Approuver les {count} revues sélectionnées ?',
+  'pages.review.batch.reject.confirm': 'Rejeter les {count} revues sélectionnées',
+  'pages.review.batch.success': '{count} revues ont été traitées avec succès.',
+  'pages.review.batch.partial': '{succeeded} réussies et {failed} échouées.',
+  'pages.review.batch.error': 'Impossible de traiter les revues sélectionnées.',
 
   'pages.review.progress.button': 'Avancement de la revue',
   'pages.review.progress.editReviewer': "Modifier l'évaluateur",

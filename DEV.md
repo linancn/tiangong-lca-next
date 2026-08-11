@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Node 24, deterministic artifacts, 100%-branch-covered review tests, TypeScript, build, and managed checked-push remain the delivery path.'
 ---
 

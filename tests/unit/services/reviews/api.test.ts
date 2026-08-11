@@ -1225,6 +1225,28 @@ describe('review workflow command wrappers', () => {
     expect(approve).toEqual(approveResult);
     expect(reject).toEqual(rejectResult);
   });
+
+  it('keeps admin finalization and reviewer opinions on separate batch endpoints', async () => {
+    const commandResult = { data: { ok: true }, error: null };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    await reviewsApi.submitAdminReviewBatchDecision(
+      ['review-1', 'review-1', 'review-2'],
+      'reject',
+      '  Needs fixes  ',
+    );
+    await reviewsApi.submitReviewerBatchDecision(['review-3'], 'approve');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_batch_decision', {
+      reviewIds: ['review-1', 'review-2'],
+      decision: 'reject',
+      reason: 'Needs fixes',
+    });
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'app_review_batch_decision', {
+      reviewIds: ['review-3'],
+      decision: 'approve',
+    });
+  });
 });
 
 describe('updateReviewApi', () => {

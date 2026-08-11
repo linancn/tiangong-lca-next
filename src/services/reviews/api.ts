@@ -144,6 +144,26 @@ type ReviewWorkflowCommandFunctionName =
   | 'admin_review_approve'
   | 'admin_review_reject';
 
+export type ReviewBatchDecision = 'approve' | 'reject';
+
+export type ReviewBatchDecisionResult = {
+  ok: boolean;
+  command: 'admin_review_batch_decision' | 'reviewer_review_batch_decision';
+  batchId: string;
+  summary: {
+    total: number;
+    succeeded: number;
+    failed: number;
+  };
+  results: Array<{
+    reviewId: string;
+    ok: boolean;
+    code?: string;
+    message?: string;
+    status?: number;
+  }>;
+};
+
 const STABLE_HASH_KEY_ENCODER = new TextEncoder();
 
 type DataNotificationRpcRow = {
@@ -732,6 +752,35 @@ export async function rejectReviewApi<
     table,
     reason,
   });
+}
+
+async function submitReviewBatchDecision(
+  functionName: 'admin_review_batch_decision' | 'app_review_batch_decision',
+  reviewIds: React.Key[],
+  decision: ReviewBatchDecision,
+  reason?: string,
+) {
+  return invokeDatasetCommand<ReviewBatchDecisionResult>(functionName as never, {
+    reviewIds: Array.from(new Set(reviewIds.map(String))),
+    decision,
+    ...(decision === 'reject' ? { reason: reason?.trim() } : {}),
+  });
+}
+
+export async function submitAdminReviewBatchDecision(
+  reviewIds: React.Key[],
+  decision: ReviewBatchDecision,
+  reason?: string,
+) {
+  return submitReviewBatchDecision('admin_review_batch_decision', reviewIds, decision, reason);
+}
+
+export async function submitReviewerBatchDecision(
+  reviewIds: React.Key[],
+  decision: ReviewBatchDecision,
+  reason?: string,
+) {
+  return submitReviewBatchDecision('app_review_batch_decision', reviewIds, decision, reason);
 }
 
 export async function updateReviewApi(reviewIds: React.Key[], data: any) {

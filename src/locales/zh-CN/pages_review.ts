@@ -65,6 +65,13 @@ export default {
   'pages.review.filters.displayMode.other': '其他类型审核',
   'pages.review.filters.dataType.label': '数据类型',
   'pages.review.filters.dataType.all': '全部数据类型',
+  'pages.review.batch.approve': '批量通过',
+  'pages.review.batch.reject': '批量驳回',
+  'pages.review.batch.approve.confirm': '确定通过已选择的 {count} 个审核任务吗？',
+  'pages.review.batch.reject.confirm': '驳回已选择的 {count} 个审核任务',
+  'pages.review.batch.success': '已成功处理 {count} 个审核任务。',
+  'pages.review.batch.partial': '成功 {succeeded} 个，失败 {failed} 个。',
+  'pages.review.batch.error': '无法处理已选择的审核任务。',
 
   'pages.review.progress.button': '审核进度',
   'pages.review.progress.editReviewer': '编辑审核员',

@@ -66,6 +66,13 @@ export default {
   'pages.review.filters.displayMode.other': 'Other reviews',
   'pages.review.filters.dataType.label': 'Data type',
   'pages.review.filters.dataType.all': 'All data types',
+  'pages.review.batch.approve': 'Batch approve',
+  'pages.review.batch.reject': 'Batch reject',
+  'pages.review.batch.approve.confirm': 'Approve {count} selected reviews?',
+  'pages.review.batch.reject.confirm': 'Reject {count} selected reviews',
+  'pages.review.batch.success': '{count} reviews processed successfully.',
+  'pages.review.batch.partial': '{succeeded} succeeded and {failed} failed.',
+  'pages.review.batch.error': 'Unable to process the selected reviews.',
 
   'pages.review.progress.button': 'Review Progress',
   'pages.review.progress.editReviewer': 'Edit Reviewer',

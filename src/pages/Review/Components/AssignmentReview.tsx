@@ -27,6 +27,7 @@ import { Card, Col, Input, Row, Select, Space, Spin, Table, Tag, theme } from 'a
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
+import BatchReviewActions from './BatchReviewActions';
 import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
@@ -152,6 +153,7 @@ const AssignmentReview = ({
 
   const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
     isReferenceMatchingReviewTab(record, tableType);
+  const supportsBatchSelection = ['unassigned', 'assigned', 'pending'].includes(tableType);
 
   const renderDatasetViewButton = (
     targetTable: ReviewSubmitDatasetTable | undefined,
@@ -1073,7 +1075,7 @@ const AssignmentReview = ({
                 pagination={false}
                 rowKey='reference_review_id'
                 rowSelection={
-                  tableType === 'unassigned'
+                  supportsBatchSelection
                     ? {
                         selectedRowKeys: (subTableData[record.id] ?? [])
                           .map((item) => item.reference_review_id)
@@ -1114,7 +1116,7 @@ const AssignmentReview = ({
               />
             </Space>
           );
-          if (selectedReviewIds.length > 0 && tableType === 'unassigned') {
+          if (selectedReviewIds.length > 0 && supportsBatchSelection) {
             return [
               filterControls,
               <Space key='batch-assignment-selection'>
@@ -1144,11 +1146,22 @@ const AssignmentReview = ({
                     />
                   </span>
                 )}
-                <SelectReviewer
-                  tabType='unassigned'
-                  actionRef={actionRef}
+                {tableType === 'unassigned' && (
+                  <SelectReviewer
+                    tabType='unassigned'
+                    actionRef={actionRef}
+                    reviewIds={selectedReviewIds}
+                    disabled={
+                      selectionLoadingRootIds.length > 0 || selectionFailedRootIds.length > 0
+                    }
+                  />
+                )}
+                <BatchReviewActions
+                  role={tableType === 'pending' ? 'reviewer' : 'admin'}
                   reviewIds={selectedReviewIds}
+                  allowApprove={tableType === 'assigned' || tableType === 'pending'}
                   disabled={selectionLoadingRootIds.length > 0 || selectionFailedRootIds.length > 0}
+                  onFinished={reloadAfterChildAction}
                 />
               </Space>,
             ];
@@ -1201,7 +1214,7 @@ const AssignmentReview = ({
         actionRef={actionRef}
         tableAlertOptionRender={tableAlertOptionRender}
         rowSelection={
-          tableType === 'unassigned'
+          supportsBatchSelection
             ? {
                 selectedRowKeys: selectedReviewIds,
                 preserveSelectedRowKeys: true,

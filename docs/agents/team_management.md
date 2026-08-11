@@ -20,7 +20,7 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-08-11
-lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: review display/type filters and the 50-row default do not change team roles, review authority, or membership-constrained visibility.'
 ---
 
