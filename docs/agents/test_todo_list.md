@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: AssignmentReview returns to 100% statements, branches, functions, and lines without opening a repository-wide coverage queue.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: AssignmentReview remains at 100% and its final formatted checkpoint now has matching canonical locale artifacts.'
 ---
 
 # Testing Execution State

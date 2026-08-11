@@ -35,7 +35,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat review queue v3 callers and full AssignmentReview branch closure remain Next-owned, preserve auth/data boundaries, and require coordinated Database A delivery.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: the final post-format canonical artifact checkpoint remains Next-owned, preserves flat-queue auth/data boundaries, and requires coordinated Database A delivery.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

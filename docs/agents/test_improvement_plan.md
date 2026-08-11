@@ -29,7 +29,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-11
 lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: flat queue behavior, v3 request guards, regenerated locale contracts, and complete component branch closure fit the maintenance strategy.'
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: post-format locale contract regeneration for complete flat-queue branch closure fits the existing maintenance strategy.'
 ---
 
 # Testing Strategy
