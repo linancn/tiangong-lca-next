@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: review-toolbar unit coverage continues through the unchanged Docpact-first and full-gate-last checked-push policy.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: ed9cd67c29e882aad01f2606bad5fcfca0689059
+lastReviewedNote: 'Reviewed for Next Issue #813: search-mode page and service coverage continues through the unchanged Docpact-first and full-gate-last checked-push policy.'
 ---
 
 # Pre-Push Gate Policy

@@ -24,6 +24,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetContactTableAll = jest.fn();
 const mockGetContactTablePgroongaSearch = jest.fn();
+const mockContactHybridSearch = jest.fn();
 const mockGetContactTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
@@ -55,7 +56,8 @@ jest.mock('umi', () => ({
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   getContactTableAll: (...args: any[]) => mockGetContactTableAll(...args),
-  contact_hybrid_search: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
+  getContactTablePgroongaSearch: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
+  contact_hybrid_search: (...args: any[]) => mockContactHybridSearch(...args),
   getContactTableUuidMentionSearch: (...args: any[]) =>
     mockGetContactTableUuidMentionSearch(...args),
 }));
@@ -234,8 +236,7 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ title, children }: any) => <div title={toText(title)}>{children}</div>;
 
-  const Checkbox = ({ children, onChange }: any) => {
-    const [checked, setChecked] = React.useState(false);
+  const Checkbox = ({ checked = false, children, onChange }: any) => {
     return (
       <label>
         <input
@@ -244,7 +245,6 @@ jest.mock('antd', () => {
           type='checkbox'
           onChange={() => {
             const next = !checked;
-            setChecked(next);
             onChange?.({ target: { checked: next } });
           }}
         />
@@ -396,6 +396,7 @@ describe('ContactsPage', () => {
     });
     mockGetContactTableAll.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
+    mockContactHybridSearch.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
   });
@@ -432,6 +433,7 @@ describe('ContactsPage', () => {
     expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
     expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
     expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
+    expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /close-contact-edit/i }));
@@ -526,6 +528,64 @@ describe('ContactsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        'all',
+        '',
+      ),
+    );
+  });
+
+  it('routes smart search to hybrid search and keeps search modes mutually exclusive', async () => {
+    renderWithProviders(<ContactsPage />);
+
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    await userEvent.click(smartSearch);
+
+    expect(smartSearch).toBeChecked();
+    expect(referenceSearch).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockContactHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        'all',
+        'team-1',
+      ),
+    );
+    expect(mockGetContactTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(smartSearch);
+    expect(smartSearch).not.toBeChecked();
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    expect(smartSearch).not.toBeChecked();
+    expect(referenceSearch).toBeChecked();
+    await userEvent.click(referenceSearch);
+    expect(referenceSearch).not.toBeChecked();
+  });
+
+  it('uses an empty team id for smart search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/contacts', search: '' };
+    renderWithProviders(<ContactsPage />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() =>
+      expect(mockContactHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',

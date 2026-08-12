@@ -11,12 +11,12 @@
  * 2. Owner creates a contact via ContactCreate drawer, observes success toast and table reload.
  * 3. Owner edits the newly created contact, sees success feedback and refreshed list.
  * 4. Owner deletes the edited contact, verifying success toast and refreshed list.
- * 5. Owner searches contacts, triggering contact_hybrid_search and rendering search results.
+ * 5. Owner searches contacts, triggering the Pgroonga keyword search and rendering search results.
  * 6. Open-data users land on /tgdata contacts and only see the read-only source matrix.
  *
  * Services mocked:
  * - getContactTableAll
- * - contact_hybrid_search
+ * - getContactTablePgroongaSearch, contact_hybrid_search
  * - createContact
  * - updateContact
  * - deleteContact
@@ -209,6 +209,7 @@ jest.mock('@/pages/Contacts/Components/form', () => {
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   getContactTableAll: jest.fn(),
+  getContactTablePgroongaSearch: jest.fn(),
   contact_hybrid_search: jest.fn(),
   createContact: jest.fn(),
   updateContact: jest.fn(),
@@ -218,6 +219,7 @@ jest.mock('@/services/contacts/api', () => ({
 
 const {
   getContactTableAll: mockGetContactTableAll,
+  getContactTablePgroongaSearch: mockGetContactTablePgroongaSearch,
   contact_hybrid_search: mockContactHybridSearch,
   createContact: mockCreateContact,
   updateContact: mockUpdateContact,
@@ -347,6 +349,9 @@ describe('Contacts workflow', () => {
       .mockResolvedValueOnce(createMockTableResponse([existingContact, updatedContact], 2, 1))
       .mockResolvedValue(createMockTableResponse([existingContact], 1, 1));
 
+    mockGetContactTablePgroongaSearch.mockResolvedValue(
+      createMockTableResponse([searchContact], 1, 1),
+    );
     mockContactHybridSearch.mockResolvedValue(createMockTableResponse([searchContact], 1, 1));
 
     mockCreateContact.mockResolvedValue({ data: [{ id: createdContact.id }] });
@@ -493,9 +498,11 @@ describe('Contacts workflow', () => {
     await user.type(searchInput, 'Search Contact');
     await user.click(within(searchContainer).getByRole('button', { name: 'Search' }));
 
-    await waitFor(() => expect(mockContactHybridSearch).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetContactTablePgroongaSearch).toHaveBeenCalled());
     const lastSearchCall =
-      mockContactHybridSearch.mock.calls[mockContactHybridSearch.mock.calls.length - 1];
+      mockGetContactTablePgroongaSearch.mock.calls[
+        mockGetContactTablePgroongaSearch.mock.calls.length - 1
+      ];
     expect(lastSearchCall).toEqual([
       expect.objectContaining({ current: 1, pageSize: 10 }),
       'en',
@@ -505,6 +512,7 @@ describe('Contacts workflow', () => {
       'all',
       '',
     ]);
+    expect(mockContactHybridSearch).not.toHaveBeenCalled();
 
     await waitFor(() => expect(screen.getByText('Search Result Contact')).toBeInTheDocument());
   });

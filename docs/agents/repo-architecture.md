@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: selection summaries, icon spacing, action-column rings, and fixed filter widths remain presentation details inside the existing unified Root/Reference Review UI.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: normal, smart, and reference search routing remains inside the existing page-to-service frontend boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

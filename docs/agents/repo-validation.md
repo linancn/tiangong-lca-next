@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: focused AssignmentReview and BatchReviewActions proof plus the unchanged managed pre-push gate remain the correct validation path for toolbar-only UI refinements.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: ed9cd67c29e882aad01f2606bad5fcfca0689059
+lastReviewedNote: 'Reviewed for Next Issue #813: the existing hybrid-search page, service, picker, locale, request-guard, lint, and build proof remains the correct validation path.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
