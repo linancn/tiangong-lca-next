@@ -11,12 +11,12 @@
  * 2. Owner creates a source via SourceCreate drawer, observes success toast and table reload.
  * 3. Owner edits the created source via SourceEdit drawer, sees success feedback and refreshed list.
  * 4. Owner deletes the updated source via SourceDelete modal, verifying success toast and refreshed list.
- * 5. Owner searches sources, triggering source_hybrid_search and rendering search results.
+ * 5. Owner searches sources, triggering the Pgroonga keyword search and rendering search results.
  * 6. Open-data users land on /tgdata sources and only see the read-only source matrix.
  *
  * Services mocked:
  * - getSourceTableAll
- * - source_hybrid_search
+ * - getSourceTablePgroongaSearch, source_hybrid_search
  * - createSource
  * - updateSource
  * - deleteSource
@@ -238,6 +238,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
 jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: jest.fn(),
+  getSourceTablePgroongaSearch: jest.fn(),
   source_hybrid_search: jest.fn(),
   createSource: jest.fn(),
   updateSource: jest.fn(),
@@ -247,6 +248,7 @@ jest.mock('@/services/sources/api', () => ({
 
 const {
   getSourceTableAll: mockGetSourceTableAll,
+  getSourceTablePgroongaSearch: mockGetSourceTablePgroongaSearch,
   source_hybrid_search: mockSourceHybridSearch,
   createSource: mockCreateSource,
   updateSource: mockUpdateSource,
@@ -451,6 +453,9 @@ describe('Sources workflow', () => {
       .mockResolvedValueOnce(createMockTableResponse([existingSource, updatedSource], 2, 1))
       .mockResolvedValue(createMockTableResponse([existingSource], 1, 1));
 
+    mockGetSourceTablePgroongaSearch.mockResolvedValue(
+      createMockTableResponse([searchSource], 1, 1),
+    );
     mockSourceHybridSearch.mockResolvedValue(createMockTableResponse([searchSource], 1, 1));
     mockCreateSource.mockResolvedValue({ data: [{ id: createdSource.id }] });
     mockUpdateSource.mockResolvedValue({ data: [{ rule_verification: true }] });
@@ -631,9 +636,11 @@ describe('Sources workflow', () => {
     await user.type(searchInput, 'Search Source');
     await user.click(within(searchContainer).getByRole('button', { name: 'Search' }));
 
-    await waitFor(() => expect(mockSourceHybridSearch).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalled());
     const lastSearchCall =
-      mockSourceHybridSearch.mock.calls[mockSourceHybridSearch.mock.calls.length - 1];
+      mockGetSourceTablePgroongaSearch.mock.calls[
+        mockGetSourceTablePgroongaSearch.mock.calls.length - 1
+      ];
     expect(lastSearchCall).toEqual([
       expect.objectContaining({ current: 1, pageSize: 10 }),
       'en',
@@ -643,6 +650,7 @@ describe('Sources workflow', () => {
       'all',
       '',
     ]);
+    expect(mockSourceHybridSearch).not.toHaveBeenCalled();
 
     await waitFor(() => expect(screen.getByText('Search Result Source')).toBeInTheDocument());
   });

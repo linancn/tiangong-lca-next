@@ -2,12 +2,12 @@
  * Unitgroups role-gated workflow integration test.
  * Covers src/pages/Unitgroups/index.tsx with focus on:
  * - Initial table load via getUnitGroupTableAll.
- * - Search behaviour delegating to unitgroup_hybrid_search.
+ * - Normal search behaviour delegating to Pgroonga keyword search.
  * - System admins can create/import/edit while destructive My Data actions remain closed.
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
- * - getUnitGroupTableAll, unitgroup_hybrid_search
+ * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch, unitgroup_hybrid_search
  * Ancillary mocks:
  * - getRoleByUserId (ensures admin access), getTeamById, contributeSource
  */
@@ -265,6 +265,7 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: jest.fn(),
+  getUnitGroupTablePgroongaSearch: jest.fn(),
   unitgroup_hybrid_search: jest.fn(),
   createUnitGroup: jest.fn(),
   updateUnitGroup: jest.fn(),
@@ -319,9 +320,8 @@ jest.mock('@ant-design/pro-components', () => {
   return { ...proComponents, ProTable };
 });
 
-const { getUnitGroupTableAll, unitgroup_hybrid_search } = jest.requireMock(
-  '@/services/unitgroups/api',
-);
+const { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch, unitgroup_hybrid_search } =
+  jest.requireMock('@/services/unitgroups/api');
 const { genUnitGroupFromData: mockGenUnitGroupFromData } = jest.requireMock(
   '@/services/unitgroups/util',
 );
@@ -347,7 +347,7 @@ describe('Unitgroups Workflow Integration', () => {
       success: true,
       total: 1,
     });
-    unitgroup_hybrid_search.mockResolvedValue({
+    getUnitGroupTablePgroongaSearch.mockResolvedValue({
       data: [
         {
           ...baseUnitGroupRow,
@@ -402,7 +402,7 @@ describe('Unitgroups Workflow Integration', () => {
     await user.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
-      expect(unitgroup_hybrid_search).toHaveBeenCalled();
+      expect(getUnitGroupTablePgroongaSearch).toHaveBeenCalled();
     });
     await waitFor(() => {
       expect(screen.getByText('Heat units')).toBeInTheDocument();
@@ -421,7 +421,7 @@ describe('Unitgroups Workflow Integration', () => {
 
     await user.selectOptions(screen.getByLabelText('state-filter'), '100');
     await waitFor(() => {
-      expect(unitgroup_hybrid_search).toHaveBeenLastCalledWith(
+      expect(getUnitGroupTablePgroongaSearch).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',
@@ -431,6 +431,7 @@ describe('Unitgroups Workflow Integration', () => {
         '',
       );
     });
+    expect(unitgroup_hybrid_search).not.toHaveBeenCalled();
   });
 
   it('uses the open-data route matrix for tgdata unit groups', async () => {
