@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-12
-lastReviewedCommit: 3083a1951d55c991fe239602025be19335022ea3
+lastReviewedCommit: ed9cd67c29e882aad01f2606bad5fcfca0689059
 lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing does not change repository ownership, service boundaries, branch policy, or delivery rules.'
 related:
   - .docpact/config.yaml

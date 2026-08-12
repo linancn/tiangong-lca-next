@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-12
-lastReviewedCommit: 3083a1951d55c991fe239602025be19335022ea3
+lastReviewedCommit: ed9cd67c29e882aad01f2606bad5fcfca0689059
 lastReviewedNote: 'Reviewed for Next Issue #813: no new troubleshooting path is required; search-mode regressions remain covered by focused serial tests before the managed full gate.'
 ---
 

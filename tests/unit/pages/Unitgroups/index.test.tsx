@@ -645,9 +645,35 @@ describe('UnitgroupsPage', () => {
     );
     expect(mockGetUnitGroupTablePgroongaSearch).not.toHaveBeenCalled();
 
+    await userEvent.click(smartSearch);
+    expect(smartSearch).not.toBeChecked();
+    await userEvent.click(smartSearch);
     await userEvent.click(referenceSearch);
     expect(smartSearch).not.toBeChecked();
     expect(referenceSearch).toBeChecked();
+    await userEvent.click(referenceSearch);
+    expect(referenceSearch).not.toBeChecked();
+  });
+
+  it('uses an empty team id for smart search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/unitgroups', search: '' };
+    mockGetRoleByUserId.mockResolvedValue([]);
+    renderWithProviders(<UnitgroupsPage />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() =>
+      expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'density',
+        {},
+        'all',
+        '',
+      ),
+    );
   });
 
   it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
