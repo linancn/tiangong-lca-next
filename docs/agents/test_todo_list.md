@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: the added review-toolbar presentation assertions preserve full closure and create no active coverage queue.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: the added three-mode routing assertions preserve full closure and create no active coverage queue.'
 ---
 
 # Testing Execution State

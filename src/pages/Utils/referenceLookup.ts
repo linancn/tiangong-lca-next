@@ -1,6 +1,8 @@
 import { normalizeDatasetUuidSearchQuery } from '@/services/datasetUuidMentionSearch/api';
 import { message } from 'antd';
 
+export type DatasetSearchMode = 'normal' | 'smart' | 'reference';
+
 type IntlLike = {
   formatMessage: (descriptor: { defaultMessage?: string; id: string }) => string;
 };

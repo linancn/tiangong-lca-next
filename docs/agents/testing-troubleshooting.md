@@ -27,9 +27,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: no new troubleshooting path is required; toolbar regressions remain covered by focused serial component tests before the managed full gate.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: no new troubleshooting path is required; search-mode regressions remain covered by focused serial tests before the managed full gate.'
 ---
 
 # Testing Troubleshooting

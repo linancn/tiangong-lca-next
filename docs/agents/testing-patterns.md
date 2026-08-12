@@ -30,9 +30,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: existing component-mock and behavior-assertion patterns cover toolbar icons, spacing, selection summaries, and fixed localized filter labels.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: existing controlled-component mocks and behavior assertions cover search-mode routing, prompts, and mutual exclusion.'
 ---
 
 # Testing Patterns Reference

@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: toolbar-only review UI changes preserve the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing preserves the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
 ---
 
 # Development Bootstrap

@@ -33,6 +33,7 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockUnitGroupHybridSearch = jest.fn();
 const mockGetUnitGroupTableUuidMentionSearch = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
 const mockIsDataUnderReview = jest.fn((stateCode: number | undefined) => stateCode === 20);
@@ -74,7 +75,8 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
-  unitgroup_hybrid_search: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  unitgroup_hybrid_search: (...args: any[]) => mockUnitGroupHybridSearch(...args),
   getUnitGroupTableUuidMentionSearch: (...args: any[]) =>
     mockGetUnitGroupTableUuidMentionSearch(...args),
 }));
@@ -248,8 +250,7 @@ jest.mock('antd', () => {
     return <div title={label}>{children}</div>;
   };
 
-  const Checkbox = ({ children, onChange }: any) => {
-    const [checked, setChecked] = React.useState(false);
+  const Checkbox = ({ checked = false, children, onChange }: any) => {
     return (
       <label>
         <input
@@ -258,7 +259,6 @@ jest.mock('antd', () => {
           type='checkbox'
           onChange={() => {
             const next = !checked;
-            setChecked(next);
             onChange?.({ target: { checked: next } });
           }}
         />
@@ -463,6 +463,21 @@ describe('UnitgroupsPage', () => {
       ],
       success: true,
     });
+    mockUnitGroupHybridSearch.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-1',
+          version: '1.0.0',
+          name: 'Length units',
+          refUnitName: 'm2',
+          refUnitGeneralComment: 'Area unit',
+          classification: 'Physical',
+          modifiedAt: '2024-01-01',
+          teamId: '',
+        },
+      ],
+      success: true,
+    });
     mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
       data: [],
       success: true,
@@ -529,6 +544,7 @@ describe('UnitgroupsPage', () => {
       'all',
     );
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
     await waitFor(() =>
@@ -598,6 +614,40 @@ describe('UnitgroupsPage', () => {
 
     expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":true');
     expect(mockIsDataUnderReview).toHaveBeenCalledWith(20);
+  });
+
+  it('routes smart search to hybrid search and keeps search modes mutually exclusive', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+    renderWithProviders(<UnitgroupsPage />);
+
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    await userEvent.click(smartSearch);
+
+    expect(smartSearch).toBeChecked();
+    expect(referenceSearch).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'density',
+        {},
+        'all',
+        'team-1',
+      ),
+    );
+    expect(mockGetUnitGroupTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    expect(smartSearch).not.toBeChecked();
+    expect(referenceSearch).toBeChecked();
   });
 
   it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
