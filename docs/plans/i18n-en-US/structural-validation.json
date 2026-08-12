@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "080859aeb4d45b26df1cc45e87a010ed0360e3c40de1f45b80867a1aa2168a45",
+    "auditedInputDigest": "1657b2b1efa3385624a8ec837f40e2f0650b79ae2986865593fed797741d494f",
     "validatedMessageCount": 3114,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1390,
     "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
     "catalogDigest": "aa8b61be8b056c7640170905371ff7564d95a4b3c11b2dd6dfbb0c43faf71a29",
-    "dossierDigest": "c0ebcceb1366f775242128d9ff02b8b9b433cad1d0740a8975d2b5db743d62d3",
+    "dossierDigest": "89f239cc6278c116368b1436aebcf40fcb81850cd75da12382421f161cd918b9",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "9a8bd81d545e15cd030fc875b986073d3b48ef980af1635b8e7fa94931ec44f3",
+    "routeEvidenceDigest": "93fca76f00af6525e016ce6d3cd9b15284393aaf052d2da526f58d7430af210d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "7e7b1cc9be2d7f7c8b74f069bddc34a36f242da8b1e5626f00a289473cc58ef2",
         "highRiskMessageCount": 1390,
         "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
-        "dossierDigest": "c0ebcceb1366f775242128d9ff02b8b9b433cad1d0740a8975d2b5db743d62d3",
+        "dossierDigest": "89f239cc6278c116368b1436aebcf40fcb81850cd75da12382421f161cd918b9",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "e769c34db641a0bb6ba561d13856ac22406b2a1fd45fbde924114bd12a241e31"
+  "validationDigest": "f42ed38ee28e078b44a5b5fab514fce7f95a164b7c862492097690f7d19b08a2"
 }

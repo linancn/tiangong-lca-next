@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "080859aeb4d45b26df1cc45e87a010ed0360e3c40de1f45b80867a1aa2168a45",
+    "auditedInputDigest": "1657b2b1efa3385624a8ec837f40e2f0650b79ae2986865593fed797741d494f",
     "validatedMessageCount": 3114,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1390,
     "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
     "catalogDigest": "ff6938d40f9eaf1179a1deae1da9474d2bc42478773be577c9fe4b97b98afd88",
-    "dossierDigest": "d3b7a085387db948900bb12b4f1ae604c3de6a354f198cb5310b4ee7191add28",
+    "dossierDigest": "e63b05251405c364a3a5d2907473c95194863109c0477738494639b5c52b6a7e",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "9a8bd81d545e15cd030fc875b986073d3b48ef980af1635b8e7fa94931ec44f3",
+    "routeEvidenceDigest": "93fca76f00af6525e016ce6d3cd9b15284393aaf052d2da526f58d7430af210d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "7e7b1cc9be2d7f7c8b74f069bddc34a36f242da8b1e5626f00a289473cc58ef2",
         "highRiskMessageCount": 1390,
         "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0",
-        "dossierDigest": "d3b7a085387db948900bb12b4f1ae604c3de6a354f198cb5310b4ee7191add28",
+        "dossierDigest": "e63b05251405c364a3a5d2907473c95194863109c0477738494639b5c52b6a7e",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "1665f5915dd329055514454540afa809bb2c6f7f9186056137fe2b6da64ee503"
+  "validationDigest": "c24bed4cf240c699d20894c3ee1d33e386b16c0f183f9d4d599f6f1568f38fd0"
 }
