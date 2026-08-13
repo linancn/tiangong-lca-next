@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: the strategy removes exact duplicate execution and bounds a two-worker pool at 512MB without weakening full closure.'
+lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedNote: 'Reviewed for Next Issue #828: adding behavior-level tests for real calculation branches preserves the existing full-closure strategy.'
 ---
 
 # Testing Strategy

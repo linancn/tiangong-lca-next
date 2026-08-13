@@ -472,6 +472,7 @@ describe('DataProcessing page', () => {
     expect(parseImpactCategoryOptionLabel('Legacy label without metadata')).toEqual({
       name: 'Legacy label without metadata',
     });
+    expect(selectedImpactCategoryIdentity(null, [])).toBeNull();
     expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
     expect(reviewedLciaMethodSet(buildImpactCategoryOptions(mockLciaMethodList, 'en-US'))).toEqual(
       expectedReviewedLciaMethods,
@@ -494,6 +495,10 @@ describe('DataProcessing page', () => {
       }),
     );
     const reviewedOptions = buildImpactCategoryOptions(mockLciaMethodList, 'en-US');
+    expect(selectedImpactCategoryIdentity('climate-change', reviewedOptions)).toEqual({
+      id: 'climate-change',
+      version: '01.00.000',
+    });
     expect(scopeSelectionKey({ defaultImpactCategory: 'climate-change' }, reviewedOptions)).toBe(
       scopeSelectionKey({ defaultImpactCategory: 'acidification' }, reviewedOptions),
     );
@@ -1233,6 +1238,25 @@ describe('DataProcessing page', () => {
       await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
     ).toBeInTheDocument();
     expect(mockCreateClosureCheck).not.toHaveBeenCalled();
+  });
+
+  it('does not submit a build when a linked certificate has no reviewed LCIA catalog', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false });
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Generate result set' })).not.toBeDisabled(),
+    );
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Missing LCIA method build' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Generate result set' }));
+
+    expect(
+      await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
+    ).toBeInTheDocument();
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
 
   it('renders preview input scope and artifact verification details', async () => {

@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: full-gate fallback and two-worker native-crash diagnosis use a heap-aware 512MB recycle boundary.'
+lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedNote: 'Reviewed for Next Issue #828: the focused coverage-gap playbook remains the correct recovery path; no troubleshooting rule changes.'
 ---
 
 # Testing Troubleshooting
