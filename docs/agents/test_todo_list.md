@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedCommit: 88758d0cd1f1e8fd021c6b963674ee5f08e873b2
 lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records exact proof reuse and requalification of the two-worker full-coverage inventory at a 512MB recycle boundary.'
 ---
 
