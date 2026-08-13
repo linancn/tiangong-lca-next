@@ -709,7 +709,7 @@ describe('tidasPackage/taskCenter', () => {
       STORAGE_KEY,
       JSON.stringify({
         version: 1,
-        savedAt: new Date().toISOString(),
+        savedAt: '2026-08-10T15:20:00.000Z',
         tasks: [
           {
             id: 'original-local-task',

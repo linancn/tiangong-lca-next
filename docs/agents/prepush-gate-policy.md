@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 3a6ad5f2
-lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse exact proof or run the complete fallback through the two-worker, 512MB-recycle coverage pool.'
+lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedNote: 'Reviewed for Next Issue #828: focused branch coverage repairs restore the unchanged 100% gate without changing trigger or release policy.'
 ---
 
 # Pre-Push Gate Policy

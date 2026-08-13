@@ -1175,6 +1175,16 @@ const DataProcessing = () => {
     const values = await buildForm.validateFields();
     const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
     const lciaMethodSet = reviewedLciaMethodSet(impactCategoryOptions);
+    if (lciaMethodSet.length === 0) {
+      setCommandStatus({
+        kind: 'error',
+        message: t(
+          'pages.dataProcessing.validation.methodCatalogUnavailable',
+          'The reviewed LCIA method catalog is unavailable.',
+        ),
+      });
+      return;
+    }
     const closureIsUsable =
       closureCheck?.runStatus === 'passed' &&
       closureCheck.certificateValidity === 'valid' &&

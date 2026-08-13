@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "dc914b0981b579e1a89dd966686642d8fda9195fe52e5958b8c1ef3f1c5199ac",
+    "auditedInputDigest": "b03fced35cf7208d31326b919be226a6a7fe6644a474264668a4382913f1fe4d",
     "validatedMessageCount": 3119,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1391,
     "highRiskMessageDigest": "803ebcc8320e7f5a792c522a7c5b69a4f24b672308a12b1feaeaa94b4df3aa5f",
     "catalogDigest": "863ec5951debb9d5343d30fe702dfd57f2c452a60bf7a635cf18dcdeb262d9d8",
-    "dossierDigest": "26b64502abc6bf7859122c323db31521c9f08b9d6cc6c3b302a7f60e67a07e7b",
+    "dossierDigest": "8f52687e0d12e177aa434f9e6ead39fb2e41e27903fc297ce219405577d8dfcf",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "9729379808fbd488cb3eff15143c7285204406dfb5e9a017420fe4b16a09b875",
+    "routeEvidenceDigest": "454cd9089bf4877288837a09fc57c90fbdb3c8ff0811b363c31c704041c471e5",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "a85893ebd5e961b8e5d716263510cfa5c38544c7dc8e0c106a070667d0906dab",
         "highRiskMessageCount": 1391,
         "highRiskMessageDigest": "803ebcc8320e7f5a792c522a7c5b69a4f24b672308a12b1feaeaa94b4df3aa5f",
-        "dossierDigest": "26b64502abc6bf7859122c323db31521c9f08b9d6cc6c3b302a7f60e67a07e7b",
+        "dossierDigest": "8f52687e0d12e177aa434f9e6ead39fb2e41e27903fc297ce219405577d8dfcf",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "2efd8ffb8e5d2a37ce0eecdd9f43542a1793ca7933a4a1c0c03aa0ae8a05acfd"
+  "validationDigest": "f6c21bf0b74fb0f49ad87ad314f22cee3900918d1e50eb6de1888f0f49504b7e"
 }

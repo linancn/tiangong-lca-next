@@ -395,6 +395,52 @@ describe('lcaReleases api', () => {
     });
   });
 
+  it('refreshes semantic Calculation Bundle downloads by role', async () => {
+    const bytes = new Uint8Array([5, 6, 7]);
+    const expected = {
+      sha256: '05'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        data: {
+          calculationBundle: {
+            manifestDownload: expected,
+            artifacts: [],
+            downloads: [
+              {
+                ...expected,
+                role: 'lcia_results_xlsx',
+                signedDownloadUrl: 'https://download.example/lcia-results.xlsx',
+                signedDownloadExpiresInSeconds: 900,
+              },
+            ],
+          },
+        },
+      },
+      error: null,
+    });
+    setCryptoDigest(5);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bytes.buffer,
+    })) as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob(
+        '11111111-1111-4111-8111-111111111111',
+        'download:lcia_results_xlsx',
+        expected,
+      ),
+    ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
+    expect(global.fetch).toHaveBeenCalledWith('https://download.example/lcia-results.xlsx', {
+      credentials: 'omit',
+    });
+  });
+
   it('rejects missing, denied, or drifted fresh Calculation Bundle downloads before saving', async () => {
     const expected = {
       sha256: '00'.repeat(32),
@@ -404,6 +450,13 @@ describe('lcaReleases api', () => {
     mockFunctionsInvoke
       .mockResolvedValueOnce({
         data: { ok: false, code: 'access_denied', message: 'Access denied' },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: { calculationBundle: { manifestDownload: expected, artifacts: [] } },
+        },
         error: null,
       })
       .mockResolvedValueOnce({
@@ -430,39 +483,8 @@ describe('lcaReleases api', () => {
           },
         },
         error: null,
-      })
-      .mockResolvedValueOnce({
-        data: {
-          ok: true,
-          data: { calculationBundle: { manifestDownload: expected, artifacts: [] } },
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: {
-          ok: true,
-          data: {
-            calculationBundle: {
-              manifestDownload: expected,
-              artifacts: [],
-              downloads: [
-                {
-                  ...expected,
-                  role: 'grouped-results',
-                  signedDownloadUrl: 'https://download.example/grouped-results',
-                },
-              ],
-            },
-          },
-        },
-        error: null,
       });
-    setCryptoDigest(0);
-    global.fetch = jest.fn(async () => ({
-      ok: true,
-      status: 200,
-      arrayBuffer: async () => new Uint8Array([1, 2]).buffer,
-    })) as any;
+    global.fetch = jest.fn() as any;
 
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', null, expected),
@@ -471,15 +493,12 @@ describe('lcaReleases api', () => {
       fetchFreshCalculationBundleDownloadBlob('package', 'missing.ndjson.gz', expected),
     ).rejects.toThrow('no longer available');
     await expect(
-      fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),
-    ).rejects.toThrow('metadata changed');
-    await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'download:missing-role', expected),
     ).rejects.toThrow('no longer available');
     await expect(
-      fetchFreshCalculationBundleDownloadBlob('package', 'download:grouped-results', expected),
-    ).resolves.toMatchObject({ size: 2, type: expected.mediaType });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+      fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),
+    ).rejects.toThrow('metadata changed');
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('fails closed for unavailable manifests and non-refreshable verified download failures', async () => {

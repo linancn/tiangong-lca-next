@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: b6bd8122ff13e4b221633eea2162043367d99f65
-lastReviewedNote: 'Reviewed for Next Issue #822: the empty-catalog generation invariant remains UI-owned, while grouped Calculation Bundle downloads retain service-side integrity verification.'
+lastReviewedAt: 2026-08-12
+lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
+lastReviewedNote: 'Reviewed for Next Issue #813: normal, smart, and reference search routing remains inside the existing page-to-service frontend boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -83,7 +83,7 @@ Rules:
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
 - LCIA result transport state and calculation-evidence trust state are separate: a failed or pending result query renders its own state and cannot be reinterpreted as missing or mismatched evidence; only a successfully returned numerical result enters the fail-closed evidence validator
 - Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
-- Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned strict owner-draft mode for its personal branch, requiring owner `state_code=0` rows with null team/review identity, then merges that result with public state-100 rows. Database migrations own the `extracted_md` lexical source and its PGroonga index
+- Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned actor-draft mode for its personal branch, requiring owner `state_code=0` rows regardless of team/review workflow metadata, then merges that result with public state-100 rows. Database migrations own the `search_text` lexical source and its PGroonga index
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `npm run reference-data:check`

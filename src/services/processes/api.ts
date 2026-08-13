@@ -580,7 +580,7 @@ async function getProcessTableAllData(
     .select(selectStr4Table, { count: 'exact' })
     .or(
       ownerDraftOnly
-        ? `state_code.eq.100,and(user_id.eq.${userId},state_code.eq.0,team_id.is.null,review_id.is.null)`
+        ? `state_code.eq.100,and(user_id.eq.${userId},state_code.eq.0)`
         : `state_code.eq.100,user_id.eq.${userId}`,
     )
     .order(sortBy, { ascending: orderBy === 'ascend' })
