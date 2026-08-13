@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 7a5e0a1b7a5811a745bd1b305730ad3a46a63124
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
 lastReviewedNote: 'Reviewed for Next Issue #813: existing controlled-component mocks and behavior assertions cover search-mode routing, prompts, and mutual exclusion.'
 ---
 

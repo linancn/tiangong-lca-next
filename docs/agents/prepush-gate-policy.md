@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 7a5e0a1b7a5811a745bd1b305730ad3a46a63124
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
 lastReviewedNote: 'Reviewed for Next Issue #813: search-mode page and service coverage continues through the unchanged Docpact-first and full-gate-last checked-push policy.'
 ---
 
