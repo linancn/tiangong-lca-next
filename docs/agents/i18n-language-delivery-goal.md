@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c14e2d92bdbda1c2704c5b852e74ad99f191d3f7
+lastReviewedCommit: 4fbdfcf63da97ed128a452d61f4272d3ee02781a
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: regenerating deterministic locale artifacts after the final flat-queue interaction closure does not change locale delivery or production-data authorization boundaries.'
 baselineObservedAt: 2026-07-18
 related:

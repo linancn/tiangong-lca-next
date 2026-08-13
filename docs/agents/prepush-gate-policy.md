@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 9e24439ded1686ed7a54eb9317c2e352ed5b7c95
+lastReviewedCommit: 4fbdfcf63da97ed128a452d61f4272d3ee02781a
 lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse exact proof or run the complete fallback through the two-worker, 512MB-recycle coverage pool.'
 ---
 
