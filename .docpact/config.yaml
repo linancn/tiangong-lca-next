@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-13'
-lastReviewedCommit: '97130a89424f1a1f70988cb0c33f6c4ab7fb895c'
-lastReviewedNote: 'Reviewed for Next Issue #819: release-proof reuse and the bounded two-worker coverage gate stay within existing release, workflow, test, and documentation ownership domains.'
+lastReviewedCommit: 'a7babd6228fb65271378899bccb7d6fac5ae23cc'
+lastReviewedNote: 'Reviewed for Next Issue #819: release-proof reuse and the 512MB-bounded two-worker coverage gate stay within existing release, workflow, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
