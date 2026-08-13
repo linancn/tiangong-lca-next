@@ -79,7 +79,7 @@ const FAILURE_TAIL_LINE_COUNT = 5;
 const HELP_TEXT = `API smoke workflow suite
 
 Usage:
-  npm run test:api:smoke -- --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run test:api:smoke -- --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
   npm run test:api:smoke -- --detail-result --no-keep-data
   npm run test:api:smoke -- --list
 

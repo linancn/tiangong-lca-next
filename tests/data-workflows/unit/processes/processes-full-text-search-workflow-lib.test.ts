@@ -26,7 +26,7 @@ describe('processes-full-text-search-workflow-lib', () => {
         'admin',
         '--frontend-url=http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--data-file',
         'custom/search.json',
         '--seed-data-file',
@@ -39,7 +39,7 @@ describe('processes-full-text-search-workflow-lib', () => {
 
     expect(options.role).toBe('admin');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.dataFile).toBe('/repo/custom/search.json');
     expect(options.seedDataFile).toBe('/repo/custom/seed.json');
     expect(options.keepData).toBe(false);
@@ -185,7 +185,7 @@ describe('processes-full-text-search-workflow-lib', () => {
             'tests/data-workflows/fixtures/result/processes/001_create.md',
           ),
           supabasePublishableKey: 'publishable-key',
-          supabaseUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
+          supabaseUrl: 'https://submidrhbtknjxfympna.supabase.co',
           usersFile,
           verifyFrontend: false,
           writeRuntime: true,
@@ -197,7 +197,7 @@ describe('processes-full-text-search-workflow-lib', () => {
       );
 
       expect(createClientImpl).toHaveBeenCalledWith(
-        'https://fotofiyqnuyvgtotswie.supabase.co',
+        'https://submidrhbtknjxfympna.supabase.co',
         'publishable-key',
         expect.objectContaining({
           auth: expect.objectContaining({ persistSession: false }),
@@ -215,7 +215,7 @@ describe('processes-full-text-search-workflow-lib', () => {
       );
       expect(rpc).toHaveBeenNthCalledWith(
         1,
-        'search_processes_latest_v2',
+        'search_processes',
         expect.objectContaining({
           data_source: 'my',
           owner_draft_only: false,
@@ -321,7 +321,7 @@ describe('processes-full-text-search-workflow-lib', () => {
             'tests/data-workflows/fixtures/result/processes/001_create.md',
           ),
           supabasePublishableKey: 'publishable-key',
-          supabaseUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
+          supabaseUrl: 'https://submidrhbtknjxfympna.supabase.co',
           usersFile,
           verifyFrontend: false,
           writeRuntime: false,

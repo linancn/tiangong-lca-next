@@ -1,9 +1,10 @@
 import {
   flowproperty_hybrid_search,
   getFlowpropertyTableAll,
+  getFlowpropertyTablePgroongaSearch,
   getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
 import { attachStateCodesToRows } from '@/services/general/api';
 import {
   guardLocaleMaterializedTableRequest,
@@ -14,7 +15,13 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
-import { getDataSource, getLang, getLangText, getUnitData } from '@/services/general/util';
+import {
+  getDataSource,
+  getLang,
+  getLangText,
+  getUnitData,
+  isDataUnderReview,
+} from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -30,6 +37,7 @@ import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -53,9 +61,11 @@ import {
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
+  type DatasetSearchMode,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import FlowpropertiesCreate from './Components/create';
+import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
 
 const { Search } = Input;
@@ -64,7 +74,8 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
+  const [searchMode, setSearchMode] = useState<DatasetSearchMode>('normal');
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [viewId, setViewId] = useState<string>('');
@@ -86,12 +97,14 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const shouldShowFlowpropertyTip = dataSource === 'my' || dataSource === 'te';
+  const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
+  const openAI = searchMode === 'smart';
+  const referenceLookup = searchMode === 'reference';
   const attachReviewState = async (result: {
     data?: FlowpropertyTable[];
     page?: number;
@@ -144,6 +157,16 @@ const TableList: FC = () => {
             id={row.id}
             version={row.version}
           />
+          {isSystemAdmin && (
+            <FlowpropertiesEdit
+              disabled={isDataUnderReview(row.stateCode)}
+              id={row.id}
+              version={row.version}
+              buttonType='icon'
+              actionRef={listActionRef}
+              lang={lang}
+            />
+          )}
         </ResponsiveDataListActions>,
       ];
     }
@@ -274,7 +297,9 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderFlowpropertyActions(versionRow as FlowpropertyTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
+              operationColumnWidth={
+                isMobileDataList ? 88 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 184
+              }
             ></AllVersionsList>
           </Space>
         );
@@ -290,7 +315,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<FlowpropertyTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 152,
       ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
@@ -319,6 +344,11 @@ const TableList: FC = () => {
     }
     actionRef.current?.reload();
   };
+
+  const handleImportData = (jsonData: FlowpropertyImportData) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -331,20 +361,28 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={intl.formatMessage({
-                id: referenceLookup
-                  ? 'pages.search.referenceLookup.placeholder'
-                  : 'pages.search.keyWord',
-              })}
+              placeholder={
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
               onSearch={onSearch}
               enterButton
             />
           </Col>
           <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={openAI}
+              onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+            </Checkbox>
             <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
               <Checkbox
                 checked={referenceLookup}
-                onChange={(e) => setReferenceLookup(e.target.checked)}
+                onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
               >
                 <FormattedMessage
                   id='pages.search.referenceLookup'
@@ -407,6 +445,15 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
+              <FlowpropertiesCreate
+                disabled={!isSystemAdmin}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -456,8 +503,21 @@ const TableList: FC = () => {
                 return attachRefUnitData(result);
               }
               if (currentKeyWord.length > 0) {
+                if (openAI) {
+                  return attachRefUnitData(
+                    await flowproperty_hybrid_search(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      {},
+                      currentStateCode,
+                      tid ?? '',
+                    ),
+                  );
+                }
                 return attachRefUnitData(
-                  await flowproperty_hybrid_search(
+                  await getFlowpropertyTablePgroongaSearch(
                     requestParams,
                     lang,
                     dataSource,

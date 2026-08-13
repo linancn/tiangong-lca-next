@@ -21,14 +21,15 @@ checkPaths:
   - tests/**
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump requires no broader testing-strategy change.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
+lastReviewedNote: 'Reviewed for Next Issue #813: focused three-mode routing assertions preserve the existing full-closure maintenance strategy without opening a new testing workstream.'
 ---
 
 # Testing Strategy
@@ -47,7 +48,7 @@ lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump requir
 - the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes; root application release-version metadata is excluded only after the evidence's raw lock is proven at its recorded commit
 - production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; GitHub Actions runs the credential-free/read-only browser matrix only on demand and for the exact release SHA, while host `CI`/`GITHUB_ACTIONS` rejects production-data mode before Docker. After that local check passes, the controller clears only image-inherited CI markers and still requires authenticated mode plus the two explicit production-write guards (and a separate verified-evidence opt-in), writes intent before create, verifies UUID/owner/five-field registry markers before delete, and ends with `created=cleaned`, `leaked=0`
 - local release proof now treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
-- semantic-harness qualification is a credential-free precursor when the release controller requires it; its generated tracked receipt must be reviewed and merged before the clean authenticated candidate runs, while the receipt path stays outside its own semantic input digest
+- semantic-harness qualification is a credential-free precursor checked before version mutation; canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, so moving or adding a workflow below a subdirectory cannot silently escape qualification. Normal `release:to-dev --apply` atomically includes a newly generated provenance-bound receipt in the Release PR and preflights the composed commit, while direct controller use still lands the receipt separately before authenticated proof and the receipt/root-version fields stay outside the semantic input digest
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
@@ -55,6 +56,7 @@ lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump requir
 - documentation screenshot capture is a separate, on-demand product-evidence workflow: Next supplies only the source-bound product profile and stable locators, while workspace owns profile compilation, plan/security/access, run-scoped base-origin logic, and the synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
+- deterministic release orchestration should fail before transport: qualification generation, exact generated-file scope, cumulative Docpact review, and composed-candidate production preflight all complete before `push:checked`, while promotion retains the exact merged `dev` SHA and repeats the main-semantic boundary
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
 - generated localization evidence should be canonical and idempotent at its source: the reporter resolves the repository-owned formatting policy independently of its output destination and writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts

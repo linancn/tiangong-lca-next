@@ -18,10 +18,9 @@ export type TeamInviteLookupError = {
 
 export async function getUsersByIds(userIds: string[]) {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, raw_user_meta_data->email,raw_user_meta_data->display_name')
-      .in('id', userIds);
+    const { data, error } = await supabase.rpc('qry_identity_get_visible_users', {
+      p_user_ids: userIds,
+    });
     if (error) {
       throw error;
     }
@@ -90,27 +89,26 @@ export async function findTeamInvitableUserByEmail(
 
 export async function getUserIdByEmail(email: string) {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id')
-      .eq('raw_user_meta_data->>email', email)
-      .single();
+    const { data, error } = await supabase.rpc('qry_system_find_member_candidate_by_email', {
+      p_email: email,
+    });
     if (error) {
       throw error;
     }
-    return data?.id;
+    return data?.[0]?.id;
   } catch (error) {
     console.log(error);
     return null;
   }
 }
 
-export async function getUserEmailByUserIds(userIds: string[]) {
-  const result = await supabase
-    .from('users')
-    .select('id,raw_user_meta_data->email')
-    .in('id', userIds);
-  return result.data ?? [];
+export async function getUserEmailByUserIds(
+  userIds: string[],
+): Promise<Array<{ id: string; email: string }>> {
+  const result = await supabase.rpc('qry_identity_get_visible_users', {
+    p_user_ids: userIds,
+  });
+  return (result.data ?? []) as Array<{ id: string; email: string }>;
 }
 
 export async function getUserId() {
@@ -120,18 +118,29 @@ export async function getUserId() {
 
 export async function getUserInfoByEmail(email: string) {
   try {
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id, raw_user_meta_data, contact')
-      .eq('raw_user_meta_data->>email', email)
-      .single();
+    const { data, error: userError } = await supabase.rpc(
+      'qry_review_find_member_candidate_by_email',
+      { p_email: email },
+    );
 
     if (userError) {
       throw userError;
     }
 
+    const userData = data?.[0];
+    if (!userData) {
+      throw new Error('User not found');
+    }
+
     return {
-      user: userData,
+      user: {
+        id: userData.id,
+        raw_user_meta_data: {
+          email: userData.email,
+          ...(userData.display_name ? { display_name: userData.display_name } : {}),
+        },
+        contact: userData.contact ?? null,
+      } as any,
       contact: userData.contact || null,
       success: true,
     };
@@ -162,7 +171,9 @@ export async function updateUserContact(userId: string, contactInfo: any) {
 }
 
 export async function getUserDetail() {
-  const id = await getUserId();
-  const result = await supabase.from('users').select('contact').eq('id', id).single();
-  return result;
+  const { data, error } = await supabase.rpc('qry_identity_get_mine');
+  return {
+    data: data?.[0] ? { contact: data[0].contact } : null,
+    error,
+  };
 }

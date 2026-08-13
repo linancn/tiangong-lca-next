@@ -1,6 +1,7 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
 import ExportData from '@/components/ExportData';
+import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -26,16 +27,17 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
-import { getDataSource, getLang, getLangText } from '@/services/general/util';
+import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import {
   getUnitGroupTableAll,
+  getUnitGroupTablePgroongaSearch,
   getUnitGroupTableUuidMentionSearch,
   unitgroup_hybrid_search,
 } from '@/services/unitgroups/api';
-import { UnitGroupTable } from '@/services/unitgroups/data';
+import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, theme } from 'antd';
@@ -51,9 +53,11 @@ import {
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
+  type DatasetSearchMode,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import UnitGroupCreate from './Components/create';
+import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
 const { Search } = Input;
@@ -62,7 +66,8 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
+  const [searchMode, setSearchMode] = useState<DatasetSearchMode>('normal');
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [viewId, setViewId] = useState<string>('');
@@ -84,12 +89,14 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const shouldShowUnitGroupTip = dataSource === 'my' || dataSource === 'te';
+  const shouldShowUnitGroupTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
+  const openAI = searchMode === 'smart';
+  const referenceLookup = searchMode === 'reference';
   const attachReviewState = async (result: {
     data?: UnitGroupTable[];
     page?: number;
@@ -137,6 +144,17 @@ const TableList: FC = () => {
             version={row.version}
             buttonType={'icon'}
           />
+          {isSystemAdmin && (
+            <UnitGroupEdit
+              disabled={isDataUnderReview(row.stateCode)}
+              id={row.id}
+              version={row.version}
+              buttonType='icon'
+              lang={lang}
+              actionRef={listActionRef}
+              setViewDrawerVisible={setViewDrawerVisible}
+            />
+          )}
         </ResponsiveDataListActions>,
       ];
     }
@@ -254,7 +272,9 @@ const TableList: FC = () => {
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderUnitGroupActions(versionRow as UnitGroupTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
+              operationColumnWidth={
+                isMobileDataList ? 88 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 184
+              }
             ></AllVersionsList>
           </Space>
         );
@@ -275,7 +295,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<UnitGroupTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? (isSystemAdmin ? 144 : 104) : 152,
       ),
       title: (
         <FormattedMessage id='pages.table.title.option' defaultMessage='Actions'></FormattedMessage>
@@ -305,6 +325,10 @@ const TableList: FC = () => {
     actionRef.current?.reload();
   };
 
+  const handleImportData = (jsonData: UnitGroupImportItem[]) => {
+    setImportData(jsonData);
+  };
+
   return (
     <PageContainer
       header={{
@@ -317,20 +341,28 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={intl.formatMessage({
-                id: referenceLookup
-                  ? 'pages.search.referenceLookup.placeholder'
-                  : 'pages.search.keyWord',
-              })}
+              placeholder={
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
               onSearch={onSearch}
               enterButton
             />
           </Col>
           <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={openAI}
+              onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+            </Checkbox>
             <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
               <Checkbox
                 checked={referenceLookup}
-                onChange={(e) => setReferenceLookup(e.target.checked)}
+                onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
               >
                 <FormattedMessage
                   id='pages.search.referenceLookup'
@@ -393,6 +425,15 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
+              <UnitGroupCreate
+                disabled={!isSystemAdmin}
+                importData={importData}
+                onClose={() => setImportData(null)}
+                lang={lang}
+                key={0}
+                actionRef={actionRef}
+              />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -442,8 +483,21 @@ const TableList: FC = () => {
                 return attachReviewState(result);
               }
               if (currentKeyWord.length > 0) {
+                if (openAI) {
+                  return attachReviewState(
+                    await unitgroup_hybrid_search(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      {},
+                      currentStateCode,
+                      tid ?? '',
+                    ),
+                  );
+                }
                 return attachReviewState(
-                  await unitgroup_hybrid_search(
+                  await getUnitGroupTablePgroongaSearch(
                     requestParams,
                     lang,
                     dataSource,

@@ -77,7 +77,7 @@ const createSupabaseMock = (records: any[]) => {
     select: jest.fn(() => builder),
   };
 
-  return {
+  const client = {
     auth: {
       signInWithPassword: jest.fn(async () => ({
         data: {
@@ -92,6 +92,10 @@ const createSupabaseMock = (records: any[]) => {
     functions: {
       invoke: jest.fn(async () => ({ data: {}, error: null })),
     },
+  };
+  return {
+    ...client,
+    schema: jest.fn(() => client),
   };
 };
 
@@ -119,7 +123,7 @@ describe('lifecyclemodels-workflow-lib', () => {
         '--frontend-url',
         'http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--supabase-publishable-key',
         'sb_publishable_test_key',
         '--seed-process-data-file',
@@ -132,7 +136,7 @@ describe('lifecyclemodels-workflow-lib', () => {
 
     expect(options.role).toBe('team-member');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.supabasePublishableKey).toBe('sb_publishable_test_key');
     expect(options.keepData).toBe(false);
     expect(options.seedProcessDataFile).toBe(
@@ -242,7 +246,7 @@ describe('lifecyclemodels-workflow-lib', () => {
             'tests/data-workflows/fixtures/data/processes/002_check_data_success.json',
           ),
           supabasePublishableKey: 'sb_publishable_test_key',
-          supabaseUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
+          supabaseUrl: 'https://submidrhbtknjxfympna.supabase.co',
           usersFile: path.join(tempRoot, 'missing-users.json'),
           verifyFrontend: false,
           writeRuntime: true,
@@ -379,7 +383,7 @@ describe('lifecyclemodels-workflow-lib', () => {
             'tests/data-workflows/fixtures/data/processes/002_check_data_success.json',
           ),
           supabasePublishableKey: 'sb_publishable_test_key',
-          supabaseUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
+          supabaseUrl: 'https://submidrhbtknjxfympna.supabase.co',
           usersFile: path.join(tempRoot, 'missing-users.json'),
           verifyFrontend: false,
           writeRuntime: true,
@@ -423,7 +427,7 @@ describe('lifecyclemodels-workflow-lib', () => {
     }
   });
 
-  it('runs full-text search without the lifecyclemodel stateCode RPC argument', async () => {
+  it('runs full-text search through the formal lifecycle RPC service without stateCode or order_by', async () => {
     const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'lifecyclemodels-search-'));
     const expectedFile = path.join(tempRoot, 'expected.md');
     const runtimeRecordFile = path.join(tempRoot, 'runtime.json');
@@ -473,7 +477,7 @@ describe('lifecyclemodels-workflow-lib', () => {
             'tests/data-workflows/fixtures/data/processes/002_check_data_success.json',
           ),
           supabasePublishableKey: 'sb_publishable_test_key',
-          supabaseUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
+          supabaseUrl: 'https://submidrhbtknjxfympna.supabase.co',
           usersFile: path.join(tempRoot, 'missing-users.json'),
           verifyFrontend: false,
           writeRuntime: true,

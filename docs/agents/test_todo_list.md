@@ -19,6 +19,7 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
@@ -28,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump creates no new repository-wide test backlog item.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
+lastReviewedNote: 'Reviewed for Next Issue #813: the added three-mode routing assertions preserve full closure and create no active coverage queue.'
 ---
 
 # Testing Execution State
@@ -53,6 +54,8 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
+- Issue #799 adds focused TIDAS task-center coverage for duplicate queue aliases, persisted alias hydration, canonical backend timestamps, one active poller, and post-coalescing failure routing; it creates no open coverage queue
+- Issue #778 adds hermetic contract coverage for the two deterministic release commands: JSON purity, non-mutating dry-run, qualification reuse and automatic exact-receipt generation, qualification/preflight failure before transport, rejection of unexpected untracked JSON, exact version fields, large-lockfile blob fallback, checked-push delegation, idempotent PR reuse, immutable promotion identity, independent version-candidate and cumulative `main`-to-candidate Docpact preflight, bounded automatic review, and fail-closed package/document/diagnostic/branch/dev/marker drift. A real isolated clone also proves the current review closure reaches a bounded fixed point without document-body changes. It creates no open coverage queue.
 - Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - Issue #748 adds a git-tracked scope-closure qualification adapter for the Next owner. Its isolated Chromium flow proves preparing, available, expired, and unavailable presentation; direct document navigation for bounded XLSX and machine-readable manifests; integrity/expiry metadata; localized 410 rerun guidance; and anonymous, standard-user, administrator, owner, and data-product-manager routing without production targets or mutation.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
@@ -61,6 +64,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
+- Issue #780 aligns semantic E2E role, team, and FlowProperty fixtures with the current Membership/Team/search RPC facades. It also makes canonical qualification discovery recursive so the nested lexical-search workflow is included in the fail-closed matrix: 81 canonical positions comprise 51 executed cases and 30 designed cross-browser skips, plus 12 harness controls for 93 qualification positions total. The explicitly authorized authenticated run for exact `dev` commit `42b7e37ad3334e69bad22932677e61f9dfb31774` passed 60 cases with 33 designed skips across Chromium, Firefox, and WebKit, closed all 49 assertion IDs, and finished the single UUID-scoped production fixture with `created=1`, `cleaned=1`, `leaked=0`. The evidence-bearing commit was then qualified credential-free with 63 passed positions, 30 designed skips, zero external requests, zero production writes, and no cleanup residue. This repair creates no open coverage queue.
 - Issue #756 qualifies exact `dev` commit `4680e5a7ab67800268ae1627af999a4480cea646` for the v0.0.65 promotion: 48 canonical cases plus 12 harness-control cases passed across Chromium, Firefox, and WebKit, 24 designed cases skipped, all 49 assertion IDs closed, and external requests and production writes remained zero. The generated receipt must merge through the normal `dev` PR flow before production-readiness proof resumes from the resulting clean candidate.
 - Issue #743 first refreshed the credential-free semantic-harness qualification for exact `dev` commit `3ac0ca60a7370d767ca003342180bb51f1b2dd7d`; that receipt merged through PR #744 before the clean production run. The evidence-bearing v0.0.64 commit `1cf3f5accdbf4ef745022ed69d8815e851df833f` was then requalified with 48 canonical cases plus 12 harness-control cases passed, 24 designed cases skipped, all 49 assertion IDs closed, and external requests, production writes, and cleanup residue all zero. The receipt path remains outside its own qualification digest, so committing this generated receipt preserves the qualified input identity.
 - Issue #704 tracks two harness defects observed during authenticated production evidence refreshes. The evidence-writer repair now resolves the repository-owned Prettier configuration independently of `/e2e-output` and gives the checker a read-only external-artifact path, so raw container bytes can satisfy the same canonical contract without host normalization. The separate argument-free `e2e:release:resume` dispatch defect remains open under #704.

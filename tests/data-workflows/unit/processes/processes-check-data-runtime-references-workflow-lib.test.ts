@@ -621,7 +621,7 @@ describe('processes-check-data-runtime-references-workflow-lib', () => {
         '--frontend-url',
         'http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--contact-data-file',
         'fixtures/contact.json',
         '--flow-data-file',
@@ -636,7 +636,7 @@ describe('processes-check-data-runtime-references-workflow-lib', () => {
 
     expect(options.role).toBe('user');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.contactDataFile).toBe('/repo/fixtures/contact.json');
     expect(options.flowDataFile).toBe('/repo/fixtures/flow.json');
     expect(options.checkDataFile).toBe('/repo/fixtures/process-check.json');
@@ -900,9 +900,9 @@ describe('processes-check-data-runtime-references-workflow-lib', () => {
           submittedRuleVerification: true,
         },
         supabaseTarget: {
-          apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-          dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-          projectId: 'fotofiyqnuyvgtotswie',
+          apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+          dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+          projectId: 'submidrhbtknjxfympna',
           publishableKey: 'sb_publishable_test',
         },
         validation: {
@@ -1381,7 +1381,7 @@ describe('processes-check-data-runtime-references-workflow-lib', () => {
           sourceDataFile,
           sourceExpectedFile,
           supabasePublishableKey: 'sb_publishable_test',
-          supabaseUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+          supabaseUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
           usersFile,
           verifyFrontend: false,
           writeRuntime: true,
@@ -1400,6 +1400,7 @@ describe('processes-check-data-runtime-references-workflow-lib', () => {
                   signInWithPassword,
                   signOut,
                 },
+                schema: jest.fn().mockReturnValue({ from }),
                 from,
                 functions: {
                   invoke: functionsInvoke,

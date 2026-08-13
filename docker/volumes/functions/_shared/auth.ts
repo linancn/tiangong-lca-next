@@ -575,5 +575,5 @@ export function handleCors(req: Request): Response | null {
 export async function createAuthenticatedSupabaseClient(apiKey: string): Promise<SupabaseClient> {
   const { createClient } = await import('jsr:@supabase/supabase-js@2.98.0');
   const supabaseUrl = getSupabaseUrl();
-  return createClient(supabaseUrl, apiKey);
+  return createClient(supabaseUrl, apiKey, { db: { schema: 'api' } }) as unknown as SupabaseClient;
 }

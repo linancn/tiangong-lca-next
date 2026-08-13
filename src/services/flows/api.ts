@@ -1,9 +1,5 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
-import {
-  getServiceQueryLanguage,
-  type SupportedContentLanguage,
-  type SupportedServiceQueryLanguage,
-} from '@/services/general/contentLanguageRegistry';
+import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import {
   classificationToString,
   genLocalizedClassification,
@@ -13,6 +9,7 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedFlowCategorizationAll } from '../classifications/cache';
@@ -131,28 +128,6 @@ function normalizeFlowSortBy(sortBy: string): string {
 
 function normalizeFlowSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
-}
-
-function resolveFlowSearchOrderBy(orderBy?: FlowSearchOrderBy): Partial<
-  Omit<FlowSearchOrderBy, 'lang'> & {
-    lang?: SupportedServiceQueryLanguage;
-  }
-> {
-  if (!orderBy) {
-    return {};
-  }
-
-  if (!orderBy.lang) {
-    return {
-      key: orderBy.key,
-      order: orderBy.order,
-    };
-  }
-
-  return {
-    ...orderBy,
-    lang: getServiceQueryLanguage(orderBy.lang),
-  };
 }
 
 function getLocalizedFlowClassification(
@@ -496,11 +471,10 @@ export async function getFlowTablePgroongaSearch(
   queryText: string,
   filter: FlowSearchFilters,
   stateCode?: string | number,
-  orderBy?: FlowSearchOrderBy,
+  _orderBy?: FlowSearchOrderBy,
   tid: string | [] = [],
 ) {
   let result: any = {};
-  const serviceOrderBy = resolveFlowSearchOrderBy(orderBy);
   const session = await supabase.auth.getSession();
 
   if (session.data.session) {
@@ -513,12 +487,11 @@ export async function getFlowTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_flows_latest',
+      'search_flows',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
             filter_condition: filter,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -529,7 +502,6 @@ export async function getFlowTablePgroongaSearch(
         : {
             query_text: queryText,
             filter_condition: filter,
-            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -818,8 +790,7 @@ export async function getFlowProperties(params: { id: string; version: string }[
   let ids = _ids.filter((id) => id && id.length === 36);
 
   if (ids.length > 0) {
-    const { data } = await supabase
-      .from('flows')
+    const { data } = await publicEntity('flows')
       .select(selectStr)
       .in('id', ids)
       .order('version', { ascending: false });
@@ -869,18 +840,16 @@ export async function getReferenceProperty(id: string, version: string) {
     `;
   if (id && id.length === 36) {
     if (version && version.length === 9) {
-      result = await supabase.from('flows').select(selectStr).eq('id', id).eq('version', version);
+      result = await publicEntity('flows').select(selectStr).eq('id', id).eq('version', version);
       if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from('flows')
+        result = await publicEntity('flows')
           .select(selectStr)
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
       }
     } else {
-      result = await supabase
-        .from('flows')
+      result = await publicEntity('flows')
         .select(selectStr)
         .eq('id', id)
         .order('version', { ascending: false })
@@ -913,13 +882,21 @@ export async function getReferenceProperty(id: string, version: string) {
 export async function getFlowStateCodeByIdsAndVersions(
   params: { id: string; version: string }[],
   lang: string,
-) {
+): Promise<{
+  error: unknown;
+  data: Array<{
+    id: string;
+    version?: string;
+    stateCode?: number;
+    classification?: string;
+    locationOfSupply?: string;
+  }>;
+}> {
   if (!params || params.length === 0) {
     return { error: null, data: [] };
   }
   const filter = params.map((p) => `and(id.eq.${p.id},version.eq.${p.version})`).join(',');
-  const result = await supabase
-    .from('flows')
+  const result = await publicEntity('flows')
     .select(
       `
       state_code,

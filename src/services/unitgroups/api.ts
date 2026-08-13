@@ -8,6 +8,7 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
@@ -367,7 +368,7 @@ export async function getUnitGroupTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_unitgroups_latest',
+      'search_unitgroups',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -485,8 +486,7 @@ export async function getReferenceUnits(params: { id: string; version: string }[
 
   const ids = _ids.filter((id) => id && id.length === 36);
   if (ids.length > 0) {
-    const { data } = await supabase
-      .from('unitgroups')
+    const { data } = await publicEntity('unitgroups')
       .select(selectStr)
       .in('id', ids)
       .order('version', { ascending: false });
@@ -535,22 +535,19 @@ export async function getReferenceUnit(id: string, version: string) {
     `;
   if (id && id.length === 36) {
     if (version && version.length === 9) {
-      result = await supabase
-        .from('unitgroups')
+      result = await publicEntity('unitgroups')
         .select(selectStr)
         .eq('id', id)
         .eq('version', version);
       if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from('unitgroups')
+        result = await publicEntity('unitgroups')
           .select(selectStr)
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
       }
     } else {
-      result = await supabase
-        .from('unitgroups')
+      result = await publicEntity('unitgroups')
         .select(selectStr)
         .eq('id', id)
         .order('version', { ascending: false })

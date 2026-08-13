@@ -32,7 +32,7 @@ describe('flows-check-data-workflow-lib', () => {
         '--frontend-url',
         'http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--create-data-file',
         'fixtures/create.json',
         '--data-file',
@@ -48,7 +48,7 @@ describe('flows-check-data-workflow-lib', () => {
 
     expect(options.role).toBe('user');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.createDataFile).toBe('/repo/fixtures/create.json');
     expect(options.checkDataFile).toBe('/repo/fixtures/check.json');
     expect(options.keepData).toBe(true);
@@ -215,9 +215,9 @@ describe('flows-check-data-workflow-lib', () => {
           userId: 'user-1',
         },
         supabaseTarget: {
-          apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-          dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-          projectId: 'fotofiyqnuyvgtotswie',
+          apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+          dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+          projectId: 'submidrhbtknjxfympna',
           publishableKey: 'sb_publishable_test',
         },
         updateStep: {
@@ -253,7 +253,7 @@ describe('flows-check-data-workflow-lib', () => {
       user_id: 'user-1',
       version: '01.01.000',
     });
-    expect(runtimeRecord.supabase.projectId).toBe('fotofiyqnuyvgtotswie');
+    expect(runtimeRecord.supabase.projectId).toBe('submidrhbtknjxfympna');
   });
 
   it('runs the create-then-update workflow against one flow record and writes a runtime record', async () => {
@@ -491,7 +491,7 @@ describe('flows-check-data-workflow-lib', () => {
           role: 'user',
           runtimeRecordFile,
           supabasePublishableKey: 'sb_publishable_test',
-          supabaseUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+          supabaseUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
           usersFile,
           verifyFrontend: false,
           writeRuntime: true,
@@ -510,6 +510,7 @@ describe('flows-check-data-workflow-lib', () => {
                   signInWithPassword,
                   signOut,
                 },
+                schema: jest.fn().mockReturnValue({ from }),
                 from,
                 functions: {
                   invoke: functionsInvoke,

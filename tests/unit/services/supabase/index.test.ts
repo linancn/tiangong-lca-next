@@ -22,6 +22,9 @@ describe('supabase client bootstrap (src/services/supabase/index.ts)', () => {
     process.env.SUPABASE_URL = 'https://example.supabase.co';
     process.env.SUPABASE_PUBLISHABLE_KEY = 'public-key';
     const expectedOptions = {
+      db: {
+        schema: 'api',
+      },
       auth: {
         autoRefreshToken: true,
         persistSession: true,

@@ -27,7 +27,7 @@ export const DEFAULT_FLOWPROPERTY_FULL_TEXT_SEARCH_FIXTURE_PATH =
 export const DEFAULT_FLOWPROPERTY_FULL_TEXT_SEARCH_EXPECTED_PATH =
   'tests/data-workflows/fixtures/result/flowProperties/007_full_text_search.md';
 
-const FLOWPROPERTY_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
+export const FLOWPROPERTY_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   computeRuleVerification: computeFlowpropertyRuleVerification,
   dataType: 'flow property',
   defaultExpectedPath: DEFAULT_FLOWPROPERTY_FULL_TEXT_SEARCH_EXPECTED_PATH,
@@ -44,7 +44,7 @@ const FLOWPROPERTY_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'search_flowproperties_latest',
+  rpcName: 'search_flowproperties',
   table: 'flowproperties',
   workflowName: 'Flow property full-text search',
 };

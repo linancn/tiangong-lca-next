@@ -6,6 +6,7 @@ import {
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
+import type { LcaScope } from '@/services/lca/scope';
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
 import { InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
@@ -32,7 +33,7 @@ type Props = {
   processId?: string;
   processVersion?: string;
   lcaDataScope?: Exclude<LcaAnalysisDataScope, 'all_data'>;
-  queryScope?: string;
+  queryScope?: LcaScope;
   enableSolverRefresh?: boolean;
   enablePublishedPackageReader?: boolean;
 };

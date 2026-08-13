@@ -24,14 +24,15 @@ checkPaths:
   - scripts/i18n/**
   - scripts/test-runner.cjs
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: b7a60b9ee622cf58c02dab1e269dab6c08e7d9e0
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump does not change or add a testing pattern.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
+lastReviewedNote: 'Reviewed for Next Issue #813: existing controlled-component mocks and behavior assertions cover search-mode routing, prompts, and mutual exclusion.'
 ---
 
 # Testing Patterns Reference
@@ -55,6 +56,8 @@ lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump does n
 - do not add snapshots when explicit assertions are clearer
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
+- test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
+- keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 
 ## Reusable Helpers
 
@@ -89,6 +92,7 @@ Special cases:
 - permission and URL-state pattern: use when behavior depends on auth, query params, or navigation state
 - data workflow fixture pattern: keep each `tests/data-workflows/fixtures/result/**` expected-result file aligned with its same-scope `fixtures/data/**` payload, workflow lib default path, and unit proof; the fixture relationship map lives in `tests/data-workflows/fixtures/result/README.md`
 - strict command-contract pattern: type the complete client payload, assert its exact serialized shape at the service boundary, and preserve versioned dataset identities as `{ id, version }` rather than weakening tests to identifier-only fixtures
+- canonical async-task pattern: create multiple local projections for one backend worker/package identity, resolve queue and poll promises out of order, and assert one retained task, one poller, backend timestamps, and error delivery to the retained identity
 - escalate to E2E only when browser-only behavior cannot be proved in Jest
 
 ## Component Pattern
@@ -122,7 +126,9 @@ Browser semantic E2E pattern:
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
-- when release proof reports a missing or stale qualification receipt, run `npm run e2e:qualify`, review its generated tracked receipt, merge it through the normal `dev` PR flow, and retry only from the clean merged candidate; the receipt file is excluded from its own semantic input digest
+- normal release orchestration checks qualification before version mutation: dry-run reports `valid` or `regeneration_required`, while `release:to-dev --apply` reuses the receipt or generates the exact provenance-bound receipt, includes it in the same Release PR, and runs `release:preflight` on the composed commit before checked push
+- direct release proof outside that deterministic flow still requires `npm run e2e:qualify`, a separately reviewed receipt PR, and retry from the clean merged candidate; the receipt file and root version fields are excluded from the qualification input digest
+- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, and the rule that no failed qualification/preflight path reaches push or PR creation
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence

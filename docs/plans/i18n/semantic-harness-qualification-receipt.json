@@ -20,24 +20,24 @@
   },
   "coverage": {
     "contractAssertionCount": 49,
-    "discoveredCases": 72,
-    "executedCases": 48,
+    "discoveredCases": 81,
+    "executedCases": 51,
     "harnessControlCases": 12,
     "liveAssertionCount": 49,
-    "qualificationDiscoveredCases": 84,
-    "skippedCases": 24
+    "qualificationDiscoveredCases": 93,
+    "skippedCases": 30
   },
   "diagnostics": {
     "retainedOutsideGit": true,
-    "runResultSha256": "575bf50d21d2055efdbeecae9a671cef9966f82a4f7e1a66cfa6dc1414074c0a"
+    "runResultSha256": "a948e3ebaf6fd1f616d8a37855deaf4f999d4ffc1ac176d9c8fb576ea5a62a81"
   },
-  "environmentManifestSha256": "5343ee156c75d52227f7b677c61da90a6affe1abb36b741cecb335e6bf8d4223",
+  "environmentManifestSha256": "94fe11a04b87b84ed66feb20903ee7984dd9579b0b60776561202eb29fc94a99",
   "externalRequests": 0,
-  "generatedAt": "2026-08-05T18:39:35.500Z",
+  "generatedAt": "2026-08-13T05:05:13.997Z",
   "productionWrites": 0,
-  "qualificationInputSha256": "92baedb2f9e776cde7fa161531f175652313abadea56073458ad392268767760",
-  "qualifiedCommit": "d36f518ff1c5ebad1262f6dba54fad4d3a183ee1",
-  "qualifiedTree": "b974b76d75793d10293fe6791a8d09dae77b9352",
+  "qualificationInputSha256": "7e988b5d275477358055ad204a0afff8dc5aba34d53d0fa736cd2574e4273e0f",
+  "qualifiedCommit": "39542f077a598ee9386a57c9d82ca375cf4b03b3",
+  "qualifiedTree": "49002deee38e129b52d03921989b63793e451925",
   "schemaVersion": "tiangong.semantic-harness-qualification.v1",
   "status": "qualified"
 }

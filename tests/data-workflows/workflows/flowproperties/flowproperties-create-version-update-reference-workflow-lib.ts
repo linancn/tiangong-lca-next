@@ -270,8 +270,8 @@ export type FlowpropertyCreateVersionUpdateReferenceDependencies = {
 export const FLOWPROPERTY_CREATE_VERSION_UPDATE_REFERENCE_DATA_WORKFLOW_HELP = `Flowproperty create-version-update-reference data workflow
 
 Usage:
-  npm run test:workflows -- --flowproperties:create-version-update-reference --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:workflows -- --flowproperties:create-version-update-reference --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --flowproperties:create-version-update-reference --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  npm run test:workflows -- --flowproperties:create-version-update-reference --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one flowproperty from tests/data-workflows/fixtures/data/flowProperties/004_create_version_update_reference.json
@@ -1110,6 +1110,7 @@ async function queryFlowpropertyRecord(
   version: string,
 ): Promise<FlowpropertyWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('flowproperties')
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

@@ -125,7 +125,7 @@ export function callLcaReadJobProjectionRpc(
 ) {
   return callLcaProjectionRpc(
     supabase,
-    'lca_read_job_projection',
+    'svc_lca_read_job_projection',
     buildLcaReadJobProjectionRpcArgs(request),
   );
 }
@@ -136,7 +136,7 @@ export function callLcaReadResultProjectionRpc(
 ) {
   return callLcaProjectionRpc(
     supabase,
-    'lca_read_result_projection',
+    'svc_lca_read_result_projection',
     buildLcaReadResultProjectionRpcArgs(request),
   );
 }
@@ -147,7 +147,7 @@ export function callLcaReadLatestSingleSolveResultRpc(
 ) {
   return callLcaProjectionRpc(
     supabase,
-    'lca_read_latest_single_solve_result',
+    'svc_lca_read_latest_single_solve_result',
     buildLcaReadLatestSingleSolveResultRpcArgs(request),
   );
 }

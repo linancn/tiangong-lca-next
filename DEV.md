@@ -22,15 +22,16 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
+  - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: e1c0fc942613bd8edd14fa64ecf3bc7c742f3be1
-lastReviewedNote: 'Reviewed for Issue #774: the release-only version bump uses the existing Node 24, managed-push, production-hotfix PR, release, and workspace-integration sequence.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
+lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing preserves the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
 ---
 
 # Development Bootstrap
@@ -134,6 +135,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | check every active locale's activation boundary | `npm run i18n:locale:all:check` |
 | require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | run the combined credential-free production preflight | `npm run release:preflight` |
+| preferred version-bump PR into `dev` | `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply` |
+| preferred immutable `dev -> main` promotion after the version PR merges | `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply` |
 | qualify the semantic release harness locally without production access | `npm run e2e:qualify` |
 | verify the current source has a matching qualification receipt | `npm run e2e:qualification:check` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
@@ -146,9 +149,9 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-Run `npm run e2e:qualify` on a clean committed source before preparing a release candidate. It executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 72 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
+For the normal deterministic flow, `release:to-dev --apply` checks qualification on the clean `dev` source before changing version metadata. It reuses a current receipt or runs the equivalent of `npm run e2e:qualify`, which executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 81 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
 
-A successful qualification updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`. Review and merge that generated receipt through the normal tracked `dev` PR flow before invoking authenticated release proof from the resulting clean commit. The receipt path is excluded from its own semantic input digest, so committing the generated record preserves the qualified input identity.
+A successful qualification updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`. During `release:to-dev --apply`, that exact generated file is allowlisted by provenance and committed in the same version PR; the fully composed commit then runs `release:preflight` before any push or PR creation. If qualification is invoked directly outside this deterministic release command, land its generated receipt through a separately reviewed tracked `dev` PR before authenticated proof. The receipt path and root version fields are excluded from the semantic input digest, so the release commit preserves the qualified input identity.
 
 After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 
@@ -164,6 +167,38 @@ npm run e2e:release -- \
 The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
 Create the `dev -> main` Promote PR only after that authorized run has produced current checked-in evidence with exact cleanup and the full managed release gate has passed on the immutable candidate. The Promote PR and its credential-free Release Readiness job verify the matching qualification receipt, production evidence, and diff. They do not create production proof: the repository has no protected production actor credential or external recovery ledger in GitHub Actions, by design.
+
+## Preferred Release PR Flow
+
+Use these commands for every normal versioned release. They replace manual package-version editing, release branch/commit/push assembly, and direct PR creation.
+
+1. Preview the version-to-`dev` plan without changing Git or GitHub:
+
+   ```bash
+   npm --silent run release:to-dev -- --version <x.y.z> --issue <number>
+   ```
+
+2. Apply that exact plan. This reuses or generates credential-free qualification, composes the version and bounded Docpact evidence, runs production preflight, and creates or reuses the Release PR targeting `dev`:
+
+   ```bash
+   npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply
+   ```
+
+3. After the returned `dev` PR is merged, preview the immutable promotion using that merged PR number:
+
+   ```bash
+   npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number>
+   ```
+
+4. Apply the promotion plan. This creates or reuses the PR targeting `main`:
+
+   ```bash
+   npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply
+   ```
+
+The commands create or reuse PRs but never merge them. Review required GitHub checks before merging. Use a manual path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
+
+Both release commands default to read-only planning when `--apply` is omitted. The dry-run reports qualification state but never generates evidence. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; full qualification, preflight, managed-gate, and Docpact output is retained under `.local/release-automation/`. Before version mutation, the version-to-dev command checks the receipt and runs credential-free qualification only when needed. It then proves that `package.json.version`, `package-lock.json.version`, `package-lock.json`'s root package version, the exact provenance-bound generated receipt when present, and bounded Docpact review metadata are the only changes. It independently checks the version candidate's `dev`-relative paths and the complete `main`-to-candidate promotion paths, then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point; review marking itself is checked to alter only `lastReviewedAt` and `lastReviewedCommit`. Keeping the two scopes separate prevents cumulative paths from masking obligations created by the version files themselves. The composed commit must pass `release:preflight` before the checked push. Any other package, dependency, document-body, uncovered, stale, missing, untracked, or unsupported finding stops the command. It also refuses release preparation when current `main` is not an ancestor of `dev`, because that state requires a governed reconciliation first. The version branch remains deliberately non-main-semantic so the existing dev gate applies. The promotion command pins the exact merged dev SHA, reports qualification as owned by the main-semantic gate, does not modify Docpact evidence, and makes the existing hook run release preflight plus the complete main-semantic gate before opening the main PR. Both commands reuse a matching open PR and fail closed on version, branch, or dev-candidate drift.
 
 ## Command Rules
 

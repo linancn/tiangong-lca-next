@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: team owner/admin do not participate in review; existing membership only constrains already-authorized reference visibility and never expands access.'
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Next Issue #811: review-toolbar styling does not change team roles, review authority, or membership-constrained visibility.'
 ---
 
 # Team Management Reference

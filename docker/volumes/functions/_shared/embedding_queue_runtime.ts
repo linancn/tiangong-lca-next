@@ -1,8 +1,5 @@
 export type EmbeddingJobErrorCategory =
-  | 'db_lock_timeout'
-  | 'db_statement_timeout'
-  | 'db_contention'
-  | 'unexpected';
+  'db_lock_timeout' | 'db_statement_timeout' | 'db_contention' | 'unexpected';
 
 export type ClassifiedEmbeddingJobError = {
   category: EmbeddingJobErrorCategory;

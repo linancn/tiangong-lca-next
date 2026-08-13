@@ -36,7 +36,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Query the processes table
-    let query = supabaseClient.from('processes').select('json').eq('id', id);
+    let query = supabaseClient.schema('public').from('processes').select('json').eq('id', id);
 
     // Add version filter if provided
     if (version) {

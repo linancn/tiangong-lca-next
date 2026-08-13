@@ -2267,13 +2267,12 @@ describe('table/search helpers', () => {
       { key: 'baseName', lang: 'en', order: 'desc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels', {
       query_text: 'keyword',
       filter_condition: { filter: true },
       page_size: 5,
       page_current: 2,
       data_source: 'my',
-      order_by: { key: 'baseName', lang: 'en', order: 'desc' },
       state_code_filter: 20,
       team_id_filter: null,
       this_user_id: 'user-0001',
@@ -2284,7 +2283,7 @@ describe('table/search helpers', () => {
     });
   });
 
-  it('preserves language-neutral sorting and maps missing cache and version fallbacks', async () => {
+  it('ignores unsupported sorting and maps missing cache and version fallbacks', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [
         {
@@ -2314,10 +2313,8 @@ describe('table/search helpers', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_lifecyclemodels_latest',
-      expect.objectContaining({
-        order_by: { key: 'baseName', order: 'desc' },
-      }),
+      'search_lifecyclemodels',
+      expect.not.objectContaining({ order_by: expect.anything() }),
     );
     expect(mockGenClassificationZH).toHaveBeenCalledWith([], []);
     expect(result.data).toEqual([
@@ -2329,7 +2326,7 @@ describe('table/search helpers', () => {
   });
 
   it.each(['de', 'fr'] as const)(
-    'loads %s lifecycle-model classifications and resolves RPC sort language',
+    'loads %s lifecycle-model classifications without sending an RPC sort payload',
     async (lang) => {
       mockRpc.mockResolvedValueOnce({
         data: [
@@ -2368,10 +2365,8 @@ describe('table/search helpers', () => {
       expect(mockGetCachedClassificationData).toHaveBeenCalledWith('LifeCycleModel', lang, ['all']);
       expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
       expect(mockRpc).toHaveBeenCalledWith(
-        'search_lifecyclemodels_latest',
-        expect.objectContaining({
-          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
-        }),
+        'search_lifecyclemodels',
+        expect.not.objectContaining({ order_by: expect.anything() }),
       );
     },
   );
@@ -2391,13 +2386,12 @@ describe('table/search helpers', () => {
       20,
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels', {
       query_text: 'keyword',
       filter_condition: {},
       page_size: 10,
       page_current: 1,
       data_source: 'my',
-      order_by: {},
       state_code_filter: 20,
       team_id_filter: null,
       this_user_id: 'user-0001',

@@ -170,7 +170,7 @@ describe('contacts-create-version-update-reference-workflow-lib', () => {
         '--frontend-url',
         'http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--data-file',
         'fixtures/004.json',
         '--keep-created',
@@ -183,7 +183,7 @@ describe('contacts-create-version-update-reference-workflow-lib', () => {
 
     expect(options.role).toBe('user');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.dataFile).toBe('/repo/fixtures/004.json');
     expect(options.keepData).toBe(true);
     expect(options.generateId).toBe(true);
@@ -319,9 +319,9 @@ describe('contacts-create-version-update-reference-workflow-lib', () => {
           userId: 'user-1',
         },
         supabaseTarget: {
-          apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-          dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-          projectId: 'fotofiyqnuyvgtotswie',
+          apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+          dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+          projectId: 'submidrhbtknjxfympna',
           publishableKey: 'sb_publishable_test',
         },
         updateReferenceStep: {
@@ -533,7 +533,7 @@ describe('contacts-create-version-update-reference-workflow-lib', () => {
           role: 'user',
           runtimeRecordFile,
           supabasePublishableKey: 'sb_publishable_test',
-          supabaseUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+          supabaseUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
           usersFile,
           verifyFrontend: false,
           writeRuntime: true,
@@ -577,6 +577,7 @@ describe('contacts-create-version-update-reference-workflow-lib', () => {
                   signInWithPassword,
                   signOut,
                 },
+                schema: jest.fn().mockReturnValue({ from }),
                 from,
                 functions: {
                   invoke: functionsInvoke,

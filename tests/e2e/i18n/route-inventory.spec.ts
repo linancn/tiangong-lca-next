@@ -27,7 +27,7 @@ import {
   installSemanticBackendSimulator,
 } from './semantic-backend-simulator';
 
-const ROLES_API_PATTERN = '**/rest/v1/roles?*';
+const MEMBERSHIP_RPC_PATTERN = '**/rest/v1/rpc/qry_membership_get_mine';
 const productionBackendTarget = readVerifiedProductionBackendTarget();
 
 async function fulfillStandardUserRole(route: Route): Promise<boolean> {
@@ -35,19 +35,13 @@ async function fulfillStandardUserRole(route: Route): Promise<boolean> {
     await route.fallback();
     return false;
   }
-  const requestTarget = new URL(route.request().url());
-  const userFilter = requestTarget.searchParams.get('user_id') ?? '';
-  expect(userFilter).toMatch(/^eq\.[0-9a-f-]+$/iu);
   assertAuditedSyntheticReadRequest(route.request(), {
     expectedOrigin: productionBackendTarget.origin,
     expectedPublishableKey: productionBackendTarget.publishableKey,
-    method: 'GET',
-    pathname: '/rest/v1/roles',
-    searchParams: {
-      select: 'user_id,role',
-      team_id: 'eq.00000000-0000-0000-0000-000000000000',
-      user_id: userFilter,
-    },
+    jsonBody: {},
+    method: 'POST',
+    pathname: '/rest/v1/rpc/qry_membership_get_mine',
+    searchParams: {},
   });
   await route.fulfill({
     // Route-boundary evidence is defined for a standard authenticated user. Keep that
@@ -109,7 +103,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   expect(baseURL).toBeTruthy();
   await signInViaUi(page);
   const standardRoleReads = { fulfilled: 0 };
-  await page.route(ROLES_API_PATTERN, async (route) => {
+  await page.route(MEMBERSHIP_RPC_PATTERN, async (route) => {
     if (new URL(page.url()).hash.split('?')[0] !== '#/data-processing') {
       await route.fallback();
       return;

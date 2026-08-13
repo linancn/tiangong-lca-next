@@ -191,6 +191,7 @@ const setupModuleMocks = () => {
       __esModule: true,
       getUserRoles: jest.fn(),
       getSystemUserRoleApi: jest.fn(),
+      getReviewUserRoleApi: jest.fn(),
     }),
     { virtual: true },
   );
@@ -218,8 +219,15 @@ const { AvatarDropdown, AvatarName } =
 
 const { logout: mockedLogout } = require('@/services/auth') as { logout: jest.Mock };
 
-const { getUserRoles: mockedGetUserRoles, getSystemUserRoleApi: mockedGetSystemUserRoleApi } =
-  require('@/services/roles/api') as { getUserRoles: jest.Mock; getSystemUserRoleApi: jest.Mock };
+const {
+  getUserRoles: mockedGetUserRoles,
+  getSystemUserRoleApi: mockedGetSystemUserRoleApi,
+  getReviewUserRoleApi: mockedGetReviewUserRoleApi,
+} = require('@/services/roles/api') as {
+  getUserRoles: jest.Mock;
+  getSystemUserRoleApi: jest.Mock;
+  getReviewUserRoleApi: jest.Mock;
+};
 
 describe('AvatarDropdown', () => {
   beforeEach(() => {
@@ -234,6 +242,7 @@ describe('AvatarDropdown', () => {
     mockedLogout.mockResolvedValue(undefined);
     mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'member' }] });
     mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'admin' });
+    mockedGetReviewUserRoleApi.mockResolvedValue(null);
     window.history.pushState({}, '', '/');
   });
 
@@ -253,6 +262,7 @@ describe('AvatarDropdown', () => {
 
     await waitFor(() => {
       expect(mockedGetSystemUserRoleApi).toHaveBeenCalled();
+      expect(mockedGetReviewUserRoleApi).toHaveBeenCalled();
     });
   });
 
@@ -276,6 +286,7 @@ describe('AvatarDropdown', () => {
     expect(screen.getByRole('status', { name: /loading user menu/i })).toBeInTheDocument();
     await waitFor(() => {
       expect(mockedGetSystemUserRoleApi).toHaveBeenCalled();
+      expect(mockedGetReviewUserRoleApi).toHaveBeenCalled();
     });
   });
 
@@ -312,6 +323,7 @@ describe('AvatarDropdown', () => {
 
     await user.click(screen.getByRole('button', { name: 'System Management' }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/manageSystem');
+    expect(screen.queryByRole('button', { name: 'Review Management' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Logout' }));
 
@@ -334,7 +346,35 @@ describe('AvatarDropdown', () => {
     });
   });
 
-  it('shows review navigation when user has review role while hiding system settings', async () => {
+  it.each(['review-admin', 'review-member'])(
+    'shows review navigation for %s while hiding system management without a system role',
+    async (role) => {
+      const setInitialState = jest.fn();
+      mockUseModel.mockImplementation((model: string) => {
+        if (model === '@@initialState') {
+          return { initialState: { currentUser: { name: 'Riley' } }, setInitialState };
+        }
+        return {};
+      });
+
+      mockedGetSystemUserRoleApi.mockResolvedValue(null);
+      mockedGetReviewUserRoleApi.mockResolvedValue({ role });
+
+      const user = userEvent.setup();
+
+      render(<AvatarDropdown>avatar</AvatarDropdown>);
+
+      expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'System Management' })).not.toBeInTheDocument();
+
+      const reviewButton = await screen.findByRole('button', { name: 'Review Management' });
+      await user.click(reviewButton);
+
+      expect(mockHistoryPush).toHaveBeenCalledWith('/review');
+    },
+  );
+
+  it('shows system and review navigation when both roles are assigned', async () => {
     const setInitialState = jest.fn();
     mockUseModel.mockImplementation((model: string) => {
       if (model === '@@initialState') {
@@ -343,19 +383,31 @@ describe('AvatarDropdown', () => {
       return {};
     });
 
-    mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'review-member' });
+    mockedGetReviewUserRoleApi.mockResolvedValue({ role: 'review-admin' });
 
-    const user = userEvent.setup();
+    render(<AvatarDropdown>avatar</AvatarDropdown>);
+
+    expect(await screen.findByRole('button', { name: 'System Management' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Review Management' })).toBeInTheDocument();
+  });
+
+  it('hides privileged navigation when neither role lookup finds a membership', async () => {
+    const setInitialState = jest.fn();
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: { currentUser: { name: 'Jordan' } }, setInitialState };
+      }
+      return {};
+    });
+
+    mockedGetSystemUserRoleApi.mockResolvedValue(null);
+    mockedGetReviewUserRoleApi.mockResolvedValue(null);
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
 
     expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'System Settings' })).not.toBeInTheDocument();
-
-    const reviewButton = await screen.findByRole('button', { name: 'Review Management' });
-    await user.click(reviewButton);
-
-    expect(mockHistoryPush).toHaveBeenCalledWith('/review');
+    expect(screen.queryByRole('button', { name: 'System Management' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Review Management' })).not.toBeInTheDocument();
   });
 
   it('opens the team selection modal when the user is not part of a team', async () => {

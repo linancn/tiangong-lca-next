@@ -8,6 +8,7 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
@@ -369,7 +370,7 @@ export async function getFlowpropertyTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_flowproperties_latest',
+      'search_flowproperties',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -494,8 +495,7 @@ export async function getReferenceUnitGroups(params: { id: string; version: stri
         json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup
     `;
   if (ids.length) {
-    const { data } = await supabase
-      .from('flowproperties')
+    const { data } = await publicEntity('flowproperties')
       .select(selectStr)
       .in('id', ids)
       .order('version', { ascending: false });
@@ -539,22 +539,19 @@ export async function getReferenceUnitGroup(id: string, version: string) {
     `;
   if (id && id.length === 36) {
     if (version && version.length === 9) {
-      result = await supabase
-        .from('flowproperties')
+      result = await publicEntity('flowproperties')
         .select(selectStr)
         .eq('id', id)
         .eq('version', version);
       if (result.data === null || result.data.length === 0) {
-        result = await supabase
-          .from('flowproperties')
+        result = await publicEntity('flowproperties')
           .select(selectStr)
           .eq('id', id)
           .order('version', { ascending: false })
           .range(0, 0);
       }
     } else {
-      result = await supabase
-        .from('flowproperties')
+      result = await publicEntity('flowproperties')
         .select(selectStr)
         .eq('id', id)
         .order('version', { ascending: false })

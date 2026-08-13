@@ -171,15 +171,19 @@ export function buildDatasetSubmitReviewRpcArgs(
   audit: CommandAuditPayload,
 ): Record<string, unknown> {
   return {
-    p_table: request.table,
-    p_id: request.id,
-    p_version: request.version,
-    p_review_submit_gate_run_id: request.reviewSubmitGateRunId ?? null,
-    p_review_submit_revision_checksum: request.revisionChecksum ?? null,
-    p_review_submit_policy_profile:
-      request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-    p_review_submit_report_schema_version:
-      request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
+    p_target_table: request.table,
+    p_target_id: request.id,
+    p_target_version: request.version,
+    p_gate_context:
+      request.table === 'processes'
+        ? {
+            reviewSubmitGateRunId: request.reviewSubmitGateRunId,
+            revisionChecksum: request.revisionChecksum,
+            policyProfile: request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
+            reportSchemaVersion:
+              request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
+          }
+        : null,
     p_audit: audit,
   };
 }
@@ -340,7 +344,7 @@ export function callDatasetSubmitReviewRpc(
 ) {
   return callDatasetRpc(
     supabase,
-    'cmd_review_submit',
+    'cmd_review_submit_v2',
     buildDatasetSubmitReviewRpcArgs(request, audit),
   );
 }

@@ -33,8 +33,10 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockUnitGroupHybridSearch = jest.fn();
 const mockGetUnitGroupTableUuidMentionSearch = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
+const mockIsDataUnderReview = jest.fn((stateCode: number | undefined) => stateCode === 20);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -57,7 +59,7 @@ jest.mock('@/services/general/util', () => ({
   getDataSource: (...args: any[]) => mockGetDataSource(...args),
   getLang: (...args: any[]) => mockGetLang(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
-  isDataUnderReview: () => false,
+  isDataUnderReview: (...args: any[]) => mockIsDataUnderReview(...args),
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -73,7 +75,8 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
-  unitgroup_hybrid_search: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  unitgroup_hybrid_search: (...args: any[]) => mockUnitGroupHybridSearch(...args),
   getUnitGroupTableUuidMentionSearch: (...args: any[]) =>
     mockGetUnitGroupTableUuidMentionSearch(...args),
 }));
@@ -176,15 +179,22 @@ jest.mock('@/pages/Unitgroups/Components/create', () => ({
   __esModule: true,
   default: (props: any) => {
     mockUnitGroupCreateCalls.push(props);
-    const { actionType = 'create', importData, newVersion, disabled } = props;
+    const { actionType = 'create', importData, newVersion, disabled, onClose } = props;
     return (
-      <div data-testid='unitgroup-create'>
-        {JSON.stringify({
-          actionType,
-          importCount: importData?.length ?? 0,
-          newVersion,
-          disabled: !!disabled,
-        })}
+      <div>
+        <div data-testid='unitgroup-create'>
+          {JSON.stringify({
+            actionType,
+            importCount: importData?.length ?? 0,
+            newVersion,
+            disabled: !!disabled,
+          })}
+        </div>
+        {onClose ? (
+          <button type='button' onClick={() => onClose()}>
+            unitgroup-create-close
+          </button>
+        ) : null}
       </div>
     );
   },
@@ -202,7 +212,11 @@ jest.mock('@/pages/Unitgroups/Components/edit', () => ({
   __esModule: true,
   default: (props: any) => {
     mockUnitGroupEditCalls.push(props);
-    return <div data-testid='unitgroup-edit'>{`edit:${props.id}`}</div>;
+    return (
+      <div data-testid='unitgroup-edit'>
+        {JSON.stringify({ id: props.id, version: props.version, disabled: props.disabled })}
+      </div>
+    );
   },
 }));
 
@@ -236,8 +250,7 @@ jest.mock('antd', () => {
     return <div title={label}>{children}</div>;
   };
 
-  const Checkbox = ({ children, onChange }: any) => {
-    const [checked, setChecked] = React.useState(false);
+  const Checkbox = ({ checked = false, children, onChange }: any) => {
     return (
       <label>
         <input
@@ -246,7 +259,6 @@ jest.mock('antd', () => {
           type='checkbox'
           onChange={() => {
             const next = !checked;
-            setChecked(next);
             onChange?.({ target: { checked: next } });
           }}
         />
@@ -451,6 +463,21 @@ describe('UnitgroupsPage', () => {
       ],
       success: true,
     });
+    mockUnitGroupHybridSearch.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-1',
+          version: '1.0.0',
+          name: 'Length units',
+          refUnitName: 'm2',
+          refUnitGeneralComment: 'Area unit',
+          classification: 'Physical',
+          modifiedAt: '2024-01-01',
+          teamId: '',
+        },
+      ],
+      success: true,
+    });
     mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
       data: [],
       success: true,
@@ -487,8 +514,8 @@ describe('UnitgroupsPage', () => {
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
     expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":true');
     expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
@@ -497,7 +524,7 @@ describe('UnitgroupsPage', () => {
     expect(mockAllVersionsOperationWidths).toContain(104);
   });
 
-  it('loads admin my data read-only and supports pgroonga search', async () => {
+  it('allows system admins to create, import, and edit while keeping other row actions closed', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -517,16 +544,26 @@ describe('UnitgroupsPage', () => {
       'all',
     );
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-1'),
     );
-    expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"id":"ug-1"');
+    expect(screen.getByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
-    expect(mockAllVersionsOperationWidths).toContain(104);
+    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
+    expect(mockAllVersionsOperationWidths).toContain(144);
+
+    await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":1');
+    await userEvent.click(screen.getByRole('button', { name: /unitgroup-create-close/i }));
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
@@ -550,6 +587,91 @@ describe('UnitgroupsPage', () => {
         {},
         '20',
         'team-1',
+      ),
+    );
+  });
+
+  it('keeps system-admin editing disabled while a unit group is under review', async () => {
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+    mockGetUnitGroupTableAll.mockResolvedValue({
+      data: [
+        {
+          id: 'ug-review',
+          version: '1.0.0',
+          name: 'Under-review units',
+          stateCode: 20,
+        },
+      ],
+      success: true,
+    });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":true');
+    expect(mockIsDataUnderReview).toHaveBeenCalledWith(20);
+  });
+
+  it('routes smart search to hybrid search and keeps search modes mutually exclusive', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+    renderWithProviders(<UnitgroupsPage />);
+
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    await userEvent.click(smartSearch);
+
+    expect(smartSearch).toBeChecked();
+    expect(referenceSearch).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'density',
+        {},
+        'all',
+        'team-1',
+      ),
+    );
+    expect(mockGetUnitGroupTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(smartSearch);
+    expect(smartSearch).not.toBeChecked();
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    expect(smartSearch).not.toBeChecked();
+    expect(referenceSearch).toBeChecked();
+    await userEvent.click(referenceSearch);
+    expect(referenceSearch).not.toBeChecked();
+  });
+
+  it('uses an empty team id for smart search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/unitgroups', search: '' };
+    mockGetRoleByUserId.mockResolvedValue([]);
+    renderWithProviders(<UnitgroupsPage />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() =>
+      expect(mockUnitGroupHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'density',
+        {},
+        'all',
+        '',
       ),
     );
   });
@@ -630,7 +752,7 @@ describe('UnitgroupsPage', () => {
     );
   });
 
-  it('uses compact mobile controls for my data rows without import actions', async () => {
+  it('keeps admin create, import, and edit controls available on mobile', async () => {
     mockBreakpointScreens = { md: false };
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -643,7 +765,9 @@ describe('UnitgroupsPage', () => {
 
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
+    expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     await waitFor(() => expect(mockAllVersionsOperationWidths).toContain(88));
   });
 
@@ -699,7 +823,7 @@ describe('UnitgroupsPage', () => {
     expect(mockContributeSource).not.toHaveBeenCalled();
   });
 
-  it('reloads when the state filter changes without import or create actions', async () => {
+  it('reloads when the state filter changes with admin create and import actions', async () => {
     mockGetRoleByUserId.mockResolvedValue([
       {
         team_id: '00000000-0000-0000-0000-000000000000',
@@ -713,8 +837,8 @@ describe('UnitgroupsPage', () => {
       expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument(),
     );
 
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('unitgroup-create')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>

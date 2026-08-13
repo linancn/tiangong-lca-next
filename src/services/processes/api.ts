@@ -16,17 +16,14 @@ import {
   type LangNormalizationMetadata,
   type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
-import {
-  getServiceQueryLanguage,
-  type SupportedContentLanguage,
-  type SupportedServiceQueryLanguage,
-} from '@/services/general/contentLanguageRegistry';
+import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import {
   normalizeDeleteCommandResult,
   type SupabaseMutationResult,
 } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
@@ -138,28 +135,6 @@ function normalizeProcessSortBy(sortBy: string): string {
 
 function normalizeProcessSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
-}
-
-function resolveProcessSearchOrderBy(orderBy?: ProcessSearchOrderBy): Partial<
-  Omit<ProcessSearchOrderBy, 'lang'> & {
-    lang?: SupportedServiceQueryLanguage;
-  }
-> {
-  if (!orderBy) {
-    return {};
-  }
-
-  if (!orderBy.lang) {
-    return {
-      key: orderBy.key,
-      order: orderBy.order,
-    };
-  }
-
-  return {
-    ...orderBy,
-    lang: getServiceQueryLanguage(orderBy.lang),
-  };
 }
 
 function getLocalizedProcessClassification(
@@ -312,8 +287,7 @@ export async function listMyProcessesForLca(
   }
 
   const limit = Math.min(Math.max(options.limit ?? 200, 1), 500);
-  const result = await supabase
-    .from('processes')
+  const result = await publicEntity('processes')
     .select(
       `
       id,
@@ -344,7 +318,7 @@ export async function listMyProcessesForLca(
         name: name || `${id}@${version}`,
       };
     })
-    .filter((item): item is LcaMyProcessOption => item !== null);
+    .filter((item: LcaMyProcessOption | null): item is LcaMyProcessOption => item !== null);
 
   return { data, success: true };
 }
@@ -602,8 +576,7 @@ async function getProcessTableAllData(
 
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
-  let query = supabase
-    .from('processes')
+  let query = publicEntity('processes')
     .select(selectStr4Table, { count: 'exact' })
     .or(
       ownerDraftOnly
@@ -691,8 +664,7 @@ export async function getConnectableProcessesTable(
 
   const tableName = 'processes';
 
-  let query = supabase
-    .from(tableName)
+  let query = publicEntity(tableName)
     .select(selectStr, { count: 'exact' })
     .order(sortBy, { ascending: orderBy === 'ascend' });
   // .range(
@@ -757,7 +729,9 @@ export async function getConnectableProcessesTable(
   );
   result.data = [...filteredData];
 
-  const locations = Array.from(new Set(result.data.map((i: any) => i['@location'])));
+  const locations = Array.from(
+    new Set<string>(result.data.map((i: any) => String(i['@location'] ?? ''))),
+  ).filter(Boolean);
   const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getCachedLocationData(lang, locations),
@@ -827,7 +801,7 @@ export async function getProcessTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
-  orderBy?: ProcessSearchOrderBy,
+  _orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
   ownerDraftOnly = false,
 ) {
@@ -850,7 +824,6 @@ export async function getProcessTablePgroongaSearch(
   const requestParams: { [key: string]: any } = {
     query_text: queryText,
     filter_condition: filterCondition,
-    order_by: resolveProcessSearchOrderBy(orderBy),
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
     data_source: dataSource,
@@ -861,7 +834,7 @@ export async function getProcessTablePgroongaSearch(
     query_terms: [queryText],
     owner_draft_only: ownerDraftOnly,
   };
-  const result = await supabase.rpc('search_processes_latest_v2', requestParams);
+  const result = await supabase.rpc('search_processes', requestParams);
   if (result.error) {
     console.log('error', result.error);
   }
@@ -1326,8 +1299,7 @@ export async function getProcessDetailByIdAndVersion(
   if (data && data.length > 0) {
     const orConditions = data.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
 
-    const result = await supabase
-      .from('processes')
+    const result = await publicEntity('processes')
       .select('id,json,version, modified_at, state_code')
       .or(orConditions);
 
@@ -1346,14 +1318,12 @@ export async function getProcessDetail(id: string, version: string) {
   let result: any = {};
   if (id && id.length === 36) {
     if (version && version.length === 9) {
-      result = await supabase
-        .from('processes')
+      result = await publicEntity('processes')
         .select('json,version, modified_at,state_code,rule_verification,team_id,reviews')
         .eq('id', id)
         .eq('version', version);
     } else {
-      result = await supabase
-        .from('processes')
+      result = await publicEntity('processes')
         .select('json,version, modified_at,state_code,rule_verification,team_id,reviews')
         .eq('id', id)
         .order('version', { ascending: false })
@@ -1415,8 +1385,7 @@ export async function getProcessExchange(
 
 export async function getProcessDetailByIdsAndVersion(ids: string[], version: string) {
   if (ids && ids.length > 0) {
-    const result = await supabase
-      .from('processes')
+    const result = await publicEntity('processes')
       .select('id,json,version, modified_at')
       .eq('version', version)
       .in('id', ids);
@@ -1445,7 +1414,7 @@ export async function getProcessesByIdAndVersion(
     };
   }
   const orConditions = params.map((k) => `and(id.eq.${k.id},version.eq.${k.version})`).join(',');
-  const result = await supabase.from('processes').select(selectStr4Table).or(orConditions);
+  const result = await publicEntity('processes').select(selectStr4Table).or(orConditions);
 
   let data: any[] = [];
   if (lang) {
@@ -1495,15 +1464,14 @@ export async function getProcessesByIdAndVersion(
 }
 
 export async function validateProcessesByIdAndVersion(id: string, version: string) {
-  const resultVersion = await supabase
-    .from('processes')
+  const resultVersion = await publicEntity('processes')
     .select('id,version')
     .eq('id', id)
     .eq('version', version);
   if (resultVersion?.data && resultVersion.data.length > 0) {
     return true;
   }
-  // const result = await supabase.from('processes').select('id,version').eq('id', id);
+  // const result = await publicEntity('processes').select('id,version').eq('id', id);
   // if (result?.data && result.data.length > 0) {
   //   return true;
   // }

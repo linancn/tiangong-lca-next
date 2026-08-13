@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-31
-lastReviewedCommit: 38a8539074b6c51ac5f99c53f01640c9509f0c9e
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: record Root/Reference semantics, advisory Reviewer outcomes, Admin override rules, exact-target state transitions, Process-only Gate, and owner-only rejection notifications.'
+lastReviewedAt: 2026-08-11
+lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
+lastReviewedNote: 'Reviewed for Issue #811: toolbar presentation changes do not alter Root/Reference state codes, transition rules, or the Admin-versus-Member batch decision boundary.'
 ---
 
 # Audit Status Reference
@@ -41,7 +41,7 @@ lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: record Root
 | `reviews`         | Root, Reference, and immutable legacy review tasks |
 | `comments`        | assigned Review Member opinions                    |
 
-New reviews use `review_kind = root | reference`. Migrated legacy source rows retain `review_kind = null` and remain read-only history. A Root Review stores its append-only reference relation in `scope_history`; a Reference Review is shared by every Root Review that uses the same exact dataset revision.
+New reviews use `review_kind = root | reference`. Migrated legacy source rows retain `review_kind = null` and remain read-only history. Root-to-Reference relationships are derived from the current dataset JSON and formally submitted Reviewer comments; a Reference Review is shared by every Root Review that uses the same exact dataset revision.
 
 ## Status Codes
 
@@ -89,6 +89,14 @@ New reviews use `review_kind = root | reference`. Migrated legacy source rows re
 
 Review Member outcomes are advisory. Review Admin may finally approve even when every Review Member used `-3`, and may reject before every Review Member has completed. A Root Review may be approved while its Reference Reviews are still pending; this does not approve or release those references. Conversely, a Reference Review continues independently when its only Root Review is rejected.
 
+## Batch Decision Boundary
+
+- Review Admin `unassigned` selections expose batch reject only; this is a final admin rejection.
+- Review Admin `assigned` selections expose batch approve and reject; both are final admin decisions.
+- Review Member `pending` selections expose batch approve and reject; these submit only that member's advisory Comment outcome and never finalize the Review.
+- Every selected Review is processed independently. A stale or unauthorized row is reported as an item failure without rolling back successful rows.
+- Batch actions reuse the same state transitions, authorization, rejection-reason rules, and Process/Lifecycle Model metadata requirements as the corresponding single-item command.
+
 Process and Lifecycle Model Root Reviews retain their existing metadata form and metadata writeback. Contact, Source, Unit Group, Flow Property, Flow, and every Reference Review use only approve/reject actions: approve requires no opinion; reject requires a reason.
 
 ## Process Summary
@@ -100,4 +108,8 @@ Process and Lifecycle Model Root Reviews retain their existing metadata form and
 5. Review Members record advisory opinions
 6. Review Admin makes the final decision and only the data owner receives the result notification
 7. rejection reasons are shown through notifications; dataset detail pages are unchanged
-8. Review Management expands a Root row to show all related Reference Reviews
+8. Review Management shows every matching Root and Reference Review as its own row in the top-level paginated table
+9. only Process and Lifecycle Model Root rows can expand; their child table shows current Reference Reviews that match the selected tab
+10. every top-level row keeps its own selectable action when the actor has permission; Review Members see only their assigned/readable reviews
+11. the child table does not show a reference-path column, and no persisted or visible reference-overview field is required
+12. every readable Root or Reference row exposes a view icon that opens the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer; viewing does not alter review state or access

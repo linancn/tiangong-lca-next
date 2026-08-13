@@ -112,6 +112,9 @@ type ReffPathNode = {
   '@type': string;
   ruleVerification: boolean;
   nonExistent: boolean;
+  underReviewVersion?: string;
+  versionIsInTg?: boolean;
+  versionUnderReview?: boolean;
 };
 
 export type ProblemNode = ReffPathNode;
@@ -279,6 +282,13 @@ const isSameRef = (
     leftRef?.['@version'] === rightRef?.['@version']
   );
 };
+
+const isAllowedExactUnderReviewReference = (
+  actionFrom: 'checkData' | 'review',
+  ref: Pick<ReffPathNode, '@refObjectId' | '@type' | '@version' | 'underReviewVersion'>,
+  rootRef: refDataType,
+) =>
+  actionFrom === 'review' && !isSameRef(ref, rootRef) && ref.underReviewVersion === ref['@version'];
 
 const getDatasetRootRef = (
   datasetType: refDataType['@type'],
@@ -971,6 +981,10 @@ export const buildValidationIssues = ({
     }
 
     if (node.versionUnderReview) {
+      if (isAllowedExactUnderReviewReference(actionFrom, node, rootRef)) {
+        return;
+      }
+
       pushValidationIssue(issues, issueKeys, {
         code:
           actionFrom === 'review' && node.underReviewVersion === node['@version']
@@ -1087,8 +1101,13 @@ export class ReffPath {
       let isProblemNode = node.ruleVerification === false || node.nonExistent === true;
 
       if (actionFrom === 'review') {
+        const exactUnderReviewReferenceAllowed =
+          node.versionUnderReview === true &&
+          isAllowedExactUnderReviewReference(actionFrom, node, this);
         isProblemNode =
-          isProblemNode || node?.versionIsInTg === true || node?.versionUnderReview === true;
+          isProblemNode ||
+          node?.versionIsInTg === true ||
+          (node?.versionUnderReview === true && !exactUnderReviewReferenceAllowed);
       }
 
       if (isProblemNode) {

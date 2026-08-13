@@ -70,6 +70,8 @@ const mapTeamNotificationRow = (row: TeamNotificationRpcRow) => ({
 const getNotificationLastViewAt = (lastViewTime?: number) =>
   lastViewTime && lastViewTime > 0 ? new Date(lastViewTime).toISOString() : null;
 
+const getMyMemberships = () => supabase.rpc('qry_membership_get_mine');
+
 async function invokeMembershipCommand(command: string, body: Record<string, unknown>) {
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
@@ -92,20 +94,9 @@ const getCommandError = (result: { data: any; error: any }) =>
   result.error ?? (result.data?.ok === false ? result.data : null);
 
 export async function getUserTeamId() {
-  const session = await supabase.auth.getSession();
-  const { data } = await supabase
-    .from('roles')
-    .select(
-      `
-      user_id,
-      team_id,
-      role
-      `,
-    )
-    .eq('user_id', session?.data?.session?.user?.id)
-    .neq('team_id', SYSTEM_TEAM_ID);
+  const { data } = await getMyMemberships();
 
-  return data?.[0]?.team_id;
+  return data?.find((membership: MemberListRow) => membership.team_id !== SYSTEM_TEAM_ID)?.team_id;
 }
 
 export async function getTeamRoles(
@@ -145,38 +136,61 @@ export async function addRoleApi(userId: string, teamId: string, role: string) {
         });
   return getCommandError(result);
 }
+export async function getUserIdsByTeamIds(teamIds: string[]): Promise<MemberListRow[]> {
+  const results = await Promise.all(
+    [...new Set(teamIds)].map((teamId) =>
+      supabase.rpc('qry_team_get_member_list', {
+        p_team_id: teamId,
+        p_page: 1,
+        p_page_size: 100,
+        p_sort_by: 'created_at',
+        p_sort_order: 'asc',
+      }),
+    ),
+  );
+  return results.flatMap((result) =>
+    result.error ? [] : ((result.data ?? []) as MemberListRow[]),
+  );
+}
+
 export async function getRoleByuserId(userId: string) {
-  return await supabase
-    .from('roles')
-    .select('*')
-    .eq('user_id', userId)
-    .neq('team_id', SYSTEM_TEAM_ID);
+  const session = await supabase.auth.getSession();
+  const memberships = await getMyMemberships();
+  if (memberships.error) {
+    return memberships;
+  }
+  if (session.data.session?.user?.id === userId) {
+    return {
+      data: (memberships.data ?? []).filter(
+        (membership: MemberListRow) => membership.team_id !== SYSTEM_TEAM_ID,
+      ),
+      error: null,
+    };
+  }
+
+  const visible = await getUserIdsByTeamIds(
+    (memberships.data ?? [])
+      .map((membership: MemberListRow) => membership.team_id)
+      .filter((teamId: string | undefined): teamId is string =>
+        Boolean(teamId && teamId !== SYSTEM_TEAM_ID),
+      ),
+  );
+  return {
+    data: visible.filter((membership) => membership.user_id === userId),
+    error: null,
+  };
 }
 
 export async function getUserRoles() {
-  const session = await supabase.auth.getSession();
-  const result = await supabase
-    .from('roles')
-    .select(
-      `
-      user_id,
-      team_id,
-      role
-      `,
-    )
-    .eq('user_id', session?.data?.session?.user?.id)
-    .neq('team_id', SYSTEM_TEAM_ID);
+  const result = await getMyMemberships();
 
   return Promise.resolve({
-    data: result.data ?? [],
-    success: true,
+    data: (result.data ?? []).filter(
+      (membership: MemberListRow) => membership.team_id !== SYSTEM_TEAM_ID,
+    ),
+    success: !result.error,
   });
 }
-
-export const getUserIdsByTeamIds = async (teamIds: string[]) => {
-  const result = await supabase.from('roles').select('user_id,team_id,role').in('team_id', teamIds);
-  return result.data ?? [];
-};
 
 export async function getTeamInvitationStatusApi(timeFilter: number = 3) {
   const session = await supabase.auth.getSession();
@@ -354,18 +368,17 @@ export async function acceptTeamInvitationApi(teamId: string, userId: string) {
 // system api
 export async function getSystemUserRoleApi() {
   try {
-    const session = await supabase.auth.getSession();
-    const { data, error } = await supabase
-      .from('roles')
-      .select('user_id,role')
-      .eq('user_id', session?.data?.session?.user?.id)
-      .eq('team_id', SYSTEM_TEAM_ID)
-      .maybeSingle();
+    const { data, error } = await getMyMemberships();
 
     if (error) {
       throw error;
     }
-    return data;
+    const membership = data?.find(
+      (membership: MemberListRow) =>
+        membership.team_id === SYSTEM_TEAM_ID &&
+        ['owner', 'admin', 'member', 'data_product_manager'].includes(membership.role),
+    );
+    return membership ? { user_id: membership.user_id, role: membership.role } : null;
   } catch (error) {
     console.log(error);
     return null;
@@ -436,19 +449,17 @@ export async function addSystemMemberApi(email: string) {
 // review api
 export async function getReviewUserRoleApi() {
   try {
-    const session = await supabase.auth.getSession();
-    const { data, error } = await supabase
-      .from('roles')
-      .select('user_id,role')
-      .eq('user_id', session?.data?.session?.user?.id)
-      .eq('team_id', SYSTEM_TEAM_ID)
-      .in('role', ['review-admin', 'review-member'])
-      .maybeSingle();
+    const { data, error } = await getMyMemberships();
 
     if (error) {
       throw error;
     }
-    return data;
+    const membership = data?.find(
+      (membership: MemberListRow) =>
+        membership.team_id === SYSTEM_TEAM_ID &&
+        ['review-admin', 'review-member'].includes(membership.role),
+    );
+    return membership ? { user_id: membership.user_id, role: membership.role } : null;
   } catch (error) {
     console.log(error);
     return null;
@@ -545,20 +556,24 @@ export async function getLatestRolesOfMine() {
     return null;
   }
 
-  const { data } = await supabase
-    .from('roles')
-    .select('*')
-    .eq('user_id', userId)
-    .in('role', ['admin', 'member', 'is_invited'])
-    .order('modified_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data } = await getMyMemberships();
 
-  return data;
+  return (
+    data?.find(
+      (membership: MemberListRow) =>
+        membership.user_id === userId &&
+        ['admin', 'member', 'is_invited'].includes(membership.role),
+    ) ?? null
+  );
 }
 
-export async function getRoleByUserId() {
+export async function getRoleByUserId(): Promise<Array<{ team_id?: string; role: string }>> {
   const userId = await getUserId();
-  const { data } = await supabase.from('roles').select('team_id,role').eq('user_id', userId);
-  return data;
+  const { data } = await getMyMemberships();
+  return (data ?? [])
+    .filter((membership: MemberListRow) => membership.user_id === userId)
+    .map((membership: MemberListRow) => ({
+      team_id: membership.team_id,
+      role: membership.role,
+    }));
 }

@@ -24,15 +24,17 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   onOk,
 }) => {
   const formRef = useRef<FormInstance>(null);
+  const wasOpenRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const intl = useIntl();
 
   useEffect(() => {
-    if (!open) {
+    if (wasOpenRef.current && !open) {
       formRef?.current?.resetFields();
       actionRef?.current?.reload();
     }
+    wasOpenRef.current = open;
   }, [open]);
 
   const handleOpen = () => {

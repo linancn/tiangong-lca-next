@@ -25,7 +25,7 @@ describe('contacts-create-workflow-lib', () => {
         '--frontend-url',
         'http://127.0.0.1:8000',
         '--supabase-url',
-        'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
         '--keep-data',
         '--generate-id',
         '--no-verify-frontend',
@@ -35,7 +35,7 @@ describe('contacts-create-workflow-lib', () => {
 
     expect(options.role).toBe('user');
     expect(options.frontendUrl).toBe('http://127.0.0.1:8000');
-    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
+    expect(options.supabaseUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
     expect(options.keepData).toBe(true);
     expect(options.generateId).toBe(true);
     expect(options.verifyFrontend).toBe(false);
@@ -175,16 +175,16 @@ describe('contacts-create-workflow-lib', () => {
       {
         supabaseProjectUrl: undefined,
         supabasePublishableKey: undefined,
-        supabaseUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
+        supabaseUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
       },
       {
         SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test_key',
       } as NodeJS.ProcessEnv,
     );
 
-    expect(target.apiUrl).toBe('https://fotofiyqnuyvgtotswie.supabase.co');
-    expect(target.dashboardUrl).toBe('https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie');
-    expect(target.projectId).toBe('fotofiyqnuyvgtotswie');
+    expect(target.apiUrl).toBe('https://submidrhbtknjxfympna.supabase.co');
+    expect(target.dashboardUrl).toBe('https://supabase.com/dashboard/project/submidrhbtknjxfympna');
+    expect(target.projectId).toBe('submidrhbtknjxfympna');
     expect(target.publishableKey).toBe('sb_publishable_test_key');
   });
 
@@ -380,9 +380,9 @@ describe('contacts-create-workflow-lib', () => {
           },
           submittedRuleVerification: false,
           supabaseTarget: {
-            apiUrl: 'https://fotofiyqnuyvgtotswie.supabase.co',
-            dashboardUrl: 'https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie',
-            projectId: 'fotofiyqnuyvgtotswie',
+            apiUrl: 'https://submidrhbtknjxfympna.supabase.co',
+            dashboardUrl: 'https://supabase.com/dashboard/project/submidrhbtknjxfympna',
+            projectId: 'submidrhbtknjxfympna',
             publishableKey: 'sb_publishable_test_key',
           },
         },

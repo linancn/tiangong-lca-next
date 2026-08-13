@@ -306,8 +306,8 @@ const EXPECTATION_KEYS = new Set<ExpectationKey>([
 export const SOURCE_CREATE_VIEW_COPY_DATA_WORKFLOW_HELP = `Source create-view-copy data workflow
 
 Usage:
-  npm run test:workflows -- --sources:create-view-copy --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:workflows -- --sources:create-view-copy --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --sources:create-view-copy --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  npm run test:workflows -- --sources:create-view-copy --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one source from tests/data-workflows/fixtures/data/sources/001_create_view_copy.json
@@ -1039,6 +1039,7 @@ async function querySourceRecord(
   version: string,
 ): Promise<SourceWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('sources')
     .select('id,json,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

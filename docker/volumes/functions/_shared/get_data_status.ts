@@ -5,12 +5,14 @@ async function getDataStatus(id: string, version: string, table: string, supabas
   if (id && id.length === 36) {
     if (version && version.length === 9) {
       result = await supabase
+        .schema('public')
         .from(table)
         .select('user_id,state_code')
         .eq('id', id)
         .eq('version', version);
       if (result?.data === null || result.data.length === 0) {
         result = await supabase
+          .schema('public')
           .from(table)
           .select('user_id,state_code')
           .eq('id', id)
@@ -19,6 +21,7 @@ async function getDataStatus(id: string, version: string, table: string, supabas
       }
     } else {
       result = await supabase
+        .schema('public')
         .from(table)
         .select('user_id,state_code')
         .eq('id', id)

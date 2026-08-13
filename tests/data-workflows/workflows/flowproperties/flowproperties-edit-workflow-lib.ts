@@ -206,8 +206,8 @@ export type FlowpropertyEditDependencies = {
 export const FLOWPROPERTY_EDIT_DATA_WORKFLOW_HELP = `Flowproperty edit data workflow
 
 Usage:
-  npm run test:workflows -- --flowproperties:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:workflows -- --flowproperties:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --flowproperties:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  npm run test:workflows -- --flowproperties:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one flowproperty from tests/data-workflows/fixtures/data/flowProperties/001_create.json
@@ -903,6 +903,7 @@ async function queryFlowpropertyRecord(
   version: string,
 ): Promise<FlowpropertyWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('flowproperties')
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

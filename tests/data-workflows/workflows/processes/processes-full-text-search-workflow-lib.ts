@@ -164,7 +164,7 @@ export type ProcessFullTextSearchDependencies = {
 export const PROCESS_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = `Process full-text-search data workflow
 
 Usage:
-  npm run test:workflows -- --processes:full-text-search --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
+  npm run test:workflows -- --processes:full-text-search --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
   npm run test:workflows -- --processes:full-text-search --detail-result --no-keep-data
 
 Flags:
@@ -562,7 +562,7 @@ async function runProcessFullTextSearchQuery(input: {
     requestParams.type_of_data_set_filter = input.query.typeOfDataSet;
   }
 
-  const result = await input.supabase.rpc('search_processes_latest_v2', requestParams);
+  const result = await input.supabase.rpc('search_processes', requestParams);
   if (result.error) {
     throw new Error(
       `Process full-text search failed for "${input.query.label}": ${result.error.message}`,

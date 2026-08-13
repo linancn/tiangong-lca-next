@@ -8,8 +8,7 @@ import { commandError, json } from './http.ts';
 import { readJsonBody, type JsonBodyResult } from './request.ts';
 
 export type CommandParseResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; message: string; details?: unknown };
+  { ok: true; value: T } | { ok: false; message: string; details?: unknown };
 
 export type CommandExecutionResult =
   | { ok: true; body: unknown; status?: number }

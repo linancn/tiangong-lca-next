@@ -1329,7 +1329,7 @@ describe('review utilities', () => {
     );
   });
 
-  it('updates nested nodes and treats under-review versions as problems in review mode', () => {
+  it('updates nested nodes and treats another under-review version as a problem in review mode', () => {
     const parent = new ReffPath(
       {
         '@refObjectId': 'parent',
@@ -1359,6 +1359,15 @@ describe('review utilities', () => {
       'versionUnderReview',
       true,
     );
+    parent.set(
+      {
+        '@refObjectId': 'child',
+        '@version': '01',
+        '@type': 'flow data set',
+      },
+      'underReviewVersion',
+      '02',
+    );
 
     expect(parent.findProblemNodes('review')).toEqual(
       expect.arrayContaining([
@@ -1366,6 +1375,86 @@ describe('review utilities', () => {
         expect.objectContaining({ '@refObjectId': 'parent' }),
       ]),
     );
+  });
+
+  it('allows the exact referenced version to remain under review during root submission', () => {
+    const root = new ReffPath(
+      {
+        '@refObjectId': 'root-process',
+        '@version': '01',
+        '@type': 'process data set',
+      },
+      true,
+      false,
+    );
+    const referencedContact = new ReffPath(
+      {
+        '@refObjectId': 'contact-under-review',
+        '@version': '01',
+        '@type': 'contact data set',
+      },
+      true,
+      false,
+    );
+    root.addChild(referencedContact);
+    root.set(
+      {
+        '@refObjectId': 'contact-under-review',
+        '@version': '01',
+        '@type': 'contact data set',
+      },
+      'versionUnderReview',
+      true,
+    );
+    root.set(
+      {
+        '@refObjectId': 'contact-under-review',
+        '@version': '01',
+        '@type': 'contact data set',
+      },
+      'underReviewVersion',
+      '01',
+    );
+
+    expect(root.findProblemNodes('review')).toEqual([]);
+  });
+
+  it('keeps the root dataset itself blocked when its exact version is under review', () => {
+    const root = new ReffPath(
+      {
+        '@refObjectId': 'root-process',
+        '@version': '01',
+        '@type': 'process data set',
+      },
+      true,
+      false,
+    );
+    root.set(
+      {
+        '@refObjectId': 'root-process',
+        '@version': '01',
+        '@type': 'process data set',
+      },
+      'versionUnderReview',
+      true,
+    );
+    root.set(
+      {
+        '@refObjectId': 'root-process',
+        '@version': '01',
+        '@type': 'process data set',
+      },
+      'underReviewVersion',
+      '01',
+    );
+
+    expect(root.findProblemNodes('review')).toEqual([
+      expect.objectContaining({
+        '@refObjectId': 'root-process',
+        underReviewVersion: '01',
+        versionUnderReview: true,
+      }),
+    ]);
   });
 
   it('returns false when setting a ref that does not exist in the path', () => {

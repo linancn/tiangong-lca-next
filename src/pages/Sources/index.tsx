@@ -1,6 +1,7 @@
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import {
   getSourceTableAll,
+  getSourceTablePgroongaSearch,
   getSourceTableUuidMentionSearch,
   source_hybrid_search,
 } from '@/services/sources/api';
@@ -57,6 +58,7 @@ import {
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
+  type DatasetSearchMode,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import SourceCreate from './Components/create';
@@ -69,7 +71,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const [searchMode, setSearchMode] = useState<DatasetSearchMode>('normal');
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -96,6 +98,8 @@ const TableList: FC = () => {
   const stateCodeRef = useRef<string | number>('all');
   const keyWordRef = useRef<string>('');
   const referenceLookupLimitNoticeRef = useRef<string>('');
+  const openAI = searchMode === 'smart';
+  const referenceLookup = searchMode === 'reference';
   const attachReviewState = async (result: {
     data?: SourceTable[];
     page?: number;
@@ -351,20 +355,28 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={intl.formatMessage({
-                id: referenceLookup
-                  ? 'pages.search.referenceLookup.placeholder'
-                  : 'pages.search.keyWord',
-              })}
+              placeholder={
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+              }
               onSearch={onSearch}
               enterButton
             />
           </Col>
           <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={openAI}
+              onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+            >
+              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+            </Checkbox>
             <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
               <Checkbox
                 checked={referenceLookup}
-                onChange={(e) => setReferenceLookup(e.target.checked)}
+                onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
               >
                 <FormattedMessage
                   id='pages.search.referenceLookup'
@@ -465,8 +477,21 @@ const TableList: FC = () => {
                 return attachReviewState(result);
               }
               if (currentKeyWord.length > 0) {
+                if (openAI) {
+                  return attachReviewState(
+                    await source_hybrid_search(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      {},
+                      currentStateCode,
+                      tid ?? '',
+                    ),
+                  );
+                }
                 return attachReviewState(
-                  await source_hybrid_search(
+                  await getSourceTablePgroongaSearch(
                     requestParams,
                     lang,
                     dataSource,

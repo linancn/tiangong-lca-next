@@ -6,7 +6,7 @@ import type { CommandParseResult } from '../../command_runtime/command.ts';
 import { stableJsonSha256 } from './canonical_json.ts';
 import type { DatasetCommandExecutionResult } from './types.ts';
 
-type QueryClient = Pick<SupabaseClient, 'from'>;
+type QueryClient = Pick<SupabaseClient, 'schema'>;
 
 export const REMOTE_VERIFY_TABLES = [
   'contacts',
@@ -198,6 +198,7 @@ async function fetchRows(
   { ok: true; rows: RemoteVerifyRow[] } | { ok: false; message: string; details: unknown }
 > {
   let query = supabase
+    .schema('public')
     .from(reference.table)
     .select('id,version,state_code,user_id,modified_at,json_ordered')
     .eq('id', reference.id);

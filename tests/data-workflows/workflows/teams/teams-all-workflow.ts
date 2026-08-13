@@ -33,7 +33,7 @@ export const TEAM_DATA_WORKFLOWS = [
 export const TEAM_ALL_DATA_WORKFLOW_HELP = `Teams data workflow suite
 
 Usage:
-  npm run test:workflows -- --teams:all --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co --supabase-publishable-key <key>
+  npm run test:workflows -- --teams:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
   npm run test:workflows -- --teams:all --detail-result --no-write-runtime
 
 Behavior:

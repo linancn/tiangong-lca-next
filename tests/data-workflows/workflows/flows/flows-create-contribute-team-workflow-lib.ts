@@ -235,8 +235,8 @@ const EXPECTATION_KEYS = new Set<ExpectationKey>([
 export const FLOW_CREATE_CONTRIBUTE_TEAM_DATA_WORKFLOW_HELP = `Flow create-contribute-team data workflow
 
 Usage:
-  npm run test:workflows -- --flows:create-contribute-team --frontend-url http://127.0.0.1:8000 --supabase-url https://fotofiyqnuyvgtotswie.supabase.co
-  npm run test:workflows -- --flows:create-contribute-team --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/fotofiyqnuyvgtotswie
+  npm run test:workflows -- --flows:create-contribute-team --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  npm run test:workflows -- --flows:create-contribute-team --role user --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one flow from tests/data-workflows/fixtures/data/flows/005_create_contribute_team.json
@@ -861,6 +861,7 @@ async function queryFlowRecord(
   version: string,
 ): Promise<FlowWorkflowRecord> {
   const result = await supabase
+    .schema('public')
     .from('flows')
     .select('id,json_ordered,user_id,state_code,version,team_id,rule_verification,reviews')
     .eq('id', id)

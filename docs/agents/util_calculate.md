@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-08-01
-lastReviewedCommit: b8b32228f6debd2165512c26fc186801bd3bcfe2
-lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change allocation, scaling, submodel, or LCIA semantics.'
+lastReviewedAt: 2026-08-09
+lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
+lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: lifecycle-model lexical search RPC migration does not change allocation, scaling, submodel, or LCIA semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

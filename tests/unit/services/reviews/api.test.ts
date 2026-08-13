@@ -83,32 +83,17 @@ jest.mock('@/services/general/util', () => {
 });
 
 const mockGetUserId = jest.fn();
+const mockGetUsersByIds = jest.fn();
 let realGenProcessName: (...args: any[]) => any;
 const originalCrypto = globalThis.crypto;
 
 jest.mock('@/services/users/api', () => ({
   __esModule: true,
   getUserId: (...args: any[]) => mockGetUserId.apply(null, args),
+  getUsersByIds: (...args: any[]) => mockGetUsersByIds.apply(null, args),
 }));
 
 import * as reviewsApi from '@/services/reviews/api';
-
-const createQueryBuilder = <T>(resolvedValue: T) => {
-  const builder: any = {
-    select: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    range: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    filter: jest.fn().mockReturnThis(),
-    gte: jest.fn().mockReturnThis(),
-    gt: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue(resolvedValue),
-    then: (resolve: any, reject?: any) => Promise.resolve(resolvedValue).then(resolve, reject),
-  };
-  builder.in = jest.fn().mockReturnThis();
-  return builder;
-};
 
 beforeAll(() => {
   realGenProcessName = jest.requireActual('@/services/processes/util').genProcessName;
@@ -155,6 +140,8 @@ beforeEach(() => {
     return '-';
   });
   mockGetUserId.mockReset();
+  mockGetUsersByIds.mockReset();
+  mockGetUsersByIds.mockResolvedValue([]);
   mockGetUserId.mockResolvedValue('user-default');
 });
 
@@ -300,7 +287,7 @@ describe('getRootReviewReferenceProgress', () => {
     await expect(
       reviewsApi.getRootReviewReferenceProgress('11111111-1111-4111-8111-111111111111'),
     ).resolves.toEqual({ data: rows, error: null });
-    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_root_review_reference_progress_v2', {
       p_root_review_id: '11111111-1111-4111-8111-111111111111',
     });
   });
@@ -1238,6 +1225,28 @@ describe('review workflow command wrappers', () => {
     expect(approve).toEqual(approveResult);
     expect(reject).toEqual(rejectResult);
   });
+
+  it('keeps admin finalization and reviewer opinions on separate batch endpoints', async () => {
+    const commandResult = { data: { ok: true }, error: null };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    await reviewsApi.submitAdminReviewBatchDecision(
+      ['review-1', 'review-1', 'review-2'],
+      'reject',
+      '  Needs fixes  ',
+    );
+    await reviewsApi.submitReviewerBatchDecision(['review-3'], 'approve');
+
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(1, 'admin_review_batch_decision', {
+      reviewIds: ['review-1', 'review-2'],
+      decision: 'reject',
+      reason: 'Needs fixes',
+    });
+    expect(mockInvokeDatasetCommand).toHaveBeenNthCalledWith(2, 'app_review_batch_decision', {
+      reviewIds: ['review-3'],
+      decision: 'approve',
+    });
+  });
 });
 
 describe('updateReviewApi', () => {
@@ -1370,6 +1379,30 @@ describe('getRejectReviewsByProcess', () => {
 });
 
 describe('getReviewsTableDataOfReviewMember', () => {
+  it('forwards queue filters and defaults the page size to fifty', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: undefined as any, current: undefined as any },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+      { displayMode: 'other', targetTable: 'sources' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+      p_status: 'pending',
+      p_page: 1,
+      p_page_size: 50,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+      p_display_mode: 'other',
+      p_target_table: 'sources',
+    });
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
   it('returns empty table when reviewer user id cannot be resolved', async () => {
     mockGetUserId.mockResolvedValueOnce(undefined);
 
@@ -1395,7 +1428,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1416,7 +1449,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1426,11 +1459,117 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
+  it.each([
+    { type: 'pending' as const },
+    { type: 'reviewed' as const },
+    { type: 'reviewer-rejected' as const },
+  ])('enriches $type rows from the current visible identity profile', async ({ type }) => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: `review-member-${type}`,
+          target_table: 'contacts',
+          json: {
+            data: { id: `contact-${type}`, version: '01.00.000' },
+            user: { id: 'submitter-1', name: 'Stale Snapshot Name' },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce([
+      {
+        id: 'submitter-1',
+        email: 'submitter@example.com',
+        display_name: 'Current Submitter',
+      },
+    ]);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      type,
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledTimes(1);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-1']);
+    expect(result.data[0].userName).toBe('Current Submitter');
+  });
+
+  it('keeps the retained review snapshot when identity enrichment fails', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-profile-failure',
+          target_table: 'contacts',
+          json: {
+            data: { id: 'contact-profile-failure', version: '01.00.000' },
+            user: {
+              id: 'submitter-profile-failure',
+              name: 'Snapshot Submitter',
+              email: 'snapshot@example.com',
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockRejectedValueOnce(new Error('identity lookup failed'));
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(result.data[0].userName).toBe('Snapshot Submitter');
+  });
+
+  it('keeps the retained review snapshot when no visible identity rows are returned', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-member-profile-missing',
+          target_table: 'contacts',
+          json: {
+            data: { id: 'contact-profile-missing', version: '01.00.000' },
+            user: {
+              id: 'submitter-profile-missing',
+              email: 'snapshot-missing@example.com',
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce(null);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewMember(
+      { pageSize: 10, current: 1 },
+      {},
+      'pending',
+      'en',
+      { user_id: 'reviewer-1' },
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-profile-missing']);
+    expect(result.data[0].userName).toBe('snapshot-missing@example.com');
+  });
+
   it('maps reviewer-rejected comments with lifecycle model enrichment', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [
         {
           id: 'review-1',
+          state_code: -1,
+          review_kind: 'root',
+          target_table: 'lifecyclemodels',
+          root_matches_status: true,
+          root_can_read: true,
           created_at: '2024-04-01T00:00:00.000Z',
           modified_at: '2024-04-02T00:00:00.000Z',
           deadline: '2024-04-20T00:00:00.000Z',
@@ -1489,7 +1628,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'reviewer-rejected',
       p_page: 2,
       p_page_size: 10,
@@ -1506,6 +1645,11 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result.data[0]).toMatchObject({
       id: 'review-1',
       isFromLifeCycle: true,
+      reviewKind: 'root',
+      targetTable: 'lifecyclemodels',
+      stateCode: -1,
+      rootMatchesStatus: true,
+      rootCanRead: true,
       teamName: 'Team A',
       userName: 'reviewer@example.com',
       deadline: '2024-04-20T00:00:00.000Z',
@@ -1553,10 +1697,10 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'reviewed',
       p_page: 1,
-      p_page_size: 10,
+      p_page_size: 50,
       p_sort_by: 'modified_at',
       p_sort_order: 'descend',
     });
@@ -1742,7 +1886,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1761,6 +1905,29 @@ describe('getReviewsTableDataOfReviewMember', () => {
 });
 
 describe('getReviewsTableDataOfReviewAdmin', () => {
+  it('forwards queue filters and defaults the page size to fifty', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: undefined as any, current: undefined as any },
+      {},
+      'unassigned',
+      'en',
+      { displayMode: 'model_process', targetTable: 'processes' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+      p_status: 'unassigned',
+      p_page: 1,
+      p_page_size: 50,
+      p_sort_by: 'modified_at',
+      p_sort_order: 'descend',
+      p_display_mode: 'model_process',
+      p_target_table: 'processes',
+    });
+    expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
   it('returns empty table for unassigned type when no rows exist', async () => {
     mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
@@ -1771,7 +1938,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
       p_status: 'unassigned',
       p_page: 1,
       p_page_size: 10,
@@ -1779,6 +1946,69 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       p_sort_order: 'descend',
     });
     expect(result).toEqual({ data: [], success: true, total: 0 });
+  });
+
+  it.each([
+    { type: 'unassigned' as const },
+    { type: 'assigned' as const },
+    { type: 'admin-rejected' as const },
+  ])('batch-enriches and deduplicates submitters for $type rows', async ({ type }) => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: `review-admin-${type}-1`,
+          target_table: 'contacts',
+          json: {
+            data: { id: `contact-${type}-1`, version: '01.00.000' },
+            user: { id: 'submitter-1', name: 'Stale Snapshot Name' },
+          },
+        },
+        {
+          id: `review-admin-${type}-2`,
+          target_table: 'sources',
+          json: {
+            data: { id: `source-${type}-2`, version: '01.00.000' },
+            user: { id: 'submitter-2' },
+          },
+        },
+        {
+          id: `review-admin-${type}-3`,
+          target_table: 'flows',
+          json: {
+            data: { id: `flow-${type}-3`, version: '01.00.000' },
+            user: { id: 'submitter-1' },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetUsersByIds.mockResolvedValueOnce([
+      {
+        id: 'submitter-1',
+        email: 'submitter-1@example.com',
+        display_name: 'Current Submitter',
+      },
+      {
+        id: 'submitter-2',
+        email: 'submitter-2@example.com',
+        display_name: '   ',
+      },
+    ]);
+
+    const result = await reviewsApi.getReviewsTableDataOfReviewAdmin(
+      { pageSize: 10, current: 1 },
+      {},
+      type,
+      'en',
+    );
+
+    expect(mockGetUsersByIds).toHaveBeenCalledTimes(1);
+    expect(mockGetUsersByIds).toHaveBeenCalledWith(['submitter-1', 'submitter-2']);
+    expect(result.data.map((row: any) => row.userName)).toEqual([
+      'Current Submitter',
+      'submitter-2@example.com',
+      'Current Submitter',
+    ]);
   });
 
   it('applies assigned query filters and maps table data', async () => {
@@ -1818,7 +2048,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
       p_status: 'assigned',
       p_page: 2,
       p_page_size: 10,
@@ -1893,7 +2123,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
       p_status: 'admin-rejected',
       p_page: 1,
       p_page_size: 10,
@@ -1908,6 +2138,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       data: [
         {
           id: 'review-admin-model',
+          target_table: 'lifecyclemodels',
           created_at: '2024-06-01T00:00:00.000Z',
           modified_at: '2024-06-03T00:00:00.000Z',
           deadline: '2024-06-20T00:00:00.000Z',
@@ -1966,6 +2197,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
           key: 'review-admin-model',
           id: 'review-admin-model',
           isFromLifeCycle: true,
+          targetTable: 'lifecyclemodels',
           name: 'Model Admin Base; Model Admin Route; Model Admin Mix; Model Admin Unit',
           teamName: '-',
           userName: 'admin-fallback@example.com',
@@ -2118,7 +2350,7 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
       p_status: 'assigned',
       p_page: 1,
       p_page_size: 10,
@@ -2486,17 +2718,45 @@ describe('getLatestReviewOfMine', () => {
 
   it('returns latest review when user exists', async () => {
     mockGetUserId.mockResolvedValueOnce('user-1');
-    const supabaseResult = { data: [{ id: 'review-1' }] };
-    const builder = createQueryBuilder(supabaseResult);
-    mockFrom.mockReturnValueOnce(builder);
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'review-1',
+          modified_at: '2026-08-07T01:00:00Z',
+          json: { user: { id: 'user-1' } },
+        },
+        {
+          id: 'review-other',
+          modified_at: '2026-08-07T02:00:00Z',
+          json: { user: { id: 'user-2' } },
+        },
+        {
+          id: 'review-older',
+          modified_at: '2026-08-06T01:00:00Z',
+          json: { user: { id: 'user-1' } },
+        },
+      ],
+      error: null,
+    });
 
     const result = await reviewsApi.getLatestReviewOfMine();
 
-    expect(builder.filter).toHaveBeenCalledWith('json->user->>id', 'eq', 'user-1');
-    expect(builder.in).toHaveBeenCalledWith('state_code', [1, 2, -1]);
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(builder.limit).toHaveBeenCalledWith(1);
-    expect(result).toEqual([{ id: 'review-1' }]);
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_items', {
+      p_data_id: null,
+      p_data_version: null,
+      p_review_ids: null,
+      p_state_codes: [1, 2, -1],
+    });
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'review-1', json: { user: { id: 'user-1' } } }),
+    ]);
+  });
+
+  it('returns an empty list when the review query has no data payload', async () => {
+    mockGetUserId.mockResolvedValueOnce('user-1');
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+    await expect(reviewsApi.getLatestReviewOfMine()).resolves.toEqual([]);
   });
 });
 

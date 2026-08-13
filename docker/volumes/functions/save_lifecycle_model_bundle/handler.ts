@@ -110,7 +110,7 @@ export function createSaveLifecycleModelBundleHandler(
       actorUserId: userId,
     };
 
-    const { data, error } = await deps.supabase.rpc('save_lifecycle_model_bundle', {
+    const { data, error } = await deps.supabase.rpc('cmd_lifecycle_model_bundle_save', {
       p_plan: rpcPlan,
     });
 

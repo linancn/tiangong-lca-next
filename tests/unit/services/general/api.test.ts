@@ -4,6 +4,7 @@
  */
 
 const mockFrom = jest.fn();
+const mockRpc = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
 const mockGetLocale = jest.fn(() => 'en-US');
@@ -30,6 +31,7 @@ jest.mock('@/services/supabase', () => ({
   __esModule: true,
   supabase: {
     from: (...args: any[]) => mockFrom.apply(null, args),
+    rpc: (...args: any[]) => mockRpc.apply(null, args),
     auth: {
       getSession: (...args: any[]) => mockAuthGetSession.apply(null, args),
     },
@@ -103,6 +105,8 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
 
 beforeEach(() => {
   mockFrom.mockReset();
+  mockRpc.mockReset();
+  mockRpc.mockImplementation((...args: any[]) => mockFrom.apply(null, args));
   mockAuthGetSession.mockReset();
   mockFunctionsInvoke.mockReset();
   mockGetLocale.mockReset();
@@ -1165,9 +1169,7 @@ describe('getTeamIdByUserId', () => {
 
     const result = await generalApi.getTeamIdByUserId();
 
-    expect(builder.select.mock.calls[0][0]).toContain('team_id');
-    expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-1');
-    expect(builder.neq).toHaveBeenCalledWith('team_id', '00000000-0000-0000-0000-000000000000');
+    expect(mockRpc).toHaveBeenCalledWith('qry_membership_get_mine');
     expect(result).toBe('team-123');
   });
 
@@ -2091,6 +2093,12 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   describe('getTeamIdByUserId', () => {
+    it('returns null when the membership RPC omits its data payload', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+      await expect(generalApi.getTeamIdByUserId()).resolves.toBeNull();
+    });
+
     it('should return null when user has no team', async () => {
       mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
       const payload = { data: [] };
@@ -2129,7 +2137,7 @@ describe('Edge Cases and Error Handling', () => {
 
       await generalApi.getTeamIdByUserId();
 
-      expect(builder.neq).toHaveBeenCalledWith('team_id', '00000000-0000-0000-0000-000000000000');
+      expect(mockRpc).toHaveBeenCalledWith('qry_membership_get_mine');
     });
   });
 
@@ -3621,12 +3629,12 @@ describe('Edge Cases and Error Handling', () => {
     });
 
     it('should use default pagination and totals when query metadata is missing', async () => {
-      const builder = createQueryBuilder({ error: null });
+      const builder = createQueryBuilder({ data: [], error: null });
       mockFrom.mockReturnValueOnce(builder);
 
       const result = await generalApi.getAllVersions(
         'name',
-        'unknown-table',
+        'processes',
         sampleId,
         {} as any,
         {},
@@ -4110,6 +4118,23 @@ describe('Edge Cases and Error Handling', () => {
       );
 
       expect(result).toEqual({ data: [], success: false, total: 0 });
+    });
+
+    it('normalizes a null errored query payload before returning failure', async () => {
+      const builder = createQueryBuilder({ data: null, error: { message: 'query failed' } });
+      mockFrom.mockReturnValueOnce(builder);
+
+      await expect(
+        generalApi.getAllVersions(
+          'name',
+          'contacts',
+          sampleId,
+          { pageSize: 10, current: 1 },
+          {},
+          'en',
+          'tg',
+        ),
+      ).resolves.toEqual({ data: [], success: false, total: 0 });
     });
   });
 

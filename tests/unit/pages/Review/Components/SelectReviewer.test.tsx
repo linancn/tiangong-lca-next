@@ -210,6 +210,22 @@ describe('SelectReviewer component', () => {
     message.error.mockReset();
   });
 
+  it('does not open reviewer assignment while the selected review scope is loading', () => {
+    render(
+      <SelectReviewer
+        reviewIds={['review-1']}
+        tabType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+        disabled
+      />,
+    );
+
+    const trigger = screen.getByTestId('icon-user').closest('button') as HTMLButtonElement;
+    expect(trigger).toBeDisabled();
+    fireEvent.click(trigger);
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
   it('temporarily saves reviewer selections for unassigned reviews', async () => {
     const actionRef = { current: { reload: jest.fn() } };
 

@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-02
-lastReviewedCommit: 33409ce1336d9cdfb3916d38a155cbf1c73bb7ab
-lastReviewedNote: 'Reviewed for Issue #745 Root/Reference Review UI: the exact read-only production guard adds only the root-reference progress RPC; four-locale, semantic evidence, explicit-write, and zero-leak contracts remain unchanged.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: 7a5e0a1b7a5811a745bd1b305730ad3a46a63124
+lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: regenerating deterministic locale artifacts after the final flat-queue interaction closure does not change locale delivery or production-data authorization boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

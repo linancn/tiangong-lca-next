@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js@2';
 import { corsHeaders } from './cors.ts';
-import getUserRole from './get_user_role.ts';
+import { getReviewAdminStatus } from './get_user_role.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const VERSION_RE = /^\d{2}\.\d{2}\.\d{3}$/;
@@ -176,6 +176,7 @@ export async function ensureOwnerOrReviewAdmin(
   version: string,
 ): Promise<{ ok: true } | { ok: false; error: BundleErrorBody }> {
   const { data: row, error } = await supabase
+    .schema('public')
     .from('lifecyclemodels')
     .select('id,version,user_id')
     .eq('id', modelId)
@@ -229,7 +230,7 @@ export async function userHasReviewAdminRole(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<boolean> {
-  const { data: roles, error } = await getUserRole(userId, supabase);
+  const { data: isReviewAdmin, error } = await getReviewAdminStatus(userId, supabase);
   if (error) {
     console.error('query user role failed', {
       user_id: userId,
@@ -239,7 +240,7 @@ export async function userHasReviewAdminRole(
     return false;
   }
 
-  return Array.isArray(roles) && roles.some((item: any) => item?.role === 'review-admin');
+  return isReviewAdmin === true;
 }
 
 export function mapRpcError(error: { message?: string; code?: string; details?: unknown }) {

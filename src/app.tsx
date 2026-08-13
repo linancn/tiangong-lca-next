@@ -19,6 +19,7 @@ import { getCurrentUser as queryCurrentUser } from '@/services/auth';
 import { LOGIN_PATH, isAnonymousAllowedPath } from '@/services/general/publicRoutePolicy';
 import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
+import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 import styles from '@/style/custom.less';
 import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
@@ -71,14 +72,17 @@ export async function getInitialState(): Promise<{
     try {
       const msg = await queryCurrentUser();
       if (!msg) {
+        bindTidasPackageTaskCenterOwner(null);
         history.push(LOGIN_PATH);
         return null;
       }
+      bindTidasPackageTaskCenterOwner(msg.userid);
       return {
         ...msg,
         access: await getSystemAccess(),
       };
     } catch (error) {
+      bindTidasPackageTaskCenterOwner(null);
       history.push(LOGIN_PATH);
     }
     return null;
@@ -101,6 +105,7 @@ export async function getInitialState(): Promise<{
       isDarkMode,
     };
   }
+  bindTidasPackageTaskCenterOwner(null);
   return {
     fetchUserInfo,
     settings: updatedSettings as Partial<LayoutSettings>,

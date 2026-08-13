@@ -8,6 +8,7 @@ import {
 
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
+import { publicEntity } from '@/services/supabase/public';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
@@ -358,7 +359,7 @@ export async function getSourceTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'search_sources_latest',
+      'search_sources',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -470,8 +471,7 @@ export async function getSourcesByIdsAndVersions(
   }
 
   const promises = idVersionPairs.map((pair) =>
-    supabase
-      .from('sources')
+    publicEntity('sources')
       .select('id, version,state_code')
       .eq('id', pair.id)
       .eq('version', pair.version),

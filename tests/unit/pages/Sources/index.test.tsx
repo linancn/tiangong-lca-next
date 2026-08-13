@@ -24,6 +24,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetSourceTableAll = jest.fn();
 const mockGetSourceTablePgroongaSearch = jest.fn();
+const mockSourceHybridSearch = jest.fn();
 const mockGetSourceTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
@@ -54,7 +55,8 @@ jest.mock('umi', () => ({
 jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
-  source_hybrid_search: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  source_hybrid_search: (...args: any[]) => mockSourceHybridSearch(...args),
   getSourceTableUuidMentionSearch: (...args: any[]) => mockGetSourceTableUuidMentionSearch(...args),
 }));
 
@@ -239,8 +241,7 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ title, children }: any) => <div title={toText(title)}>{children}</div>;
 
-  const Checkbox = ({ children, onChange }: any) => {
-    const [checked, setChecked] = React.useState(false);
+  const Checkbox = ({ checked = false, children, onChange }: any) => {
     return (
       <label>
         <input
@@ -249,7 +250,6 @@ jest.mock('antd', () => {
           type='checkbox'
           onChange={() => {
             const next = !checked;
-            setChecked(next);
             onChange?.({ target: { checked: next } });
           }}
         />
@@ -408,6 +408,7 @@ describe('SourcesPage', () => {
     });
     mockGetSourceTableAll.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTablePgroongaSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
+    mockSourceHybridSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
   });
@@ -444,6 +445,7 @@ describe('SourcesPage', () => {
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');
+    expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
@@ -538,6 +540,64 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'iso',
+        {},
+        'all',
+        '',
+      ),
+    );
+  });
+
+  it('routes smart search to hybrid search and keeps search modes mutually exclusive', async () => {
+    renderWithProviders(<SourcesPage />);
+
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    await userEvent.click(smartSearch);
+
+    expect(smartSearch).toBeChecked();
+    expect(referenceSearch).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockSourceHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'iso',
+        {},
+        'all',
+        'team-1',
+      ),
+    );
+    expect(mockGetSourceTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(smartSearch);
+    expect(smartSearch).not.toBeChecked();
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    expect(smartSearch).not.toBeChecked();
+    expect(referenceSearch).toBeChecked();
+    await userEvent.click(referenceSearch);
+    expect(referenceSearch).not.toBeChecked();
+  });
+
+  it('uses an empty team id for smart search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/sources', search: '' };
+    renderWithProviders(<SourcesPage />);
+
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    await waitFor(() =>
+      expect(mockSourceHybridSearch).toHaveBeenCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',
