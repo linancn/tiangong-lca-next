@@ -33,7 +33,7 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 // Mock tidas-sdk module
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createFlow: jest.fn((data) => data),
 }));
 

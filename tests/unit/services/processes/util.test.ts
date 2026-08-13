@@ -65,7 +65,7 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 // Mock tidas-sdk module
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createProcess: jest.fn((data) => data),
 }));
 

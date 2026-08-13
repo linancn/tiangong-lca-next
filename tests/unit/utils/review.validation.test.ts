@@ -26,7 +26,7 @@ const mockGetRefDataByIds = jest.fn();
 const mockGetReviewsOfData = jest.fn();
 const mockUpdateDateToReviewState = jest.fn();
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createContact: (...args: any[]) => mockCreateContact(...args),
   createFlow: (...args: any[]) => mockCreateFlow(...args),

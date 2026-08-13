@@ -17,7 +17,7 @@ import {
   updateUnitGroup,
 } from '@/services/unitgroups/api';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createUnitGroup: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),

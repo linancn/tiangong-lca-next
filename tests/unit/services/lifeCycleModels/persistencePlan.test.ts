@@ -1,4 +1,4 @@
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createLifeCycleModel: jest.fn(),
   createProcess: jest.fn(),
@@ -7,7 +7,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 const {
   createLifeCycleModel: mockCreateTidasLifeCycleModel,
   createProcess: mockCreateTidasProcess,
-} = jest.requireMock('@tiangong-lca/tidas-sdk');
+} = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
 const mockNormalizeLangPayloadForSave = jest.fn();
 const mockJsonToList = jest.fn();

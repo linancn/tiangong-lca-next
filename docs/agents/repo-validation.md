@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
-lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the current validation matrix already covers the v0.0.70 evidence refresh and tracked release-parser regression proof.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
+lastReviewedNote: 'Reviewed for Next Issue #839: the current tests-and-gates validation row covers the SDK mock-entry alignment and focused regression proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

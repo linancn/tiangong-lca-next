@@ -239,7 +239,7 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 
 const mockValidateEnhanced = jest.fn();
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createProcess: jest.fn(() => ({
     validateEnhanced: (...args: any[]) => mockValidateEnhanced(...args),

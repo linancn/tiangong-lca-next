@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
-lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 candidate and parser regression retain the closed 413-suite, 5,690-test coverage baseline.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
+lastReviewedNote: 'Reviewed for Next Issue #839: the SDK mock-entry alignment adds no test or queue item and preserves the checked-in reference baseline.'
 ---
 
 # Testing Execution State

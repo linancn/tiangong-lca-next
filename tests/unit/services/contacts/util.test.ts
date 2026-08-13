@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 
 // Mock dependencies
 jest.mock('@/services/general/util');
-jest.mock('@tiangong-lca/tidas-sdk');
+jest.mock('@tiangong-lca/tidas-sdk/core');
 
 describe('Contacts Util Service', () => {
   const {
@@ -17,7 +17,7 @@ describe('Contacts Util Service', () => {
     removeEmptyObjects,
     formatDateTime,
   } = jest.requireMock('@/services/general/util');
-  const { createContact: createTidasContact } = jest.requireMock('@tiangong-lca/tidas-sdk');
+  const { createContact: createTidasContact } = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
   beforeEach(() => {
     jest.clearAllMocks();

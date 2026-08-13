@@ -6,13 +6,13 @@
 import * as processesApi from '@/services/processes/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createProcess: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
   }),
 }));
-const { createProcess: mockCreateTidasProcess } = jest.requireMock('@tiangong-lca/tidas-sdk');
+const { createProcess: mockCreateTidasProcess } = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
