@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 5400b798ea4ff948c2776b0d66fb2e52489e4066
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Next forwards review display mode and exact target type to v3 queue RPCs; Database remains authoritative for filtering, totals, pagination, validation, and the 50-row default.'
 ---
 

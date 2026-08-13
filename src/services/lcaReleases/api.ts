@@ -38,6 +38,19 @@ export type CalculationBundleSignedDownload = {
   signedDownloadExpiresInSeconds: number;
 };
 
+export type CalculationProductDownload = CalculationBundleSignedDownload & {
+  role:
+    | 'lcia_results_xlsx'
+    | 'lcia_results_csv_zip'
+    | 'lci_inventory_parquet'
+    | 'lci_inventory_csv_zip'
+    | 'calculation_evidence_bundle';
+  group: 'results' | 'advanced_data' | 'audit_evidence';
+  fileName: string;
+  schemaVersion: 'tiangong.calculation-download.v1';
+  recordCount: number;
+};
+
 export type CalculationBundleManifest = {
   schemaVersion: 'tiangong.calculation-bundle.v1' | string;
   calculationContractVersion: string;
@@ -81,6 +94,7 @@ export type CalculationBundleProjection = {
     manifest: CalculationBundleManifest;
     manifestDownload: CalculationBundleSignedDownload;
     artifacts: CalculationBundleArtifact[];
+    downloads: CalculationProductDownload[];
   };
 };
 
@@ -358,7 +372,13 @@ async function resolveFreshCalculationBundleDownload(
   const download =
     artifactPath === null
       ? result.data.calculationBundle.manifestDownload
-      : result.data.calculationBundle.artifacts.find((artifact) => artifact.path === artifactPath);
+      : artifactPath.startsWith('download:')
+        ? (result.data.calculationBundle.downloads ?? []).find(
+            (download) => download.role === artifactPath.slice('download:'.length),
+          )
+        : result.data.calculationBundle.artifacts.find(
+            (artifact) => artifact.path === artifactPath,
+          );
   if (!download) {
     throw new Error(`Calculation artifact is no longer available: ${artifactPath ?? 'manifest'}`);
   }

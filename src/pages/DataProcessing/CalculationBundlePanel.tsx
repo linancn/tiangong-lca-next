@@ -9,6 +9,7 @@ import {
   type CalculationBundleProcessRecord,
   type CalculationBundleProjection,
   type CalculationBundleSignedDownload,
+  type CalculationProductDownload,
 } from '@/services/lcaReleases';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
@@ -239,6 +240,9 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   const bundleData = bundle?.calculationBundle;
   const manifest = bundleData?.manifest;
   const coverageComplete = coverage?.complete;
+  const productDownloads = bundleData?.downloads ?? [];
+  const downloadsFor = (group: CalculationProductDownload['group']) =>
+    productDownloads.filter((download) => download.group === group);
 
   const exportLciCsv = () =>
     downloadText(
@@ -383,6 +387,32 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
       </Button>
     </Space>
   );
+  const productDownloadCards = (downloads: CalculationProductDownload[]) =>
+    downloads.map((download) => (
+      <section key={download.role} className={styles.bundleDownloadItem}>
+        <strong>{download.fileName}</strong>
+        <span>
+          {download.recordCount} {t('pages.dataProcessing.bundle.records', 'records')}
+        </span>
+        <code>{download.sha256}</code>
+        <Button
+          size='small'
+          icon={<DownloadOutlined />}
+          loading={downloadingPath === `download:${download.role}`}
+          disabled={downloadingPath !== null}
+          onClick={() =>
+            void downloadVerifiedArtifact(
+              `download:${download.role}`,
+              `download:${download.role}`,
+              download.fileName,
+              download,
+            )
+          }
+        >
+          {t('pages.dataProcessing.bundle.download', 'Download')}
+        </Button>
+      </section>
+    ));
 
   return (
     <Card
@@ -517,6 +547,17 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                         }
                       />
                     ) : null}
+                    <strong>{t('pages.dataProcessing.bundle.resultFiles', 'Result files')}</strong>
+                    <div className={styles.bundleDownloadGrid}>
+                      {productDownloadCards(downloadsFor('results'))}
+                    </div>
+                    <strong>
+                      {t('pages.dataProcessing.bundle.advancedFiles', 'Advanced data')}
+                    </strong>
+                    <div className={styles.bundleDownloadGrid}>
+                      {productDownloadCards(downloadsFor('advanced_data'))}
+                    </div>
+                    <strong>{t('pages.dataProcessing.bundle.auditFiles', 'Audit evidence')}</strong>
                     <div className={styles.bundleDownloadGrid}>
                       <section className={styles.bundleDownloadItem}>
                         <strong>calculation-bundle.json</strong>
@@ -538,34 +579,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                           {t('pages.dataProcessing.bundle.download', 'Download')}
                         </Button>
                       </section>
-                      {bundleData.artifacts.map((artifact) => {
-                        const filename = artifact.path.split('/').pop() || artifact.path;
-                        return (
-                          <section key={artifact.path} className={styles.bundleDownloadItem}>
-                            <strong>{artifact.path}</strong>
-                            <span>
-                              {artifact.kind} · {artifact.recordCount} records
-                            </span>
-                            <code>{artifact.sha256}</code>
-                            <Button
-                              size='small'
-                              icon={<DownloadOutlined />}
-                              loading={downloadingPath === artifact.path}
-                              disabled={downloadingPath !== null}
-                              onClick={() =>
-                                void downloadVerifiedArtifact(
-                                  artifact.path,
-                                  artifact.path,
-                                  filename,
-                                  artifact,
-                                )
-                              }
-                            >
-                              {t('pages.dataProcessing.bundle.download', 'Download')}
-                            </Button>
-                          </section>
-                        );
-                      })}
+                      {productDownloadCards(downloadsFor('audit_evidence'))}
                     </div>
                   </Space>
                 ),
