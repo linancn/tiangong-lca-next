@@ -12,8 +12,7 @@ const DEFAULT_CANONICAL_REMOTE = 'origin';
 const DEFAULT_PUSH_REMOTE = 'fork';
 const DEFAULT_LOG_DIRECTORY = '.local/release-automation';
 const TRANSPORT_RECEIPT_PATH = '.local/prepush-gate/failed-transport-receipt.json';
-const QUALIFICATION_RECEIPT_PATH =
-  'docs/plans/i18n/semantic-harness-qualification-receipt.json';
+const QUALIFICATION_RECEIPT_PATH = 'docs/plans/i18n/semantic-harness-qualification-receipt.json';
 const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v1';
 const MAX_CAPTURE_BYTES = 64 * 1024 * 1024;
 const MAIN_SEMANTIC_BRANCH_PATTERN = /^(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u;
@@ -165,7 +164,10 @@ function assertClean(root) {
 }
 
 function worktreeStatus(root) {
-  return git(root, ['status', '--porcelain=v1', '--untracked-files=all']).stdout.trim();
+  return git(root, ['status', '--porcelain=v1', '--untracked-files=all']).stdout.replace(
+    /\r?\n$/u,
+    '',
+  );
 }
 
 function branchHasMainSemantics(branch) {
@@ -496,10 +498,7 @@ function reviewCommitFromDocument(source) {
 }
 
 function assertQualificationReceiptProvenance(root, baseRef) {
-  const receipt = readJson(
-    path.join(root, QUALIFICATION_RECEIPT_PATH),
-    QUALIFICATION_RECEIPT_PATH,
-  );
+  const receipt = readJson(path.join(root, QUALIFICATION_RECEIPT_PATH), QUALIFICATION_RECEIPT_PATH);
   if (
     receipt.schemaVersion !== 'tiangong.semantic-harness-qualification.v1' ||
     !/^[0-9a-f]{40}$/u.test(receipt.qualifiedCommit || '') ||
@@ -710,10 +709,7 @@ function generateQualification(root, logFile) {
     .split(/\r?\n/u)
     .filter(Boolean)
     .map((line) => line.slice(3));
-  if (
-    changed.length !== 1 ||
-    changed[0] !== QUALIFICATION_RECEIPT_PATH
-  ) {
+  if (changed.length !== 1 || changed[0] !== QUALIFICATION_RECEIPT_PATH) {
     throw new ReleaseAutomationError(
       'semantic_qualification_scope_invalid',
       'Qualification changed files outside its one generated receipt.',
@@ -724,10 +720,7 @@ function generateQualification(root, logFile) {
     );
   }
   const provenance = assertQualificationReceiptProvenance(root, sourceCommit);
-  if (
-    provenance.qualified_commit !== sourceCommit ||
-    provenance.qualified_tree !== sourceTree
-  ) {
+  if (provenance.qualified_commit !== sourceCommit || provenance.qualified_tree !== sourceTree) {
     throw new ReleaseAutomationError(
       'semantic_qualification_source_mismatch',
       'Qualification did not bind the exact clean source commit and tree.',
