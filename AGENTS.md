@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: owner-draft scope and focused coverage repairs preserve the existing repo contract, quality gate, and delivery boundaries.'
+lastReviewedCommit: 1f1cdcb238368518fc98c4117eeeba63902e8462
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 evidence refresh and release-parser repair preserve the existing repo contract, quality gate, and delivery boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
