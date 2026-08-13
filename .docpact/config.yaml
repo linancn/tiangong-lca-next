@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "b7d8edd7adc03426d6f1534c12ddadb7aca34b94"
+lastReviewedAt: '2026-08-13'
+lastReviewedCommit: 'cf867d22c8c80356cd778ec4cf882162a97593b4'
 lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing stays within the existing frontend runtime, service boundary, and validation contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
