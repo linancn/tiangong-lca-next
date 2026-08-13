@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "41e3617f6c9e987ebd478fc5a529ab449991de99"
-lastReviewedNote: 'Reviewed for Next Issue #828: owner-draft scope and adjacent coverage repairs stay within existing runtime, test, and documentation ownership domains.'
+lastReviewedCommit: "3ef10317dac87831f48c728ae92e54bdb98c4433"
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 evidence refresh and tracked porcelain parser repair remain within the existing release, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

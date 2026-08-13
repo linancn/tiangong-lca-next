@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: the focused coverage-gap playbook remains the correct recovery path; no troubleshooting rule changes.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: existing qualification, preflight, and managed-push recovery guidance remains correct after the parser repair.'
 ---
 
 # Testing Troubleshooting

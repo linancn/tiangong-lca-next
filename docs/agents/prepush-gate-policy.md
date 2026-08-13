@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: focused branch coverage repairs restore the unchanged 100% gate without changing trigger or release policy.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 release proof and tracked porcelain parser repair preserve the existing full-gate trigger and release policy.'
 ---
 
 # Pre-Push Gate Policy

@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: the new tests follow existing unit and behavior-level component patterns for real calculation branches.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: release evidence refresh and porcelain parsing use the existing release-contract and focused unit-test patterns.'
 ---
 
 # Testing Patterns Reference

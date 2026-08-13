@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: the Process LCA picker proof and focused coverage recovery remain correctly described by the existing matrix.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the current validation matrix already covers the v0.0.70 evidence refresh and tracked release-parser regression proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
