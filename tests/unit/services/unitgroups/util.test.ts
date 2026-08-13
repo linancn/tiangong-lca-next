@@ -9,11 +9,11 @@ import {
   genUnitTableData,
 } from '@/services/unitgroups/util';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createUnitGroup: jest.fn((data) => data),
 }));
 
-const mockCreateUnitGroup = jest.requireMock('@tiangong-lca/tidas-sdk')
+const mockCreateUnitGroup = jest.requireMock('@tiangong-lca/tidas-sdk/core')
   .createUnitGroup as jest.Mock;
 
 const baseUnitGroupData = {
