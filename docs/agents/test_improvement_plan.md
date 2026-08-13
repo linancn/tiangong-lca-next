@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a7babd6228fb65271378899bccb7d6fac5ae23cc
-lastReviewedNote: 'Reviewed for Next Issue #819: the strategy removes exact duplicate execution and bounds a two-worker pool at 512MB without weakening full closure.'
+lastReviewedCommit: 2d50fb1e425750274d5a1e03c67980a87bfae26c
+lastReviewedNote: 'Reviewed for Next Issue #820 on the Issue #819 release-gate baseline: direct-submit service proof and a role-gated interactive component suite fit the current risk-proportional strategy and bounded full-closure execution.'
 ---
 
 # Testing Strategy

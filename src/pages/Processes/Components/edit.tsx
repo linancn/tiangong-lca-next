@@ -20,7 +20,7 @@ import {
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
-  requestReviewSubmitJob,
+  submitDatasetReview,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 
@@ -38,7 +38,6 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { hasLangNormalizationDraftChanges } from '@/services/general/api';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { jsonToList } from '@/services/general/util';
-import { requestOpenLcaTaskCenter } from '@/services/lca/taskCenter';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import {
@@ -50,26 +49,12 @@ import {
   getFirstProcessExchangeAllocation,
 } from '@/services/processes/data';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
-import type {
-  ReviewSubmitGateBlockingReason,
-  ReviewSubmitGateStatus,
-  ReviewSubmitJobResult,
-  ReviewSubmitJobStatus,
-} from '@/services/reviews/api';
-import { trackReviewSubmitTask } from '@/services/reviews/taskCenter';
 import { getUserTeamId } from '@/services/roles/api';
-import {
-  requestWorkerJobsApi,
-  type WorkerJobResult,
-  type WorkerJobStatus,
-} from '@/services/workerJobs/api';
 import styles from '@/style/custom.less';
-import { formatLocaleList } from '@/utils/localeFormatting';
-import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Alert, Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
+import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -87,398 +72,11 @@ type ProcessCheckTarget = FormProcessWithDatas & {
   stateCode: number;
   ruleVerification: boolean;
 };
-type ProcessReviewSubmitTarget = Pick<ProcessCheckTarget, 'id' | 'version'>;
 type HandleSubmitResult = Awaited<ReturnType<typeof updateProcess>>;
 type RefProblemNode = ProblemNode & {
   versionUnderReview?: boolean;
   underReviewVersion?: string;
   versionIsInTg?: boolean;
-};
-type ReviewSubmitGateUiStatus = 'not_run' | ReviewSubmitGateStatus | ReviewSubmitJobStatus;
-type ReviewSubmitGateUiState = {
-  status: ReviewSubmitGateUiStatus;
-  reviewSubmitJobId?: string;
-  gateRunId?: string;
-  revisionChecksum?: string;
-  blockingReasons?: ReviewSubmitGateBlockingReason[];
-  message?: string;
-};
-type ReviewSubmitEvidenceIntl = Pick<ReturnType<typeof useIntl>, 'formatMessage'> & {
-  locale?: string;
-};
-type ReviewSubmitEvidenceMessage = { defaultMessage: string; id: string };
-
-const REVIEW_SUBMIT_EVIDENCE_MESSAGES = {
-  process: {
-    id: 'pages.process.reviewSubmitGate.evidence.process',
-    defaultMessage: 'Process',
-  },
-  version: {
-    id: 'pages.process.reviewSubmitGate.evidence.version',
-    defaultMessage: 'Version',
-  },
-  exchange: {
-    id: 'pages.process.reviewSubmitGate.evidence.exchange',
-    defaultMessage: 'Exchange',
-  },
-  flow: {
-    id: 'pages.process.reviewSubmitGate.evidence.flow',
-    defaultMessage: 'Flow',
-  },
-  consumer: {
-    id: 'pages.process.reviewSubmitGate.evidence.consumer',
-    defaultMessage: 'Consuming process',
-  },
-  provider: {
-    id: 'pages.process.reviewSubmitGate.evidence.provider',
-    defaultMessage: 'Providing process',
-  },
-  target: {
-    id: 'pages.process.reviewSubmitGate.evidence.target',
-    defaultMessage: 'Target process',
-  },
-} as const;
-
-const REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES = {
-  error: {
-    id: 'pages.process.reviewSubmitGate.diagnostics.error',
-    defaultMessage: 'error',
-  },
-  workerJobId: {
-    id: 'pages.process.reviewSubmitGate.diagnostics.workerJobId',
-    defaultMessage: 'Worker job ID',
-  },
-  submitWorkerJobId: {
-    id: 'pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId',
-    defaultMessage: 'Submit worker job ID',
-  },
-  gateWorkerJobId: {
-    id: 'pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId',
-    defaultMessage: 'Gate worker job ID',
-  },
-  reviewSubmitJobId: {
-    id: 'pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId',
-    defaultMessage: 'Review submission job ID',
-  },
-} as const;
-
-const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
-  'queued',
-  'running',
-  'waiting_gate',
-  'submitting',
-]);
-const REVIEW_SUBMIT_ROOT_WORKER_KIND = 'review_submit.submit';
-const REVIEW_SUBMIT_GATE_WORKER_KIND = 'review_submit.gate';
-const REVIEW_SUBMIT_ACTIVE_WORKER_STATUSES = new Set<WorkerJobStatus>([
-  'queued',
-  'running',
-  'waiting',
-]);
-const REVIEW_SUBMIT_ACTIVE_WORKER_LIST_LIMIT = 20;
-const REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS = 250;
-const REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS = 5000;
-const REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS = 24;
-
-const toReviewSubmitGateEvidenceValue = (value: unknown): string | undefined => {
-  if (typeof value === 'string') {
-    return value.trim() || undefined;
-  }
-
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-
-  if (typeof value === 'boolean') {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    const values = value
-      .map(toReviewSubmitGateEvidenceValue)
-      .filter((item): item is string => Boolean(item));
-    if (values.length > 0) {
-      return `${values.slice(0, 3).join(', ')}${values.length > 3 ? '...' : ''}`;
-    }
-  }
-
-  return undefined;
-};
-
-const pickReviewSubmitGateEvidenceValue = (
-  record: Record<string, unknown>,
-  keys: string[],
-): string | undefined => {
-  for (const key of keys) {
-    const value = toReviewSubmitGateEvidenceValue(record[key]);
-    if (value) {
-      return value;
-    }
-  }
-
-  return undefined;
-};
-
-const toReviewSubmitGateEvidenceRecord = (value: unknown): Record<string, unknown> | null => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null;
-  }
-
-  return value as Record<string, unknown>;
-};
-
-const formatReviewSubmitGateEvidenceParts = (
-  intl: ReviewSubmitEvidenceIntl,
-  fields: Array<[ReviewSubmitEvidenceMessage, string | undefined]>,
-) =>
-  fields.flatMap(([message, evidenceValue]) =>
-    evidenceValue ? [`${intl.formatMessage(message)}: ${evidenceValue}`] : [],
-  );
-
-const formatReviewSubmitGateEvidenceRecord = (
-  intl: ReviewSubmitEvidenceIntl,
-  value: unknown,
-): string | null => {
-  const record = toReviewSubmitGateEvidenceRecord(value);
-  if (!record) {
-    return toReviewSubmitGateEvidenceValue(value) ?? null;
-  }
-
-  const nestedProcess =
-    toReviewSubmitGateEvidenceRecord(record.process) ??
-    (Array.isArray(record.processes)
-      ? toReviewSubmitGateEvidenceRecord(record.processes[0])
-      : null);
-  const processRecord = nestedProcess ?? record;
-  const parts = formatReviewSubmitGateEvidenceParts(intl, [
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.process,
-      pickReviewSubmitGateEvidenceValue(processRecord, ['process_name', 'process_id']),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.version,
-      pickReviewSubmitGateEvidenceValue(processRecord, ['process_version']),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.exchange,
-      pickReviewSubmitGateEvidenceValue(record, [
-        'exchange_id',
-        'input_exchange_id',
-        'output_exchange_id',
-      ]),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.flow,
-      pickReviewSubmitGateEvidenceValue(record, ['flow_id', 'flow_idx']),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.consumer,
-      pickReviewSubmitGateEvidenceValue(record, ['consumer_idx']),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.provider,
-      pickReviewSubmitGateEvidenceValue(record, ['provider_id', 'provider_idx']),
-    ],
-    [
-      REVIEW_SUBMIT_EVIDENCE_MESSAGES.target,
-      pickReviewSubmitGateEvidenceValue(record, ['process_idx']),
-    ],
-  ]);
-
-  if (parts.length > 0) {
-    return formatLocaleList(parts, intl.locale);
-  }
-
-  const diagnosticParts = formatReviewSubmitGateEvidenceParts(intl, [
-    [REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.error, pickReviewSubmitGateEvidenceValue(record, ['error'])],
-    [
-      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.workerJobId,
-      pickReviewSubmitGateEvidenceValue(record, ['worker_job_id', 'workerJobId']),
-    ],
-    [
-      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.submitWorkerJobId,
-      pickReviewSubmitGateEvidenceValue(record, ['submit_worker_job_id', 'submitWorkerJobId']),
-    ],
-    [
-      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.gateWorkerJobId,
-      pickReviewSubmitGateEvidenceValue(record, ['gate_worker_job_id', 'gateWorkerJobId']),
-    ],
-    [
-      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.reviewSubmitJobId,
-      pickReviewSubmitGateEvidenceValue(record, ['review_submit_job_id', 'reviewSubmitJobId']),
-    ],
-  ]);
-
-  return diagnosticParts.length > 0 ? formatLocaleList(diagnosticParts, intl.locale) : null;
-};
-
-export const formatReviewSubmitGateEvidence = (
-  intl: ReviewSubmitEvidenceIntl,
-  details: unknown,
-): string[] => {
-  const detailRecord = toReviewSubmitGateEvidenceRecord(details);
-  const examples =
-    detailRecord && Array.isArray(detailRecord.examples) && detailRecord.examples.length > 0
-      ? detailRecord.examples
-      : details !== undefined && details !== null
-        ? [details]
-        : [];
-
-  return examples
-    .slice(0, 2)
-    .map((example) => formatReviewSubmitGateEvidenceRecord(intl, example))
-    .filter((item): item is string => Boolean(item));
-};
-
-const getBlockingReasonsFromResult = (
-  result: unknown,
-): ReviewSubmitGateBlockingReason[] | undefined => {
-  const resultRecord = toReviewSubmitGateEvidenceRecord(result);
-  if (!resultRecord || !Array.isArray(resultRecord.blockingReasons)) {
-    return undefined;
-  }
-
-  return resultRecord.blockingReasons as ReviewSubmitGateBlockingReason[];
-};
-
-const getReviewSubmitJobBlockingReasons = (
-  jobData?: ReviewSubmitJobResult,
-): ReviewSubmitGateBlockingReason[] | undefined => {
-  const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
-  const blockingReasons =
-    jobData?.gate?.blockingReasons ??
-    getBlockingReasonsFromResult(gateWorkerJob?.result) ??
-    getBlockingReasonsFromResult(jobData?.result) ??
-    getBlockingReasonsFromResult(jobData?.error?.details);
-
-  if (blockingReasons && blockingReasons.length > 0) {
-    return blockingReasons;
-  }
-
-  if (!jobData?.error?.code && !jobData?.error?.message && jobData?.error?.details === undefined) {
-    return undefined;
-  }
-
-  return [
-    {
-      code: jobData.error?.code,
-      message: jobData.error?.message,
-      details: {
-        ...(toReviewSubmitGateEvidenceRecord(jobData.error?.details) ?? {
-          error: jobData.error?.details,
-        }),
-        review_submit_job_id: jobData.reviewSubmitJobId,
-        submit_worker_job_id: jobData.submitWorkerJobId ?? jobData.rootJobId,
-        gate_worker_job_id: jobData.gateWorkerJobId,
-      },
-    },
-  ];
-};
-
-const isReviewSubmitTerminalStatus = (status: ReviewSubmitGateUiStatus) =>
-  status !== 'not_run' && !REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status);
-
-const isReviewSubmitGateNotPassedStatus = (status: ReviewSubmitGateUiStatus) =>
-  status === 'blocked' || status === 'stale' || status === 'error';
-
-const isReviewSubmitWorkerStatusActive = (status: unknown): status is WorkerJobStatus =>
-  typeof status === 'string' && REVIEW_SUBMIT_ACTIVE_WORKER_STATUSES.has(status as WorkerJobStatus);
-
-const isReviewSubmitGateCheckActive = (
-  jobData?: ReviewSubmitJobResult,
-): jobData is ReviewSubmitJobResult => {
-  if (!jobData) {
-    return false;
-  }
-
-  if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(jobData.status)) {
-    return true;
-  }
-
-  if (jobData.gate?.status && REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(jobData.gate.status)) {
-    return true;
-  }
-
-  return (
-    isReviewSubmitWorkerStatusActive(jobData.gateWorkerJob?.status) ||
-    isReviewSubmitWorkerStatusActive(jobData.workerJob?.status) ||
-    isReviewSubmitWorkerStatusActive(jobData.submitWorkerJob?.status)
-  );
-};
-
-const isReviewSubmitWorkerJob = (
-  workerJob?: WorkerJobResult | null,
-): workerJob is WorkerJobResult =>
-  workerJob?.jobKind === REVIEW_SUBMIT_ROOT_WORKER_KIND ||
-  workerJob?.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND;
-
-const isReviewSubmitWorkerJobForProcess = (
-  workerJob: WorkerJobResult,
-  processDetail: ProcessReviewSubmitTarget,
-): boolean =>
-  isReviewSubmitWorkerJob(workerJob) &&
-  workerJob.subjectType === 'processes' &&
-  workerJob.subjectId === processDetail.id &&
-  (!workerJob.subjectVersion || workerJob.subjectVersion === processDetail.version);
-
-const findActiveReviewSubmitWorkerJob = (
-  workerJobs: WorkerJobResult[] | null | undefined,
-  processDetail: ProcessReviewSubmitTarget,
-): WorkerJobResult | undefined =>
-  workerJobs?.find(
-    (workerJob) =>
-      isReviewSubmitWorkerJobForProcess(workerJob, processDetail) &&
-      isReviewSubmitWorkerStatusActive(workerJob.status),
-  );
-
-const reviewSubmitJobStatusFromWorkerJob = (workerJob: WorkerJobResult): ReviewSubmitJobStatus => {
-  if (workerJob.phase === 'submitting') {
-    return 'submitting';
-  }
-  if (workerJob.status === 'queued') {
-    return 'queued';
-  }
-  return 'waiting_gate';
-};
-
-const reviewSubmitJobFromActiveWorkerJob = (
-  workerJob: WorkerJobResult,
-  processDetail: ProcessReviewSubmitTarget,
-): ReviewSubmitJobResult => {
-  const isGateWorker = workerJob.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND;
-  const rootJobId = workerJob.rootJobId ?? (isGateWorker ? undefined : workerJob.id);
-
-  return {
-    status: reviewSubmitJobStatusFromWorkerJob(workerJob),
-    submitWorkerJobId: isGateWorker ? rootJobId : workerJob.id,
-    rootJobId,
-    gateWorkerJobId: isGateWorker ? workerJob.id : undefined,
-    datasetRevision: {
-      table: 'processes',
-      id: processDetail.id,
-      version: processDetail.version,
-    },
-    workerJob,
-    submitWorkerJob: isGateWorker ? null : workerJob,
-    gateWorkerJob: isGateWorker ? workerJob : null,
-  };
-};
-
-const isReviewSubmitJobNotFoundResult = (result: {
-  error?: {
-    code?: string;
-    message?: string;
-  } | null;
-  status?: number;
-  statusText?: string;
-}): boolean => {
-  if (!result.error) {
-    return false;
-  }
-
-  const code = `${result.error.code ?? result.statusText ?? ''}`.toLowerCase();
-  const messageText = `${result.error.message ?? ''}`.toLowerCase();
-  return result.status === 404 || code.includes('not_found') || messageText.includes('not found');
 };
 
 const collectChangedFieldPaths = (
@@ -578,9 +176,6 @@ const ProcessEdit: FC<Props> = ({
   actionFrom,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const drawerVisibleRef = useRef(false);
-  const reviewSubmitLatestSyncTimeoutRef = useRef<number | null>(null);
-  const reviewSubmitLatestSyncTokenRef = useRef(0);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
   const [fromData, setFromData] = useState<FormProcessWithDatas>();
@@ -599,9 +194,6 @@ const ProcessEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
-  const [reviewSubmitGateState, setReviewSubmitGateState] = useState<ReviewSubmitGateUiState>({
-    status: 'not_run',
-  });
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
@@ -622,204 +214,6 @@ const ProcessEdit: FC<Props> = ({
   const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
 
   useEffect(() => {
-    drawerVisibleRef.current = drawerVisible;
-  }, [drawerVisible]);
-
-  const cancelReviewSubmitLatestSync = useCallback(() => {
-    reviewSubmitLatestSyncTokenRef.current += 1;
-    if (reviewSubmitLatestSyncTimeoutRef.current !== null) {
-      window.clearTimeout(reviewSubmitLatestSyncTimeoutRef.current);
-      reviewSubmitLatestSyncTimeoutRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => () => cancelReviewSubmitLatestSync(), [cancelReviewSubmitLatestSync]);
-
-  const resetReviewSubmitGateState = useCallback(() => {
-    cancelReviewSubmitLatestSync();
-    setReviewSubmitGateState({ status: 'not_run' });
-  }, [cancelReviewSubmitLatestSync]);
-
-  const getReviewSubmitGateStatusMessage = useCallback(
-    (status: ReviewSubmitGateUiStatus) => {
-      switch (status) {
-        case 'queued':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.queued',
-            defaultMessage:
-              'Review submission is queued. The system will run the numerical stability gate first.',
-          });
-        case 'running':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.running',
-            defaultMessage:
-              'Numerical stability gate is running. Submission is disabled until it passes.',
-          });
-        case 'waiting_gate':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.waitingGate',
-            defaultMessage:
-              'Review submission is waiting for the numerical stability gate to finish.',
-          });
-        case 'submitting':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.submitting',
-            defaultMessage: 'Numerical stability gate passed. Submitting for review now.',
-          });
-        case 'submitted':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.submitted',
-            defaultMessage: 'Review submission completed.',
-          });
-        case 'passed':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.passed',
-            defaultMessage: 'Numerical stability gate passed for the current revision.',
-          });
-        case 'blocked':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.blocked',
-            defaultMessage: 'Numerical stability gate blocked this revision.',
-          });
-        case 'stale':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.stale',
-            defaultMessage:
-              'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
-          });
-        case 'error':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.error',
-            defaultMessage: 'Numerical stability gate could not complete.',
-          });
-        case 'cancelled':
-          return intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.cancelled',
-            defaultMessage: 'Review submission job was cancelled.',
-          });
-        case 'not_run':
-        default:
-          return '';
-      }
-    },
-    [intl],
-  );
-
-  const getReviewSubmitGateFailedToastMessage = useCallback(
-    () =>
-      intl.formatMessage({
-        id: 'pages.process.reviewSubmitGate.failedToast',
-        defaultMessage: 'Gate check did not pass. Open the task center for details.',
-      }),
-    [intl],
-  );
-
-  const formatReviewSubmitGateReason = useCallback(
-    (reason: ReviewSubmitGateBlockingReason, index: number) => {
-      const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
-      const code = rawCode
-        ? rawCode
-        : intl.formatMessage(
-            {
-              id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
-              defaultMessage: 'Reason {index}',
-            },
-            { index: index + 1 },
-          );
-      const reasonMessage =
-        typeof reason?.message === 'string' && reason.message.trim()
-          ? reason.message.trim()
-          : intl.formatMessage({
-              id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
-              defaultMessage: 'No detailed message returned.',
-            });
-      const guidance = rawCode
-        ? REVIEW_SUBMIT_GATE_REASON_GUIDANCE[
-            rawCode as keyof typeof REVIEW_SUBMIT_GATE_REASON_GUIDANCE
-          ]
-        : undefined;
-
-      if (!guidance) {
-        return {
-          title: intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.fallback.title',
-            defaultMessage: 'Review submission did not complete',
-          }),
-          description: intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.fallback.description',
-            defaultMessage: 'The current data could not complete the pre-review check.',
-          }),
-          action: intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.fallback.action',
-            defaultMessage: 'Save the data and retry. If it still fails, contact an administrator.',
-          }),
-          diagnostic: `${code}: ${reasonMessage}`,
-        };
-      }
-
-      return {
-        title: intl.formatMessage({
-          id: guidance.titleId,
-          defaultMessage: guidance.defaultTitle,
-        }),
-        description: intl.formatMessage({
-          id: guidance.descriptionId,
-          defaultMessage: guidance.defaultDescription,
-        }),
-        action: intl.formatMessage({
-          id: guidance.actionId,
-          defaultMessage: guidance.defaultAction,
-        }),
-        diagnostic: `${code}: ${reasonMessage}`,
-      };
-    },
-    [intl],
-  );
-
-  const renderReviewSubmitGateDescription = useCallback(() => {
-    const reasons = reviewSubmitGateState.blockingReasons ?? [];
-    const statusMessage =
-      reviewSubmitGateState.message ||
-      getReviewSubmitGateStatusMessage(reviewSubmitGateState.status);
-
-    return (
-      <Space direction='vertical' size={4}>
-        <span>{statusMessage}</span>
-        {reasons.length > 0 && (
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {reasons.map((reason, index) => {
-              const evidence = formatReviewSubmitGateEvidence(intl, reason.details);
-              const formattedReason = formatReviewSubmitGateReason(reason, index);
-
-              return (
-                <li key={`${reason.code ?? 'reason'}-${index}`}>
-                  <div>{formattedReason.title}</div>
-                  <div>{formattedReason.description}</div>
-                  {formattedReason.action && (
-                    <div style={{ color: 'rgba(0, 0, 0, 0.78)' }}>{formattedReason.action}</div>
-                  )}
-                  <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{formattedReason.diagnostic}</div>
-                  {evidence.length > 0 && (
-                    <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
-                      {formatLocaleList(evidence, intl.locale)}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Space>
-    );
-  }, [
-    formatReviewSubmitGateReason,
-    getReviewSubmitGateStatusMessage,
-    reviewSubmitGateState.blockingReasons,
-    reviewSubmitGateState.message,
-    reviewSubmitGateState.status,
-  ]);
-
-  useEffect(() => {
     if (autoOpen && id && version) {
       setDrawerVisible(true);
     }
@@ -828,7 +222,6 @@ const ProcessEdit: FC<Props> = ({
   const applyProcessData = useCallback(
     (nextData: FormProcessWithDatas, options?: { resetFields?: boolean }) => {
       const normalizedData = { ...nextData, id } as FormProcessWithDatas;
-      resetReviewSubmitGateState();
       setFromData(normalizedData);
       setExchangeDataSource(
         ((normalizedData?.exchanges?.exchange ?? []) as ProcessExchangeData[]).map((item) => ({
@@ -840,7 +233,7 @@ const ProcessEdit: FC<Props> = ({
       }
       formRefEdit.current?.setFieldsValue(normalizedData);
     },
-    [id, resetReviewSubmitGateState],
+    [id],
   );
 
   const getCurrentProcessData = useCallback(() => {
@@ -1422,6 +815,59 @@ const ProcessEdit: FC<Props> = ({
       }
     }
 
+    const getValidationHint = () => {
+      if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'exchanges') {
+        return datasetValidationMessage;
+      }
+      if (errTabNames.length > 0) {
+        return formatDataCheckErrorWithSections(
+          intl,
+          errTabNames.map((tab: string) => formatDatasetTabLabel(intl, 'process data set', tab)),
+        );
+      }
+      return intl.formatMessage({
+        id: 'pages.button.check.error',
+        defaultMessage: 'Data check failed, please check the data!',
+      });
+    };
+
+    if (from === 'review') {
+      const currentValidationIssues = buildValidationIssues({
+        actionFrom: 'review',
+        datasetSdkValid: currentDatasetValid,
+        rootRef,
+        sdkInvalidDetails: mergedSdkIssueDetails,
+        sdkInvalidTabNames: currentDatasetTabNames,
+      });
+
+      setValidationIssueTabNames([]);
+      setRefCheckData(mapValidationIssuesToRefCheckData(currentValidationIssues));
+
+      if (currentDatasetValid) {
+        setSpinning(false);
+        return { checkResult: true, unReview: [] as refDataType[] };
+      }
+
+      if (!silent && currentValidationIssues.length > 0) {
+        const validationIssuesWithOwner =
+          await enrichValidationIssuesWithOwner(currentValidationIssues);
+        showValidationIssueModal({
+          intl,
+          issues: validationIssuesWithOwner,
+          onNavigate: handleValidationIssueNavigate,
+          title: {
+            id: 'pages.validationIssues.modal.reviewTitle',
+            defaultMessage: 'Review submission blocked',
+          },
+        });
+      } else if (!silent) {
+        message.error(getValidationHint());
+      }
+
+      setSpinning(false);
+      return { checkResult: false, unReview: [] as refDataType[] };
+    }
+
     const unReview: refDataType[] = []; // stateCode < 20
     const underReview: refDataType[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: refDataType[] = [];
@@ -1497,18 +943,7 @@ const ProcessEdit: FC<Props> = ({
       return { checkResult: true, unReview };
     }
 
-    let validationHint = intl.formatMessage({
-      id: 'pages.button.check.error',
-      defaultMessage: 'Data check failed, please check the data!',
-    });
-    if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'exchanges') {
-      validationHint = datasetValidationMessage;
-    } else if (errTabNames.length > 0) {
-      validationHint = formatDataCheckErrorWithSections(
-        intl,
-        errTabNames.map((tab: string) => formatDatasetTabLabel(intl, 'process data set', tab)),
-      );
-    }
+    const validationHint = getValidationHint();
 
     if (!silent && validationIssues.length > 0) {
       const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
@@ -1516,16 +951,10 @@ const ProcessEdit: FC<Props> = ({
         intl,
         issues: validationIssuesWithOwner,
         onNavigate: handleValidationIssueNavigate,
-        title:
-          from === 'review'
-            ? {
-                id: 'pages.validationIssues.modal.reviewTitle',
-                defaultMessage: 'Review submission blocked',
-              }
-            : {
-                id: 'pages.validationIssues.modal.checkDataTitle',
-                defaultMessage: 'Data validation issues',
-              },
+        title: {
+          id: 'pages.validationIssues.modal.checkDataTitle',
+          defaultMessage: 'Data validation issues',
+        },
       });
     } else if (!silent) {
       message.error(validationHint);
@@ -1549,305 +978,8 @@ const ProcessEdit: FC<Props> = ({
     return handleCheckData('checkData', validationTarget, { silent });
   };
 
-  const applyReviewSubmitJobState = useCallback(
-    (
-      jobData: ReviewSubmitJobResult | undefined,
-      fallback?: { revisionChecksum?: string },
-    ): { status: ReviewSubmitGateUiStatus; messageText: string } => {
-      const status = jobData?.status ?? 'error';
-      const gateData = jobData?.gate ?? undefined;
-      const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
-      const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
-      const revisionChecksum =
-        jobData?.datasetRevision?.revisionChecksum ??
-        gateData?.datasetRevision?.revisionChecksum ??
-        (gateWorkerJob?.result &&
-        typeof gateWorkerJob.result === 'object' &&
-        'datasetRevision' in gateWorkerJob.result
-          ? (
-              gateWorkerJob.result as {
-                datasetRevision?: { revisionChecksum?: string };
-              }
-            ).datasetRevision?.revisionChecksum
-          : undefined) ??
-        fallback?.revisionChecksum;
-      const blockingReasons = getReviewSubmitJobBlockingReasons(jobData);
-      const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
-
-      setReviewSubmitGateState({
-        status,
-        reviewSubmitJobId: jobData?.reviewSubmitJobId,
-        gateRunId,
-        revisionChecksum,
-        blockingReasons,
-        message: jobData?.error?.message,
-      });
-
-      return { status, messageText };
-    },
-    [getReviewSubmitGateStatusMessage],
-  );
-
-  const startReviewSubmitLatestSync = useCallback(
-    (processDetail: ProcessCheckTarget) => {
-      cancelReviewSubmitLatestSync();
-      const syncToken = reviewSubmitLatestSyncTokenRef.current;
-
-      const syncLatest = async (remainingAttempts: number): Promise<void> => {
-        if (!drawerVisibleRef.current || reviewSubmitLatestSyncTokenRef.current !== syncToken) {
-          return;
-        }
-
-        const latestResult = await requestReviewSubmitJob(
-          'processes',
-          processDetail.id,
-          processDetail.version,
-          null,
-          {
-            action: 'read_latest',
-          },
-        );
-
-        if (!drawerVisibleRef.current || reviewSubmitLatestSyncTokenRef.current !== syncToken) {
-          return;
-        }
-
-        const latestJobData = latestResult.data?.[0] as ReviewSubmitJobResult | undefined;
-        if (!latestJobData || latestResult.error) {
-          if (remainingAttempts > 1) {
-            reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
-              reviewSubmitLatestSyncTimeoutRef.current = null;
-              void syncLatest(remainingAttempts - 1);
-            }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS);
-          }
-          return;
-        }
-
-        const { status, messageText } = applyReviewSubmitJobState(latestJobData, {
-          revisionChecksum: latestResult.revisionChecksum,
-        });
-
-        if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
-          if (remainingAttempts > 1) {
-            reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
-              reviewSubmitLatestSyncTimeoutRef.current = null;
-              void syncLatest(remainingAttempts - 1);
-            }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS);
-          }
-          return;
-        }
-
-        trackReviewSubmitTask(latestJobData);
-        if (isReviewSubmitTerminalStatus(status) && status !== 'submitted') {
-          message.error(
-            isReviewSubmitGateNotPassedStatus(status)
-              ? getReviewSubmitGateFailedToastMessage()
-              : messageText,
-          );
-        }
-      };
-
-      reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
-        reviewSubmitLatestSyncTimeoutRef.current = null;
-        void syncLatest(REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS);
-      }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS);
-    },
-    [
-      applyReviewSubmitJobState,
-      cancelReviewSubmitLatestSync,
-      getReviewSubmitGateFailedToastMessage,
-    ],
-  );
-
-  const readActiveReviewSubmitWorkerJob = async (processDetail: ProcessReviewSubmitTarget) => {
-    const result = await requestWorkerJobsApi<WorkerJobResult>({
-      action: 'list',
-      subjectType: 'processes',
-      subjectId: processDetail.id,
-      statuses: ['queued', 'running', 'waiting'],
-      limit: REVIEW_SUBMIT_ACTIVE_WORKER_LIST_LIMIT,
-    });
-
-    if (result.error) {
-      return { error: result.error, workerJob: undefined };
-    }
-
-    return {
-      error: null,
-      workerJob: findActiveReviewSubmitWorkerJob(result.data, processDetail),
-    };
-  };
-
-  const failReviewSubmitRunningCheck = (messageText: string, revisionChecksum?: string) => {
-    setReviewSubmitGateState({
-      status: 'error',
-      message: messageText,
-      revisionChecksum,
-    });
-    message.error(messageText);
-    return 'failed' as const;
-  };
-
-  const showActiveReviewSubmitJob = (
-    jobData: ReviewSubmitJobResult,
-    fallback?: { revisionChecksum?: string },
-  ) => {
-    applyReviewSubmitJobState(jobData, fallback);
-    trackReviewSubmitTask(jobData);
-    requestOpenLcaTaskCenter();
-    message.warning(
-      intl.formatMessage({
-        id: 'pages.process.reviewSubmitJob.alreadyRunning',
-        defaultMessage: 'A review submission gate check is already running.',
-      }),
-    );
-    return 'queued' as const;
-  };
-
-  const runReviewSubmitJob = async (processDetail: ProcessCheckTarget) => {
-    const activeWorkerCheck = await readActiveReviewSubmitWorkerJob(processDetail);
-
-    if (activeWorkerCheck.error) {
-      return failReviewSubmitRunningCheck(
-        activeWorkerCheck.error.message ||
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.checkRunningFailed',
-            defaultMessage: 'Failed to check whether a review submission gate is already running.',
-          }),
-      );
-    }
-
-    if (activeWorkerCheck.workerJob) {
-      return showActiveReviewSubmitJob(
-        reviewSubmitJobFromActiveWorkerJob(activeWorkerCheck.workerJob, processDetail),
-      );
-    }
-
-    const handleActiveReviewSubmitJob = (
-      jobData: ReviewSubmitJobResult,
-      fallback?: { revisionChecksum?: string },
-    ) => {
-      startReviewSubmitLatestSync(processDetail);
-      return showActiveReviewSubmitJob(jobData, fallback);
-    };
-
-    const latestResult = await requestReviewSubmitJob(
-      'processes',
-      processDetail.id,
-      processDetail.version,
-      null,
-      {
-        action: 'read_latest',
-      },
-    );
-
-    if (latestResult.error && !isReviewSubmitJobNotFoundResult(latestResult)) {
-      return failReviewSubmitRunningCheck(
-        latestResult.error.message ||
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.checkRunningFailed',
-            defaultMessage: 'Failed to check whether a review submission gate is already running.',
-          }),
-        latestResult.revisionChecksum,
-      );
-    }
-
-    const latestJobData = latestResult.data?.[0] as ReviewSubmitJobResult | undefined;
-    if (isReviewSubmitGateCheckActive(latestJobData)) {
-      return handleActiveReviewSubmitJob(latestJobData, {
-        revisionChecksum: latestResult.revisionChecksum,
-      });
-    }
-
-    const jobResult = await requestReviewSubmitJob(
-      'processes',
-      processDetail.id,
-      processDetail.version,
-      null,
-      {
-        action: 'enqueue',
-        reviewSubmitJobId: undefined,
-      },
-    );
-
-    if (jobResult.error) {
-      const messageText =
-        jobResult.error.message ||
-        intl.formatMessage({
-          id: 'pages.process.reviewSubmitGate.error',
-          defaultMessage: 'Numerical stability gate could not complete.',
-        });
-      setReviewSubmitGateState({
-        status: 'error',
-        message: messageText,
-        revisionChecksum: jobResult.revisionChecksum,
-      });
-      message.error(messageText);
-      return 'failed' as const;
-    }
-
-    const jobData = jobResult.data?.[0] as ReviewSubmitJobResult | undefined;
-    const { status, messageText } = applyReviewSubmitJobState(jobData, {
-      revisionChecksum: jobResult.revisionChecksum,
-    });
-
-    if (jobData) {
-      trackReviewSubmitTask(jobData);
-      requestOpenLcaTaskCenter();
-    }
-
-    if (status === 'submitted') {
-      return 'submitted' as const;
-    }
-
-    if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
-      message.info(
-        intl.formatMessage({
-          id: 'pages.process.reviewSubmitJob.enqueued',
-          defaultMessage:
-            'Review submission task has been created. Track progress in the task center.',
-        }),
-      );
-      startReviewSubmitLatestSync(processDetail);
-      return 'queued' as const;
-    }
-
-    message.error(
-      isReviewSubmitGateNotPassedStatus(status)
-        ? getReviewSubmitGateFailedToastMessage()
-        : messageText,
-    );
-    return 'failed' as const;
-  };
-
   const submitReview = async () => {
     setSpinning(true);
-    resetReviewSubmitGateState();
-
-    if (id && version) {
-      const activeWorkerCheck = await readActiveReviewSubmitWorkerJob({ id, version });
-
-      if (activeWorkerCheck.error) {
-        failReviewSubmitRunningCheck(
-          activeWorkerCheck.error.message ||
-            intl.formatMessage({
-              id: 'pages.process.reviewSubmitJob.checkRunningFailed',
-              defaultMessage:
-                'Failed to check whether a review submission gate is already running.',
-            }),
-        );
-        setSpinning(false);
-        return;
-      }
-
-      if (activeWorkerCheck.workerJob) {
-        showActiveReviewSubmitJob(
-          reviewSubmitJobFromActiveWorkerJob(activeWorkerCheck.workerJob, { id, version }),
-        );
-        setSpinning(false);
-        return;
-      }
-    }
 
     const updateResult = await handleSubmit(false, { langIntent: 'validation' });
     const validationTarget = await resolveProcessCheckTarget(updateResult);
@@ -1861,8 +993,19 @@ const ProcessEdit: FC<Props> = ({
 
     if (checkResult && updatedProcess) {
       setSpinning(true);
-      const submitState = await runReviewSubmitJob(updatedProcess);
-      if (submitState !== 'submitted') {
+      const submitResult = await submitDatasetReview(
+        'processes',
+        updatedProcess.id,
+        updatedProcess.version,
+      );
+      if (submitResult.error) {
+        message.error(
+          submitResult.error.message ||
+            intl.formatMessage({
+              id: 'pages.process.review.submitFailed',
+              defaultMessage: 'Review submission failed',
+            }),
+        );
         setSpinning(false);
         return;
       }
@@ -1933,13 +1076,12 @@ const ProcessEdit: FC<Props> = ({
       setSdkValidationDismissedFieldKeys(new Set());
       setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
-      resetReviewSubmitGateState();
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
       return;
     }
     onReset();
-  }, [drawerVisible, resetReviewSubmitGateState]);
+  }, [drawerVisible]);
 
   useEffect(() => {
     if (!showRules || !drawerVisible || pendingTabValidationKey !== activeTabKey) {
@@ -2132,35 +1274,10 @@ const ProcessEdit: FC<Props> = ({
         />
         <Spin spinning={spinning}>
           <RefCheckContext.Provider value={refCheckContextValue}>
-            {reviewSubmitGateState.status !== 'not_run' && (
-              <Alert
-                showIcon
-                style={{ marginBottom: 12 }}
-                type={
-                  reviewSubmitGateState.status === 'passed' ||
-                  reviewSubmitGateState.status === 'submitted'
-                    ? 'success'
-                    : reviewSubmitGateState.status === 'queued' ||
-                        reviewSubmitGateState.status === 'running' ||
-                        reviewSubmitGateState.status === 'waiting_gate' ||
-                        reviewSubmitGateState.status === 'submitting'
-                      ? 'info'
-                      : 'error'
-                }
-                message={
-                  <FormattedMessage
-                    id='pages.process.reviewSubmitGate.title'
-                    defaultMessage='Numerical stability gate'
-                  />
-                }
-                description={renderReviewSubmitGateDescription()}
-              />
-            )}
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
               onValuesChange={async (changedValues, allValues) => {
-                resetReviewSubmitGateState();
                 dismissChangedSdkValidationFields(changedValues);
                 if (activeTabKey === 'validation') {
                   await setFromData({

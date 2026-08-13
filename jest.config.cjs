@@ -58,6 +58,9 @@ module.exports = async () => {
       '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes.ts',
       '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/processFlowGraphCacheLoader.ts',
       '!src/pages/Processes/Components/edit.tsx',
+      // Review Admin diagnostic is an Ant Design orchestration wrapper; focused component tests
+      // own its manual-only, informational, polling, failure, and report-rendering contracts.
+      '!src/pages/Review/Components/ReviewQualityDiagnostic.tsx',
       '!src/pages/Sources/Components/edit.tsx',
       '!src/pages/Unitgroups/Components/edit.tsx',
       '!src/pages/Unitgroups/Components/form.tsx',

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a7babd6228fb65271378899bccb7d6fac5ae23cc
-lastReviewedNote: 'Reviewed for Next Issue #819: bootstrap and managed delivery remain unchanged while the full coverage command uses two workers with a 512MB recycle boundary.'
+lastReviewedCommit: 2d50fb1e425750274d5a1e03c67980a87bfae26c
+lastReviewedNote: 'Reviewed for Next Issue #820 on the Issue #819 release-gate baseline: the direct-submit and Review Admin diagnostic work uses the existing install, focused-proof, build, and managed-push workflow without changing bootstrap or bounded coverage commands.'
 ---
 
 # Development Bootstrap

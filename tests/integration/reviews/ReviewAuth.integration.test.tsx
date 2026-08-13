@@ -111,6 +111,11 @@ jest.mock('@/pages/Review/Components/ReviewMember', () => ({
   ),
 }));
 
+jest.mock('@/pages/Review/Components/ReviewQualityDiagnostic', () => ({
+  __esModule: true,
+  default: () => <div data-testid='review-quality-diagnostic'>Quality diagnostic</div>,
+}));
+
 jest.mock('@/services/roles/api', () => ({
   getReviewUserRoleApi: jest.fn(),
 }));
@@ -134,6 +139,7 @@ describe('Review page authentication workflow', () => {
 
     await waitFor(() => expect(assignmentReloads.unassigned).toBeDefined());
     expect(screen.getByTestId('assignment-role-unassigned')).toHaveTextContent('review-admin');
+    expect(screen.getByTestId('review-quality-diagnostic')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-assigned'));
 
@@ -150,6 +156,7 @@ describe('Review page authentication workflow', () => {
 
     await waitFor(() => expect(screen.getByTestId('tab-panel-reviewed')).toBeInTheDocument());
     expect(screen.queryByTestId('tab-unassigned')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('review-quality-diagnostic')).not.toBeInTheDocument();
     expect(assignmentReloads.reviewed).toBeDefined();
   });
 

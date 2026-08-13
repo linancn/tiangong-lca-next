@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a7babd6228fb65271378899bccb7d6fac5ae23cc
-lastReviewedNote: 'Reviewed for Next Issue #819: full-gate fallback and two-worker native-crash diagnosis use a heap-aware 512MB recycle boundary.'
+lastReviewedCommit: 2d50fb1e425750274d5a1e03c67980a87bfae26c
+lastReviewedNote: 'Reviewed for Next Issue #820 on the Issue #819 release-gate baseline: the focused Process test failure used the existing narrow-scope async-state workflow, while full-gate fallback retains the heap-aware bounded worker recovery path.'
 ---
 
 # Testing Troubleshooting

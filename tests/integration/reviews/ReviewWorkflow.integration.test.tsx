@@ -56,6 +56,11 @@ jest.mock('@/pages/Review/Components/SimpleReviewActions', () => ({
   default: ({ reviewId }: any) => <span data-testid={`simple-review-${reviewId}`}>Review</span>,
 }));
 
+jest.mock('@/pages/Review/Components/ReviewQualityDiagnostic', () => ({
+  __esModule: true,
+  default: () => <div data-testid='review-quality-diagnostic'>Quality diagnostic</div>,
+}));
+
 jest.mock('@/pages/Account/view', () => ({
   __esModule: true,
   default: ({ userId }: any) => <span data-testid={`account-${userId}`}>Account</span>,

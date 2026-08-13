@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-13'
-lastReviewedCommit: 'a7babd6228fb65271378899bccb7d6fac5ae23cc'
-lastReviewedNote: 'Reviewed for Next Issue #819: release-proof reuse and the 512MB-bounded two-worker coverage gate stay within existing release, workflow, test, and documentation ownership domains.'
+lastReviewedCommit: '2d50fb1e425750274d5a1e03c67980a87bfae26c'
+lastReviewedNote: 'Reviewed for Next Issue #820 on the Issue #819 release-gate baseline: direct review submission and the Review Admin diagnostic are routed through current page, service, review-role, validation, architecture, and full-gate ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -273,8 +273,14 @@ routing:
     team-and-review-management:
       paths:
         - src/pages/Review/**
+        - src/pages/Processes/Components/edit.tsx
+        - src/pages/Utils/review.tsx
+        - src/services/reviews/**
         - src/pages/ManageSystem/**
         - src/pages/Teams/**
+        - docs/agents/data_audit_instruction.md
+        - docs/agents/team_management.md
+        - docs/agents/supabase-branching.md
     classification-assets:
       paths:
         - src/services/referenceResources/**

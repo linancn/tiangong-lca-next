@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-12
-lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
-lastReviewedNote: 'Reviewed for Next Issue #813: normal, smart, and reference search routing remains inside the existing page-to-service frontend boundary.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -114,25 +114,25 @@ The repo-owned qualification adapter runs this actual page from an exact clean d
 
 The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. The Data Processing artifact projection similarly exposes only semantic role/format/filename, integrity, size, lifecycle/expiry, and signed-download metadata; it never exposes bucket or object paths. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 
-### Process Review-Submit Gate
+### Review Submission And Review Admin Quality Diagnostic
 
-Process review submission uses an asynchronous submit job:
+Process review submission uses the same stable command boundary as the other dataset types:
 
-`src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_jobs`
+`src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
-The task-center recovery path is:
+Before calling that command, the Process editor checks only the current saved record with rules the submitter can immediately correct there: TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. The submit action does not traverse references, calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. The user-invoked `Data Check` action may continue to traverse references as a separate diagnostic. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
 
-`src/components/LcaTaskCenter/index.tsx -> src/services/reviews/taskCenter.ts -> src/services/workerJobs/api.ts -> app_worker_jobs`
+Review Admin has a separate manual quality-diagnostic path:
 
-Next owns only the UI orchestration for this job. It enqueues or reads the Edge job without treating any browser-computed checksum as authoritative, renders returned `queued`, `waiting_gate`, `submitting`, `submitted`, `blocked`, `stale`, `error`, and `cancelled` states, and shows user-facing guidance for backend-provided gate `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate worker-owned blocker heuristics or infer submit readiness from worker internals.
+`src/pages/Review/Components/ReviewQualityDiagnostic.tsx -> src/services/reviews/api.ts -> admin_review_quality_diagnostic`
 
-After enqueue succeeds, the process edit page must stop long blocking loading and route attention to the task center. The task center treats service-returned `worker_jobs` / coordinator rows as the task fact source. The visible task identity and task actions should prefer the canonical root `review_submit.submit` worker job (`submitWorkerJobId` / `rootJobId`), while `review_submit.gate`, `gateWorkerJobId`, `gateRunId`, and retained `reviewSubmitJobId` values remain child evidence or diagnostics. LocalStorage may cache UI projections and dismissals for resume behavior, but it must not be the authority for review-submit job state.
+The browser may start a diagnostic or read the latest/server-identified run, but it never chooses the dataset scope. Database and Worker evaluate one server-owned snapshot of pending reviews and return joint completeness and numerical-stability sections. Next renders the run state, scope counts, findings, and structured details as informational evidence. It never interprets `clear`, `findings`, `not_evaluable`, or runtime failure as permission to enable or disable assignment, approval, rejection, or any other review transition.
 
-When the job reaches `submitted`, Edge/Database have already validated the gate and called the final submit-review RPC on behalf of the original user. The browser must not call `app_dataset_submit_review` after a gate pass in the main process flow. Database/Edge own the persisted-row checksum, freshness, policy assertion, and final submit idempotency; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
+The diagnostic is visible only to `review-admin`, starts only after an explicit click, and may refresh an active run. It creates no frontend Batch entity, waiver, risk-acceptance action, browser checksum, or revision identity. Historical review-submit Gate/task-center readers remain compatibility surfaces for already-running or retained legacy jobs only; new Process submissions must not enqueue them.
 
 ### Unified Root And Reference Review
 
-All seven dataset edit surfaces expose one `Submit Review` label. Process keeps the asynchronous Gate path above; Lifecycle Model, Contact, Source, Unit Group, Flow Property, and Flow submit without Gate evidence. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
+All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs only its current-record checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
 Review Management consumes the central review projection. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
 
@@ -163,9 +163,9 @@ Next owns read orchestration, release dataset identity display, directional LCI/
 ## Cross-Repo Boundaries
 
 - `database-engine` owns schema truth and Supabase branch governance
-- `edge-functions` owns Edge runtime behavior, including `app_dataset_review_submit_gate` and `app_dataset_review_submit_jobs`
+- `edge-functions` owns Edge runtime behavior, including the Review Admin `admin_review_quality_diagnostic` boundary and compatibility-only legacy review-submit routes
 - `next-docs` owns public docs-site content
-- `worker` owns solver and compute internals, including review-submit blocker heuristics
+- `worker` owns the joint pending-review completeness and numerical-stability diagnostic internals and report production; its outcome does not control review workflow state
 - `lca-workspace` owns root delivery completion after merge
 
 ## Common Misreads

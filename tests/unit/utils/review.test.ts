@@ -1641,7 +1641,6 @@ describe('review utilities', () => {
       'processes',
       '11111111-1111-4111-8111-111111111111',
       '01.00.000',
-      {},
     );
     expect(result).toEqual({ data: [{ review: { id: 'review-1' } }] });
   });

@@ -5,15 +5,15 @@
     "repository": "linancn/tiangong-lca-next",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "4dbaff8f99ec34385c3d76bdfe68a5fc1590f481b84efd9dace708db4be7633b",
-    "auditedInputDigest": "1657b2b1efa3385624a8ec837f40e2f0650b79ae2986865593fed797741d494f"
+    "sourceManifestDigest": "4fc47a2406a021478d79c00390bf46912441503b7ceb268509f5290aad657040",
+    "auditedInputDigest": "4684eb16a02afee038ac706aa4bcc2d399cbc2483210d93e5c427806a9f17312"
   },
   "inventory": {
-    "sourceMessageCount": 3114,
-    "localeMessageCount": 3114,
+    "sourceMessageCount": 3156,
+    "localeMessageCount": 3156,
     "leafModuleCount": 30,
-    "dynamicFamilyCount": 17,
-    "dynamicCallsiteCount": 39,
+    "dynamicFamilyCount": 16,
+    "dynamicCallsiteCount": 35,
     "routeViewRowCount": 49,
     "configuredRouteCount": 46,
     "coveredConfiguredRouteCount": 46,
@@ -44,36 +44,36 @@
       "preserved tokens and layout/RTL/dark risks",
       "candidate/rationale/risk/validation"
     ],
-    "messageCount": 3114,
-    "completeCount": 3114,
+    "messageCount": 3156,
+    "completeCount": 3156,
     "blockedCount": 0,
-    "dossierDigest": "06a7dbdba0db74f82cedbc8f776e66292b9cc6dc4af26ae8132fc8d886ea5a77",
-    "catalogDigest": "05d9ac48d37d0eafb48ec463e6b33e2be831295ef25d4afba5dfce8ff96ff832",
+    "dossierDigest": "fd1d176152b119e983d67856b2c65f0b9c80aaf87e2e9ab567d5dc55e2212f5c",
+    "catalogDigest": "5474a55d9f34aed60d8eab4231980faf64afc707059f1f5368f2b26cbad899d2",
     "moduleCount": 31,
     "moduleDigest": "46fb10d2d29c762e23a92a65d644a45d9f5e3cd5f2cd7c56e5a9c57ed428cd4f",
     "roleCounts": {
-      "error-or-validation": 363,
+      "error-or-validation": 368,
       "explanatory-copy": 110,
       "field-guidance": 49,
-      "label-or-body-copy": 1255,
-      "navigation-or-tab": 226,
+      "label-or-body-copy": 1276,
+      "navigation-or-tab": 227,
       "reserved-catalog-copy": 277,
-      "status-or-empty-state": 100,
-      "success-notification": 182,
-      "title-or-heading": 239,
-      "user-action": 313
+      "status-or-empty-state": 110,
+      "success-notification": 184,
+      "title-or-heading": 240,
+      "user-action": 315
     },
     "stateCounts": {
       "destructive-or-rejecting-action": 47,
-      "failure-or-invalid-input": 363,
-      "interactive-ready": 522,
-      "retained-not-currently-reachable": 357,
-      "successful-completion": 182,
-      "visible": 1643
+      "failure-or-invalid-input": 368,
+      "interactive-ready": 525,
+      "retained-not-currently-reachable": 358,
+      "successful-completion": 184,
+      "visible": 1674
     },
-    "riskCounts": { "high": 1390, "low": 1502, "medium": 222 },
-    "highRiskMessageCount": 1390,
-    "highRiskMessageDigest": "af9c33a37e6517bfd6c9a539c8f06ad0ca010472b6f5f4d94183ad81c0103bd0"
+    "riskCounts": { "high": 1432, "low": 1502, "medium": 222 },
+    "highRiskMessageCount": 1432,
+    "highRiskMessageDigest": "d0e620dfc05a8ed2fcf46a3a0f206c27984b22b6dd37a5c39fb8e60655f34696"
   },
   "typedContentDossiers": {
     "sourcePath": "src/components/ImportTidasPackage/reportContent.ts",
@@ -88,8 +88,8 @@
   },
   "usageIndex": {
     "source": "docs/plans/i18n-de-DE/manifest.json messages[*].references/moduleOwnership/dynamicFamilies",
-    "literalReferenceCount": 4133,
-    "dynamicCallsiteCount": 39,
+    "literalReferenceCount": 4152,
+    "dynamicCallsiteCount": 35,
     "glossaryRuleScope": "full target catalog at the automated quality gate",
     "onDemandCommand": "npm run i18n:context:dossier -- --locale de-DE --message <MESSAGE_ID>"
   },
@@ -144,7 +144,7 @@
         "focusedVariantCount": 7
       },
       "sourceFileCount": 35,
-      "sourceEvidenceDigest": "a2cd3077c993f0767ab41166d4f3997d830d9dd0e13b808f126d5240a9076096",
+      "sourceEvidenceDigest": "7ff7039666c52bea3e4c534a252975fbe2394be3547822a5c0307490cfc92e14",
       "rowEvidence": [
         {
           "executableAssertionId": "rv.root.redirect-to-welcome",
@@ -502,8 +502,8 @@
           "route": "/review",
           "viewState": "review-workbench",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "b1442ddd3a928a5a99c5020c2dceee3994fcd8744aa2e03c62f980625d38446b",
-          "focusedTestDigest": "c07876b4fdfe48fd401a12db522d50582a7f1af3f6285d3192ad8a90a25d072f",
+          "sourceDigest": "c83add5c6565f7b1ce08296dbf734f84f06a1dd7feb45161b797d88979b62e8e",
+          "focusedTestDigest": "532ae6ebc5fe409c9b976ee0dedaf3d83ede0f406c63159c1ef267c800610f00",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "5a8c72f83ffaf3ff28bf1ba10eb392dc9595f22dc25398575a67c71a636d6af4",
           "derivedMessageCount": 10,
@@ -1096,7 +1096,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "8c46fc18019f45c8f9fa5bbd9bd9562ef12260bc36c909752364048eb514949e",
+      "rowEvidenceDigest": "00c8157d073495d46d0e9ac4c8f1f1b71e4887cbb179fbc5aa4b769b11f83c1a",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1113,12 +1113,12 @@
     "scripts/i18n/audit-language-platform.mjs": "a7c8584bcf0ccc4f70ccd7e9ace047a1327687eab3233a7eda8df1773c7f1610",
     "scripts/i18n/language-hardcoding-allowlist.json": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a",
     "src/components/ImportTidasPackage/reportContent.ts": "b2abf951ea5aad8bc1cb440aba7d771a5344ca1a33f36d502ff1c8c6a2961c6b",
-    "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
+    "docs/plans/i18n-de-DE/dynamic-families.json": "c2bf4189d9a6dfc1e9b99698577088ec8e5bf9a06c6f97ff7a668c937c218f1e",
     "docs/plans/i18n/route-view-coverage.json": "4cb5341e8964b51ca78dc2816ad3ad477ee6c6c85c4c92382605240e762c2e7c",
     "docs/plans/i18n/fallback-contract.json": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "docs/plans/i18n-de-DE/glossary.json": "a5fd4e759af2713fbec83f2b95171c7b32206d7218da0401d28d2eecefccce3a",
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "0e9e670c2fc8620837387415c3d06237bb485ea6da86afa454a4f3973ec0ea4e"
+  "contextDigest": "e0939393fe8260c009f0261d84845664762e66dbce4b970a1e1b8971d1925e06"
 }
