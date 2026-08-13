@@ -12,7 +12,7 @@ export interface HybridSearchClientRequest {
 }
 
 export interface HybridSearchRpcOptions {
-  filter_condition: Record<string, unknown>;
+  filter_condition: string;
   match_threshold: number;
   match_count: number;
   lexical_weight: number;
@@ -124,15 +124,15 @@ function parseNullableTeamId(value: unknown): string | null {
   return teamId;
 }
 
-function normalizeFilterCondition(value: unknown): Record<string, unknown> {
+function normalizeFilterCondition(value: unknown): string {
   if (value === undefined || value === null || value === '') {
-    return {};
+    return '{}';
   }
 
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) {
-      return {};
+      return '{}';
     }
 
     try {
@@ -140,7 +140,7 @@ function normalizeFilterCondition(value: unknown): Record<string, unknown> {
       if (!isRecord(parsed)) {
         throw new HybridSearchRequestError('filter_condition must be a JSON object');
       }
-      return parsed;
+      return JSON.stringify(parsed);
     } catch (error) {
       if (error instanceof HybridSearchRequestError) {
         throw error;
@@ -153,7 +153,7 @@ function normalizeFilterCondition(value: unknown): Record<string, unknown> {
     throw new HybridSearchRequestError('filter_condition must be a JSON object');
   }
 
-  return value;
+  return JSON.stringify(value);
 }
 
 export function parseHybridSearchClientRequest(body: unknown): HybridSearchClientRequest {

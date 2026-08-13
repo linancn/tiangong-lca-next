@@ -8,6 +8,6 @@ Deno.serve(
     entityKind: 'lifecyclemodel',
     entityLabel: 'Lifecycle model',
     entityPlural: 'lifecycle models',
-    rpcName: 'hybrid_search_lifecyclemodels',
+    rpcName: 'hybrid_search_lifecyclemodels_v2',
   }),
 );

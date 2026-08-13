@@ -63,21 +63,6 @@ export type SimpleReviewDecisionRequest =
       reason: string;
     };
 
-export type ReviewBatchDecisionRequest = {
-  reviewIds: string[];
-  decision: SimpleReviewDecision;
-  reason?: string;
-};
-
-export type ReviewIdRequest = {
-  reviewId: string;
-};
-
-export type ReviewerDecisionRequest = ReviewIdRequest & {
-  decision: SimpleReviewDecision;
-  reason?: string;
-};
-
 export type ReviewResponsibility = {
   reviewId: string;
   reviewKind: ReviewKind;

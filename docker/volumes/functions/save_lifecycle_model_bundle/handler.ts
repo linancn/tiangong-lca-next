@@ -1,7 +1,6 @@
 import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
 import { authenticateRequest, AuthMethod, type AuthResult } from '../_shared/auth.ts';
-import { extractBearerToken } from '../_shared/command_runtime/actor_context.ts';
 import {
   ensureOwnerOrReviewAdmin,
   json,
@@ -10,16 +9,11 @@ import {
   permissionErrorStatusCode,
   validateSavePlan,
 } from '../_shared/lifecyclemodel_bundle.ts';
-import {
-  createRequestSupabaseClient,
-  supabaseAuthClient,
-  supabaseServiceClient,
-} from '../_shared/supabase_client.ts';
+import { supabaseAuthClient, supabaseServiceClient } from '../_shared/supabase_client.ts';
 
 export type SaveLifecycleModelBundleHandlerDeps = {
   authClient: SupabaseClient;
-  serviceSupabase: SupabaseClient;
-  createRequestSupabaseClient: (accessToken: string) => SupabaseClient;
+  supabase: SupabaseClient;
   authenticateRequest: (
     req: Request,
     config: {
@@ -33,8 +27,7 @@ export type SaveLifecycleModelBundleHandlerDeps = {
 export function createSaveLifecycleModelBundleHandler(
   deps: SaveLifecycleModelBundleHandlerDeps = {
     authClient: supabaseAuthClient,
-    serviceSupabase: supabaseServiceClient,
-    createRequestSupabaseClient,
+    supabase: supabaseServiceClient,
     authenticateRequest,
     ensureOwnerOrReviewAdmin,
   },
@@ -61,8 +54,7 @@ export function createSaveLifecycleModelBundleHandler(
     });
 
     const userId = authResult.user?.id;
-    const accessToken = extractBearerToken(req);
-    if (!authResult.isAuthenticated || !userId || !accessToken) {
+    if (!authResult.isAuthenticated || !userId) {
       return json(
         {
           ok: false,
@@ -100,10 +92,9 @@ export function createSaveLifecycleModelBundleHandler(
     }
 
     const plan = validation.value;
-    const actorSupabase = deps.createRequestSupabaseClient(accessToken);
     if (plan.mode === 'update') {
       const permission = await deps.ensureOwnerOrReviewAdmin(
-        deps.serviceSupabase,
+        deps.supabase,
         userId,
         plan.modelId,
         plan.version!,
@@ -113,8 +104,14 @@ export function createSaveLifecycleModelBundleHandler(
       }
     }
 
-    const { data, error } = await actorSupabase.rpc('cmd_lifecycle_model_bundle_save', {
-      p_plan: plan,
+    // The RPC runs with service_role, so ownership must be forwarded explicitly.
+    const rpcPlan = {
+      ...plan,
+      actorUserId: userId,
+    };
+
+    const { data, error } = await deps.supabase.rpc('cmd_lifecycle_model_bundle_save', {
+      p_plan: rpcPlan,
     });
 
     if (error) {

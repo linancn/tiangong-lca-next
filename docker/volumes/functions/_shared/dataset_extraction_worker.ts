@@ -7,21 +7,11 @@ import {
   generateSourceMarkdown,
   generateUnitGroupMarkdown,
 } from './foundation_dataset_extraction.ts';
-import {
-  projectContactSearchText,
-  projectFlowPropertySearchText,
-  projectFlowSearchText,
-  projectLifecycleModelSearchText,
-  projectProcessSearchText,
-  projectSourceSearchText,
-  projectUnitGroupSearchText,
-  type SearchTextProjector,
-} from './search_text_projection.ts';
 
-export type DatasetExtractionKind = 'extracted_md' | 'search_text';
+export type DatasetExtractionKind = 'extracted_md';
 export type DatasetEntityKind =
-  'flow' | 'process' | 'lifecyclemodel' | 'contact' | 'flowproperty' | 'source' | 'unitgroup';
-export type SupportedDatasetEntityKind = DatasetEntityKind;
+  'flow' | 'process' | 'contact' | 'flowproperty' | 'source' | 'unitgroup';
+export type SupportedDatasetEntityKind = Exclude<DatasetEntityKind, 'process'>;
 
 export interface DatasetExtractionJobMessage {
   schema: string;
@@ -67,7 +57,6 @@ export interface DatasetExtractionWorkerOptions {
   maxReadCount?: number;
   markdownGenerator?: MarkdownGenerator;
   markdownGenerators?: Partial<Record<SupportedDatasetEntityKind, MarkdownGenerator>>;
-  searchTextProjectors?: Partial<Record<SupportedDatasetEntityKind, SearchTextProjector>>;
 }
 
 interface RpcEnvelope<T> {
@@ -80,43 +69,17 @@ interface RpcEnvelope<T> {
 
 interface DatasetExtractionTarget {
   table: string;
-  generator?: MarkdownGenerator;
-  searchTextProjector: SearchTextProjector;
+  generator: MarkdownGenerator;
 }
 
 const DATASET_EXTRACTION_TARGETS: Readonly<
   Record<SupportedDatasetEntityKind, DatasetExtractionTarget>
 > = {
-  flow: {
-    table: 'flows',
-    generator: generateFlowMarkdown,
-    searchTextProjector: projectFlowSearchText,
-  },
-  process: { table: 'processes', searchTextProjector: projectProcessSearchText },
-  lifecyclemodel: {
-    table: 'lifecyclemodels',
-    searchTextProjector: projectLifecycleModelSearchText,
-  },
-  contact: {
-    table: 'contacts',
-    generator: generateContactMarkdown,
-    searchTextProjector: projectContactSearchText,
-  },
-  flowproperty: {
-    table: 'flowproperties',
-    generator: generateFlowPropertyMarkdown,
-    searchTextProjector: projectFlowPropertySearchText,
-  },
-  source: {
-    table: 'sources',
-    generator: generateSourceMarkdown,
-    searchTextProjector: projectSourceSearchText,
-  },
-  unitgroup: {
-    table: 'unitgroups',
-    generator: generateUnitGroupMarkdown,
-    searchTextProjector: projectUnitGroupSearchText,
-  },
+  flow: { table: 'flows', generator: generateFlowMarkdown },
+  contact: { table: 'contacts', generator: generateContactMarkdown },
+  flowproperty: { table: 'flowproperties', generator: generateFlowPropertyMarkdown },
+  source: { table: 'sources', generator: generateSourceMarkdown },
+  unitgroup: { table: 'unitgroups', generator: generateUnitGroupMarkdown },
 };
 
 function positiveInteger(value: number | undefined, fallback: number, max: number): number {
@@ -163,7 +126,7 @@ function resolveTarget(job: ClaimedDatasetExtractionJob): DatasetExtractionTarge
       code: 'INVALID_JOB_MESSAGE',
     });
   }
-  if (message.extraction_kind !== 'extracted_md' && message.extraction_kind !== 'search_text') {
+  if (message.extraction_kind !== 'extracted_md') {
     throw Object.assign(new Error('Unsupported dataset extraction kind'), {
       code: 'UNSUPPORTED_EXTRACTION_KIND',
     });
@@ -230,12 +193,12 @@ async function updateDatasetExtraction(
   table: string,
   id: string,
   version: string,
-  values: { extracted_md?: string; search_text?: string[] },
+  extractedMarkdown: string,
 ): Promise<void> {
   const { error } = await supabase
     .schema('public')
     .from(table)
-    .update(values)
+    .update({ extracted_md: extractedMarkdown })
     .eq('id', id)
     .eq('version', version);
   if (error) throw error;
@@ -244,45 +207,20 @@ async function updateDatasetExtraction(
 async function processDatasetJob(
   supabase: SupabaseClient,
   job: ClaimedDatasetExtractionJob,
-  generators: Partial<Record<SupportedDatasetEntityKind, MarkdownGenerator>>,
-  searchTextProjectors: Record<SupportedDatasetEntityKind, SearchTextProjector>,
+  generators: Record<SupportedDatasetEntityKind, MarkdownGenerator>,
 ): Promise<'success' | 'stale'> {
   const target = resolveTarget(job);
   const { id, version, entity_kind: entityKind } = job.message;
-  const kind = entityKind as SupportedDatasetEntityKind;
-  if (job.message.extraction_kind === 'extracted_md' && !generators[kind]) {
-    throw Object.assign(new Error(`No extracted_md generator registered for ${kind}`), {
-      code: 'UNSUPPORTED_ENTITY_KIND',
-    });
-  }
   const datasetJson = await fetchDatasetJson(supabase, target.table, id, version);
   if (datasetJson === null) return 'stale';
 
-  const searchText = searchTextProjectors[kind](datasetJson, id);
-  if (searchText.length === 0) {
-    throw Object.assign(new Error('Empty search text projection'), {
-      code: 'EMPTY_SEARCH_TEXT',
-    });
-  }
-
-  if (job.message.extraction_kind === 'search_text') {
-    await updateDatasetExtraction(supabase, target.table, id, version, {
-      search_text: searchText,
-    });
-    return 'success';
-  }
-
-  const markdownGenerator = generators[kind]!;
-  const markdown = markdownGenerator(datasetJson);
+  const markdown = generators[entityKind as SupportedDatasetEntityKind](datasetJson);
   if (!markdown.trim()) {
     throw Object.assign(new Error('Empty extracted markdown'), {
       code: 'EMPTY_EXTRACTED_MD',
     });
   }
-  await updateDatasetExtraction(supabase, target.table, id, version, {
-    extracted_md: markdown,
-    search_text: searchText,
-  });
+  await updateDatasetExtraction(supabase, target.table, id, version, markdown);
   return 'success';
 }
 
@@ -292,25 +230,13 @@ export async function processDatasetExtractionJobs(
   const batchSize = positiveInteger(options.batchSize, 5, 50);
   const visibilityTimeoutSeconds = positiveInteger(options.visibilityTimeoutSeconds, 300, 3600);
   const maxReadCount = positiveInteger(options.maxReadCount, 5, 100);
-  const generators: Partial<Record<SupportedDatasetEntityKind, MarkdownGenerator>> = {
+  const generators: Record<SupportedDatasetEntityKind, MarkdownGenerator> = {
     flow: options.markdownGenerator ?? DATASET_EXTRACTION_TARGETS.flow.generator,
-    process: DATASET_EXTRACTION_TARGETS.process.generator,
-    lifecyclemodel: DATASET_EXTRACTION_TARGETS.lifecyclemodel.generator,
     contact: DATASET_EXTRACTION_TARGETS.contact.generator,
     flowproperty: DATASET_EXTRACTION_TARGETS.flowproperty.generator,
     source: DATASET_EXTRACTION_TARGETS.source.generator,
     unitgroup: DATASET_EXTRACTION_TARGETS.unitgroup.generator,
     ...options.markdownGenerators,
-  };
-  const searchTextProjectors: Record<SupportedDatasetEntityKind, SearchTextProjector> = {
-    process: DATASET_EXTRACTION_TARGETS.process.searchTextProjector,
-    flow: DATASET_EXTRACTION_TARGETS.flow.searchTextProjector,
-    lifecyclemodel: DATASET_EXTRACTION_TARGETS.lifecyclemodel.searchTextProjector,
-    contact: DATASET_EXTRACTION_TARGETS.contact.searchTextProjector,
-    flowproperty: DATASET_EXTRACTION_TARGETS.flowproperty.searchTextProjector,
-    source: DATASET_EXTRACTION_TARGETS.source.searchTextProjector,
-    unitgroup: DATASET_EXTRACTION_TARGETS.unitgroup.searchTextProjector,
-    ...options.searchTextProjectors,
   };
 
   const { data, error } = await options.supabase.rpc('cmd_dataset_extraction_claim', {
@@ -345,12 +271,7 @@ export async function processDatasetExtractionJobs(
     };
 
     try {
-      const status = await processDatasetJob(
-        options.supabase,
-        job,
-        generators,
-        searchTextProjectors,
-      );
+      const status = await processDatasetJob(options.supabase, job, generators);
       ackIds.push(job.msg_id);
       const result = { ...baseLog, status, duration_ms: Date.now() - startedAt };
       console.log('[dataset_extraction_job]', { ...result, stage: status });

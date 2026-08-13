@@ -168,11 +168,6 @@ type ProjectPreviewRowsInput = {
   queryArtifact?: AllUnitQueryEnvelope | null;
   processMetadata?: LciaResultPackageProcessMetadata[];
   impactMetadata?: LciaResultPackageImpactMetadata[];
-  resolvedValues?: {
-    snapshotId: string;
-    impactIndex: number;
-    valuesByProcessIndex: Map<number, number>;
-  } | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -382,7 +377,7 @@ function impactOptionsFrom(
     });
 }
 
-export function selectPreviewImpact(
+function selectImpact(
   preview: unknown,
   request: DataProductPackagePreviewRequest,
   impactOptions: LciaResultPackageImpactOption[],
@@ -411,7 +406,7 @@ function selectImpactByCategoryId(
   impactCategoryId: string,
   impactOptions: LciaResultPackageImpactOption[],
 ): LciaResultPackageImpactOption | null {
-  return selectPreviewImpact(
+  return selectImpact(
     preview,
     {
       action: 'preview_package',
@@ -675,14 +670,13 @@ export function projectLciaResultPackagePreviewRows({
   queryArtifact,
   processMetadata,
   impactMetadata,
-  resolvedValues,
 }: ProjectPreviewRowsInput): LciaResultPackagePreviewProjection {
   const rowOffset = rowOffsetFrom(request);
   const rowLimit = rowLimitFrom(request);
   const inputRows = inputRowsFrom(preview, snapshotIndex, processMetadata);
   const impactOptions = impactOptionsFrom(snapshotIndex, impactMetadata);
 
-  if (!snapshotIndex || (!queryArtifact && !resolvedValues)) {
+  if (!snapshotIndex || !queryArtifact) {
     return {
       detailPage: unavailableResultPage(
         'result_projection_artifacts_unavailable',
@@ -693,18 +687,17 @@ export function projectLciaResultPackagePreviewRows({
     };
   }
 
-  const projectionBindingMatches = resolvedValues
-    ? resolvedValues.snapshotId === snapshotIndex.snapshot_id
-    : queryArtifact?.format === LCIA_ALL_UNIT_QUERY_FORMAT &&
-      queryArtifact.snapshot_id === snapshotIndex.snapshot_id;
-  if (!projectionBindingMatches) {
+  if (
+    queryArtifact.format !== LCIA_ALL_UNIT_QUERY_FORMAT ||
+    queryArtifact.snapshot_id !== snapshotIndex.snapshot_id
+  ) {
     return {
       detailPage: unavailableResultPage('result_projection_artifact_mismatch', request, inputRows),
       impactOptions,
     };
   }
 
-  const impact = selectPreviewImpact(preview, request, impactOptions);
+  const impact = selectImpact(preview, request, impactOptions);
   if (!impact) {
     return {
       detailPage: unavailableResultPage('impact_category_unavailable', request, inputRows),
@@ -721,21 +714,13 @@ export function projectLciaResultPackagePreviewRows({
       continue;
     }
 
-    const resolvedValue =
-      resolvedValues?.impactIndex === impact.impactIndex
-        ? resolvedValues.valuesByProcessIndex.get(inputRow.processIndex)
-        : undefined;
-    const hRow = queryArtifact?.h_matrix[inputRow.processIndex];
-    if (resolvedValues && resolvedValue === undefined) {
-      omittedInputCount += 1;
-      continue;
-    }
-    if (!resolvedValues && !Array.isArray(hRow)) {
+    const hRow = queryArtifact.h_matrix[inputRow.processIndex];
+    if (!Array.isArray(hRow)) {
       omittedInputCount += 1;
       continue;
     }
 
-    const value = Number(resolvedValues ? resolvedValue : (hRow?.[impact.impactIndex] ?? 0));
+    const value = Number(hRow[impact.impactIndex] ?? 0);
     resultPageRows.push({
       ...inputRow,
       processIndex: inputRow.processIndex,
@@ -820,35 +805,6 @@ export function queryArtifactUrlFromPackagePreview(preview: unknown): string | n
     stringField(manifestQueryArtifact, 'artifactUrl') ??
     stringField(manifestQueryArtifact, 'artifact_url')
   );
-}
-
-export type QueryArtifactDescriptor = {
-  artifactUrl: string;
-  artifactFormat: string | null;
-  artifactSha256: string | null;
-  artifactByteSize: number | null;
-};
-
-export function queryArtifactDescriptorFromPackagePreview(
-  preview: unknown,
-): QueryArtifactDescriptor | null {
-  const queryArtifact = recordField(preview, 'queryArtifact');
-  const manifest = recordField(preview, 'artifactManifest');
-  const manifestQueryArtifact = recordField(manifest, 'queryArtifact');
-  const source = queryArtifact ?? manifestQueryArtifact;
-  const artifactUrl = queryArtifactUrlFromPackagePreview(preview);
-  if (!source || !artifactUrl) {
-    return null;
-  }
-  const rawByteSize = source.artifactByteSize ?? source.artifact_byte_size;
-  const artifactByteSize = Number(rawByteSize);
-  return {
-    artifactUrl,
-    artifactFormat: stringField(source, 'artifactFormat') ?? stringField(source, 'artifact_format'),
-    artifactSha256: stringField(source, 'artifactSha256') ?? stringField(source, 'artifact_sha256'),
-    artifactByteSize:
-      Number.isSafeInteger(artifactByteSize) && artifactByteSize > 0 ? artifactByteSize : null,
-  };
 }
 
 export function deriveSnapshotIndexUrl(snapshotArtifactUrl: string): string {
