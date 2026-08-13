@@ -146,18 +146,23 @@ export function selectedImpactCategoryIdentity(
   return option ? { id: option.value, version: option.version } : null;
 }
 
+export function reviewedLciaMethodSet(options: ImpactCategoryOption[]): ClosureScopeIdentityV1[] {
+  const identities = new Map<string, ClosureScopeIdentityV1>();
+  options.forEach((option) => {
+    const identity = { id: option.value.trim(), version: option.version.trim() };
+    if (!identity.id || !identity.version) return;
+    identities.set(`${identity.id}\u0000${identity.version}`, identity);
+  });
+  return [...identities.values()];
+}
+
 export function scopeSelectionKey(
   values: Record<string, unknown>,
   options: ImpactCategoryOption[] = [],
 ): string {
-  const selectedIdentity = selectedImpactCategoryIdentity(values.defaultImpactCategory, options);
   return JSON.stringify({
     coverageMode: values.coverageMode ?? 'global_eligible',
-    defaultImpactCategory:
-      selectedIdentity ??
-      (typeof values.defaultImpactCategory === 'string'
-        ? { id: values.defaultImpactCategory, version: null }
-        : null),
+    lciaMethods: reviewedLciaMethodSet(options),
   });
 }
 
@@ -1169,6 +1174,17 @@ const DataProcessing = () => {
   const handleCreateBuild = async () => {
     const values = await buildForm.validateFields();
     const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
+    const lciaMethodSet = reviewedLciaMethodSet(impactCategoryOptions);
+    if (lciaMethodSet.length === 0) {
+      setCommandStatus({
+        kind: 'error',
+        message: t(
+          'pages.dataProcessing.validation.methodCatalogUnavailable',
+          'The reviewed LCIA method catalog is unavailable.',
+        ),
+      });
+      return;
+    }
     const closureIsUsable =
       closureCheck?.runStatus === 'passed' &&
       closureCheck.certificateValidity === 'valid' &&
@@ -1191,7 +1207,7 @@ const DataProcessing = () => {
         ...(values.defaultImpactCategory
           ? { defaultImpactCategory: values.defaultImpactCategory }
           : {}),
-        lciaMethodSet: [],
+        lciaMethodSet,
         closureCheckId: closureCheck.closureCheckId,
         requestedScopeHash: closureCheck.requestedScopeHash,
         policyFingerprint: closureCheck.policyFingerprint,
@@ -1213,16 +1229,13 @@ const DataProcessing = () => {
     setRecoveryLoading(true);
     try {
       const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
-      const selectedLciaMethod = selectedImpactCategoryIdentity(
-        values.defaultImpactCategory,
-        impactCategoryOptions,
-      );
-      if (!selectedLciaMethod) {
+      const lciaMethods = reviewedLciaMethodSet(impactCategoryOptions);
+      if (lciaMethods.length === 0) {
         setCommandStatus({
           kind: 'error',
           message: t(
-            'pages.dataProcessing.validation.defaultImpactCategoryInvalid',
-            'The selected impact category is unavailable or has no valid version.',
+            'pages.dataProcessing.validation.methodCatalogUnavailable',
+            'The reviewed LCIA method catalog is unavailable.',
           ),
         });
         return;
@@ -1232,7 +1245,7 @@ const DataProcessing = () => {
         createClosureCheck({
           requestedScope: {
             coverageMode: values.coverageMode || 'global_eligible',
-            lciaMethods: [selectedLciaMethod],
+            lciaMethods,
           },
           requestIdempotencyToken: newIdempotencyToken(),
         }),

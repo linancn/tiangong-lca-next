@@ -1,6 +1,7 @@
 import { supabase } from '@/services/supabase';
 import type { SupabaseError } from '@/services/supabase/data';
 import { FunctionRegion } from '@supabase/supabase-js';
+import type { ClosureScopeIdentityV1 } from './closure';
 
 export type DataProductCoverageMode = 'global_eligible' | 'subset';
 
@@ -14,7 +15,7 @@ export type LciaResultBuildRequest = {
   processes?: DataProductProcessSelection[];
   coverageMode: DataProductCoverageMode;
   defaultImpactCategory?: string;
-  lciaMethodSet: unknown[];
+  lciaMethodSet: ClosureScopeIdentityV1[];
   idempotencyKey?: string;
   /** Required by the v2 command; optional here only while the legacy command remains deployed. */
   closureCheckId?: string;

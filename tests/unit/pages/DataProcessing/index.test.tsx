@@ -10,6 +10,7 @@ import DataProcessing, {
   parseDataProcessingDeepLink,
   parseImpactCategoryOptionLabel,
   resolveLocalizedText,
+  reviewedLciaMethodSet,
   scopeSelectionKey,
   selectedImpactCategoryIdentity,
   stateCodeCountsFromProcesses,
@@ -195,6 +196,11 @@ const mockLciaMethodList = {
     },
   ],
 };
+
+const expectedReviewedLciaMethods = [
+  { id: 'climate-change', version: '01.00.000' },
+  { id: 'acidification', version: '01.00.000' },
+];
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
@@ -467,11 +473,29 @@ describe('DataProcessing page', () => {
       name: 'Legacy label without metadata',
     });
     expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
+    expect(reviewedLciaMethodSet(buildImpactCategoryOptions(mockLciaMethodList, 'en-US'))).toEqual(
+      expectedReviewedLciaMethods,
+    );
+    expect(
+      reviewedLciaMethodSet([
+        { value: ' method-a ', version: ' 01.00.000 ', label: 'A' },
+        { value: 'method-a', version: '01.00.000', label: 'A duplicate' },
+        { value: '', version: '01.00.000', label: 'Invalid' },
+        { value: 'method-b', version: '02.00.000', label: 'B' },
+      ]),
+    ).toEqual([
+      { id: 'method-a', version: '01.00.000' },
+      { id: 'method-b', version: '02.00.000' },
+    ]);
     expect(scopeSelectionKey({ defaultImpactCategory: 'missing-method' }, [])).toBe(
       JSON.stringify({
         coverageMode: 'global_eligible',
-        defaultImpactCategory: { id: 'missing-method', version: null },
+        lciaMethods: [],
       }),
+    );
+    const reviewedOptions = buildImpactCategoryOptions(mockLciaMethodList, 'en-US');
+    expect(scopeSelectionKey({ defaultImpactCategory: 'climate-change' }, reviewedOptions)).toBe(
+      scopeSelectionKey({ defaultImpactCategory: 'acidification' }, reviewedOptions),
     );
   });
 
@@ -652,7 +676,7 @@ describe('DataProcessing page', () => {
       expect(mockCreateClosureCheck).toHaveBeenCalledWith({
         requestedScope: {
           coverageMode: 'global_eligible',
-          lciaMethods: [{ id: 'climate-change', version: '01.00.000' }],
+          lciaMethods: expectedReviewedLciaMethods,
         },
         requestIdempotencyToken: expect.any(String),
       }),
@@ -667,7 +691,7 @@ describe('DataProcessing page', () => {
         name: 'June package',
         coverageMode: 'global_eligible',
         defaultImpactCategory: 'climate-change',
-        lciaMethodSet: [],
+        lciaMethodSet: expectedReviewedLciaMethods,
         closureCheckId: 'closure-new',
         requestedScopeHash: 'scope-hash-new',
         policyFingerprint: 'policy-new',
@@ -1194,8 +1218,9 @@ describe('DataProcessing page', () => {
     );
   });
 
-  it('does not submit a closure check without a versioned LCIA method selection', async () => {
+  it('does not submit a closure check when the reviewed LCIA catalog is unavailable', async () => {
     mockLocation = { pathname: '/data-processing', search: '' };
+    mockFetch.mockResolvedValueOnce({ ok: false });
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
@@ -1205,9 +1230,7 @@ describe('DataProcessing page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
 
     expect(
-      await screen.findByText(
-        'The selected impact category is unavailable or has no valid version.',
-      ),
+      await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
     ).toBeInTheDocument();
     expect(mockCreateClosureCheck).not.toHaveBeenCalled();
   });
@@ -1805,7 +1828,7 @@ describe('DataProcessing page', () => {
       expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith({
         name: 'Sparse package',
         coverageMode: 'global_eligible',
-        lciaMethodSet: [],
+        lciaMethodSet: expectedReviewedLciaMethods,
         closureCheckId: 'closure-valid',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
@@ -2212,7 +2235,7 @@ describe('DataProcessing page', () => {
     },
   );
 
-  it('uses the idempotency fallback and invalidates the certificate when selection changes', async () => {
+  it('uses the idempotency fallback and keeps the certificate when only the default display changes', async () => {
     mockLocation = { pathname: '/data-processing', search: '' };
     mockGetClosureCheck.mockResolvedValue({
       data: {
@@ -2269,11 +2292,11 @@ describe('DataProcessing page', () => {
         target: { value: 'acidification' },
       });
       expect(
-        await screen.findByText(
+        screen.queryByText(
           'The current selection differs from this check. Run a new check before generating.',
         ),
-      ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Generate result set' })).toBeDisabled();
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Generate result set' })).not.toBeDisabled();
     } finally {
       Object.defineProperty(globalThis.crypto, 'randomUUID', {
         configurable: true,
