@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "9d886b4500d7cebd1365547d0439b6a508bcc25aabe085e7cc9ccd15a592f238",
+    "auditedInputDigest": "dc914b0981b579e1a89dd966686642d8fda9195fe52e5958b8c1ef3f1c5199ac",
     "validatedMessageCount": 3119,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1391,
     "highRiskMessageDigest": "803ebcc8320e7f5a792c522a7c5b69a4f24b672308a12b1feaeaa94b4df3aa5f",
     "catalogDigest": "6827c943304f5ed82c6c9e7d2476db149798f2e17f4d9906a8e251baa8eaa68f",
-    "dossierDigest": "0904aae78e8ef98e1785731c1729f09c575ecd0ae4c81386d6c0d05c5c5873b4",
+    "dossierDigest": "796d7bd5fdae82c5d97d597cc57d439b93cd0625a3bca32e412d12c1a88e5207",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "5a1a477972b0b0ca71d25f149ae0ac4f561dd1f9ffcd64486efe941ae5f881a4",
+    "routeEvidenceDigest": "9729379808fbd488cb3eff15143c7285204406dfb5e9a017420fe4b16a09b875",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "a85893ebd5e961b8e5d716263510cfa5c38544c7dc8e0c106a070667d0906dab",
         "highRiskMessageCount": 1391,
         "highRiskMessageDigest": "803ebcc8320e7f5a792c522a7c5b69a4f24b672308a12b1feaeaa94b4df3aa5f",
-        "dossierDigest": "0904aae78e8ef98e1785731c1729f09c575ecd0ae4c81386d6c0d05c5c5873b4",
+        "dossierDigest": "796d7bd5fdae82c5d97d597cc57d439b93cd0625a3bca32e412d12c1a88e5207",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "40a20b88f97ff089fc826ae5250bd6876a402890527ef687d9cb07cf6881ecfd"
+  "validationDigest": "2b1dcc810f339512a68bb85b9ef47102dd3994c51e37150181c9a9911757cd69"
 }
