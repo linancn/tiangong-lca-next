@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: b7d8edd7adc03426d6f1534c12ddadb7aca34b94
+lastReviewedCommit: 9257f79e1efe52117e4c6745ff07a08f3727b002
 lastReviewedNote: 'Reviewed for Next Issue #813: focused three-mode routing assertions preserve the existing full-closure maintenance strategy without opening a new testing workstream.'
 ---
 

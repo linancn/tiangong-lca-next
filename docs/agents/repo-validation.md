@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: cf867d22c8c80356cd778ec4cf882162a97593b4
+lastReviewedCommit: 9257f79e1efe52117e4c6745ff07a08f3727b002
 lastReviewedNote: 'Reviewed for Next Issue #813: the existing hybrid-search page, service, picker, locale, request-guard, lint, and build proof remains the correct validation path.'
 related:
   - ../AGENTS.md
