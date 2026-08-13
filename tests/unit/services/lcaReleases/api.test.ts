@@ -456,6 +456,13 @@ describe('lcaReleases api', () => {
       .mockResolvedValueOnce({
         data: {
           ok: true,
+          data: { calculationBundle: { artifacts: [] } },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
           data: {
             calculationBundle: {
               manifestDownload: expected,
@@ -478,6 +485,9 @@ describe('lcaReleases api', () => {
     ).rejects.toThrow('Access denied');
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'missing.ndjson.gz', expected),
+    ).rejects.toThrow('no longer available');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:missing', expected),
     ).rejects.toThrow('no longer available');
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),
