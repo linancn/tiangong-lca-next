@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c14e2d92bdbda1c2704c5b852e74ad99f191d3f7
+lastReviewedCommit: 9e24439ded1686ed7a54eb9317c2e352ed5b7c95
 lastReviewedNote: 'Reviewed for Next Issue #819: full-gate fallback and two-worker native-crash diagnosis use a heap-aware 512MB recycle boundary.'
 ---
 
