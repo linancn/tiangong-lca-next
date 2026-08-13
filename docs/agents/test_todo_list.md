@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
-lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records exact PR proof reuse, full fallback cases, and the unchanged complete inventory.'
+lastReviewedCommit: 97130a89424f1a1f70988cb0c33f6c4ab7fb895c
+lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records exact proof reuse and the qualified two-worker full-coverage inventory.'
 ---
 
 # Testing Execution State
@@ -41,10 +41,10 @@ lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records
 ## Checked-In Reference Baseline
 
 - reference full run: `npm run prepush:gate`
-- verified commit: `217a2b6a01b3cc8a65d026390cb0a4fa802edf68`
-- suites: `405`
-- tests: `5486`
-- tracked source files: `456`
+- verified commit: `97130a89424f1a1f70988cb0c33f6c4ab7fb895c`
+- suites: `413`
+- tests: `5688`
+- tracked source files: `462`
 - coverage: `100%` statements, branches, functions, and lines
 
 This is a checked-in reference, not a per-PR execution ledger. A delivery's post-commit, hook-owned full-gate result belongs in its PR validation evidence; update this section when the reference counts, coverage policy, or queue state materially changes.
@@ -81,6 +81,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - main-target PRs run the reusable Release Gate against their exact base/head and emit a 30-day exact proof only after success; main-semantic local pushes add `release:preflight` between Docpact and the full test gate, while `dev` pushes retain the normal two-gate path
 - a canonical version-changing `main` push reuses that proof only when the exact merged PR, two parents, candidate tree, successful job, run attempt, and artifact payload all match; direct/squash/rebase merges, changed trees, expired or missing proof, API failure, manual tags, and recovery dispatches automatically run the full Release Gate
 - release qualification delegates the complete Jest inventory to one `prepush:gate` execution—reused from the exact PR proof or run as the post-merge fallback—while the credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
+- Issue #819 qualifies the exact 413-suite / 5,688-test coverage inventory with two recyclable workers and the retained `64MB` boundary: the same macOS Node 24 checkpoint improved from 466.6 seconds to 311.6 seconds, kept 462/462 files at 100/100/100/100, used zero swap, and produced no new Node `.ips` report
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline

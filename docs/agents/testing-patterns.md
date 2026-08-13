@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
-lastReviewedNote: 'Reviewed for Next Issue #819: exact gate-proof production, resolution, fallback, and aggregate dependency are reusable workflow testing patterns.'
+lastReviewedCommit: 97130a89424f1a1f70988cb0c33f6c4ab7fb895c
+lastReviewedNote: 'Reviewed for Next Issue #819: exact proof reuse and platform-qualified bounded worker pools are reusable Release Gate patterns.'
 ---
 
 # Testing Patterns Reference
@@ -172,7 +172,7 @@ Scope-closure provider qualification pattern:
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
-- when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then run all remaining suites through one worker at a time with a documented idle-memory recycle boundary; lock the exact selection/exclusion and worker contract in the isolated suite, and let the coordinator retain the global 100% source threshold across worker replacements
+- when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then qualify the smallest useful fixed worker pool with a documented per-worker idle-memory recycle boundary on the affected platform; lock the exact selection/exclusion and worker contract in the isolated suite, and let the single coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
 
