@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 88758d0cd1f1e8fd021c6b963674ee5f08e873b2
+lastReviewedCommit: 3af9c5bce57706fd1dd23d2502c96841210695db
 lastReviewedNote: 'Reviewed for Next Issue #819: the strategy removes exact duplicate execution and bounds a two-worker pool at 512MB without weakening full closure.'
 ---
 
