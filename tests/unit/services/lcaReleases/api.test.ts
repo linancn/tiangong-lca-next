@@ -395,6 +395,46 @@ describe('lcaReleases api', () => {
     });
   });
 
+  it('resolves named Calculation Bundle downloads through the refreshed projection', async () => {
+    const bytes = new Uint8Array([3, 3, 3]);
+    const expected = {
+      sha256: '03'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        data: {
+          calculationBundle: {
+            artifacts: [],
+            downloads: [
+              {
+                ...expected,
+                role: 'review_workbook',
+                signedDownloadUrl: 'https://download.example/review-workbook',
+              },
+            ],
+          },
+        },
+      },
+      error: null,
+    });
+    setCryptoDigest(3);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bytes.buffer,
+    })) as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:review_workbook', expected),
+    ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
+    expect(global.fetch).toHaveBeenCalledWith('https://download.example/review-workbook', {
+      credentials: 'omit',
+    });
+  });
+
   it('rejects missing, denied, or drifted fresh Calculation Bundle downloads before saving', async () => {
     const expected = {
       sha256: '00'.repeat(32),

@@ -472,7 +472,13 @@ describe('DataProcessing page', () => {
     expect(parseImpactCategoryOptionLabel('Legacy label without metadata')).toEqual({
       name: 'Legacy label without metadata',
     });
+    expect(selectedImpactCategoryIdentity(undefined, [])).toBeNull();
     expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
+    expect(
+      selectedImpactCategoryIdentity('method-a', [
+        { value: 'method-a', version: '01.00.000', label: 'Method A' },
+      ]),
+    ).toEqual({ id: 'method-a', version: '01.00.000' });
     expect(reviewedLciaMethodSet(buildImpactCategoryOptions(mockLciaMethodList, 'en-US'))).toEqual(
       expectedReviewedLciaMethods,
     );
@@ -1233,6 +1239,27 @@ describe('DataProcessing page', () => {
       await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
     ).toBeInTheDocument();
     expect(mockCreateClosureCheck).not.toHaveBeenCalled();
+  });
+
+  it('does not submit a result build when the reviewed LCIA catalog is unavailable', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false });
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Missing LCIA method build' },
+    });
+    fireEvent.change(screen.getByLabelText('Default impact category'), {
+      target: { value: 'missing-method' },
+    });
+    const generateButton = screen.getByRole('button', { name: 'Generate result set' });
+    await waitFor(() => expect(generateButton).not.toBeDisabled());
+    fireEvent.click(generateButton);
+
+    expect(
+      await screen.findByText('The reviewed LCIA method catalog is unavailable.'),
+    ).toBeInTheDocument();
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
 
   it('renders preview input scope and artifact verification details', async () => {
