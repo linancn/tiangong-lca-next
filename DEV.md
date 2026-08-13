@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
 lastReviewedNote: 'Reviewed for Next Issue #828: bootstrap and managed delivery remain unchanged; focused proof precedes one hook-owned full gate.'
 ---
 

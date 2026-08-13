@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
 lastReviewedNote: 'Reviewed for Next Issue #828: the Process LCA picker proof and focused coverage recovery remain correctly described by the existing matrix.'
 related:
   - ../AGENTS.md

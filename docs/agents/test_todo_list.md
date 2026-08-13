@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
 lastReviewedNote: 'Reviewed for Next Issue #828: owner-draft scope adds two behavior tests and closes the adjacent baseline coverage gaps without opening a queue.'
 ---
 
