@@ -101,7 +101,7 @@
     "test:workflows": "node --import tsx tests/data-workflows/test-workflows.ts",
     "test:prepush-receipt": "cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage prepush-receipt --runInBand --runTestsByPath tests/unit/scripts/prepushGateReceipt.test.ts --testTimeout=20000 --no-coverage",
     "test:release-workflow": "jest tests/unit/scripts/releaseWorkflow.test.ts --runInBand --no-watchman --testTimeout=30000",
-    "test:coverage:collect": "cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=2 --workerIdleMemoryLimit=64MB --testTimeout=20000 --coverage --testPathIgnorePatterns=\"<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$\"",
+    "test:coverage:collect": "cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=2 --workerIdleMemoryLimit=512MB --testTimeout=20000 --coverage --testPathIgnorePatterns=\"<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$\"",
     "test:coverage": "npm run test:prepush-receipt && npm run test:coverage:collect",
     "test:coverage:assert-full": "node scripts/test-coverage-report.js --assert-full",
     "test:coverage:report": "npm run test:coverage && node scripts/test-coverage-report.js",
