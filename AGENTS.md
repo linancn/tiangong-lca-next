@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: d2e35429
+lastReviewedCommit: 3a6ad5f2
 lastReviewedNote: 'Reviewed for Next Issue #819: exact PR proof reuse and the two-worker, 512MB-recycle coverage gate preserve the complete repository quality boundary without excessive GC churn.'
 related:
   - .docpact/config.yaml
