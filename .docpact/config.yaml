@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "3ef10317dac87831f48c728ae92e54bdb98c4433"
+lastReviewedCommit: "fcb03cca5d67941f63b2ebb382e43f19a9588a0d"
 lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 evidence refresh and tracked porcelain parser repair remain within the existing release, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

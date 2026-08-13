@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
 lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 release proof and tracked porcelain parser repair preserve the existing full-gate trigger and release policy.'
 ---
 
