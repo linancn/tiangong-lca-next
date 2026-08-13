@@ -6,6 +6,8 @@ import type {
   AssignReviewersRequest,
   RejectReviewRequest,
   ReviewCommandFailure,
+  ReviewerDecisionRequest,
+  ReviewIdRequest,
   RevokeReviewerRequest,
   SaveAssignmentDraftRequest,
   SaveCommentDraftRequest,
@@ -168,6 +170,39 @@ export function buildSimpleReviewDecisionRpcArgs(
   };
 }
 
+export function buildReviewFinalizeApproveByIdRpcArgs(
+  request: ReviewIdRequest,
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_audit: audit,
+  };
+}
+
+export function buildReviewFinalizeRejectByIdRpcArgs(
+  request: ReviewIdRequest & { reason: string },
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_reason: request.reason,
+    p_audit: audit,
+  };
+}
+
+export function buildReviewerDecisionRpcArgs(
+  request: ReviewerDecisionRequest,
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_decision: request.decision,
+    p_reason: request.decision === 'reject' ? request.reason : null,
+    p_audit: audit,
+  };
+}
+
 export function callReviewSaveAssignmentDraftRpc(
   supabase: RpcClient,
   request: SaveAssignmentDraftRequest,
@@ -261,5 +296,41 @@ export function callSimpleReviewDecisionRpc(
     supabase,
     'cmd_simple_review_submit_decision',
     buildSimpleReviewDecisionRpcArgs(request, audit),
+  );
+}
+
+export function callReviewFinalizeApproveByIdRpc(
+  supabase: RpcClient,
+  request: ReviewIdRequest,
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_review_finalize_approve',
+    buildReviewFinalizeApproveByIdRpcArgs(request, audit),
+  );
+}
+
+export function callReviewFinalizeRejectByIdRpc(
+  supabase: RpcClient,
+  request: ReviewIdRequest & { reason: string },
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_review_finalize_reject',
+    buildReviewFinalizeRejectByIdRpcArgs(request, audit),
+  );
+}
+
+export function callReviewerDecisionRpc(
+  supabase: RpcClient,
+  request: ReviewerDecisionRequest,
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_reviewer_submit_decision',
+    buildReviewerDecisionRpcArgs(request, audit),
   );
 }

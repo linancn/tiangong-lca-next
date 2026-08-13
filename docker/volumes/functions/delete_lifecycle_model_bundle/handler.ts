@@ -6,9 +6,9 @@ import {
   ensureOwnerOrReviewAdmin,
   json,
   mapRpcError,
-  normalizeSaveRpcPayload,
+  normalizeDeleteRpcPayload,
   permissionErrorStatusCode,
-  validateSavePlan,
+  validateDeleteBody,
 } from '../_shared/lifecyclemodel_bundle.ts';
 import {
   createRequestSupabaseClient,
@@ -16,7 +16,7 @@ import {
   supabaseServiceClient,
 } from '../_shared/supabase_client.ts';
 
-export type SaveLifecycleModelBundleHandlerDeps = {
+export type DeleteLifecycleModelBundleHandlerDeps = {
   authClient: SupabaseClient;
   serviceSupabase: SupabaseClient;
   createRequestSupabaseClient: (accessToken: string) => SupabaseClient;
@@ -30,8 +30,8 @@ export type SaveLifecycleModelBundleHandlerDeps = {
   ensureOwnerOrReviewAdmin: typeof ensureOwnerOrReviewAdmin;
 };
 
-export function createSaveLifecycleModelBundleHandler(
-  deps: SaveLifecycleModelBundleHandlerDeps = {
+export function createDeleteLifecycleModelBundleHandler(
+  deps: DeleteLifecycleModelBundleHandlerDeps = {
     authClient: supabaseAuthClient,
     serviceSupabase: supabaseServiceClient,
     createRequestSupabaseClient,
@@ -87,7 +87,7 @@ export function createSaveLifecycleModelBundleHandler(
       );
     }
 
-    const validation = validateSavePlan(body);
+    const validation = validateDeleteBody(body);
     if (!validation.ok) {
       return json(
         {
@@ -99,29 +99,27 @@ export function createSaveLifecycleModelBundleHandler(
       );
     }
 
-    const plan = validation.value;
-    const actorSupabase = deps.createRequestSupabaseClient(accessToken);
-    if (plan.mode === 'update') {
-      const permission = await deps.ensureOwnerOrReviewAdmin(
-        deps.serviceSupabase,
-        userId,
-        plan.modelId,
-        plan.version!,
-      );
-      if (!permission.ok) {
-        return json(permission.error, permissionErrorStatusCode(permission.error));
-      }
+    const payload = validation.value;
+    const permission = await deps.ensureOwnerOrReviewAdmin(
+      deps.serviceSupabase,
+      userId,
+      payload.modelId,
+      payload.version,
+    );
+    if (!permission.ok) {
+      return json(permission.error, permissionErrorStatusCode(permission.error));
     }
 
-    const { data, error } = await actorSupabase.rpc('cmd_lifecycle_model_bundle_save', {
-      p_plan: plan,
+    const actorSupabase = deps.createRequestSupabaseClient(accessToken);
+    const { data, error } = await actorSupabase.rpc('cmd_lifecycle_model_bundle_delete', {
+      p_model_id: payload.modelId,
+      p_version: payload.version,
     });
 
     if (error) {
-      console.error('save_lifecycle_model_bundle rpc failed', {
-        model_id: plan.modelId,
-        version: plan.version ?? null,
-        mode: plan.mode,
+      console.error('delete_lifecycle_model_bundle rpc failed', {
+        model_id: payload.modelId,
+        version: payload.version,
         error: error.message,
         code: error.code,
         details: error.details,
@@ -130,6 +128,6 @@ export function createSaveLifecycleModelBundleHandler(
       return json(mapped, mapped.code === 'MODEL_NOT_FOUND' ? 404 : 400);
     }
 
-    return json(normalizeSaveRpcPayload(data), 200);
+    return json(normalizeDeleteRpcPayload(data), 200);
   };
 }

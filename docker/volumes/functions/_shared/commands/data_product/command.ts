@@ -4,13 +4,19 @@ import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import type { CommandParseResult } from '../../command_runtime/command.ts';
 import {
+  ALL_UNIT_QUERY_V2_FORMAT,
+  parseAllUnitQueryArtifact,
+  readImpactColumn,
+} from '../../lca_all_unit_query_artifact.ts';
+import {
   type AllUnitQueryEnvelope,
   deriveSnapshotIndexUrl,
   inputManifestSummaryFromPackagePreview,
   inputScopeFromPackagePreview,
   previewMetadataRefsFromProjection,
   projectLciaResultPackagePreviewRows,
-  queryArtifactUrlFromPackagePreview,
+  queryArtifactDescriptorFromPackagePreview,
+  selectPreviewImpact,
   snapshotIdFromPackagePreview,
   type SnapshotIndexDocument,
 } from './package_preview_projection.ts';
@@ -120,7 +126,10 @@ const createClosureCheckSchema = z
   .strict();
 
 const getClosureCheckSchema = z
-  .object({ action: z.literal('get_closure_check'), closureCheckId: uuidSchema })
+  .object({
+    action: z.literal('get_closure_check'),
+    closureCheckId: uuidSchema,
+  })
   .strict();
 const listClosureIssuesSchema = z
   .object({
@@ -145,7 +154,10 @@ const listTaskFeedSchema = z
     statuses: z.array(nonEmptyTextSchema).max(20).optional(),
     updatedSince: z.string().datetime({ offset: true }).optional(),
     cursor: z
-      .object({ updatedAt: z.string().datetime({ offset: true }), jobId: uuidSchema })
+      .object({
+        updatedAt: z.string().datetime({ offset: true }),
+        jobId: uuidSchema,
+      })
       .strict()
       .optional(),
     limit: z.number().int().min(1).max(200).optional(),
@@ -274,8 +286,11 @@ async function enrichPackagePreview(
   const warnings: Array<Record<string, unknown>> = [];
   let snapshotIndex: SnapshotIndexDocument | null = null;
   let queryArtifact: AllUnitQueryEnvelope | null = null;
+  let rawQueryArtifact: unknown = null;
+  let processMetadata = undefined;
+  let impactMetadata = undefined;
   const snapshotId = snapshotIdFromPackagePreview(data);
-  const queryArtifactUrl = queryArtifactUrlFromPackagePreview(data);
+  const queryDescriptor = queryArtifactDescriptorFromPackagePreview(data);
 
   if (snapshotId) {
     const snapshotArtifact = await repository.fetchSnapshotArtifactUrl(snapshotId);
@@ -301,16 +316,27 @@ async function enrichPackagePreview(
     warnings.push({ code: 'snapshot_id_missing' });
   }
 
-  if (queryArtifactUrl) {
-    const queryArtifactResult =
-      await repository.fetchJsonArtifact<AllUnitQueryEnvelope>(queryArtifactUrl);
-    if (queryArtifactResult.ok) {
-      queryArtifact = queryArtifactResult.data;
+  if (queryDescriptor) {
+    if (queryDescriptor.artifactFormat === ALL_UNIT_QUERY_V2_FORMAT) {
+      const verified = await fetchVerifiedQueryArtifact(repository, queryDescriptor);
+      if (verified.ok) {
+        rawQueryArtifact = verified.data;
+      } else {
+        warnings.push({ code: verified.error, detail: verified.detail });
+      }
     } else {
-      warnings.push({
-        code: 'query_artifact_fetch_failed',
-        detail: queryArtifactResult.error,
-      });
+      const queryArtifactResult = await repository.fetchJsonArtifact<AllUnitQueryEnvelope>(
+        queryDescriptor.artifactUrl,
+      );
+      if (queryArtifactResult.ok) {
+        queryArtifact = queryArtifactResult.data;
+        rawQueryArtifact = queryArtifactResult.data;
+      } else {
+        warnings.push({
+          code: 'query_artifact_fetch_failed',
+          detail: queryArtifactResult.error,
+        });
+      }
     }
   } else {
     warnings.push({ code: 'query_artifact_url_missing' });
@@ -329,6 +355,8 @@ async function enrichPackagePreview(
   ) {
     const metadataResult = await repository.fetchPreviewMetadata(previewMetadataRefs);
     if (metadataResult.ok) {
+      processMetadata = metadataResult.data.processes;
+      impactMetadata = metadataResult.data.impacts;
       projection = projectLciaResultPackagePreviewRows({
         preview: data,
         request,
@@ -354,11 +382,111 @@ async function enrichPackagePreview(
     }
   }
 
+  if (
+    snapshotIndex &&
+    rawQueryArtifact &&
+    queryDescriptor?.artifactFormat === ALL_UNIT_QUERY_V2_FORMAT
+  ) {
+    const impacts = [...snapshotIndex.impact_map].sort(
+      (left, right) => left.impact_index - right.impact_index,
+    );
+    const parsed = parseAllUnitQueryArtifact(rawQueryArtifact, {
+      expectedFormat: queryDescriptor.artifactFormat,
+      snapshotId: snapshotIndex.snapshot_id,
+      processCount: snapshotIndex.process_count,
+      impacts,
+    });
+    const selectedImpact = selectPreviewImpact(data, request, projection.impactOptions);
+    if (!parsed.ok) {
+      warnings.push({ code: parsed.error, detail: parsed.detail });
+    } else if (selectedImpact) {
+      const processIndices = projection.detailPage.rows
+        .map((row) => row.processIndex)
+        .filter((value): value is number => value !== null);
+      const values = await readImpactColumn(
+        parsed.data,
+        impacts,
+        selectedImpact.impactIndex,
+        processIndices,
+        repository.fetchArtifactBytes,
+      );
+      if (values.ok) {
+        projection = projectLciaResultPackagePreviewRows({
+          preview: data,
+          request,
+          snapshotIndex,
+          queryArtifact: null,
+          processMetadata,
+          impactMetadata,
+          resolvedValues: {
+            snapshotId: snapshotIndex.snapshot_id,
+            impactIndex: selectedImpact.impactIndex,
+            valuesByProcessIndex: values.data,
+          },
+        });
+      } else {
+        warnings.push({ code: values.error, detail: values.detail });
+      }
+    }
+  }
+
   return {
     ...compactPackagePreviewData(data),
     ...projection,
     ...(warnings.length > 0 ? { previewWarnings: warnings } : {}),
   };
+}
+
+async function fetchVerifiedQueryArtifact(
+  repository: DataProductCommandRepository,
+  descriptor: {
+    artifactUrl: string;
+    artifactSha256: string | null;
+    artifactByteSize: number | null;
+  },
+) {
+  const expectedSha256 = descriptor.artifactSha256?.toLowerCase();
+  if (!expectedSha256?.match(/^[0-9a-f]{64}$/) || descriptor.artifactByteSize === null) {
+    return {
+      ok: false as const,
+      error: 'result_projection_artifact_integrity_invalid',
+      detail: 'durable query artifact integrity metadata is missing or invalid',
+    };
+  }
+  const fetched = await repository.fetchArtifactBytes(descriptor.artifactUrl);
+  if (!fetched.ok) {
+    return fetched;
+  }
+  if (fetched.data.byteLength !== descriptor.artifactByteSize) {
+    return {
+      ok: false as const,
+      error: 'result_projection_artifact_integrity_invalid',
+      detail: `expected_bytes=${descriptor.artifactByteSize} actual_bytes=${fetched.data.byteLength}`,
+    };
+  }
+  const digest = await crypto.subtle.digest('SHA-256', fetched.data);
+  const observedSha256 = [...new Uint8Array(digest)]
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('');
+  if (observedSha256 !== expectedSha256) {
+    return {
+      ok: false as const,
+      error: 'result_projection_artifact_integrity_invalid',
+      detail: 'sha256_mismatch',
+    };
+  }
+  try {
+    return {
+      ok: true as const,
+      data: JSON.parse(new TextDecoder().decode(fetched.data)) as unknown,
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+      error: 'result_projection_artifact_invalid_json',
+      detail: error instanceof Error ? error.message : 'json_parse_failed',
+    };
+  }
 }
 
 function workerJobFrom(value: Record<string, unknown>): DataProductWorkerJobRequest | null {
@@ -581,7 +709,11 @@ export async function executeDataProductCommand(
       return result.ok
         ? {
             ok: true,
-            body: { ok: true, command: 'lcia_scope_closure_check_request', data: result.data },
+            body: {
+              ok: true,
+              command: 'lcia_scope_closure_check_request',
+              data: result.data,
+            },
           }
         : result;
     }
@@ -590,7 +722,11 @@ export async function executeDataProductCommand(
       return result.ok
         ? {
             ok: true,
-            body: { ok: true, command: 'lcia_scope_closure_check_get', data: result.data },
+            body: {
+              ok: true,
+              command: 'lcia_scope_closure_check_get',
+              data: result.data,
+            },
           }
         : result;
     }
@@ -599,7 +735,11 @@ export async function executeDataProductCommand(
       return result.ok
         ? {
             ok: true,
-            body: { ok: true, command: 'lcia_scope_closure_issues_list', data: result.data },
+            body: {
+              ok: true,
+              command: 'lcia_scope_closure_issues_list',
+              data: result.data,
+            },
           }
         : result;
     }
@@ -619,7 +759,14 @@ export async function executeDataProductCommand(
     case 'list_task_feed': {
       const result = await repository.listTaskFeed(request);
       return result.ok
-        ? { ok: true, body: { ok: true, command: 'task_summary_v2_feed_list', data: result.data } }
+        ? {
+            ok: true,
+            body: {
+              ok: true,
+              command: 'task_summary_v2_feed_list',
+              data: result.data,
+            },
+          }
         : result;
     }
     case 'create_build':

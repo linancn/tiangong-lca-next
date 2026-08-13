@@ -3,6 +3,18 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import {
+  asArray as sharedAsArray,
+  collectLocalizedTexts as sharedCollectLocalizedTexts,
+  isRecord as sharedIsRecord,
+  pickProperty as sharedPickProperty,
+  readClassificationPath as sharedReadClassificationPath,
+  readLocalizedText as sharedReadLocalizedText,
+  readPreferredLocalizedText as sharedReadPreferredLocalizedText,
+  readReferenceShortDescription as sharedReadReferenceShortDescription,
+  readDisplayTextLeaf as sharedReadTextLeaf,
+} from '../_shared/projection_primitives.ts';
+import { projectLifecycleModelSearchText } from '../_shared/search_text_projection.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
 
 interface WebhookPayload {
@@ -15,82 +27,12 @@ interface WebhookPayload {
 
 const DEFAULT_LANG = 'en';
 
-const isObject = (value: unknown): value is Record<string, any> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isObject = sharedIsRecord;
+const pickProperty = sharedPickProperty;
+const ensureArray = sharedAsArray;
+const getTextFromDict = sharedReadTextLeaf;
 
-const pickProperty = (obj: any, names: string[]) => {
-  if (!obj || typeof obj !== 'object') return undefined;
-  for (const name of names) {
-    const value = (obj as any)[name];
-    if (value !== undefined && value !== null) return value;
-  }
-  return undefined;
-};
-
-const ensureArray = <T>(obj: T | T[] | null | undefined): T[] => {
-  if (obj === null || obj === undefined) return [];
-  return Array.isArray(obj) ? obj : [obj];
-};
-
-const getTextFromDict = (data: any): string | null => {
-  if (data === null || data === undefined) return null;
-  if (typeof data === 'string' || typeof data === 'number') {
-    const text = String(data).trim();
-    return text || null;
-  }
-  if (isObject(data)) {
-    const text = data['#text'] ?? data['text'] ?? data['_text'];
-    if (typeof text === 'string') {
-      const trimmed = text.trim();
-      return trimmed || null;
-    }
-  }
-  return null;
-};
-
-const getLangText = (value: any, lang = DEFAULT_LANG): string | null => {
-  if (value === null || value === undefined) return null;
-
-  if (typeof value === 'string' || typeof value === 'number') {
-    const text = String(value).trim();
-    return text || null;
-  }
-
-  if (Array.isArray(value)) {
-    const exact = value.find(
-      (item) => isObject(item) && item['@xml:lang'] && item['@xml:lang'] === lang,
-    );
-    if (exact !== undefined) {
-      const text = getLangText(exact, lang);
-      if (text) return text;
-    }
-    for (const item of value) {
-      const text = getLangText(item, lang);
-      if (text) return text;
-    }
-    return null;
-  }
-
-  if (isObject(value)) {
-    if (typeof (value as any).get_text === 'function') {
-      const text = (value as any).get_text(lang);
-      if (text) {
-        const trimmed = String(text).trim();
-        if (trimmed) return trimmed;
-      }
-    }
-    const text = getTextFromDict(value);
-    if (text) return text;
-    for (const key of Object.keys(value)) {
-      if (key.toLowerCase().includes('text')) {
-        const nestedText = getLangText((value as any)[key], lang);
-        if (nestedText) return nestedText;
-      }
-    }
-  }
-
-  return null;
-};
+const getLangText = sharedReadPreferredLocalizedText;
 
 const toDisplayText = (value: any, lang = DEFAULT_LANG): string | null => {
   if (value === null || value === undefined) return null;
@@ -153,74 +95,8 @@ const formatNumber = (value: any): string => {
   return fixed.includes('.') ? fixed.replace(/\.?0+$/, '') : fixed;
 };
 
-const collectTexts = (value: any, lang = DEFAULT_LANG): string[] => {
-  if (value === null || value === undefined) return [];
-
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    const text = String(value).trim();
-    return text ? [text] : [];
-  }
-
-  let entries: any[] = [];
-  if (Array.isArray(value)) {
-    entries = value;
-  } else if (isObject(value)) {
-    entries = [value];
-  } else {
-    return [];
-  }
-
-  const langMatches: string[] = [];
-  const fallback: string[] = [];
-  for (const entry of entries) {
-    if (entry === null || entry === undefined) {
-      continue;
-    }
-    if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
-      const text = String(entry).trim();
-      if (text) fallback.push(text);
-      continue;
-    }
-    if (!isObject(entry)) continue;
-    const entryLang = pickProperty(entry, ['@xml:lang', 'xml:lang', 'xml_lang', 'lang']);
-    const text = getTextFromDict(entry);
-    if (!text) continue;
-    if (lang && entryLang === lang) {
-      langMatches.push(text);
-    } else {
-      fallback.push(text);
-    }
-  }
-  return langMatches.length ? langMatches : fallback;
-};
-
-const pickText = (value: any, lang = DEFAULT_LANG): string | null => {
-  if (value === null || value === undefined) return null;
-
-  if (Array.isArray(value)) {
-    const texts = collectTexts(value, lang);
-    return texts.length ? texts[0] : null;
-  }
-
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    const text = String(value).trim();
-    return text || null;
-  }
-
-  if (isObject(value)) {
-    if (typeof (value as any).get_text === 'function') {
-      const text = (value as any).get_text(lang);
-      if (text) {
-        const trimmed = String(text).trim();
-        if (trimmed) return trimmed;
-      }
-    }
-    const direct = getTextFromDict(value);
-    if (direct) return direct;
-  }
-
-  return null;
-};
+const collectTexts = sharedCollectLocalizedTexts;
+const pickText = sharedReadLocalizedText;
 
 const joinTexts = (value: any, lang = DEFAULT_LANG, sep = '\n\n'): string | null => {
   const texts = collectTexts(value, lang)
@@ -229,24 +105,7 @@ const joinTexts = (value: any, lang = DEFAULT_LANG, sep = '\n\n'): string | null
   return texts.length ? texts.join(sep) : null;
 };
 
-const pickShortDescription = (ref: any, lang = DEFAULT_LANG): string | null => {
-  if (ref === null || ref === undefined) return null;
-  if (Array.isArray(ref)) {
-    for (const entry of ref) {
-      const text = pickShortDescription(entry, lang);
-      if (text) return text;
-    }
-    return null;
-  }
-  if (isObject(ref)) {
-    const shortDesc = pickProperty(ref, ['common:shortDescription', 'common_short_description']);
-    const text = pickText(shortDesc, lang);
-    if (text) return text;
-    const direct = getTextFromDict(ref);
-    if (direct) return direct;
-  }
-  return null;
-};
+const pickShortDescription = sharedReadReferenceShortDescription;
 
 const findProcessDataSet = (data: any): any => {
   if (!isObject(data)) return null;
@@ -604,50 +463,7 @@ const getReferenceFlowSummary = (
   return { name, amount };
 };
 
-const getClassificationPath = (dataInfo: any): string | null => {
-  if (!dataInfo) return null;
-
-  const classificationInfo = pickProperty(dataInfo, [
-    'classificationInformation',
-    'classification_information',
-  ]);
-  if (!classificationInfo) return null;
-
-  const commonClassification = pickProperty(classificationInfo, [
-    'common:classification',
-    'common_classification',
-    'classification',
-  ]);
-  if (!commonClassification) return null;
-
-  const classes = ensureArray(
-    pickProperty(commonClassification, ['common:class', 'common_class', 'class']),
-  );
-  if (!classes.length) return null;
-
-  const getLevel = (item: any): number | null => {
-    const level = isObject(item) ? pickProperty(item, ['@level', 'level']) : null;
-    if (level === undefined || level === null) return null;
-    const parsed = Number(level);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  const sorted = classes.slice().sort((a, b) => {
-    const levelA = getLevel(a);
-    const levelB = getLevel(b);
-    if (levelA === null && levelB === null) return 0;
-    if (levelA === null) return 1;
-    if (levelB === null) return -1;
-    return levelA - levelB;
-  });
-
-  const parts: string[] = [];
-  for (const entry of sorted) {
-    const text = getTextFromDict(entry);
-    if (text) parts.push(text);
-  }
-  return parts.length ? parts.join(' > ') : null;
-};
+const getClassificationPath = sharedReadClassificationPath;
 
 const getTimeCoverage = (processInfo: any, lang = DEFAULT_LANG): string | null => {
   const timeInfo = processInfo ? pickProperty(processInfo, ['time']) : null;
@@ -987,7 +803,7 @@ const tidasProcessToMarkdown = (processJson: any, lang = DEFAULT_LANG) => {
   return lines.join('\n');
 };
 
-const tidasLifeCycleModelToMarkdown = (modelJson: any, lang = DEFAULT_LANG) => {
+export const tidasLifeCycleModelToMarkdown = (modelJson: any, lang = DEFAULT_LANG) => {
   const dataset = findLifeCycleModelDataSet(modelJson);
   if (!dataset) {
     throw new Error('Invalid life cycle model JSON: missing data set');
@@ -1110,143 +926,152 @@ const tidasLifeCycleModelToMarkdown = (modelJson: any, lang = DEFAULT_LANG) => {
   return lines.join('\n');
 };
 
-Deno.serve(async (req) => {
-  const authResult = await authenticateRequest(req, {
-    allowedMethods: [AuthMethod.SERVICE_API_KEY],
-  });
+if (import.meta.main) {
+  Deno.serve(async (req) => {
+    const authResult = await authenticateRequest(req, {
+      allowedMethods: [AuthMethod.SERVICE_API_KEY],
+    });
 
-  if (!authResult.isAuthenticated) {
-    return authResult.response!;
-  }
+    if (!authResult.isAuthenticated) {
+      return authResult.response!;
+    }
 
-  try {
-    const rawPayload: unknown = await req.json();
-    const events: WebhookPayload[] = Array.isArray(rawPayload)
-      ? (rawPayload as WebhookPayload[])
-      : [rawPayload as WebhookPayload];
+    try {
+      const rawPayload: unknown = await req.json();
+      const events: WebhookPayload[] = Array.isArray(rawPayload)
+        ? (rawPayload as WebhookPayload[])
+        : [rawPayload as WebhookPayload];
 
-    // console.log("[webhook_model_embedding_ft] batch received", { size: events.length });
+      // console.log("[webhook_model_embedding_ft] batch received", { size: events.length });
 
-    const results: Array<{
-      index: number;
-      id?: string;
-      version?: string;
-      type?: string;
-      table?: string;
-      status: 'success' | 'ignored' | 'skipped';
-      markdownLength?: number;
-    }> = [];
+      const results: Array<{
+        index: number;
+        id?: string;
+        version?: string;
+        type?: string;
+        table?: string;
+        status: 'success' | 'ignored' | 'skipped';
+        markdownLength?: number;
+      }> = [];
 
-    for (const [index, payload] of events.entries()) {
-      const { type, record, table } = payload ?? {};
-      // console.log("[webhook_model_embedding_ft] payload received", {
-      //   index,
-      //   type,
-      //   hasRecord: !!record,
-      //   recordKeys: record ? Object.keys(record as Record<string, unknown>) : [],
-      //   table,
-      // });
+      for (const [index, payload] of events.entries()) {
+        const { type, record, table } = payload ?? {};
+        // console.log("[webhook_model_embedding_ft] payload received", {
+        //   index,
+        //   type,
+        //   hasRecord: !!record,
+        //   recordKeys: record ? Object.keys(record as Record<string, unknown>) : [],
+        //   table,
+        // });
 
-      if (table && table !== 'lifecyclemodels') {
-        throw new Error(`batch index ${index}: unexpected table ${table}, expect lifecyclemodels`);
-      }
-
-      if (type !== 'INSERT' && type !== 'UPDATE') {
-        console.error('[webhook_model_embedding_ft] ignored type', { index, type });
-        results.push({ index, type, table, status: 'ignored' });
-        continue;
-      }
-
-      if (!record) {
-        throw new Error(`batch index ${index}: No record data found`);
-      }
-
-      const { id, version } = record as { id?: string; version?: string };
-      if (!id || !version) {
-        throw new Error(`batch index ${index}: Record is missing id or version`);
-      }
-
-      const jsonDataRaw = (record as Record<string, any>).json_ordered;
-      // console.log("[webhook_model_embedding_ft] json_ordered type", {
-      //   index,
-      //   type: typeof jsonDataRaw,
-      //   isString: typeof jsonDataRaw === "string",
-      // });
-      if (typeof jsonDataRaw === 'string') {
-        try {
-          (record as Record<string, any>).json_ordered = JSON.parse(jsonDataRaw);
-        } catch (error) {
-          console.error('[webhook_model_embedding_ft] json parse failed', {
-            index,
-            message: error instanceof Error ? error.message : String(error),
-          });
+        if (table && table !== 'lifecyclemodels') {
           throw new Error(
-            `batch index ${index}: Failed to parse json_ordered string: ${
-              error instanceof Error ? error.message : 'unknown'
+            `batch index ${index}: unexpected table ${table}, expect lifecyclemodels`,
+          );
+        }
+
+        if (type !== 'INSERT' && type !== 'UPDATE') {
+          console.error('[webhook_model_embedding_ft] ignored type', { index, type });
+          results.push({ index, type, table, status: 'ignored' });
+          continue;
+        }
+
+        if (!record) {
+          throw new Error(`batch index ${index}: No record data found`);
+        }
+
+        const { id, version } = record as { id?: string; version?: string };
+        if (!id || !version) {
+          throw new Error(`batch index ${index}: Record is missing id or version`);
+        }
+
+        const jsonDataRaw = (record as Record<string, any>).json_ordered;
+        // console.log("[webhook_model_embedding_ft] json_ordered type", {
+        //   index,
+        //   type: typeof jsonDataRaw,
+        //   isString: typeof jsonDataRaw === "string",
+        // });
+        if (typeof jsonDataRaw === 'string') {
+          try {
+            (record as Record<string, any>).json_ordered = JSON.parse(jsonDataRaw);
+          } catch (error) {
+            console.error('[webhook_model_embedding_ft] json parse failed', {
+              index,
+              message: error instanceof Error ? error.message : String(error),
+            });
+            throw new Error(
+              `batch index ${index}: Failed to parse json_ordered string: ${
+                error instanceof Error ? error.message : 'unknown'
+              }`,
+            );
+          }
+        }
+        const jsonData = (record as Record<string, any>).json_ordered;
+        if (!jsonData) {
+          throw new Error(`batch index ${index}: No json_ordered data found in record`);
+        }
+
+        const markdown = tidasLifeCycleModelToMarkdown(jsonData);
+        const searchText = projectLifecycleModelSearchText(jsonData, id);
+        console.log(markdown);
+        // console.log("[webhook_model_embedding_ft] markdown generated", {
+        //   index,
+        //   length: markdown?.length ?? 0,
+        // });
+        if (!markdown) throw new Error(`batch index ${index}: Empty extracted markdown`);
+        if (searchText.length === 0) {
+          throw new Error(`batch index ${index}: Empty search text projection`);
+        }
+
+        const { error: updateError } = await supabaseClient
+          .schema('public')
+          .from('lifecyclemodels')
+          .update({
+            extracted_md: markdown,
+            search_text: searchText,
+          })
+          .eq('id', id)
+          .eq('version', version);
+
+        if (updateError) {
+          console.error('[webhook_model_embedding_ft] supabase update error', updateError);
+          throw new Error(
+            `batch index ${index}: ${
+              updateError instanceof Error ? updateError.message : String(updateError)
             }`,
           );
         }
-      }
-      const jsonData = (record as Record<string, any>).json_ordered;
-      if (!jsonData) {
-        throw new Error(`batch index ${index}: No json_ordered data found in record`);
+        console.log('md update success', {
+          index,
+          id,
+          version,
+          markdownLength: markdown.length,
+        });
+        results.push({
+          index,
+          id,
+          version,
+          type,
+          table,
+          status: 'success',
+          markdownLength: markdown.length,
+        });
       }
 
-      const markdown = tidasLifeCycleModelToMarkdown(jsonData);
-      console.log(markdown);
-      // console.log("[webhook_model_embedding_ft] markdown generated", {
-      //   index,
-      //   length: markdown?.length ?? 0,
-      // });
-      if (!markdown) throw new Error(`batch index ${index}: Empty extracted markdown`);
-
-      const { error: updateError } = await supabaseClient
-        .schema('public')
-        .from('lifecyclemodels')
-        .update({
-          extracted_md: markdown,
-        })
-        .eq('id', id)
-        .eq('version', version);
-
-      if (updateError) {
-        console.error('[webhook_model_embedding_ft] supabase update error', updateError);
-        throw new Error(
-          `batch index ${index}: ${
-            updateError instanceof Error ? updateError.message : String(updateError)
-          }`,
-        );
-      }
-      console.log('md update success', {
-        index,
-        id,
-        version,
-        markdownLength: markdown.length,
+      return new Response(JSON.stringify({ success: true, results }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
       });
-      results.push({
-        index,
-        id,
-        version,
-        type,
-        table,
-        status: 'success',
-        markdownLength: markdown.length,
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('[webhook_model_embedding_ft] caught error', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      return new Response(JSON.stringify({ error: errorMessage }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
       });
     }
-
-    return new Response(JSON.stringify({ success: true, results }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('[webhook_model_embedding_ft] caught error', {
-      error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
-  }
-});
+  });
+}

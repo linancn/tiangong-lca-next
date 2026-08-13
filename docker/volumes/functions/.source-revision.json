@@ -1,5 +1,5 @@
 {
-  "repository": "https://github.com/linancn/tiangong-lca-edge-functions.git",
-  "commit": "b4869b6f1f9e7b26dc3e18efc2a26749cfd00b9e",
+  "repository": "https://github.com/chukeaa/tiangong-lca-edge-functions.git",
+  "commit": "03cfe5ec9fc5d52a65a113de23eeff1fe88e9464",
   "sourcePath": "supabase/functions"
 }

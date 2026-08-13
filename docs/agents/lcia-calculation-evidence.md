@@ -80,9 +80,9 @@ Result-query state is not evidence state. A pending or failed Edge query shows o
 `public_plus_owner_draft` means exactly:
 
 - all `state_code=100` process rows; plus
-- the authenticated owner's `state_code=0` rows where `team_id IS NULL` and `review_id IS NULL`.
+- all authenticated-owner `state_code=0` rows, regardless of `team_id` or `review_id` workflow metadata.
 
-Both normal listing and keyword search use that exact database predicate. This scope is separate from LCIA method provenance: access to a private process or FP/UG does not publish it and does not make an LCIA factor canonical.
+Both normal listing and keyword search use that exact predicate. Ownership is determined by `user_id`; `team_id` and `review_id` describe collaboration workflow and do not revoke an owner's readable draft from calculation scope. This scope is separate from LCIA method provenance: access to a private process or FP/UG does not publish it and does not make an LCIA factor canonical.
 
 ## Persisted Calculation Bundle And Release Readback
 

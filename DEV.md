@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
+lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
 lastReviewedNote: 'Reviewed for Next Issue #819: bootstrap and managed delivery remain unchanged while the full coverage command uses two workers with a 512MB recycle boundary.'
 ---
 

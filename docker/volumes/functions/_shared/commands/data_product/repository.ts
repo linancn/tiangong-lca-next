@@ -14,6 +14,7 @@ import {
   callTaskSummaryV2FeedRpc,
   type DataProductRpcResult,
 } from '../../db_rpc/data_product_commands.ts';
+import type { AllUnitQueryResult } from '../../lca_all_unit_query_artifact.ts';
 import { queryLcaSnapshotCandidates } from '../../lca_snapshot_capabilities.ts';
 import { createSupabaseServiceClient } from '../../supabase_client.ts';
 import {
@@ -137,6 +138,7 @@ export type DataProductCommandRepository = {
   fetchJsonArtifact: <T>(
     artifactUrl: string,
   ) => Promise<{ ok: true; data: T } | { ok: false; error: string }>;
+  fetchArtifactBytes: (artifactUrl: string) => Promise<AllUnitQueryResult<Uint8Array>>;
   fetchPreviewMetadata: (
     request: DataProductPreviewMetadataRequest,
   ) => Promise<DataProductPreviewMetadataResult>;
@@ -286,6 +288,7 @@ export function createDataProductCommandRepository(
     previewPackage: (request) => callDataProductPackagePreviewRpc(actorClient, request),
     fetchSnapshotArtifactUrl: (snapshotId) => fetchSnapshotArtifactUrl(serviceSupabase, snapshotId),
     fetchJsonArtifact: (artifactUrl) => fetchArtifactJson(serviceSupabase, artifactUrl),
+    fetchArtifactBytes: (artifactUrl) => fetchArtifactBytes(serviceSupabase, artifactUrl),
     fetchPreviewMetadata: (request) => fetchPreviewMetadata(serviceSupabase, request),
     publishPackage: (request, audit) =>
       callLciaResultPackagePublishRpc(actorClient, request, audit),
@@ -546,7 +549,12 @@ function hasExactKeys(value: Record<string, unknown>, expectedKeys: string[]): b
 function decodeClosureArtifactDownloadDescriptor(
   value: unknown,
   expectedArtifactRole: DataProductClosureReportDownloadRequest['artifactRole'],
-): { ok: true; data: ClosureArtifactDownloadDescriptor } | { ok: false; reason: string } {
+):
+  | { ok: true; data: ClosureArtifactDownloadDescriptor }
+  | {
+      ok: false;
+      reason: string;
+    } {
   if (!isRecord(value)) {
     return { ok: false, reason: 'not_an_object' };
   }
@@ -797,6 +805,46 @@ async function fetchArtifactJson<T>(
     return { ok: false, error: `${storageError};${httpResult.error}` };
   }
   return httpResult;
+}
+
+async function fetchArtifactBytes(
+  supabase: SupabaseClient,
+  artifactUrl: string,
+): Promise<AllUnitQueryResult<Uint8Array>> {
+  const storagePath = parseStoragePathFromArtifactUrl(artifactUrl);
+  let storageError: string | null = null;
+  if (storagePath) {
+    const downloaded = await supabase.storage
+      .from(storagePath.bucket)
+      .download(storagePath.objectPath);
+    if (!downloaded.error) {
+      return {
+        ok: true,
+        data: new Uint8Array(await downloaded.data.arrayBuffer()),
+      };
+    }
+    storageError = `storage_download_failed:${downloaded.error.message}`;
+  }
+
+  try {
+    const response = await fetch(artifactUrl, { method: 'GET' });
+    if (!response.ok) {
+      const detail = `http_${response.status}`;
+      return {
+        ok: false,
+        error: 'result_projection_artifact_fetch_failed',
+        detail: storageError ? `${storageError};${detail}` : detail,
+      };
+    }
+    return { ok: true, data: new Uint8Array(await response.arrayBuffer()) };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'fetch_failed';
+    return {
+      ok: false,
+      error: 'result_projection_artifact_fetch_failed',
+      detail: storageError ? `${storageError};${detail}` : detail,
+    };
+  }
 }
 
 function rememberArtifactJson(artifactUrl: string, data: unknown): void {

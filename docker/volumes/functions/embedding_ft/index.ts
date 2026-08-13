@@ -6,6 +6,7 @@ import { InvokeEndpointCommand, SageMakerRuntimeClient } from '@aws-sdk/client-s
 import postgres from 'postgres';
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import {
+  buildEmbeddingFtContentQuery,
   parseEmbeddingFtJobs,
   type EmbeddingFtJobError,
   type EmbeddingFtJob as Job,
@@ -263,7 +264,7 @@ async function generateEmbedding(text: string) {
  * Processes an embedding job.
  */
 async function processJob(job: Job): Promise<JobOutcome> {
-  const { jobId, id, version, schema, table, contentFunction, embeddingColumn } = job;
+  const { jobId, id, version, schema, table, contentFunction } = job;
   const jobStartedAt = performance.now();
 
   // Log the id & version for traceability of each job
@@ -277,16 +278,8 @@ async function processJob(job: Job): Promise<JobOutcome> {
 
   // Fetch content for the schema/table/row combination
   const fetchStartedAt = performance.now();
-  const [row]: [Row] = await sql`
-    select
-      id,
-      version,
-      ${sql(contentFunction)}(t) as content
-    from
-      ${sql(schema)}.${sql(table)} t
-    where
-      id = ${id} and version = ${version}
-  `;
+  const contentQuery = buildEmbeddingFtContentQuery(sql, job) as unknown as Promise<[Row]>;
+  const [row]: [Row] = await contentQuery;
 
   console.log('embedding job content fetch finished', {
     id,

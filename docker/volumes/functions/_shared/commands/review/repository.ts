@@ -4,6 +4,9 @@ import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import {
   callReviewApproveRpc,
   callReviewAssignReviewersRpc,
+  callReviewerDecisionRpc,
+  callReviewFinalizeApproveByIdRpc,
+  callReviewFinalizeRejectByIdRpc,
   callReviewRejectRpc,
   callReviewRevokeReviewerRpc,
   callReviewSaveAssignmentDraftRpc,
@@ -16,6 +19,8 @@ import type {
   ApproveReviewRequest,
   AssignReviewersRequest,
   RejectReviewRequest,
+  ReviewerDecisionRequest,
+  ReviewIdRequest,
   RevokeReviewerRequest,
   SaveAssignmentDraftRequest,
   SaveCommentDraftRequest,
@@ -58,6 +63,18 @@ export type ReviewCommandRepository = {
     request: SimpleReviewDecisionRequest,
     audit: CommandAuditPayload,
   ) => Promise<ReviewRpcResult>;
+  finalizeApproveById: (
+    request: ReviewIdRequest,
+    audit: CommandAuditPayload,
+  ) => Promise<ReviewRpcResult>;
+  finalizeRejectById: (
+    request: ReviewIdRequest & { reason: string },
+    audit: CommandAuditPayload,
+  ) => Promise<ReviewRpcResult>;
+  submitReviewerDecision: (
+    request: ReviewerDecisionRequest,
+    audit: CommandAuditPayload,
+  ) => Promise<ReviewRpcResult>;
 };
 
 function requireExplicitClient(supabase: RpcClient | null | undefined): RpcClient {
@@ -81,5 +98,9 @@ export function createReviewCommandRepository(supabase: RpcClient): ReviewComman
     approveReview: (request, audit) => callReviewApproveRpc(client, request, audit),
     rejectReview: (request, audit) => callReviewRejectRpc(client, request, audit),
     submitSimpleDecision: (request, audit) => callSimpleReviewDecisionRpc(client, request, audit),
+    finalizeApproveById: (request, audit) =>
+      callReviewFinalizeApproveByIdRpc(client, request, audit),
+    finalizeRejectById: (request, audit) => callReviewFinalizeRejectByIdRpc(client, request, audit),
+    submitReviewerDecision: (request, audit) => callReviewerDecisionRpc(client, request, audit),
   };
 }
