@@ -30,9 +30,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
-lastReviewedNote: 'Reviewed for Next Issues #823 and #832: release evidence refresh and porcelain parsing use the existing release-contract and focused unit-test patterns.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
+lastReviewedNote: 'Reviewed for Next Issue #839: direct runtime-entry SDK mocks follow the existing focused unit-test and external-boundary mock patterns.'
 ---
 
 # Testing Patterns Reference

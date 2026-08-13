@@ -39,11 +39,11 @@ const {
   removeEmptyObjects: jest.Mock;
 };
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createSource: jest.fn(),
 }));
 
-const mockCreateSource = jest.requireMock('@tiangong-lca/tidas-sdk').createSource as jest.Mock;
+const mockCreateSource = jest.requireMock('@tiangong-lca/tidas-sdk/core').createSource as jest.Mock;
 
 describe('Source Utility Functions', () => {
   beforeEach(() => {

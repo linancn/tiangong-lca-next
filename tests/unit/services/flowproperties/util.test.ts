@@ -21,7 +21,7 @@ jest.mock('@/services/general/util', () => ({
   removeEmptyObjects: jest.fn(),
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createFlowProperty: jest.fn((data) => data),
 }));
 
@@ -34,7 +34,7 @@ const {
   getLangList,
   removeEmptyObjects,
 } = jest.requireMock('@/services/general/util');
-const mockCreateFlowProperty = jest.requireMock('@tiangong-lca/tidas-sdk')
+const mockCreateFlowProperty = jest.requireMock('@tiangong-lca/tidas-sdk/core')
   .createFlowProperty as jest.Mock;
 
 describe('FlowProperties Utility Functions (src/services/flowproperties/util.ts)', () => {
