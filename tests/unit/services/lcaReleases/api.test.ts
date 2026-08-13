@@ -430,8 +430,39 @@ describe('lcaReleases api', () => {
           },
         },
         error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: { calculationBundle: { manifestDownload: expected, artifacts: [] } },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [],
+              downloads: [
+                {
+                  ...expected,
+                  role: 'grouped-results',
+                  signedDownloadUrl: 'https://download.example/grouped-results',
+                },
+              ],
+            },
+          },
+        },
+        error: null,
       });
-    global.fetch = jest.fn() as any;
+    setCryptoDigest(0);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new Uint8Array([1, 2]).buffer,
+    })) as any;
 
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', null, expected),
@@ -442,7 +473,13 @@ describe('lcaReleases api', () => {
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),
     ).rejects.toThrow('metadata changed');
-    expect(global.fetch).not.toHaveBeenCalled();
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:missing-role', expected),
+    ).rejects.toThrow('no longer available');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:grouped-results', expected),
+    ).resolves.toMatchObject({ size: 2, type: expected.mediaType });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed for unavailable manifests and non-refreshable verified download failures', async () => {

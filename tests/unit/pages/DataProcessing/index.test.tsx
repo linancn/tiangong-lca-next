@@ -472,7 +472,13 @@ describe('DataProcessing page', () => {
     expect(parseImpactCategoryOptionLabel('Legacy label without metadata')).toEqual({
       name: 'Legacy label without metadata',
     });
+    expect(selectedImpactCategoryIdentity(null, [])).toBeNull();
     expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
+    expect(
+      selectedImpactCategoryIdentity('climate-change', [
+        { value: 'climate-change', version: '01.00.000', label: 'Climate change' },
+      ]),
+    ).toEqual({ id: 'climate-change', version: '01.00.000' });
     expect(reviewedLciaMethodSet(buildImpactCategoryOptions(mockLciaMethodList, 'en-US'))).toEqual(
       expectedReviewedLciaMethods,
     );
