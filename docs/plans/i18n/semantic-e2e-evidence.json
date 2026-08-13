@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-13T11:30:47.633Z",
-  "runId": "local-b07d1c54-cc76-47b4-af7d-f6aa1768e5bc",
+  "generatedAt": "2026-08-13T12:51:15.997Z",
+  "runId": "local-3498953f-026f-4f2f-8b60-d9899e192048",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "88758d0cd1f1e8fd021c6b963674ee5f08e873b2",
+    "observedHeadCommit": "6d58c67027ef7f8e061455078feb8db760f5b518",
     "packageManifestDigest": "2b78dea75572169f5a945913cc1d3b8b9ed3b9ecbb65c4fc0dc45b4126150437",
     "sourceTreeDigest": "6bf3df96128a18ffde3658b99d6cb8cd36fd8322d92fdde59338c65c3d8530d6",
-    "unitTestTreeDigest": "0f9654a32892ad4404f2a9e2f5288acfaba27a4f2776cf2b6547c08e263d661c"
+    "unitTestTreeDigest": "21903c76065fd616469e1ab929d0fe5fde811f850c2a212dea6fce6aa7ea85a6"
   },
   "target": {
     "frontend": "candidate-local",
@@ -377,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "62e2fa228b3c006769e1053e91f6f027e7c301944f8365685ff3e74c243653be"
+        "sha256": "bb26a437e66f4e7018c6a1857b8f9a4b69087315d58da2d5dfd7448b94129fc2"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",

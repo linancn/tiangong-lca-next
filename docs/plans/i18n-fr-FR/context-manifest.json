@@ -95,7 +95,7 @@
   },
   "routeViewCoverage": {
     "path": "docs/plans/i18n/route-view-coverage.json",
-    "digest": "f36791e092d1e17f2ca0c1f3d08d4c967e12cbcc542192e3389ac58ebb1828bd",
+    "digest": "c1fb5b9f142e4e2e647b2ca08a6337334345bb62a19c2deb69ea76325b858393",
     "requiredRouteViews": ["/", "/welcome", "/welcome?view=carbon-footprint"],
     "derivedEvidence": {
       "schemaVersion": "tiangong.i18n-route-view-derived-evidence.v2",
@@ -113,7 +113,7 @@
         "requiredAssertionCount": 49,
         "executionEvidence": {
           "path": "docs/plans/i18n/semantic-e2e-evidence.json",
-          "sha256": "9dcff21b8caea698f67dd0c899cf2b007d34bda442f00702967e09ca8fdc55dd",
+          "sha256": "11b27a2a3e20215b2e796519a0dbe3fd937940b4e88f4261d615780a4e3e824e",
           "contractDigest": "b9def444859e8fabbc7abed5c6b274e1c24896dd5de0f0ea38b28aacc0570e5e",
           "assertionCount": 49,
           "internalLocalizationAssertionCount": 42,
@@ -1043,7 +1043,7 @@
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "32fe106473e04bf5f0cb7101c0e01258a74037dbe436b6168fd3cec645ad25ee",
-          "focusedTestDigest": "ac2a7911150bdf0d092b41037817f85caf3618c853dc4bec9f391fbc883e4a8d",
+          "focusedTestDigest": "fc41b8aa33910cdfc8bd350b7fa66d037e9f4fa5c0073b2ff5856044aa2974ac",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 119,
@@ -1096,7 +1096,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "5a1a477972b0b0ca71d25f149ae0ac4f561dd1f9ffcd64486efe941ae5f881a4",
+      "rowEvidenceDigest": "997a00ea7a96230491788656a5323ee3e0f8213690b70fc2a63333e7fc06c19f",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1114,11 +1114,11 @@
     "scripts/i18n/language-hardcoding-allowlist.json": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a",
     "src/components/ImportTidasPackage/reportContent.ts": "b2abf951ea5aad8bc1cb440aba7d771a5344ca1a33f36d502ff1c8c6a2961c6b",
     "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
-    "docs/plans/i18n/route-view-coverage.json": "f36791e092d1e17f2ca0c1f3d08d4c967e12cbcc542192e3389ac58ebb1828bd",
+    "docs/plans/i18n/route-view-coverage.json": "c1fb5b9f142e4e2e647b2ca08a6337334345bb62a19c2deb69ea76325b858393",
     "docs/plans/i18n/fallback-contract.json": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "docs/plans/i18n-fr-FR/glossary.json": "057cb494f02d980106469f6a16befc102d26db5ac362b9777cd5f97c7729c91b",
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "f3b3903f89d22e472d65da4fc999eb1d80e9a47a71afedfe3845d2e0cd8350e2"
+  "contextDigest": "d079a3cd55574a34c853d7e6f0ec3c25c87927a10c093914acfb88f170c5a5e3"
 }
