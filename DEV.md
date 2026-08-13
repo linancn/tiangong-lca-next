@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 7a2829ba9bd3cd628a4f2ec82924955fc692bbd1
+lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
 lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing preserves the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
 ---
 
