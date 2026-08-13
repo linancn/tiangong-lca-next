@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
-lastReviewedNote: 'Reviewed for Next Issue #819: bootstrap and managed delivery remain unchanged while the full coverage command uses the qualified bounded two-worker pool.'
+lastReviewedCommit: a7babd6228fb65271378899bccb7d6fac5ae23cc
+lastReviewedNote: 'Reviewed for Next Issue #819: bootstrap and managed delivery remain unchanged while the full coverage command uses two workers with a 512MB recycle boundary.'
 ---
 
 # Development Bootstrap

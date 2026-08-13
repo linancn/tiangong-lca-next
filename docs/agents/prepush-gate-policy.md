@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
-lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse exact proof or run the complete fallback through the qualified two-worker, 64MB-recycle coverage pool.'
+lastReviewedCommit: a7babd6228fb65271378899bccb7d6fac5ae23cc
+lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse exact proof or run the complete fallback through the two-worker, 512MB-recycle coverage pool.'
 ---
 
 # Pre-Push Gate Policy
@@ -137,7 +137,7 @@ It does not own:
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the main-target PR Release Gate repeats this proof before merge, and the post-merge workflow accepts its exact run-bound proof only for a structurally matching unchanged-tree merge or reruns the complete gate
 - protect the actual local and release gates
-- keep one logical full-suite qualification for each canonical release candidate: normally reuse the exact successful main-target PR proof, but run one post-merge `prepush:gate` fallback whenever proof identity cannot be established; that command runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with exactly two workers and a `64MB` per-worker idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
+- keep one logical full-suite qualification for each canonical release candidate: normally reuse the exact successful main-target PR proof, but run one post-merge `prepush:gate` fallback whenever proof identity cannot be established; that command runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with exactly two workers and a `512MB` per-worker idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep semantic E2E independent from `prepush:gate`: routine PR/dev events do not trigger it, manual and release invocations have no production credentials or writes, and only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
