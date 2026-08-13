@@ -68,13 +68,6 @@ export type ReviewSubmitGateRequest = {
   reportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
 };
 
-export type SubmitReviewGateMetadata = {
-  reviewSubmitGateRunId?: string;
-  revisionChecksum?: string;
-  reviewSubmitPolicyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
-  reviewSubmitReportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
-};
-
 export type ReviewSubmitJobAction = 'enqueue' | 'read' | 'read_latest';
 export type ReviewSubmitJobStatus =
   | 'queued'
@@ -137,6 +130,72 @@ export type ReviewSubmitJobRequest =
       version: string;
       revisionChecksum?: string;
     };
+
+export type ReviewQualityDiagnosticStatus =
+  'queued' | 'running' | 'waiting' | 'stale' | 'completed' | 'failed' | 'cancelled';
+
+export type ReviewQualityDiagnosticOutcome = 'clear' | 'findings' | 'not_evaluable';
+
+export type ReviewQualityDiagnosticFinding = {
+  code: string;
+  category: 'completeness' | 'numerical_stability';
+  level: 'info' | 'warning' | 'error';
+  message: string;
+  details?: unknown;
+  workflowBlocking: false;
+};
+
+export type ReviewQualityDiagnosticSection = {
+  key: 'completeness' | 'numerical_stability';
+  status: 'clear' | 'findings' | 'not_evaluable' | 'not_applicable';
+  metrics?: Record<string, unknown>;
+  findings: ReviewQualityDiagnosticFinding[];
+};
+
+export type ReviewQualityDiagnosticReport = {
+  schemaVersion: 'review.quality_diagnostic.report.v1';
+  runId: string;
+  generatedAt?: string;
+  requestedAt?: string;
+  requestedBy?: string;
+  outcome: ReviewQualityDiagnosticOutcome;
+  informationalOnly: true;
+  affectsReviewState: false;
+  scope: {
+    kind: 'pending_review';
+    reviewStates?: number[];
+    reviewCount?: number;
+    datasetCount?: number;
+    datasetCounts?: Record<string, number>;
+    pendingProcessCount?: number;
+    pendingProcessSample?: Array<{ id: string; version: string }>;
+    pendingProcessSampleTruncated?: boolean;
+  };
+  summary?: Record<string, unknown>;
+  sections: ReviewQualityDiagnosticSection[];
+  findings: ReviewQualityDiagnosticFinding[];
+};
+
+export type ReviewQualityDiagnosticRun = {
+  runId: string;
+  status: ReviewQualityDiagnosticStatus;
+  outcome?: ReviewQualityDiagnosticOutcome;
+  requestedBy?: string;
+  requestedAt?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  updatedAt?: string;
+  reportSchemaVersion?: string;
+  report?: ReviewQualityDiagnosticReport;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+};
+
+export type ReviewQualityDiagnosticRequest =
+  { action: 'start' } | { action: 'read'; runId?: string };
+
 type ReviewWorkflowCommandFunctionName =
   | 'admin_review_save_assignment_draft'
   | 'admin_review_assign_reviewers'
@@ -361,6 +420,22 @@ function isReviewSubmitJobEnvelope(payload: unknown): payload is {
   );
 }
 
+function isReviewQualityDiagnosticEnvelope(payload: unknown): payload is {
+  command?: string;
+  action?: string;
+  data?: ReviewQualityDiagnosticRun | null;
+} {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return false;
+  }
+
+  const candidate = payload as { command?: unknown; action?: unknown };
+  return (
+    candidate.command === 'review_quality_diagnostic' &&
+    (candidate.action === 'start' || candidate.action === 'read')
+  );
+}
+
 function normalizeReviewSubmitCommandError(error: any, payload: any): SupabaseError {
   return {
     message:
@@ -539,18 +614,66 @@ export async function addReviewsApi(id: string, data: any) {
 
 export async function submitDatasetReviewApi<
   Row extends Record<string, unknown> = Record<string, unknown>,
->(
-  tableName: ReviewSubmitDatasetTable,
-  id: string,
-  version: string,
-  gateMetadata: SubmitReviewGateMetadata = {},
-) {
+>(tableName: ReviewSubmitDatasetTable, id: string, version: string) {
   return invokeDatasetCommand<Row>('app_dataset_submit_review', {
     id,
     version,
     table: tableName,
-    ...gateMetadata,
   });
+}
+
+export async function requestReviewQualityDiagnosticApi(
+  request: ReviewQualityDiagnosticRequest,
+): Promise<SupabaseMutationResult<ReviewQualityDiagnosticRun>> {
+  const session = await supabase.auth.getSession();
+  if (!session?.data?.session) {
+    return {
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      } as SupabaseError,
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    };
+  }
+
+  const result = await supabase.functions.invoke('admin_review_quality_diagnostic', {
+    headers: {
+      Authorization: `Bearer ${session.data.session.access_token ?? ''}`,
+    },
+    body: request,
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    const payload = await parseReviewSubmitCommandErrorPayload(result.error);
+    const normalizedError = normalizeReviewSubmitCommandError(result.error, payload);
+    return {
+      data: null,
+      error: normalizedError,
+      count: null,
+      status: result.error.context?.status ?? 500,
+      statusText: normalizedError.code,
+    };
+  }
+
+  const payload = isReviewQualityDiagnosticEnvelope(result.data)
+    ? result.data.data
+    : !result.data || typeof result.data !== 'object' || Array.isArray(result.data)
+      ? null
+      : (result.data as ReviewQualityDiagnosticRun);
+
+  return {
+    data: payload ? [payload] : [],
+    error: null,
+    count: null,
+    status: request.action === 'start' ? 202 : 200,
+    statusText: request.action === 'start' ? 'Accepted' : 'OK',
+  };
 }
 
 export async function requestReviewSubmitGateApi<

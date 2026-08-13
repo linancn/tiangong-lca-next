@@ -721,6 +721,7 @@ export default {
   'pages.process.validator.exchanges.quantitativeReference.required': '请选择且仅选择一项作为定量参考。',
 
   'pages.process.review.submitSuccess': '提交审核成功',
+  'pages.process.review.submitFailed': '提交审核失败',
   'pages.process.review.submitError': '提交审核失败',
   'pages.process.reviewSubmitGate.title': '数值稳定性门禁',
   'pages.process.reviewSubmitGate.queued': '提交审核任务已排队，系统会先运行数值稳定性门禁。',

@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: exact proof reuse and heap-aware bounded worker pools are reusable Release Gate patterns.'
+lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: semantic component interactions and exact direct-submit/diagnostic payload assertions use existing strict command-contract and bounded full-gate patterns.'
 ---
 
 # Testing Patterns Reference

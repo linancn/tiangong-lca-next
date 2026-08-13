@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse exact proof or run the complete fallback through the two-worker, 512MB-recycle coverage pool.'
+lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: product, component-test, and locale-artifact changes retain exact-proof reuse, Docpact-first validation, and the bounded hook-owned full gate.'
 ---
 
 # Pre-Push Gate Policy

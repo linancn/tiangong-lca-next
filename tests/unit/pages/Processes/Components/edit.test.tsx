@@ -1,6 +1,5 @@
 // @ts-nocheck
 import ProcessEdit, {
-  formatReviewSubmitGateEvidence,
   normalizeQuantitativeReferenceSelection,
 } from '@/pages/Processes/Components/edit';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -138,13 +137,8 @@ const mockGetErrRefTab = jest.fn();
 const mockBuildValidationIssues = jest.fn(() => []);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
-const mockRequestReviewSubmitGate = jest.fn();
-const mockRequestReviewSubmitJob = jest.fn();
 const mockSubmitDatasetReview = jest.fn();
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
-const mockRequestOpenLcaTaskCenter = jest.fn();
-const mockTrackReviewSubmitTask = jest.fn();
-const mockRequestWorkerJobsApi = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -179,25 +173,8 @@ jest.mock('@/pages/Utils/review', () => ({
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
     mockMapValidationIssuesToRefCheckData(...args),
-  requestReviewSubmitGate: (...args: any[]) => mockRequestReviewSubmitGate(...args),
-  requestReviewSubmitJob: (...args: any[]) => mockRequestReviewSubmitJob(...args),
   submitDatasetReview: (...args: any[]) => mockSubmitDatasetReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
-}));
-
-jest.mock('@/services/lca/taskCenter', () => ({
-  __esModule: true,
-  requestOpenLcaTaskCenter: (...args: any[]) => mockRequestOpenLcaTaskCenter(...args),
-}));
-
-jest.mock('@/services/reviews/taskCenter', () => ({
-  __esModule: true,
-  trackReviewSubmitTask: (...args: any[]) => mockTrackReviewSubmitTask(...args),
-}));
-
-jest.mock('@/services/workerJobs/api', () => ({
-  __esModule: true,
-  requestWorkerJobsApi: (...args: any[]) => mockRequestWorkerJobsApi(...args),
 }));
 
 jest.mock('@/components/ValidationIssueModal', () => ({
@@ -443,13 +420,6 @@ describe('ProcessEdit component', () => {
     },
   });
 
-  const mockNoRunningReviewSubmitJob = () => {
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [],
-      error: null,
-    });
-  };
-
   afterEach(() => {
     jest.useRealTimers();
   });
@@ -502,37 +472,10 @@ describe('ProcessEdit component', () => {
     mockGetAllRefObj.mockReturnValue([]);
     mockGetErrRefTab.mockReturnValue('');
     mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
-    mockRequestReviewSubmitGate.mockReset();
-    mockRequestReviewSubmitGate.mockResolvedValue({
-      data: [
-        {
-          status: 'passed',
-          gateRunId: 'gate-run-1',
-          datasetRevision: { revisionChecksum: 'a'.repeat(64) },
-        },
-      ],
+    mockSubmitDatasetReview.mockResolvedValue({
+      data: [{ review: { id: 'review-1' } }],
       error: null,
-      revisionChecksum: 'z'.repeat(64),
     });
-    mockRequestReviewSubmitJob.mockReset();
-    mockRequestReviewSubmitJob.mockResolvedValue({
-      data: [
-        {
-          status: 'submitted',
-          reviewSubmitJobId: 'job-1',
-          gateRunId: 'gate-run-1',
-          datasetRevision: { revisionChecksum: 'a'.repeat(64) },
-        },
-      ],
-      error: null,
-      reviewSubmitJobId: 'job-1',
-      revisionChecksum: 'a'.repeat(64),
-    });
-    mockSubmitDatasetReview.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
-    mockRequestOpenLcaTaskCenter.mockReset();
-    mockTrackReviewSubmitTask.mockReset();
-    mockRequestWorkerJobsApi.mockReset();
-    mockRequestWorkerJobsApi.mockResolvedValue({ data: [], error: null });
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
     mockUpdateRefsData.mockImplementation((data: any) => data);
@@ -1416,20 +1359,26 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
-  it('does not close the drawer when the review-submit job fails', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
+  it('submits directly after current-record validation without traversing upstream references', async () => {
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
+    );
+    expect(mockDealProcress).not.toHaveBeenCalled();
+    expect(mockGetAllRefObj).not.toHaveBeenCalled();
+    expect(mockCheckReferences).not.toHaveBeenCalled();
+    expect(mockCheckVersions).not.toHaveBeenCalled();
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('keeps the drawer open when direct review submission fails', async () => {
+    mockSubmitDatasetReview.mockResolvedValueOnce({
       data: null,
       error: { message: 'review submission failed' },
     });
@@ -1441,26 +1390,16 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
-    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalled());
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('review submission failed');
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('review submission failed'),
+    );
+    expect(screen.getByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
+    expect(setViewDrawerVisible).not.toHaveBeenCalledWith(false);
   });
 
-  it('falls back to the default review-submit error when the command omits a message', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
+  it('uses the direct-submit fallback when the server omits an error message', async () => {
+    mockSubmitDatasetReview.mockResolvedValueOnce({
       data: null,
       error: {},
     });
@@ -1472,663 +1411,11 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
-    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalled());
-    expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'Numerical stability gate could not complete.',
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith('Review submission failed'),
     );
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
-
-  it('shows blocker reasons when the review-submit job is blocked by the gate', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [
-        {
-          status: 'blocked',
-          reviewSubmitJobId: 'job-blocked',
-          gateRunId: 'gate-run-blocked',
-          gate: {
-            status: 'blocked',
-            gateRunId: 'gate-run-blocked',
-            blockingReasons: [
-              {
-                code: 'missing_or_zero_reference',
-                message: 'Reference missing',
-                details: {
-                  examples: [
-                    {
-                      process: {
-                        process_id: 'process-1',
-                        process_name: 'Existing process',
-                        process_version: '1.0.0',
-                      },
-                      exchange_id: 'exchange-1',
-                      flow_id: 'flow-1',
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-      error: null,
-      reviewSubmitJobId: 'job-blocked',
-      revisionChecksum: 'b'.repeat(64),
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockRequestReviewSubmitJob).toHaveBeenCalledWith(
-        'processes',
-        'process-1',
-        '1.0.0',
-        null,
-        {
-          action: 'enqueue',
-          reviewSubmitJobId: undefined,
-        },
-      ),
-    );
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-    expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'Gate check did not pass. Open the task center for details.',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Quantitative reference is missing or zero',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Check the quantitative reference and make sure it points to a valid exchange with an amount greater than zero.',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'missing_or_zero_reference: Reference missing',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Process: Existing process, Version: 1.0.0, Exchange: exchange-1, and Flow: flow-1',
-    );
-  });
-
-  it('blocks final review submission when the review-submit job result is stale', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [{ status: 'stale', reviewSubmitJobId: 'job-stale', gateRunId: 'gate-run-stale' }],
-      error: null,
-      reviewSubmitJobId: 'job-stale',
-      revisionChecksum: 'c'.repeat(64),
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Gate check did not pass. Open the task center for details.',
-      ),
-    );
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-  });
-
-  it('completes review submission when the submitted job omits a browser checksum', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [{ status: 'submitted', reviewSubmitJobId: 'job-no-checksum' }],
-      error: null,
-      revisionChecksum: undefined,
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully'),
-    );
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-  });
-
-  it('blocks final review submission when the review-submit job API fails', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'gate api unavailable' },
-      revisionChecksum: 'd'.repeat(64),
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('gate api unavailable'));
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-  });
-
-  it('enqueues a review-submit job when latest lookup reports no existing job', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockRequestReviewSubmitJob
-      .mockResolvedValueOnce({
-        data: null,
-        error: { code: 'NOT_FOUND', message: 'Review-submit job not found' },
-        status: 404,
-      })
-      .mockResolvedValueOnce({
-        data: [{ status: 'submitted', reviewSubmitJobId: 'job-created-after-not-found' }],
-        error: null,
-      });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-        2,
-        'processes',
-        'process-1',
-        '1.0.0',
-        null,
-        {
-          action: 'enqueue',
-          reviewSubmitJobId: undefined,
-        },
-      ),
-    );
-    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Review-submit job not found');
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
-  });
-
-  it('does not enqueue a new review-submit job when an active root worker job exists', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockRequestWorkerJobsApi.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'root-worker-running',
-          jobKind: 'review_submit.submit',
-          status: 'running',
-          subjectType: 'processes',
-          subjectId: 'process-1',
-          subjectVersion: '1.0.0',
-        },
-      ],
-      error: null,
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockAntdMessage.warning).toHaveBeenCalledWith(
-        'A review submission gate check is already running.',
-      ),
-    );
-    expect(mockRequestWorkerJobsApi).toHaveBeenCalledWith({
-      action: 'list',
-      subjectType: 'processes',
-      subjectId: 'process-1',
-      statuses: ['queued', 'running', 'waiting'],
-      limit: 20,
-    });
-    expect(mockUpdateProcess).not.toHaveBeenCalled();
-    expect(mockValidateDatasetWithSdk).not.toHaveBeenCalled();
-    expect(mockRequestReviewSubmitJob).not.toHaveBeenCalled();
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Review submission is waiting for the numerical stability gate to finish.',
-    );
-    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'waiting_gate',
-        submitWorkerJobId: 'root-worker-running',
-        rootJobId: 'root-worker-running',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-1',
-          version: '1.0.0',
-        },
-        submitWorkerJob: expect.objectContaining({
-          id: 'root-worker-running',
-          jobKind: 'review_submit.submit',
-          status: 'running',
-        }),
-      }),
-    );
-    expect(mockRequestOpenLcaTaskCenter).toHaveBeenCalled();
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-  });
-
-  it('does not enqueue a new review-submit job when a gate check is already running', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [
-        {
-          status: 'waiting_gate',
-          reviewSubmitJobId: 'job-running',
-          gateWorkerJobId: 'gate-worker-running',
-          gateWorkerJob: {
-            id: 'gate-worker-running',
-            status: 'running',
-          },
-        },
-      ],
-      error: null,
-      revisionChecksum: 'f'.repeat(64),
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockAntdMessage.warning).toHaveBeenCalledWith(
-        'A review submission gate check is already running.',
-      ),
-    );
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      1,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'read_latest',
-      },
-    );
-    expect(mockRequestReviewSubmitJob).not.toHaveBeenCalledWith(
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'enqueue',
-        reviewSubmitJobId: undefined,
-      },
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Review submission is waiting for the numerical stability gate to finish.',
-    );
-    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'waiting_gate',
-        reviewSubmitJobId: 'job-running',
-        gateWorkerJobId: 'gate-worker-running',
-      }),
-    );
-    expect(mockRequestOpenLcaTaskCenter).toHaveBeenCalled();
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-  });
-
-  it('enqueues queued review-submit jobs and sends the user to the task center', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [{ status: 'queued', reviewSubmitJobId: 'job-queued' }],
-      error: null,
-      reviewSubmitJobId: 'job-queued',
-      revisionChecksum: 'e'.repeat(64),
-    });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(mockRequestReviewSubmitJob).toHaveBeenCalledWith(
-        'processes',
-        'process-1',
-        '1.0.0',
-        null,
-        {
-          action: 'enqueue',
-          reviewSubmitJobId: undefined,
-        },
-      ),
-    );
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      1,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'read_latest',
-      },
-    );
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      2,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'enqueue',
-        reviewSubmitJobId: undefined,
-      },
-    );
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
-    expect(mockAntdMessage.info).toHaveBeenCalledWith(
-      'Review submission task has been created. Track progress in the task center.',
-    );
-    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith({
-      status: 'queued',
-      reviewSubmitJobId: 'job-queued',
-    });
-    expect(mockRequestOpenLcaTaskCenter).toHaveBeenCalled();
-  });
-
-  it('syncs pending review-submit jobs to latest terminal errors in the drawer', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockRequestReviewSubmitJob
-      .mockResolvedValueOnce({
-        data: [],
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: [{ status: 'waiting_gate', reviewSubmitJobId: 'job-waiting' }],
-        error: null,
-        reviewSubmitJobId: 'job-waiting',
-      })
-      .mockResolvedValueOnce({
-        data: [
-          {
-            status: 'error',
-            reviewSubmitJobId: 'job-waiting',
-            submitWorkerJobId: 'submit-worker-1',
-            gateWorkerJobId: 'gate-worker-1',
-            error: {
-              code: 'calculator_gate_error',
-              message:
-                'calculator review-submit gate worker failed before producing a passed/blocked report',
-              details: {
-                error: 'failed to build review-submit gate snapshot',
-                worker_job_id: 'gate-worker-1',
-              },
-            },
-            gate: {
-              status: 'error',
-              blockingReasons: [
-                {
-                  code: 'calculator_gate_error',
-                  message: 'failed to build review-submit gate snapshot',
-                  details: {
-                    error: 'failed to build review-submit gate snapshot',
-                    worker_job_id: 'gate-worker-1',
-                  },
-                },
-              ],
-            },
-          },
-        ],
-        error: null,
-      });
-
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        'Review submission is waiting for the numerical stability gate to finish.',
-      ),
-    );
-
-    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalledTimes(3));
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      1,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'read_latest',
-      },
-    );
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      2,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'enqueue',
-        reviewSubmitJobId: undefined,
-      },
-    );
-    expect(mockRequestReviewSubmitJob).toHaveBeenLastCalledWith(
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'read_latest',
-      },
-    );
-    expect(screen.getByRole('alert')).not.toHaveTextContent(
-      'Review submission is waiting for the numerical stability gate to finish.',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'calculator review-submit gate worker failed before producing a passed/blocked report',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'calculator_gate_error: failed to build review-submit gate snapshot',
-    );
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'error: failed to build review-submit gate snapshot and Worker job ID: gate-worker-1',
-    );
-    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'error',
-        reviewSubmitJobId: 'job-waiting',
-        submitWorkerJobId: 'submit-worker-1',
-        gateWorkerJobId: 'gate-worker-1',
-      }),
-    );
-  });
-
-  it('localizes every review-submit evidence and diagnostic label while preserving values', () => {
-    const intl = {
-      formatMessage: ({ defaultMessage }: { defaultMessage: string }) => defaultMessage,
-    } as any;
-
-    expect(
-      formatReviewSubmitGateEvidence(intl, {
-        examples: [
-          {
-            process: { process_name: 'Steel', process_version: '01.00.000' },
-            exchange_id: 'exchange-1',
-            flow_id: 'flow-1',
-            consumer_idx: 2,
-            provider_id: 'provider-1',
-            process_idx: 9,
-          },
-          {
-            error: 'snapshot failed',
-            worker_job_id: 'worker-1',
-            submit_worker_job_id: 'submit-1',
-            gate_worker_job_id: 'gate-1',
-            review_submit_job_id: 'review-1',
-          },
-        ],
-      }),
-    ).toEqual([
-      'Process: Steel, Version: 01.00.000, Exchange: exchange-1, Flow: flow-1, Consuming process: 2, Providing process: provider-1, and Target process: 9',
-      'error: snapshot failed, Worker job ID: worker-1, Submit worker job ID: submit-1, Gate worker job ID: gate-1, and Review submission job ID: review-1',
-    ]);
-  });
-
-  it('clears a review-submit job state after data changes', async () => {
-    mockUpdateProcess.mockResolvedValue({
-      data: [
-        {
-          id: 'process-1',
-          version: '1.0.0',
-          json: { processDataSet: processDataset },
-          state_code: 10,
-          rule_verification: true,
-        },
-      ],
-    });
-    mockNoRunningReviewSubmitJob();
-    mockRequestReviewSubmitJob.mockResolvedValueOnce({
-      data: [{ status: 'stale', reviewSubmitJobId: 'job-stale' }],
-      error: null,
-      reviewSubmitJobId: 'job-stale',
-    });
-    render(<ProcessEdit {...baseProps} />);
-
-    fireEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Edit process' });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
-
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
-      ),
-    );
-
-    await act(async () => {
-      triggerValuesChange?.(
-        {
-          processInformation: {
-            name: 'Changed process',
-          },
-        },
-        {
-          processInformation: {
-            name: 'Changed process',
-          },
-        },
-      );
-    });
-
-    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
-  });
-
   it('stops review submission when the saved process shape is incomplete', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
@@ -3077,18 +2364,8 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
     await waitFor(() =>
-      expect(mockRequestReviewSubmitJob).toHaveBeenCalledWith(
-        'processes',
-        'process-1',
-        '1.0.0',
-        null,
-        {
-          action: 'enqueue',
-          reviewSubmitJobId: undefined,
-        },
-      ),
+      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
     );
-    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);

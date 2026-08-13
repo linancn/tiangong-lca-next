@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records exact proof reuse and requalification of the two-worker full-coverage inventory at a 512MB recycle boundary.'
+lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: focused Process, review-page, diagnostic-component, service, and utility proof adds no exception queue, and the bounded full-coverage inventory remains authoritative.'
 ---
 
 # Testing Execution State
@@ -86,7 +86,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
-- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
+- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell and the Review Admin quality-diagnostic report panel; the latter retains focused component proof for latest-report loading, explicit manual start, non-blocking active state, report rendering, and retryable runtime failure. If that list changes, re-check save, validation, navigation, highlighting, diagnostic-report, or visual screenshot flows before treating the baseline as settled
 
 ## Reopen Conditions
 
