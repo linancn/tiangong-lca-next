@@ -1048,13 +1048,13 @@ function validateQualificationReceipt(receipt, expectedInput) {
   if (
     receipt?.schemaVersion !== 'tiangong.semantic-harness-qualification.v1' ||
     receipt.status !== 'qualified' ||
-    receipt.coverage?.discoveredCases !== 72 ||
+    receipt.coverage?.discoveredCases !== 81 ||
     receipt.coverage?.contractAssertionCount !== 49 ||
     receipt.coverage?.liveAssertionCount !== 49 ||
-    receipt.coverage?.executedCases !== 48 ||
-    receipt.coverage?.skippedCases !== 24 ||
+    receipt.coverage?.executedCases !== 51 ||
+    receipt.coverage?.skippedCases !== 30 ||
     receipt.coverage?.harnessControlCases !== 12 ||
-    receipt.coverage?.qualificationDiscoveredCases !== 84 ||
+    receipt.coverage?.qualificationDiscoveredCases !== 93 ||
     receipt.productionWrites !== 0 ||
     receipt.externalRequests !== 0 ||
     receipt.cleanup?.created !== 0 ||
@@ -1567,12 +1567,12 @@ function runQualification(options) {
   const canonicalCounts = totalCounts(qualification?.canonicalBrowsers);
   const harnessCounts = totalCounts(qualification?.harnessBrowsers);
   if (
-    discovery?.fullListedTests !== 72 ||
-    discovery?.listedTests !== 84 ||
+    discovery?.fullListedTests !== 81 ||
+    discovery?.listedTests !== 93 ||
     assertionCount !== 49 ||
     qualification?.assertionIds?.length !== 49 ||
-    canonicalCounts.executed !== 48 ||
-    canonicalCounts.skipped !== 24 ||
+    canonicalCounts.executed !== 51 ||
+    canonicalCounts.skipped !== 30 ||
     harnessCounts.executed !== 12 ||
     harnessCounts.skipped !== 0 ||
     qualification?.externalRequests !== 0 ||

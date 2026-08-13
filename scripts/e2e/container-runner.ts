@@ -441,10 +441,16 @@ function discoverPlaywrightTests(): Record<string, unknown> {
   if (process.env.E2E_QUALIFICATION !== 'true') {
     return { listingSha256: sha256(output), listedTests };
   }
-  const canonicalSpecs = readdirSync(path.join(process.cwd(), 'tests/e2e/i18n'))
-    .filter((name) => name.endsWith('.spec.ts') && name !== 'harness-qualification.spec.ts')
-    .sort()
-    .map((name) => `tests/e2e/i18n/${name}`);
+  const canonicalRoot = path.join(process.cwd(), 'tests/e2e/i18n');
+  const collectCanonicalSpecs = (directory: string): string[] =>
+    readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const absolutePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) return collectCanonicalSpecs(absolutePath);
+      if (!entry.isFile() || !entry.name.endsWith('.spec.ts')) return [];
+      if (entry.name === 'harness-qualification.spec.ts') return [];
+      return [path.relative(process.cwd(), absolutePath)];
+    });
+  const canonicalSpecs = collectCanonicalSpecs(canonicalRoot).sort();
   const fullResult = discover(canonicalSpecs);
   if (fullResult.error) throw fullResult.error;
   if (fullResult.status !== 0) {
@@ -713,8 +719,8 @@ async function main(): Promise<number> {
         canonicalCheck.status !== 0 ||
         !Array.isArray(assertionIds) ||
         assertionIds.length !== 49 ||
-        canonicalTotals?.executed !== 48 ||
-        canonicalTotals?.skipped !== 24 ||
+        canonicalTotals?.executed !== 51 ||
+        canonicalTotals?.skipped !== 30 ||
         harnessTotals?.executed !== 12 ||
         harnessTotals?.skipped !== 0 ||
         !hasExactBrowserApplicability ||

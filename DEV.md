@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-12
-lastReviewedCommit: ed9cd67c29e882aad01f2606bad5fcfca0689059
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: b7d8edd7adc03426d6f1534c12ddadb7aca34b94
 lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing preserves the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
 ---
 
@@ -149,7 +149,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-For the normal deterministic flow, `release:to-dev --apply` checks qualification on the clean `dev` source before changing version metadata. It reuses a current receipt or runs the equivalent of `npm run e2e:qualify`, which executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 72 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
+For the normal deterministic flow, `release:to-dev --apply` checks qualification on the clean `dev` source before changing version metadata. It reuses a current receipt or runs the equivalent of `npm run e2e:qualify`, which executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 81 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
 
 A successful qualification updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`. During `release:to-dev --apply`, that exact generated file is allowlisted by provenance and committed in the same version PR; the fully composed commit then runs `release:preflight` before any push or PR creation. If qualification is invoked directly outside this deterministic release command, land its generated receipt through a separately reviewed tracked `dev` PR before authenticated proof. The receipt path and root version fields are excluded from the semantic input digest, so the release commit preserves the qualified input identity.
 

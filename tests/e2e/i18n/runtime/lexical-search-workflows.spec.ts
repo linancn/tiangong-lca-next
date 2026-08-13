@@ -246,7 +246,7 @@ test('Flow Chinese lexical search uses the formal RPC and preserves detail navig
   });
 });
 
-test('Flow property Chinese search stays on the reviewed Edge contract and preserves detail navigation', async ({
+test('Flow property Chinese lexical search uses the formal RPC and preserves detail navigation', async ({
   page,
 }, testInfo) => {
   await runSearchScenario(page, testInfo, {
@@ -257,6 +257,6 @@ test('Flow property Chinese search stays on the reviewed Edge contract and prese
     label: '中文流属性',
     responseRow: flowPropertyRow,
     route: '/mydata/flowproperties',
-    searchTarget: '/functions/v1/flowproperty_hybrid_search',
+    searchTarget: '/rest/v1/rpc/search_flowproperties',
   });
 });

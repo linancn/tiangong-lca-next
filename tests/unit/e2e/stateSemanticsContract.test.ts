@@ -9,16 +9,16 @@ describe('state semantics production-read fixture contract', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
 
     expect(source).toContain('readVerifiedProductionBackendTarget()');
-    expect(source).toContain("expect(request.method()).toBe('GET')");
-    expect(source).toContain('target.origin).toBe(productionBackendTarget.origin)');
-    expect(source).toContain("target.pathname).toBe('/rest/v1/teams')");
-    expect(source).toContain(
-      'request.headers().apikey).toBe(productionBackendTarget.publishableKey)',
-    );
-    expect(source).toContain('expect([...target.searchParams.keys()].sort()).toEqual([');
-    expect(source).toContain("expect(target.searchParams.get('select')).toBe('id,json,rank')");
-    expect(source).toContain("expect(target.searchParams.get('rank')).toBe('gt.0')");
-    expect(source).toContain("expect(target.searchParams.get('order')).toBe('rank.asc')");
+    expect(source).toContain('assertAuditedSyntheticReadRequest(route.request(), {');
+    expect(source).toContain('expectedOrigin: productionBackendTarget.origin');
+    expect(source).toContain('expectedPublishableKey: productionBackendTarget.publishableKey');
+    expect(source).toContain("method: 'POST'");
+    expect(source).toContain("pathname: '/rest/v1/rpc/qry_team_list'");
+    expect(source).toContain('p_keyword: null');
+    expect(source).toContain("p_mode: 'ranked'");
+    expect(source).toContain('p_page: 1');
+    expect(source).toContain('p_page_size: 100');
+    expect(source).toContain('searchParams: {}');
     expect(source).toContain("screenshot: 'off'");
     expect(source).toContain("trace: 'off'");
     expect(source).toContain("video: 'off'");
