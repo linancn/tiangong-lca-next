@@ -10,23 +10,27 @@ import {
   selectAppLocaleThroughUi,
 } from './contracts';
 import { readVerifiedProductionBackendTarget } from './production-backend-target';
+import { assertAuditedSyntheticReadRequest } from './production-request-guard';
 
 const welcomeAssertion = findRouteAssertion('/welcome');
-const TEAMS_API_PATTERN = '**/rest/v1/teams*';
+const TEAM_LIST_RPC_PATTERN = '**/rest/v1/rpc/qry_team_list';
 const RAW_FORCED_RESPONSE = 'codex-e2e forced response';
 const productionBackendTarget = readVerifiedProductionBackendTarget();
 
 function assertExactTeamsRead(route: Route): void {
-  const request = route.request();
-  const target = new URL(request.url());
-  expect(request.method()).toBe('GET');
-  expect(target.origin).toBe(productionBackendTarget.origin);
-  expect(target.pathname).toBe('/rest/v1/teams');
-  expect(request.headers().apikey).toBe(productionBackendTarget.publishableKey);
-  expect([...target.searchParams.keys()].sort()).toEqual(['order', 'rank', 'select']);
-  expect(target.searchParams.get('select')).toBe('id,json,rank');
-  expect(target.searchParams.get('rank')).toBe('gt.0');
-  expect(target.searchParams.get('order')).toBe('rank.asc');
+  assertAuditedSyntheticReadRequest(route.request(), {
+    expectedOrigin: productionBackendTarget.origin,
+    expectedPublishableKey: productionBackendTarget.publishableKey,
+    jsonBody: {
+      p_keyword: null,
+      p_mode: 'ranked',
+      p_page: 1,
+      p_page_size: 100,
+    },
+    method: 'POST',
+    pathname: '/rest/v1/rpc/qry_team_list',
+    searchParams: {},
+  });
 }
 
 async function fulfillTeams(route: Route, body: unknown[], status = 200): Promise<void> {
@@ -76,7 +80,7 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
       const modalResponse = new Promise<void>((resolve) => {
         releaseModalResponse = resolve;
       });
-      await page.route(TEAMS_API_PATTERN, async (route) => {
+      await page.route(TEAM_LIST_RPC_PATTERN, async (route) => {
         assertExactTeamsRead(route);
         if (requestPhase === 'bootstrap') {
           bootstrapRequestCount += 1;
@@ -111,7 +115,7 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
         await closeModal(page);
       } finally {
         releaseModalResponse?.();
-        await page.unroute(TEAMS_API_PATTERN);
+        await page.unroute(TEAM_LIST_RPC_PATTERN);
       }
     });
 
@@ -120,7 +124,7 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
       let bootstrapRequestCount = 0;
       let modalRequestCount = 0;
       let retryRequestCount = 0;
-      await page.route(TEAMS_API_PATTERN, async (route) => {
+      await page.route(TEAM_LIST_RPC_PATTERN, async (route) => {
         assertExactTeamsRead(route);
         if (requestPhase === 'bootstrap') {
           bootstrapRequestCount += 1;
@@ -172,7 +176,7 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
         ).toBeVisible();
         await closeModal(page);
       } finally {
-        await page.unroute(TEAMS_API_PATTERN);
+        await page.unroute(TEAM_LIST_RPC_PATTERN);
       }
     });
   }

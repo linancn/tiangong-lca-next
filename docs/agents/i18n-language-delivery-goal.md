@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 07467b98423473223d84f5169415062d33eaaa15
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: b7d8edd7adc03426d6f1534c12ddadb7aca34b94
 lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: regenerating deterministic locale artifacts after the final flat-queue interaction closure does not change locale delivery or production-data authorization boundaries.'
 baselineObservedAt: 2026-07-18
 related:

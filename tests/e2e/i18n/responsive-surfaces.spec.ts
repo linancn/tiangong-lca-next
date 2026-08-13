@@ -520,15 +520,17 @@ async function installProcessTableFixture(page: Page): Promise<() => number> {
 async function installWelcomeTeamFixture(page: Page): Promise<() => number> {
   const expectedTarget = readVerifiedProductionBackendTarget();
   let teamRequests = 0;
-  await page.route('**/rest/v1/teams*', async (route) => {
+  await page.route('**/rest/v1/rpc/qry_team_list', async (route) => {
     const contract = readContract(expectedTarget, {
-      method: 'GET',
-      pathname: '/rest/v1/teams',
-      searchParams: {
-        order: 'rank.asc',
-        rank: 'gt.0',
-        select: 'id,json,rank',
+      jsonBody: {
+        p_keyword: null,
+        p_mode: 'ranked',
+        p_page: 1,
+        p_page_size: 100,
       },
+      method: 'POST',
+      pathname: '/rest/v1/rpc/qry_team_list',
+      searchParams: {},
     });
     if (!requestMatchesAuditedContract(route, contract)) {
       await route.fallback();

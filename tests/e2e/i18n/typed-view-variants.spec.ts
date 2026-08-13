@@ -26,7 +26,7 @@ test.use({ semanticPersona: 'data_product_manager' });
 const dataProcessingAssertion = findRouteAssertion('/data-processing');
 const processAssertion = findRouteAssertion('/mydata/processes');
 const productionBackendTarget = readVerifiedProductionBackendTarget();
-const ROLES_API_PATTERN = '**/rest/v1/roles?*';
+const MEMBERSHIP_RPC_PATTERN = '**/rest/v1/rpc/qry_membership_get_mine';
 const WORKER_JOBS_API_PATTERN = '**/functions/v1/app_worker_jobs*';
 const DATA_PRODUCT_COMMANDS_API_PATTERN = '**/functions/v1/app_data_product_commands*';
 
@@ -90,26 +90,25 @@ async function fallbackVerifiedPreflight(route: Route, pathname: string): Promis
 }
 
 async function fulfillDataProductManagerRole(route: Route): Promise<boolean> {
-  if (await fallbackVerifiedPreflight(route, '/rest/v1/roles')) return false;
-  const requestTarget = new URL(route.request().url());
-  const userFilter = requestTarget.searchParams.get('user_id') ?? '';
-  expect(userFilter).toMatch(/^eq\.[0-9a-f-]+$/iu);
-  const target = assertAuditedSyntheticReadRequest(route.request(), {
+  if (await fallbackVerifiedPreflight(route, '/rest/v1/rpc/qry_membership_get_mine')) return false;
+  assertAuditedSyntheticReadRequest(route.request(), {
     expectedOrigin: productionBackendTarget.origin,
     expectedPublishableKey: productionBackendTarget.publishableKey,
-    method: 'GET',
-    pathname: '/rest/v1/roles',
-    searchParams: {
-      select: 'user_id,role',
-      team_id: 'eq.00000000-0000-0000-0000-000000000000',
-      user_id: userFilter,
-    },
+    jsonBody: {},
+    method: 'POST',
+    pathname: '/rest/v1/rpc/qry_membership_get_mine',
+    searchParams: {},
   });
-  const userId = target.searchParams.get('user_id')!.slice(3);
   await route.fulfill({
     // Shape a synthetic one-row read response for deterministic UI-state coverage only;
     // this does not claim that the supplied account has production manager authorization.
-    body: JSON.stringify([{ role: 'data_product_manager', user_id: userId }]),
+    body: JSON.stringify([
+      {
+        role: 'data_product_manager',
+        team_id: '00000000-0000-0000-0000-000000000000',
+        user_id: '70400000-0000-4000-8000-000000000704',
+      },
+    ]),
     contentType: 'application/json',
     headers: {
       'access-control-allow-origin': '*',
@@ -294,7 +293,7 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
   expect(baseURL).toBeTruthy();
   await signInViaUi(page);
   let fulfilledRoleReads = 0;
-  await page.route(ROLES_API_PATTERN, async (route) => {
+  await page.route(MEMBERSHIP_RPC_PATTERN, async (route) => {
     if (await fulfillDataProductManagerRole(route)) {
       fulfilledRoleReads += 1;
     }
