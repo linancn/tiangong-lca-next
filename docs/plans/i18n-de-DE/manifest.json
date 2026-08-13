@@ -1,8 +1,8 @@
 {
   "schemaVersion": "tiangong.i18n-manifest.v1",
   "source": {
-    "baseRef": "origin/dev",
-    "baseCommit": "2d50fb1e425750274d5a1e03c67980a87bfae26c",
+    "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "auditedInputDigest": "9d886b4500d7cebd1365547d0439b6a508bcc25aabe085e7cc9ccd15a592f238",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
