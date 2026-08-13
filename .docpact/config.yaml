@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "3af9c5bce57706fd1dd23d2502c96841210695db"
+lastReviewedCommit: "69564f9d16e28e55d7e7eb89c3488cc286651bc9"
 lastReviewedNote: 'Reviewed for Next Issue #819: release-proof reuse and the 512MB-bounded two-worker coverage gate stay within existing release, workflow, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

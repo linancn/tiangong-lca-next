@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 3af9c5bce57706fd1dd23d2502c96841210695db
+lastReviewedCommit: 69564f9d16e28e55d7e7eb89c3488cc286651bc9
 lastReviewedNote: 'Reviewed for Next Issue #819: exact proof reuse and heap-aware bounded worker pools are reusable Release Gate patterns.'
 ---
 

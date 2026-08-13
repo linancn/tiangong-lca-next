@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 3af9c5bce57706fd1dd23d2502c96841210695db
+lastReviewedCommit: 69564f9d16e28e55d7e7eb89c3488cc286651bc9
 lastReviewedNote: 'Reviewed for Next Issue #819: release validation distinguishes reusable proof from fallback and runs the complete coverage inventory through two workers with a 512MB recycle boundary.'
 related:
   - ../AGENTS.md
