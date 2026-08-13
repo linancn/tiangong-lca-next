@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 9fc83b97055c88c87d2e76e9b644fb5860bdb63b
-lastReviewedNote: 'Reviewed for Next Issue #823: the v0.0.70 authenticated production proof, regenerated locale artifacts, and final credential-free qualification preserve the existing evidence-binding and production-data authorization boundaries.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 5114e834
+lastReviewedNote: 'Reviewed for Next Issue #836: the time-independent unit fixture and refreshed v0.0.70 proof preserve the existing evidence-binding and production-data authorization boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
