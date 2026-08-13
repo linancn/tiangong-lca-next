@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: existing controlled-component mocks and behavior assertions cover search-mode routing, prompts, and mutual exclusion.'
+lastReviewedCommit: 97130a89424f1a1f70988cb0c33f6c4ab7fb895c
+lastReviewedNote: 'Reviewed for Next Issue #819: exact proof reuse and platform-qualified bounded worker pools are reusable Release Gate patterns.'
 ---
 
 # Testing Patterns Reference
@@ -146,6 +146,13 @@ Browser semantic E2E pattern:
 - when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
 - when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
 
+Release Gate proof pattern:
+
+- emit proof only after every main-target PR gate step succeeds, and bind repository, PR number, PR base, candidate commit/tree, workflow path, run ID, run attempt, and artifact name in one short-lived artifact
+- resolve reuse from the release merge itself: require exactly two parents, first-parent equality with the gated base, second-parent equality with the gated candidate, and equal release/candidate trees before consulting GitHub metadata
+- require exactly one matching merged PR, successful readiness workflow and named Release Gate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
+- return the full reusable gate as the successful fallback decision for every missing, ambiguous, expired, mismatched, unavailable, direct, squash, rebase, tag, or recovery-dispatch case; downstream publication depends on one aggregate qualification job, never directly on a conditionally skipped gate
+
 Documentation capture profile pattern:
 
 - keep only source-version facts under `config/docs-capture/**`: runtime/readiness, login/identity, allowed auth/session mutations, denial probes, and stable locator policy
@@ -165,7 +172,7 @@ Scope-closure provider qualification pattern:
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
-- when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then run all remaining suites through one worker at a time with a documented idle-memory recycle boundary; lock the exact selection/exclusion and worker contract in the isolated suite, and let the coordinator retain the global 100% source threshold across worker replacements
+- when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then qualify the smallest useful fixed worker pool with a documented per-worker idle-memory recycle boundary on the affected platform; lock the exact selection/exclusion and worker contract in the isolated suite, and let the single coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
 

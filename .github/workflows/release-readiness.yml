@@ -24,3 +24,5 @@ jobs:
     with:
       release_base: ${{ github.event.pull_request.base.sha }}
       release_head: ${{ github.event.pull_request.head.sha }}
+      emit_proof: true
+      proof_pr_number: ${{ format('{0}', github.event.pull_request.number) }}
