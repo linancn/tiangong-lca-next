@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: adding behavior-level tests for real calculation branches preserves the existing full-closure strategy.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: release evidence refresh and the parser regression test preserve the existing full-closure strategy.'
 ---
 
 # Testing Strategy

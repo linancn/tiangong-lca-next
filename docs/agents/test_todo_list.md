@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 41e3617f6c9e987ebd478fc5a529ab449991de99
-lastReviewedNote: 'Reviewed for Next Issue #828: owner-draft scope adds two behavior tests and closes the adjacent baseline coverage gaps without opening a queue.'
+lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 candidate and parser regression retain the closed 413-suite, 5,690-test coverage baseline.'
 ---
 
 # Testing Execution State
