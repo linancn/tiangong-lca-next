@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-12
-lastReviewedCommit: f78878fa0b338c54f252f23efef9dd265ff5344f
-lastReviewedNote: 'Reviewed for Next Issue #813: normal, smart, and reference search routing remains inside the existing page-to-service frontend boundary.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: b6bd8122ff13e4b221633eea2162043367d99f65
+lastReviewedNote: 'Reviewed for Next Issue #822: the empty-catalog generation invariant remains UI-owned, while grouped Calculation Bundle downloads retain service-side integrity verification.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
