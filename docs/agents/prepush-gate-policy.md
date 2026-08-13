@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: search-mode page and service coverage continues through the unchanged Docpact-first and full-gate-last checked-push policy.'
+lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
+lastReviewedNote: 'Reviewed for Next Issue #819: canonical releases reuse only exact successful PR gate proof and otherwise run the complete fallback gate.'
 ---
 
 # Pre-Push Gate Policy
@@ -96,13 +96,13 @@ It does not own:
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
 | ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
 | PRs into `dev` | rely on local test-gate evidence, focused proof, and Docpact PR governance; run browser semantic E2E manually only when risk warrants it |
-| PRs into `main` | run the reusable Release Gate against the exact PR base/head, including production readiness and the complete test inventory; keep the credential-free browser semantic matrix on the post-merge release candidate |
+| PRs into `main` | run the reusable Release Gate against the exact PR base/head, including production readiness and the complete test inventory; after every step succeeds, upload a 30-day proof bound to the repository, PR, base, head/tree, workflow run, attempt, and artifact name; keep the credential-free browser semantic matrix on the post-merge release candidate |
 | `dev -> main` promotion candidate | use `release:to-dev` so the version PR preflights Docpact against the cumulative current-`main` to candidate path set; the immutable promotion and main-target Release Gate recheck that complete base/head range |
 | semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
 | local authenticated semantic E2E | run `e2e:release` only in an explicitly authorized operator session with a protected runtime-only credential file, archived clean candidate, verified local-bundle/production-backend targeting, explicit authenticated/write/evidence options, and exact cleanup |
-| canonical post-merge `main` pushes | read `package.json.version`, run the reusable Release Gate and exact-SHA credential-free semantic E2E first, create or verify the matching `v*` tag only after both pass, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
+| canonical post-merge `main` pushes | read `package.json.version`; reuse a successful PR Release Gate only when the exact merged PR, two parents, unchanged candidate tree, workflow/job result, run attempt, unexpired artifact, and payload all match, otherwise run the full reusable gate; run exact-SHA credential-free semantic E2E in parallel, create or verify the matching `v*` tag only after both qualification paths pass, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
-| manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
+| manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and always run the full reusable Release Gate before deploy/release |
 
 ## Adoption Conditions
 
@@ -135,14 +135,14 @@ It does not own:
 - a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
-- before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the main-target PR Release Gate repeats this proof before merge and the post-merge Release Gate verifies the exact release commit again
+- before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the main-target PR Release Gate repeats this proof before merge, and the post-merge workflow accepts its exact run-bound proof only for a structurally matching unchanged-tree merge or reruns the complete gate
 - protect the actual local and release gates
-- keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
+- keep one logical full-suite qualification for each canonical release candidate: normally reuse the exact successful main-target PR proof, but run one post-merge `prepush:gate` fallback whenever proof identity cannot be established; that command runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep semantic E2E independent from `prepush:gate`: routine PR/dev events do not trigger it, manual and release invocations have no production credentials or writes, and only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
 - keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate
-- keep release automation in the same `main` push workflow, but create the tag only after both exact-candidate release gates pass; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
+- keep release automation in the same `main` push workflow, but create the tag only after exact Release Gate qualification—reused proof or full fallback—and exact-SHA semantic E2E pass; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run
 - reproduce Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially on one workstation when they are needed; the full gate already contains the complete test inventory and unchanged 100% `src/**` coverage

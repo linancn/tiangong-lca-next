@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing does not change repository ownership, service boundaries, branch policy, or delivery rules.'
+lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
+lastReviewedNote: 'Reviewed for Next Issue #819: exact successful main-PR Release Gate proof reuse and fail-closed full-gate fallback are now repository delivery facts.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -188,10 +188,11 @@ Route those tasks to:
 - routine PR base: `dev`
 - promote path: `dev -> main`
 - normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
-- PRs targeting `main` run the reusable Release Gate against their exact base/head; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
-- canonical `main` branch pushes read `package.json.version`, run the reusable Release Gate plus exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after both pass, then deploy the web app and build draft Electron releases in the same workflow run
+- PRs targeting `main` run the reusable Release Gate against their exact base/head and retain a run-bound proof only after the complete gate succeeds; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
+- canonical version-changing `main` pushes may reuse that PR proof only when the release commit is the exact two-parent merge, its first parent/base and second parent/candidate match, the merged tree equals the gated candidate tree, and the successful unexpired workflow artifact matches every identity; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case runs the full reusable Release Gate instead
+- canonical `main` branch pushes also run exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after release qualification and semantic E2E pass, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
-- manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases
+- manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases and always run the full reusable Release Gate
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 

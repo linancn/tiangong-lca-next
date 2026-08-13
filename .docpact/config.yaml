@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "a1f5f75640cb64e01f681a2336f12d2d1def3717"
-lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing stays within the existing frontend runtime, service boundary, and validation contracts.'
+lastReviewedAt: '2026-08-13'
+lastReviewedCommit: 'dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1'
+lastReviewedNote: 'Reviewed for Next Issue #819: release-gate proof reuse stays within existing release, workflow, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

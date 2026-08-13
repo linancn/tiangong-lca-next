@@ -11,6 +11,16 @@ on:
         description: Exact candidate commit to validate.
         required: true
         type: string
+      emit_proof:
+        description: Emit an exact PR gate proof after every gate step succeeds.
+        required: false
+        default: false
+        type: boolean
+      proof_pr_number:
+        description: Pull request number bound into the emitted proof.
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -78,3 +88,23 @@ jobs:
           path: .local/test-logs/**
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Write exact release gate proof
+        id: release-proof
+        if: ${{ inputs.emit_proof && success() }}
+        env:
+          PROOF_OUTPUT: ${{ runner.temp }}/release-gate-proof.json
+          PROOF_PR_NUMBER: ${{ inputs.proof_pr_number }}
+          RELEASE_BASE: ${{ inputs.release_base }}
+          RELEASE_HEAD: ${{ inputs.release_head }}
+        run: >-
+          node scripts/release/release-gate-proof.cjs create --repository "$GITHUB_REPOSITORY" --pr-number "$PROOF_PR_NUMBER" --release-base "$RELEASE_BASE" --release-head "$RELEASE_HEAD" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" --output "$PROOF_OUTPUT" --github-output "$GITHUB_OUTPUT"
+
+      - name: Upload exact release gate proof
+        if: ${{ inputs.emit_proof && success() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.release-proof.outputs.artifact_name }}
+          path: ${{ steps.release-proof.outputs.proof_path }}
+          if-no-files-found: error
+          retention-days: 30

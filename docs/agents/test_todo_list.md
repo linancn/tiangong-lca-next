@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: the added three-mode routing assertions preserve full closure and create no active coverage queue.'
+lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
+lastReviewedNote: 'Reviewed for Next Issue #819: current execution state records exact PR proof reuse, full fallback cases, and the unchanged complete inventory.'
 ---
 
 # Testing Execution State
@@ -78,8 +78,9 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #688 introduced exact non-browser semantic harness digest pairs, and Issue #703 added a bounded one-time release-candidate waiver plus request-guard pairs for the v0.0.62 promotion. Issue #698's fresh authenticated production evidence now directly covers the promoted product and request-guard inputs, so the active #703 waiver and all directly covered pairs are retired
 - the back-merged #703 waiver mechanism remains fail closed for future reviewed exceptions, but the current manifest has no active release-candidate waiver. Only the post-evidence release-harness script and locale-contract test retain exact old/new pairs; duplicate, redundant, later-drifted, or unlisted mappings fail closed
 - the earlier v0.0.62 main-to-dev back-merge was based before Issue #698 evidence PR #707 advanced `dev`, so it is superseded by the replacement back-merge that reconciles current `dev` with `main`; the replacement keeps the released v0.0.62 product state while treating the fresh authenticated production evidence as authoritative instead of restoring the retired Issue #703 waiver
-- main-target PRs run the reusable Release Gate against their exact base/head, and main-semantic local pushes add `release:preflight` between Docpact and the full test gate; `dev` pushes retain the normal two-gate path
-- the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
+- main-target PRs run the reusable Release Gate against their exact base/head and emit a 30-day exact proof only after success; main-semantic local pushes add `release:preflight` between Docpact and the full test gate, while `dev` pushes retain the normal two-gate path
+- a canonical version-changing `main` push reuses that proof only when the exact merged PR, two parents, candidate tree, successful job, run attempt, and artifact payload all match; direct/squash/rebase merges, changed trees, expired or missing proof, API failure, manual tags, and recovery dispatches automatically run the full Release Gate
+- release qualification delegates the complete Jest inventory to one `prepush:gate` execution—reused from the exact PR proof or run as the post-merge fallback—while the credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline

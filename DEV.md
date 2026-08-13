@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing preserves the Node 24 bootstrap, focused validation loop, build requirement, and managed checked-push delivery path.'
+lastReviewedCommit: dea9d54b5bc3c0eb3ce7c41f17f7fe2e506fdda1
+lastReviewedNote: 'Reviewed for Next Issue #819: the bootstrap now states exact PR gate proof reuse, full fallback, and the unchanged managed delivery path.'
 ---
 
 # Development Bootstrap
@@ -228,7 +228,7 @@ Both release commands default to read-only planning when `--apply` is omitted. T
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run `npm run release:preflight` between them, while `dev` pushes keep the two-gate path
-- PRs targeting `main` run the reusable clean-runner Release Gate against the exact PR base/head before merge; the post-merge workflow revalidates the exact release SHA and creates the tag only after both release jobs succeed
+- PRs targeting `main` run the reusable clean-runner Release Gate against the exact PR base/head before merge and emit an exact run-bound proof only after success; the post-merge workflow reuses it only for a matching two-parent merge with an unchanged candidate tree, otherwise runs the full gate, and creates the tag only after release qualification and exact-SHA semantic E2E succeed
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
