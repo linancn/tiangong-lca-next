@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "794fef603798d03c3dd8f4692a53563074b09d63"
-lastReviewedNote: 'Reviewed for Next Issue #819: release-proof reuse and the 512MB-bounded two-worker coverage gate stay within existing release, workflow, test, and documentation ownership domains.'
+lastReviewedCommit: "c498d0f5e777555f99a56685160596a66b54c2eb"
+lastReviewedNote: 'Reviewed for Next Issue #828: owner-draft scope and adjacent coverage repairs stay within existing runtime, test, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

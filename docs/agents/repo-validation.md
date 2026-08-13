@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: c7e6ac3364a0ebb0cc11b717550a9c0afaa20311
-lastReviewedNote: 'Reviewed for Next Issue #819: release validation distinguishes reusable proof from fallback and runs the complete coverage inventory through two workers with a 512MB recycle boundary.'
+lastReviewedCommit: c498d0f5e777555f99a56685160596a66b54c2eb
+lastReviewedNote: 'Reviewed for Next Issue #828: the Process LCA picker proof and focused coverage recovery remain correctly described by the existing matrix.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
