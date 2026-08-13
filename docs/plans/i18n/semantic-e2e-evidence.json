@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-13T14:45:11.991Z",
-  "runId": "local-c5507a8c-9302-4e74-853a-836be04db33e",
+  "generatedAt": "2026-08-13T16:03:03.669Z",
+  "runId": "local-e1ccecf8-011c-4dae-b4da-ff4731b2a2bf",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "bc7aaf34f7ce78f206c33562f6460ffc1580ae7b",
+    "observedHeadCommit": "b918c68480ac67de3ab66e332c0e5a62272963c9",
     "packageManifestDigest": "2b78dea75572169f5a945913cc1d3b8b9ed3b9ecbb65c4fc0dc45b4126150437",
     "sourceTreeDigest": "5e5430988c519280325dd6d71189e8651780c4b3eb1d78616b4a2121ddb523a9",
-    "unitTestTreeDigest": "f16debd5fcaebcc64f9f9b59370bfba863784dd190f9c90c6ed02200a2ffb7b0"
+    "unitTestTreeDigest": "40d09c6a1e13df8a901f7c6d5f34c2464247b49d06d5381cbfc980ac89a0bab0"
   },
   "target": {
     "frontend": "candidate-local",

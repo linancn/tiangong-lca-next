@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 1f1cdcb238368518fc98c4117eeeba63902e8462
+lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
 lastReviewedNote: 'Reviewed for Next Issues #823 and #832: the v0.0.70 evidence refresh and release-parser repair preserve the existing repo contract, quality gate, and delivery boundaries.'
 related:
   - .docpact/config.yaml

@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 3ef10317dac87831f48c728ae92e54bdb98c4433
+lastReviewedCommit: fcb03cca5d67941f63b2ebb382e43f19a9588a0d
 lastReviewedNote: 'Reviewed for Next Issues #823 and #832: release evidence refresh and the parser regression test preserve the existing full-closure strategy.'
 ---
 
