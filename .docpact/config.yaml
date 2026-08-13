@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "018bd8e1c932c307b1e024a02928c65c06d60048"
-lastReviewedNote: 'Reviewed for Next Issue #839: direct runtime-entry SDK mocks remain within the existing test, release, and documentation ownership domains.'
+lastReviewedCommit: "69c286c45e34645d3768c7943b62df9f9665dec9"
+lastReviewedNote: 'Reviewed for Next Issue #842: stable stateful-hook mock identity remains within the existing test, release, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

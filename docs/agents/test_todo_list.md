@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
-lastReviewedNote: 'Reviewed for Next Issue #839: the SDK mock-entry alignment adds no test or queue item and preserves the checked-in reference baseline.'
+lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
+lastReviewedNote: 'Reviewed for Next Issue #842: the shared form-mock regression adds no queue item and preserves the checked-in reference baseline policy.'
 ---
 
 # Testing Execution State

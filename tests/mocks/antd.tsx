@@ -766,11 +766,15 @@ export const createAntdMock = () => {
     );
   };
 
-  (Form as any).Item = FormItem;
-  (Form as any).useForm = () => {
-    const api: any = {};
-    return [api];
+  const useMockForm = () => {
+    const apiRef = React.useRef<any>(null);
+    if (apiRef.current === null) {
+      apiRef.current = {};
+    }
+    return [apiRef.current];
   };
+  (Form as any).Item = FormItem;
+  (Form as any).useForm = useMockForm;
 
   const Layout = ({ children, style }: any) => (
     <div data-testid='layout' style={style}>

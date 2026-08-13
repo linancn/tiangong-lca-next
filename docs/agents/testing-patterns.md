@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
-lastReviewedNote: 'Reviewed for Next Issue #839: direct runtime-entry SDK mocks follow the existing focused unit-test and external-boundary mock patterns.'
+lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
+lastReviewedNote: 'Reviewed for Next Issue #842: stateful hook mocks now explicitly preserve API identity across parent rerenders.'
 ---
 
 # Testing Patterns Reference
@@ -54,6 +54,8 @@ lastReviewedNote: 'Reviewed for Next Issue #839: direct runtime-entry SDK mocks 
 - keep test setup close to the behavior being proved
 - prefer existing helpers over one-off fixtures
 - do not add snapshots when explicit assertions are clearer
+- make mocks for stateful hooks preserve the identity of returned API objects across parent rerenders; update methods on the stable object instead of returning a fresh placeholder on each render
+- pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
