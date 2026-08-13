@@ -395,6 +395,61 @@ describe('lcaReleases api', () => {
     });
   });
 
+  it('refreshes calculation product downloads by role and rejects missing role projections', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const expected = {
+      sha256: '03'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    };
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [],
+            },
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [],
+              downloads: [
+                {
+                  ...expected,
+                  role: 'lcia_results_xlsx',
+                  signedDownloadUrl: 'https://download.example/results.xlsx',
+                  signedDownloadExpiresInSeconds: 900,
+                },
+              ],
+            },
+          },
+        },
+        error: null,
+      });
+    setCryptoDigest(3);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bytes.buffer,
+    }) as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:lcia_results_csv_zip', expected),
+    ).rejects.toThrow('no longer available');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:lcia_results_xlsx', expected),
+    ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
+  });
+
   it('rejects missing, denied, or drifted fresh Calculation Bundle downloads before saving', async () => {
     const expected = {
       sha256: '00'.repeat(32),
