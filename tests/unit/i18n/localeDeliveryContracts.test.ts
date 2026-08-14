@@ -904,15 +904,15 @@ describe('shared locale delivery contracts', () => {
         requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
       'tests/e2e/i18n/production-request-guard.ts': {
-        ownerIssue: '#703',
-        reviewedAt: '2026-07-28',
+        ownerIssue: '#858',
+        reviewedAt: '2026-08-14',
         scope: 'reviewed-read-only-request-guard-expansion',
         requiredProof:
           'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
       },
       'tests/unit/e2e/productionRequestGuard.test.ts': {
-        ownerIssue: '#703',
-        reviewedAt: '2026-07-28',
+        ownerIssue: '#858',
+        reviewedAt: '2026-08-14',
         scope: 'reviewed-read-only-request-guard-expansion',
         requiredProof:
           'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
@@ -924,8 +924,8 @@ describe('shared locale delivery contracts', () => {
         requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
       'tests/unit/i18n/localeDeliveryContracts.test.ts': {
-        ownerIssue: '#698',
-        reviewedAt: '2026-07-28',
+        ownerIssue: '#858',
+        reviewedAt: '2026-08-14',
         scope: 'non-browser-semantic-release-harness-only',
         requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
