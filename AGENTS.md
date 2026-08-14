@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
-lastReviewedNote: 'Direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable shared mocks, and current release evidence preserve the frontend, service, quality-gate, and delivery boundaries.'
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedNote: 'Release publication now carries exact reused proof through explicit dependency results, and deterministic release commands recognize the normal tree-identical two-parent promotion topology without accepting main-only drift.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -155,6 +155,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
 - `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
+- release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries

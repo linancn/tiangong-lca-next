@@ -33,6 +33,7 @@ const workflow = require('../../../scripts/release/release-workflow.cjs') as {
     rounds: number;
   };
   humanResult: (result: Record<string, any>) => string;
+  releaseLineAlignment: (root: string, mainRef: string, devRef: string) => Record<string, any>;
   versionsFromDocuments: (
     packageJson: Record<string, any>,
     packageLock: Record<string, any>,
@@ -336,6 +337,33 @@ const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
     title: 'chore: prepare v1.0.1 on dev',
   });
 
+const installExactPromotionBaseline = (
+  fixture: Fixture,
+  options: { advanceDev?: boolean; changePromotionTree?: boolean } = {},
+) => {
+  git(fixture.root, ['switch', 'main']);
+  git(fixture.root, ['merge', '--no-ff', 'dev', '-m', 'promote dev to main']);
+  if (options.changePromotionTree) {
+    fs.writeFileSync(path.join(fixture.root, 'main-only.txt'), 'unsafe promotion delta\n');
+    git(fixture.root, ['add', 'main-only.txt']);
+    git(fixture.root, ['commit', '--amend', '--no-edit']);
+  }
+  fixture.mainSha = git(fixture.root, ['rev-parse', 'HEAD']);
+  git(fixture.root, ['push', '--no-verify', '--force', 'origin', 'main']);
+
+  if (options.advanceDev !== false) {
+    git(fixture.root, ['switch', 'dev']);
+    fs.appendFileSync(path.join(fixture.root, 'dev.txt'), 'after promotion\n');
+    git(fixture.root, ['add', 'dev.txt']);
+    git(fixture.root, ['commit', '-m', 'advance dev after promotion']);
+    fixture.devSha = git(fixture.root, ['rev-parse', 'HEAD']);
+    git(fixture.root, ['push', '--no-verify', 'origin', 'dev']);
+  }
+
+  git(fixture.root, ['switch', 'main']);
+  git(fixture.root, ['fetch', 'origin', 'main', 'dev']);
+};
+
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -434,6 +462,100 @@ describe('release automation public contracts', () => {
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(beforeBranch);
     expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(beforeHead);
     expect(git(fixture.root, ['status', '--porcelain'])).toBe('');
+  });
+
+  it('accepts a tree-identical two-parent main promotion after dev advances', () => {
+    const fixture = createFixture();
+    installExactPromotionBaseline(fixture);
+
+    expect(workflow.releaseLineAlignment(fixture.root, 'origin/main', 'origin/dev')).toMatchObject({
+      aligned: true,
+      mode: 'exact_two_parent_promotion',
+      main_sha: fixture.mainSha,
+      dev_sha: fixture.devSha,
+    });
+
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      { FAKE_GH_CREATED_URL: 'https://example.test/pull/56' },
+    );
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      status: 'ready_for_review',
+      release_line_alignment: {
+        aligned: true,
+        mode: 'exact_two_parent_promotion',
+        main_sha: fixture.mainSha,
+        dev_sha: fixture.devSha,
+      },
+    });
+  });
+
+  it('rejects a two-parent main merge that changes the promoted candidate tree', () => {
+    const fixture = createFixture();
+    installExactPromotionBaseline(fixture, { changePromotionTree: true });
+
+    const result = runCli(fixture, releaseScript, [
+      '--version',
+      '1.0.1',
+      '--issue',
+      '778',
+      '--head-owner',
+      'fixture',
+      '--apply',
+    ]);
+
+    expect(result.status).toBe(workflow.EXIT.drift);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      complete: false,
+      error: {
+        code: 'release_main_not_ancestor_of_dev',
+        details: {
+          aligned: false,
+          reason: 'promotion_merge_changed_the_candidate_tree',
+          main_sha: fixture.mainSha,
+          dev_sha: fixture.devSha,
+        },
+      },
+    });
+  });
+
+  it('rejects single-parent main-only drift', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'main']);
+    fs.writeFileSync(path.join(fixture.root, 'main-only.txt'), 'main-only drift\n');
+    git(fixture.root, ['add', 'main-only.txt']);
+    git(fixture.root, ['commit', '-m', 'main-only drift']);
+
+    expect(workflow.releaseLineAlignment(fixture.root, 'main', 'dev')).toMatchObject({
+      aligned: false,
+      reason: 'main_is_not_an_exact_two_parent_promotion',
+      main_parent_count: 1,
+    });
+  });
+
+  it('rejects a two-parent main merge whose candidate is absent from dev history', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', '-c', 'unrelated-candidate', 'main']);
+    fs.writeFileSync(path.join(fixture.root, 'unrelated.txt'), 'unrelated candidate\n');
+    git(fixture.root, ['add', 'unrelated.txt']);
+    git(fixture.root, ['commit', '-m', 'unrelated candidate']);
+    git(fixture.root, ['switch', 'main']);
+    git(fixture.root, [
+      'merge',
+      '--no-ff',
+      'unrelated-candidate',
+      '-m',
+      'merge unrelated candidate',
+    ]);
+
+    expect(workflow.releaseLineAlignment(fixture.root, 'main', 'dev')).toMatchObject({
+      aligned: false,
+      reason: 'promotion_candidate_is_not_in_dev_history',
+    });
   });
 
   it('reads a large lockfile through the Git blob fallback', () => {
@@ -855,6 +977,31 @@ describe('release automation public contracts', () => {
     );
     expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.devSha);
     expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
+  });
+
+  it('promotes after an earlier tree-identical two-parent main promotion', () => {
+    const fixture = createFixture('1.0.1');
+    installExactPromotionBaseline(fixture);
+    const result = runCli(
+      fixture,
+      promotionScript,
+      ['--release-pr', '42', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_GH_PR_VIEW: promotionPr(fixture),
+        FAKE_GH_CREATED_URL: 'https://example.test/pull/57',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      status: 'ready_for_review',
+      release_line_alignment: {
+        aligned: true,
+        mode: 'exact_two_parent_promotion',
+        main_sha: fixture.mainSha,
+        dev_sha: fixture.devSha,
+      },
+    });
   });
 
   it('fails closed when dev advances after the merged Release PR', () => {
