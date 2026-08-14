@@ -466,9 +466,11 @@ describe('production browser request guard', () => {
   it('pins the current app RPC surface to the reviewed exact allowlist', () => {
     const rpcNames = listTypeScriptFiles(path.join(REPOSITORY_ROOT, 'src/services')).flatMap(
       (filePath) =>
-        [...readFileSync(filePath, 'utf8').matchAll(/supabase[.]rpc[(]\s*'([^']+)'/gu)].map(
-          (match) => match[1],
-        ),
+        [
+          ...readFileSync(filePath, 'utf8').matchAll(
+            /supabase(?:[.]schema[(][^)]*[)])?[.]rpc[(]\s*'([^']+)'/gu,
+          ),
+        ].map((match) => match[1]),
     );
     expect([...new Set(rpcNames)].sort()).toEqual([...AUDITED_READ_ONLY_RPC_NAMES].sort());
   });

@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedCommit: b1b2b6785e5153ac767b45a915f2f53dc127d6ad
 lastReviewedNote: 'Reviewed for Next Issue #845: the refreshed v0.0.71 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
 baselineObservedAt: 2026-07-18
 related:

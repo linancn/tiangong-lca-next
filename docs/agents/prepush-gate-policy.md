@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2be77cc77708f63b4c8671b9ff7283f6285c8784
+lastReviewedCommit: b1b2b6785e5153ac767b45a915f2f53dc127d6ad
 lastReviewedNote: 'Reviewed for Next Issue #846: maintenance runtime, locale, component-test, and packaging changes remain covered by the existing Docpact-first managed push gate.'
 ---
 

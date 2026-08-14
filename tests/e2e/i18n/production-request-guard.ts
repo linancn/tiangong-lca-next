@@ -50,6 +50,7 @@ export const AUDITED_READ_ONLY_RPC_NAMES = [
   'qry_root_review_reference_progress_v2',
   'qry_system_find_member_candidate_by_email',
   'qry_system_get_member_list',
+  'qry_system_status',
   'qry_team_find_invitable_user_by_email',
   'qry_team_get',
   'qry_team_get_member_list',
