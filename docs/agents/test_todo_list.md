@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
-lastReviewedNote: 'Issue #845 adds proof-reuse publication and exact promotion-topology coverage with no exception queue; the checked-in bounded full-coverage baseline remains authoritative.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: v0.0.71 now has fresh authenticated semantic evidence and credential-free qualification with no new exception queue.'
 ---
 
 # Testing Execution State

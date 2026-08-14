@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "6d45b13a55b178ec33094d2bb021659350a2dee9"
-lastReviewedNote: 'Next routing covers explicit proof-reuse publication dependencies and deterministic release-line validation for direct ancestry or an exact tree-identical two-parent promotion.'
+lastReviewedCommit: "04fa6b7539156a1d3585d228b7564fc08cf7b0c2"
+lastReviewedNote: 'Reviewed for Next Issue #845: refreshing provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
