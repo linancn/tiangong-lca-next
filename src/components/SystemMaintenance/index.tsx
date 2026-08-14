@@ -4,14 +4,14 @@ import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Tag, Typography } from 'antd';
 import styles from './index.less';
 
-const { Paragraph, Text, Title } = Typography;
+const { Paragraph, Title } = Typography;
 
 export interface SystemMaintenanceProps {
   status: SystemStatus;
 }
 
 export default function SystemMaintenance({ status }: SystemMaintenanceProps) {
-  const { formatDate, formatMessage } = useIntl();
+  const { formatDate } = useIntl();
   const isVerifying = status.phase === 'verifying';
   const estimatedEnd = status.estimatedEndAt
     ? formatDate(status.estimatedEndAt, {
@@ -80,9 +80,6 @@ export default function SystemMaintenance({ status }: SystemMaintenanceProps) {
         >
           <FormattedMessage id='component.systemMaintenance.refresh' />
         </Button>
-        <Text type='secondary' className={styles.hint}>
-          {formatMessage({ id: 'component.systemMaintenance.refreshHint' })}
-        </Text>
       </section>
     </main>
   );

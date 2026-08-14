@@ -8,7 +8,6 @@ jest.mock('@umijs/max', () => ({
   FormattedMessage: ({ id }: { id: string }) => <span>{id}</span>,
   useIntl: () => ({
     formatDate: (value: string) => `formatted:${value}`,
-    formatMessage: ({ id }: { id: string }) => id,
   }),
 }));
 
@@ -29,7 +28,6 @@ jest.mock('antd', () => ({
   Tag: ({ children }: any) => <div>{children}</div>,
   Typography: {
     Paragraph: ({ children }: any) => <p>{children}</p>,
-    Text: ({ children }: any) => <small>{children}</small>,
     Title: ({ children, id }: any) => <h1 id={id}>{children}</h1>,
   },
 }));
@@ -68,6 +66,7 @@ describe('SystemMaintenance', () => {
     );
     expect(screen.getByText('0.0.71')).toBeInTheDocument();
     expect(screen.getByText('formatted:2026-08-14T10:30:00+08:00')).toBeInTheDocument();
+    expect(screen.queryByText('component.systemMaintenance.refreshHint')).not.toBeInTheDocument();
     expect(mockReload).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button'));
     expect(mockReload).toHaveBeenCalledTimes(1);

@@ -7,5 +7,4 @@ export default {
   'component.systemMaintenance.targetVersion': 'Target version',
   'component.systemMaintenance.estimatedEnd': 'Estimated completion',
   'component.systemMaintenance.refresh': 'Refresh page',
-  'component.systemMaintenance.refreshHint': 'The system status is checked again when the page reloads',
 };

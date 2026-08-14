@@ -7,5 +7,4 @@ export default {
   'component.systemMaintenance.targetVersion': 'Zielversion',
   'component.systemMaintenance.estimatedEnd': 'Voraussichtliches Ende',
   'component.systemMaintenance.refresh': 'Seite aktualisieren',
-  'component.systemMaintenance.refreshHint': 'Beim Neuladen der Seite wird der Systemstatus erneut geprüft',
 };

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "356d4a92d9643b16fdf77c3f4614d236edf473746068c2a41c66a843108237ae",
+    "auditedInputDigest": "5319c5fd34d9b2edfa6c16005a708828afb48472d13ff995672734ddb03aa3b7",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -69,13 +69,13 @@
   "summary": {
     "localeCount": 4,
     "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
-    "localeUniqueKeyCounts": { "en-US": 3170, "zh-CN": 3170, "de-DE": 3170, "fr-FR": 3170 },
-    "canonicalCandidateKeyCount": 3170,
-    "activeStaticKeyCount": 2155,
+    "localeUniqueKeyCounts": { "en-US": 3169, "zh-CN": 3169, "de-DE": 3169, "fr-FR": 3169 },
+    "canonicalCandidateKeyCount": 3169,
+    "activeStaticKeyCount": 2154,
     "activeDynamicKeyCount": 355,
     "reservedKeyCount": 660,
     "productionSourceFileCount": 441,
-    "literalReferenceCount": 4166,
+    "literalReferenceCount": 4165,
     "dynamicCallsiteCount": 35,
     "dynamicCallsiteSummaryCount": 35,
     "registeredDynamicCallsiteCount": 35,
@@ -17346,75 +17346,6 @@
           "path": "src/components/SystemMaintenance/index.tsx",
           "line": 81,
           "column": 11,
-          "symbol": "SystemMaintenance",
-          "defaultMessage": null,
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": []
-    },
-    {
-      "id": "component.systemMaintenance.refreshHint",
-      "category": "active-static",
-      "dynamicFamilies": [],
-      "moduleOwnership": {
-        "en-US": ["component_systemMaintenance"],
-        "zh-CN": ["component_systemMaintenance"],
-        "de-DE": ["component_systemMaintenance"],
-        "fr-FR": ["component_systemMaintenance"]
-      },
-      "translations": {
-        "en-US": {
-          "value": "The system status is checked again when the page reloads",
-          "argumentSignature": [],
-          "placeholders": [],
-          "source": {
-            "path": "src/locales/en-US/component_systemMaintenance.ts",
-            "line": 10,
-            "column": 3,
-            "module": "component_systemMaintenance"
-          }
-        },
-        "zh-CN": {
-          "value": "页面刷新时会重新检查系统状态",
-          "argumentSignature": [],
-          "placeholders": [],
-          "source": {
-            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
-            "line": 10,
-            "column": 3,
-            "module": "component_systemMaintenance"
-          }
-        },
-        "de-DE": {
-          "value": "Beim Neuladen der Seite wird der Systemstatus erneut geprüft",
-          "argumentSignature": [],
-          "placeholders": [],
-          "source": {
-            "path": "src/locales/de-DE/component_systemMaintenance.ts",
-            "line": 10,
-            "column": 3,
-            "module": "component_systemMaintenance"
-          }
-        },
-        "fr-FR": {
-          "value": "Le statut du système est vérifié à nouveau lorsque la page est rechargée",
-          "argumentSignature": [],
-          "placeholders": [],
-          "source": {
-            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
-            "line": 10,
-            "column": 3,
-            "module": "component_systemMaintenance"
-          }
-        }
-      },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 84,
-          "column": 12,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
           "defaultMessageExpression": null

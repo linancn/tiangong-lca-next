@@ -7,5 +7,4 @@ export default {
   'component.systemMaintenance.targetVersion': '目标版本',
   'component.systemMaintenance.estimatedEnd': '预计结束时间',
   'component.systemMaintenance.refresh': '刷新页面',
-  'component.systemMaintenance.refreshHint': '页面刷新时会重新检查系统状态',
 };
