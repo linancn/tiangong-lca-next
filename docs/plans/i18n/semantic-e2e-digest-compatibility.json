@@ -1,48 +1,5 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-digest-compatibility.v1",
-  "entries": [
-    {
-      "path": "tests/e2e/i18n/production-request-guard.ts",
-      "evidenceObservedHeadCommit": "e5991ff390c8ef3ea767fee9f4acd75b8e39e081",
-      "evidenceSha256": "705432cfe2e6cb39a1f97913ab9f4fb53d516835b4a551d02cc8f29ef41565a4",
-      "compatibleSha256": "26317756b4235350a3ed60b38a76007ddf7e45a44b72814c393efe7108e8a0f2",
-      "scope": "reviewed-read-only-request-guard-expansion",
-      "ownerIssue": "#858",
-      "reviewedAt": "2026-08-14",
-      "sunset": "next-verified-evidence-for-compatible-sha",
-      "proofCommands": [
-        "npm run i18n:evidence:canonical:check",
-        "npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage"
-      ]
-    },
-    {
-      "path": "tests/unit/e2e/productionRequestGuard.test.ts",
-      "evidenceObservedHeadCommit": "e5991ff390c8ef3ea767fee9f4acd75b8e39e081",
-      "evidenceSha256": "4286f37e6b8132aa49ad4afecd16490e9d55427ba7d3167603a58fbf5e2a7b5a",
-      "compatibleSha256": "036b074b88f3e7274b07977f6beccf50d957596a73876e3837289f17c045444f",
-      "scope": "reviewed-read-only-request-guard-expansion",
-      "ownerIssue": "#858",
-      "reviewedAt": "2026-08-14",
-      "sunset": "next-verified-evidence-for-compatible-sha",
-      "proofCommands": [
-        "npm run i18n:evidence:canonical:check",
-        "npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage"
-      ]
-    },
-    {
-      "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-      "evidenceObservedHeadCommit": "e5991ff390c8ef3ea767fee9f4acd75b8e39e081",
-      "evidenceSha256": "7bbc1317683c8a2418134a59c0de7735973fe74b42ecf76a0ea6b0a79c0b180e",
-      "compatibleSha256": "17f651fd688d46dd6c012e6c1fcdc0eb0fbc16fed8949f44f037d8f1efadece1",
-      "scope": "non-browser-semantic-release-harness-only",
-      "ownerIssue": "#858",
-      "reviewedAt": "2026-08-14",
-      "sunset": "next-verified-evidence-for-compatible-sha",
-      "proofCommands": [
-        "npm run i18n:evidence:canonical:check",
-        "npm run i18n:locale:artifacts:idempotence"
-      ]
-    }
-  ],
+  "entries": [],
   "releaseCandidateWaivers": []
 }
