@@ -43,6 +43,10 @@ const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => iss
 const mockGenContactJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockSubmitDatasetReviewApi = jest.fn(async () => ({
+  data: [{ review: { id: 'review-1' } }],
+  error: null,
+}));
 const mockHasLangNormalizationDraftChanges = jest.fn();
 
 jest.mock('umi', () => ({
@@ -70,6 +74,11 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@/components/ValidationIssueModal', () => ({
   __esModule: true,
   showValidationIssueModal: jest.fn(),
+}));
+
+jest.mock('@/services/reviews/api', () => ({
+  __esModule: true,
+  submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
 jest.mock('antd', () => {
@@ -369,9 +378,9 @@ jest.mock('@/pages/Utils/review', () => ({
     };
   },
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
-  ReffPath: jest
-    .fn()
-    .mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() })),
+  ReffPath: jest.fn().mockImplementation(() => ({
+    findProblemNodes: (...args: any[]) => mockFindProblemNodes(...args),
+  })),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   getAllRefObj: jest.fn(() => []),
@@ -528,10 +537,16 @@ describe('ContactEdit component', () => {
     mockCheckData.mockResolvedValue(undefined);
     mockGetErrRefTab.mockReturnValue('contactInformation');
     mockFindProblemNodes.mockReturnValue([]);
-    mockReffPath.mockImplementation(() => ({ findProblemNodes: () => mockFindProblemNodes() }));
+    mockReffPath.mockImplementation(() => ({
+      findProblemNodes: (...args: any[]) => mockFindProblemNodes(...args),
+    }));
     mockGenContactJsonOrdered.mockReturnValue({ mocked: true });
     mockValidateEnhanced.mockReturnValue({ success: true });
     mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
+    mockSubmitDatasetReviewApi.mockResolvedValue({
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+    });
     mockGetRefData.mockResolvedValue({
       success: true,
       data: {
@@ -1228,6 +1243,61 @@ describe('ContactEdit component', () => {
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('contact-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
+  });
+
+  it('runs review-mode reference checks and blocks contact submission on a version problem', async () => {
+    const user = userEvent.setup();
+    const versionProblem = {
+      '@refObjectId': 'source-review',
+      '@version': '01',
+      '@type': 'source data set',
+      ruleVerification: true,
+      nonExistent: false,
+      underReviewVersion: '02',
+      versionUnderReview: true,
+    };
+    mockFindProblemNodes.mockReturnValueOnce([versionProblem]);
+    mockBuildValidationIssues.mockReturnValueOnce([{ id: 'version-under-review' }]);
+
+    renderWithProviders(
+      <ContactEdit
+        id='contact-123'
+        version='01.00.000'
+        buttonType='icon'
+        lang='en'
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Contact' });
+    await user.click(within(drawer).getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionFrom: 'review',
+          problemNodes: [versionProblem],
+        }),
+      ),
+    );
+    expect(mockCheckData).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Object),
+      expect.objectContaining({ actionFrom: 'review' }),
+    );
+    expect(mockFindProblemNodes).toHaveBeenCalledWith('review');
+    expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: {
+          id: 'pages.validationIssues.modal.reviewTitle',
+          defaultMessage: 'Review submission blocked',
+        },
+      }),
+    );
+    expect(mockSubmitDatasetReviewApi).not.toHaveBeenCalled();
   });
 
   it('keeps an empty object for the active tab when values change after switching tabs', async () => {

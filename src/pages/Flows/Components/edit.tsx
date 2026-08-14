@@ -437,7 +437,11 @@ const FlowsEdit: FC<Props> = ({
     },
     [id],
   );
-  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
+  const handleCheckData = async (options?: {
+    actionFrom?: 'checkData' | 'review';
+    silent?: boolean;
+  }): Promise<boolean> => {
+    const actionFrom = options?.actionFrom ?? 'checkData';
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
       if (!silent) {
@@ -472,9 +476,10 @@ const FlowsEdit: FC<Props> = ({
       flowProperties: validationDraft?.flowProperties ?? fromData?.flowProperties,
     };
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      actionFrom,
       orderedJson: genFlowJsonOrdered(id, jsonData),
     });
-    const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
+    const problemNodes: ProblemNode[] = pathRef.findProblemNodes(actionFrom);
 
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
@@ -531,9 +536,11 @@ const FlowsEdit: FC<Props> = ({
     }
 
     const validationIssues = buildValidationIssues({
+      actionFrom,
       datasetSdkValid: currentDatasetValid,
       getRefTabNames,
       nonExistentRef,
+      problemNodes,
       rootRef,
       sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
@@ -585,10 +592,16 @@ const FlowsEdit: FC<Props> = ({
           intl,
           issues: validationIssuesWithOwner,
           onNavigate: handleValidationIssueNavigate,
-          title: {
-            id: 'pages.validationIssues.modal.checkDataTitle',
-            defaultMessage: 'Data validation issues',
-          },
+          title:
+            actionFrom === 'review'
+              ? {
+                  id: 'pages.validationIssues.modal.reviewTitle',
+                  defaultMessage: 'Review submission blocked',
+                }
+              : {
+                  id: 'pages.validationIssues.modal.checkDataTitle',
+                  defaultMessage: 'Data validation issues',
+                },
         });
       } else if (!silent) {
         message.error(validationHint);
@@ -665,7 +678,7 @@ const FlowsEdit: FC<Props> = ({
               id={id}
               version={version}
               disabled={spinning || detailStateCode !== 0}
-              beforeSubmit={() => handleCheckData()}
+              beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
               onSuccess={() => {
                 setDetailStateCode(20);
                 actionRef?.current?.reload();

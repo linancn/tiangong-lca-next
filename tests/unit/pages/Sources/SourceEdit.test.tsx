@@ -33,6 +33,10 @@ const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => iss
 const mockGenSourceJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockSubmitDatasetReviewApi = jest.fn(async () => ({
+  data: [{ review: { id: 'review-1' } }],
+  error: null,
+}));
 const mockFormatMessage = (
   { defaultMessage, id }: { defaultMessage?: string; id: string },
   values: Record<string, unknown> = {},
@@ -96,6 +100,11 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@/components/ValidationIssueModal', () => ({
   __esModule: true,
   showValidationIssueModal: jest.fn(),
+}));
+
+jest.mock('@/services/reviews/api', () => ({
+  __esModule: true,
+  submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
 jest.mock('antd', () => {
@@ -432,7 +441,7 @@ jest.mock('@/pages/Utils/review', () => ({
   },
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn().mockImplementation(() => ({
-    findProblemNodes: () => mockFindProblemNodes(),
+    findProblemNodes: (...args: any[]) => mockFindProblemNodes(...args),
   })),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
@@ -545,6 +554,10 @@ describe('SourceEdit component', () => {
     mockGenSourceJsonOrdered.mockReturnValue({ mocked: true });
     mockValidateEnhanced.mockReturnValue({ success: true });
     mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
+    mockSubmitDatasetReviewApi.mockResolvedValue({
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+    });
     Object.values(getMockAntdMessage()).forEach((fn) => fn.mockClear());
   });
 
@@ -922,6 +935,70 @@ describe('SourceEdit component', () => {
     expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
+  });
+
+  it('runs review-mode reference checks and blocks source submission on a version problem', async () => {
+    const user = userEvent.setup();
+    mockGetSourceDetail.mockResolvedValueOnce({
+      data: {
+        json: {
+          sourceDataSet: {},
+        },
+        stateCode: 0,
+      },
+    });
+    const versionProblem = {
+      '@refObjectId': 'contact-review',
+      '@version': '01',
+      '@type': 'contact data set',
+      ruleVerification: true,
+      nonExistent: false,
+      underReviewVersion: '02',
+      versionUnderReview: true,
+    };
+    mockFindProblemNodes.mockReturnValueOnce([versionProblem]);
+    mockBuildValidationIssues.mockReturnValueOnce([{ id: 'version-under-review' }]);
+
+    renderWithProviders(
+      <SourceEdit
+        id='source-123'
+        version='01.00.000'
+        lang='en'
+        buttonType='icon'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        setViewDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionFrom: 'review',
+          problemNodes: [versionProblem],
+        }),
+      ),
+    );
+    expect(mockCheckData).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Object),
+      expect.objectContaining({ actionFrom: 'review' }),
+    );
+    expect(mockFindProblemNodes).toHaveBeenCalledWith('review');
+    expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: {
+          id: 'pages.validationIssues.modal.reviewTitle',
+          defaultMessage: 'Review submission blocked',
+        },
+      }),
+    );
+    expect(mockSubmitDatasetReviewApi).not.toHaveBeenCalled();
   });
 
   it('shows source data-check errors when references or schema issues remain', async () => {

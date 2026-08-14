@@ -451,7 +451,11 @@ const ContactEdit: FC<Props> = ({
     return true;
   };
 
-  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
+  const handleCheckData = async (options?: {
+    actionFrom?: 'checkData' | 'review';
+    silent?: boolean;
+  }): Promise<boolean> => {
+    const actionFrom = options?.actionFrom ?? 'checkData';
     const silent = options?.silent ?? false;
     if (typeof currentStateCode === 'number' && currentStateCode >= 20 && currentStateCode < 100) {
       if (!silent) {
@@ -483,9 +487,10 @@ const ContactEdit: FC<Props> = ({
     } satisfies refDataType;
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      actionFrom,
       orderedJson,
     });
-    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes(actionFrom) ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
         return {
@@ -537,9 +542,11 @@ const ContactEdit: FC<Props> = ({
       });
     }
     const validationIssues = buildValidationIssues({
+      actionFrom,
       datasetSdkValid: sdkValidation.success,
       getRefTabNames,
       nonExistentRef,
+      problemNodes,
       rootRef,
       sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames,
@@ -581,10 +588,16 @@ const ContactEdit: FC<Props> = ({
           intl,
           issues: validationIssuesWithOwner,
           onNavigate: handleValidationIssueNavigate,
-          title: {
-            id: 'pages.validationIssues.modal.checkDataTitle',
-            defaultMessage: 'Data validation issues',
-          },
+          title:
+            actionFrom === 'review'
+              ? {
+                  id: 'pages.validationIssues.modal.reviewTitle',
+                  defaultMessage: 'Review submission blocked',
+                }
+              : {
+                  id: 'pages.validationIssues.modal.checkDataTitle',
+                  defaultMessage: 'Data validation issues',
+                },
         });
       } else if (!silent) {
         message.error(validationHint);
@@ -733,7 +746,7 @@ const ContactEdit: FC<Props> = ({
               id={id}
               version={version}
               disabled={spinning || currentStateCode !== 0}
-              beforeSubmit={() => handleCheckData()}
+              beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
               onSuccess={() => {
                 setCurrentStateCode(20);
                 actionRef?.current?.reload();

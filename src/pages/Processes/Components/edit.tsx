@@ -831,43 +831,6 @@ const ProcessEdit: FC<Props> = ({
       });
     };
 
-    if (from === 'review') {
-      const currentValidationIssues = buildValidationIssues({
-        actionFrom: 'review',
-        datasetSdkValid: currentDatasetValid,
-        rootRef,
-        sdkInvalidDetails: mergedSdkIssueDetails,
-        sdkInvalidTabNames: currentDatasetTabNames,
-      });
-
-      setValidationIssueTabNames([]);
-      setRefCheckData(mapValidationIssuesToRefCheckData(currentValidationIssues));
-
-      if (currentDatasetValid) {
-        setSpinning(false);
-        return { checkResult: true, unReview: [] as refDataType[] };
-      }
-
-      if (!silent && currentValidationIssues.length > 0) {
-        const validationIssuesWithOwner =
-          await enrichValidationIssuesWithOwner(currentValidationIssues);
-        showValidationIssueModal({
-          intl,
-          issues: validationIssuesWithOwner,
-          onNavigate: handleValidationIssueNavigate,
-          title: {
-            id: 'pages.validationIssues.modal.reviewTitle',
-            defaultMessage: 'Review submission blocked',
-          },
-        });
-      } else if (!silent) {
-        message.error(getValidationHint());
-      }
-
-      setSpinning(false);
-      return { checkResult: false, unReview: [] as refDataType[] };
-    }
-
     const unReview: refDataType[] = []; // stateCode < 20
     const underReview: refDataType[] = []; // stateCode >= 20 && stateCode < 100
     const unRuleVerification: refDataType[] = [];
@@ -951,10 +914,16 @@ const ProcessEdit: FC<Props> = ({
         intl,
         issues: validationIssuesWithOwner,
         onNavigate: handleValidationIssueNavigate,
-        title: {
-          id: 'pages.validationIssues.modal.checkDataTitle',
-          defaultMessage: 'Data validation issues',
-        },
+        title:
+          from === 'review'
+            ? {
+                id: 'pages.validationIssues.modal.reviewTitle',
+                defaultMessage: 'Review submission blocked',
+              }
+            : {
+                id: 'pages.validationIssues.modal.checkDataTitle',
+                defaultMessage: 'Data validation issues',
+              },
       });
     } else if (!silent) {
       message.error(validationHint);
