@@ -156,6 +156,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - app-side Supabase and API access belongs only in `src/services/**`
+- startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
 
 ## Ownership Boundaries
 

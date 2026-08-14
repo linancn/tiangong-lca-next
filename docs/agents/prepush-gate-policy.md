@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf
 lastReviewedNote: 'Product, component-test, locale-artifact, and stable-mock changes retain exact-proof reuse, Docpact-first validation, release policy, and the bounded hook-owned full gate.'
 ---
 

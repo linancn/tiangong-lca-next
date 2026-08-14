@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf
 lastReviewedNote: 'Focused and full proof cover direct current-record submission, the Review Admin manual diagnostic, the current LCIA-product surface, stable shared mocks, rerender behavior, and the bounded two-worker gate.'
 related:
   - ../AGENTS.md

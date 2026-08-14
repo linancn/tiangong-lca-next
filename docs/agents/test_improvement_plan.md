@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf
 lastReviewedNote: 'Direct-submit service proof, role-gated diagnostic components, and stable shared hook mocks preserve the risk-proportional focused-first and bounded full-closure strategy.'
 ---
 

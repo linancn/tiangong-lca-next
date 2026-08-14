@@ -12,6 +12,7 @@ jest.mock('@/services/supabase', () => ({
 
 import {
   getSystemStatus,
+  isRuntimeConfigEnabled,
   isSystemMaintenanceActive,
   NORMAL_SYSTEM_STATUS,
   systemStatusSchema,
@@ -27,10 +28,21 @@ const maintenanceStatus = {
   updatedAt: '2026-08-14T09:00:00+08:00',
 };
 
+const originalRuntimeConfigEnabled = process.env.APP_RUNTIME_CONFIG_ENABLED;
+
 describe('systemStatus', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.APP_RUNTIME_CONFIG_ENABLED;
     mockAbortSignal.mockResolvedValue({ data: maintenanceStatus, error: null });
+  });
+
+  afterAll(() => {
+    if (originalRuntimeConfigEnabled === undefined) {
+      delete process.env.APP_RUNTIME_CONFIG_ENABLED;
+    } else {
+      process.env.APP_RUNTIME_CONFIG_ENABLED = originalRuntimeConfigEnabled;
+    }
   });
 
   it('reads and validates the fixed API facade', async () => {
@@ -39,6 +51,26 @@ describe('systemStatus', () => {
     expect(mockSchema).toHaveBeenCalledWith('api');
     expect(mockRpc).toHaveBeenCalledWith('qry_system_status');
     expect(mockAbortSignal).toHaveBeenCalledWith(expect.any(AbortSignal));
+  });
+
+  it.each([
+    [undefined, true],
+    ['', true],
+    ['true', true],
+    ['unexpected', true],
+    [' false ', false],
+    ['FALSE', false],
+  ])('maps runtime-config env %p to enabled=%s', (value, expected) => {
+    expect(isRuntimeConfigEnabled(value)).toBe(expected);
+  });
+
+  it('skips the runtime-config RPC when explicitly disabled', async () => {
+    process.env.APP_RUNTIME_CONFIG_ENABLED = 'false';
+
+    await expect(getSystemStatus()).resolves.toBe(NORMAL_SYSTEM_STATUS);
+    expect(mockSchema).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockAbortSignal).not.toHaveBeenCalled();
   });
 
   it.each([

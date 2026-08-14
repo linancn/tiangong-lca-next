@@ -29,6 +29,12 @@ export const NORMAL_SYSTEM_STATUS: SystemStatus = Object.freeze({
 
 export const SYSTEM_STATUS_TIMEOUT_MS = 4000;
 
+export function isRuntimeConfigEnabled(
+  value: string | undefined = process.env.APP_RUNTIME_CONFIG_ENABLED,
+): boolean {
+  return value?.trim().toLowerCase() !== 'false';
+}
+
 export function isSystemMaintenanceActive(status?: SystemStatus): boolean {
   return status?.phase === 'maintenance' || status?.phase === 'verifying';
 }
@@ -39,6 +45,10 @@ export function isSystemMaintenanceActive(status?: SystemStatus): boolean {
  * control-plane outage cannot take the application offline by itself.
  */
 export async function getSystemStatus(): Promise<SystemStatus> {
+  if (!isRuntimeConfigEnabled()) {
+    return NORMAL_SYSTEM_STATUS;
+  }
+
   const controller = new AbortController();
   const timeout = globalThis.setTimeout(() => controller.abort(), SYSTEM_STATUS_TIMEOUT_MS);
 

@@ -183,6 +183,7 @@ export default defineConfig({
     'process.env.APP_LIGHT_LOGO': process.env.APP_LIGHT_LOGO,
     'process.env.APP_DARK_LOGO': process.env.APP_DARK_LOGO,
     'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
+    'process.env.APP_RUNTIME_CONFIG_ENABLED': process.env.APP_RUNTIME_CONFIG_ENABLED,
     ...localeEnvironmentDefines,
   },
 });

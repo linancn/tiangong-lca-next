@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "8c735ca300f4505f436df2d1f2db4f7adc830e39"
+lastReviewedCommit: "a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf"
 lastReviewedNote: 'Next routing covers the Supabase-backed startup maintenance boundary, standalone public fallback, localized UI, focused proof, and bounded full-gate ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
