@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b1b2b6785e5153ac767b45a915f2f53dc127d6ad
+lastReviewedCommit: be619da517760a89410f1ba9ceb8f4b2a4896318
 lastReviewedNote: 'Reviewed for Next Issue #845: refreshed v0.0.71 production evidence and qualification follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
 related:
   - .docpact/config.yaml

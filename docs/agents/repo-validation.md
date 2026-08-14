@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b1b2b6785e5153ac767b45a915f2f53dc127d6ad
+lastReviewedCommit: be619da517760a89410f1ba9ceb8f4b2a4896318
 lastReviewedNote: 'Reviewed for Next Issue #846: the runtime-config service, maintenance UI, static fallback, locale artifacts, focused tests, lint, and production build follow the existing shared-runtime validation contract.'
 related:
   - ../AGENTS.md

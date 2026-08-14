@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b1b2b6785e5153ac767b45a915f2f53dc127d6ad
+lastReviewedCommit: be619da517760a89410f1ba9ceb8f4b2a4896318
 lastReviewedNote: 'Reviewed for Next Issue #846: maintenance startup, fallback, environment-switch, and refresh-button coverage fit the existing focused-first strategy without changing the test-improvement plan.'
 ---
 
