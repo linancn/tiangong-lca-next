@@ -1058,6 +1058,70 @@ function isAncestor(root, ancestor, descendant) {
   );
 }
 
+function releaseLineAlignment(root, mainRef, devRef) {
+  const mainSha = git(root, ['rev-parse', `${mainRef}^{commit}`]).stdout.trim();
+  const devSha = git(root, ['rev-parse', `${devRef}^{commit}`]).stdout.trim();
+  if (isAncestor(root, mainSha, devSha)) {
+    return {
+      aligned: true,
+      mode: 'direct_ancestry',
+      main_sha: mainSha,
+      dev_sha: devSha,
+    };
+  }
+
+  const commitAndParents = git(root, ['rev-list', '--parents', '-n', '1', mainSha])
+    .stdout.trim()
+    .split(/\s+/u);
+  const parents = commitAndParents.slice(1);
+  if (parents.length !== 2) {
+    return {
+      aligned: false,
+      reason: 'main_is_not_an_exact_two_parent_promotion',
+      main_sha: mainSha,
+      dev_sha: devSha,
+      main_parent_count: parents.length,
+    };
+  }
+
+  const promotionCandidateSha = parents[1];
+  if (!isAncestor(root, promotionCandidateSha, devSha)) {
+    return {
+      aligned: false,
+      reason: 'promotion_candidate_is_not_in_dev_history',
+      main_sha: mainSha,
+      dev_sha: devSha,
+      promotion_candidate_sha: promotionCandidateSha,
+    };
+  }
+
+  const mainTree = git(root, ['rev-parse', `${mainSha}^{tree}`]).stdout.trim();
+  const promotionCandidateTree = git(root, [
+    'rev-parse',
+    `${promotionCandidateSha}^{tree}`,
+  ]).stdout.trim();
+  if (mainTree !== promotionCandidateTree) {
+    return {
+      aligned: false,
+      reason: 'promotion_merge_changed_the_candidate_tree',
+      main_sha: mainSha,
+      dev_sha: devSha,
+      promotion_candidate_sha: promotionCandidateSha,
+      main_tree: mainTree,
+      promotion_candidate_tree: promotionCandidateTree,
+    };
+  }
+
+  return {
+    aligned: true,
+    mode: 'exact_two_parent_promotion',
+    main_sha: mainSha,
+    dev_sha: devSha,
+    promotion_candidate_sha: promotionCandidateSha,
+    tree_sha: mainTree,
+  };
+}
+
 function findOpenPr(root, { repository, base, owner, branch }) {
   const payload = parseJsonOutput(
     gh(root, [
@@ -1186,11 +1250,11 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Qualify, review Docpact, preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic qualification and review boundary:\n  The command reuses a current semantic qualification receipt or generates the\n  credential-free receipt before changing the version, then includes it in the\n  same Release PR. The command proves that only package.json.version,\n  package-lock.json.version, package-lock.json packages[""].version, that exact\n  generated receipt, and bounded Docpact review metadata changed. Every other\n  finding or semantic change fails closed.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Qualify, review Docpact, preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic qualification and review boundary:\n  The command reuses a current semantic qualification receipt or generates the\n  credential-free receipt before changing the version, then includes it in the\n  same Release PR. The command proves that only package.json.version,\n  package-lock.json.version, package-lock.json packages[""].version, that exact\n  generated receipt, and bounded Docpact review metadata changed. Every other\n  finding or semantic change fails closed.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
-  return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the dev merge SHA, run main-semantic managed gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its required GitHub checks pass.`;
+  return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the dev merge SHA, run main-semantic managed gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for full gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its required GitHub checks pass.`;
 }
 
 function releasePrBody({
@@ -1390,15 +1454,16 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       },
     );
   }
-  if (!isAncestor(root, fetchedMainSha, fetchedDevSha)) {
+  const releaseLine = releaseLineAlignment(root, fetchedMainSha, fetchedDevSha);
+  if (!releaseLine.aligned) {
     throw new ReleaseAutomationError(
       'release_main_not_ancestor_of_dev',
-      'The current main head is not contained in dev, so a normal promotion candidate is unsafe.',
+      'The current main and dev heads do not form a safe release line.',
       {
         exitCode: EXIT.drift,
-        details: { main_sha: fetchedMainSha, dev_sha: fetchedDevSha },
+        details: releaseLine,
         nextAction:
-          'Complete the governed main-to-dev reconciliation before preparing another version PR.',
+          'Inspect the reported promotion identity, then complete a governed main-to-dev reconciliation before preparing another version PR.',
       },
     );
   }
@@ -1553,6 +1618,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     base_branch: 'dev',
     base_sha: fetchedDevSha,
     main_sha: fetchedMainSha,
+    release_line_alignment: releaseLine,
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
@@ -1725,15 +1791,16 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       },
     );
   }
-  if (!isAncestor(root, `${options.remote}/main`, `${options.remote}/dev`)) {
+  const releaseLine = releaseLineAlignment(root, `${options.remote}/main`, `${options.remote}/dev`);
+  if (!releaseLine.aligned) {
     throw new ReleaseAutomationError(
       'main_not_ancestor_of_dev',
-      'main is not an ancestor of the release candidate on dev.',
+      'main and the release candidate on dev do not form a safe release line.',
       {
         exitCode: EXIT.drift,
-        details: { main_sha: fetchedMainSha, dev_sha: fetchedDevSha },
+        details: releaseLine,
         nextAction:
-          'Reconcile main into dev through the governed hotfix back-merge path before promotion.',
+          'Inspect the reported promotion identity, then reconcile main into dev through the governed hotfix back-merge path before promotion.',
       },
     );
   }
@@ -1808,6 +1875,7 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
     release_pr: { number: releasePr.number, url: releasePr.url },
     dev_merge_sha: devMergeSha,
     main_sha: fetchedMainSha,
+    release_line_alignment: releaseLine,
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
@@ -1907,6 +1975,7 @@ module.exports = {
   parseArguments,
   parseStableVersion,
   promotionHelp,
+  releaseLineAlignment,
   releaseHelp,
   runCli,
   versionsFromDocuments,

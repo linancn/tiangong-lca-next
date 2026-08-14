@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf
-lastReviewedNote: 'Direct-submit service proof, role-gated diagnostic components, and stable shared hook mocks preserve the risk-proportional focused-first and bounded full-closure strategy.'
+lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
+lastReviewedNote: 'Reviewed for Next Issue #845: the v0.0.71 evidence refresh closes the existing semantic proof contract without changing the test-improvement plan.'
 ---
 
 # Testing Strategy
@@ -56,7 +56,7 @@ lastReviewedNote: 'Direct-submit service proof, role-gated diagnostic components
 - documentation screenshot capture is a separate, on-demand product-evidence workflow: Next supplies only the source-bound product profile and stable locators, while workspace owns profile compilation, plan/security/access, run-scoped base-origin logic, and the synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight; a successful main-target PR gate emits exact base/head/tree/run proof, and the post-merge workflow reuses it only for the matching two-parent merge while every non-exact case falls back to a full exact-release gate
-- deterministic release orchestration should fail before transport: qualification generation, exact generated-file scope, cumulative Docpact review, and composed-candidate production preflight all complete before `push:checked`, while promotion retains the exact merged `dev` SHA and repeats the main-semantic boundary
+- deterministic release orchestration should fail before transport: qualification generation, exact generated-file scope, cumulative Docpact review, and composed-candidate production preflight all complete before `push:checked`; release-line proof accepts direct ancestry or only a tree-identical two-parent promotion whose second parent remains in `dev`, while promotion retains the exact merged `dev` SHA and repeats the main-semantic boundary
 - each production release candidate should have one full-suite owner: `prepush:gate`, executed once by the main-target PR and reused through exact proof or executed once by the post-merge fallback, with exactly two coverage workers under the `512MB` idle-memory recycle boundary; the reusable browser semantic E2E matrix remains a separate exact-release-SHA prerequisite without duplicating Jest coverage, and immutable tag publication follows both successful qualification paths
 - generated localization evidence should be canonical and idempotent at its source: the reporter resolves the repository-owned formatting policy independently of its output destination and writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts

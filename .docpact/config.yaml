@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf"
-lastReviewedNote: 'Next routing covers the Supabase-backed startup maintenance boundary, standalone public fallback, localized UI, focused proof, and bounded full-gate ownership.'
+lastReviewedCommit: "4c51e963368f4376303d1662750350ab6a652c11"
+lastReviewedNote: 'Reviewed for Next Issue #845: refreshing provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

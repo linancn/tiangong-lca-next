@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: a63f154b3ab46e7396792cbe2fd701a3eb8b2dcf
-lastReviewedNote: 'Semantic component interactions, exact direct-submit and diagnostic payloads, and stateful hook mocks use strict command contracts, stable API identity across rerenders, and bounded full-gate patterns.'
+lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
+lastReviewedNote: 'Reviewed for Next Issue #845: the refreshed run follows the existing clean-candidate, explicit-production-authorization, exact-cleanup, and qualification patterns.'
 ---
 
 # Testing Patterns Reference
@@ -130,7 +130,8 @@ Browser semantic E2E pattern:
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
 - normal release orchestration checks qualification before version mutation: dry-run reports `valid` or `regeneration_required`, while `release:to-dev --apply` reuses the receipt or generates the exact provenance-bound receipt, includes it in the same Release PR, and runs `release:preflight` on the composed commit before checked push
 - direct release proof outside that deterministic flow still requires `npm run e2e:qualify`, a separately reviewed receipt PR, and retry from the clean merged candidate; the receipt file and root version fields are excluded from the qualification input digest
-- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, and the rule that no failed qualification/preflight path reaches push or PR creation
+- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, direct ancestry, the normal tree-identical two-parent promotion after `dev` advances, changed-tree rejection, and the rule that no failed qualification/preflight path reaches push or PR creation
+- publication-workflow contract tests must prove proof reuse can pass an intentionally skipped full-gate ancestor with `!cancelled()`, while every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence

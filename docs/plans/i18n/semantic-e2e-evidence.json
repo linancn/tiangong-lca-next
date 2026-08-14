@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-13T16:03:03.669Z",
-  "runId": "local-e1ccecf8-011c-4dae-b4da-ff4731b2a2bf",
+  "generatedAt": "2026-08-14T03:57:26.047Z",
+  "runId": "local-348e22f4-c9f6-4876-889a-d6c46ff49560",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "b918c68480ac67de3ab66e332c0e5a62272963c9",
+    "observedHeadCommit": "e5991ff390c8ef3ea767fee9f4acd75b8e39e081",
     "packageManifestDigest": "2b78dea75572169f5a945913cc1d3b8b9ed3b9ecbb65c4fc0dc45b4126150437",
-    "sourceTreeDigest": "5e5430988c519280325dd6d71189e8651780c4b3eb1d78616b4a2121ddb523a9",
-    "unitTestTreeDigest": "40d09c6a1e13df8a901f7c6d5f34c2464247b49d06d5381cbfc980ac89a0bab0"
+    "sourceTreeDigest": "5e99ca4a831c91dd58d7f63f79305e14bacbb7c46f7b4c1b422d8e0d4fdc93c3",
+    "unitTestTreeDigest": "ae69a7638431b555ebc4fafbcbd0603211618484061249695009f8b6523c3592"
   },
   "target": {
     "frontend": "candidate-local",
@@ -377,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "d1930ddaf4817eb4dec31668565b1b3d52103dbeca3cb515066594807e0d0198"
+        "sha256": "d054a3c3ddc3c12f5be1c9ab19f531c6d870a429f094d898ffad035bd989fbc9"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -429,7 +429,7 @@
       },
       {
         "path": "tests/unit/pages/Review/index.test.tsx",
-        "sha256": "b40f8e57d9a13c7b7754d3cc81016174a41e6445a6bab4ad3ef304b29fec66cb"
+        "sha256": "553f85cd073d0580976697488343ffe3f55dd5cd6173be3c00e1320f58166c4f"
       },
       {
         "path": "tests/unit/pages/Sources/index.test.tsx",
@@ -583,7 +583,7 @@
       },
       {
         "path": "src/pages/Review/index.tsx",
-        "sha256": "bde2c6c4f7aa2100d1dc1b7e2fbf9338c8c1754be52167636b37aa8c9182c3aa"
+        "sha256": "66014539541e015ccb4e25a042104f1b3d8215803636fb99ab6f6724437584d7"
       },
       {
         "path": "src/pages/Sources/index.tsx",
