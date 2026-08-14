@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 018bd8e1c932c307b1e024a02928c65c06d60048
-lastReviewedNote: 'Reviewed for Next Issue #839: the current tests-and-gates validation row covers the SDK mock-entry alignment and focused regression proof.'
+lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
+lastReviewedNote: 'Reviewed for Next Issue #842: the tests-and-gates validation row covers the shared form-mock lifecycle repair and focused rerender proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
