@@ -7,6 +7,7 @@ import component_contributeData from './fr-FR/component_contributeData';
 import importData from './fr-FR/component_importData';
 import component_refsOfNewVersionDrawer from './fr-FR/component_refsOfNewVersionDrawer';
 import component_rejectReview from './fr-FR/component_rejectReview';
+import component_systemMaintenance from './fr-FR/component_systemMaintenance';
 import component_tidasPackage from './fr-FR/component_tidasPackage';
 import globalHeader from './fr-FR/globalHeader';
 import menu from './fr-FR/menu';
@@ -63,6 +64,7 @@ export default {
   ...pages_review,
   ...importData,
   ...component_tidasPackage,
+  ...component_systemMaintenance,
   ...component_rejectReview,
   ...component_connectableProcesses,
   ...component_AISuggestion,

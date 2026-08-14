@@ -101,6 +101,7 @@ coverage:
     - config/**
     - src/**
     - public/**
+    - public/maintenance.html
     - docker/**
     - electron/**
     - icons/**
@@ -552,6 +553,8 @@ rules:
         kind: app-branding
       - path: public/logo_dark.svg
         kind: app-branding
+      - path: public/maintenance.html
+        kind: packaging
       - path: public/privacy_notice.html
         kind: packaging
       - path: public/scripts/loading.js

@@ -3,12 +3,12 @@
   "locale": "fr-FR",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "efcf05858b750fdd6343f1bcf14d08b57d238587fb63e9897b985567c84de5d0",
-    "contextDigest": "600484da7285fd81a83dc19cabe0179e6fa3e62580c74e064d014bd1acfa91f2"
+    "sourceManifestDigest": "fb3b8bbbfcfd8ed87e2be2eb6926a7b48060ceed7db4841dbf5b69a99bbb8a83",
+    "contextDigest": "5c776467727775323164bbd900f806ada91e316ebff3b2992900fc5475034386"
   },
   "catalog": {
-    "messageCount": 3161,
-    "catalogDigest": "0d8630715e6792f17445b45c01a7a80f6974051c791ff9587c7fc76a32b9108c",
+    "messageCount": 3169,
+    "catalogDigest": "1ba849eb8b7c14e431539769c1a00e471c4c12da4e821ecd42097ea07451d0b0",
     "emptyTranslationCount": 0,
     "acceptedSourceEmptyCount": 1,
     "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
@@ -41,16 +41,16 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-fr-FR/structural-validation.json",
-    "digest": "3632b48342170c59c2f21fccca945e57d0ce25a49da3777f08e153ff27c0eb6d",
-    "validationDigest": "fdb35e1717eb4dedf8b6a0bd30a2933c91339ecf8beeff07c119c4e8eee55410",
+    "digest": "decedae9c3e5786bb6c2e3b32f2f145a1bd0ceed28bff437872a022a4cdbb9bc",
+    "validationDigest": "051d423cb301b89d5db383488178de2449d735860172c0262265c8367e9d7cdc",
     "laneCount": 1,
-    "validatedMessageCount": 3161,
-    "validatedModuleCount": 31,
+    "validatedMessageCount": 3169,
+    "validatedModuleCount": 32,
     "highRiskMessageCount": 1433,
     "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635",
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "ec579e237ccafc2a27f4dcfc7b06e1a8fdd66ab7b720ab087a95a232280b00cb"
+  "qualityDigest": "41d502a1f041ae77447bd7273835184caeb96413be2187c7453a27c9aa61e0e8"
 }

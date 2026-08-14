@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
-lastReviewedNote: 'Reviewed for Next Issue #845: authenticated production proof, exact cleanup, canonical artifacts, and credential-free qualification follow the documented validation order.'
+lastReviewedCommit: 01a3dcc00bd70ef80d0419be493c4e6f883c2f95
+lastReviewedNote: 'Reviewed for Next Issue #846: the runtime-config service, maintenance UI, static fallback, locale artifacts, focused tests, lint, and production build follow the existing shared-runtime validation contract.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

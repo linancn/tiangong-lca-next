@@ -3,12 +3,12 @@
   "locale": "zh-CN",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "efcf05858b750fdd6343f1bcf14d08b57d238587fb63e9897b985567c84de5d0",
-    "contextDigest": "84a3194812dfbb185e1507d9e5a49c8a49a9f917489805cd1e0045dfe25405ec"
+    "sourceManifestDigest": "fb3b8bbbfcfd8ed87e2be2eb6926a7b48060ceed7db4841dbf5b69a99bbb8a83",
+    "contextDigest": "52806a3fe484904ce3ba16b9e8e02788712e919a4c1a61a0ae3f2fbaf9c58d63"
   },
   "catalog": {
-    "messageCount": 3161,
-    "catalogDigest": "f4d4c4710c94e5a6d7a295861128fd5bb1232080d7bf9a7db51ae47ab7d6ff9f",
+    "messageCount": 3169,
+    "catalogDigest": "69b254df834ac7f6856e26623aacaacf89507d7a077c22a91e410d06bcbd0e67",
     "emptyTranslationCount": 0,
     "acceptedSourceEmptyCount": 1,
     "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
@@ -41,16 +41,16 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-zh-CN/structural-validation.json",
-    "digest": "9b3c89c1ad64598bfc96321f277aca99db744ef80740de93c7d9f5f88c489260",
-    "validationDigest": "de2f538236b1aa47130605bec632142a8f7092f3218666edc5066bd649e40d4a",
+    "digest": "afa29ace6bbeac73525b08d7654053b8ac20ad37aba38ee87def95eddf101066",
+    "validationDigest": "7f73ca4efbcd452c67d66478362e0ad2dbd91b49adfe6a01c7e8db2d19edf8d4",
     "laneCount": 1,
-    "validatedMessageCount": 3161,
-    "validatedModuleCount": 31,
+    "validatedMessageCount": 3169,
+    "validatedModuleCount": 32,
     "highRiskMessageCount": 1433,
     "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635",
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "6bddf833d41cfa3194b90f79dadbfd3f1ad051fa76c94ae5b17022fb63f3d05f"
+  "qualityDigest": "c0c90018cbd71d7ddef2be568e7a626f44e45a83989bbff762d09dc284cf5433"
 }

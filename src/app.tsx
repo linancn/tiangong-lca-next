@@ -13,11 +13,21 @@ import {
 } from '@/components';
 import AccessDenied from '@/components/AccessDenied';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
+import SystemMaintenance from '@/components/SystemMaintenance';
+import {
+  AppBootMarker,
+  StaticFallbackErrorBoundary,
+} from '@/components/SystemMaintenance/AppBootBoundary';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
 import { LOGIN_PATH, isAnonymousAllowedPath } from '@/services/general/publicRoutePolicy';
 import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
+import {
+  getSystemStatus,
+  isSystemMaintenanceActive,
+  type SystemStatus,
+} from '@/services/general/systemStatus';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 import styles from '@/style/custom.less';
@@ -67,6 +77,7 @@ export async function getInitialState(): Promise<{
   loading?: boolean;
   isDarkMode?: boolean;
   fetchUserInfo?: () => Promise<Auth.CurrentUser | null>;
+  systemStatus?: SystemStatus;
 }> {
   const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
     try {
@@ -95,6 +106,19 @@ export async function getInitialState(): Promise<{
     ...brandTheme,
   };
 
+  // Maintenance is intentionally checked before authentication. This is a
+  // single startup read; a browser refresh is required to check it again.
+  const systemStatus = await getSystemStatus();
+  if (isSystemMaintenanceActive(systemStatus)) {
+    bindTidasPackageTaskCenterOwner(null);
+    return {
+      fetchUserInfo,
+      settings: updatedSettings as Partial<LayoutSettings>,
+      isDarkMode,
+      systemStatus,
+    };
+  }
+
   const { location } = history;
   if (!isAnonymousAllowedPath(location.pathname)) {
     const currentUser = await fetchUserInfo();
@@ -103,6 +127,7 @@ export async function getInitialState(): Promise<{
       currentUser,
       settings: updatedSettings as Partial<LayoutSettings>,
       isDarkMode,
+      systemStatus,
     };
   }
   bindTidasPackageTaskCenterOwner(null);
@@ -110,6 +135,7 @@ export async function getInitialState(): Promise<{
     fetchUserInfo,
     settings: updatedSettings as Partial<LayoutSettings>,
     isDarkMode,
+    systemStatus,
   };
 }
 
@@ -121,6 +147,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
   const canViewDashboard = initialState?.currentUser?.access === 'admin';
   const canViewDataProcessing = initialState?.currentUser?.access === 'data_product_manager';
+  const maintenanceActive = isSystemMaintenanceActive(initialState?.systemStatus);
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -139,6 +166,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   };
   return {
     actionsRender: () => {
+      if (maintenanceActive) {
+        return [];
+      }
       const publicActions = [
         <DarkMode
           key='DarkMode'
@@ -197,28 +227,32 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
       return actions;
     },
-    avatarProps: initialState?.currentUser
-      ? {
-          title: <AvatarName />,
-          render: () => {
-            return (
-              <AvatarDropdown>
-                <div
-                  className='tg-global-header-avatar-trigger'
-                  data-testid='docs-capture-authenticated'
-                >
-                  <AvatarName />
-                </div>
-              </AvatarDropdown>
-            );
-          },
-        }
-      : undefined,
+    avatarProps:
+      !maintenanceActive && initialState?.currentUser
+        ? {
+            title: <AvatarName />,
+            render: () => {
+              return (
+                <AvatarDropdown>
+                  <div
+                    className='tg-global-header-avatar-trigger'
+                    data-testid='docs-capture-authenticated'
+                  >
+                    <AvatarName />
+                  </div>
+                </AvatarDropdown>
+              );
+            },
+          }
+        : undefined,
     waterMarkProps: {
       // content: initialState?.currentUser?.name,
     },
-    footerRender: () => <Footer />,
+    footerRender: maintenanceActive ? undefined : () => <Footer />,
     onPageChange: () => {
+      if (maintenanceActive) {
+        return;
+      }
       const { location } = history;
       // Only the login and account-recovery flow can render anonymously.
       if (!initialState?.currentUser && !isAnonymousAllowedPath(location.pathname)) {
@@ -243,8 +277,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     unAccessible: <AccessDenied />,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
+      const renderedChildren = maintenanceActive ? (
+        <SystemMaintenance status={initialState!.systemStatus!} />
+      ) : (
+        children
+      );
       // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次
-      if (!initialState?.currentUser && !isAnonymousAllowedPath(history.location.pathname)) {
+      if (
+        !maintenanceActive &&
+        !initialState?.currentUser &&
+        !isAnonymousAllowedPath(history.location.pathname)
+      ) {
         history.push(LOGIN_PATH);
         return null;
       }
@@ -261,27 +304,29 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               : antdTheme.defaultAlgorithm,
           }}
         >
-          <>
-            {children}
-            {isDev && (
-              <SettingDrawer
-                disableUrlParams
-                enableDarkTheme
-                settings={initialState?.settings}
-                onSettingChange={(settings) => {
-                  setInitialState((preInitialState: any) => ({
-                    ...preInitialState,
-                    settings,
-                  }));
-                }}
-              />
-            )}
-          </>
+          <StaticFallbackErrorBoundary>
+            <AppBootMarker>
+              {renderedChildren}
+              {isDev && !maintenanceActive && (
+                <SettingDrawer
+                  disableUrlParams
+                  enableDarkTheme
+                  settings={initialState?.settings}
+                  onSettingChange={(settings) => {
+                    setInitialState((preInitialState: any) => ({
+                      ...preInitialState,
+                      settings,
+                    }));
+                  }}
+                />
+              )}
+            </AppBootMarker>
+          </StaticFallbackErrorBoundary>
         </ConfigProvider>
       );
     },
     menuDataRender: (menuDataProps) => {
-      if (!initialState?.currentUser) {
+      if (maintenanceActive || !initialState?.currentUser) {
         return [];
       }
       const location = history.location;

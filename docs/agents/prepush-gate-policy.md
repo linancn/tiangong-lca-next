@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
-lastReviewedNote: 'Reviewed for Next Issue #845: refreshed production evidence and qualification continue to use the documented Docpact-first managed release gates.'
+lastReviewedCommit: 01a3dcc00bd70ef80d0419be493c4e6f883c2f95
+lastReviewedNote: 'Reviewed for Next Issue #846: maintenance runtime, locale, component-test, and packaging changes remain covered by the existing Docpact-first managed push gate.'
 ---
 
 # Pre-Push Gate Policy
