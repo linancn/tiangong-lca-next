@@ -399,7 +399,11 @@ const SourceEdit: FC<Props> = ({
     }
     onReset();
   }, [drawerVisible]);
-  const handleCheckData = async (options?: { silent?: boolean }): Promise<boolean> => {
+  const handleCheckData = async (options?: {
+    actionFrom?: 'checkData' | 'review';
+    silent?: boolean;
+  }): Promise<boolean> => {
+    const actionFrom = options?.actionFrom ?? 'checkData';
     const silent = options?.silent ?? false;
     if (typeof detailStateCode === 'number' && detailStateCode >= 20 && detailStateCode < 100) {
       if (!silent) {
@@ -430,9 +434,10 @@ const SourceEdit: FC<Props> = ({
       : true;
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
     await checkData(rootRef, unRuleVerification, nonExistentRef, pathRef, {
+      actionFrom,
       orderedJson,
     });
-    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes() ?? [];
+    const problemNodes: ProblemNode[] = pathRef?.findProblemNodes(actionFrom) ?? [];
     if (problemNodes && problemNodes.length > 0) {
       const result = problemNodes.map((item) => {
         return {
@@ -484,9 +489,11 @@ const SourceEdit: FC<Props> = ({
       });
     }
     const validationIssues = buildValidationIssues({
+      actionFrom,
       datasetSdkValid: sdkValidation.success,
       getRefTabNames,
       nonExistentRef,
+      problemNodes,
       rootRef,
       sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames,
@@ -528,10 +535,16 @@ const SourceEdit: FC<Props> = ({
           intl,
           issues: validationIssuesWithOwner,
           onNavigate: handleValidationIssueNavigate,
-          title: {
-            id: 'pages.validationIssues.modal.checkDataTitle',
-            defaultMessage: 'Data validation issues',
-          },
+          title:
+            actionFrom === 'review'
+              ? {
+                  id: 'pages.validationIssues.modal.reviewTitle',
+                  defaultMessage: 'Review submission blocked',
+                }
+              : {
+                  id: 'pages.validationIssues.modal.checkDataTitle',
+                  defaultMessage: 'Data validation issues',
+                },
         });
       } else if (!silent) {
         message.error(validationHint);
@@ -588,7 +601,7 @@ const SourceEdit: FC<Props> = ({
               id={id}
               version={version}
               disabled={spinning || detailStateCode !== 0}
-              beforeSubmit={() => handleCheckData()}
+              beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
               onSuccess={() => {
                 setDetailStateCode(20);
                 reload();

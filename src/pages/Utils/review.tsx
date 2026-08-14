@@ -1509,13 +1509,16 @@ export const checkData = async (
   nonExistentRef: refDataType[],
   pathRef: ReffPath,
   options: {
+    actionFrom?: 'checkData' | 'review';
     exactVersion?: boolean;
     orderedJson?: any;
     userTeamId?: string;
   } = {},
 ) => {
-  const exactVersion = options.exactVersion ?? true;
+  const actionFrom = options.actionFrom ?? 'checkData';
+  const exactVersion = options.exactVersion ?? actionFrom !== 'review';
   const userTeamId = options.userTeamId ?? '';
+  const allRefs = new Set<string>();
 
   if (typeof options.orderedJson !== 'undefined') {
     const refs = filterOutRootSelfReferences(getAllRefObj(options.orderedJson), data);
@@ -1530,43 +1533,46 @@ export const checkData = async (
         unRuleVerification,
         nonExistentRef,
         pathRef,
-        undefined,
+        allRefs,
         {
           exactVersion,
           rootRef: data,
         },
       );
     }
-
-    return;
-  }
-
-  const { data: detail } = await getRefData(
-    data['@refObjectId'],
-    data['@version'],
-    getRefTableName(data['@type']),
-    userTeamId,
-    {
-      fallbackToLatest: exactVersion !== true,
-    },
-  );
-  if (detail) {
-    const refs = filterOutRootSelfReferences(getAllRefObj(detail?.json), data);
-    await checkReferences(
-      refs,
-      new Map<string, any>(),
+  } else {
+    const { data: detail } = await getRefData(
+      data['@refObjectId'],
+      data['@version'],
+      getRefTableName(data['@type']),
       userTeamId,
-      [],
-      [],
-      unRuleVerification,
-      nonExistentRef,
-      pathRef,
-      undefined,
       {
-        exactVersion,
-        rootRef: data,
+        fallbackToLatest: exactVersion !== true,
       },
     );
+    if (detail) {
+      const refs = filterOutRootSelfReferences(getAllRefObj(detail?.json), data);
+      await checkReferences(
+        refs,
+        new Map<string, any>(),
+        userTeamId,
+        [],
+        [],
+        unRuleVerification,
+        nonExistentRef,
+        pathRef,
+        allRefs,
+        {
+          exactVersion,
+          rootRef: data,
+        },
+      );
+    }
+  }
+
+  if (actionFrom === 'review') {
+    allRefs.add(`${data['@refObjectId']}:${data['@version']}:${data['@type']}`);
+    await checkVersions(allRefs, pathRef);
   }
 };
 

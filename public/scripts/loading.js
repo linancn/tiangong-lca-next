@@ -3,6 +3,21 @@
  * 解决首次加载时白屏的问题
  */
  (function () {
+  const getStaticFallbackUrl = function () {
+    if (window.location.protocol === 'file:') {
+      return new URL('./maintenance.html?reason=boot-timeout', window.location.href).toString();
+    }
+    return '/maintenance.html?reason=boot-timeout';
+  };
+
+  if (!window.__TIANGONG_APP_MOUNTED__) {
+    window.__TIANGONG_APP_BOOT_TIMEOUT__ = window.setTimeout(function () {
+      if (!window.__TIANGONG_APP_MOUNTED__) {
+        window.location.replace(getStaticFallbackUrl());
+      }
+    }, 15000);
+  }
+
   const _root = document.querySelector('#root');
   if (_root && _root.innerHTML === '') {
     _root.innerHTML = `

@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 313c80a7081a68464221a669b2cd630464d08b0c
 lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
 related:
   - ../AGENTS.md
@@ -75,6 +75,7 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
+- the startup system-status service treats `APP_RUNTIME_CONFIG_ENABLED` as a build-time emergency bypass: loading remains enabled by default, and only an explicit case-insensitive `false` returns the normal status without starting the Supabase RPC or its timeout
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
 - language behavior is split across typed owners: `localeRegistry.ts` owns UI locale/adapters, `contentLanguageRegistry.ts` owns TIDAS/ILCD reading and authoring plus service-query resolution, `referenceResources/manifest.ts` owns classification/location availability and provenance, and `localeCapabilities.ts` is the derived joined view. The current canonical UI keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`; business consumers and parameterized capability tests discover them from the registries. A fixed locale array may appear only in an explicitly labeled fail-closed product-contract test whose purpose is to force deliberate review when that snapshot changes
@@ -116,11 +117,11 @@ The global task center consumes only the whitelisted `task-summary.v2` projectio
 
 ### Review Submission And Review Admin Quality Diagnostic
 
-Process review submission uses the same stable command boundary as the other dataset types:
+Process, Flow, Source, and Contact review submission use the same stable command boundary as the other dataset types:
 
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
-Before calling that command, the Process editor checks only the current saved record with rules the submitter can immediately correct there: TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. The submit action does not traverse references, calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. The user-invoked `Data Check` action may continue to traverse references as a separate diagnostic. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
+Before calling that command, the Process editor validates the current saved record for TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. Process, Flow, Source, and Contact then recursively validate their existing reference chains through the same reference-access, rule-verification, and referenced-version checks. Any blocking reference-chain issue prevents submission and is shown through the review-specific validation surface. The submit action does not calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
 
 Review Admin has a separate manual quality-diagnostic path:
 
@@ -132,7 +133,7 @@ The diagnostic is visible only to `review-admin`, starts only after an explicit 
 
 ### Unified Root And Reference Review
 
-All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs only its current-record checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
+All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs its current-record checks above, while Process, Flow, Source, and Contact perform the recursive reference-chain checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
 Review Management consumes the central review projection. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
 

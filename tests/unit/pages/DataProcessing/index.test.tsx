@@ -469,6 +469,26 @@ describe('DataProcessing page', () => {
         label: 'String name (01.00.000 / kg eq)',
       },
     ]);
+    expect(
+      buildImpactCategoryOptions(
+        {
+          files: [
+            {
+              id: '9ec743ea-6b00-400d-a53b-61547a3fc03c',
+              version: '01.01.000',
+              description: 'Reviewed alias',
+            },
+          ],
+        },
+        'en-US',
+      ),
+    ).toEqual([
+      {
+        value: '503699e0-eca9-4089-8bf8-e0f49c93e578',
+        version: '01.01.000',
+        label: 'Reviewed alias (01.01.000)',
+      },
+    ]);
     expect(parseImpactCategoryOptionLabel('Legacy label without metadata')).toEqual({
       name: 'Legacy label without metadata',
     });
@@ -783,6 +803,48 @@ describe('DataProcessing page', () => {
     await waitFor(() =>
       expect(mockUnpublishLciaResultPublication).toHaveBeenCalledWith({
         publicationId: 'publication-1',
+      }),
+    );
+  });
+
+  it('submits the canonical LCIA method identity for a reviewed artifact alias', async () => {
+    mockLocation = { pathname: '/data-processing', search: '' };
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        files: [
+          {
+            id: '9ec743ea-6b00-400d-a53b-61547a3fc03c',
+            version: '01.01.000',
+            description: 'Reviewed alias',
+          },
+        ],
+      }),
+    });
+
+    render(<DataProcessing />);
+
+    await screen.findByText('Reviewed alias (01.01.000)');
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Alias package' },
+    });
+    fireEvent.change(screen.getByLabelText('Default impact category'), {
+      target: { value: '503699e0-eca9-4089-8bf8-e0f49c93e578' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+
+    await waitFor(() =>
+      expect(mockCreateClosureCheck).toHaveBeenCalledWith({
+        requestedScope: {
+          coverageMode: 'global_eligible',
+          lciaMethods: [
+            {
+              id: '503699e0-eca9-4089-8bf8-e0f49c93e578',
+              version: '01.01.000',
+            },
+          ],
+        },
+        requestIdempotencyToken: expect.any(String),
       }),
     );
   });

@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
-lastReviewedNote: 'Reviewed for Next Issue #845: the refreshed run follows the existing clean-candidate, explicit-production-authorization, exact-cleanup, and qualification patterns.'
+lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
+lastReviewedNote: 'Reviewed for Next Issue #846: startup maintenance, fail-open service, static fallback, refresh interaction, and environment-switch tests follow the existing component and service test patterns.'
 ---
 
 # Testing Patterns Reference

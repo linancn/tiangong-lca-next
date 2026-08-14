@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 4c51e963368f4376303d1662750350ab6a652c11
+lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
 lastReviewedNote: 'Reviewed for Next Issue #845: refreshed v0.0.71 production evidence and qualification follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
 related:
   - .docpact/config.yaml
@@ -157,6 +157,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
+- startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
 
 ## Ownership Boundaries
 

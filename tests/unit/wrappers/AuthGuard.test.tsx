@@ -6,19 +6,29 @@ const mockHistory = {
   replace: mockReplace,
 };
 let mockCurrentUser: Auth.CurrentUser | undefined;
+let mockSystemStatus: { schemaVersion: 1; phase: string } | undefined;
 
 jest.mock('@umijs/max', () => ({
   history: mockHistory,
   Outlet: () => <div data-testid='route-outlet'>route outlet</div>,
   useModel: jest.fn(() => ({
-    initialState: mockCurrentUser ? { currentUser: mockCurrentUser } : {},
+    initialState: {
+      currentUser: mockCurrentUser,
+      systemStatus: mockSystemStatus,
+    },
   })),
+}));
+
+jest.mock('@/services/general/systemStatus', () => ({
+  isSystemMaintenanceActive: (status: any) =>
+    status?.phase === 'maintenance' || status?.phase === 'verifying',
 }));
 
 describe('AuthGuard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCurrentUser = undefined;
+    mockSystemStatus = undefined;
     mockHistory.location.pathname = '/dashboard/national-carbon';
   });
 
@@ -62,6 +72,20 @@ describe('AuthGuard', () => {
   it('does not create a redirect loop at the canonical login path', () => {
     const { default: AuthGuard } = require('@/wrappers/AuthGuard');
     mockHistory.location.pathname = '/user/login';
+
+    render(
+      <AuthGuard>
+        <div data-testid='protected-content'>protected</div>
+      </AuthGuard>,
+    );
+
+    expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('does not redirect or expose protected content during maintenance', () => {
+    const { default: AuthGuard } = require('@/wrappers/AuthGuard');
+    mockSystemStatus = { schemaVersion: 1, phase: 'maintenance' };
 
     render(
       <AuthGuard>

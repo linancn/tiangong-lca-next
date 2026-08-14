@@ -6,6 +6,7 @@ const mockGetSystemUserRoleApi = jest.fn();
 const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
 const mockResolveBrowserRuntimeLocale = jest.fn(() => 'de-DE');
 const mockBindTidasPackageTaskCenterOwner = jest.fn();
+const mockGetSystemStatus = jest.fn();
 const mockHistory = {
   location: {
     pathname: '/tgdata',
@@ -40,6 +41,17 @@ jest.mock('@/components', () => ({
 jest.mock('@/components/LCIACacheMonitor', () => ({
   __esModule: true,
   default: 'lcia-cache-monitor',
+}));
+
+jest.mock('@/components/SystemMaintenance', () => ({
+  __esModule: true,
+  default: ({ status }: any) => <div data-testid='system-maintenance'>{status.phase}</div>,
+}));
+
+jest.mock('@/components/SystemMaintenance/AppBootBoundary', () => ({
+  __esModule: true,
+  AppBootMarker: ({ children }: any) => children,
+  StaticFallbackErrorBoundary: ({ children }: any) => children,
 }));
 
 jest.mock('@/components/AccessDenied', () => ({
@@ -80,6 +92,13 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
 jest.mock('@/services/general/runtimeLocale', () => ({
   __esModule: true,
   resolveBrowserRuntimeLocale: () => mockResolveBrowserRuntimeLocale(),
+}));
+
+jest.mock('@/services/general/systemStatus', () => ({
+  __esModule: true,
+  getSystemStatus: () => mockGetSystemStatus(),
+  isSystemMaintenanceActive: (status: any) =>
+    status?.phase === 'maintenance' || status?.phase === 'verifying',
 }));
 
 jest.mock('../../config/defaultSettings', () => ({
@@ -158,6 +177,7 @@ describe('app runtime config', () => {
     mockGetSystemUserRoleApi.mockResolvedValue({ role: 'admin' });
     mockGetLocalizedAppTitle.mockReturnValue('Localized TianGong');
     mockResolveBrowserRuntimeLocale.mockReturnValue('de-DE');
+    mockGetSystemStatus.mockResolvedValue({ schemaVersion: 1, phase: 'normal' });
   });
 
   it('exposes the canonical browser locale to Umi before provider render', () => {
@@ -182,6 +202,49 @@ describe('app runtime config', () => {
       colorPrimary: '#9e3ffd',
       logo: '/logo_dark.svg',
     });
+  });
+
+  it('checks maintenance before authentication and stops protected startup while active', async () => {
+    const { getInitialState } = require('@/app');
+    mockGetSystemStatus.mockResolvedValueOnce({
+      schemaVersion: 1,
+      phase: 'maintenance',
+      reason: 'release_upgrade',
+      targetVersion: '0.0.71',
+    });
+
+    const state = await getInitialState();
+
+    expect(mockGetSystemStatus).toHaveBeenCalledTimes(1);
+    expect(mockQueryCurrentUser).not.toHaveBeenCalled();
+    expect(mockGetSystemUserRoleApi).not.toHaveBeenCalled();
+    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(mockBindTidasPackageTaskCenterOwner).toHaveBeenCalledWith(null);
+    expect(state.systemStatus.phase).toBe('maintenance');
+  });
+
+  it('renders maintenance ahead of auth guards and hides application chrome', () => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: undefined,
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+        systemStatus: { schemaVersion: 1, phase: 'verifying' },
+      },
+      setInitialState: jest.fn(),
+    });
+
+    runtimeLayout.onPageChange?.();
+    render(runtimeLayout.childrenRender?.(<div data-testid='protected-child'>private</div>));
+
+    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(screen.getByTestId('system-maintenance')).toHaveTextContent('verifying');
+    expect(screen.queryByTestId('protected-child')).not.toBeInTheDocument();
+    expect(runtimeLayout.actionsRender?.()).toEqual([]);
+    expect(runtimeLayout.avatarProps).toBeUndefined();
+    expect(runtimeLayout.footerRender).toBeUndefined();
+    expect(runtimeLayout.menuDataRender?.([{ path: '/tgdata' }])).toEqual([]);
   });
 
   it('binds the package task center to the authenticated user before rendering', async () => {

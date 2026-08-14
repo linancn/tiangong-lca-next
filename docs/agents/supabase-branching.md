@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
 lastReviewedNote: 'Reviewed for Next Issue #820 on the current queue/LCIA baseline: stable dataset submission carries no Gate assertion, the Review Admin diagnostic uses a separate authenticated Edge boundary, and Database remains authoritative for queue filtering and pagination.'
 ---
 
@@ -65,6 +65,7 @@ Rules:
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - the shared shipped client defaults to `db.schema = api`; non-core reads use Database-owned query facades and mutations use established command/Edge boundaries
+- browser startup reads `api.qry_system_status()` once before authentication through `src/services/general/systemStatus.ts`; `APP_RUNTIME_CONFIG_ENABLED` defaults to enabled, and only an explicit case-insensitive `false` skips the RPC and continues with the normal status; maintenance and verification phases render the localized app-shell boundary, while an unavailable or malformed control response fails open to normal startup and is checked again only after a full page refresh
 - direct relation access is fail-closed through `src/services/supabase/public.ts` and is limited to `processes`, `flows`, `contacts`, `sources`, `unitgroups`, `flowproperties`, `lciamethods`, `lifecyclemodels`, and `ilcd`; callers must not broaden this list to regain access to implementation tables
 - test-only Supabase clients used by live data workflows must select `public` explicitly before reading a core entity; mocks must implement the same schema-selection step
 - `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit

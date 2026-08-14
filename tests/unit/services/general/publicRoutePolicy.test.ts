@@ -86,8 +86,9 @@ describe('anonymous route policy', () => {
     expect(isAnonymousAllowedPath('/welcome')).toBe(false);
   });
 
-  it('keeps SPA-external anonymous HTML limited to the two legal login dependencies', () => {
+  it('keeps SPA-external anonymous HTML limited to maintenance and legal pages', () => {
     expect(collectPublicHtmlPaths(publicRoot)).toEqual([
+      '/maintenance.html',
       '/privacy_notice.html',
       '/terms_of_use.html',
     ]);

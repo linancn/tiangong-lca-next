@@ -1359,7 +1359,17 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
-  it('submits directly after current-record validation without traversing upstream references', async () => {
+  it('submits after the saved process and its recursive reference chain pass validation', async () => {
+    const findProblemNodes = jest.fn(() => []);
+    mockGetAllRefObj.mockReturnValueOnce([
+      {
+        '@refObjectId': 'flow-1',
+        '@version': '1.0.0',
+        '@type': 'flow data set',
+      },
+    ]);
+    mockCheckReferences.mockResolvedValueOnce({ findProblemNodes });
+
     render(<ProcessEdit {...baseProps} />);
 
     fireEvent.click(screen.getByRole('button'));
@@ -1370,11 +1380,84 @@ describe('ProcessEdit component', () => {
     await waitFor(() =>
       expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
     );
-    expect(mockDealProcress).not.toHaveBeenCalled();
-    expect(mockGetAllRefObj).not.toHaveBeenCalled();
-    expect(mockCheckReferences).not.toHaveBeenCalled();
-    expect(mockCheckVersions).not.toHaveBeenCalled();
+    expect(mockDealProcress).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'process-1', version: '1.0.0' }),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+    );
+    expect(mockGetAllRefObj).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'process-1', version: '1.0.0' }),
+    );
+    expect(mockCheckReferences).toHaveBeenCalledWith(
+      [
+        {
+          '@refObjectId': 'flow-1',
+          '@version': '1.0.0',
+          '@type': 'flow data set',
+        },
+      ],
+      expect.any(Map),
+      'team-1',
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Object),
+      expect.any(Set),
+      {
+        rootRef: {
+          '@refObjectId': 'process-1',
+          '@version': '1.0.0',
+          '@type': 'process data set',
+        },
+      },
+    );
+    expect(mockCheckVersions).toHaveBeenCalledWith(expect.any(Set), expect.any(Object));
+    expect(findProblemNodes).toHaveBeenCalledWith('review');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+  });
+
+  it('blocks review submission when the recursive reference chain contains a missing reference', async () => {
+    const missingRef = {
+      '@refObjectId': 'missing-flow',
+      '@version': '1.0.0',
+      '@type': 'flow data set',
+    };
+    mockCheckReferences.mockImplementationOnce(async (...args: any[]) => {
+      args[6].push(missingRef);
+      return { findProblemNodes: () => [] };
+    });
+    mockBuildValidationIssues.mockReturnValueOnce([{ id: 'missing-reference' }]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ key: 'missing-reference' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: [{ id: 'missing-reference' }],
+          title: {
+            id: 'pages.validationIssues.modal.reviewTitle',
+            defaultMessage: 'Review submission blocked',
+          },
+        }),
+      ),
+    );
+    expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionFrom: 'review',
+        nonExistentRef: [missingRef],
+      }),
+    );
+    expect(mockCheckVersions).toHaveBeenCalled();
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
   it('keeps the drawer open when direct review submission fails', async () => {
