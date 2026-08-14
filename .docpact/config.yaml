@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-08-14'
-lastReviewedCommit: '8c735ca300f4505f436df2d1f2db4f7adc830e39'
+lastReviewedAt: "2026-08-14"
+lastReviewedCommit: "6d45b13a55b178ec33094d2bb021659350a2dee9"
 lastReviewedNote: 'Next routing covers explicit proof-reuse publication dependencies and deterministic release-line validation for direct ancestry or an exact tree-identical two-parent promotion.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

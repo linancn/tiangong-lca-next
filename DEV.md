@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: 4d133b0fe25ce991e585e08cc58b36602be65ede
 lastReviewedNote: 'The normal release commands preserve exact qualification and managed-push proof while accepting only direct ancestry or a tree-identical two-parent promotion as a safe release line.'
 ---
 

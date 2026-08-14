@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
 lastReviewedNote: 'Deterministic release commands preserve Docpact-first managed gates and validate direct ancestry or only an exact tree-identical two-parent promotion before transport.'
 ---
 

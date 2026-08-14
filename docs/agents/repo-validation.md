@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
 lastReviewedNote: 'Release proof covers explicit proof-reuse publication dependencies plus direct-ancestry, exact two-parent promotion, and changed-tree rejection fixtures before the managed full gate.'
 related:
   - ../AGENTS.md

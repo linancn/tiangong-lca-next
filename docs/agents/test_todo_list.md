@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
 lastReviewedNote: 'Issue #845 adds proof-reuse publication and exact promotion-topology coverage with no exception queue; the checked-in bounded full-coverage baseline remains authoritative.'
 ---
 
