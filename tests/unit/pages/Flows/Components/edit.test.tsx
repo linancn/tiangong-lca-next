@@ -30,6 +30,10 @@ const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockSubmitDatasetReviewApi = jest.fn(async () => ({
+  data: [{ review: { id: 'review-1' } }],
+  error: null,
+}));
 const mockJsonToList = jest.fn((value: any) => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
@@ -83,6 +87,11 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@/components/ValidationIssueModal', () => ({
   __esModule: true,
   showValidationIssueModal: jest.fn(),
+}));
+
+jest.mock('@/services/reviews/api', () => ({
+  __esModule: true,
+  submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
 jest.mock('antd', () => {
@@ -391,7 +400,7 @@ jest.mock('@/pages/Utils/review', () => ({
   },
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn(() => ({
-    findProblemNodes: () => mockFindProblemNodes(),
+    findProblemNodes: (...args: any[]) => mockFindProblemNodes(...args),
   })),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
@@ -500,6 +509,10 @@ describe('FlowsEdit', () => {
     mockGetErrRefTab.mockReturnValue('');
     mockValidateEnhanced.mockReturnValue({ success: true });
     mockValidateDatasetWithSdk.mockReturnValue({ success: true, issues: [] });
+    mockSubmitDatasetReviewApi.mockResolvedValue({
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+    });
     mockJsonToList.mockImplementation((value: any) => {
       if (!value) return [];
       return Array.isArray(value) ? value : [value];
@@ -810,6 +823,75 @@ describe('FlowsEdit', () => {
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('flow-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+  });
+
+  it('runs review-mode reference checks and blocks flow submission on a version problem', async () => {
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: {
+        json: {
+          flowDataSet: {
+            flowInformation: {
+              dataSetInformation: {
+                name: { baseName: [{ '@xml:lang': 'en', '#text': 'Existing flow' }] },
+              },
+            },
+          },
+        },
+        stateCode: 0,
+        version: '1.0.0',
+      },
+    });
+    const versionProblem = {
+      '@refObjectId': 'source-review',
+      '@version': '01',
+      '@type': 'source data set',
+      ruleVerification: true,
+      nonExistent: false,
+      underReviewVersion: '02',
+      versionUnderReview: true,
+    };
+    mockFindProblemNodes.mockReturnValueOnce([versionProblem]);
+    mockBuildValidationIssues.mockReturnValueOnce([{ id: 'version-under-review' }]);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() =>
+      expect(mockBuildValidationIssues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actionFrom: 'review',
+          problemNodes: [versionProblem],
+        }),
+      ),
+    );
+    expect(mockCheckData).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Object),
+      expect.objectContaining({ actionFrom: 'review' }),
+    );
+    expect(mockFindProblemNodes).toHaveBeenCalledWith('review');
+    expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: {
+          id: 'pages.validationIssues.modal.reviewTitle',
+          defaultMessage: 'Review submission blocked',
+        },
+      }),
+    );
+    expect(mockSubmitDatasetReviewApi).not.toHaveBeenCalled();
   });
 
   it('keeps flow data checks running when the background save fails', async () => {

@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 68dbfce92fb34cdcf3a875103eb54dac93f72c3e
+lastReviewedCommit: 313c80a7081a68464221a669b2cd630464d08b0c
 lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
 related:
   - ../AGENTS.md
@@ -117,11 +117,11 @@ The global task center consumes only the whitelisted `task-summary.v2` projectio
 
 ### Review Submission And Review Admin Quality Diagnostic
 
-Process review submission uses the same stable command boundary as the other dataset types:
+Process, Flow, Source, and Contact review submission use the same stable command boundary as the other dataset types:
 
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
-Before calling that command, the Process editor checks only the current saved record with rules the submitter can immediately correct there: TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. The submit action does not traverse references, calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. The user-invoked `Data Check` action may continue to traverse references as a separate diagnostic. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
+Before calling that command, the Process editor validates the current saved record for TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. Process, Flow, Source, and Contact then recursively validate their existing reference chains through the same reference-access, rule-verification, and referenced-version checks. Any blocking reference-chain issue prevents submission and is shown through the review-specific validation surface. The submit action does not calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
 
 Review Admin has a separate manual quality-diagnostic path:
 
@@ -133,7 +133,7 @@ The diagnostic is visible only to `review-admin`, starts only after an explicit 
 
 ### Unified Root And Reference Review
 
-All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs only its current-record checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
+All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs its current-record checks above, while Process, Flow, Source, and Contact perform the recursive reference-chain checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
 Review Management consumes the central review projection. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
 
