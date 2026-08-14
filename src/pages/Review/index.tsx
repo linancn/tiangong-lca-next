@@ -6,6 +6,7 @@ import { Spin, Tabs } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import AssignmentReview from './Components/AssignmentReview';
 import ReviewMember from './Components/ReviewMember';
+import ReviewQualityDiagnostic from './Components/ReviewQualityDiagnostic';
 
 const Review = () => {
   const [activeTabKey, setActiveTabKey] = useState('');
@@ -152,7 +153,10 @@ const Review = () => {
         {!authResolved ? null : !isAuthorized ? (
           <AccessDenied />
         ) : (
-          <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+          <>
+            {isReviewAdmin && <ReviewQualityDiagnostic />}
+            <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+          </>
         )}
       </Spin>
     </PageContainer>

@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: the shared form-mock lifecycle repair preserves the existing repo contract, quality gate, and delivery boundaries.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable shared mocks, and current release evidence preserve the frontend, service, quality-gate, and delivery boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

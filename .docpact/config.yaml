@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "69c286c45e34645d3768c7943b62df9f9665dec9"
-lastReviewedNote: 'Reviewed for Next Issue #842: stable stateful-hook mock identity remains within the existing test, release, and documentation ownership domains.'
+lastReviewedAt: '2026-08-14'
+lastReviewedCommit: 'b5155e21e2858a48366380367b27179002889a22'
+lastReviewedNote: 'Next routing covers direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable stateful mocks, current release evidence, and bounded full-gate ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -273,8 +273,14 @@ routing:
     team-and-review-management:
       paths:
         - src/pages/Review/**
+        - src/pages/Processes/Components/edit.tsx
+        - src/pages/Utils/review.tsx
+        - src/services/reviews/**
         - src/pages/ManageSystem/**
         - src/pages/Teams/**
+        - docs/agents/data_audit_instruction.md
+        - docs/agents/team_management.md
+        - docs/agents/supabase-branching.md
     classification-assets:
       paths:
         - src/services/referenceResources/**

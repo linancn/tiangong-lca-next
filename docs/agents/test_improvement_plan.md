@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: stable shared hook mocks preserve the existing focused-first, full-closure strategy.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct-submit service proof, role-gated diagnostic components, and stable shared hook mocks preserve the risk-proportional focused-first and bounded full-closure strategy.'
 ---
 
 # Testing Strategy

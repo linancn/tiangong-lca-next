@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: bootstrap and managed delivery remain unchanged by the shared form-mock lifecycle repair.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct submission, the Review Admin diagnostic, stable shared mocks, and current release evidence use the existing install, focused-proof, build, coverage, and managed-push workflow.'
 ---
 
 # Development Bootstrap

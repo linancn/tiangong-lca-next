@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
-lastReviewedNote: 'Reviewed for Next Issue #807 / workspace Issue #521: Next forwards review display mode and exact target type to v3 queue RPCs; Database remains authoritative for filtering, totals, pagination, validation, and the 50-row default.'
+lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
+lastReviewedNote: 'Reviewed for Next Issue #820 on the current queue/LCIA baseline: stable dataset submission carries no Gate assertion, the Review Admin diagnostic uses a separate authenticated Edge boundary, and Database remains authoritative for queue filtering and pagination.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -76,6 +76,7 @@ Rules:
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - review queue services forward display mode and exact target type to the Database-owned v3 RPCs. Database applies their intersection before count and pagination and validates values; Next owns the controls, compatible-option presentation, state reset, and matching 50-row UI default.
+- dataset review submission calls the stable `app_dataset_submit_review` command with only table, ID, and version; Next sends no Gate run, checksum, or revision assertion. The separate `admin_review_quality_diagnostic` Edge function accepts only Review Admin start/read actions, derives scope server-side, and returns informational report state that cannot authorize or block review transitions.
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
 - Process keyword searches call `search_processes` through `src/services/processes/api.ts`, pass explicit query terms, and use no app-side ILIKE field filter. The `public_plus_owner_draft` picker asks the database for actor-owned state-zero drafts and public rows separately; database-engine owns actor/state eligibility, latest-version selection, workflow metadata, and `search_text` index constraints
 - LCA solve, result-query, and contribution-path requests use the shared `LcaScope` contract from `src/services/lca/scope.ts`. The default snapshot family is `full_library`; `data_product` is the only alternate value. Deployment names and cache namespaces are not valid LCA scope values, and persisted task recovery normalizes historical non-canonical values before resubmission

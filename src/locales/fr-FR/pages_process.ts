@@ -723,6 +723,7 @@ export default {
   'pages.process.validator.exchanges.quantitativeReference.required': 'Sélectionnez exactement un élément comme référence quantitative.',
 
   'pages.process.review.submitSuccess': 'Soumission pour revue réussie',
+  'pages.process.review.submitFailed': 'Échec de la soumission pour revue',
   'pages.process.review.submitError': 'Échec de la soumission pour revue',
   'pages.process.reviewSubmitGate.title': 'Contrôle de stabilité numérique',
   'pages.process.reviewSubmitGate.queued': 'La soumission pour revue est en file d’attente. Le système exécutera d’abord le contrôle de stabilité numérique.',

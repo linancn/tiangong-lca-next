@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: stateful hook mocks now explicitly preserve API identity across parent rerenders.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Semantic component interactions, exact direct-submit and diagnostic payloads, and stateful hook mocks use strict command contracts, stable API identity across rerenders, and bounded full-gate patterns.'
 ---
 
 # Testing Patterns Reference

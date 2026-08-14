@@ -185,23 +185,17 @@ describe('submitDatasetReviewApi', () => {
       'processes',
       '11111111-1111-4111-8111-111111111111',
       '01.00.000',
-      {
-        reviewSubmitGateRunId: '22222222-2222-4222-8222-222222222222',
-        revisionChecksum: 'a'.repeat(64),
-      },
     );
 
     expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
       id: '11111111-1111-4111-8111-111111111111',
       version: '01.00.000',
       table: 'processes',
-      reviewSubmitGateRunId: '22222222-2222-4222-8222-222222222222',
-      revisionChecksum: 'a'.repeat(64),
     });
     expect(result).toBe(commandResult);
   });
 
-  it('omits gate assertion metadata when it has not been provided', async () => {
+  it('keeps submission independent from Gate assertion metadata', async () => {
     const commandResult = {
       data: [{ review: { id: 'review-1' } }],
       error: null,
@@ -241,6 +235,181 @@ describe('submitDatasetReviewApi', () => {
       id: '11111111-1111-4111-8111-111111111111',
       version: '01.00.000',
       table: 'flows',
+    });
+  });
+});
+
+describe('requestReviewQualityDiagnosticApi', () => {
+  it('starts a Review Admin diagnostic and unwraps the command envelope', async () => {
+    const run = {
+      runId: '22222222-2222-4222-8222-222222222222',
+      status: 'queued',
+      requestedAt: '2026-08-13T08:00:00.000Z',
+    };
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'review_quality_diagnostic',
+        action: 'start',
+        data: run,
+      },
+      error: null,
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'start' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('admin_review_quality_diagnostic', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: { action: 'start' },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result).toEqual({
+      data: [run],
+      error: null,
+      count: null,
+      status: 202,
+      statusText: 'Accepted',
+    });
+  });
+
+  it('reads the latest diagnostic without starting one and normalizes an empty result', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'review_quality_diagnostic',
+        action: 'read',
+        data: null,
+      },
+      error: null,
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('admin_review_quality_diagnostic', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: { action: 'read' },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result).toEqual({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('reads a specific diagnostic run when the server-issued run ID is supplied', async () => {
+    const runId = '22222222-2222-4222-8222-222222222222';
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { runId, status: 'completed', outcome: 'clear' },
+      error: null,
+    });
+
+    await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read', runId });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('admin_review_quality_diagnostic', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: { action: 'read', runId },
+      region: FunctionRegion.UsEast1,
+    });
+  });
+
+  it.each([null, 'malformed', []])(
+    'normalizes malformed successful diagnostic payload %p to an empty result',
+    async (data) => {
+      mockFunctionsInvoke.mockResolvedValue({ data, error: null });
+
+      const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+      expect(result).toEqual({
+        data: [],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+    },
+  );
+
+  it('uses an empty bearer token when the diagnostic session omits its access token', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: {} },
+    });
+    mockFunctionsInvoke.mockResolvedValue({ data: null, error: null });
+
+    await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('admin_review_quality_diagnostic', {
+      headers: { Authorization: 'Bearer ' },
+      body: { action: 'read' },
+      region: FunctionRegion.UsEast1,
+    });
+  });
+
+  it('requires authentication before invoking the Review Admin diagnostic', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      data: null,
+      error: { code: 'AUTH_REQUIRED', message: 'Authentication required' },
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    });
+  });
+
+  it('preserves structured authorization errors returned by the Edge boundary', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          status: 403,
+          json: jest.fn(async () => ({
+            code: 'REVIEW_ADMIN_REQUIRED',
+            message: 'Review Admin role required',
+          })),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'start' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: {
+        code: 'REVIEW_ADMIN_REQUIRED',
+        message: 'Review Admin role required',
+      },
+      status: 403,
+      statusText: 'REVIEW_ADMIN_REQUIRED',
+    });
+  });
+
+  it('uses the server-error status fallback when the diagnostic error has no HTTP status', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function failed',
+        context: {
+          json: jest.fn(async () => ({
+            code: 'DIAGNOSTIC_FAILED',
+            message: 'Diagnostic unavailable',
+          })),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: { code: 'DIAGNOSTIC_FAILED', message: 'Diagnostic unavailable' },
+      status: 500,
+      statusText: 'DIAGNOSTIC_FAILED',
     });
   });
 });

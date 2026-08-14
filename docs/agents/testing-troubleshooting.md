@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: rerender-only missing mock APIs now route to stable hook identity and focused regression proof.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Focused Process and rerender failures use narrow async-state and stable-hook-identity proof; full-gate fallback retains the heap-aware bounded worker recovery path.'
 ---
 
 # Testing Troubleshooting

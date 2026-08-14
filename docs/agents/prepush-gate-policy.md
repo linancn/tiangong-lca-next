@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
-lastReviewedNote: 'Reviewed for Next Issue #842: the shared form-mock lifecycle repair preserves the existing full-gate trigger and release policy.'
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Product, component-test, locale-artifact, and stable-mock changes retain exact-proof reuse, Docpact-first validation, release policy, and the bounded hook-owned full gate.'
 ---
 
 # Pre-Push Gate Policy

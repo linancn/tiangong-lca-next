@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Next Issue #811: review-toolbar styling does not change team roles, review authority, or membership-constrained visibility.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedNote: 'Reviewed for Next Issue #820: the manual quality diagnostic belongs only to Review Admin and grants no workflow authority to team roles or Review Members.'
 ---
 
 # Team Management Reference
@@ -61,5 +61,7 @@ Member-management actions are always role-gated:
 ## Review Workflow Boundary
 
 Team `owner` and `admin` roles do not assign, review, approve, reject, repair, or receive notifications for Root/Reference Reviews. Review Admin and Review Member remain the only review roles, while each dataset owner remains responsible for repairing and resubmitting rejected data.
+
+Only Review Admin sees and manually runs the pending-review completeness and numerical-stability diagnostic. Review Member and every team role cannot start or read it through the product UI. Its report is informational and never changes the authority or availability of assign, approve, or reject actions.
 
 Existing team membership and dataset visibility may determine whether a submitter can already read and reference another owner's draft. Review submission must not grant new team or cross-team access. Result notifications go only to the affected dataset owner.

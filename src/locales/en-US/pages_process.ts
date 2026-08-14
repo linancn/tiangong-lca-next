@@ -724,6 +724,7 @@ export default {
   'pages.process.validator.exchanges.quantitativeReference.required': 'Select exactly one item as the quantitative reference.',
 
   'pages.process.review.submitSuccess': 'Review submitted successfully',
+  'pages.process.review.submitFailed': 'Review submission failed',
   'pages.process.review.submitError': 'Submit review failed',
   'pages.process.reviewSubmitGate.title': 'Numerical stability gate',
   'pages.process.reviewSubmitGate.queued': 'Review submission is queued. The system will run the numerical stability gate first.',
