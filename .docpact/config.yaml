@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-14'
-lastReviewedCommit: 'b5155e21e2858a48366380367b27179002889a22'
-lastReviewedNote: 'Next routing covers direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable stateful mocks, current release evidence, and bounded full-gate ownership.'
+lastReviewedCommit: '8c735ca300f4505f436df2d1f2db4f7adc830e39'
+lastReviewedNote: 'Next routing covers explicit proof-reuse publication dependencies and deterministic release-line validation for direct ancestry or an exact tree-identical two-parent promotion.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

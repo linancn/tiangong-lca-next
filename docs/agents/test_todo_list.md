@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
-lastReviewedNote: 'Focused Process, review-page, diagnostic-component, service, utility, and shared-mock proof adds no exception queue; the checked-in bounded full-coverage baseline remains authoritative.'
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedNote: 'Issue #845 adds proof-reuse publication and exact promotion-topology coverage with no exception queue; the checked-in bounded full-coverage baseline remains authoritative.'
 ---
 
 # Testing Execution State
@@ -56,6 +56,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - touched code must stay at full closure
 - Issue #799 adds focused TIDAS task-center coverage for duplicate queue aliases, persisted alias hydration, canonical backend timestamps, one active poller, and post-coalescing failure routing; it creates no open coverage queue
 - Issue #778 adds hermetic contract coverage for the two deterministic release commands: JSON purity, non-mutating dry-run, qualification reuse and automatic exact-receipt generation, qualification/preflight failure before transport, rejection of unexpected untracked JSON, exact version fields, large-lockfile blob fallback, checked-push delegation, idempotent PR reuse, immutable promotion identity, independent version-candidate and cumulative `main`-to-candidate Docpact preflight, bounded automatic review, and fail-closed package/document/diagnostic/branch/dev/marker drift. A real isolated clone also proves the current review closure reaches a bounded fixed point without document-body changes. It creates no open coverage queue.
+- Issue #845 closes the release proof-reuse publication gap: every tag, draft, web, Electron, and final-verification job overrides only the intentional skipped-ancestor propagation with `!cancelled()` while requiring each direct prerequisite to succeed. The deterministic release fixtures also accept the normal tree-identical two-parent promotion after `dev` advances and reject any changed promotion tree; this creates no open coverage queue.
 - Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - Issue #748 adds a git-tracked scope-closure qualification adapter for the Next owner. Its isolated Chromium flow proves preparing, available, expired, and unavailable presentation; direct document navigation for bounded XLSX and machine-readable manifests; integrity/expiry metadata; localized 410 rerun guidance; and anonymous, standard-user, administrator, owner, and data-product-manager routing without production targets or mutation.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
