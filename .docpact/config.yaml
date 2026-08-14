@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-08-13'
-lastReviewedCommit: '794fef603798d03c3dd8f4692a53563074b09d63'
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: direct review submission and the Review Admin diagnostic stay within current page, service, role, validation, architecture, locale, and full-gate ownership.'
+lastReviewedAt: '2026-08-14'
+lastReviewedCommit: 'b5155e21e2858a48366380367b27179002889a22'
+lastReviewedNote: 'Next routing covers direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable stateful mocks, current release evidence, and bounded full-gate ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

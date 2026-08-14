@@ -30,9 +30,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: semantic component interactions and exact direct-submit/diagnostic payload assertions use existing strict command-contract and bounded full-gate patterns.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Semantic component interactions, exact direct-submit and diagnostic payloads, and stateful hook mocks use strict command contracts, stable API identity across rerenders, and bounded full-gate patterns.'
 ---
 
 # Testing Patterns Reference
@@ -54,6 +54,8 @@ lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 b
 - keep test setup close to the behavior being proved
 - prefer existing helpers over one-off fixtures
 - do not add snapshots when explicit assertions are clearer
+- make mocks for stateful hooks preserve the identity of returned API objects across parent rerenders; update methods on the stable object instead of returning a fresh placeholder on each render
+- pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary

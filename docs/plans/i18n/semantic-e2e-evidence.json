@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-13T04:43:11.480Z",
-  "runId": "local-b77e55ac-7ccf-40f3-9eb6-ec51ae13dc05",
+  "generatedAt": "2026-08-13T16:03:03.669Z",
+  "runId": "local-e1ccecf8-011c-4dae-b4da-ff4731b2a2bf",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "42b7e37ad3334e69bad22932677e61f9dfb31774",
-    "packageManifestDigest": "4edda913c2d75c266e5ef803b7d0171f019ed5494ad8cbef10d8d0b7e7ecc2b0",
-    "sourceTreeDigest": "7eb7f23eaa1bc802da8a594c8609c7005fd02a3b2b7bdc623a7df5cac295aedf",
-    "unitTestTreeDigest": "4902252cde9a2d5764f73a9fa42990b2c164d7e9b4aff6e4ec8141fabcbab218"
+    "observedHeadCommit": "b918c68480ac67de3ab66e332c0e5a62272963c9",
+    "packageManifestDigest": "2b78dea75572169f5a945913cc1d3b8b9ed3b9ecbb65c4fc0dc45b4126150437",
+    "sourceTreeDigest": "5e5430988c519280325dd6d71189e8651780c4b3eb1d78616b4a2121ddb523a9",
+    "unitTestTreeDigest": "40d09c6a1e13df8a901f7c6d5f34c2464247b49d06d5381cbfc980ac89a0bab0"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "b46fc0f92f5cdd34853fa71c7238a15bcefde446d6795893ea650f2490496931"
+      "sha256": "9fd2ed1e848cbdbc78d612167f5672ab034a3b5445d5e9a391d113a1fe1f6d69"
     },
     "runtimeAssets": [
       {
@@ -377,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "718feff487151b71ad19ad0a508bb56b46bfd8531af05b60477c678b479ade2a"
+        "sha256": "d1930ddaf4817eb4dec31668565b1b3d52103dbeca3cb515066594807e0d0198"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -519,7 +519,7 @@
       },
       {
         "path": "src/locales/en-US/pages.ts",
-        "sha256": "287a5f3f589b5e3138ba05891b6259da4c6da452c800e22456fab4273909b74e"
+        "sha256": "a593dba3f0843b5ff53f4739953702d7608c9e6134ee4f33db2d7533339d72a4"
       },
       {
         "path": "src/locales/en-US/pages_general.ts",
@@ -543,7 +543,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "e395d4baee0870648b3d832bcbc2af3e5449a19dd9bba07d1cbae1ec149e619e"
+        "sha256": "940f8843458a176296cfb41b824204bedd203b45981657b409dc1d38734d50da"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",

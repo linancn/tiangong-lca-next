@@ -33,9 +33,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: direct current-record review submission and the Review Admin informational diagnostic preserve existing frontend, service, LCIA-product, documentation, and bounded full-gate boundaries.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct current-record review submission, the manual non-blocking Review Admin diagnostic, stable shared mocks, and current release evidence preserve the frontend, service, quality-gate, and delivery boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

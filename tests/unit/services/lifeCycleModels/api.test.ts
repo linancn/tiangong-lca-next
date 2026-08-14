@@ -4,7 +4,7 @@
 
 jest.mock('@/pages/LifeCycleModels/lifecyclemodels.json', () => ({}), { virtual: true });
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createLifeCycleModel: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
@@ -17,7 +17,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 const {
   createLifeCycleModel: mockCreateTidasLifeCycleModel,
   createProcess: mockCreateTidasProcess,
-} = jest.requireMock('@tiangong-lca/tidas-sdk');
+} = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();

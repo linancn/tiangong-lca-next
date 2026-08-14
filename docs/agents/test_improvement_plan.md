@@ -27,9 +27,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: direct-submit service proof and a role-gated interactive component suite fit the risk-proportional strategy and bounded full-closure execution.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct-submit service proof, role-gated diagnostic components, and stable shared hook mocks preserve the risk-proportional focused-first and bounded full-closure strategy.'
 ---
 
 # Testing Strategy

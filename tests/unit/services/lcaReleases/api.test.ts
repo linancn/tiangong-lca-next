@@ -443,11 +443,22 @@ describe('lcaReleases api', () => {
     }) as any;
 
     await expect(
-      fetchFreshCalculationBundleDownloadBlob('package', 'download:lcia_results_csv_zip', expected),
+      fetchFreshCalculationBundleDownloadBlob(
+        '11111111-1111-4111-8111-111111111111',
+        'download:lcia_results_csv_zip',
+        expected,
+      ),
     ).rejects.toThrow('no longer available');
     await expect(
-      fetchFreshCalculationBundleDownloadBlob('package', 'download:lcia_results_xlsx', expected),
+      fetchFreshCalculationBundleDownloadBlob(
+        '11111111-1111-4111-8111-111111111111',
+        'download:lcia_results_xlsx',
+        expected,
+      ),
     ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
+    expect(global.fetch).toHaveBeenCalledWith('https://download.example/results.xlsx', {
+      credentials: 'omit',
+    });
   });
 
   it('rejects missing, denied, or drifted fresh Calculation Bundle downloads before saving', async () => {
@@ -459,6 +470,13 @@ describe('lcaReleases api', () => {
     mockFunctionsInvoke
       .mockResolvedValueOnce({
         data: { ok: false, code: 'access_denied', message: 'Access denied' },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: { calculationBundle: { manifestDownload: expected, artifacts: [] } },
+        },
         error: null,
       })
       .mockResolvedValueOnce({
@@ -493,6 +511,9 @@ describe('lcaReleases api', () => {
     ).rejects.toThrow('Access denied');
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'missing.ndjson.gz', expected),
+    ).rejects.toThrow('no longer available');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'download:missing-role', expected),
     ).rejects.toThrow('no longer available');
     await expect(
       fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),

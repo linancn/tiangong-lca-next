@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 794fef603798d03c3dd8f4692a53563074b09d63
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current Issue #819/#823 baseline: direct submission and the Review Admin diagnostic use the existing install, focused-proof, build, and managed-push workflow without changing bootstrap or bounded coverage commands.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedNote: 'Direct submission, the Review Admin diagnostic, stable shared mocks, and current release evidence use the existing install, focused-proof, build, coverage, and managed-push workflow.'
 ---
 
 # Development Bootstrap

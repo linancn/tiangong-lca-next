@@ -12,7 +12,7 @@
  * - getSourcesByIdsAndVersions: Fetch multiple sources by ID-version pairs (used in Utils/review.tsx)
  */
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createSource: jest.fn(),
 }));
@@ -102,7 +102,7 @@ const {
   normalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
-const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk');
+const { createSource: mockCreateSource } = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
 describe('Sources API Service (src/services/sources/api.ts)', () => {
   const mockSession = createMockSession('user-123', 'test-token');
