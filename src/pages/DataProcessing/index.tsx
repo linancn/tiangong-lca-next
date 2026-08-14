@@ -32,6 +32,7 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
+import { toCanonicalLciaMethodId } from '@/services/lciaMethods/evidence';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { taskProgressPercent, type TaskSummaryV2 } from '@/services/taskCenter/types';
 import {
@@ -572,13 +573,14 @@ export function buildImpactCategoryOptions(
     const id = typeof file.id === 'string' ? file.id.trim() : '';
     const version = typeof file.version === 'string' ? file.version.trim() : '';
     if (!id || !/^\d{2}\.\d{2}\.\d{3}$/.test(version)) return [];
+    const methodId = toCanonicalLciaMethodId(id, version);
 
     const name = resolveLocalizedText(file.description, locale) || id;
     const unit = resolveLocalizedText(file.referenceQuantity?.['common:shortDescription'], locale);
     const suffix = [version, unit].filter(Boolean).join(' / ');
     return [
       {
-        value: id,
+        value: methodId,
         version,
         label: `${name} (${suffix})`,
       },
