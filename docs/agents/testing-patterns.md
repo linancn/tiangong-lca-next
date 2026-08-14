@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
 lastReviewedNote: 'Semantic component interactions, exact direct-submit and diagnostic payloads, and stateful hook mocks use strict command contracts, stable API identity across rerenders, and bounded full-gate patterns.'
 ---
 

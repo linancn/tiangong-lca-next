@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
 lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
 related:
   - ../AGENTS.md

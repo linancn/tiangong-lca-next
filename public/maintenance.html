@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>System status · TianGong LCA</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      html, body { min-width: 320px; min-height: 100%; margin: 0; }
+      body {
+        display: grid; min-height: 100vh; place-items: center; padding: 28px 20px;
+        color: #251a29;
+        background: radial-gradient(circle at 18% 16%, rgb(92 36 106 / 14%), transparent 36%),
+          radial-gradient(circle at 84% 80%, rgb(92 36 106 / 10%), transparent 34%), #f7f5fa;
+      }
+      main {
+        width: min(100%, 620px); padding: 50px 44px 42px; text-align: center;
+        background: rgb(255 255 255 / 95%); border: 1px solid rgb(92 36 106 / 12%);
+        border-radius: 24px; box-shadow: 0 24px 64px rgb(35 18 41 / 12%);
+      }
+      .icon {
+        display: grid; width: 72px; height: 72px; margin: 0 auto 20px; place-items: center;
+        color: #5c246a; font-size: 36px; background: rgb(92 36 106 / 10%); border-radius: 20px;
+      }
+      .tag {
+        display: inline-block; margin-bottom: 16px; padding: 6px 12px; color: #874d00;
+        font-size: 13px; font-weight: 700; background: #fff7e6; border: 1px solid #ffd591; border-radius: 999px;
+      }
+      h1 { margin: 0 0 16px; font-size: clamp(30px, 6vw, 42px); line-height: 1.18; }
+      p { margin: 0 auto 28px; color: #625668; font-size: 17px; line-height: 1.75; }
+      button {
+        min-height: 44px; padding: 0 22px; color: white; font: inherit; font-weight: 650; cursor: pointer;
+        background: #5c246a; border: 0; border-radius: 10px;
+      }
+      button:focus-visible { outline: 3px solid rgb(92 36 106 / 30%); outline-offset: 3px; }
+      small { display: block; margin-top: 14px; color: #817486; }
+      @media (max-width: 520px) { main { padding: 40px 24px 34px; } }
+    </style>
+  </head>
+  <body>
+    <main aria-labelledby="title">
+      <div class="icon" aria-hidden="true">⚙</div>
+      <div class="tag" id="tag">Service status</div>
+      <h1 id="title">The service is temporarily unavailable</h1>
+      <p id="description">The application could not start or is undergoing maintenance. Please try again shortly.</p>
+      <button id="refresh" type="button">Refresh page</button>
+      <small id="hint">Refreshing will try to start the application again</small>
+    </main>
+    <script>
+      (function () {
+        var messages = {
+          'zh-CN': ['服务状态', '系统暂时无法访问', '应用未能正常启动，或系统正在维护中。请稍后重新尝试。', '刷新页面', '刷新后将重新尝试启动应用'],
+          'en-US': ['Service status', 'The service is temporarily unavailable', 'The application could not start or is undergoing maintenance. Please try again shortly.', 'Refresh page', 'Refreshing will try to start the application again'],
+          'de-DE': ['Dienststatus', 'Der Dienst ist vorübergehend nicht verfügbar', 'Die Anwendung konnte nicht gestartet werden oder wird gerade gewartet. Bitte versuchen Sie es später erneut.', 'Seite aktualisieren', 'Beim Aktualisieren wird die Anwendung erneut gestartet'],
+          'fr-FR': ['État du service', 'Le service est temporairement indisponible', "L’application n’a pas pu démarrer ou est en maintenance. Veuillez réessayer dans quelques instants.", 'Actualiser la page', "L’actualisation tentera de redémarrer l’application"]
+        };
+        var language = (navigator.language || 'en-US').toLowerCase();
+        var locale = language.indexOf('zh') === 0 ? 'zh-CN' : language.indexOf('de') === 0 ? 'de-DE' : language.indexOf('fr') === 0 ? 'fr-FR' : 'en-US';
+        var copy = messages[locale];
+        document.documentElement.lang = locale;
+        document.getElementById('tag').textContent = copy[0];
+        document.getElementById('title').textContent = copy[1];
+        document.getElementById('description').textContent = copy[2];
+        document.getElementById('refresh').textContent = copy[3];
+        document.getElementById('hint').textContent = copy[4];
+        document.getElementById('refresh').addEventListener('click', function () {
+          window.location.replace(window.location.protocol === 'file:' ? './index.html' : '/');
+        });
+      })();
+    </script>
+  </body>
+</html>

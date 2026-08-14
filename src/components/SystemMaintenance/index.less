@@ -1,0 +1,99 @@
+.page {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-width: 320px;
+  padding: 32px 20px;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 18% 16%, rgb(92 36 106 / 14%) 0, transparent 36%),
+    radial-gradient(circle at 84% 80%, rgb(92 36 106 / 10%) 0, transparent 34%), #f7f5fa;
+}
+
+.card {
+  width: min(100%, 640px);
+  padding: 52px 48px 44px;
+  text-align: center;
+  background: rgb(255 255 255 / 94%);
+  border: 1px solid rgb(92 36 106 / 12%);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgb(35 18 41 / 12%);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  color: var(--ant-color-primary, #5c246a);
+  font-size: 34px;
+  background: rgb(92 36 106 / 10%);
+  border-radius: 20px;
+}
+
+.statusTag {
+  margin: 0 0 16px;
+  padding: 4px 12px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.title {
+  margin-bottom: 16px !important;
+  color: #251a29 !important;
+  font-size: clamp(30px, 5vw, 44px) !important;
+}
+
+.description {
+  max-width: 520px;
+  margin: 0 auto 28px !important;
+  color: #625668;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 28px;
+  text-align: left;
+}
+
+.details > div {
+  padding: 14px 16px;
+  background: #f7f4f8;
+  border-radius: 12px;
+}
+
+.details dt {
+  margin-bottom: 4px;
+  color: #817486;
+  font-size: 12px;
+}
+
+.details dd {
+  margin: 0;
+  color: #352b39;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  display: block;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 40px 24px 34px;
+  }
+
+  .details {
+    grid-template-columns: 1fr;
+  }
+}

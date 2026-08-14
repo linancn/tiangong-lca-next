@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "0af7ffeffc23418d361d2aaefe4e5f38010027a59d11f9ee6400ace40c219061",
+    "auditedInputDigest": "356d4a92d9643b16fdf77c3f4614d236edf473746068c2a41c66a843108237ae",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -68,14 +68,14 @@
   },
   "summary": {
     "localeCount": 4,
-    "localeLeafModuleCounts": { "en-US": 30, "zh-CN": 30, "de-DE": 30, "fr-FR": 30 },
-    "localeUniqueKeyCounts": { "en-US": 3161, "zh-CN": 3161, "de-DE": 3161, "fr-FR": 3161 },
-    "canonicalCandidateKeyCount": 3161,
-    "activeStaticKeyCount": 2146,
+    "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
+    "localeUniqueKeyCounts": { "en-US": 3170, "zh-CN": 3170, "de-DE": 3170, "fr-FR": 3170 },
+    "canonicalCandidateKeyCount": 3170,
+    "activeStaticKeyCount": 2155,
     "activeDynamicKeyCount": 355,
     "reservedKeyCount": 660,
-    "productionSourceFileCount": 438,
-    "literalReferenceCount": 4157,
+    "productionSourceFileCount": 441,
+    "literalReferenceCount": 4166,
     "dynamicCallsiteCount": 35,
     "dynamicCallsiteSummaryCount": 35,
     "registeredDynamicCallsiteCount": 35,
@@ -112,6 +112,7 @@
         "component_importData",
         "component_refsOfNewVersionDrawer",
         "component_rejectReview",
+        "component_systemMaintenance",
         "component_tidasPackage",
         "component",
         "globalHeader",
@@ -162,6 +163,7 @@
         "pages_review",
         "component_importData",
         "component_tidasPackage",
+        "component_systemMaintenance",
         "component_rejectReview",
         "component_connectableProcesses",
         "component_AISuggestion",
@@ -180,6 +182,7 @@
         "component_importData",
         "component_refsOfNewVersionDrawer",
         "component_rejectReview",
+        "component_systemMaintenance",
         "component_tidasPackage",
         "component",
         "globalHeader",
@@ -230,6 +233,7 @@
         "pages_review",
         "component_importData",
         "component_tidasPackage",
+        "component_systemMaintenance",
         "component_rejectReview",
         "component_connectableProcesses",
         "component_AISuggestion",
@@ -248,6 +252,7 @@
         "component_importData",
         "component_refsOfNewVersionDrawer",
         "component_rejectReview",
+        "component_systemMaintenance",
         "component_tidasPackage",
         "component",
         "globalHeader",
@@ -298,6 +303,7 @@
         "pages_review",
         "component_importData",
         "component_tidasPackage",
+        "component_systemMaintenance",
         "component_rejectReview",
         "component_connectableProcesses",
         "component_AISuggestion",
@@ -316,6 +322,7 @@
         "component_importData",
         "component_refsOfNewVersionDrawer",
         "component_rejectReview",
+        "component_systemMaintenance",
         "component_tidasPackage",
         "component",
         "globalHeader",
@@ -366,6 +373,7 @@
         "pages_review",
         "component_importData",
         "component_tidasPackage",
+        "component_systemMaintenance",
         "component_rejectReview",
         "component_connectableProcesses",
         "component_AISuggestion",
@@ -390,25 +398,25 @@
           "value": "Download this page to your local project",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 36, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 37, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "下载此页面到本地项目",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 36, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 37, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Diese Seite in Ihr lokales Projekt herunterladen",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 37, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 38, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Télécharger cette page dans votre projet local",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 37, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 38, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -5437,25 +5445,25 @@
           "value": "Quickly build standard, pages based on `block` development",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 38, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 39, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "基于 block 开发，快速构建标准页面",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 38, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 39, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Standardseiten schnell auf Basis von `block`-Bausteinen erstellen",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 39, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 40, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Créer rapidement des pages standard à partir de composants `block`",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 39, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 40, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -5476,25 +5484,25 @@
           "value": "Get all block",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 37, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 38, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "获取全部区块",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 37, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 38, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Alle Blöcke abrufen",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 38, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 39, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Obtenir tous les blocs",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 38, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 39, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -13724,7 +13732,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 233,
+          "line": 267,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13737,7 +13745,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 233, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 267, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -17068,6 +17076,627 @@
           ]
         }
       ]
+    },
+    {
+      "id": "component.systemMaintenance.description",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "We are releasing a new version and performing required maintenance. Please refresh this page later.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 5,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "我们正在发布新版本并进行必要的系统维护。维护完成后即可继续使用，请稍后刷新页面。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 5,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Wir veröffentlichen eine neue Version und führen notwendige Wartungsarbeiten durch. Bitte aktualisieren Sie diese Seite später.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 5,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Nous publions une nouvelle version et effectuons la maintenance nécessaire. Veuillez actualiser cette page plus tard.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 5,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 45,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.estimatedEnd",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Estimated completion",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 8,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "预计结束时间",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 8,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Voraussichtliches Ende",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 8,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Fin estimée",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 8,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 67,
+          "column": 19,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.maintenanceTag",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Maintenance in progress",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 2,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "系统维护中",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 2,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Wartung läuft",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 2,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Maintenance en cours",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 2,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 33,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.refresh",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Refresh page",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 9,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "刷新页面",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 9,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Seite aktualisieren",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 9,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Actualiser la page",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 9,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 81,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.refreshHint",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The system status is checked again when the page reloads",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 10,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "页面刷新时会重新检查系统状态",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 10,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Beim Neuladen der Seite wird der Systemstatus erneut geprüft",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 10,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Le statut du système est vérifié à nouveau lorsque la page est rechargée",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 10,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 84,
+          "column": 12,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.targetVersion",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Target version",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 7,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "目标版本",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 7,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Zielversion",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 7,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Version cible",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 7,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 59,
+          "column": 19,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.title",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "System upgrade in progress",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 4,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "系统版本升级维护中",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 4,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "System-Upgrade läuft",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 4,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Mise à niveau du système en cours",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 4,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 42,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.verifyingDescription",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The new version is deployed and undergoing final availability checks. Access will resume when verification finishes.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 6,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "新版本已经部署，正在进行最后的可用性验证。验证完成后系统将恢复访问。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 6,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Die neue Version wurde bereitgestellt und wird abschließend geprüft. Nach der Prüfung ist das System wieder verfügbar.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 6,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "La nouvelle version est déployée et fait l’objet des dernières vérifications. L’accès reprendra ensuite.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 6,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 45,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "component.systemMaintenance.verifyingTag",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["component_systemMaintenance"],
+        "zh-CN": ["component_systemMaintenance"],
+        "de-DE": ["component_systemMaintenance"],
+        "fr-FR": ["component_systemMaintenance"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Upgrade verification",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/component_systemMaintenance.ts",
+            "line": 3,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "zh-CN": {
+          "value": "升级验证中",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/component_systemMaintenance.ts",
+            "line": 3,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "de-DE": {
+          "value": "Upgrade wird geprüft",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/component_systemMaintenance.ts",
+            "line": 3,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        },
+        "fr-FR": {
+          "value": "Vérification de la mise à niveau",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/component_systemMaintenance.ts",
+            "line": 3,
+            "column": 3,
+            "module": "component_systemMaintenance"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/components/SystemMaintenance/index.tsx",
+          "line": 33,
+          "column": 11,
+          "symbol": "SystemMaintenance",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
     },
     {
       "id": "component.tagSelect.collapse",
@@ -23429,25 +24058,25 @@
           "value": "Help",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 33, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 34, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "帮助",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 33, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 34, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Hilfe",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 34, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 35, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Aide",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 34, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 35, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -23468,25 +24097,25 @@
           "value": "Privacy",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 34, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 35, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "隐私",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 34, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 35, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Datenschutz",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 35, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 36, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Confidentialité",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 35, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 36, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -23507,25 +24136,25 @@
           "value": "Terms",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 35, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 36, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "条款",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 35, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 36, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Nutzungsbedingungen",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 36, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 37, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Conditions",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 36, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 37, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -25054,7 +25683,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 174,
+          "line": 204,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25067,7 +25696,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 174, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 204, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25191,7 +25820,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 190,
+          "line": 220,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25204,7 +25833,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 190, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 220, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -30035,25 +30664,25 @@
           "value": "Languages",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/en-US.ts", "line": 32, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/en-US.ts", "line": 33, "column": 3, "module": "$entry" }
         },
         "zh-CN": {
           "value": "语言",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/zh-CN.ts", "line": 32, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/zh-CN.ts", "line": 33, "column": 3, "module": "$entry" }
         },
         "de-DE": {
           "value": "Sprachen",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/de-DE.ts", "line": 33, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/de-DE.ts", "line": 34, "column": 3, "module": "$entry" }
         },
         "fr-FR": {
           "value": "Langues",
           "argumentSignature": [],
           "placeholders": [],
-          "source": { "path": "src/locales/fr-FR.ts", "line": 33, "column": 3, "module": "$entry" }
+          "source": { "path": "src/locales/fr-FR.ts", "line": 34, "column": 3, "module": "$entry" }
         }
       },
       "references": [],
@@ -130874,7 +131503,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 121,
+          "line": 147,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,

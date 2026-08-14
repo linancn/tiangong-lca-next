@@ -566,7 +566,7 @@ describe('shared locale delivery contracts', () => {
       expect(quality.structuralValidation).toEqual(
         expect.objectContaining({
           validatedMessageCount: context.messageDossiers.messageCount,
-          validatedModuleCount: 31,
+          validatedModuleCount: 32,
           blockedItems: 0,
           semanticReviewPerformed: false,
         }),

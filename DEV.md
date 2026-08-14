@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: b5155e21e2858a48366380367b27179002889a22
+lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
 lastReviewedNote: 'Direct submission, the Review Admin diagnostic, stable shared mocks, and current release evidence use the existing install, focused-proof, build, coverage, and managed-push workflow.'
 ---
 
