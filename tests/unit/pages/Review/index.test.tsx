@@ -131,6 +131,9 @@ describe('Review page', () => {
     await waitFor(() => {
       expect(screen.getByTestId('assignment-assigned')).toHaveTextContent('assigned:review-admin');
     });
+    fireEvent.click(screen.getByRole('button', { name: 'open-quality-diagnostic' }));
+    expect(screen.getByTestId('review-quality-diagnostic')).toHaveAttribute('data-open', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'close-quality-diagnostic' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'pages.review.tabs.rejectedTask' }));
 
