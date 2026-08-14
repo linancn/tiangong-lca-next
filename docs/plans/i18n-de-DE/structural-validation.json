@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "5319c5fd34d9b2edfa6c16005a708828afb48472d13ff995672734ddb03aa3b7",
+    "auditedInputDigest": "db6dbddc113c0bdef9ee215f9fdfe1810763ba176ba2e0ac983b86189ac0386f",
     "validatedMessageCount": 3169,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1433,
     "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
     "catalogDigest": "a069f1d12f849e391c7c38fb44ada66b8a856cf31f92902a02cd5538a41827fa",
-    "dossierDigest": "141a6ab1135341252560bbf4c87d2df423fd330ee746c9b3f9d1b5a919ae02ad",
+    "dossierDigest": "4e32eb024441da0fdea47b3f97db6945924f2ebabd9219fc0bc9a58a7f71468d",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "bc7fb4c74b8cbfcc3b58c462e4320593d56bbf4256fadacbc2e2988f9c0cb361",
+    "routeEvidenceDigest": "c5d9211efd6201d53b09d372dd9c6e45d2236229100be6e68c4425d4ec2b4e18",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "720ffdb462f7c139597e6d9e9bb59f4641cd1fd1b5099b671fdef39cc900c87f",
         "highRiskMessageCount": 1433,
         "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
-        "dossierDigest": "141a6ab1135341252560bbf4c87d2df423fd330ee746c9b3f9d1b5a919ae02ad",
+        "dossierDigest": "4e32eb024441da0fdea47b3f97db6945924f2ebabd9219fc0bc9a58a7f71468d",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "2fa4137659401387f8acb4a5fee08b034aaecd3b658bfebd3db642723c24e5fc"
+  "validationDigest": "0503b6e0719f37eff250280a27d50fdd0bf9af0a2fecec1f411935098f7365a2"
 }
