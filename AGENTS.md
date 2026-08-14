@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
+lastReviewedCommit: 4d133b0fe25ce991e585e08cc58b36602be65ede
 lastReviewedNote: 'Release publication now carries exact reused proof through explicit dependency results, and deterministic release commands recognize the normal tree-identical two-parent promotion topology without accepting main-only drift.'
 related:
   - .docpact/config.yaml
