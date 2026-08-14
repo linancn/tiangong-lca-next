@@ -12,6 +12,7 @@ const Review = () => {
   const [activeTabKey, setActiveTabKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [authResolved, setAuthResolved] = useState(false);
+  const [qualityDiagnosticOpen, setQualityDiagnosticOpen] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
   const actionRef = useRef<any>();
   const unassignedTableRef = useRef<any>();
@@ -75,6 +76,7 @@ const Review = () => {
               actionRef={unassignedTableRef}
               tableType='unassigned'
               userData={userData}
+              onOpenQualityDiagnostic={() => setQualityDiagnosticOpen(true)}
             />
           ),
         },
@@ -86,6 +88,7 @@ const Review = () => {
               actionRef={assignedTableRef}
               tableType='assigned'
               userData={userData}
+              onOpenQualityDiagnostic={() => setQualityDiagnosticOpen(true)}
             />
           ),
         },
@@ -154,7 +157,12 @@ const Review = () => {
           <AccessDenied />
         ) : (
           <>
-            {isReviewAdmin && <ReviewQualityDiagnostic />}
+            {isReviewAdmin && (
+              <ReviewQualityDiagnostic
+                open={qualityDiagnosticOpen}
+                onClose={() => setQualityDiagnosticOpen(false)}
+              />
+            )}
             <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
           </>
         )}

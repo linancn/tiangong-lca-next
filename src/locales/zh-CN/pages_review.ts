@@ -20,7 +20,7 @@ export default {
   'pages.review.qualityDiagnostic.empty': '尚未运行质量诊断。',
   'pages.review.qualityDiagnostic.updatedAt': '更新于 {time}',
   'pages.review.qualityDiagnostic.runtimeFailed': '本次诊断未生成报告。',
-  'pages.review.qualityDiagnostic.running': '诊断正在后台运行，审核操作仍然可用。',
+  'pages.review.qualityDiagnostic.running': '诊断正在后台检查待审核数据联合矩阵，仅供参考，不影响审核操作。',
   'pages.review.qualityDiagnostic.scope.reviews': '审核项数量',
   'pages.review.qualityDiagnostic.scope.datasets': '数据集数量',
   'pages.review.qualityDiagnostic.scope.processes': '待审核过程',

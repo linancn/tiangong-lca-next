@@ -19,7 +19,7 @@ export default {
   'pages.review.qualityDiagnostic.empty': 'Es wurde noch keine Qualitätsdiagnose ausgeführt.',
   'pages.review.qualityDiagnostic.updatedAt': 'Aktualisiert um {time}',
   'pages.review.qualityDiagnostic.runtimeFailed': 'Die Diagnose hat keinen Bericht erstellt.',
-  'pages.review.qualityDiagnostic.running': 'Die Diagnose läuft im Hintergrund. Prüfaktionen bleiben verfügbar.',
+  'pages.review.qualityDiagnostic.running': 'Die Diagnose prüft die gemeinsame Matrix ausstehender Prüfungen im Hintergrund nur zur Information; Prüfaktionen bleiben verfügbar.',
   'pages.review.qualityDiagnostic.scope.reviews': 'Geprüfte Prüfungen',
   'pages.review.qualityDiagnostic.scope.datasets': 'Geprüfte Datensätze',
   'pages.review.qualityDiagnostic.scope.processes': 'Ausstehende Prozesse',
