@@ -17,7 +17,7 @@ jest.mock('@/services/roles/api', () => ({
 
 jest.mock('@/pages/Review/Components/AssignmentReview', () => ({
   __esModule: true,
-  default: ({ actionRef, tableType, userData }: any) => {
+  default: ({ actionRef, tableType, userData, onOpenQualityDiagnostic }: any) => {
     const reload = assignmentReloads[tableType] ?? jest.fn();
     assignmentReloads[tableType] = reload;
     if (actionRef) {
@@ -26,6 +26,11 @@ jest.mock('@/pages/Review/Components/AssignmentReview', () => ({
     return (
       <div data-testid={`assignment-${tableType}`}>
         {`${tableType}:${userData?.role ?? 'none'}`}
+        {onOpenQualityDiagnostic && (
+          <button type='button' onClick={onOpenQualityDiagnostic}>
+            open-quality-diagnostic
+          </button>
+        )}
       </div>
     );
   },
@@ -38,7 +43,16 @@ jest.mock('@/pages/Review/Components/ReviewMember', () => ({
 
 jest.mock('@/pages/Review/Components/ReviewQualityDiagnostic', () => ({
   __esModule: true,
-  default: () => <div data-testid='review-quality-diagnostic'>quality diagnostic</div>,
+  default: ({ open, onClose }: any) => (
+    <div data-testid='review-quality-diagnostic' data-open={String(open)}>
+      quality diagnostic
+      {open && (
+        <button type='button' onClick={onClose}>
+          close-quality-diagnostic
+        </button>
+      )}
+    </div>
+  ),
 }));
 
 jest.mock('@ant-design/pro-components', () => ({
@@ -101,6 +115,11 @@ describe('Review page', () => {
       'unassigned:review-admin',
     );
     expect(screen.getByTestId('review-quality-diagnostic')).toBeInTheDocument();
+    expect(screen.getByTestId('review-quality-diagnostic')).toHaveAttribute('data-open', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'open-quality-diagnostic' }));
+    expect(screen.getByTestId('review-quality-diagnostic')).toHaveAttribute('data-open', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'close-quality-diagnostic' }));
+    expect(screen.getByTestId('review-quality-diagnostic')).toHaveAttribute('data-open', 'false');
     expect(screen.getByRole('button', { name: 'pages.review.tabs.assigned' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'pages.review.tabs.rejectedTask' }),
