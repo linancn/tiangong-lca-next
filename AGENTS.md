@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 4d133b0fe25ce991e585e08cc58b36602be65ede
-lastReviewedNote: 'Release publication now carries exact reused proof through explicit dependency results, and deterministic release commands recognize the normal tree-identical two-parent promotion topology without accepting main-only drift.'
+lastReviewedCommit: 473aba11cf7c1b991e66c8241ef55c3c098904d4
+lastReviewedNote: 'Reviewed for Next Issue #845: refreshed v0.0.71 production evidence and qualification follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
