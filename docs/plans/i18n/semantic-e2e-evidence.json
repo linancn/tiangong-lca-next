@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-14T03:57:26.047Z",
-  "runId": "local-348e22f4-c9f6-4876-889a-d6c46ff49560",
+  "generatedAt": "2026-08-14T11:17:52.396Z",
+  "runId": "local-451d36df-cd3e-4d10-8669-026451b45ee0",
   "candidate": {
-    "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "e5991ff390c8ef3ea767fee9f4acd75b8e39e081",
-    "packageManifestDigest": "2b78dea75572169f5a945913cc1d3b8b9ed3b9ecbb65c4fc0dc45b4126150437",
-    "sourceTreeDigest": "5e99ca4a831c91dd58d7f63f79305e14bacbb7c46f7b4c1b422d8e0d4fdc93c3",
-    "unitTestTreeDigest": "ae69a7638431b555ebc4fafbcbd0603211618484061249695009f8b6523c3592"
+    "configTreeDigest": "d6ae18f74119b7b90412411bfb2f034c8c6ab9ec959d614b67b8006fed87c189",
+    "observedHeadCommit": "2864ff58b2778e75baee64375c906ce14c70546c",
+    "packageManifestDigest": "5101399bc561b0c10e04e1ab5af1ed059ad39f346d7e12c79757ebd2cca95858",
+    "sourceTreeDigest": "7703d24cd13e213addf77f5fd049c640bb8403d077582cb67accac1e8a141cfb",
+    "unitTestTreeDigest": "8810a6c9cdf79addcdabf7675f015f318317d2e04a9018d1c7a1c4b5022261a7"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "9fd2ed1e848cbdbc78d612167f5672ab034a3b5445d5e9a391d113a1fe1f6d69"
+      "sha256": "90f3ead68eaf5860e326a8160c467db06e134ab35eb9814ae67e054879e677b7"
     },
     "runtimeAssets": [
       {
@@ -237,7 +237,7 @@
       },
       {
         "path": "tests/e2e/i18n/production-request-guard.ts",
-        "sha256": "705432cfe2e6cb39a1f97913ab9f4fb53d516835b4a551d02cc8f29ef41565a4"
+        "sha256": "26317756b4235350a3ed60b38a76007ddf7e45a44b72814c393efe7108e8a0f2"
       },
       {
         "path": "tests/e2e/i18n/qualification-reporter.ts",
@@ -293,7 +293,7 @@
       },
       {
         "path": "tests/unit/app.test.tsx",
-        "sha256": "f06a7a68b95c89f6082e45ea57e24f45a5f133879351749b5cbad3b5b3cdadc9"
+        "sha256": "2382de84191678f71e01340a7023191b4779a50d6afe99d5394c2d215a130fb1"
       },
       {
         "path": "tests/unit/components/AccessDenied.test.tsx",
@@ -349,7 +349,7 @@
       },
       {
         "path": "tests/unit/e2e/productionRequestGuard.test.ts",
-        "sha256": "4286f37e6b8132aa49ad4afecd16490e9d55427ba7d3167603a58fbf5e2a7b5a"
+        "sha256": "036b074b88f3e7274b07977f6beccf50d957596a73876e3837289f17c045444f"
       },
       {
         "path": "tests/unit/e2e/referenceRefreshContract.test.ts",
@@ -357,7 +357,7 @@
       },
       {
         "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-        "sha256": "7bbc1317683c8a2418134a59c0de7735973fe74b42ecf76a0ea6b0a79c0b180e"
+        "sha256": "17f651fd688d46dd6c012e6c1fcdc0eb0fbc16fed8949f44f037d8f1efadece1"
       },
       {
         "path": "tests/unit/i18n/packageLockRuntimeFingerprint.test.js",
@@ -377,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "d054a3c3ddc3c12f5be1c9ab19f531c6d870a429f094d898ffad035bd989fbc9"
+        "sha256": "c6df6664fcb609fbd54b225543a8831994ec9ad079975e28d732c99066c1d004"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -469,7 +469,7 @@
       },
       {
         "path": "tests/unit/services/general/publicRoutePolicy.test.ts",
-        "sha256": "27196590823ba86e70f8c74115b726680f37cfe3916f54db231e829a08de7595"
+        "sha256": "e64f1071d54c3669ae16931f1cafac95f9395ba2e2c93015b4b1be13ca68e4b6"
       },
       {
         "path": "tests/unit/services/general/routeViewStateRegistry.test.ts",
@@ -477,7 +477,7 @@
       },
       {
         "path": "tests/unit/wrappers/AuthGuard.test.tsx",
-        "sha256": "2dfded1227b15be060de9d75d1fdde01667f049a39e16889ad15c3f333ad12a6"
+        "sha256": "4a9b3d2ec6df03ee8e54658637d04080e636b2d25e7c5ec198799da503675a8c"
       },
       {
         "path": "tests/unit/wrappers/LoginFlowGuard.test.tsx",
@@ -499,7 +499,7 @@
       },
       {
         "path": "src/app.tsx",
-        "sha256": "3664a1c3256a78cc488cceabf9d577617daed2fad7a789f1f01a2fe484717994"
+        "sha256": "a33f6d65e41e53fc451d0bea994cc5a52bcaf03deebfb8de63c788ede6dfec1c"
       },
       {
         "path": "src/components/AccessDenied/index.tsx",
@@ -543,7 +543,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "940f8843458a176296cfb41b824204bedd203b45981657b409dc1d38734d50da"
+        "sha256": "82cc9efa10be3831085a3d185f2bd25a6a79adbdce7186e2781d0c1b18a3fc46"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",
@@ -643,7 +643,7 @@
       },
       {
         "path": "src/wrappers/AuthGuard.tsx",
-        "sha256": "07b1736f8f5bd09b67b387cfeaacbc13293bdfb0e35648510d800229d3f89364"
+        "sha256": "0a3a4fb13c52d9415c4d9be393938619eb431b88eaa6e79bfabf1ccfd1af823b"
       },
       {
         "path": "src/wrappers/LoginFlowGuard.tsx",
