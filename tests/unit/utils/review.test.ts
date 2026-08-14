@@ -737,6 +737,69 @@ describe('review utilities', () => {
     });
   });
 
+  it('applies review-mode version checks to the recursive ordered-json reference chain', async () => {
+    mockGetRefData.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'source-review',
+        stateCode: 10,
+        ruleVerification: true,
+        json: {},
+      },
+    });
+    mockGetRefDataByIds.mockImplementation(async (_ids: string[], tableName: string) => ({
+      data:
+        tableName === 'sources'
+          ? [
+              {
+                id: 'source-review',
+                version: '02',
+                state_code: 20,
+              },
+            ]
+          : [],
+    }));
+
+    const rootRef = {
+      '@refObjectId': 'root-flow',
+      '@version': '01',
+      '@type': 'flow data set',
+    } as const;
+    const path = new ReffPath(rootRef);
+
+    await checkData(rootRef, [], [], path, {
+      actionFrom: 'review',
+      orderedJson: {
+        flowDataSet: {
+          administrativeInformation: {
+            dataEntryBy: {
+              'common:referenceToDataSetFormat': {
+                '@refObjectId': 'source-review',
+                '@version': '01',
+                '@type': 'source data set',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(mockGetRefData).toHaveBeenCalledWith('source-review', '01', 'sources', '', {
+      fallbackToLatest: true,
+    });
+    expect(mockGetRefDataByIds).toHaveBeenCalledWith(['source-review'], 'sources');
+    expect(path.findProblemNodes('review')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          '@refObjectId': 'source-review',
+          '@version': '01',
+          underReviewVersion: '02',
+          versionUnderReview: true,
+        }),
+      ]),
+    );
+  });
+
   it('returns early when orderedJson contains no additional references', async () => {
     const parentPath = new ReffPath({
       '@refObjectId': 'root-flow',

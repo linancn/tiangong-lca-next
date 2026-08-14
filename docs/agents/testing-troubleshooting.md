@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: be619da517760a89410f1ba9ceb8f4b2a4896318
+lastReviewedCommit: 313c80a7081a68464221a669b2cd630464d08b0c
 lastReviewedNote: 'Reviewed for Next Issue #846: maintenance startup, timeout, fallback, environment bypass, and refresh behavior require no troubleshooting rule beyond the existing focused-test and gate workflow.'
 ---
 

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "db6dbddc113c0bdef9ee215f9fdfe1810763ba176ba2e0ac983b86189ac0386f",
+    "auditedInputDigest": "a3f28c7ecc55713f38a02b0d2c87d826d7acedb64e600c628e2d5723c918cb06",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -41125,7 +41125,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 655,
+          "line": 668,
           "column": 13,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Action failed",
@@ -41146,7 +41146,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 655,
+              "line": 668,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -41589,7 +41589,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 754,
+          "line": 767,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Cancel",
@@ -41643,7 +41643,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 687,
+          "line": 700,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Cancel",
@@ -41742,7 +41742,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1249,
+          "line": 1218,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Cancel",
@@ -41814,7 +41814,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 609,
+          "line": 622,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Cancel",
@@ -41901,7 +41901,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 754,
+              "line": 767,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41937,7 +41937,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 687,
+              "line": 700,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42003,7 +42003,7 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1249,
+              "line": 1218,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42051,7 +42051,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 609,
+              "line": 622,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42155,7 +42155,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 718,
+          "line": 731,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Data Check",
@@ -42173,7 +42173,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 661,
+          "line": 674,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Data Check",
@@ -42191,7 +42191,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1224,
+          "line": 1193,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Data Check",
@@ -42200,7 +42200,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 584,
+          "line": 597,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Data Check",
@@ -42224,7 +42224,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 718,
+              "line": 731,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42236,7 +42236,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 661,
+              "line": 674,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42248,13 +42248,13 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1224,
+              "line": 1193,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 584,
+              "line": 597,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42328,7 +42328,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 574,
+          "line": 581,
           "column": 13,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -42346,7 +42346,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 566,
+          "line": 573,
           "column": 28,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -42373,7 +42373,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 521,
+          "line": 528,
           "column": 13,
           "symbol": "validationHint",
           "defaultMessage": "Data check failed, please check the data!",
@@ -42397,7 +42397,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 574,
+              "line": 581,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -42409,7 +42409,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 566,
+              "line": 573,
               "column": 28,
               "kind": "formatMessage"
             },
@@ -42427,7 +42427,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 521,
+              "line": 528,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -42584,7 +42584,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 561,
+          "line": 568,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -42602,7 +42602,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 559,
+          "line": 566,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -42620,7 +42620,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 936,
+          "line": 899,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -42629,7 +42629,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 508,
+          "line": 515,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "Data validation passed.",
@@ -42653,7 +42653,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 561,
+              "line": 568,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -42665,7 +42665,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 559,
+              "line": 566,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -42677,13 +42677,13 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 936,
+              "line": 899,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 508,
+              "line": 515,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -45492,7 +45492,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 688,
+          "line": 701,
           "column": 27,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit",
@@ -45501,7 +45501,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 699,
+          "line": 712,
           "column": 13,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit",
@@ -45528,7 +45528,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 626,
+          "line": 639,
           "column": 25,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -45537,7 +45537,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 637,
+          "line": 650,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -45546,7 +45546,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 645,
+          "line": 658,
           "column": 16,
           "symbol": "FlowsEdit",
           "defaultMessage": "Edit",
@@ -45591,7 +45591,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1174,
+          "line": 1143,
           "column": 27,
           "symbol": "ProcessEdit",
           "defaultMessage": "Edit",
@@ -45600,7 +45600,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1185,
+          "line": 1154,
           "column": 17,
           "symbol": "ProcessEdit",
           "defaultMessage": "Edit",
@@ -45645,7 +45645,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 554,
+          "line": 567,
           "column": 27,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit",
@@ -45654,7 +45654,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 565,
+          "line": 578,
           "column": 13,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit",
@@ -45711,13 +45711,13 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 688,
+              "line": 701,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 699,
+              "line": 712,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -45735,19 +45735,19 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 626,
+              "line": 639,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 637,
+              "line": 650,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 645,
+              "line": 658,
               "column": 16,
               "kind": "FormattedMessage"
             },
@@ -45777,13 +45777,13 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1174,
+              "line": 1143,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1185,
+              "line": 1154,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -45813,13 +45813,13 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 554,
+              "line": 567,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 565,
+              "line": 578,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -47774,7 +47774,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1125,
+          "line": 1094,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Process information",
@@ -47798,7 +47798,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1125,
+              "line": 1094,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -48086,7 +48086,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1144,
+          "line": 1113,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Model Results",
@@ -48095,7 +48095,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1160,
+          "line": 1129,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Model Results",
@@ -48131,13 +48131,13 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1144,
+              "line": 1113,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1160,
+              "line": 1129,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49387,7 +49387,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1234,
+          "line": 1203,
           "column": 19,
           "symbol": "ProcessEdit",
           "defaultMessage": "Submit for Review",
@@ -49408,7 +49408,7 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1234,
+              "line": 1203,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -49494,7 +49494,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 766,
+          "line": 779,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Save",
@@ -49530,7 +49530,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 700,
+          "line": 713,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Save",
@@ -49584,7 +49584,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1263,
+          "line": 1232,
           "column": 15,
           "symbol": "ProcessEdit",
           "defaultMessage": "Save",
@@ -49647,7 +49647,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 621,
+          "line": 634,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Save",
@@ -49710,7 +49710,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 766,
+              "line": 779,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49734,7 +49734,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 700,
+              "line": 713,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49770,7 +49770,7 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1263,
+              "line": 1232,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -49812,7 +49812,7 @@
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 621,
+              "line": 634,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50513,7 +50513,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 725,
+          "line": 738,
           "column": 17,
           "symbol": "ContactEdit",
           "defaultMessage": "Sync to Open Data",
@@ -50528,7 +50528,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 725,
+              "line": 738,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -50703,7 +50703,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 748,
+          "line": 761,
           "column": 15,
           "symbol": "ContactEdit",
           "defaultMessage": "Update Reference",
@@ -50739,7 +50739,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 680,
+          "line": 693,
           "column": 15,
           "symbol": "FlowsEdit",
           "defaultMessage": "Update Reference",
@@ -50775,7 +50775,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1242,
+          "line": 1211,
           "column": 17,
           "symbol": "ProcessEdit",
           "defaultMessage": "Update Reference",
@@ -50784,7 +50784,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 603,
+          "line": 616,
           "column": 15,
           "symbol": "SourceEdit",
           "defaultMessage": "Update Reference",
@@ -50826,7 +50826,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 748,
+              "line": 761,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50850,7 +50850,7 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 680,
+              "line": 693,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50874,13 +50874,13 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1242,
+              "line": 1211,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 603,
+              "line": 616,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -51914,7 +51914,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 459,
+          "line": 463,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51932,7 +51932,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/edit.tsx",
-          "line": 445,
+          "line": 449,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51941,7 +51941,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 407,
+          "line": 411,
           "column": 11,
           "symbol": "handleCheckData",
           "defaultMessage": "This data set is under review and cannot be validated",
@@ -51965,7 +51965,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 459,
+              "line": 463,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -51977,13 +51977,13 @@
             },
             {
               "path": "src/pages/Flows/Components/edit.tsx",
-              "line": 445,
+              "line": 449,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 407,
+              "line": 411,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -53600,7 +53600,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 707,
+          "line": 720,
           "column": 11,
           "symbol": "ContactEdit",
           "defaultMessage": "Edit Contact",
@@ -53615,7 +53615,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 707,
+              "line": 720,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -55698,7 +55698,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 611,
+          "line": 624,
           "column": 9,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Current contact data is incomplete. Please fill all required fields before syncing.",
@@ -55713,7 +55713,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 611,
+              "line": 624,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -55781,7 +55781,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 668,
+          "line": 681,
           "column": 7,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Synchronized to open data successfully!",
@@ -55796,7 +55796,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 668,
+              "line": 681,
               "column": 7,
               "kind": "formatMessage"
             }
@@ -132259,7 +132259,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1194,
+          "line": 1163,
           "column": 11,
           "symbol": "ProcessEdit",
           "defaultMessage": "Edit process",
@@ -132274,7 +132274,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1194,
+              "line": 1163,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -166048,7 +166048,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1004,
+          "line": 973,
           "column": 13,
           "symbol": "submitReview",
           "defaultMessage": "Review submission failed",
@@ -166063,7 +166063,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1004,
+              "line": 973,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -166149,7 +166149,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/edit.tsx",
-          "line": 1014,
+          "line": 983,
           "column": 9,
           "symbol": "submitReview",
           "defaultMessage": "Review submitted successfully",
@@ -166176,7 +166176,7 @@
             },
             {
               "path": "src/pages/Processes/Components/edit.tsx",
-              "line": 1014,
+              "line": 983,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -212684,7 +212684,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 640,
+          "line": 653,
           "column": 11,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "This data is open data, save failed",
@@ -212759,7 +212759,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 640,
+              "line": 653,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -221801,7 +221801,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/edit.tsx",
-          "line": 647,
+          "line": 660,
           "column": 11,
           "symbol": "handleSyncToOpenData",
           "defaultMessage": "Data is under review, save failed",
@@ -221876,7 +221876,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/edit.tsx",
-              "line": 647,
+              "line": 660,
               "column": 11,
               "kind": "formatMessage"
             },
@@ -228458,7 +228458,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/edit.tsx",
-          "line": 573,
+          "line": 586,
           "column": 11,
           "symbol": "SourceEdit",
           "defaultMessage": "Edit Source",
@@ -228473,7 +228473,7 @@
           "locations": [
             {
               "path": "src/pages/Sources/Components/edit.tsx",
-              "line": 573,
+              "line": 586,
               "column": 11,
               "kind": "FormattedMessage"
             }
