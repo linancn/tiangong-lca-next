@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-13"
-lastReviewedCommit: "a1f5f75640cb64e01f681a2336f12d2d1def3717"
-lastReviewedNote: 'Reviewed for Next Issue #813: dataset search-mode routing stays within the existing frontend runtime, service boundary, and validation contracts.'
+lastReviewedAt: "2026-08-14"
+lastReviewedCommit: "69c286c45e34645d3768c7943b62df9f9665dec9"
+lastReviewedNote: 'Reviewed for Next Issue #842: stable stateful-hook mock identity remains within the existing test, release, and documentation ownership domains.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

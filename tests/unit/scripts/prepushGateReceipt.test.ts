@@ -307,7 +307,7 @@ describe('bounded checked-push transport receipt', () => {
       'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage prepush-receipt --runInBand --runTestsByPath tests/unit/scripts/prepushGateReceipt.test.ts --testTimeout=20000 --no-coverage',
     );
     expect(packageJson.scripts['test:coverage:collect']).toBe(
-      'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=1 --workerIdleMemoryLimit=64MB --testTimeout=20000 --coverage --testPathIgnorePatterns="<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$"',
+      'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=2 --workerIdleMemoryLimit=512MB --testTimeout=20000 --coverage --testPathIgnorePatterns="<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$"',
     );
     expect(packageJson.scripts['test:coverage']).toBe(
       'npm run test:prepush-receipt && npm run test:coverage:collect',

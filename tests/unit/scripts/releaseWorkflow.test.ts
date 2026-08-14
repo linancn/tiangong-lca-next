@@ -148,7 +148,11 @@ const args = process.argv.slice(2);
 if (process.env.FAKE_NPM_LOG) fs.appendFileSync(process.env.FAKE_NPM_LOG, JSON.stringify(args) + '\\n');
 const qualificationReceipt = 'docs/plans/i18n/semantic-harness-qualification-receipt.json';
 if (args[0] === 'run' && args[1] === 'e2e:qualification:check') {
-  const mustRegenerate = process.env.FAKE_QUALIFICATION_STATUS === 'invalid' && !fs.existsSync(qualificationReceipt);
+  const currentReceipt = fs.existsSync(qualificationReceipt)
+    ? fs.readFileSync(qualificationReceipt, 'utf8')
+    : '';
+  const mustRegenerate = process.env.FAKE_QUALIFICATION_STATUS === 'invalid'
+    && (!currentReceipt || currentReceipt.includes('"stale": true'));
   process.exitCode = mustRegenerate ? 10 : 0;
 } else if (args[0] === 'run' && args[1] === 'e2e:qualify') {
   if (process.env.FAKE_QUALIFICATION_FAIL === '1') {
@@ -557,6 +561,52 @@ describe('release automation public contracts', () => {
       ]),
     ).toContain(`"qualifiedCommit": "${fixture.devSha}"`);
     expect(fs.readFileSync(npmLog, 'utf8')).toContain('e2e:qualify');
+  });
+
+  it('regenerates an already tracked stale qualification receipt', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'dev']);
+    writeJson(
+      path.join(fixture.root, 'docs/plans/i18n/semantic-harness-qualification-receipt.json'),
+      {
+        schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+        stale: true,
+      },
+    );
+    git(fixture.root, ['add', 'docs/plans/i18n/semantic-harness-qualification-receipt.json']);
+    git(fixture.root, ['commit', '-m', 'track stale qualification receipt']);
+    fixture.devSha = git(fixture.root, ['rev-parse', 'HEAD']);
+    git(fixture.root, ['push', '--no-verify', 'origin', 'dev']);
+    git(fixture.root, ['switch', 'main']);
+    git(fixture.root, ['fetch', 'origin', 'dev']);
+
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      {
+        FAKE_QUALIFICATION_STATUS: 'invalid',
+        FAKE_GH_CREATED_URL: 'https://example.test/pull/55',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    const output = JSON.parse(result.stdout);
+    expect(output).toMatchObject({
+      status: 'ready_for_review',
+      qualification: {
+        status: 'generated',
+        action: 'included_in_release_pr',
+        qualified_commit: fixture.devSha,
+      },
+      pull_request: { url: 'https://example.test/pull/55' },
+    });
+    expect(
+      git(fixture.root, [
+        'show',
+        'HEAD:docs/plans/i18n/semantic-harness-qualification-receipt.json',
+      ]),
+    ).not.toContain('"stale": true');
   });
 
   it('fails before push when semantic qualification cannot be generated', () => {

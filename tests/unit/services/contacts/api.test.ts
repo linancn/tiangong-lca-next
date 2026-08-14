@@ -4,7 +4,7 @@
 import '@testing-library/jest-dom';
 
 // Mock TIDAS SDK
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createContact: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),

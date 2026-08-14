@@ -1,7 +1,7 @@
 name: Build/release
 
 # Releases normally start from a main push whose package.json version is new.
-# The workflow creates the matching v* tag only after both release gates pass.
+# The workflow creates the matching v* tag only after release qualification and semantic E2E pass.
 # Manual v* tag pushes and workflow_dispatch runs remain supported for recovery/backfill releases.
 on:
   workflow_dispatch:
@@ -17,7 +17,9 @@ on:
       - 'v*'
 
 permissions:
+  actions: read
   contents: write
+  pull-requests: read
 
 concurrency:
   group: build-release-${{ github.ref }}
@@ -32,6 +34,12 @@ jobs:
       release_head: ${{ steps.release.outputs.release_head }}
       should_release: ${{ steps.release.outputs.should_release }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      gate_mode: ${{ steps.proof.outputs.gate_mode || 'full' }}
+      gate_reason: ${{ steps.proof.outputs.gate_reason || 'proof_reuse_not_requested' }}
+      proof_run_id: ${{ steps.proof.outputs.proof_run_id }}
+      proof_pr_number: ${{ steps.proof.outputs.proof_pr_number }}
+      proof_artifact_id: ${{ steps.proof.outputs.proof_artifact_id }}
+      proof_artifact_name: ${{ steps.proof.outputs.proof_artifact_name }}
 
     steps:
       - name: Check out Git repository
@@ -149,17 +157,71 @@ jobs:
             echo "- head: \`${release_head}\`"
             echo "- base: \`${release_base}\`"
             echo "- package version: \`${package_version}\`"
-            echo "- tag publication: deferred until all release gates pass"
+            echo "- tag publication: deferred until release qualification and semantic E2E pass"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Resolve reusable PR Release Gate proof
+        id: proof
+        if: >-
+          steps.release.outputs.should_release == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BASE: ${{ steps.release.outputs.release_base }}
+          RELEASE_HEAD: ${{ steps.release.outputs.release_head }}
+        run: >-
+          node scripts/release/release-gate-proof.cjs resolve --repository "$GITHUB_REPOSITORY" --release-base "$RELEASE_BASE" --release-head "$RELEASE_HEAD" --github-output "$GITHUB_OUTPUT"
 
   release-gate:
     name: Release Gate
     needs: release-context
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      needs.release-context.outputs.should_release == 'true' && needs.release-context.outputs.gate_mode == 'full'
     uses: ./.github/workflows/release-gate.yml
     with:
       release_base: ${{ needs.release-context.outputs.release_base }}
       release_head: ${{ needs.release-context.outputs.release_head }}
+
+  release-qualified:
+    name: Release Qualification
+    needs:
+      - release-context
+      - release-gate
+    if: ${{ always() && needs.release-context.outputs.should_release == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require an exact reusable proof or a successful full gate
+        env:
+          GATE_MODE: ${{ needs.release-context.outputs.gate_mode }}
+          GATE_REASON: ${{ needs.release-context.outputs.gate_reason }}
+          FULL_GATE_RESULT: ${{ needs.release-gate.result }}
+          PROOF_ARTIFACT_ID: ${{ needs.release-context.outputs.proof_artifact_id }}
+          PROOF_ARTIFACT_NAME: ${{ needs.release-context.outputs.proof_artifact_name }}
+          PROOF_PR_NUMBER: ${{ needs.release-context.outputs.proof_pr_number }}
+          PROOF_RUN_ID: ${{ needs.release-context.outputs.proof_run_id }}
+        run: |
+          set -euo pipefail
+
+          if [ "${GATE_MODE}" = "reuse" ] && [ "${FULL_GATE_RESULT}" = "skipped" ]; then
+            echo "::notice::Reusing exact Release Gate proof from PR #${PROOF_PR_NUMBER}, workflow run ${PROOF_RUN_ID}."
+          elif [ "${GATE_MODE}" = "full" ] && [ "${FULL_GATE_RESULT}" = "success" ]; then
+            echo "::notice::The full Release Gate completed successfully (${GATE_REASON})."
+          else
+            echo "::error::Release qualification is inconsistent: mode=${GATE_MODE}, full_gate=${FULL_GATE_RESULT}, reason=${GATE_REASON}."
+            exit 1
+          fi
+
+          {
+            echo "### Release qualification"
+            echo "- mode: \`${GATE_MODE}\`"
+            echo "- reason: \`${GATE_REASON}\`"
+            echo "- full gate result: \`${FULL_GATE_RESULT}\`"
+            if [ "${GATE_MODE}" = "reuse" ]; then
+              echo "- source PR: \`#${PROOF_PR_NUMBER}\`"
+              echo "- source workflow run: \`${PROOF_RUN_ID}\`"
+              echo "- source artifact: \`${PROOF_ARTIFACT_NAME}\` (id \`${PROOF_ARTIFACT_ID}\`)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   release-semantic-e2e:
     name: Release Semantic E2E
@@ -173,7 +235,7 @@ jobs:
     name: Publish Release Tag
     needs:
       - release-context
-      - release-gate
+      - release-qualified
       - release-semantic-e2e
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
@@ -229,7 +291,7 @@ jobs:
     name: Prepare Unique Draft Release
     needs:
       - release-context
-      - release-gate
+      - release-qualified
       - release-semantic-e2e
       - release-tag
     if: needs.release-context.outputs.should_release == 'true'
@@ -303,7 +365,7 @@ jobs:
     name: Build and Deploy Web App
     needs:
       - release-context
-      - release-gate
+      - release-qualified
       - release-semantic-e2e
       - release-tag
     if: needs.release-context.outputs.should_release == 'true'
@@ -395,7 +457,7 @@ jobs:
   release:
     needs:
       - release-context
-      - release-gate
+      - release-qualified
       - release-draft
       - release-semantic-e2e
       - release-tag

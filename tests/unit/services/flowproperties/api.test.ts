@@ -10,7 +10,7 @@
  * - getFlowpropertyTablePgroongaSearch: Full-text search for flow properties
  */
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createFlowProperty: jest.fn(),
 }));
@@ -89,7 +89,9 @@ const {
   invokeDatasetCreateVersion,
   normalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
-const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
+const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock(
+  '@tiangong-lca/tidas-sdk/core',
+);
 
 describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () => {
   const mockSession = createMockSession('user-123', 'test-token');

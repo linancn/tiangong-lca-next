@@ -6,13 +6,13 @@
 import * as processesApi from '@/services/processes/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createProcess: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),
   }),
 }));
-const { createProcess: mockCreateTidasProcess } = jest.requireMock('@tiangong-lca/tidas-sdk');
+const { createProcess: mockCreateTidasProcess } = jest.requireMock('@tiangong-lca/tidas-sdk/core');
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
@@ -1249,7 +1249,7 @@ describe('getProcessTableAll', () => {
 });
 
 describe('listProcessesForLcaAnalysis', () => {
-  it('lists only public rows plus personal owner drafts for the strict scope', async () => {
+  it('lists public rows plus every actor-owned state-zero draft', async () => {
     const builder = createQueryBuilder({ data: [], error: null, count: 0 });
     mockFrom.mockReturnValueOnce(builder);
     mockAuthGetSession.mockResolvedValueOnce({
@@ -1263,13 +1263,13 @@ describe('listProcessesForLcaAnalysis', () => {
     );
 
     expect(builder.or).toHaveBeenCalledWith(
-      'state_code.eq.100,and(user_id.eq.owner-1,state_code.eq.0,team_id.is.null,review_id.is.null)',
+      'state_code.eq.100,and(user_id.eq.owner-1,state_code.eq.0)',
     );
     expect(builder.ilike).not.toHaveBeenCalled();
     expect(result).toMatchObject({ success: true, total: 0 });
   });
 
-  it('uses indexed formal search with strict owner-draft scope for keyword filtering', async () => {
+  it('uses indexed formal search with actor-owned draft scope for keyword filtering', async () => {
     mockAuthGetSession.mockResolvedValue({
       data: { session: { user: { id: 'owner-2' } } },
     });

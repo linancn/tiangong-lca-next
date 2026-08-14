@@ -72,6 +72,23 @@ const artifact = (kind: string, overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const productDownload = (role: string, group: string, fileName: string) => ({
+  role,
+  group,
+  fileName,
+  schemaVersion: 'tiangong.calculation-download.v1',
+  mediaType: fileName.endsWith('.xlsx')
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    : fileName.endsWith('.parquet')
+      ? 'application/vnd.apache.parquet'
+      : 'application/zip',
+  sha256: '9'.repeat(64),
+  byteSize: 200,
+  recordCount: 2,
+  signedDownloadUrl: `https://download.example/${fileName}`,
+  signedDownloadExpiresInSeconds: 900,
+});
+
 const bundleProjection = (overrides: Record<string, any> = {}) => ({
   packageId: '33333333-3333-4333-8333-333333333333',
   packageVersion: '01.00.000',
@@ -116,6 +133,17 @@ const bundleProjection = (overrides: Record<string, any> = {}) => ({
       signedDownloadExpiresInSeconds: 900,
     },
     artifacts: [artifact('process_axis'), artifact('lci'), artifact('lcia'), artifact('coverage')],
+    downloads: [
+      productDownload('lcia_results_xlsx', 'results', 'lcia-results.xlsx'),
+      productDownload('lcia_results_csv_zip', 'results', 'lcia-results.csv.zip'),
+      productDownload('lci_inventory_parquet', 'advanced_data', 'lci-inventory.parquet'),
+      productDownload('lci_inventory_csv_zip', 'advanced_data', 'lci-inventory-csv.zip'),
+      productDownload(
+        'calculation_evidence_bundle',
+        'audit_evidence',
+        'calculation-evidence-bundle.zip',
+      ),
+    ],
     ...overrides,
   },
 });
@@ -205,11 +233,14 @@ describe('CalculationBundlePanel', () => {
     expect(screen.getByText('e'.repeat(64))).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('tab-downloads'));
     expect(screen.getByText('calculation-bundle.json')).toBeInTheDocument();
-    expect(screen.getByText('lci.ndjson.gz')).toBeInTheDocument();
+    expect(screen.getByText('lcia-results.xlsx')).toBeInTheDocument();
+    expect(screen.getByText('lci-inventory.parquet')).toBeInTheDocument();
+    expect(screen.getByText('calculation-evidence-bundle.zip')).toBeInTheDocument();
+    expect(screen.queryByText('lci.ndjson.gz')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
-    expect(downloadButtons).toHaveLength(bundleProjection().calculationBundle.artifacts.length + 1);
+    expect(downloadButtons).toHaveLength(bundleProjection().calculationBundle.downloads.length + 1);
     for (const [index, button] of downloadButtons.entries()) {
       await waitFor(() => expect(button).not.toBeDisabled());
       fireEvent.click(button);
@@ -219,14 +250,14 @@ describe('CalculationBundlePanel', () => {
     expect(mockFetchFreshDownloadBlob).toHaveBeenNthCalledWith(
       1,
       '33333333-3333-4333-8333-333333333333',
-      null,
-      bundleProjection().calculationBundle.manifestDownload,
+      'download:lcia_results_xlsx',
+      bundleProjection().calculationBundle.downloads[0],
     );
     expect(mockFetchFreshDownloadBlob).toHaveBeenNthCalledWith(
       2,
       '33333333-3333-4333-8333-333333333333',
-      bundleProjection().calculationBundle.artifacts[0].path,
-      bundleProjection().calculationBundle.artifacts[0],
+      'download:lcia_results_csv_zip',
+      bundleProjection().calculationBundle.downloads[1],
     );
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
 

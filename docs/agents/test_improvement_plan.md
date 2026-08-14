@@ -27,9 +27,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: a1f5f75640cb64e01f681a2336f12d2d1def3717
-lastReviewedNote: 'Reviewed for Next Issue #813: focused three-mode routing assertions preserve the existing full-closure maintenance strategy without opening a new testing workstream.'
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 69c286c45e34645d3768c7943b62df9f9665dec9
+lastReviewedNote: 'Reviewed for Next Issue #842: stable shared hook mocks preserve the existing focused-first, full-closure strategy.'
 ---
 
 # Testing Strategy
@@ -55,9 +55,9 @@ lastReviewedNote: 'Reviewed for Next Issue #813: focused three-mode routing asse
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - documentation screenshot capture is a separate, on-demand product-evidence workflow: Next supplies only the source-bound product profile and stable locators, while workspace owns profile compilation, plan/security/access, run-scoped base-origin logic, and the synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
-- release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
+- release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight; a successful main-target PR gate emits exact base/head/tree/run proof, and the post-merge workflow reuses it only for the matching two-parent merge while every non-exact case falls back to a full exact-release gate
 - deterministic release orchestration should fail before transport: qualification generation, exact generated-file scope, cumulative Docpact review, and composed-candidate production preflight all complete before `push:checked`, while promotion retains the exact merged `dev` SHA and repeats the main-semantic boundary
-- each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
+- each production release candidate should have one full-suite owner: `prepush:gate`, executed once by the main-target PR and reused through exact proof or executed once by the post-merge fallback, with exactly two coverage workers under the `512MB` idle-memory recycle boundary; the reusable browser semantic E2E matrix remains a separate exact-release-SHA prerequisite without duplicating Jest coverage, and immutable tag publication follows both successful qualification paths
 - generated localization evidence should be canonical and idempotent at its source: the reporter resolves the repository-owned formatting policy independently of its output destination and writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
 - semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, and an explicit release-owner decision may cover one promotion candidate only when its complete config/package/source/unit-test identity is pinned and the full gate passes; any future digest or tree drift must fail closed

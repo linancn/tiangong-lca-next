@@ -4,7 +4,7 @@
 
 import { genContactFromData, genContactJsonOrdered } from '@/services/contacts/util';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createContact: jest.fn((data: any) => data),
 }));

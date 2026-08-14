@@ -14,7 +14,7 @@ describe('Publication workflow gates', () => {
     expect(buildAt).toBeLessThan(deployAt);
   });
 
-  it('makes the release gate verify the bundle before any web or Electron publication job', () => {
+  it('makes release qualification verify the bundle before any publication job', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
@@ -32,6 +32,33 @@ describe('Publication workflow gates', () => {
     expect(releaseGate).not.toContain('run: npm run test:ci');
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
     expect(workflow).toContain('release_head: ${{ needs.release-context.outputs.release_head }}');
+    expect(workflow).toContain('actions: read');
+    expect(workflow).toContain('pull-requests: read');
+
+    const releaseContext = workflow.slice(
+      workflow.indexOf('  release-context:'),
+      workflow.indexOf('  release-gate:'),
+    );
+    const fullGate = workflow.slice(
+      workflow.indexOf('  release-gate:'),
+      workflow.indexOf('  release-qualified:'),
+    );
+    const releaseQualification = workflow.slice(
+      workflow.indexOf('  release-qualified:'),
+      workflow.indexOf('  release-semantic-e2e:'),
+    );
+    expect(releaseContext).toContain('node scripts/release/release-gate-proof.cjs resolve');
+    expect(releaseContext).toContain("github.ref == 'refs/heads/main'");
+    expect(fullGate).toContain("needs.release-context.outputs.gate_mode == 'full'");
+    expect(releaseQualification).toContain(
+      "always() && needs.release-context.outputs.should_release == 'true'",
+    );
+    expect(releaseQualification).toContain(
+      '[ "${GATE_MODE}" = "reuse" ] && [ "${FULL_GATE_RESULT}" = "skipped" ]',
+    );
+    expect(releaseQualification).toContain(
+      '[ "${GATE_MODE}" = "full" ] && [ "${FULL_GATE_RESULT}" = "success" ]',
+    );
 
     const webDeploy = workflow.slice(
       workflow.indexOf('  web-deploy:'),
@@ -41,9 +68,9 @@ describe('Publication workflow gates', () => {
       workflow.indexOf('  release:', workflow.indexOf('  web-deploy:')),
       workflow.indexOf('  verify-release:'),
     );
-    expect(webDeploy).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(webDeploy).toMatch(/needs:[\s\S]*- release-qualified/);
     expect(webDeploy).toMatch(/needs:[\s\S]*- release-tag/);
-    expect(electronRelease).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(electronRelease).toMatch(/needs:[\s\S]*- release-qualified/);
     expect(electronRelease).toMatch(/needs:[\s\S]*- release-tag/);
   });
 
@@ -93,16 +120,24 @@ describe('Publication workflow gates', () => {
     }
   });
 
-  it('validates every main-target PR with the reusable release gate', () => {
+  it('validates every main-target PR and emits an exact reusable gate proof', () => {
     const workflow = read('.github/workflows/release-readiness.yml');
+    const releaseGate = read('.github/workflows/release-gate.yml');
     expect(workflow).toContain('pull_request:');
     expect(workflow).toMatch(/branches:\s*\n\s*- main/);
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
     expect(workflow).toContain('release_base: ${{ github.event.pull_request.base.sha }}');
     expect(workflow).toContain('release_head: ${{ github.event.pull_request.head.sha }}');
+    expect(workflow).toContain('emit_proof: true');
+    expect(workflow).toContain(
+      "proof_pr_number: ${{ format('{0}', github.event.pull_request.number) }}",
+    );
+    expect(releaseGate).toContain('node scripts/release/release-gate-proof.cjs create');
+    expect(releaseGate).toContain('Upload exact release gate proof');
+    expect(releaseGate).toContain('retention-days: 30');
   });
 
-  it('publishes a release tag only after both release gates pass', () => {
+  it('publishes a release tag only after release qualification and semantic E2E pass', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseContext = workflow.slice(
       workflow.indexOf('  release-context:'),
@@ -115,7 +150,7 @@ describe('Publication workflow gates', () => {
 
     expect(releaseContext).not.toContain('git tag "${tag_name}"');
     expect(releaseContext).not.toContain('git push origin "refs/tags/${tag_name}"');
-    expect(releaseTag).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(releaseTag).toMatch(/needs:[\s\S]*- release-qualified/);
     expect(releaseTag).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
     expect(releaseTag).toContain('git tag "${TAG_NAME}" "${RELEASE_HEAD}"');
     expect(releaseTag).toContain('git push origin "refs/tags/${TAG_NAME}"');
