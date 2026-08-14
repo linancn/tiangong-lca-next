@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 5114e834
-lastReviewedNote: 'Reviewed for Next Issue #836: the time-independent unit fixture and refreshed v0.0.70 proof preserve the existing evidence-binding and production-data authorization boundaries.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: the refreshed v0.0.71 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

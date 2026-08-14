@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
-lastReviewedNote: 'Release proof covers explicit proof-reuse publication dependencies plus direct-ancestry, exact two-parent promotion, and changed-tree rejection fixtures before the managed full gate.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: authenticated production proof, exact cleanup, canonical artifacts, and credential-free qualification follow the documented validation order.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

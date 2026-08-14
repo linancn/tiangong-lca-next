@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
-lastReviewedNote: 'Release diagnosis now distinguishes an exact promoted lineage from true main/dev drift and preserves explicit prerequisite checks after proof reuse.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: no new troubleshooting rule is required after the authorized production run completed with exact cleanup and canonical evidence.'
 ---
 
 # Testing Troubleshooting

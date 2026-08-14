@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
-lastReviewedNote: 'Deterministic release commands preserve Docpact-first managed gates and validate direct ancestry or only an exact tree-identical two-parent promotion before transport.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: refreshed production evidence and qualification continue to use the documented Docpact-first managed release gates.'
 ---
 
 # Pre-Push Gate Policy

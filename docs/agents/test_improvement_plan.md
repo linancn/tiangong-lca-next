@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 6d45b13a55b178ec33094d2bb021659350a2dee9
-lastReviewedNote: 'Release orchestration remains fail closed before transport while recognizing only direct ancestry or an exact tree-identical two-parent promotion as aligned.'
+lastReviewedCommit: 04fa6b7539156a1d3585d228b7564fc08cf7b0c2
+lastReviewedNote: 'Reviewed for Next Issue #845: the v0.0.71 evidence refresh closes the existing semantic proof contract without changing the test-improvement plan.'
 ---
 
 # Testing Strategy
