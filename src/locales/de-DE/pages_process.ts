@@ -724,6 +724,7 @@ export default {
   'pages.process.validator.exchanges.quantitativeReference.required': 'Wählen Sie genau einen Austausch als quantitative Referenz aus.',
 
   'pages.process.review.submitSuccess': 'Erfolgreich zur Prüfung eingereicht',
+  'pages.process.review.submitFailed': 'Einreichung zur Prüfung fehlgeschlagen',
   'pages.process.review.submitError': 'Einreichung zur Prüfung fehlgeschlagen',
   'pages.process.reviewSubmitGate.title': 'Validierung der numerischen Stabilität',
   'pages.process.reviewSubmitGate.queued': 'Die Einreichung zur Prüfung wurde eingereiht. Das System validiert zuerst die numerische Stabilität.',

@@ -14,7 +14,6 @@ import {
   type ReviewSubmitGateResult,
   type ReviewSubmitJobAction,
   type ReviewSubmitJobResult,
-  type SubmitReviewGateMetadata,
 } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
@@ -1614,9 +1613,8 @@ export const submitDatasetReview = async (
   table: ReviewSubmitDatasetTable,
   id: string,
   version: string,
-  gateMetadata: SubmitReviewGateMetadata = {},
 ) => {
-  return submitDatasetReviewApi(table, id, version, gateMetadata);
+  return submitDatasetReviewApi(table, id, version);
 };
 
 export const requestReviewSubmitGate = async (

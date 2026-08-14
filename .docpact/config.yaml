@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "69c286c45e34645d3768c7943b62df9f9665dec9"
-lastReviewedNote: 'Reviewed for Next Issue #842: stable stateful-hook mock identity remains within the existing test, release, and documentation ownership domains.'
+lastReviewedCommit: "4c51e963368f4376303d1662750350ab6a652c11"
+lastReviewedNote: 'Reviewed for Next Issue #845: refreshing provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -273,8 +273,14 @@ routing:
     team-and-review-management:
       paths:
         - src/pages/Review/**
+        - src/pages/Processes/Components/edit.tsx
+        - src/pages/Utils/review.tsx
+        - src/services/reviews/**
         - src/pages/ManageSystem/**
         - src/pages/Teams/**
+        - docs/agents/data_audit_instruction.md
+        - docs/agents/team_management.md
+        - docs/agents/supabase-branching.md
     classification-assets:
       paths:
         - src/services/referenceResources/**

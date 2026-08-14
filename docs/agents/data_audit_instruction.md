@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-11
-lastReviewedCommit: 6677a2f6e4a3b860c71e81c52d80d443841be1e2
-lastReviewedNote: 'Reviewed for Issue #811: toolbar presentation changes do not alter Root/Reference state codes, transition rules, or the Admin-versus-Member batch decision boundary.'
+lastReviewedAt: 2026-08-13
+lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedNote: 'Reviewed for Next Issue #820: submission admission is separated from the Review Admin informational quality diagnostic without changing review-state transitions.'
 ---
 
 # Audit Status Reference
@@ -99,10 +99,14 @@ Review Member outcomes are advisory. Review Admin may finally approve even when 
 
 Process and Lifecycle Model Root Reviews retain their existing metadata form and metadata writeback. Contact, Source, Unit Group, Flow Property, Flow, and every Reference Review use only approve/reject actions: approve requires no opinion; reject requires a reason.
 
+## Review Admin Quality Diagnostic
+
+Only Review Admin can manually start or read the joint pending-review quality diagnostic. The report combines completeness and numerical-stability information for the server-selected pending-review scope. It is evidence for operational judgment, not a workflow transition: `findings`, `not_evaluable`, request failure, and runtime failure do not block assignment, approval, rejection, or resubmission. Review Member does not see this control.
+
 ## Process Summary
 
 1. each of the seven edit pages shows one `Submit Review` action
-2. Process first completes the existing numeric Gate; the other six types do not calculate a Gate
+2. Process blocks only on editable current-record validation; no dataset type requires completeness or numerical-stability evidence to submit
 3. the database decides Root versus rejected-Reference repair and records exact relations
 4. Review Admin assigns Review Members; assignment sends no notification
 5. Review Members record advisory opinions

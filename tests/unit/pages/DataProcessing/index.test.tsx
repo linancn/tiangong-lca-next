@@ -474,6 +474,15 @@ describe('DataProcessing page', () => {
     });
     expect(selectedImpactCategoryIdentity(null, [])).toBeNull();
     expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
+    expect(
+      selectedImpactCategoryIdentity('string-name', [
+        {
+          value: 'string-name',
+          version: '01.00.000',
+          label: 'String name (01.00.000)',
+        },
+      ]),
+    ).toEqual({ id: 'string-name', version: '01.00.000' });
     expect(reviewedLciaMethodSet(buildImpactCategoryOptions(mockLciaMethodList, 'en-US'))).toEqual(
       expectedReviewedLciaMethods,
     );

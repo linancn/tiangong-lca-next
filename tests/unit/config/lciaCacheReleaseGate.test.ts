@@ -3,6 +3,12 @@ import { resolve } from 'node:path';
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
+const job = (workflow: string, name: string, nextName?: string) => {
+  const start = workflow.indexOf(`  ${name}:`);
+  const end = nextName ? workflow.indexOf(`  ${nextName}:`, start) : workflow.length;
+  return workflow.slice(start, end);
+};
+
 describe('Publication workflow gates', () => {
   it('verifies the reviewed bundle before the manual web build and deploy', () => {
     const workflow = read('.github/workflows/ci.yml');
@@ -154,5 +160,47 @@ describe('Publication workflow gates', () => {
     expect(releaseTag).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
     expect(releaseTag).toContain('git tag "${TAG_NAME}" "${RELEASE_HEAD}"');
     expect(releaseTag).toContain('git push origin "refs/tags/${TAG_NAME}"');
+  });
+
+  it('continues after an intentional proof-reuse skip while every publication dependency succeeds', () => {
+    const workflow = read('.github/workflows/build.yml');
+    const publicationJobs = [
+      {
+        source: job(workflow, 'release-tag', 'release-draft'),
+        required: ['release-context', 'release-qualified', 'release-semantic-e2e'],
+      },
+      {
+        source: job(workflow, 'release-draft', 'web-deploy'),
+        required: ['release-context', 'release-qualified', 'release-semantic-e2e', 'release-tag'],
+      },
+      {
+        source: job(workflow, 'web-deploy', 'release'),
+        required: ['release-context', 'release-qualified', 'release-semantic-e2e', 'release-tag'],
+      },
+      {
+        source: job(workflow, 'release', 'verify-release'),
+        required: [
+          'release-context',
+          'release-qualified',
+          'release-draft',
+          'release-semantic-e2e',
+          'release-tag',
+        ],
+      },
+      {
+        source: job(workflow, 'verify-release'),
+        required: ['release-context', 'release-draft', 'release'],
+      },
+    ];
+
+    for (const publicationJob of publicationJobs) {
+      expect(publicationJob.source).toContain('!cancelled()');
+      expect(publicationJob.source).toContain(
+        "needs.release-context.outputs.should_release == 'true'",
+      );
+      for (const dependency of publicationJob.required) {
+        expect(publicationJob.source).toContain(`needs.${dependency}.result == 'success'`);
+      }
+    }
   });
 });

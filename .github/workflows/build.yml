@@ -237,7 +237,8 @@ jobs:
       - release-context
       - release-qualified
       - release-semantic-e2e
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -294,7 +295,8 @@ jobs:
       - release-qualified
       - release-semantic-e2e
       - release-tag
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
@@ -368,7 +370,8 @@ jobs:
       - release-qualified
       - release-semantic-e2e
       - release-tag
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     env:
       EDGEONE_OUTPUT_DIR: dist
@@ -461,7 +464,8 @@ jobs:
       - release-draft
       - release-semantic-e2e
       - release-tag
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -504,7 +508,8 @@ jobs:
       - release-context
       - release-draft
       - release
-    if: needs.release-context.outputs.should_release == 'true'
+    if: >-
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-draft.result == 'success' && needs.release.result == 'success' }}
     runs-on: ubuntu-latest
 
     steps:

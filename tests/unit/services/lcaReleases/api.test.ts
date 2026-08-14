@@ -395,40 +395,60 @@ describe('lcaReleases api', () => {
     });
   });
 
-  it('refreshes semantic Calculation Bundle downloads by role', async () => {
-    const bytes = new Uint8Array([5, 6, 7]);
+  it('refreshes calculation product downloads by role and rejects missing role projections', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
     const expected = {
-      sha256: '05'.repeat(32),
+      sha256: '03'.repeat(32),
       byteSize: bytes.byteLength,
       mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     };
-    mockFunctionsInvoke.mockResolvedValueOnce({
-      data: {
-        ok: true,
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
         data: {
-          calculationBundle: {
-            manifestDownload: expected,
-            artifacts: [],
-            downloads: [
-              {
-                ...expected,
-                role: 'lcia_results_xlsx',
-                signedDownloadUrl: 'https://download.example/lcia-results.xlsx',
-                signedDownloadExpiresInSeconds: 900,
-              },
-            ],
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [],
+            },
           },
         },
-      },
-      error: null,
-    });
-    setCryptoDigest(5);
-    global.fetch = jest.fn(async () => ({
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [],
+              downloads: [
+                {
+                  ...expected,
+                  role: 'lcia_results_xlsx',
+                  signedDownloadUrl: 'https://download.example/results.xlsx',
+                  signedDownloadExpiresInSeconds: 900,
+                },
+              ],
+            },
+          },
+        },
+        error: null,
+      });
+    setCryptoDigest(3);
+    global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       arrayBuffer: async () => bytes.buffer,
-    })) as any;
+    }) as any;
 
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob(
+        '11111111-1111-4111-8111-111111111111',
+        'download:lcia_results_csv_zip',
+        expected,
+      ),
+    ).rejects.toThrow('no longer available');
     await expect(
       fetchFreshCalculationBundleDownloadBlob(
         '11111111-1111-4111-8111-111111111111',
@@ -436,7 +456,7 @@ describe('lcaReleases api', () => {
         expected,
       ),
     ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
-    expect(global.fetch).toHaveBeenCalledWith('https://download.example/lcia-results.xlsx', {
+    expect(global.fetch).toHaveBeenCalledWith('https://download.example/results.xlsx', {
       credentials: 'omit',
     });
   });

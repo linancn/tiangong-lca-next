@@ -36,6 +36,11 @@ jest.mock('@/pages/Review/Components/ReviewMember', () => ({
   default: ({ userData }: any) => <div data-testid='review-member'>{userData?.role ?? 'none'}</div>,
 }));
 
+jest.mock('@/pages/Review/Components/ReviewQualityDiagnostic', () => ({
+  __esModule: true,
+  default: () => <div data-testid='review-quality-diagnostic'>quality diagnostic</div>,
+}));
+
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
   PageContainer: ({ title, children }: any) => (
@@ -95,6 +100,7 @@ describe('Review page', () => {
     expect(await screen.findByTestId('assignment-unassigned')).toHaveTextContent(
       'unassigned:review-admin',
     );
+    expect(screen.getByTestId('review-quality-diagnostic')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'pages.review.tabs.assigned' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'pages.review.tabs.rejectedTask' }),
@@ -137,6 +143,7 @@ describe('Review page', () => {
     await waitFor(() => {
       expect(screen.getByTestId('assignment-reviewed')).toHaveTextContent('reviewed:review-member');
     });
+    expect(screen.queryByTestId('review-quality-diagnostic')).not.toBeInTheDocument();
     expect(assignmentReloads.reviewed).not.toHaveBeenCalled();
 
     expect(
@@ -179,6 +186,7 @@ describe('Review page', () => {
     expect(screen.getByTestId('access-denied')).toHaveTextContent(
       'You do not have permission to access this page.',
     );
+    expect(screen.queryByTestId('review-quality-diagnostic')).not.toBeInTheDocument();
 
     consoleErrorSpy.mockRestore();
   });
