@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: ead5823accc3b4fbecbea4110b723160633d5965
+lastReviewedCommit: bdb122563a6ae4fd4bfe4bb3c6aa1302246119a3
 lastReviewedNote: 'Reviewed for Next Issue #846: focused maintenance boundary, runtime-config, fallback, locale, lint, and build proof introduces no new exception queue.'
 ---
 

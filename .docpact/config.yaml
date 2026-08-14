@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-14"
-lastReviewedCommit: "ead5823accc3b4fbecbea4110b723160633d5965"
+lastReviewedCommit: "bdb122563a6ae4fd4bfe4bb3c6aa1302246119a3"
 lastReviewedNote: 'Reviewed for Next Issue #845: refreshing provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
