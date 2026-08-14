@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
+lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
 lastReviewedNote: 'Reviewed for Next Issue #846: startup maintenance, fail-open service, static fallback, refresh interaction, and environment-switch tests follow the existing component and service test patterns.'
 ---
 

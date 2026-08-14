@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
+lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
 lastReviewedNote: 'Reviewed for Next Issue #846: the startup runtime-config switch, maintenance boundary, static fallback, and focused validation use the existing bootstrap workflow without changing local setup commands.'
 ---
 
