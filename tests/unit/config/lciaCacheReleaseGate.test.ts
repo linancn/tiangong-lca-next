@@ -86,25 +86,33 @@ describe('Publication workflow gates', () => {
     expect(packageJson.scripts['prepush:gate']).toContain('npm run lcia-cache:verify');
   });
 
-  it('keeps the dev-server browser matrix diagnostic and uses hermetic qualification for releases', () => {
+  it('keeps hermetic browser qualification manual and outside release blocking', () => {
     const semanticWorkflow = read('.github/workflows/i18n-semantic-e2e.yml');
     expect(semanticWorkflow).not.toContain('  workflow_call:');
     expect(semanticWorkflow).toContain('  workflow_dispatch:');
     expect(semanticWorkflow).not.toContain('  pull_request:');
     expect(semanticWorkflow).not.toContain('  push:');
     expect(semanticWorkflow).toContain('ref: ${{ inputs.ref || github.sha }}');
-    expect(semanticWorkflow).toContain("E2E_ALLOW_PRODUCTION_DATA: 'false'");
-    expect(semanticWorkflow).toContain("E2E_AUTHENTICATED: 'false'");
+    expect(semanticWorkflow).toContain('Manual Hermetic Semantic Qualification');
+    expect(semanticWorkflow).toContain('npm --silent run e2e:qualification:key');
+    expect(semanticWorkflow).toContain('npm --silent run e2e:qualify');
+    expect(semanticWorkflow).toContain('npm --silent run release:proof:verify');
+    expect(semanticWorkflow).toContain('Upload manual semantic qualification proof');
+    expect(semanticWorkflow).not.toContain('uses: actions/cache@');
     expect(semanticWorkflow).not.toContain('E2E_PRODUCTION_WRITE_CONFIRMATION');
     expect(semanticWorkflow).not.toContain('E2E_WRITE_VERIFIED_EVIDENCE');
+    expect(semanticWorkflow).not.toContain('secrets:');
 
     const aggregateGate = read('.github/workflows/release-gate.yml');
-    expect(aggregateGate).toContain('  semantic-qualification:');
-    expect(aggregateGate).toContain('npm --silent run e2e:qualification:key');
-    expect(aggregateGate).toContain('npm --silent run release:proof:verify');
-    expect(aggregateGate).toContain('npm --silent run e2e:qualify');
+    expect(aggregateGate).not.toContain('  semantic-qualification:');
+    expect(aggregateGate).not.toContain('npm --silent run e2e:qualification:key');
+    expect(aggregateGate).not.toContain('npm --silent run release:proof:verify');
+    expect(aggregateGate).not.toContain('npm --silent run e2e:qualify');
     expect(aggregateGate).not.toContain('  public-semantic-e2e:');
     expect(aggregateGate).not.toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
+    expect(aggregateGate).toMatch(
+      /release-proof:\n\s+name: Aggregate Exact Release Proof\n\s+needs: release-gate/,
+    );
     expect(aggregateGate).not.toContain('secrets:');
 
     const releaseWorkflow = read('.github/workflows/build.yml');
@@ -130,7 +138,7 @@ describe('Publication workflow gates', () => {
     }
   });
 
-  it('qualifies deterministic dev Release PRs once and makes main PRs proof-only', () => {
+  it('runs the deterministic dev Release gate once and makes main PRs proof-only', () => {
     const workflow = read('.github/workflows/release-readiness.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(workflow).toContain('pull_request:');

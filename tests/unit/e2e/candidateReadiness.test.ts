@@ -90,12 +90,13 @@ describe('candidate frontend readiness', () => {
     expect(closeBrowser).toHaveBeenCalledTimes(1);
   });
 
-  it('binds each CI browser job to the installed readiness browser', () => {
+  it('delegates manual CI browser readiness to the hermetic qualification controller', () => {
     const workflow = readFileSync(
       path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
       'utf8',
     );
-    expect(workflow).toContain('E2E_READINESS_BROWSER: ${{ matrix.browser }}');
+    expect(workflow).toContain('npm --silent run e2e:qualify');
+    expect(workflow).not.toContain('E2E_READINESS_BROWSER: ${{ matrix.browser }}');
 
     const globalSetup = readFileSync(
       path.resolve(process.cwd(), 'tests/e2e/i18n/global-setup.ts'),

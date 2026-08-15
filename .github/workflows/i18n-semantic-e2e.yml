@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: Optional commit or ref to diagnose; defaults to the dispatched commit.
+        description: Optional branch, tag, or commit to qualify; defaults to the dispatched commit.
         required: false
         default: ''
         type: string
@@ -13,73 +13,53 @@ permissions:
   contents: read
 
 concurrency:
-  group: i18n-semantic-e2e-diagnostic-${{ inputs.ref || github.ref }}
+  group: i18n-semantic-e2e-manual-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  contract:
-    name: Playwright contract discovery
+  semantic-qualification:
+    name: Manual Hermetic Semantic Qualification
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+
     steps:
-      - name: Check out repository
+      - name: Check out exact requested revision
         uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Resolve qualification proof key
+        id: qualification-identity
+        run: |
+          set -euo pipefail
+          identity_json="$(npm --silent run e2e:qualification:key -- --format=json)"
+          proof_key="$(jq -r '.result.proofKey' <<< "$identity_json")"
+          if [[ ! "$proof_key" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "::error::Qualification identity did not return a valid proof key."
+            exit 1
+          fi
+          echo "proof_key=$proof_key" >> "$GITHUB_OUTPUT"
 
-      - name: List semantic E2E assertions
-        env:
-          E2E_ALLOW_PRODUCTION_DATA: 'false'
-          E2E_AUTHENTICATED: 'false'
-          E2E_BACKEND_TARGET: production
-          E2E_BASE_URL: http://127.0.0.1:8000
-        run: npm run test:e2e:i18n -- --list
-
-  public-browser-semantics:
-    name: Public locale semantics (${{ matrix.browser }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        browser:
-          - chromium
-          - firefox
-          - webkit
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install browser
-        run: npx playwright install --with-deps "${{ matrix.browser }}"
-
-      - name: Run public locale semantics against candidate frontend
-        env:
-          E2E_ALLOW_PRODUCTION_DATA: 'false'
-          E2E_AUTHENTICATED: 'false'
-          E2E_BACKEND_TARGET: production
-          E2E_BASE_URL: http://127.0.0.1:8000
-          E2E_RELEASE_MODE: 'true'
-          E2E_READINESS_BROWSER: ${{ matrix.browser }}
+      - name: Run complete semantic qualification
         run: >-
-          npm run test:e2e:i18n -- tests/e2e/i18n/access-fallback.spec.ts tests/e2e/i18n/semantic-critical.spec.ts tests/e2e/i18n/query-responsive.spec.ts --project="${{ matrix.browser }}"
+          npm --silent run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json --format=json --output .local/e2e-release/qualification-controller-report.json
+
+      - name: Verify generated qualification proof
+        run: >-
+          npm --silent run release:proof:verify -- --proof .local/e2e-release/qualification-proof.json --format=json
+
+      - name: Upload manual semantic qualification proof
+        uses: actions/upload-artifact@v6
+        with:
+          name: manual-semantic-qualification-${{ steps.qualification-identity.outputs.proof_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/e2e-release/qualification-proof.json
+            .local/e2e-release/qualification-controller-report.json
+          if-no-files-found: error
+          retention-days: 30

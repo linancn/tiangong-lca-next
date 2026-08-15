@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: release proof is hermetic and push eligibility is resolved before expensive gates.'
+lastReviewedCommit: a29f4f3392fc22e7800b407cfe5596396d1d783b
+lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 ---
 
 # Development Bootstrap
@@ -72,7 +72,7 @@ The direct development browser harness uses `@playwright/test` `1.61.1`. Install
 npx playwright install chromium firefox webkit
 ```
 
-Release proof does not use host browser binaries, host `node_modules`, Umi/MFSU caches, or the parent workspace. It requires the repo Node.js `24` launcher plus Git and a running Docker engine; the idempotent installer owns the pinned Playwright image and all E2E-specific runtime dependencies:
+Hermetic browser qualification does not use host browser binaries, host `node_modules`, Umi/MFSU caches, or the parent workspace. It requires the repo Node.js `24` launcher plus Git and a running Docker engine; the idempotent installer owns the pinned Playwright image and all E2E-specific runtime dependencies:
 
 ```bash
 npm run e2e:env:install
@@ -137,9 +137,10 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | run the static release preflight (no browser claim) | `npm run release:static-preflight` (`release:preflight` is a compatibility alias) |
 | preferred version-bump PR into `dev` | `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply` |
 | preferred immutable `dev -> main` promotion after the version PR merges | `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply` |
-| compute the semantic qualification cache/proof key | `npm run e2e:qualification:key` |
+| compute the semantic qualification identity key | `npm run e2e:qualification:key` |
 | qualify the semantic release harness locally without production access | `npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json` |
 | verify an external qualification proof | `npm run release:proof:verify -- --proof <path>` |
+| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo linancn/tiangong-lca-next --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
@@ -150,9 +151,11 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-For the normal deterministic flow, `release:to-dev --apply` changes only the three root version fields plus bounded Docpact review metadata. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` is the proof boundary: the reusable Release Gate runs static/full tests plus content-addressed semantic qualification against a prebuilt candidate and closed simulator before merge, then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. That qualification owns the complete Chromium route/view matrix and the Firefox/WebKit critical scenarios; the separate dev-server public matrix is an optional `workflow_dispatch` diagnostic and is not a second release prerequisite. The immutable promotion push, main PR, and normal main publication verify the candidate identity and proof without rerunning the aggregate. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. Unknown simulator requests, external origins, and production writes fail the qualification.
+For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
 
-Qualification builds with the fixed non-production profile in `docker/e2e/qualification.env`; it never reads or connects to the deployment target in `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime contracts, and the browser environment contract. Deployment-only `.env` and root release-version metadata are excluded, so those changes may reuse an exact behavior-equivalent proof; changing a real qualification input forces a new run. Proof lives only under ignored `.local/e2e-release/**`, in the GitHub Actions cache, or as a 30-day Actions artifact; source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
+`release:to-dev --apply` changes only the three root version fields plus bounded Docpact review metadata. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` runs the reusable non-browser Release Gate—static contracts and the full Jest gate—then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main PR, and normal main publication verify candidate identity and that proof without running browser E2E. Canonical E2E discovery still recursively includes nested spec directories whenever manual qualification is invoked; unknown simulator requests, external origins, and production writes fail that qualification.
+
+Qualification builds with the fixed non-production profile in `docker/e2e/qualification.env`; it never reads or connects to the deployment target in `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime contracts, and the browser environment contract. Deployment-only `.env` and root release-version metadata are excluded. Manual GitHub qualification always executes and stores proof only as a 30-day Actions artifact; local proof lives under ignored `.local/e2e-release/**`. Source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
 
 After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 
@@ -165,9 +168,9 @@ npm run e2e:release -- \
   --users-env-file .env.users.local
 ```
 
-The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; release CI keeps using the credential-free/read-only exact-SHA hermetic qualification.
+The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; the optional manual workflow uses only the credential-free/read-only hermetic qualification.
 
-The authenticated production-data closure remains an explicit local operator diagnostic and is not a normal release prerequisite. Merge the deterministic dev Release PR only after its aggregate Release Readiness proof succeeds, then create the `dev -> main` Promote PR from that immutable merged candidate. The promotion check verifies the dev proof without obtaining production credentials, write authority, or another browser run.
+The authenticated production-data closure remains an explicit local operator diagnostic and is not a normal release prerequisite. Merge the deterministic dev Release PR only after its non-browser Release Readiness proof succeeds, then create the `dev -> main` Promote PR from that immutable merged candidate. The promotion check verifies the dev proof without obtaining production credentials, write authority, or a browser run.
 
 ## Preferred Release PR Flow
 
@@ -179,7 +182,7 @@ Use these commands for every normal versioned release. They replace manual packa
    npm --silent run release:to-dev -- --version <x.y.z> --issue <number>
    ```
 
-2. Apply that exact plan. This composes the version and bounded Docpact evidence, runs the restricted structural/static candidate push, and creates or reuses the Release PR targeting `dev`. That PR, not the local command, runs the one aggregate acceptance:
+2. Apply that exact plan only after any operator-selected manual browser qualification for the open business PR is complete. This composes the version and bounded Docpact evidence, runs the restricted structural/static candidate push, and creates or reuses the Release PR targeting `dev`. That PR runs the one non-browser release gate:
 
    ```bash
    npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply
@@ -197,7 +200,7 @@ Use these commands for every normal versioned release. They replace manual packa
    npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply
    ```
 
-The commands create or reuse PRs but never merge them. Merge the dev Release PR only after its aggregate gate passes; the later main check is expected to be proof/identity-only and must fail closed if the candidate or main baseline drifted. Use a manual path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
+The commands create or reuse PRs but never merge them. Merge the dev Release PR only after its non-browser gate passes; the later main check is expected to be proof/identity-only and must fail closed if the candidate or main baseline drifted. Browser E2E is not evaluated by either release PR. Use a manual release-assembly path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
 
 Both release commands default to read-only planning when `--apply` is omitted. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; preflight, managed-gate, and Docpact output is retained under `.local/release-automation/`. The version-to-dev command proves that only `package.json.version`, `package-lock.json.version`, `package-lock.json`'s root package version, and bounded Docpact review metadata changed. It independently checks the version candidate's `dev`-relative paths and the complete `main`-to-candidate promotion paths, then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point. The composed commit must pass `release:static-preflight` before the checked push. Any dependency, document-body, uncovered, stale, missing, untracked, or unsupported change stops the command. Release-line validation accepts direct `main` ancestry in `dev`; after a normal promotion, it also accepts the exact two-parent `main` merge only when its second parent remains in `dev` history and the merge tree equals that promoted parent. The promotion command pins the exact merged dev SHA and requires the dev Release PR's bound proof; its main-candidate check does not repeat browser or full-suite acceptance. Both commands reuse a matching open PR and fail closed on version, branch, main-baseline, proof, or dev-candidate drift.
 
@@ -218,7 +221,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - a failed build, server, or preflight phase may activate one ignored one-hour HMAC-bound continuation receipt; argument-free `npm run e2e:release:resume` revalidates the exact commit/tree/lock/environment/source/image/arguments and reruns preflight, while browser results and production-fixture phases are never reused
 - race diagnosis may add `--project <browser> --spec <path>` or `--grep <pattern> --repeat-each <1-5>`; repeat is accepted only for a focused read-only scope and cannot write verified evidence
 - diagnostics retain the sanitized original error chain and emit stable phase/check IDs, coarse exit classes (`2`, `10`, `20`, `30`, `40`, `50`), cleanup state, output path, and one exact next command
-- semantic E2E GitHub Actions is credential-free and read-only: the exact deterministic dev Release PR runs the hermetic content-addressed qualification for its candidate SHA, including the three-browser critical scenarios; the separate dev-server public semantic/boundary matrix is available only through optional `workflow_dispatch`, and routine PR/dev pushes do not trigger either browser path
+- semantic E2E GitHub Actions is credential-free and read-only: `i18n-semantic-e2e.yml` is dispatched manually for a chosen business-PR branch or exact SHA when browser evidence is warranted, runs the hermetic content-addressed qualification including the three-browser critical scenarios, and is never triggered or required by routine PR/dev/release events
 - the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; the host controller refuses production-data mode when `CI` or `GITHUB_ACTIONS` is set, then an accepted local run overrides the image-inherited markers to empty inside the container; production write still requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
 - before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
 - use one protected `E2E_RECOVERY_LEDGER_PATH` per active invocation; recovery may proceed from the external copy alone after a crash, but a primary ledger without the configured recovery copy fails closed so a stale teardown cannot adopt another run
@@ -229,7 +232,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - ordinary local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. No-update and raw deletion-only pushes skip gates, normal exact-branch `HEAD` refspecs are accepted, and every other ineligible checked ref shape fails before Docpact/full tests. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
-- exact marker-bound Release PRs targeting `dev` run the reusable clean-runner aggregate Release Gate: static/full tests and content-addressed hermetic semantic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios. PRs targeting `main` and normal post-merge publication only verify the resulting exact proof and unchanged-tree merge chain; they fail closed instead of rerunning the aggregate
+- exact marker-bound Release PRs targeting `dev` run the reusable clean-runner non-browser Release Gate: static contracts plus the complete Jest gate. PRs targeting `main` and normal post-merge publication verify the resulting exact proof and unchanged-tree merge chain; none of these release stages run or require browser E2E
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
