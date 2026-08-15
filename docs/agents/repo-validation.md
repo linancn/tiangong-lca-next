@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: a29f4f3392fc22e7800b407cfe5596396d1d783b
+lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
 lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 related:
   - ../AGENTS.md
