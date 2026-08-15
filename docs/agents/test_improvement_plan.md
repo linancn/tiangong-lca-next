@@ -29,7 +29,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: one hermetic qualification owns release browser proof; dev-server E2E remains diagnostic.'
+lastReviewedNote: 'Reviewed for Next Issue #867: release browser proof is hermetic and push-shape errors fail before the test budget is spent.'
 ---
 
 # Testing Strategy
@@ -55,6 +55,7 @@ lastReviewedNote: 'Reviewed for Next Issue #867: one hermetic qualification owns
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - documentation screenshot capture is a separate, on-demand product-evidence workflow: Next supplies only the source-bound product profile and stable locators, while workspace owns profile compilation, plan/security/access, run-scoped base-origin logic, and the synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
+- gate eligibility should be decided before gate execution: exact current-branch and `HEAD` source spellings may proceed, raw deletion/no-update shapes spend no test budget, and invalid checked ref shapes fail before Docpact or the full suite
 - release-risk gates should shift to the earliest immutable candidate without weakening the final boundary: the generated release-candidate push runs only structural/static proof, and the exact dev Release PR runs the aggregate static/full gate plus content-addressed hermetic qualification, which already owns the complete Chromium matrix and Firefox/WebKit critical scenarios. A successful dev Release PR emits proof bound to the main/dev bases, candidate head/tree/version, PR, run attempt, and artifact; immutable promotion/main stages verify it instead of repeating the aggregate
 - deterministic release orchestration should fail before transport on version scope, cumulative Docpact review, and composed-candidate static preflight; it must not generate browser proof. Release-line proof accepts direct ancestry or only a tree-identical two-parent promotion whose second parent remains in `dev`, while promotion retains the exact merged `dev` SHA and the original main baseline
 - each production release candidate should have one aggregate proof owner: the exact dev Release PR runs `prepush:gate` once and semantic qualification once per behavior key. The separate dev-server public workflow is not part of that proof. Normal main PR/push paths fail closed on absent or mismatched proof rather than creating a late fallback; explicit recovery events may run a fresh aggregate

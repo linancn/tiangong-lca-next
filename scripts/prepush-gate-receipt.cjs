@@ -435,12 +435,13 @@ function readPushUpdate(root, updatesFile, checkpoint) {
     );
   }
   const [{ localRef, localSha, remoteRef, remoteSha }] = updates;
+  const resolvedLocalRef = localRef === 'HEAD' ? checkpoint.branch : localRef;
   if (
-    !localRef.startsWith('refs/heads/') ||
+    !resolvedLocalRef.startsWith('refs/heads/') ||
     !remoteRef.startsWith('refs/heads/') ||
     localSha === ZERO_SHA ||
     localSha !== checkpoint.head ||
-    localRef !== checkpoint.branch
+    resolvedLocalRef !== checkpoint.branch
   ) {
     throw new IneligibleReceiptError(
       'the push is not a single exact-HEAD update from the current local branch',
@@ -456,7 +457,7 @@ function readPushUpdate(root, updatesFile, checkpoint) {
     }
   }
 
-  return { localRef, localSha, remoteRef, remoteSha };
+  return { localRef: resolvedLocalRef, localSha, remoteRef, remoteSha };
 }
 
 function isPlainObject(value) {
@@ -644,6 +645,13 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
   }
 
   invalidateReceipt(root);
+  if (updates.every((update) => update.localSha === ZERO_SHA)) {
+    if (session) {
+      throw new Error('checked push manages branch updates, not ref deletions');
+    }
+    process.stdout.write('Only ref deletions requested; skipped the checkpoint and gates.\n');
+    return null;
+  }
   const docpactBaseRef = selectDocpactBaseRef(root, updates, docpactBaseOverride);
   const currentBranchRef = git(root, ['symbolic-ref', '--quiet', 'HEAD'], {
     allowFailure: true,
@@ -676,6 +684,12 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
     update = null;
     remote = null;
     ineligibleReason = error instanceof Error ? error.message : String(error);
+  }
+
+  if (session && (!update || !remote)) {
+    throw new Error(
+      `checked push requires one eligible exact-HEAD branch update (${ineligibleReason})`,
+    );
   }
 
   if (gateProfile !== GATE_PROFILES.full) {

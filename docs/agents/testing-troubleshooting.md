@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c2d369386438a8ff88f47e637784feda2f0cf3f5
-lastReviewedNote: 'Reviewed for Next Issue #867: release diagnosis distinguishes hermetic qualification failures from optional dev-server matrix noise.'
+lastReviewedNote: 'Reviewed for Next Issue #867: diagnosis separates hermetic browser failures and rejects static push-shape errors before gates.'
 ---
 
 # Testing Troubleshooting
@@ -114,6 +114,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | local German review rejects its input/output path | the path is inside the repository but outside ignored `.local/i18n-de-DE/`, is tracked, or traverses a symlink | keep completed evidence in the private ignored directory (or an external private path); never move it under tracked docs |
 | active `i18n:de:audit` reports correction or activation drift | current German differs from the pinned accepted baseline without an exact dossier, or context/quality/runtime inputs changed | add or repair the compact tracked correction dossier, regenerate active artifacts, and rerun shared checks; never request a new private delta approval |
 | managed push transport fails after both gates pass | `push:checked` activated the ignored exact-intent receipt and the remote may or may not have accepted the commit | run argument-free `npm run push:retry`; it succeeds idempotently when the exact SHA already arrived and otherwise retries only while the remote and all bound inputs remain unchanged |
+| checked push reports an ineligible ref update | the source is not the current exact branch/`HEAD`, the destination is not a branch, or more than one update was requested | correct the refspec shown by the command; the helper must reject this shape before Docpact/full tests, and an ordinary raw deletion-only push intentionally skips those gates |
 | raw push fails after its hook passed but no receipt exists | only `push:checked` can bind the original push intent and activate bounded recovery after a failed transport | run a fresh `npm run push:checked -- <normal-git-push-args>` so its ordinary hook re-establishes evidence; never use `--no-verify` or `HUSKY=0` manually |
 | every hook-driven receipt test exits before either fake gate on GitHub Ubuntu | the hook forced `nvm use 24` even though `setup-node` had already activated Node 24 outside NVM | verify the active Node major first, use it when already 24, and consult NVM only as a fallback |
 

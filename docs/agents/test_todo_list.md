@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs require one hermetic qualification and no duplicate dev-server blocker.'
+lastReviewedNote: 'Reviewed for Next Issue #867: release qualification is hermetic and checked-push eligibility no longer fails after full tests.'
 ---
 
 # Testing Execution State
@@ -80,6 +80,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - release qualification delegates the complete Jest inventory to one `prepush:gate` lane and runs content-addressed semantic qualification in parallel on the exact dev Release PR; tag creation waits for proof verification, and normal later stages never repeat candidate acceptance
 - Issue #819 keeps the exact complete coverage inventory on two workers but requires a `512MB` idle-memory recycle boundary and full managed-gate proof; lower boundaries that force collection around the normal instrumented worker footprint are not an accepted optimization
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
+- checked-push eligibility now accepts the normal exact-branch `HEAD` spelling and fails every other invalid ref shape before gates; raw deletion-only pushes skip gates, so branch cleanup cannot spend the full-suite budget
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`

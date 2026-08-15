@@ -35,7 +35,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs use one hermetic browser qualification; the dev-server matrix is diagnostic only.'
+lastReviewedNote: 'Reviewed for Next Issue #867: browser proof is hermetic and static push-shape failures occur before expensive gates.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -121,7 +121,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
-- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns aggregate acceptance.
+- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns aggregate acceptance. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
 - new npm dependencies require human approval
 - production-writing E2E requires a host without `CI` or `GITHUB_ACTIONS`; only after that check may the controller clear image-inherited CI markers for the local container. Authenticated mode plus two write guards remain mandatory: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 

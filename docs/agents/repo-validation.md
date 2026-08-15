@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs use one hermetic browser qualification; the dev-server matrix is diagnostic only.'
+lastReviewedNote: 'Reviewed for Next Issue #867: release proof is hermetic and static push-shape decisions occur before expensive gates.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -117,7 +117,7 @@ Qualification reuse is computed, not maintained by editing hash records. `npm ru
 
 The shared Header wraps Umi `SelectLang` with `reload={false}`. Browser proof must show that locale switching preserves the current URL and document identity, refreshes locale-bound reference labels in the mounted page, and prevents a delayed response for the old locale from overwriting the current locale.
 
-The local `pre-push` hook runs `npm run docpact:gate` first. Ordinary delivery pushes run the full `npm run prepush:gate` local test gate last, with static release preflight added for main-semantic destinations. Only the repo-owned deterministic release command may request the `release-candidate` or `immutable-promotion` profile; each validates its exact generated branch, destination, base/head, and allowed paths, then runs Docpact plus static release preflight without browsers or the aggregate suite. For ordinary delivery, commit the final controlled tracked change and let the hook own the authoritative full gate once; do not manually run the same full gate immediately before pushing.
+The local `pre-push` hook runs `npm run docpact:gate` first. Ordinary delivery pushes run the full `npm run prepush:gate` local test gate last, with static release preflight added for main-semantic destinations. Only the repo-owned deterministic release command may request the `release-candidate` or `immutable-promotion` profile; each validates its exact generated branch, destination, base/head, and allowed paths, then runs Docpact plus static release preflight without browsers or the aggregate suite. A no-update push and a raw deletion-only push skip checkpoint/gates because they deliver no candidate content; a checked push accepts `HEAD` only when it resolves to the current exact branch SHA and rejects every other ineligible ref shape before running gates. For ordinary delivery, commit the final controlled tracked change and let the hook own the authoritative full gate once; do not manually run the same full gate immediately before pushing.
 
 A passing feature-branch or `dev`-relative Docpact gate proves only that configured comparison range. The normal `release:to-dev` command therefore supplies the complete cumulative path set from current `main` through the intended `dev` candidate, records only genuine bounded review evidence, rejects any other untracked path, and runs static preflight on the composed commit before creating the version PR. That exact dev Release PR adds the one aggregate full-suite and hermetic browser proof. The immutable promotion, main-target PR, and normal post-merge workflow then require structurally matching unchanged-tree merges and the exact bound proof; missing, expired, ambiguous, unavailable, or mismatched proof fails closed and requires a new dev candidate instead of a late aggregate rerun. If a candidate reports `missing-review`, genuinely review and update every required governed document in a new `dev` PR; do not hide active findings with a baseline, waiver, or narrower comparison base.
 

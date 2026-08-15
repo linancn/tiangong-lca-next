@@ -31,7 +31,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: release acceptance uses one hermetic browser qualification and avoids the duplicate dev-server matrix.'
+lastReviewedNote: 'Reviewed for Next Issue #867: release proof is hermetic and push eligibility is resolved before expensive gates.'
 ---
 
 # Development Bootstrap
@@ -228,7 +228,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
-- ordinary local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
+- ordinary local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. No-update and raw deletion-only pushes skip gates, normal exact-branch `HEAD` refspecs are accepted, and every other ineligible checked ref shape fails before Docpact/full tests. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
 - exact marker-bound Release PRs targeting `dev` run the reusable clean-runner aggregate Release Gate: static/full tests and content-addressed hermetic semantic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios. PRs targeting `main` and normal post-merge publication only verify the resulting exact proof and unchanged-tree merge chain; they fail closed instead of rerunning the aggregate
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate

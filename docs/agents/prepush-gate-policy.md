@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: release aggregation keeps one hermetic browser proof and excludes the duplicate dev-server matrix.'
+lastReviewedNote: 'Reviewed for Next Issue #867: release proof is hermetic; checked ref errors fail early and deletion-only pushes skip gates.'
 ---
 
 # Pre-Push Gate Policy
@@ -91,6 +91,7 @@ It does not own:
 | Surface | Target rule |
 | --- | --- |
 | local `pre-push` hook | ordinary delivery pushes run Docpact first and the full local gate last; exact deterministic release-candidate and immutable-promotion branches may use their repo-owned reduced profiles, which run Docpact plus static release preflight and defer aggregate acceptance to the exact dev Release PR |
+| non-mutating or deletion-only push | skip the checkpoint and both gates because no candidate content is being delivered; a checked push remains branch-update-only and rejects deletion before any gate |
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
 | ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
 | PRs into `dev` | ordinary PRs rely on local test-gate evidence, focused proof, and Docpact governance; a marker-bound deterministic Release PR runs the reusable aggregate Release Gate and emits a 30-day proof bound to the main baseline, dev base/head/tree, version, PR, workflow run, attempt, and artifact |
@@ -123,7 +124,8 @@ It does not own:
 - for ordinary delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; deterministic release-candidate and promotion pushes use only their restricted structural/static profiles because the dev Release PR owns aggregate acceptance
 - use manual full-gate execution only when a no-push handoff needs the evidence
 - use `npm run push:checked -- <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper
-- an already-up-to-date push supplies no ref updates, so the hook skips checkpoint collection and both gates; a managed no-op succeeds only with a private nonce-bound no-update acknowledgement, which can never activate a retry receipt
+- an already-up-to-date push supplies no ref updates, and a raw deletion-only push supplies no new candidate content, so the hook skips checkpoint collection and both gates; a managed no-op succeeds only with a private nonce-bound no-update acknowledgement, while checked ref deletion is rejected before any gate, and neither path can activate a retry receipt
+- normalize the normal Git source spelling `HEAD` to the current exact branch only when its SHA equals the immutable checkpoint; reject every other ineligible checked ref shape before Docpact or the full gate, rather than reporting a deterministic transport-shape error after expensive validation
 - hook completion alone never creates a reusable receipt: a successful managed original push leaves no receipt, and only a non-zero original push after a valid hook payload activates an ignored, one-hour, bounded single-push-intent receipt under `.local/prepush-gate/`
 - the checked-push session directory and nonce remain private to the hook coordinator and are removed from Docpact and test-gate subprocess environments, so nested tests or helper pushes cannot forge the outer session's successful-gate payload
 - after that uncertain or failed transport, use `npm run push:retry` with no arguments; remote, ref, and commit come only from the receipt, and any operator-supplied target argument is rejected

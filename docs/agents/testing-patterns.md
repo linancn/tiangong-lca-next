@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: release proof comes from the hermetic qualification; the dev-server matrix is manual diagnosis.'
+lastReviewedNote: 'Reviewed for Next Issue #867: browser release proof is hermetic and push-shape tests enforce fail-fast gate budgeting.'
 ---
 
 # Testing Patterns Reference
@@ -176,6 +176,7 @@ Scope-closure provider qualification pattern:
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
+- test no-update, deletion-only, `HEAD`-source, tag, and multi-ref push shapes explicitly: deletion/no-update must not spend the gate budget, an exact `HEAD` branch push may proceed, and every other ineligible checked update must fail before either gate
 - when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then qualify the smallest useful fixed worker pool with a documented per-worker idle-memory recycle boundary on the affected platform; lock the exact selection/exclusion and worker contract in the isolated suite, and let the single coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
