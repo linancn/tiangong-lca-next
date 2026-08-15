@@ -15,7 +15,7 @@ describe('production semantic E2E mutation authorization contract', () => {
     expect(controller).toContain("'.local/state/tiangong-lca-next/e2e-production-ledger.json'");
   });
 
-  it('keeps ordinary CI retries diagnostic while release proof uses the first attempt', () => {
+  it('keeps ordinary CI retries diagnostic while hermetic qualification uses the first attempt', () => {
     const config = read('playwright.config.ts');
     expect(config).toContain('failOnFlakyTests: Boolean(process.env.CI)');
     expect(config).toContain("const releaseRun = process.env.E2E_RELEASE_MODE === 'true'");

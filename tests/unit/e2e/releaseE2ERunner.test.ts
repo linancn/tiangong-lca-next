@@ -519,12 +519,12 @@ describe('release E2E controller contracts', () => {
     expect(fs.readFileSync(path.resolve(process.cwd(), 'playwright.config.ts'), 'utf8')).toContain(
       'retries: releaseRun ? 0',
     );
-    expect(
-      fs.readFileSync(
-        path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
-        'utf8',
-      ),
-    ).toContain("E2E_RELEASE_MODE: 'true'");
+    const manualWorkflow = fs.readFileSync(
+      path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
+      'utf8',
+    );
+    expect(manualWorkflow).toContain('npm --silent run e2e:qualify');
+    expect(manualWorkflow).not.toContain("E2E_RELEASE_MODE: 'true'");
     expect(
       fs.readFileSync(path.resolve(process.cwd(), 'tests/e2e/i18n/evidence-reporter.ts'), 'utf8'),
     ).toContain('E2E_CANDIDATE_MANIFEST_PATH');

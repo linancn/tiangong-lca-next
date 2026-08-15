@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-15'
-lastReviewedCommit: 'c2d369386438a8ff88f47e637784feda2f0cf3f5'
-lastReviewedNote: 'Reviewed for Next Issue #867: validation routing keeps browser proof hermetic and push-shape failures ahead of expensive gates.'
+lastReviewedCommit: 'a29f4f3392fc22e7800b407cfe5596396d1d783b'
+lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
