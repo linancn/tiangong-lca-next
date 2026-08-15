@@ -151,8 +151,10 @@ if (args[0] === 'run' && args[1] === 'release:static-preflight') {
   process.exitCode = process.env.FAKE_RELEASE_PREFLIGHT_FAIL === '1' ? 12 : 0;
 } else if (args[0] === 'run' && args[1] === 'push:checked') {
   const separator = args.indexOf('--');
-  const remote = args[separator + 1];
-  const ref = args[separator + 2];
+  const profileFlag = args[separator + 1];
+  if (profileFlag !== '--gate-profile') throw new Error('missing gate profile');
+  const remote = args[separator + 3];
+  const ref = args[separator + 4];
   const result = spawnSync('git', ['push', '--no-verify', remote, ref], { cwd: process.cwd(), stdio: 'inherit' });
   process.exitCode = result.status || 0;
 } else if (args[0] === 'run' && args[1] === 'push:retry') {
@@ -311,7 +313,7 @@ const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
     baseRefOid: fixture.mainSha,
     headRefName: 'codex/version',
     headRefOid: mergeSha,
-    body: `<!-- tiangong-next-release-automation:v1 issue=778 version=1.0.1 base=${fixture.mainSha} candidate=${mergeSha} -->`,
+    body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.mainSha} main-base=${fixture.mainSha} candidate=${mergeSha} -->`,
     title: 'chore: prepare v1.0.1 on dev',
   });
 
@@ -435,7 +437,7 @@ describe('release automation public contracts', () => {
       base_sha: fixture.devSha,
       main_sha: fixture.mainSha,
       qualification: {
-        status: 'deferred_to_main_candidate_gate',
+        status: 'required_by_dev_release_candidate_gate',
         action: 'no_tracked_proof_mutation',
       },
       next_action: 'rerun_with_apply',
@@ -582,7 +584,7 @@ describe('release automation public contracts', () => {
         rounds: 3,
       },
       qualification: {
-        status: 'deferred_to_main_candidate_gate',
+        status: 'required_by_dev_release_candidate_gate',
         action: 'no_tracked_proof_mutation',
         preflight_status: 'passed',
       },
@@ -606,6 +608,7 @@ describe('release automation public contracts', () => {
     expect(npmInvocations).not.toContain('e2e:qualify');
     expect(npmInvocations).toContain('release:static-preflight');
     expect(npmInvocations).toContain('push:checked');
+    expect(npmInvocations).toContain('release-candidate');
 
     const previousBinary = process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
     const previousMode = process.env.FAKE_DOCPACT_MODE;
@@ -654,7 +657,7 @@ describe('release automation public contracts', () => {
     expect(output).toMatchObject({
       status: 'ready_for_review',
       qualification: {
-        status: 'deferred_to_main_candidate_gate',
+        status: 'required_by_dev_release_candidate_gate',
         action: 'no_tracked_proof_mutation',
         preflight_status: 'passed',
       },
@@ -838,7 +841,7 @@ describe('release automation public contracts', () => {
         headRefOid: candidateSha,
         baseRefName: 'dev',
         headRefName: 'codex/issue-778-version-v1.0.1',
-        body: `<!-- tiangong-next-release-automation:v1 issue=778 version=1.0.1 base=${fixture.devSha} candidate=${candidateSha} -->`,
+        body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.devSha} main-base=${fixture.mainSha} candidate=${candidateSha} -->`,
       },
     ];
     const candidateDocuments = versionDocuments('1.0.1');
@@ -886,7 +889,7 @@ describe('release automation public contracts', () => {
       dev_merge_sha: fixture.devSha,
       candidate_sha: fixture.devSha,
       pull_request: { url: 'https://example.test/pull/53' },
-      qualification: { status: 'required_by_main_candidate_gate' },
+      qualification: { status: 'proved_by_dev_release_candidate_gate' },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(
@@ -894,6 +897,7 @@ describe('release automation public contracts', () => {
     );
     expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.devSha);
     expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
+    expect(fs.readFileSync(npmLog, 'utf8')).toContain('immutable-promotion');
   });
 
   it('promotes after an earlier tree-identical two-parent main promotion', () => {

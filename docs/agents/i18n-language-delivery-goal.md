@@ -8,7 +8,7 @@ owner: next
 targetRepo: linancn/tiangong-lca-next
 project: https://github.com/users/tiangong-lca/projects/1
 language: zh-CN
-version: 3.4
+version: 3.5
 translationGovernance: autonomous-context-grounded
 referenceDataLocalization: official-first-version-locked
 languageExtensibilityContract: registry-manifest-derived-no-business-hardcoding
@@ -57,7 +57,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: 2f4cad4b
-lastReviewedNote: 'Reviewed for Next Issue #867: closed semantic qualification uses deterministic non-production configuration, separate from deployment-target evidence.'
+lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs own aggregate acceptance and later immutable release stages reuse their proof.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -178,7 +178,7 @@ related:
 
 唯一需要人工确认的正常动作是：执行当前 workflow 中真正使 production URL 生效的动作。这里的 production-effective action 定义为“第一个可能改变任何真实生产用户可见服务状态，或启动不可撤销/外部可见生产 rollout 的动作”。
 
-如果当前 Next workflow 在 `main` push 后自动执行 Release Gate 与 credential-free semantic E2E，并仅在两者通过后创建 tag、部署 Web 和准备 Draft Release，那么这些副作用与 `main` 合并仍是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。main-target PR 上的可复用 Release Gate 是合并前阻断证据，不改变 production-effective action 的位置。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
+如果当前 Next workflow 在 exact dev Release PR 已完成 aggregate acceptance 后，由 `main` push 验证该 proof 并创建 tag、部署 Web 和准备 Draft Release，那么这些副作用与 `main` 合并仍是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。main-target PR 上的 proof/identity check 是合并前阻断证据，不改变 production-effective action 的位置。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
 
 如果 feature、promote、release 或 root integration 的 branch protection 强制人工批准，这属于仓库外部治理阻塞，不是本 Goal 设计的正常确认节点。不得主动增加这类 gate，也不得绕过已存在的保护规则。
 
@@ -615,7 +615,7 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 只有一个 CI 信任边界：
 
-- 日常 PR 与 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，`main`-target PR 的 aggregate Release Gate 对 exact candidate SHA 强制复用同一 workflow；
+- 日常 PR 与普通 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，只有 marker-bound 的 exact dev Release PR aggregate 对 candidate SHA 强制调用同一 workflow；
 - semantic E2E GitHub Actions 一律不接收生产凭据、不写生产数据，只运行合同发现以及 Chromium、Firefox、WebKit 三浏览器 public semantics/认证边界矩阵；`workflow_dispatch` 与 release 调用都不扩权，也不承载 authenticated production-data closure。
 
 完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 verified external evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
@@ -626,7 +626,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
-browser proof 不进入 Git。`main`-target PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
+browser proof 不进入 Git。exact dev Release PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。成功后生成绑定 main baseline、dev base/head/tree、version、PR、run attempt 与 artifact 的外部 proof。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
 
 显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代 release aggregate proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
@@ -817,11 +817,11 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 
 阶段输出：focused proof、完整 route-view browser smoke、自动质量问题清零。
 
-### 阶段 H：冻结、版本、clean proof 和一次本地最终门禁
+### 阶段 H：冻结业务候选、clean proof 和一次本地最终门禁
 
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
-3. 选择/确认唯一 package version，只 bump 一次。
+3. 选择/确认唯一 package version，但此阶段不手工修改；最终 version bump 由阶段 I 的确定性 `release:to-dev` 命令一次完成。
 4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `npm run i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `npm run i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使最终 release gate 非零退出。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
@@ -848,7 +848,7 @@ npm run push:retry
 
 9. 只有受控 tracked 输入、依赖、Node/toolchain 或 gate config 改变，才为新 HEAD 再跑一次。Project/Issue 文本、只读检查和 tree-identical merge 不使其失效。
 
-阶段输出：version、delivery SHA、clean proof、一次本地 full gate 和成功 push。
+阶段输出：delivery SHA、clean proof、一次业务交付本地 full gate 和成功 push。后续纯 version/Docpact release commit 不重复该本地 full gate。
 
 ### 阶段 I：feature PR 到 dev，全程自主
 
@@ -859,8 +859,9 @@ npm run push:retry
 4. 三个 PR required checks 通过后按依赖顺序自主合并到 `dev`，不请求翻译或合并确认。
 5. 执行 dev smoke；匿名态覆盖登录流程和受保护入口跳登录，已登录态完整覆盖 route-view matrix，特别是 `/welcome` 与 `/welcome?view=carbon-footprint`；若角色走同一 selector 代码路径，只做代表性 smoke。
 6. 枚举完整 `dev...main` commits/paths/batch members，确认版本/tag/release 唯一。
-7. 创建/更新唯一 promote PR，等待 required checks。
-8. 重新审计 production-effective action：若 promote merge 会直接上线，停在其合并前进入阶段 J；若 promote merge 已不再上线，则自主合并到 `main`，继续完成所有非生产生效准备，只在真实 deploy/promote/publish 动作前进入阶段 J。
+7. 用 `release:to-dev --apply` 创建唯一确定性 version PR 到 `dev`。该命令的 restricted push 只跑 Docpact 与 static preflight；exact dev Release PR 必须完成一次 aggregate static/full、content-addressed qualification 与 public three-browser proof。若失败，回 `dev` 修复并生成新 patch candidate；不得把失败推迟到 main。
+8. dev Release PR 合并后，用 `release:promote-dev-to-main --apply` 创建唯一 immutable promote PR。其本地 push 与 `Main Candidate / Release Gate` 只验证 exact dev proof、main/dev lineage 和 tree identity，不重跑 candidate acceptance。
+9. 重新审计 production-effective action：若 promote merge 会直接上线，停在其合并前进入阶段 J；若 promote merge 已不再上线，则自主合并到 `main`，继续完成所有非生产生效准备，只在真实 deploy/promote/publish 动作前进入阶段 J。
 
 阶段输出：feature PR/dev SHA、dev smoke、promote/main 当前状态，以及紧邻真实 production-effective action 的精确 release candidate tuple。
 
@@ -868,9 +869,9 @@ npm run push:retry
 
 当且仅当以下条件全部满足时，向用户请求一次最终发布确认：
 
-- promote PR required checks 已通过；
+- dev Release PR aggregate proof 已通过，且 promote PR 的 proof/identity required check 已通过；
 - version、promote SHA/tree 和完整 batch digest 已冻结；
-- 本地 final gate 与 clean proof 已通过；
+- 业务 delivery HEAD 的本地 final gate、clean proof 与 exact dev candidate aggregate proof 已通过；
 - 自动翻译质量门槛、全部 active locale capability/reference-data/hardcoding audit、已有语言 correction audit、runtime/browser smoke 已通过；
 - canonical workflow 自动副作用和 Release 终态已确认；
 - production target、rollback target/runbook 已明确。
@@ -903,8 +904,8 @@ npm run push:retry
 
 最终发布确认后不再请求其他正常确认：
 
-1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`，触发 canonical Release Gate/semantic E2E；两者成功后才创建 tag，并继续 Web/Draft Release workflow。若 workflow 已变化，执行阶段 J 绑定的真实动作。
-2. 监控全部 jobs 到终态。本地 final gate、main-target PR clean-runner gate 与 post-merge exact-release clean-runner gate 是不同信任边界，各自保留。
+1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`；canonical workflow 验证 exact dev candidate proof 后创建 tag，并继续 Web/Draft Release workflow，不再重复 aggregate/static-full/browser acceptance。若 workflow 已变化，执行阶段 J 绑定的真实动作。
+2. 监控全部 jobs 到终态。业务 delivery HEAD 的本地 gate 与 exact dev Release PR aggregate 是两个保留边界；main-target PR 和 post-merge main 只做 proof/identity verification。
 3. 同一 SHA 的瞬时 cache/network/job 失败只重跑失败 job；不重跑已成功 Gate/资产 job。
 4. 若需要 tracked 修复或新 patch，回到受影响检查点并为新的线上候选再次执行阶段 J。
 5. tag 一旦创建不可移动或复用。
@@ -932,10 +933,10 @@ npm run push:retry
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
-| 仅 root release version metadata 变化 | 计算 qualification key 并严格校验外部 proof；行为 key 应保持不变 | 永不需要 | tracked HEAD 变化则一次 | proof key 不变，但 aggregate PR proof 仍绑定 exact candidate |
+| 仅 root release version metadata 变化 | restricted release-candidate push 跑 Docpact/static preflight；dev Release PR 计算 qualification key 并严格校验或生成外部 proof | 永不需要 | 本地不跑；dev aggregate 一次 | behavior key 不变，但 aggregate proof 仍绑定 exact candidate |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
-| package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + affected proof | 永不需要 | tracked HEAD 变化则一次 | 已有确认失效，发布前重确认一次 |
+| package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + proof identity | 永不需要 | version/promotion 本地不跑；若 identity 改变则新 dev aggregate | 已有确认失效，发布前重确认一次 |
 | Issue/PR/Project 文本变化 | 远端状态核验 | 永不需要 | 不跑 | 不失效 |
 | 门禁成功、transport 失败 | `npm run push:retry` | 永不需要 | 不重跑 | 不失效 |
 | 同 SHA release job 瞬时失败 | 只重跑失败 job | 永不需要 | 不重跑 | 不失效 |
@@ -943,7 +944,7 @@ npm run push:retry
 | tree-identical merge | 核对 tree/CI | 永不需要 | 不重跑 | 不失效 |
 | root pointer 集成 | exact child main SHA validation | 永不需要 | Next gate 不重跑 | 发布后不再确认 |
 
-正常 broad-gate 预算：迭代期 0 次；不可变本地 delivery HEAD 1 次；main-target PR clean-runner Release Gate 1 次；`main` exact-release clean-runner Release Gate 1 次。三者覆盖本地交付、合并前阻断和最终 release SHA 三个不同信任边界，均保留；其他无受控内容变化的事件不增加次数。
+正常 broad-gate 预算：迭代期 0 次；真实业务 delivery HEAD 的本地受管 full gate 1 次；exact dev Release PR clean-runner aggregate 1 次；main-target PR 与 `main` exact-release 的 aggregate 均为 0 次，只验证 proof/identity。若本次工作仅创建确定性 version/Docpact release commit，则它自身的本地 broad gate 为 0 次，完整验收仅由 dev Release PR 对累计候选执行一次。显式 tag/`workflow_dispatch` recovery 可额外执行一次 fresh aggregate，但不属于正常路径。
 
 ---
 
@@ -1068,7 +1069,7 @@ npm run push:retry
 - [ ] `npm run test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `npm run start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
-- [ ] 日常 PR/`dev` push 不触发浏览器矩阵；main-target PR 运行可复用 Release Gate 但不获得生产凭据或写权限；按需 `workflow_dispatch` 与 post-merge exact-release-SHA semantic gate 同样无生产凭据、无生产写，只运行三浏览器 public semantics/合同；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
+- [ ] 日常 PR/普通 `dev` push 不触发浏览器矩阵；exact dev Release PR 运行一次 aggregate Release Gate 但不获得生产凭据或写权限；main-target PR 与正常 post-merge main 仅验证该 proof；按需 `workflow_dispatch` recovery 同样无生产凭据、无生产写；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
 - [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
@@ -1082,10 +1083,10 @@ npm run push:retry
 - [ ] “语言平台化、分类资源本地化、页面清扫与 E2E”三个 Issue 及对应 PR 全部完成，并在 Project 中分类和闭合依赖。
 - [ ] delivery HEAD 通过一次 `push:checked`；transport failure 只用 `push:retry`。
 - [ ] feature PR 自主合并到 routine target，promote PR/候选已冻结。
-- [ ] main-target PR 的可复用 Release Gate 已对 exact base/head 通过，任何 production-readiness evidence 漂移在合并前阻断。
+- [ ] exact dev Release PR aggregate 已对 main/dev base、candidate head/tree/version 通过；main-target PR 的 proof/identity check 已阻断任何基线、tree 或 evidence 漂移。
 - [ ] 只在最终线上发布前请求一次人工确认，且绑定 exact release tuple。
 - [ ] 唯一确认紧邻真实 production-effective action；workflow 漂移时没有机械停在错误的 Git 步骤。
-- [ ] 确认后 production-effective action、main/Release Gate/semantic E2E/tag/Web/assets/production smoke 完成，且 tag 只在两类 exact-release gate 通过后创建，未增加正常确认点。
+- [ ] 确认后 production-effective action、main proof verification、tag/Web/assets/production smoke 完成，且 tag 只在 exact dev aggregate proof 与 main identity 验证通过后创建，未增加正常确认点或重复 aggregate。
 - [ ] root workspace 指向 Next `main` exact release SHA，Project/Issue/PR 状态完成。
 - [ ] 分支/临时文件已清理，workspace 已同步，无关用户内容保留。
 

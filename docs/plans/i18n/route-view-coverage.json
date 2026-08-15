@@ -350,7 +350,7 @@
     "browserProof": {
       "status": "external-artifact",
       "ownerIssue": "#867",
-      "requiredAt": "main-candidate-release-gate",
+      "requiredAt": "dev-release-candidate-gate",
       "storage": "ignored-local-or-github-actions-artifact",
       "executedEvidence": []
     }

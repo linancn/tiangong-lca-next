@@ -78,7 +78,7 @@ describe('shared locale delivery contracts', () => {
         browserProof: {
           status: 'external-artifact',
           ownerIssue: '#867',
-          requiredAt: 'main-candidate-release-gate',
+          requiredAt: 'dev-release-candidate-gate',
           storage: 'ignored-local-or-github-actions-artifact',
           executedEvidence: [],
         },
@@ -464,7 +464,7 @@ describe('shared locale delivery contracts', () => {
             executedEvidenceCount: 0,
             evidenceSchemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
             proofStorage: 'ignored-local-or-github-actions-artifact',
-            requiredAt: 'main-candidate-release-gate',
+            requiredAt: 'dev-release-candidate-gate',
             routeCoverageContractDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
             requiredAssertionCount: 49,
             contractReady: true,

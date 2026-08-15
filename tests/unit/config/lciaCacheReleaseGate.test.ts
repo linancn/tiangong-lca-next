@@ -20,7 +20,7 @@ describe('Publication workflow gates', () => {
     expect(buildAt).toBeLessThan(deployAt);
   });
 
-  it('makes release qualification verify the bundle before any publication job', () => {
+  it('keeps the aggregate gate for dev candidates and explicit release recovery', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
@@ -65,6 +65,7 @@ describe('Publication workflow gates', () => {
     expect(releaseQualification).toContain(
       '[ "${GATE_MODE}" = "full" ] && [ "${FULL_GATE_RESULT}" = "success" ]',
     );
+    expect(releaseQualification).toContain('Normal main pushes never rerun candidate acceptance');
 
     const webDeploy = workflow.slice(
       workflow.indexOf('  web-deploy:'),
@@ -85,7 +86,7 @@ describe('Publication workflow gates', () => {
     expect(packageJson.scripts['prepush:gate']).toContain('npm run lcia-cache:verify');
   });
 
-  it('keeps browser semantic E2E optional for daily work and mandatory for releases', () => {
+  it('keeps browser semantic E2E optional for daily work and mandatory on dev release candidates', () => {
     const semanticWorkflow = read('.github/workflows/i18n-semantic-e2e.yml');
     expect(semanticWorkflow).toContain('  workflow_call:');
     expect(semanticWorkflow).toContain('  workflow_dispatch:');
@@ -130,18 +131,25 @@ describe('Publication workflow gates', () => {
     }
   });
 
-  it('validates every main-target PR and emits an exact reusable gate proof', () => {
+  it('qualifies deterministic dev Release PRs once and makes main PRs proof-only', () => {
     const workflow = read('.github/workflows/release-readiness.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(workflow).toContain('pull_request:');
-    expect(workflow).toMatch(/branches:\s*\n\s*- main/);
+    expect(workflow).toMatch(/branches:\s*\n\s*- dev\s*\n\s*- main/);
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
-    expect(workflow).toContain('release_base: ${{ github.event.pull_request.base.sha }}');
-    expect(workflow).toContain('release_head: ${{ github.event.pull_request.head.sha }}');
+    expect(workflow).toContain('candidate-context --event-path "$GITHUB_EVENT_PATH"');
+    expect(workflow).toContain(
+      'release_base: ${{ needs.release-candidate-context.outputs.release_base }}',
+    );
+    expect(workflow).toContain(
+      'candidate_base: ${{ needs.release-candidate-context.outputs.candidate_base }}',
+    );
     expect(workflow).toContain('emit_proof: true');
     expect(workflow).toContain(
-      "proof_pr_number: ${{ format('{0}', github.event.pull_request.number) }}",
+      'proof_pr_number: ${{ needs.release-candidate-context.outputs.proof_pr_number }}',
     );
+    expect(workflow).toContain('name: Main Candidate / Release Gate');
+    expect(workflow).toContain('release-gate-proof.cjs verify-promotion');
     expect(releaseGate).toContain('node scripts/release/release-gate-proof.cjs create');
     expect(releaseGate).toContain('Upload exact aggregate release proof');
     expect(releaseGate).toContain('retention-days: 30');

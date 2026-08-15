@@ -1815,13 +1815,13 @@ function validateRouteCoverage(root, manifest, { requireCurrentSemanticEvidence 
     coverage.proofPolicy?.status === 'ci-required' &&
     browserProof?.status === 'external-artifact' &&
     browserProof?.ownerIssue === '#867' &&
-    browserProof?.requiredAt === 'main-candidate-release-gate' &&
+    browserProof?.requiredAt === 'dev-release-candidate-gate' &&
     browserProof?.storage === 'ignored-local-or-github-actions-artifact' &&
     Array.isArray(browserProof?.executedEvidence) &&
     browserProof.executedEvidence.length === 0;
   if (!externalBrowserProof) {
     throw new Error(
-      'Route-view coverage must require external browser proof at the main-candidate release gate.',
+      'Route-view coverage must require external browser proof at the dev Release candidate gate.',
     );
   }
   const externalEvidencePath = path.resolve(root, evidenceContract.evidencePath);

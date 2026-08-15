@@ -3,6 +3,7 @@ name: Release Readiness
 on:
   pull_request:
     branches:
+      - dev
       - main
     types:
       - opened
@@ -11,18 +12,77 @@ on:
       - ready_for_review
 
 permissions:
+  actions: read
   contents: read
+  pull-requests: read
 
 concurrency:
   group: release-readiness-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  main-candidate:
-    name: Main Candidate
+  release-candidate-context:
+    name: Release Candidate Context
+    if: >-
+      github.event.pull_request.base.ref == 'dev' && contains(github.event.pull_request.body || '', 'tiangong-next-release-automation:v2')
+    runs-on: ubuntu-latest
+    outputs:
+      release_base: ${{ steps.context.outputs.release_base }}
+      candidate_base: ${{ steps.context.outputs.candidate_base }}
+      release_head: ${{ steps.context.outputs.release_head }}
+      release_version: ${{ steps.context.outputs.release_version }}
+      proof_pr_number: ${{ steps.context.outputs.proof_pr_number }}
+
+    steps:
+      - name: Check out exact Release PR candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Verify deterministic Release PR identity
+        id: context
+        run: >-
+          node scripts/release/release-gate-proof.cjs candidate-context --event-path "$GITHUB_EVENT_PATH" --github-output "$GITHUB_OUTPUT"
+
+  release-candidate:
+    name: Release Candidate
+    needs: release-candidate-context
     uses: ./.github/workflows/release-gate.yml
     with:
-      release_base: ${{ github.event.pull_request.base.sha }}
-      release_head: ${{ github.event.pull_request.head.sha }}
+      release_base: ${{ needs.release-candidate-context.outputs.release_base }}
+      candidate_base: ${{ needs.release-candidate-context.outputs.candidate_base }}
+      release_head: ${{ needs.release-candidate-context.outputs.release_head }}
+      release_version: ${{ needs.release-candidate-context.outputs.release_version }}
       emit_proof: true
-      proof_pr_number: ${{ format('{0}', github.event.pull_request.number) }}
+      proof_pr_number: ${{ needs.release-candidate-context.outputs.proof_pr_number }}
+
+  main-candidate:
+    name: Main Candidate / Release Gate
+    if: github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out exact promotion candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Verify exact dev Release PR proof
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
+          PROMOTION_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          node scripts/release/release-gate-proof.cjs verify-promotion --repository "$GITHUB_REPOSITORY" --release-base "$RELEASE_BASE" --promotion-head "$PROMOTION_HEAD"
