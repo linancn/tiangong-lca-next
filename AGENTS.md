@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
+lastReviewedCommit: c2d369386438a8ff88f47e637784feda2f0cf3f5
 lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs own aggregate acceptance and immutable main delivery reuses their external proof.'
 related:
   - .docpact/config.yaml

@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
+lastReviewedCommit: c2d369386438a8ff88f47e637784feda2f0cf3f5
 lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs own aggregate acceptance and later release stages reuse the bound external proof.'
 ---
 
