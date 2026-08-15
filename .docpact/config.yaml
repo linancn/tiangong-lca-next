@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-15"
-lastReviewedCommit: "2f4cad4bcf738aae2fb965d3d7ad49fce8832513"
+lastReviewedCommit: "c8e47ab3c22a0f5457ba9db3114272a7b0fc9152"
 lastReviewedNote: 'Reviewed for Next Issue #867: deterministic qualification configuration and expanded proof inputs remain covered by the existing environment and testing routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

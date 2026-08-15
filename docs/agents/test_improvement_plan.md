@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
+lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
 lastReviewedNote: 'Reviewed for Next Issue #867: semantic proof now separates deterministic simulator behavior from deployment-target configuration.'
 ---
 

@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
+lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
 lastReviewedNote: 'Reviewed for Next Issue #867: reusable qualification proof uses deterministic non-production configuration and a closed behavior-input identity.'
 ---
 
