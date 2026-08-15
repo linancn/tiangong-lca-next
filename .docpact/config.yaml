@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-15"
-lastReviewedCommit: "80064ce51904c5d29aa7c0ce9f174355e746b72b"
-lastReviewedNote: 'Reviewed for Next Issue #820: refreshing v0.0.73 provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
+lastReviewedCommit: "32df9d9db48bb1bf5ec577a5e9c20e84c91ad189"
+lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -43,7 +43,6 @@ ownership:
           - docs/plans/i18n/**
           - docs/plans/i18n-*/**
           - docs/plans/i18n/semantic-e2e-evidence.schema.json
-          - docs/plans/i18n/semantic-e2e-evidence.json
           - .github/PULL_REQUEST_TEMPLATE/*.md
       ownerRepo: next
     - id: repo-testing-and-quality-gates
@@ -185,7 +184,6 @@ routing:
         - tests/**
         - tests/e2e/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
-        - docs/plans/i18n/semantic-e2e-evidence.json
     i18n-semantic-e2e:
       paths:
         - playwright.config.ts
@@ -193,7 +191,6 @@ routing:
         - .github/workflows/i18n-semantic-e2e.yml
         - docs/plans/i18n/route-view-coverage.json
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
-        - docs/plans/i18n/semantic-e2e-evidence.json
         - src/services/general/localeRegistry.ts
         - src/services/general/contentLanguageRegistry.ts
     repo-docs:
@@ -243,7 +240,6 @@ routing:
         - docs/plans/i18n/**
         - docs/plans/i18n-*/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
-        - docs/plans/i18n/semantic-e2e-evidence.json
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
         - docs/agents/testing-troubleshooting.md
@@ -441,8 +437,6 @@ rules:
         kind: semantic-e2e-workflow
       - path: docs/plans/i18n/semantic-e2e-evidence.schema.json
         kind: semantic-e2e-evidence-schema
-      - path: docs/plans/i18n/semantic-e2e-evidence.json
-        kind: semantic-e2e-evidence
     requiredDocs:
       - path: docs/agents/i18n-language-delivery-goal.md
         mode: review_or_update
@@ -629,8 +623,6 @@ rules:
         kind: test-baseline
       - path: docs/plans/i18n/semantic-e2e-evidence.schema.json
         kind: semantic-e2e-evidence-schema
-      - path: docs/plans/i18n/semantic-e2e-evidence.json
-        kind: semantic-e2e-evidence
       - path: tests/data-workflows/test-api-smoke.cjs
         kind: repo-test
       - path: tests/e2e/**
@@ -652,7 +644,7 @@ rules:
         mode: review_or_update
       - path: docs/agents/test_improvement_plan.md
         mode: review_or_update
-    reason: Coverage, testing workflow, browser trust boundaries, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
+    reason: Coverage, testing workflow, browser trust boundaries, release-candidate proof ownership, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
   - id: next-static-resource-contract
     scope: repo
     repo: next

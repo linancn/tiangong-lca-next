@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
-lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 semantic evidence refresh follows the existing qualification and evidence-binding test patterns.'
+lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedNote: 'Reviewed for Next Issue #867: browser qualification is manual PR-stage evidence and outside release proof.'
 ---
 
 # Testing Patterns Reference
@@ -121,17 +121,17 @@ Special cases:
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
-17. when a digest-bound change is proven to affect only release-harness generation/formatting and not browser semantics, record only its exact evidence/current digest pair in the reviewed compatibility manifest; never exclude the path or accept future drift
+17. keep browser proof outside the repository and identify it from behavior-affecting inputs; never maintain or imply release reuse by committing generated hashes or compatibility records
 
 Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
-- use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
-- normal release orchestration checks qualification before version mutation: dry-run reports `valid` or `regeneration_required`, while `release:to-dev --apply` reuses the receipt or generates the exact provenance-bound receipt, includes it in the same Release PR, and runs `release:preflight` on the composed commit before checked push
-- direct release proof outside that deterministic flow still requires `npm run e2e:qualify`, a separately reviewed receipt PR, and retry from the clean merged candidate; the receipt file and root version fields are excluded from the qualification input digest
-- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, direct ancestry, the normal tree-identical two-parent promotion after `dev` advances, changed-tree rejection, and the rule that no failed qualification/preflight path reaches push or PR creation
-- publication-workflow contract tests must prove proof reuse can pass an intentionally skipped full-gate ancestor with `!cancelled()`, while every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
+- use `npm run e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
+- normal release orchestration keeps browser qualification earlier and separate: run the manual hermetic workflow on the open business PR when change risk warrants it, then `release:to-dev --apply` uses a restricted structural/static push and the exact generated Release PR into `dev` runs one non-browser Release Gate before merge
+- local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it
+- release-workflow unit fixtures must prove release-to-dev and promotion invoke only their exact restricted push profiles, never invoke browser qualification or write tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, main-baseline binding, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
+- publication-workflow contract tests must prove normal main pushes fail closed on an invalid dev proof without selecting a full-gate fallback, while explicit tag/dispatch recovery selects one full aggregate; every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence
@@ -139,7 +139,7 @@ Browser semantic E2E pattern:
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
 - run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
-- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` provides optional three-browser public semantics/contract proof and release reuses it for the exact candidate SHA, while routine PR/dev events do not trigger it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
+- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while routine PR/dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
@@ -151,10 +151,11 @@ Browser semantic E2E pattern:
 
 Release Gate proof pattern:
 
-- emit proof only after every main-target PR gate step succeeds, and bind repository, PR number, PR base, candidate commit/tree, workflow path, run ID, run attempt, and artifact name in one short-lived artifact
-- resolve reuse from the release merge itself: require exactly two parents, first-parent equality with the gated base, second-parent equality with the gated candidate, and equal release/candidate trees before consulting GitHub metadata
-- require exactly one matching merged PR, successful readiness workflow and named Release Gate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
-- return the full reusable gate as the successful fallback decision for every missing, ambiguous, expired, mismatched, unavailable, direct, squash, rebase, tag, or recovery-dispatch case; downstream publication depends on one aggregate qualification job, never directly on a conditionally skipped gate
+- emit release proof only after every exact dev Release PR non-browser gate step succeeds, and bind repository, dev PR number, main baseline, dev base, candidate commit/tree/version, workflow path, run ID, run attempt, and artifact name in one short-lived artifact; browser qualification is deliberately outside this scope
+- resolve promotion reuse from the dev merge itself: require exactly two parents, first-parent equality with the gated dev base, second-parent equality with the gated candidate, and equal merge/candidate trees before consulting GitHub metadata
+- resolve publication reuse through both merges: require the main merge's first parent to equal the proof-bound main baseline, its second parent to equal the verified dev merge, and all promotion/release/candidate trees to remain equal
+- require exactly one matching merged dev PR and main PR, a successful readiness workflow and named aggregate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
+- fail closed on missing, ambiguous, expired, mismatched, unavailable, direct, squash, or rebase identity during a normal promotion/main release; use a fresh full aggregate only for explicit tag or recovery-dispatch events
 
 Documentation capture profile pattern:
 
@@ -175,6 +176,7 @@ Scope-closure provider qualification pattern:
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
+- test no-update, deletion-only, `HEAD`-source, tag, and multi-ref push shapes explicitly: deletion/no-update must not spend the gate budget, an exact `HEAD` branch push may proceed, and every other ineligible checked update must fail before either gate
 - when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then qualify the smallest useful fixed worker pool with a documented per-worker idle-memory recycle boundary on the affected platform; lock the exact selection/exclusion and worker contract in the isolated suite, and let the single coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
@@ -191,7 +193,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
-| canonical semantic evidence format | `npm run i18n:evidence:canonical:check` |
+| canonical semantic evidence format | `npm run i18n:evidence:canonical:check -- --path <artifact>` |
 | language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
 | all-active-locale activation | `npm run i18n:locale:all:check` |
 | existing-translation correction overlay | `npm run i18n:corrections:check` |

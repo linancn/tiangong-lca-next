@@ -1,9 +1,12 @@
 const proofModule = require('../../../scripts/release/release-gate-proof.cjs') as {
+  PROOF_SCOPE: string[];
   PROOF_SCHEMA_VERSION: string;
   READINESS_WORKFLOW_PATH: string;
   RELEASE_GATE_JOB_NAME: string;
+  RELEASE_MARKER_PREFIX: string;
   artifactName: (input: {
     releaseBase: string;
+    candidateBase: string;
     releaseHead: string;
     runId: number;
     runAttempt: number;
@@ -12,11 +15,25 @@ const proofModule = require('../../../scripts/release/release-gate-proof.cjs') a
     repository: string;
     pullRequestNumber: number;
     releaseBase: string;
+    candidateBase: string;
     releaseHead: string;
     releaseHeadTree: string;
+    releaseVersion: string;
     runId: number;
     runAttempt: number;
   }) => Record<string, unknown>;
+  candidateContextFromPullRequest: (input: Record<string, unknown>) => Record<string, unknown>;
+  parseReleaseMarker: (body: string) => Record<string, unknown>;
+  resolvePromotionProof: (
+    input: {
+      root: string;
+      repository: string;
+      releaseBase: string;
+      promotionHead: string;
+      token: string;
+    },
+    dependencies: Dependencies,
+  ) => Promise<Record<string, unknown>>;
   resolveExactProof: (
     input: {
       root: string;
@@ -25,11 +42,7 @@ const proofModule = require('../../../scripts/release/release-gate-proof.cjs') a
       releaseHead: string;
       token: string;
     },
-    dependencies: {
-      gitText: (root: string, args: string[]) => string;
-      apiJson: (path: string) => Promise<unknown>;
-      downloadProofArtifact: (artifact: Record<string, unknown>) => Promise<unknown>;
-    },
+    dependencies: Dependencies,
   ) => Promise<Record<string, unknown>>;
   resolveWithFallback: (
     input: {
@@ -39,27 +52,38 @@ const proofModule = require('../../../scripts/release/release-gate-proof.cjs') a
       releaseHead: string;
       token: string;
     },
-    dependencies: {
-      gitText: (root: string, args: string[]) => string;
-      apiJson: (path: string) => Promise<unknown>;
-      downloadProofArtifact: (artifact: Record<string, unknown>) => Promise<unknown>;
-    },
+    dependencies: Dependencies,
   ) => Promise<Record<string, unknown>>;
+};
+
+type Dependencies = {
+  gitText: jest.Mock<string, [string, string[]]>;
+  apiJson: jest.Mock<Promise<unknown>, [string]>;
+  downloadProofArtifact: jest.Mock<Promise<unknown>, [Record<string, unknown>]>;
 };
 
 const repository = 'linancn/tiangong-lca-next';
 const releaseBase = 'a'.repeat(40);
-const candidateHead = 'b'.repeat(40);
-const releaseHead = 'c'.repeat(40);
-const candidateTree = 'd'.repeat(40);
-const changedTree = 'e'.repeat(40);
+const candidateBase = 'b'.repeat(40);
+const candidateHead = 'c'.repeat(40);
+const promotionHead = 'd'.repeat(40);
+const releaseHead = 'e'.repeat(40);
+const candidateTree = 'f'.repeat(40);
+const changedTree = '1'.repeat(40);
+const releaseVersion = '1.2.3';
 const runId = 123456;
 const runAttempt = 2;
-const pullRequestNumber = 819;
+const releasePullRequestNumber = 819;
+const promotionPullRequestNumber = 820;
 const artifactId = 987654;
+
+const releaseMarker =
+  `<!-- ${proofModule.RELEASE_MARKER_PREFIX} issue=867 version=${releaseVersion} ` +
+  `dev-base=${candidateBase} main-base=${releaseBase} candidate=${candidateHead} -->`;
 
 const expectedArtifactName = proofModule.artifactName({
   releaseBase,
+  candidateBase,
   releaseHead: candidateHead,
   runId,
   runAttempt,
@@ -68,20 +92,31 @@ const expectedArtifactName = proofModule.artifactName({
 const exactProof = () =>
   proofModule.buildProof({
     repository,
-    pullRequestNumber,
+    pullRequestNumber: releasePullRequestNumber,
     releaseBase,
+    candidateBase,
     releaseHead: candidateHead,
     releaseHeadTree: candidateTree,
+    releaseVersion,
     runId,
     runAttempt,
   });
 
-const exactPullRequest = () => ({
-  number: pullRequestNumber,
-  merged_at: '2026-08-13T00:00:00Z',
+const exactReleasePullRequest = () => ({
+  number: releasePullRequestNumber,
+  merged_at: '2026-08-15T00:00:00Z',
+  merge_commit_sha: promotionHead,
+  body: releaseMarker,
+  base: { ref: 'dev', sha: candidateBase },
+  head: { ref: 'codex/issue-867-version-v1.2.3', sha: candidateHead },
+});
+
+const exactPromotionPullRequest = () => ({
+  number: promotionPullRequestNumber,
+  merged_at: '2026-08-15T01:00:00Z',
   merge_commit_sha: releaseHead,
   base: { ref: 'main', sha: releaseBase },
-  head: { ref: 'codex/promote-v1', sha: candidateHead },
+  head: { ref: 'codex/promote-v1.2.3-dev-to-main-issue-867', sha: promotionHead },
 });
 
 const exactRun = () => ({
@@ -93,37 +128,46 @@ const exactRun = () => ({
   path: proofModule.READINESS_WORKFLOW_PATH,
 });
 
-const exactArtifact = () => ({
-  id: artifactId,
-  name: expectedArtifactName,
-  expired: false,
-});
+const exactArtifact = () => ({ id: artifactId, name: expectedArtifactName, expired: false });
 
 const createDependencies = ({
-  parentLine = `${releaseHead} ${releaseBase} ${candidateHead}`,
+  mainParentLine = `${releaseHead} ${releaseBase} ${promotionHead}`,
+  promotionParentLine = `${promotionHead} ${candidateBase} ${candidateHead}`,
   releaseTree = candidateTree,
-  pullRequests = [exactPullRequest()],
+  promotionTree = candidateTree,
+  candidateTreeValue = candidateTree,
+  mainPullRequests = [exactPromotionPullRequest()],
+  releasePullRequests = [exactReleasePullRequest()],
   workflowRuns = [exactRun()],
   jobs = [{ name: proofModule.RELEASE_GATE_JOB_NAME, conclusion: 'success' }],
   artifacts = [exactArtifact()],
   proof = exactProof(),
 }: {
-  parentLine?: string;
+  mainParentLine?: string;
+  promotionParentLine?: string;
   releaseTree?: string;
-  pullRequests?: unknown[];
+  promotionTree?: string;
+  candidateTreeValue?: string;
+  mainPullRequests?: unknown[];
+  releasePullRequests?: unknown[];
   workflowRuns?: unknown[];
   jobs?: unknown[];
   artifacts?: unknown[];
   proof?: unknown;
-} = {}) => {
+} = {}): Dependencies => {
   const gitText = jest.fn((_root: string, args: string[]) => {
-    if (args[0] === 'rev-list') return parentLine;
+    if (args[0] === 'rev-list' && args[4] === releaseHead) return mainParentLine;
+    if (args[0] === 'rev-list' && args[4] === promotionHead) return promotionParentLine;
     if (args[0] === 'rev-parse' && args[1] === `${releaseHead}^{tree}`) return releaseTree;
-    if (args[0] === 'rev-parse' && args[1] === `${candidateHead}^{tree}`) return candidateTree;
+    if (args[0] === 'rev-parse' && args[1] === `${promotionHead}^{tree}`) return promotionTree;
+    if (args[0] === 'rev-parse' && args[1] === `${candidateHead}^{tree}`) {
+      return candidateTreeValue;
+    }
     throw new Error(`Unexpected git arguments: ${args.join(' ')}`);
   });
   const apiJson = jest.fn(async (apiPath: string) => {
-    if (apiPath.includes(`/commits/${releaseHead}/pulls`)) return pullRequests;
+    if (apiPath.includes(`/commits/${releaseHead}/pulls`)) return mainPullRequests;
+    if (apiPath.includes(`/commits/${promotionHead}/pulls`)) return releasePullRequests;
     if (apiPath.includes('/actions/workflows/release-readiness.yml/runs')) {
       return { workflow_runs: workflowRuns };
     }
@@ -131,11 +175,22 @@ const createDependencies = ({
     if (apiPath.includes(`/actions/runs/${runId}/artifacts`)) return { artifacts };
     throw new Error(`Unexpected API path: ${apiPath}`);
   });
-  const downloadProofArtifact = jest.fn(async () => proof);
+  const downloadProofArtifact = jest.fn(async (artifact: Record<string, unknown>) => {
+    void artifact;
+    return proof;
+  });
   return { gitText, apiJson, downloadProofArtifact };
 };
 
-const resolutionInput = () => ({
+const promotionInput = () => ({
+  root: '/fixture',
+  repository,
+  releaseBase,
+  promotionHead,
+  token: 'test-token',
+});
+
+const releaseInput = () => ({
   root: '/fixture',
   repository,
   releaseBase,
@@ -144,14 +199,22 @@ const resolutionInput = () => ({
 });
 
 describe('release gate proof', () => {
-  it('binds proof identity to the exact PR base, candidate tree, run, and attempt', () => {
+  it('keeps browser qualification outside the release proof scope', () => {
+    expect(proofModule.PROOF_SCHEMA_VERSION).toBe('tiangong.next.release-gate-proof.v5');
+    expect(proofModule.PROOF_SCOPE).toEqual(['release-gate']);
+  });
+
+  it('binds proof identity to the main/dev bases, candidate tree, version, run, and attempt', () => {
     expect(exactProof()).toEqual({
       schema_version: proofModule.PROOF_SCHEMA_VERSION,
+      proof_scope: proofModule.PROOF_SCOPE,
       repository,
-      pull_request_number: pullRequestNumber,
+      pull_request_number: releasePullRequestNumber,
       release_base: releaseBase,
+      candidate_base: candidateBase,
       release_head: candidateHead,
       release_head_tree: candidateTree,
+      release_version: releaseVersion,
       workflow_path: proofModule.READINESS_WORKFLOW_PATH,
       workflow_run_id: runId,
       workflow_run_attempt: runAttempt,
@@ -159,60 +222,98 @@ describe('release gate proof', () => {
     });
   });
 
-  it('reuses one exact successful main PR release gate proof', async () => {
-    const dependencies = createDependencies();
+  it('parses and verifies the deterministic dev Release PR marker', () => {
+    expect(proofModule.parseReleaseMarker(releaseMarker)).toEqual({
+      issue: 867,
+      version: releaseVersion,
+      candidateBase,
+      releaseBase,
+      candidateHead,
+    });
+    expect(proofModule.candidateContextFromPullRequest(exactReleasePullRequest())).toMatchObject({
+      pullRequestNumber: releasePullRequestNumber,
+      releaseVersion,
+      releaseBase,
+      candidateBase,
+      candidateHead,
+    });
+  });
 
+  it('verifies an immutable dev promotion from one exact candidate proof', async () => {
+    const dependencies = createDependencies();
     await expect(
-      proofModule.resolveExactProof(resolutionInput(), dependencies),
+      proofModule.resolvePromotionProof(promotionInput(), dependencies),
     ).resolves.toMatchObject({
       complete: true,
       gate_mode: 'reuse',
-      reason: 'exact_main_pr_release_gate_proof',
-      pull_request_number: pullRequestNumber,
+      reason: 'exact_dev_release_candidate_proof',
+      release_pull_request_number: releasePullRequestNumber,
       release_base: releaseBase,
-      release_head: releaseHead,
+      promotion_head: promotionHead,
+      candidate_base: candidateBase,
       candidate_head: candidateHead,
       candidate_tree: candidateTree,
+      release_version: releaseVersion,
       workflow_run_id: runId,
-      workflow_run_attempt: runAttempt,
       artifact_id: artifactId,
-      artifact_name: expectedArtifactName,
     });
     expect(dependencies.downloadProofArtifact).toHaveBeenCalledWith(exactArtifact());
   });
 
-  it.each([
-    {
-      name: 'direct or squash push',
-      dependencies: createDependencies({ parentLine: `${releaseHead} ${releaseBase}` }),
-      reason: 'release_head_not_merge_commit',
-    },
-    {
-      name: 'different first parent',
-      dependencies: createDependencies({
-        parentLine: `${releaseHead} ${'f'.repeat(40)} ${candidateHead}`,
-      }),
-      reason: 'release_base_parent_mismatch',
-    },
-    {
-      name: 'merge conflict changed tree',
-      dependencies: createDependencies({ releaseTree: changedTree }),
-      reason: 'release_tree_changed_after_pr_gate',
-    },
-    {
-      name: 'missing merged PR identity',
-      dependencies: createDependencies({ pullRequests: [] }),
-      reason: 'merged_pull_request_not_exact',
-    },
-  ])('falls back to the full gate for $name', async ({ dependencies, reason }) => {
+  it('verifies the tree-identical main merge without rerunning candidate acceptance', async () => {
     await expect(
-      proofModule.resolveWithFallback(resolutionInput(), dependencies),
-    ).resolves.toMatchObject({ complete: true, gate_mode: 'full', reason });
+      proofModule.resolveExactProof(releaseInput(), createDependencies()),
+    ).resolves.toMatchObject({
+      gate_mode: 'reuse',
+      release_head: releaseHead,
+      promotion_head: promotionHead,
+      promotion_pull_request_number: promotionPullRequestNumber,
+      release_pull_request_number: releasePullRequestNumber,
+    });
   });
 
   it.each([
     {
-      name: 'failed Release Gate job',
+      name: 'non-merge main release',
+      dependencies: createDependencies({ mainParentLine: `${releaseHead} ${releaseBase}` }),
+      reason: 'release_head_not_main_merge',
+    },
+    {
+      name: 'different main first parent',
+      dependencies: createDependencies({
+        mainParentLine: `${releaseHead} ${'2'.repeat(40)} ${promotionHead}`,
+      }),
+      reason: 'release_base_parent_mismatch',
+    },
+    {
+      name: 'changed main merge tree',
+      dependencies: createDependencies({ releaseTree: changedTree }),
+      reason: 'main_merge_tree_changed_after_candidate_gate',
+    },
+    {
+      name: 'non-merge dev candidate',
+      dependencies: createDependencies({
+        promotionParentLine: `${promotionHead} ${candidateBase}`,
+      }),
+      reason: 'promotion_head_not_dev_merge',
+    },
+    {
+      name: 'changed dev merge tree',
+      dependencies: createDependencies({
+        releaseTree: changedTree,
+        promotionTree: changedTree,
+      }),
+      reason: 'dev_merge_tree_changed_after_candidate_gate',
+    },
+  ])('fails closed without a full-gate fallback for $name', async ({ dependencies, reason }) => {
+    await expect(
+      proofModule.resolveWithFallback(releaseInput(), dependencies),
+    ).resolves.toMatchObject({ complete: true, gate_mode: 'invalid', reason });
+  });
+
+  it.each([
+    {
+      name: 'failed aggregate job',
       dependencies: createDependencies({
         jobs: [{ name: proofModule.RELEASE_GATE_JOB_NAME, conclusion: 'failure' }],
       }),
@@ -222,34 +323,27 @@ describe('release gate proof', () => {
       dependencies: createDependencies({ artifacts: [{ ...exactArtifact(), expired: true }] }),
     },
     {
-      name: 'invalid artifact identity',
-      dependencies: createDependencies({ artifacts: [{ ...exactArtifact(), id: 0 }] }),
-    },
-    {
       name: 'mismatched proof payload',
       dependencies: createDependencies({
         proof: { ...exactProof(), release_head_tree: changedTree },
       }),
     },
-  ])('falls back when the successful run has a $name', async ({ dependencies }) => {
+  ])('rejects a candidate proof with a $name', async ({ dependencies }) => {
     await expect(
-      proofModule.resolveWithFallback(resolutionInput(), dependencies),
+      proofModule.resolveWithFallback(releaseInput(), dependencies),
     ).resolves.toMatchObject({
-      complete: true,
-      gate_mode: 'full',
+      gate_mode: 'invalid',
       reason: 'no_exact_successful_pr_gate_proof',
     });
   });
 
-  it('falls back when GitHub proof resolution is unavailable', async () => {
+  it('fails closed when GitHub proof resolution is unavailable', async () => {
     const dependencies = createDependencies();
     dependencies.apiJson.mockRejectedValueOnce(new Error('temporary outage'));
-
     await expect(
-      proofModule.resolveWithFallback(resolutionInput(), dependencies),
+      proofModule.resolveWithFallback(releaseInput(), dependencies),
     ).resolves.toMatchObject({
-      complete: true,
-      gate_mode: 'full',
+      gate_mode: 'invalid',
       reason: 'unexpected_resolution_error',
     });
   });

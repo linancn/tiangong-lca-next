@@ -147,34 +147,14 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const args = process.argv.slice(2);
 if (process.env.FAKE_NPM_LOG) fs.appendFileSync(process.env.FAKE_NPM_LOG, JSON.stringify(args) + '\\n');
-const qualificationReceipt = 'docs/plans/i18n/semantic-harness-qualification-receipt.json';
-if (args[0] === 'run' && args[1] === 'e2e:qualification:check') {
-  const currentReceipt = fs.existsSync(qualificationReceipt)
-    ? fs.readFileSync(qualificationReceipt, 'utf8')
-    : '';
-  const mustRegenerate = process.env.FAKE_QUALIFICATION_STATUS === 'invalid'
-    && (!currentReceipt || currentReceipt.includes('"stale": true'));
-  process.exitCode = mustRegenerate ? 10 : 0;
-} else if (args[0] === 'run' && args[1] === 'e2e:qualify') {
-  if (process.env.FAKE_QUALIFICATION_FAIL === '1') {
-    process.exitCode = 11;
-  } else {
-    const commit = spawnSync('git', ['rev-parse', 'HEAD^{commit}'], { cwd: process.cwd(), encoding: 'utf8' }).stdout.trim();
-    const tree = spawnSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: process.cwd(), encoding: 'utf8' }).stdout.trim();
-    fs.mkdirSync(require('node:path').dirname(qualificationReceipt), { recursive: true });
-    fs.writeFileSync(qualificationReceipt, JSON.stringify({
-      schemaVersion: 'tiangong.semantic-harness-qualification.v1',
-      qualifiedCommit: commit,
-      qualifiedTree: tree,
-      qualificationInputSha256: 'fixture-input',
-    }, null, 2) + '\\n');
-  }
-} else if (args[0] === 'run' && args[1] === 'release:preflight') {
+if (args[0] === 'run' && args[1] === 'release:static-preflight') {
   process.exitCode = process.env.FAKE_RELEASE_PREFLIGHT_FAIL === '1' ? 12 : 0;
 } else if (args[0] === 'run' && args[1] === 'push:checked') {
   const separator = args.indexOf('--');
-  const remote = args[separator + 1];
-  const ref = args[separator + 2];
+  const profileFlag = args[separator + 1];
+  if (profileFlag !== '--gate-profile') throw new Error('missing gate profile');
+  const remote = args[separator + 3];
+  const ref = args[separator + 4];
   const result = spawnSync('git', ['push', '--no-verify', remote, ref], { cwd: process.cwd(), stdio: 'inherit' });
   process.exitCode = result.status || 0;
 } else if (args[0] === 'run' && args[1] === 'push:retry') {
@@ -333,7 +313,7 @@ const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
     baseRefOid: fixture.mainSha,
     headRefName: 'codex/version',
     headRefOid: mergeSha,
-    body: `<!-- tiangong-next-release-automation:v1 issue=778 version=1.0.1 base=${fixture.mainSha} candidate=${mergeSha} -->`,
+    body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.mainSha} main-base=${fixture.mainSha} candidate=${mergeSha} -->`,
     title: 'chore: prepare v1.0.1 on dev',
   });
 
@@ -456,7 +436,10 @@ describe('release automation public contracts', () => {
       version: '1.0.1',
       base_sha: fixture.devSha,
       main_sha: fixture.mainSha,
-      qualification: { status: 'valid', action: 'reuse' },
+      qualification: {
+        status: 'required_by_dev_release_candidate_gate',
+        action: 'no_tracked_proof_mutation',
+      },
       next_action: 'rerun_with_apply',
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(beforeBranch);
@@ -600,7 +583,11 @@ describe('release automation public contracts', () => {
         reviewed_paths: ['AGENTS.md', 'docs/gate.md'],
         rounds: 3,
       },
-      qualification: { status: 'reused', preflight_status: 'passed' },
+      qualification: {
+        status: 'required_by_dev_release_candidate_gate',
+        action: 'no_tracked_proof_mutation',
+        preflight_status: 'passed',
+      },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe('codex/issue-778-version-v1.0.1');
@@ -617,9 +604,11 @@ describe('release automation public contracts', () => {
       ]),
     ).toContain(output.candidate_sha);
     const npmInvocations = fs.readFileSync(npmLog, 'utf8');
-    expect(npmInvocations).toContain('e2e:qualification:check');
-    expect(npmInvocations).toContain('release:preflight');
+    expect(npmInvocations).not.toContain('e2e:qualification:check');
+    expect(npmInvocations).not.toContain('e2e:qualify');
+    expect(npmInvocations).toContain('release:static-preflight');
     expect(npmInvocations).toContain('push:checked');
+    expect(npmInvocations).toContain('release-candidate');
 
     const previousBinary = process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
     const previousMode = process.env.FAKE_DOCPACT_MODE;
@@ -650,7 +639,7 @@ describe('release automation public contracts', () => {
     }
   });
 
-  it('generates a stale qualification receipt and includes it in the same release PR', () => {
+  it('never runs browser qualification or writes a tracked proof from release-to-dev', () => {
     const fixture = createFixture();
     const npmLog = path.join(fixture.container, 'npm.log');
     const result = runCli(
@@ -659,7 +648,6 @@ describe('release automation public contracts', () => {
       ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
       {
         FAKE_NPM_LOG: npmLog,
-        FAKE_QUALIFICATION_STATUS: 'invalid',
         FAKE_GH_CREATED_URL: 'https://example.test/pull/54',
       },
     );
@@ -669,91 +657,23 @@ describe('release automation public contracts', () => {
     expect(output).toMatchObject({
       status: 'ready_for_review',
       qualification: {
-        status: 'generated',
-        action: 'included_in_release_pr',
-        qualified_commit: fixture.devSha,
+        status: 'required_by_dev_release_candidate_gate',
+        action: 'no_tracked_proof_mutation',
         preflight_status: 'passed',
       },
       pull_request: { url: 'https://example.test/pull/54' },
     });
+    const npmInvocations = fs.readFileSync(npmLog, 'utf8');
+    expect(npmInvocations).not.toContain('e2e:qualification:check');
+    expect(npmInvocations).not.toContain('e2e:qualify');
     expect(
       git(fixture.root, [
-        'show',
-        'HEAD:docs/plans/i18n/semantic-harness-qualification-receipt.json',
-      ]),
-    ).toContain(`"qualifiedCommit": "${fixture.devSha}"`);
-    expect(fs.readFileSync(npmLog, 'utf8')).toContain('e2e:qualify');
-  });
-
-  it('regenerates an already tracked stale qualification receipt', () => {
-    const fixture = createFixture();
-    git(fixture.root, ['switch', 'dev']);
-    writeJson(
-      path.join(fixture.root, 'docs/plans/i18n/semantic-harness-qualification-receipt.json'),
-      {
-        schemaVersion: 'tiangong.semantic-harness-qualification.v1',
-        stale: true,
-      },
-    );
-    git(fixture.root, ['add', 'docs/plans/i18n/semantic-harness-qualification-receipt.json']);
-    git(fixture.root, ['commit', '-m', 'track stale qualification receipt']);
-    fixture.devSha = git(fixture.root, ['rev-parse', 'HEAD']);
-    git(fixture.root, ['push', '--no-verify', 'origin', 'dev']);
-    git(fixture.root, ['switch', 'main']);
-    git(fixture.root, ['fetch', 'origin', 'dev']);
-
-    const result = runCli(
-      fixture,
-      releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
-      {
-        FAKE_QUALIFICATION_STATUS: 'invalid',
-        FAKE_GH_CREATED_URL: 'https://example.test/pull/55',
-      },
-    );
-
-    expect(result.status).toBe(0);
-    const output = JSON.parse(result.stdout);
-    expect(output).toMatchObject({
-      status: 'ready_for_review',
-      qualification: {
-        status: 'generated',
-        action: 'included_in_release_pr',
-        qualified_commit: fixture.devSha,
-      },
-      pull_request: { url: 'https://example.test/pull/55' },
-    });
-    expect(
-      git(fixture.root, [
-        'show',
-        'HEAD:docs/plans/i18n/semantic-harness-qualification-receipt.json',
-      ]),
-    ).not.toContain('"stale": true');
-  });
-
-  it('fails before push when semantic qualification cannot be generated', () => {
-    const fixture = createFixture();
-    const result = runCli(
-      fixture,
-      releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
-      {
-        FAKE_QUALIFICATION_STATUS: 'invalid',
-        FAKE_QUALIFICATION_FAIL: '1',
-      },
-    );
-
-    expect(result.status).toBe(workflow.EXIT.gate);
-    expect(JSON.parse(result.stdout)).toMatchObject({
-      complete: false,
-      error: { code: 'semantic_qualification_failed' },
-    });
-    expect(
-      git(fixture.root, [
-        'ls-remote',
-        '--refs',
-        'fork',
-        'refs/heads/codex/issue-778-version-v1.0.1',
+        'ls-tree',
+        '-r',
+        '--name-only',
+        'HEAD',
+        '--',
+        'docs/plans/i18n/semantic-harness-qualification-receipt.json',
       ]),
     ).toBe('');
   });
@@ -921,7 +841,7 @@ describe('release automation public contracts', () => {
         headRefOid: candidateSha,
         baseRefName: 'dev',
         headRefName: 'codex/issue-778-version-v1.0.1',
-        body: `<!-- tiangong-next-release-automation:v1 issue=778 version=1.0.1 base=${fixture.devSha} candidate=${candidateSha} -->`,
+        body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.devSha} main-base=${fixture.mainSha} candidate=${candidateSha} -->`,
       },
     ];
     const candidateDocuments = versionDocuments('1.0.1');
@@ -969,7 +889,7 @@ describe('release automation public contracts', () => {
       dev_merge_sha: fixture.devSha,
       candidate_sha: fixture.devSha,
       pull_request: { url: 'https://example.test/pull/53' },
-      qualification: { status: 'verified_by_main_semantic_gate' },
+      qualification: { status: 'proved_by_dev_release_candidate_gate' },
       gate: { status: 'passed' },
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe(
@@ -977,6 +897,7 @@ describe('release automation public contracts', () => {
     );
     expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.devSha);
     expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
+    expect(fs.readFileSync(npmLog, 'utf8')).toContain('immutable-promotion');
   });
 
   it('promotes after an earlier tree-identical two-parent main promotion', () => {

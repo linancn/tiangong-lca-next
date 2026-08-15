@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: 3784deb29e1da1a2e15833214315a455c7cb2369
-lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: frontend environment selection now separates explicit deployment inputs from the deterministic semantic-qualification profile.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -45,7 +45,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `config/routes.ts` | route tree and route-family entrypoints |
 | `config/config.ts` | Umi runtime config |
 | `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
-| `config/supabaseEnv.ts` | frontend env selection |
+| `config/supabaseEnv.ts` | frontend env selection; explicit build values override file defaults, and qualification selects a fixed non-production profile |
 | `src/app.tsx` | runtime layout, auth redirect, cache monitors, theme behavior |
 | `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, and shared runtime state |
 | `src/pages/**` | route-level product pages |
@@ -57,7 +57,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
-| `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
+| `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, deterministic closed-simulator backend profile, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `scripts/qualification/**`, `playwright.closure-download.config.ts`, `tests/browser/**` | test-only exact-commit scope-closure Next adapter and loopback browser contract accepted by the Worker provider aggregator |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |

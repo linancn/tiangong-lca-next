@@ -8,7 +8,7 @@ owner: next
 targetRepo: linancn/tiangong-lca-next
 project: https://github.com/users/tiangong-lca/projects/1
 language: zh-CN
-version: 3.4
+version: 3.6
 translationGovernance: autonomous-context-grounded
 referenceDataLocalization: official-first-version-locked
 languageExtensibilityContract: registry-manifest-derived-no-business-hardcoding
@@ -49,7 +49,6 @@ checkPaths:
   - docs/plans/i18n/fallback-contract.json
   - docs/plans/i18n/route-view-coverage.json
   - docs/plans/i18n/semantic-e2e-evidence.schema.json
-  - docs/plans/i18n/semantic-e2e-evidence.json
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
@@ -57,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
-lastReviewedNote: 'Reviewed for Next Issue #820: the refreshed v0.0.73 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
+lastReviewedCommit: a29f4f3392fc22e7800b407cfe5596396d1d783b
+lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual on the open feature PR and release proof is non-browser.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -179,7 +178,7 @@ related:
 
 唯一需要人工确认的正常动作是：执行当前 workflow 中真正使 production URL 生效的动作。这里的 production-effective action 定义为“第一个可能改变任何真实生产用户可见服务状态，或启动不可撤销/外部可见生产 rollout 的动作”。
 
-如果当前 Next workflow 在 `main` push 后自动执行 Release Gate 与 credential-free semantic E2E，并仅在两者通过后创建 tag、部署 Web 和准备 Draft Release，那么这些副作用与 `main` 合并仍是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。main-target PR 上的可复用 Release Gate 是合并前阻断证据，不改变 production-effective action 的位置。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
+如果当前 Next workflow 在 exact dev Release PR 已完成非浏览器 release gate 后，由 `main` push 验证该 proof 并创建 tag、部署 Web 和准备 Draft Release，那么这些副作用与 `main` 合并仍是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。main-target PR 上的 proof/identity check 是合并前阻断证据，不改变 production-effective action 的位置。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
 
 如果 feature、promote、release 或 root integration 的 branch protection 强制人工批准，这属于仓库外部治理阻塞，不是本 Goal 设计的正常确认节点。不得主动增加这类 gate，也不得绕过已存在的保护规则。
 
@@ -523,7 +522,7 @@ npm run i18n:locale:audit -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:manifest:write -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:artifacts:write
 npm run i18n:locale:artifacts:idempotence
-npm run i18n:evidence:canonical:check
+npm run i18n:evidence:canonical:check -- --path <artifact>
 npm run i18n:context:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:quality:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:corrections:check
@@ -535,7 +534,7 @@ npm run i18n:hardcoding:audit
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
 
-tracked semantic evidence reporter 必须直接写出仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。格式策略必须从 repository-owned evidence path 解析并与实际输出目的地解耦，因此容器挂载的 `/e2e-output` 也必须一次写出可由同一 canonical checker 原样接受的 bytes。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
+semantic evidence reporter 必须直接把外部 artifact 写成仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。格式策略必须从 repository-owned canonical path 解析并与实际输出目的地解耦，因此容器挂载的 `/e2e-output` 或 ignored `.local/**` 也必须一次写出可由同一 canonical checker 原样接受的 bytes。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
 
 CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二元条件、固定 supported-locale union、手写语言下拉数组、缓存资产数组、`locale || 'en-US'` / `locale ?? 'zh-CN'` 一类逻辑或空值默认，以及“非 zh 即 en”归一逻辑。下载报告等导出完整 HTML 文档的根 `<html lang>` 与 `dir` 也属于运行时语言能力，必须从 registry/runtime policy 动态派生；门禁必须拒绝嵌入模板中的固定根语言元数据。允许项必须落在最小 allowlist，并说明它是外部 adapter、canonical source、历史冻结验证，或故意 fail-closed 的产品支持语言快照门禁；新增语言后，不修改业务页面即可让 registry 驱动的测试发现其所有必需能力。
 
@@ -614,12 +613,13 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 当前浏览器执行合同使用 `@playwright/test` `1.61.1`，canonical 入口为 `npm run test:e2e:i18n`，配置位于 `playwright.config.ts`，测试与 ledger/reporter helper 位于 `tests/e2e/i18n/**`。候选前端必须由 `npm run start:main` 在 loopback URL 启动并连接 production backend；`E2E_BASE_URL` 指向真实生产前端时必须 fail closed。
 
-独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 只有一个 CI 信任边界：
+独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 是可选的手动 hermetic qualification 边界：
 
-- 日常 PR 与 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，canonical release workflow 对 exact release SHA 强制复用同一 workflow；
-- semantic E2E GitHub Actions 一律不接收生产凭据、不写生产数据，只运行合同发现以及 Chromium、Firefox、WebKit 三浏览器 public semantics/认证边界矩阵；`workflow_dispatch` 与 release 调用都不扩权，也不承载 authenticated production-data closure。
+- 日常 PR、普通 `dev` push、release PR、promote PR 和 publication 都不自动触发或要求浏览器 E2E；仅 `workflow_dispatch` 由 operator 选择仍开放的业务 PR 分支或 exact SHA；
+- 该 workflow 一律不接收生产凭据、不写生产数据，每次真实执行预构建候选与固定 closed simulator 的 content-addressed hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；
+- 应在 `release:to-dev` 前、业务 PR 仍可修改时按风险选择运行；失败直接在同一 PR 修复并重跑。它是人工选择的验收信号，不属于 release proof。
 
-完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 tracked verified evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
+完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 verified external evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
 
 route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观察合同共 49 个 assertion ID；每个 ID 除 live route scenario 外，还必须闭合其 `executableTarget.requiredScenarios` 声明的匿名保护、fallback/refresh、状态机、authoring、响应式、持久化或参考数据刷新场景。Chromium 执行完整 route/view 矩阵，登录/语言选择器、团队内容语言录入和流程数据生命周期等关键场景在 Chromium、Firefox、WebKit 三种引擎中执行。locale 和可编辑内容语言集合必须从 `LOCALE_REGISTRY` 与 `CONTENT_LANGUAGE_REGISTRY` 动态派生；新增 registry locale 会自动扩大期望集合并使旧证据失效，不得人工修改旧证据继续使用。
 
@@ -627,11 +627,9 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
-tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环境合同计算 qualification key，在固定 `.invalid` backend profile 对预构建候选执行完整 closed-simulator qualification，并上传短期 artifact；它不读取 deployment `.env` 或 `origin/main:.env`，也不复用 Actions proof cache。根应用 release version 与 deployment-only metadata 不进入行为 identity，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。exact dev Release PR 只聚合 static/full 非浏览器 gate，并生成绑定 main baseline、dev base/head/tree、version、PR、run attempt 与 artifact 的独立 release proof。
 
-通常只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。另一个受限范围 `reviewed-read-only-request-guard-expansion` 只允许在用户明确授权跳过 E2E、改动仅向 production request guard 增加具名只读 endpoint、且 focused guard tests 覆盖全部新增 endpoint 时使用。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
-
-Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，可以跳过完整 authenticated E2E。该授权只能通过 `user-authorized-release-candidate-e2e-skip` 保存为完整 `config`、package manifest、`src`、`tests/unit` tree identity，并要求 focused request-guard proof、`release:preflight` 与完整 `prepush:gate`；任何 tree drift 立即失效，且 route coverage、E2E harness、package lock、runtime assets、backend target 与 production safety 均不在授权范围内。
+显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代非浏览器 release proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
 ---
 
@@ -647,7 +645,7 @@ Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，�
 - source manifest digest；
 - shared dynamic-family registry；
 - route-view coverage manifest/digest；
-- semantic E2E evidence schema，以及通过 49-ID closure、browser/locale matrix、source/test digest 和零泄漏 ledger 校验的紧凑执行证据；
+- semantic E2E evidence schema、route-view proof contract 和外部 artifact 路径策略；
 - glossary/style guide/context override；
 - context-completeness schema 和自动检查结果摘要；
 - existing-translation correction ledger；
@@ -809,7 +807,7 @@ Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，�
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
 - 以 `npm run test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
-- 日常 PR/`dev` push 不触发 semantic browser E2E；按需 `workflow_dispatch` 与 exact-release-SHA 强制调用只执行无生产凭据、无写入的三浏览器 public semantics/合同边界矩阵；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
+- 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
 - semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
@@ -820,12 +818,12 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 
 阶段输出：focused proof、完整 route-view browser smoke、自动质量问题清零。
 
-### 阶段 H：冻结、版本、clean proof 和一次本地最终门禁
+### 阶段 H：冻结业务候选、clean proof 和一次本地最终门禁
 
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
-3. 选择/确认唯一 package version，只 bump 一次。
-4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `npm run i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `npm run i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使最终 release gate 非零退出。
+3. 选择/确认唯一 package version，但此阶段不手工修改；最终 version bump 由阶段 I 的确定性 `release:to-dev` 命令一次完成。
+4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `npm run i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `npm run i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
    - 使用当前受支持 Node；
@@ -851,19 +849,20 @@ npm run push:retry
 
 9. 只有受控 tracked 输入、依赖、Node/toolchain 或 gate config 改变，才为新 HEAD 再跑一次。Project/Issue 文本、只读检查和 tree-identical merge 不使其失效。
 
-阶段输出：version、delivery SHA、clean proof、一次本地 full gate 和成功 push。
+阶段输出：delivery SHA、clean proof、一次业务交付本地 full gate 和成功 push。后续纯 version/Docpact release commit 不重复该本地 full gate。
 
 ### 阶段 I：feature PR 到 dev，全程自主
 
 1. 按依赖顺序为三个 owner Issues 创建/更新 feature PR 到当前 routine target（观察模型通常是 `dev`），每个 PR 关闭对应 Issue；必要的来源研究和 inventory 可以并行，但最终 E2E 依赖平台与资源 PR。
 2. PR 分别说明语言平台、参考资源、页面/E2E 的边界，并共同覆盖目标 locale、全语言能力矩阵、context contract、自动质量模型、已有语言修订、runtime/fallback、验证和回滚。
 3. CI、自动化 review 或已有 code review feedback 发现问题时在同一分支自主修复；只重跑受影响 proof，tracked HEAD 变化后按阶段 H 处理。不得主动建立额外 human PR approval gate；如果未来 branch protection 强制人工批准且无法绕过，应作为外部治理阻塞报告，不能弱化保护规则。
-   - semantic E2E remote policy：PR、`dev` push 不自动运行浏览器矩阵；按需 `workflow_dispatch` 和 exact release SHA 强制调用始终无生产凭据且不写数据；完整 production-backend 已登录闭包只使用明确授权的本地 operator session，不能把用户凭据或生产写权限放入任何 semantic E2E GitHub job。
-4. 三个 PR required checks 通过后按依赖顺序自主合并到 `dev`，不请求翻译或合并确认。
+   - semantic E2E remote policy：PR、`dev` push 不自动运行浏览器矩阵；在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行始终无生产凭据且不写数据的 hermetic qualification；release SHA 不强制调用；完整 production-backend 已登录闭包只使用明确授权的本地 operator session，不能把用户凭据或生产写权限放入任何 semantic E2E GitHub job。
+4. 三个 PR required checks 通过后，在最终页面/E2E 业务 PR 仍开放时手动运行 hermetic browser qualification；若失败就在该 PR 修复并重跑。通过后按依赖顺序自主合并到 `dev`，不请求翻译或合并确认。
 5. 执行 dev smoke；匿名态覆盖登录流程和受保护入口跳登录，已登录态完整覆盖 route-view matrix，特别是 `/welcome` 与 `/welcome?view=carbon-footprint`；若角色走同一 selector 代码路径，只做代表性 smoke。
 6. 枚举完整 `dev...main` commits/paths/batch members，确认版本/tag/release 唯一。
-7. 创建/更新唯一 promote PR，等待 required checks。
-8. 重新审计 production-effective action：若 promote merge 会直接上线，停在其合并前进入阶段 J；若 promote merge 已不再上线，则自主合并到 `main`，继续完成所有非生产生效准备，只在真实 deploy/promote/publish 动作前进入阶段 J。
+7. 确认阶段 4 的 browser evidence 决策和结果已经记录，随后用 `release:to-dev --apply` 创建唯一确定性 version PR 到 `dev`。该命令的 restricted push 只跑 Docpact 与 static preflight；exact dev Release PR 必须完成一次非浏览器 static/full gate 并生成 release proof，不运行或要求浏览器 E2E。
+8. dev Release PR 合并后，用 `release:promote-dev-to-main --apply` 创建唯一 immutable promote PR。其本地 push 与 `Main Candidate / Release Gate` 只验证 exact dev release proof、main/dev lineage 和 tree identity，不重跑 candidate acceptance 或浏览器 E2E。
+9. 重新审计 production-effective action：若 promote merge 会直接上线，停在其合并前进入阶段 J；若 promote merge 已不再上线，则自主合并到 `main`，继续完成所有非生产生效准备，只在真实 deploy/promote/publish 动作前进入阶段 J。
 
 阶段输出：feature PR/dev SHA、dev smoke、promote/main 当前状态，以及紧邻真实 production-effective action 的精确 release candidate tuple。
 
@@ -871,9 +870,9 @@ npm run push:retry
 
 当且仅当以下条件全部满足时，向用户请求一次最终发布确认：
 
-- promote PR required checks 已通过；
+- dev Release PR 的非浏览器 release proof 已通过，且 promote PR 的 proof/identity required check 已通过；
 - version、promote SHA/tree 和完整 batch digest 已冻结；
-- 本地 final gate 与 clean proof 已通过；
+- 业务 delivery HEAD 的本地 final gate、clean proof、适用时的手动 browser evidence 与 exact dev candidate release proof 已通过；
 - 自动翻译质量门槛、全部 active locale capability/reference-data/hardcoding audit、已有语言 correction audit、runtime/browser smoke 已通过；
 - canonical workflow 自动副作用和 Release 终态已确认；
 - production target、rollback target/runbook 已明确。
@@ -906,8 +905,8 @@ npm run push:retry
 
 最终发布确认后不再请求其他正常确认：
 
-1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`，触发 canonical Release Gate/semantic E2E；两者成功后才创建 tag，并继续 Web/Draft Release workflow。若 workflow 已变化，执行阶段 J 绑定的真实动作。
-2. 监控全部 jobs 到终态。本地 final gate、main-target PR clean-runner gate 与 post-merge exact-release clean-runner gate 是不同信任边界，各自保留。
+1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`；canonical workflow 验证 exact dev candidate release proof 后创建 tag，并继续 Web/Draft Release workflow，不再重复 static/full acceptance，也不运行浏览器 E2E。若 workflow 已变化，执行阶段 J 绑定的真实动作。
+2. 监控全部 jobs 到终态。业务 delivery HEAD 的本地 gate、适用时的业务 PR 手动 browser evidence 与 exact dev Release PR 非浏览器 gate 是保留边界；main-target PR 和 post-merge main 只做 proof/identity verification。
 3. 同一 SHA 的瞬时 cache/network/job 失败只重跑失败 job；不重跑已成功 Gate/资产 job。
 4. 若需要 tracked 修复或新 patch，回到受影响检查点并为新的线上候选再次执行阶段 J。
 5. tag 一旦创建不可移动或复用。
@@ -935,10 +934,10 @@ npm run push:retry
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
-| 仅 canonical evidence formatting / locale artifact orchestration 变化，且 focused proof 证明 browser 语义不变 | 记录精确旧/新 digest compatibility，运行 canonical check、双生成幂等、focused contracts 和 production preflight | 永不需要 | tracked HEAD 变化则一次 | 精确兼容 pair 内不失效；任何后续漂移立即失效 |
+| 仅 root release version metadata 变化 | restricted release-candidate push 跑 Docpact/static preflight；dev Release PR 生成非浏览器 release proof | 永不需要 | 本地不跑；dev full gate 一次 | browser evidence 不失效；release proof 仍绑定 exact candidate |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
-| package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + affected proof | 永不需要 | tracked HEAD 变化则一次 | 已有确认失效，发布前重确认一次 |
+| package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + proof identity | 永不需要 | version/promotion 本地不跑；若 identity 改变则新 dev non-browser gate | 已有确认失效，发布前重确认一次 |
 | Issue/PR/Project 文本变化 | 远端状态核验 | 永不需要 | 不跑 | 不失效 |
 | 门禁成功、transport 失败 | `npm run push:retry` | 永不需要 | 不重跑 | 不失效 |
 | 同 SHA release job 瞬时失败 | 只重跑失败 job | 永不需要 | 不重跑 | 不失效 |
@@ -946,7 +945,7 @@ npm run push:retry
 | tree-identical merge | 核对 tree/CI | 永不需要 | 不重跑 | 不失效 |
 | root pointer 集成 | exact child main SHA validation | 永不需要 | Next gate 不重跑 | 发布后不再确认 |
 
-正常 broad-gate 预算：迭代期 0 次；不可变本地 delivery HEAD 1 次；main-target PR clean-runner Release Gate 1 次；`main` exact-release clean-runner Release Gate 1 次。三者覆盖本地交付、合并前阻断和最终 release SHA 三个不同信任边界，均保留；其他无受控内容变化的事件不增加次数。
+正常 broad-gate 预算：迭代期 0 次；真实业务 delivery HEAD 的本地受管 full gate 1 次；适用时在开放业务 PR 上手动 hermetic browser qualification 1 次；exact dev Release PR clean-runner 非浏览器 gate 1 次；main-target PR 与 `main` exact-release 的 full gate 均为 0 次，只验证 proof/identity。若本次工作仅创建确定性 version/Docpact release commit，则它自身的本地 broad gate 和 browser gate 均为 0 次。显式 tag/`workflow_dispatch` recovery 可额外执行一次 fresh 非浏览器 gate，但不属于正常路径。
 
 ---
 
@@ -1071,7 +1070,7 @@ npm run push:retry
 - [ ] `npm run test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `npm run start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
-- [ ] 日常 PR/`dev` push 不触发浏览器矩阵；main-target PR 运行可复用 Release Gate 但不获得生产凭据或写权限；按需 `workflow_dispatch` 与 post-merge exact-release-SHA semantic gate 同样无生产凭据、无生产写，只运行三浏览器 public semantics/合同；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
+- [ ] 日常 PR/普通 `dev` push 不自动触发浏览器矩阵；按风险在仍开放的业务 PR 上通过 `workflow_dispatch` 手动运行无凭据、无生产写的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；exact dev Release PR 只运行非浏览器 static/full gate，main-target PR 与正常 post-merge main 仅验证 release proof；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
 - [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
@@ -1085,10 +1084,10 @@ npm run push:retry
 - [ ] “语言平台化、分类资源本地化、页面清扫与 E2E”三个 Issue 及对应 PR 全部完成，并在 Project 中分类和闭合依赖。
 - [ ] delivery HEAD 通过一次 `push:checked`；transport failure 只用 `push:retry`。
 - [ ] feature PR 自主合并到 routine target，promote PR/候选已冻结。
-- [ ] main-target PR 的可复用 Release Gate 已对 exact base/head 通过，任何 production-readiness evidence 漂移在合并前阻断。
+- [ ] exact dev Release PR 的非浏览器 gate 已对 main/dev base、candidate head/tree/version 通过；main-target PR 的 proof/identity check 已阻断任何基线或 tree 漂移；适用的 browser evidence 已在业务 PR 阶段闭合。
 - [ ] 只在最终线上发布前请求一次人工确认，且绑定 exact release tuple。
 - [ ] 唯一确认紧邻真实 production-effective action；workflow 漂移时没有机械停在错误的 Git 步骤。
-- [ ] 确认后 production-effective action、main/Release Gate/semantic E2E/tag/Web/assets/production smoke 完成，且 tag 只在两类 exact-release gate 通过后创建，未增加正常确认点。
+- [ ] 确认后 production-effective action、main proof verification、tag/Web/assets/production smoke 完成，且 tag 只在 exact dev release proof 与 main identity 验证通过后创建，未增加正常确认点、重复 full gate 或晚期 browser gate。
 - [ ] root workspace 指向 Next `main` exact release SHA，Project/Issue/PR 状态完成。
 - [ ] 分支/临时文件已清理，workspace 已同步，无关用户内容保留。
 
@@ -1131,7 +1130,7 @@ npm run push:retry
 - 翻译或已有译文修订是否需要任何人工审核？
 - 唯一人工确认发生在哪里，绑定哪些 release facts？
 - workflow 漂移后，如何把唯一确认移动到真正使线上生效的动作之前？
-- main 合并与自动 Release Gate/semantic E2E、门禁后 tag、Web/Draft Release 为什么仍是一个确认单元？
+- main 合并与自动非浏览器 Release Gate proof verification、门禁后 tag、Web/Draft Release 为什么仍是一个确认单元？
 - 每条消息的完整 LCA 平台上下文包括什么？
 - 如何在不改变认证合同的前提下，证明已登录 `/welcome`、`/welcome?view=carbon-footprint` 及其他 route/static query view 都已翻译，而不只依赖 locale key parity？
 - 如何证明匿名访问受保护路由只会到 canonical login，且 i18n 证据没有成为授权来源？
@@ -1151,7 +1150,7 @@ npm run push:retry
 - 哪些语言事实属于 UI locale registry、content-language registry 和 reference-resource Manifest？
 - 如何阻止下一种语言再次引入固定 union、下拉数组、文件 map、缓存列表和语言特判？
 - 为什么新增 registry locale 会自动扩大 Playwright 期望集合并使旧 semantic evidence 失效？
-- 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，而按需 `workflow_dispatch` 与 exact-release-SHA release gate 都只能运行无凭据、无写入的三浏览器 public proof；同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
+- 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，而是在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行无凭据、无写入、预构建候选的 hermetic qualification；为什么 release stages 不消费该证明，同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
 - 49 个 assertion ID、Chromium 全矩阵、三浏览器关键场景和 digest/ledger closure 如何共同防止 prose-only 或伪造浏览器证据？
 - 为什么生产测试数据只能是 UUID-scoped `codex-e2e` tuple，必须 create 前写 intent、delete 前验证 UUID/owner/五字段全语言 markers，并且最终 `created=cleaned`、`leaked=0`？
 - `SelectLang reload={false}` 如何让 same-document locale refresh 与旧请求 race 成为可验证合同，而不是由整页 reload 掩盖？

@@ -1,7 +1,8 @@
 name: Build/release
 
 # Releases normally start from a main push whose package.json version is new.
-# The workflow creates the matching v* tag only after release qualification and semantic E2E pass.
+# The workflow creates the matching v* tag only after reusing or completing the aggregate
+# exact-candidate Release Gate proof produced on the deterministic dev Release PR.
 # Manual v* tag pushes and workflow_dispatch runs remain supported for recovery/backfill releases.
 on:
   workflow_dispatch:
@@ -157,10 +158,10 @@ jobs:
             echo "- head: \`${release_head}\`"
             echo "- base: \`${release_base}\`"
             echo "- package version: \`${package_version}\`"
-            echo "- tag publication: deferred until release qualification and semantic E2E pass"
+            echo "- tag publication: deferred until aggregate release proof verification"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Resolve reusable PR Release Gate proof
+      - name: Resolve reusable dev Release PR proof
         id: proof
         if: >-
           steps.release.outputs.should_release == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -190,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Require an exact reusable proof or a successful full gate
+      - name: Require the dev candidate proof or an explicit recovery full gate
         env:
           GATE_MODE: ${{ needs.release-context.outputs.gate_mode }}
           GATE_REASON: ${{ needs.release-context.outputs.gate_reason }}
@@ -203,11 +204,11 @@ jobs:
           set -euo pipefail
 
           if [ "${GATE_MODE}" = "reuse" ] && [ "${FULL_GATE_RESULT}" = "skipped" ]; then
-            echo "::notice::Reusing exact Release Gate proof from PR #${PROOF_PR_NUMBER}, workflow run ${PROOF_RUN_ID}."
+            echo "::notice::Reusing exact dev Release PR proof from PR #${PROOF_PR_NUMBER}, workflow run ${PROOF_RUN_ID}."
           elif [ "${GATE_MODE}" = "full" ] && [ "${FULL_GATE_RESULT}" = "success" ]; then
-            echo "::notice::The full Release Gate completed successfully (${GATE_REASON})."
+            echo "::notice::The explicit recovery Release Gate completed successfully (${GATE_REASON})."
           else
-            echo "::error::Release qualification is inconsistent: mode=${GATE_MODE}, full_gate=${FULL_GATE_RESULT}, reason=${GATE_REASON}."
+            echo "::error::Release qualification is invalid: mode=${GATE_MODE}, full_gate=${FULL_GATE_RESULT}, reason=${GATE_REASON}. Normal main pushes never rerun candidate acceptance; prepare a new dev Release PR if proof identity changed."
             exit 1
           fi
 
@@ -223,22 +224,13 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-  release-semantic-e2e:
-    name: Release Semantic E2E
-    needs: release-context
-    if: needs.release-context.outputs.should_release == 'true'
-    uses: ./.github/workflows/i18n-semantic-e2e.yml
-    with:
-      ref: ${{ needs.release-context.outputs.release_head }}
-
   release-tag:
     name: Publish Release Tag
     needs:
       - release-context
       - release-qualified
-      - release-semantic-e2e
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -293,10 +285,9 @@ jobs:
     needs:
       - release-context
       - release-qualified
-      - release-semantic-e2e
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
@@ -368,10 +359,9 @@ jobs:
     needs:
       - release-context
       - release-qualified
-      - release-semantic-e2e
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ubuntu-latest
     env:
       EDGEONE_OUTPUT_DIR: dist
@@ -462,10 +452,9 @@ jobs:
       - release-context
       - release-qualified
       - release-draft
-      - release-semantic-e2e
       - release-tag
     if: >-
-      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-semantic-e2e.result == 'success' && needs.release-tag.result == 'success' }}
+      ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-tag.result == 'success' }}
     runs-on: ${{ matrix.os }}
 
     strategy:

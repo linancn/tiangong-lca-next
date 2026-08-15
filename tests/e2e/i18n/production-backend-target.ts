@@ -26,6 +26,8 @@ export type VerifiedProductionBackendTarget = {
   trackedMainEnvironmentSha256: string;
 };
 
+const QUALIFICATION_ENVIRONMENT_RELATIVE_PATH = 'docker/e2e/qualification.env';
+
 function parseProductionBackend(environment: string): {
   origin: string;
   publishableKey: string;
@@ -70,7 +72,7 @@ export function verifyProductionBackendTargetSources(
   };
 }
 
-export function readVerifiedProductionBackendTarget(): VerifiedProductionBackendTarget {
+function readVerifiedDeploymentBackendTarget(): VerifiedProductionBackendTarget {
   const candidateEnvironment = readFileSync(path.join(REPOSITORY_ROOT, '.env'), 'utf8');
   const trackedMainEnvironmentPath = process.env.E2E_TRACKED_MAIN_ENV_PATH?.trim();
   const trackedMainEnvironment = trackedMainEnvironmentPath
@@ -80,6 +82,22 @@ export function readVerifiedProductionBackendTarget(): VerifiedProductionBackend
         encoding: 'utf8',
       });
   return verifyProductionBackendTargetSources(candidateEnvironment, trackedMainEnvironment);
+}
+
+export function readVerifiedE2EBackendTarget(): VerifiedProductionBackendTarget {
+  if (process.env.E2E_QUALIFICATION !== 'true') {
+    return readVerifiedDeploymentBackendTarget();
+  }
+  const qualificationEnvironment = readFileSync(
+    path.join(REPOSITORY_ROOT, QUALIFICATION_ENVIRONMENT_RELATIVE_PATH),
+    'utf8',
+  );
+  return verifyProductionBackendTargetSources(qualificationEnvironment, qualificationEnvironment);
+}
+
+// Keep the established spec-facing API stable while target selection remains centralized here.
+export function readVerifiedProductionBackendTarget(): VerifiedProductionBackendTarget {
+  return readVerifiedE2EBackendTarget();
 }
 
 export function bindVerifiedProductionRequestGuardOptions(
@@ -99,7 +117,7 @@ export async function installVerifiedProductionReadOnlyGuard(
   backendTarget: VerifiedProductionBackendTarget;
   guard: ProductionRequestGuard;
 }> {
-  const backendTarget = readVerifiedProductionBackendTarget();
+  const backendTarget = readVerifiedE2EBackendTarget();
   const guard = await installReadOnlyProductionGuard(
     target,
     backendTarget.origin,

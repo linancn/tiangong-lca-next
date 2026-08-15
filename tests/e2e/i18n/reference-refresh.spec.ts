@@ -762,8 +762,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
         requestCounts.set(fixture.id, 0);
         await page.route(pattern, async (route) => {
           requestCounts.set(fixture.id, (requestCounts.get(fixture.id) ?? 0) + 1);
-          const response = await route.fetch();
-          await route.fulfill({ response });
+          await route.fallback();
         });
       }
 

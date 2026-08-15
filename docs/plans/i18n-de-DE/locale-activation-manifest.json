@@ -78,10 +78,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "bca39c586c3c099cd06276c0388b687605dd170e834903a04733c1f013f0a379",
-    "qualityDigest": "7b9e723eded766e48d893848084adf66ce61ffc9abc5159eb2b91f8093c94f33",
+    "contextDigest": "781aee414f0d7de96e8bfd723f5301301376e5d39de21bbe0f9c175f0c12c34b",
+    "qualityDigest": "586f29ee69934ff746333c1f23bc74320efef7fe5da8ed0118c60b04ea3bc862",
     "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e",
-    "routeViewCoverageDigest": "f0d812a92bb7c0f39948ee1301a2eb73415d8eb194763729d3819d28ff62b1d0",
+    "routeViewCoverageDigest": "134baf5f810bdfb469b07e0ecf241e6500b749c2e9925004916d99bde09cef98",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -104,17 +104,26 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": true,
+    "semanticRouteAndE2EContractReady": true,
+    "semanticRouteAndE2EReady": false,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": true,
+    "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [],
-  "activationDigest": "5bfbfa32a7a23005ec3dc8435f2fb654ab88f8ea31968d432f64b05d5cb8e7d0"
+  "productionActivationBlockers": [
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#867"
+    }
+  ],
+  "activationDigest": "adb6d4d6d04aff9f829f4e3c11836b0b42e10887b901823b2c23ea73774333d5"
 }

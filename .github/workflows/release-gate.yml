@@ -11,6 +11,16 @@ on:
         description: Exact candidate commit to validate.
         required: true
         type: string
+      candidate_base:
+        description: Exact dev base of the deterministic Release PR.
+        required: false
+        default: ''
+        type: string
+      release_version:
+        description: Stable package version bound into the candidate proof.
+        required: false
+        default: ''
+        type: string
       emit_proof:
         description: Emit an exact PR gate proof after every gate step succeeds.
         required: false
@@ -71,8 +81,8 @@ jobs:
           RELEASE_HEAD: ${{ inputs.release_head }}
         run: npm run docpact:gate -- --base "$RELEASE_BASE" --head "$RELEASE_HEAD"
 
-      - name: Verify production readiness
-        run: npm run release:preflight
+      - name: Verify static release readiness
+        run: npm run release:static-preflight
 
       - name: Run full release gate
         env:
@@ -89,19 +99,34 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Write exact release gate proof
+  release-proof:
+    name: Aggregate Exact Release Proof
+    needs: release-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out exact candidate
+        if: inputs.emit_proof
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.release_head }}
+          fetch-depth: 0
+
+      - name: Write exact aggregate release proof
         id: release-proof
-        if: ${{ inputs.emit_proof && success() }}
+        if: inputs.emit_proof
         env:
           PROOF_OUTPUT: ${{ runner.temp }}/release-gate-proof.json
           PROOF_PR_NUMBER: ${{ inputs.proof_pr_number }}
           RELEASE_BASE: ${{ inputs.release_base }}
+          CANDIDATE_BASE: ${{ inputs.candidate_base }}
           RELEASE_HEAD: ${{ inputs.release_head }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: >-
-          node scripts/release/release-gate-proof.cjs create --repository "$GITHUB_REPOSITORY" --pr-number "$PROOF_PR_NUMBER" --release-base "$RELEASE_BASE" --release-head "$RELEASE_HEAD" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" --output "$PROOF_OUTPUT" --github-output "$GITHUB_OUTPUT"
+          node scripts/release/release-gate-proof.cjs create --repository "$GITHUB_REPOSITORY" --pr-number "$PROOF_PR_NUMBER" --release-base "$RELEASE_BASE" --candidate-base "$CANDIDATE_BASE" --release-head "$RELEASE_HEAD" --release-version "$RELEASE_VERSION" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" --output "$PROOF_OUTPUT" --github-output "$GITHUB_OUTPUT"
 
-      - name: Upload exact release gate proof
-        if: ${{ inputs.emit_proof && success() }}
+      - name: Upload exact aggregate release proof
+        if: inputs.emit_proof
         uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.release-proof.outputs.artifact_name }}

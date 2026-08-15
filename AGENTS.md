@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
-lastReviewedNote: 'Reviewed for Next Issue #820: refreshed v0.0.73 production evidence, qualification, and Docpact records follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
+lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -113,7 +113,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
-- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while local release proof uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the three-browser GitHub Actions matrix remains credential-free/read-only and release-required
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
 - scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
@@ -121,7 +121,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
-- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for normal delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change
+- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Run manual hermetic browser qualification on the open business PR before merge or release-to-dev when the change risk warrants it, so a failure can be fixed on that same PR. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns the non-browser release gate. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
 - new npm dependencies require human approval
 - production-writing E2E requires a host without `CI` or `GITHUB_ACTIONS`; only after that check may the controller clear image-inherited CI markers for the local container. Authenticated mode plus two write guards remain mandatory: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 
@@ -149,11 +149,14 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - exact-candidate scope-closure proof: `npm run test:qualification:scope-closure:browser -- --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
-- credential-free production preflight for main candidates: `npm run release:preflight`
+- static release preflight: `npm run release:static-preflight` (`release:preflight` is a compatibility alias); this validates tracked locale/reference contracts but does not claim browser execution
+- optional content-addressed browser qualification: dispatch `.github/workflows/i18n-semantic-e2e.yml` for the chosen business-PR ref, or run `npm run e2e:qualification:key` then `npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json`; verify with `npm run release:proof:verify -- --proof <path>`
 - preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
 - preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
-- `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
+- `release:to-dev --apply` changes only version metadata and bounded Docpact review metadata; its restricted local push runs Docpact plus static preflight and never runs browsers or writes proof into the branch
+- the exact marker-bound Release PR into `dev` runs one non-browser Release Gate before merge and emits an external proof for later main checks; it does not run or require browser E2E
+- every `main`-target promotion PR keeps the required `Main Candidate / Release Gate` check but verifies only immutable lineage, unchanged tree/main baseline, and the exact dev proof; it does not rerun the aggregate
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
@@ -190,9 +193,10 @@ Route those tasks to:
 - routine PR base: `dev`
 - promote path: `dev -> main`
 - normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
-- PRs targeting `main` run the reusable Release Gate against their exact base/head and retain a run-bound proof only after the complete gate succeeds; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
-- canonical version-changing `main` pushes may reuse that PR proof only when the release commit is the exact two-parent merge, its first parent/base and second parent/candidate match, the merged tree equals the gated candidate tree, and the successful unexpired workflow artifact matches every identity; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case runs the full reusable Release Gate instead
-- canonical `main` branch pushes also run exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after release qualification and semantic E2E pass, then deploy the web app and build draft Electron releases in the same workflow run
+- marker-bound version PRs targeting `dev` run the non-browser Release Gate against their exact base/head and retain proof only after the complete gate succeeds; their restricted local push runs Docpact and static preflight, while browser E2E remains a separate manual business-PR-stage decision
+- PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight
+- canonical version-changing `main` pushes reuse that dev proof only when the exact dev and main two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and unexpired artifact payload all match; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case fails before publication and requires a new dev candidate
+- canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
 - manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases and always run the full reusable Release Gate
 

@@ -7,9 +7,13 @@ import {
   loadUsersConfig,
   pickCredentialByRole,
 } from '../../data-workflows/workflows/workflow-shared';
-import { readVerifiedProductionBackendTarget } from '../../e2e/i18n/production-backend-target';
+import {
+  readVerifiedE2EBackendTarget,
+  readVerifiedProductionBackendTarget,
+} from '../../e2e/i18n/production-backend-target';
 
 const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
+  QUALIFICATION_PROOF_SCHEMA_VERSION: string;
   RECEIPT_SCHEMA_VERSION: number;
   acquireInvocationLock: (command: string, lockPath: string) => () => void;
   assertLocalOperatorHostEnvironment: (
@@ -25,6 +29,11 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     runtimeInputs: Record<string, any>,
   ) => string[];
   parseOptions: (command: string, args: string[]) => Record<string, any>;
+  qualificationIdentity: (root?: string) => {
+    environmentContractSha256: string;
+    inputSha256: string;
+    proofKey: string;
+  };
   playwrightArguments: (options: Record<string, any>) => string[];
   redactString: (value: string, sensitiveValues?: string[]) => string;
   sanitize: (value: unknown, sensitiveValues?: string[]) => unknown;
@@ -33,9 +42,9 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     now: number,
     key: Buffer,
   ) => Record<string, unknown>;
-  validateQualificationReceipt: (
-    receipt: Record<string, unknown>,
-    expectedInput: string,
+  validateQualificationProof: (
+    proof: Record<string, unknown>,
+    expectedIdentity: Record<string, string>,
   ) => Record<string, unknown>;
   validateRunOptions: (options: Record<string, any>) => void;
 };
@@ -50,6 +59,28 @@ const buildVerifier = require('../../../scripts/e2e/verify-build-input.cjs') as 
 
 const controllerPath = path.resolve(process.cwd(), 'scripts/e2e/release-e2e.cjs');
 const temporaryDirectories: string[] = [];
+const LOCAL_GIT_ENVIRONMENT_KEYS = [
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+] as const;
+
+function isolatedGitEnvironment() {
+  const environment = { ...process.env };
+  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
+  return environment;
+}
 
 function makeTemporaryDirectory(): string {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'release-e2e-runner-'));
@@ -71,7 +102,8 @@ describe('release E2E controller contracts', () => {
     expect(help).toContain('npm run e2e:release');
     expect(help).toContain('npm run e2e:release:resume');
     expect(help).toContain('npm run e2e:qualify');
-    expect(help).toContain('npm run e2e:qualification:check');
+    expect(help).toContain('npm run e2e:qualification:key');
+    expect(help).toContain('npm run release:proof:verify');
     expect(help).toContain('npm run e2e:env:clean');
     expect(help).toContain('npm run e2e:dev');
     expect(() => controller.parseOptions('resume', ['--format=json'])).toThrow(
@@ -86,8 +118,12 @@ describe('release E2E controller contracts', () => {
   });
 
   it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
-    const input = 'a'.repeat(64);
-    const receipt = {
+    const identity = {
+      inputSha256: 'a'.repeat(64),
+      environmentContractSha256: 'b'.repeat(64),
+      proofKey: 'c'.repeat(64),
+    };
+    const proof = {
       browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
         name,
         version: '1.61.1',
@@ -104,26 +140,123 @@ describe('release E2E controller contracts', () => {
       },
       externalRequests: 0,
       productionWrites: 0,
-      qualificationInputSha256: input,
-      schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+      candidate: { commit: 'd'.repeat(40), tree: 'e'.repeat(40) },
+      qualificationInputSha256: identity.inputSha256,
+      environmentContractSha256: identity.environmentContractSha256,
+      environmentManifestSha256: 'a'.repeat(64),
+      proofKey: identity.proofKey,
+      schemaVersion: controller.QUALIFICATION_PROOF_SCHEMA_VERSION,
       status: 'qualified',
     };
-    expect(controller.validateQualificationReceipt(receipt, input)).toBe(receipt);
+    expect(controller.validateQualificationProof(proof, identity)).toBe(proof);
     expect(() =>
-      controller.validateQualificationReceipt(
+      controller.validateQualificationProof(
         {
-          ...receipt,
-          coverage: { ...receipt.coverage, liveAssertionCount: 48 },
+          ...proof,
+          coverage: { ...proof.coverage, liveAssertionCount: 48 },
         },
-        input,
+        identity,
       ),
     ).toThrow('missing, stale, or incomplete');
     expect(() =>
-      controller.validateQualificationReceipt({ ...receipt, externalRequests: 1 }, input),
+      controller.validateQualificationProof({ ...proof, externalRequests: 1 }, identity),
     ).toThrow('missing, stale, or incomplete');
-    expect(() => controller.validateQualificationReceipt(receipt, 'b'.repeat(64))).toThrow(
-      'missing, stale, or incomplete',
+    expect(() =>
+      controller.validateQualificationProof(proof, {
+        ...identity,
+        inputSha256: 'f'.repeat(64),
+      }),
+    ).toThrow('missing, stale, or incomplete');
+  });
+
+  it('keeps proof identity stable for version-only changes and invalidates shipped inputs', () => {
+    const root = makeTemporaryDirectory();
+    const write = (relativePath: string, value: string) => {
+      const filePath = path.join(root, relativePath);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, value);
+    };
+    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.0' })}\n`);
+    write(
+      'package-lock.json',
+      `${JSON.stringify({
+        name: 'proof-fixture',
+        version: '1.0.0',
+        lockfileVersion: 3,
+        packages: { '': { name: 'proof-fixture', version: '1.0.0' } },
+      })}\n`,
     );
+    write(
+      'docker/e2e/environment.json',
+      `${JSON.stringify({
+        schemaVersion: 1,
+        playwrightVersion: '1.61.1',
+        nodeMajor: 24,
+        playwrightImage: `image@sha256:${'1'.repeat(64)}`,
+      })}\n`,
+    );
+    write('src/app.tsx', 'export const app = true;\n');
+    write('public/scripts/loading.js', 'window.loaded = true;\n');
+    write('config/routes.ts', 'export default [];\n');
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = true;\n',
+    );
+    write('.env', 'SUPABASE_URL=https://deploy-one.invalid\n');
+    write('.github/workflows/release-gate.yml', 'name: Release Gate\n');
+    const gitEnvironment = isolatedGitEnvironment();
+    expect(spawnSync('git', ['init', '-q'], { cwd: root, env: gitEnvironment }).status).toBe(0);
+    expect(
+      spawnSync('git', ['config', 'core.fileMode', 'true'], { cwd: root, env: gitEnvironment })
+        .status,
+    ).toBe(0);
+    expect(spawnSync('git', ['add', '.'], { cwd: root, env: gitEnvironment }).status).toBe(0);
+
+    const initial = controller.qualificationIdentity(root);
+    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.1' })}\n`);
+    write(
+      'package-lock.json',
+      `${JSON.stringify({
+        name: 'proof-fixture',
+        version: '1.0.1',
+        lockfileVersion: 3,
+        packages: { '': { name: 'proof-fixture', version: '1.0.1' } },
+      })}\n`,
+    );
+    expect(controller.qualificationIdentity(root)).toEqual(initial);
+
+    write('.env', 'SUPABASE_URL=https://deploy-two.invalid\n');
+    expect(controller.qualificationIdentity(root)).toEqual(initial);
+    write('.env', 'SUPABASE_URL=https://deploy-one.invalid\n');
+
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = false;\n',
+    );
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = true;\n',
+    );
+
+    fs.chmodSync(path.join(root, 'src/app.tsx'), 0o755);
+    expect(
+      spawnSync('git', ['add', 'src/app.tsx'], { cwd: root, env: gitEnvironment }).status,
+    ).toBe(0);
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    fs.chmodSync(path.join(root, 'src/app.tsx'), 0o644);
+    expect(
+      spawnSync('git', ['add', 'src/app.tsx'], { cwd: root, env: gitEnvironment }).status,
+    ).toBe(0);
+
+    write('public/scripts/loading.js', 'window.loaded = false;\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write('public/scripts/loading.js', 'window.loaded = true;\n');
+    write('config/routes.ts', 'export default [{ path: "/" }];\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write('config/routes.ts', 'export default [];\n');
+    write('.github/workflows/release-gate.yml', 'name: Mutated Release Gate\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
   });
 
   it('keeps the global login identity role-neutral while requiring explicit write authorization', () => {
@@ -371,6 +504,8 @@ describe('release E2E controller contracts', () => {
       /^mcr\.microsoft\.com\/playwright:v1\.61\.1-noble@sha256:[a-f0-9]{64}$/u,
     );
     expect(dockerfile).toContain(`ARG PLAYWRIGHT_IMAGE=${environment.playwrightImage}`);
+    expect(dockerfile).toContain('ARG E2E_FRONTEND_ENV=main');
+    expect(dockerfile).toContain('REACT_APP_ENV=${E2E_FRONTEND_ENV}');
     expect(dockerfile).toContain('npm ci --ignore-scripts');
     expect(dockerfile).toContain('node /tmp/verify-build-input.cjs');
     expect(controllerSource).toContain('org.tiangong.lca.next.package-json-sha256');
@@ -378,15 +513,18 @@ describe('release E2E controller contracts', () => {
     expect(controllerSource).not.toContain('lca-workspace');
     expect(controllerSource).toContain(`${'${runDirectory}'}:/e2e-output`);
     expect(controllerSource).toContain("E2E_RELEASE_MODE: 'true'");
+    expect(controllerSource).toContain(
+      'E2E_FRONTEND_ENV=${context.manifest.environment.frontendTarget}',
+    );
     expect(fs.readFileSync(path.resolve(process.cwd(), 'playwright.config.ts'), 'utf8')).toContain(
       'retries: releaseRun ? 0',
     );
-    expect(
-      fs.readFileSync(
-        path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
-        'utf8',
-      ),
-    ).toContain("E2E_RELEASE_MODE: 'true'");
+    const manualWorkflow = fs.readFileSync(
+      path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
+      'utf8',
+    );
+    expect(manualWorkflow).toContain('npm --silent run e2e:qualify');
+    expect(manualWorkflow).not.toContain("E2E_RELEASE_MODE: 'true'");
     expect(
       fs.readFileSync(path.resolve(process.cwd(), 'tests/e2e/i18n/evidence-reporter.ts'), 'utf8'),
     ).toContain('E2E_CANDIDATE_MANIFEST_PATH');
@@ -490,6 +628,24 @@ describe('release E2E isolated runtime inputs', () => {
     } finally {
       if (originalPath === undefined) delete process.env.E2E_TRACKED_MAIN_ENV_PATH;
       else process.env.E2E_TRACKED_MAIN_ENV_PATH = originalPath;
+    }
+  });
+
+  it('uses a deterministic non-production backend during semantic qualification', () => {
+    const originalQualification = process.env.E2E_QUALIFICATION;
+    const originalTrackedMainPath = process.env.E2E_TRACKED_MAIN_ENV_PATH;
+    process.env.E2E_QUALIFICATION = 'true';
+    process.env.E2E_TRACKED_MAIN_ENV_PATH = '/does/not/exist';
+    try {
+      expect(readVerifiedE2EBackendTarget()).toMatchObject({
+        origin: 'https://semantic-harness.invalid',
+        publishableKey: 'semantic-harness-public-key',
+      });
+    } finally {
+      if (originalQualification === undefined) delete process.env.E2E_QUALIFICATION;
+      else process.env.E2E_QUALIFICATION = originalQualification;
+      if (originalTrackedMainPath === undefined) delete process.env.E2E_TRACKED_MAIN_ENV_PATH;
+      else process.env.E2E_TRACKED_MAIN_ENV_PATH = originalTrackedMainPath;
     }
   });
 });

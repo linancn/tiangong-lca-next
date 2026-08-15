@@ -74,10 +74,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "cbcf80392fe057d8d3fbf852f16290d4a490a0d81ba928286bcab32e54943102",
-    "qualityDigest": "feda2c3db5dfe58a60c698822cdc8b66bab85a3c1583483621e8f808d9e14485",
+    "contextDigest": "b33ab8ac15e4bee3f6b264dd021dcdf59d87dbb1a9882344fe683a91ca978b9d",
+    "qualityDigest": "aa36b66122d30797f018a219294633cf6f15937f83d73a10e4074bc78bfbb8e2",
     "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e",
-    "routeViewCoverageDigest": "f0d812a92bb7c0f39948ee1301a2eb73415d8eb194763729d3819d28ff62b1d0",
+    "routeViewCoverageDigest": "134baf5f810bdfb469b07e0ecf241e6500b749c2e9925004916d99bde09cef98",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -100,17 +100,26 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": true,
+    "semanticRouteAndE2EContractReady": true,
+    "semanticRouteAndE2EReady": false,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": true,
+    "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [],
-  "activationDigest": "066e5bc24ee08e91b88c4e0c75c4c4c0b780303a900f810d31ccd6935b0d76a7"
+  "productionActivationBlockers": [
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#867"
+    }
+  ],
+  "activationDigest": "b755fa73c87ebda045cd831ad21db5913deb0d3d13326747f3bc0f26eea2edf9"
 }

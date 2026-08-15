@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -10,10 +9,7 @@ import type {
   TestResult,
 } from '@playwright/test/reporter';
 
-import {
-  formatCanonicalSemanticEvidence,
-  SEMANTIC_EVIDENCE_REPOSITORY_PATH,
-} from '../../../scripts/i18n/semantic-evidence-format';
+import { formatCanonicalSemanticEvidence } from '../../../scripts/i18n/semantic-evidence-format';
 
 export default class QualificationReporter implements Reporter {
   private assertionBrowsers = new Map<string, Set<string>>();
@@ -61,13 +57,14 @@ export default class QualificationReporter implements Reporter {
       );
     const outputDirectory = path.dirname(resultPath);
     await mkdir(outputDirectory, { recursive: true });
-    const evidence = JSON.parse(
-      readFileSync(path.join(this.root, SEMANTIC_EVIDENCE_REPOSITORY_PATH), 'utf8'),
-    );
+    const formatProbe = {
+      schemaVersion: 'tiangong.semantic-evidence-format-probe.v1',
+      status: 'qualification-format-check',
+    };
     const roundTripPath = path.join(outputDirectory, 'qualification-evidence-roundtrip.json');
     await writeFile(
       roundTripPath,
-      await formatCanonicalSemanticEvidence(evidence, this.root),
+      await formatCanonicalSemanticEvidence(formatProbe, this.root),
       'utf8',
     );
     await writeFile(

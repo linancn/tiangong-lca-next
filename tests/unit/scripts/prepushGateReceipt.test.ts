@@ -222,12 +222,20 @@ const checkedPush = (
   fixture: Fixture,
   remoteRef = 'refs/heads/main',
   env: Record<string, string> = {},
+  gateProfile?: string,
 ) => {
   const localRef = git(fixture.root, ['symbolic-ref', 'HEAD']);
   return run(
     fixture.root,
     'npm',
-    ['run', 'push:checked', '--', 'origin', `${localRef}:${remoteRef}`],
+    [
+      'run',
+      'push:checked',
+      '--',
+      ...(gateProfile ? ['--gate-profile', gateProfile] : []),
+      'origin',
+      `${localRef}:${remoteRef}`,
+    ],
     env,
   );
 };
@@ -235,6 +243,30 @@ const checkedPush = (
 const rawPush = (fixture: Fixture, remoteRef = 'refs/heads/main') => {
   const localRef = git(fixture.root, ['symbolic-ref', 'HEAD']);
   return run(fixture.root, 'git', ['push', 'origin', `${localRef}:${remoteRef}`]);
+};
+
+const prepareReleaseCandidate = (fixture: Fixture) => {
+  git(fixture.root, ['switch', '-c', 'codex/issue-867-version-v1.0.1', 'refs/remotes/origin/dev']);
+  const packagePath = path.join(fixture.root, 'package.json');
+  const lockPath = path.join(fixture.root, 'package-lock.json');
+  const packageDocument = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+  const lockDocument = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+  packageDocument.version = '1.0.1';
+  lockDocument.version = '1.0.1';
+  lockDocument.packages[''].version = '1.0.1';
+  writeJson(packagePath, packageDocument);
+  writeJson(lockPath, lockDocument);
+  git(fixture.root, ['add', 'package.json', 'package-lock.json']);
+  git(fixture.root, ['commit', '-m', 'prepare release candidate']);
+};
+
+const prepareImmutablePromotion = (fixture: Fixture) => {
+  git(fixture.root, [
+    'switch',
+    '-c',
+    'codex/promote-v1.0.0-dev-to-main-issue-867',
+    'refs/remotes/origin/dev',
+  ]);
 };
 
 const retryPush = (fixture: Fixture, args: string[] = []) =>
@@ -434,6 +466,56 @@ describe('bounded checked-push transport receipt', () => {
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
+  it('skips the checkpoint and gates for a raw ref deletion', () => {
+    const current = fixture();
+
+    const result = run(current.root, 'git', ['push', 'origin', '--delete', 'dev']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(
+      'Only ref deletions requested; skipped the checkpoint and gates.',
+    );
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current, 'refs/heads/dev')).toBe('');
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
+  it('accepts HEAD as the exact current-branch source for a managed push', () => {
+    const current = fixture();
+
+    const result = run(current.root, 'npm', [
+      'run',
+      'push:checked',
+      '--',
+      'origin',
+      'HEAD:refs/heads/main',
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(readGateLog(current)).toHaveLength(3);
+    expect(remoteSha(current)).toBe(current.head);
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
+  it('rejects an ineligible managed ref update before running either gate', () => {
+    const current = fixture();
+    git(current.root, ['tag', 'ineligible-managed-tag']);
+
+    const result = run(current.root, 'npm', [
+      'run',
+      'push:checked',
+      '--',
+      'origin',
+      'refs/tags/ineligible-managed-tag:refs/tags/ineligible-managed-tag',
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('checked push requires one eligible exact-HEAD branch update');
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current, 'refs/tags/ineligible-managed-tag')).toBe('');
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
   it('rejects a successful managed update when the hook returns no private payload', () => {
     const current = fixture();
     git(current.root, ['config', 'core.hooksPath', '.missing-hooks']);
@@ -565,6 +647,60 @@ describe('bounded checked-push transport receipt', () => {
       gate: 'docpact',
       args: ['--base', overridden.head, '--head', overridden.head],
     });
+  });
+
+  it('uses structural/static gates for an exact deterministic Release PR push', () => {
+    const current = fixture();
+    prepareReleaseCandidate(current);
+    const branchRef = 'refs/heads/codex/issue-867-version-v1.0.1';
+
+    expect(checkedPush(current, branchRef, {}, 'release-candidate').status).toBe(0);
+    expect(readGateLog(current).map(({ gate }) => gate)).toEqual(['docpact', 'release-preflight']);
+    expect(remoteSha(current, branchRef)).toBe(git(current.root, ['rev-parse', 'HEAD']));
+  });
+
+  it('rejects dependency drift hidden behind the release-candidate profile', () => {
+    const current = fixture();
+    prepareReleaseCandidate(current);
+    const lockPath = path.join(current.root, 'package-lock.json');
+    const lockDocument = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    lockDocument.packages['node_modules/hidden-drift'] = { version: '9.9.9' };
+    writeJson(lockPath, lockDocument);
+    git(current.root, ['add', 'package-lock.json']);
+    git(current.root, ['commit', '--amend', '--no-edit']);
+
+    const result = checkedPush(
+      current,
+      'refs/heads/codex/issue-867-version-v1.0.1',
+      {},
+      'release-candidate',
+    );
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(
+      'release-candidate profile permits only the package and lock root version fields',
+    );
+    expect(readGateLog(current)).toEqual([]);
+  });
+
+  it('uses structural/static gates for an exact immutable promotion push', () => {
+    const current = fixture();
+    prepareImmutablePromotion(current);
+    const branchRef = 'refs/heads/codex/promote-v1.0.0-dev-to-main-issue-867';
+
+    expect(checkedPush(current, branchRef, {}, 'immutable-promotion').status).toBe(0);
+    expect(readGateLog(current).map(({ gate }) => gate)).toEqual(['docpact', 'release-preflight']);
+    expect(remoteSha(current, branchRef)).toBe(current.devBase);
+  });
+
+  it('rejects a reduced gate profile on an arbitrary branch', () => {
+    const current = fixture();
+    const localRef = git(current.root, ['symbolic-ref', 'HEAD']);
+    const result = checkedPush(current, localRef, {}, 'release-candidate');
+
+    expect(result.status).not.toBe(0);
+    expect(readGateLog(current)).toEqual([]);
+    expect(result.stderr).toContain('deterministic version branch');
   });
 
   it('runs release preflight only for main-semantic branch pushes', () => {
