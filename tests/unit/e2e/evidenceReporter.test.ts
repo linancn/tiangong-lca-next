@@ -137,7 +137,7 @@ describe('i18n evidence reporter', () => {
       `${JSON.stringify({
         candidate: { evidenceIdentity: identity },
         kind: 'tiangong-next-release-e2e-candidate',
-        schemaVersion: 3,
+        schemaVersion: 4,
       })}\n`,
     );
     const originalManifestPath = process.env.E2E_CANDIDATE_MANIFEST_PATH;

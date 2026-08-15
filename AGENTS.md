@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: release proof is external, content-addressed, mandatory before main merge, and never written by version orchestration.'
+lastReviewedCommit: 2f4cad4bcf738aae2fb965d3d7ad49fce8832513
+lastReviewedNote: 'Reviewed for Next Issue #867: release proof remains external and content-addressed, while closed qualification is independent of deployment configuration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

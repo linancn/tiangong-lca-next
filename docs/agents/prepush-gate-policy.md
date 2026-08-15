@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: local pushes remain browser-free while main-target PRs own aggregate content-addressed proof.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: local pushes remain browser-free and reusable closed-simulator proof excludes deployment-only environment drift.'
 ---
 
 # Pre-Push Gate Policy
@@ -73,7 +73,7 @@ Docs-impact screenshot execution is an isolated workspace tooling surface. Next 
 
 Routine locale and pre-push checks validate the external-proof contract without requiring a browser artifact in the checkout. Exact browser execution is enforced by the main-target aggregate Release Gate. If a local operator supplies external authenticated evidence to the explicit production-readiness command, current backend, executable package-lock semantics, runtime assets, semantic tests, and route/source digests must match exactly; only root application release-version fields are normalized in the package-lock comparison.
 
-Qualification reuse is content-addressed and computed from current inputs; it is never granted through a tracked digest compatibility or waiver file. A behavior-key hit still passes proof verification before reuse. Any behavior-affecting drift changes the key and runs the full qualification.
+Qualification reuse is content-addressed and computed from current inputs; it is never granted through a tracked digest compatibility or waiver file. The closed simulator uses its fixed non-production backend profile, so deployment-only `.env` drift does not invalidate semantic proof. Source, harness, shared-helper, Git mode/type, or pinned browser-environment drift does. A behavior-key hit still passes proof verification before reuse.
 
 ## Scope
 

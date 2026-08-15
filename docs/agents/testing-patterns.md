@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: proof reuse is computed from behavior inputs and external artifacts, never maintained with source hashes.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: reusable qualification proof uses deterministic non-production configuration and a closed behavior-input identity.'
 ---
 
 # Testing Patterns Reference
@@ -129,7 +129,7 @@ Browser semantic E2E pattern:
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
 - normal release orchestration keeps version mutation and browser proof separate: `release:to-dev --apply` runs static preflight and writes no proof, while the `main`-target PR runs the aggregate Release Gate before merge
-- local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; root version-only changes preserve the key, while behavior-affecting inputs invalidate it
+- local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it
 - release-workflow unit fixtures must prove release-to-dev never invokes browser qualification or writes tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
 - publication-workflow contract tests must prove proof reuse can pass an intentionally skipped full-gate ancestor with `!cancelled()`, while every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics

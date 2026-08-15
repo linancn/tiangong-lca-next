@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: current release proof uses one aggregate pre-merge boundary and no tracked proof-maintenance queue.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: current qualification proof uses a fixed non-production backend identity and no tracked proof-maintenance queue.'
 ---
 
 # Testing Execution State
@@ -74,7 +74,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - Issue #688 makes semantic evidence and locale summaries deterministic at the writer boundary: evidence is emitted in canonical JSON, all locale summaries are generated once in dependency order, and the isolated double-generation check requires the second run to preserve the exact Git diff
 - Issue #688 also adds compact Agent/CI full-gate output while retaining complete Jest stdout/stderr and structured results under `.local/test-logs/**`; the Release Gate uploads those files for seven days on success or failure
-- qualification reuse is content-addressed from behavior inputs and browser environment, with no tracked receipt, evidence, compatibility, or waiver hash file
+- qualification reuse is content-addressed from behavior inputs, shared helpers, Git mode/type, and the browser environment; its fixed `.invalid` simulator profile excludes deployment-only `.env`, and no tracked receipt, evidence, compatibility, or waiver hash file exists
 - main-target PRs run the aggregate reusable Release Gate against their exact base/head and emit a 30-day exact proof only after static/full tests, semantic qualification, and public three-browser semantics all succeed; main-semantic local pushes add static `release:preflight` between Docpact and the full test gate
 - a canonical version-changing `main` push reuses that proof only when the exact merged PR, two parents, candidate tree, successful job, run attempt, and artifact payload all match; direct/squash/rebase merges, changed trees, expired or missing proof, API failure, manual tags, and recovery dispatches automatically run the full Release Gate
 - release qualification delegates the complete Jest inventory to one `prepush:gate` lane and runs content-addressed semantic qualification plus public browser semantics in parallel; tag creation waits for the aggregate result, and post-merge reuses only the exact unchanged-tree PR proof

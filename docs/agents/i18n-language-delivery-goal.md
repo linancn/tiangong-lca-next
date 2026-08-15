@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: semantic browser proof is external, content-addressed, and aggregated before main merge.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: closed semantic qualification uses deterministic non-production configuration, separate from deployment-target evidence.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -626,7 +626,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
-browser proof 不进入 Git。`main`-target PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。根应用 release version metadata 不进入行为 key；source、public asset、config、runtime、test 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
+browser proof 不进入 Git。`main`-target PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
 
 显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代 release aggregate proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 

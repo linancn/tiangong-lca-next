@@ -16,12 +16,13 @@ const RECEIPT_KEY_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.key');
 const INVOCATION_LOCK_PATH = path.join(RUNTIME_ROOT, 'invocation.lock');
 const ENVIRONMENT_MANIFEST_PATH = path.join(RUNTIME_ROOT, 'environment-manifest.json');
 const DEFAULT_QUALIFICATION_PROOF_PATH = path.join(RUNTIME_ROOT, 'qualification-proof.json');
-const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v2';
+const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v3';
 const ENVIRONMENT_CONTRACT_RELATIVE_PATH = 'docker/e2e/environment.json';
 const DOCKERFILE_RELATIVE_PATH = 'docker/e2e/Dockerfile';
+const QUALIFICATION_ENVIRONMENT_RELATIVE_PATH = 'docker/e2e/qualification.env';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const RECEIPT_SCHEMA_VERSION = 5;
-const MANIFEST_SCHEMA_VERSION = 3;
+const MANIFEST_SCHEMA_VERSION = 4;
 const REPORT_SCHEMA_VERSION = 2;
 const CANONICAL_REPOSITORY = 'linancn/tiangong-lca-next';
 const IMAGE_LABEL = 'org.tiangong.lca.next.release-e2e';
@@ -852,7 +853,7 @@ function requireCleanCommittedCandidate() {
   };
 }
 
-function createCandidateBuildContext(candidate, environment, runId) {
+function createCandidateBuildContext(candidate, environment, runId, options = {}) {
   const directory = path.join(BUILD_ROOT, runId);
   fs.rmSync(directory, { recursive: true, force: true });
   fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -897,6 +898,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
     });
   }
 
+  const frontendTarget = options.qualification ? 'qualification' : 'main';
   const manifest = {
     kind: 'tiangong-next-release-e2e-candidate',
     schemaVersion: MANIFEST_SCHEMA_VERSION,
@@ -923,6 +925,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
     environment: {
       contractSha256: sha256(environmentRaw),
       dockerfileSha256: sha256(dockerfileRaw),
+      frontendTarget,
       nodeMajor: committedEnvironment.nodeMajor,
       playwrightImage: committedEnvironment.playwrightImage,
       playwrightVersion: committedEnvironment.playwrightVersion,
@@ -936,7 +939,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
   };
   const manifestText = jsonText(manifest);
   const manifestSha256 = sha256(manifestText);
-  const imageTag = `tiangong-lca-next-e2e:${candidate.tree.slice(0, 12)}-${manifest.environment.contractSha256.slice(0, 12)}`;
+  const imageTag = `tiangong-lca-next-e2e:${candidate.tree.slice(0, 12)}-${manifest.environment.contractSha256.slice(0, 12)}-${frontendTarget}`;
 
   writeBuildFile(path.join(directory, 'package.json'), packageJsonRaw, 0o600);
   writeBuildFile(path.join(directory, 'package-lock.json'), packageLockRaw, 0o600);
@@ -983,6 +986,8 @@ function ensureCandidateImage(context, environment, options = {}) {
     `org.tiangong.lca.next.manifest-sha256=${context.manifestSha256}`,
     '--build-arg',
     `PLAYWRIGHT_IMAGE=${environment.contract.playwrightImage}`,
+    '--build-arg',
+    `E2E_FRONTEND_ENV=${context.manifest.environment.frontendTarget}`,
   ];
   if (options.offline) args.push('--network=none');
   args.push(context.directory);
@@ -1048,34 +1053,80 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
     'public',
     'config',
     'tests/e2e/i18n',
+    'tests/data-workflows/workflows/workflow-shared.ts',
     'scripts/e2e',
     'scripts/i18n/check-semantic-evidence-format.mjs',
     'scripts/i18n/semantic-evidence-format.ts',
     'docker/e2e',
     '.github/workflows/release-gate.yml',
     'playwright.config.ts',
-    '.env',
     '.nvmrc',
     'tsconfig.json',
     'docs/plans/i18n/route-view-coverage.json',
     'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   ];
-  const files = git(['ls-files', '--', ...pathPrefixes], { cwd: repositoryRoot })
-    .split(/\r?\n/u)
+  const trackedEntries = runCapture('git', ['ls-files', '--stage', '-z', '--', ...pathPrefixes], {
+    cwd: repositoryRoot,
+    env: isolatedGitEnvironment(),
+  }).stdout
+    .split('\0')
     .filter(Boolean)
-    .sort();
+    .map((line) => {
+      const match = /^([0-7]{6}) ([0-9a-f]+) ([0-3])\t([\s\S]+)$/u.exec(line);
+      if (!match || match[3] !== '0') {
+        throw new ReleaseE2EError('Qualification inputs contain an unsupported Git index entry.', {
+          exitCode: EXIT.CANDIDATE,
+          failureCode: 'E2E_QUALIFICATION_GIT_ENTRY_INVALID',
+          phase: 'candidate',
+        });
+      }
+      const [, mode, objectId, , file] = match;
+      const type = mode === '120000' ? 'symlink' : mode === '160000' ? 'gitlink' : 'blob';
+      let contents;
+      if (type === 'symlink') {
+        contents = Buffer.from(fs.readlinkSync(path.join(repositoryRoot, file)), 'utf8');
+      } else if (type === 'gitlink') {
+        contents = Buffer.from(objectId, 'utf8');
+      } else {
+        contents = fs.readFileSync(path.join(repositoryRoot, file));
+      }
+      return { mode, path: file, sha256: sha256(contents), type };
+    })
+    .sort((left, right) => left.path.localeCompare(right.path, 'en'));
   const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json')));
   const packageLock = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package-lock.json')));
   delete packageJson.version;
   delete packageLock.version;
   if (packageLock.packages?.['']) delete packageLock.packages[''].version;
-  const entries = files.map((file) => ({
-    path: file,
-    sha256: sha256(fs.readFileSync(path.join(repositoryRoot, file))),
-  }));
+  const packageEntries = runCapture(
+    'git',
+    ['ls-files', '--stage', '--', 'package.json', 'package-lock.json'],
+    { cwd: repositoryRoot, env: isolatedGitEnvironment() },
+  ).stdout
+    .trim()
+    .split(/\r?\n/u)
+    .map((line) => {
+      const match = /^([0-7]{6}) [0-9a-f]+ 0\t(.+)$/u.exec(line);
+      if (!match) throw new Error(`Invalid package Git index entry: ${line}`);
+      return { mode: match[1], path: match[2], type: 'blob' };
+    });
+  const packageEntry = (packagePath) => {
+    const entry = packageEntries.find(({ path: entryPath }) => entryPath === packagePath);
+    if (!entry) throw new Error(`Missing tracked qualification input: ${packagePath}`);
+    return entry;
+  };
+  const entries = [...trackedEntries];
   entries.push(
-    { path: 'package.json#without-version', sha256: sha256(jsonText(packageJson)) },
-    { path: 'package-lock.json#without-root-version', sha256: sha256(jsonText(packageLock)) },
+    {
+      ...packageEntry('package.json'),
+      path: 'package.json#without-version',
+      sha256: sha256(jsonText(packageJson)),
+    },
+    {
+      ...packageEntry('package-lock.json'),
+      path: 'package-lock.json#without-root-version',
+      sha256: sha256(jsonText(packageLock)),
+    },
   );
   return sha256(jsonText(entries));
 }
@@ -1360,9 +1411,11 @@ function prepareRuntimeInputs(context, options, runDirectory) {
   const trackedMainEnvironmentPath = path.join(inputDirectory, 'tracked-main.env');
   let trackedMainEnvironment;
   try {
-    trackedMainEnvironment = git(['show', 'origin/main:.env']);
+    trackedMainEnvironment = options.qualification
+      ? fs.readFileSync(path.join(REPOSITORY_ROOT, QUALIFICATION_ENVIRONMENT_RELATIVE_PATH), 'utf8')
+      : `${git(['show', 'origin/main:.env'])}\n`;
   } catch (error) {
-    throw new ReleaseE2EError('The tracked origin/main production environment is unavailable.', {
+    throw new ReleaseE2EError('The selected E2E backend environment is unavailable.', {
       cause: error,
       exitCode: EXIT.CANDIDATE,
       failureCode: 'E2E_TRACKED_MAIN_ENVIRONMENT_UNAVAILABLE',
@@ -1370,7 +1423,7 @@ function prepareRuntimeInputs(context, options, runDirectory) {
       nextCommand: 'git fetch origin main',
     });
   }
-  writeBuildFile(trackedMainEnvironmentPath, `${trackedMainEnvironment}\n`, 0o600);
+  writeBuildFile(trackedMainEnvironmentPath, trackedMainEnvironment, 0o600);
 
   let usersEnvFile;
   if (options.authenticated) {
@@ -1493,7 +1546,7 @@ function runRelease(options, state = {}) {
   const runId = makeRunId(candidate);
   let context;
   try {
-    context = createCandidateBuildContext(candidate, environment, runId);
+    context = createCandidateBuildContext(candidate, environment, runId, options);
   } catch (error) {
     fs.rmSync(path.join(BUILD_ROOT, runId), { recursive: true, force: true });
     throw error;

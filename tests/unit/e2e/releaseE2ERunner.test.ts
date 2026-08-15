@@ -7,7 +7,10 @@ import {
   loadUsersConfig,
   pickCredentialByRole,
 } from '../../data-workflows/workflows/workflow-shared';
-import { readVerifiedProductionBackendTarget } from '../../e2e/i18n/production-backend-target';
+import {
+  readVerifiedE2EBackendTarget,
+  readVerifiedProductionBackendTarget,
+} from '../../e2e/i18n/production-backend-target';
 
 const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
   QUALIFICATION_PROOF_SCHEMA_VERSION: string;
@@ -195,9 +198,18 @@ describe('release E2E controller contracts', () => {
     write('src/app.tsx', 'export const app = true;\n');
     write('public/scripts/loading.js', 'window.loaded = true;\n');
     write('config/routes.ts', 'export default [];\n');
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = true;\n',
+    );
+    write('.env', 'SUPABASE_URL=https://deploy-one.invalid\n');
     write('.github/workflows/release-gate.yml', 'name: Release Gate\n');
     const gitEnvironment = isolatedGitEnvironment();
     expect(spawnSync('git', ['init', '-q'], { cwd: root, env: gitEnvironment }).status).toBe(0);
+    expect(
+      spawnSync('git', ['config', 'core.fileMode', 'true'], { cwd: root, env: gitEnvironment })
+        .status,
+    ).toBe(0);
     expect(spawnSync('git', ['add', '.'], { cwd: root, env: gitEnvironment }).status).toBe(0);
 
     const initial = controller.qualificationIdentity(root);
@@ -212,6 +224,30 @@ describe('release E2E controller contracts', () => {
       })}\n`,
     );
     expect(controller.qualificationIdentity(root)).toEqual(initial);
+
+    write('.env', 'SUPABASE_URL=https://deploy-two.invalid\n');
+    expect(controller.qualificationIdentity(root)).toEqual(initial);
+    write('.env', 'SUPABASE_URL=https://deploy-one.invalid\n');
+
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = false;\n',
+    );
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write(
+      'tests/data-workflows/workflows/workflow-shared.ts',
+      'export const sharedWorkflow = true;\n',
+    );
+
+    fs.chmodSync(path.join(root, 'src/app.tsx'), 0o755);
+    expect(
+      spawnSync('git', ['add', 'src/app.tsx'], { cwd: root, env: gitEnvironment }).status,
+    ).toBe(0);
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    fs.chmodSync(path.join(root, 'src/app.tsx'), 0o644);
+    expect(
+      spawnSync('git', ['add', 'src/app.tsx'], { cwd: root, env: gitEnvironment }).status,
+    ).toBe(0);
 
     write('public/scripts/loading.js', 'window.loaded = false;\n');
     expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
@@ -468,6 +504,8 @@ describe('release E2E controller contracts', () => {
       /^mcr\.microsoft\.com\/playwright:v1\.61\.1-noble@sha256:[a-f0-9]{64}$/u,
     );
     expect(dockerfile).toContain(`ARG PLAYWRIGHT_IMAGE=${environment.playwrightImage}`);
+    expect(dockerfile).toContain('ARG E2E_FRONTEND_ENV=main');
+    expect(dockerfile).toContain('REACT_APP_ENV=${E2E_FRONTEND_ENV}');
     expect(dockerfile).toContain('npm ci --ignore-scripts');
     expect(dockerfile).toContain('node /tmp/verify-build-input.cjs');
     expect(controllerSource).toContain('org.tiangong.lca.next.package-json-sha256');
@@ -475,6 +513,9 @@ describe('release E2E controller contracts', () => {
     expect(controllerSource).not.toContain('lca-workspace');
     expect(controllerSource).toContain(`${'${runDirectory}'}:/e2e-output`);
     expect(controllerSource).toContain("E2E_RELEASE_MODE: 'true'");
+    expect(controllerSource).toContain(
+      'E2E_FRONTEND_ENV=${context.manifest.environment.frontendTarget}',
+    );
     expect(fs.readFileSync(path.resolve(process.cwd(), 'playwright.config.ts'), 'utf8')).toContain(
       'retries: releaseRun ? 0',
     );
@@ -587,6 +628,24 @@ describe('release E2E isolated runtime inputs', () => {
     } finally {
       if (originalPath === undefined) delete process.env.E2E_TRACKED_MAIN_ENV_PATH;
       else process.env.E2E_TRACKED_MAIN_ENV_PATH = originalPath;
+    }
+  });
+
+  it('uses a deterministic non-production backend during semantic qualification', () => {
+    const originalQualification = process.env.E2E_QUALIFICATION;
+    const originalTrackedMainPath = process.env.E2E_TRACKED_MAIN_ENV_PATH;
+    process.env.E2E_QUALIFICATION = 'true';
+    process.env.E2E_TRACKED_MAIN_ENV_PATH = '/does/not/exist';
+    try {
+      expect(readVerifiedE2EBackendTarget()).toMatchObject({
+        origin: 'https://semantic-harness.invalid',
+        publishableKey: 'semantic-harness-public-key',
+      });
+    } finally {
+      if (originalQualification === undefined) delete process.env.E2E_QUALIFICATION;
+      else process.env.E2E_QUALIFICATION = originalQualification;
+      if (originalTrackedMainPath === undefined) delete process.env.E2E_TRACKED_MAIN_ENV_PATH;
+      else process.env.E2E_TRACKED_MAIN_ENV_PATH = originalTrackedMainPath;
     }
   });
 });

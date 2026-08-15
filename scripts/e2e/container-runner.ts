@@ -13,7 +13,7 @@ import {
   waitForCandidateFrontendReady,
 } from '../../tests/e2e/i18n/candidate-readiness';
 import { PLAYWRIGHT_BROWSER_PROJECTS } from '../../tests/e2e/i18n/contracts';
-import { readVerifiedProductionBackendTarget } from '../../tests/e2e/i18n/production-backend-target';
+import { readVerifiedE2EBackendTarget } from '../../tests/e2e/i18n/production-backend-target';
 import {
   cleanupCodexE2EProcess,
   readProductionDataLedger,
@@ -52,6 +52,7 @@ type CandidateManifest = {
   environment: {
     contractSha256: string;
     dockerfileSha256: string;
+    frontendTarget: 'main' | 'qualification';
     nodeMajor: number;
     playwrightImage: string;
     playwrightVersion: string;
@@ -234,7 +235,7 @@ async function verifyCandidateIdentity(
 ): Promise<Record<string, unknown>> {
   if (
     manifest.kind !== 'tiangong-next-release-e2e-candidate' ||
-    manifest.schemaVersion !== 3 ||
+    manifest.schemaVersion !== 4 ||
     manifest.repository?.canonical !== 'linancn/tiangong-lca-next' ||
     manifest.repository?.packageName !== 'tiangong-lca-next'
   ) {
@@ -277,7 +278,9 @@ async function verifyCandidateIdentity(
   if (
     manifest.environment.playwrightImage !== environment.playwrightImage ||
     manifest.environment.playwrightVersion !== environment.playwrightVersion ||
-    manifest.environment.nodeMajor !== environment.nodeMajor
+    manifest.environment.nodeMajor !== environment.nodeMajor ||
+    manifest.environment.frontendTarget !==
+      (process.env.E2E_QUALIFICATION === 'true' ? 'qualification' : 'main')
   ) {
     throw new Error('Candidate manifest and environment contract differ.');
   }
@@ -350,7 +353,7 @@ async function readCandidateServerIdentity(
 async function verifyRoleNeutralAuthentication(): Promise<Record<string, string>> {
   const [credential, backendTarget] = await Promise.all([
     loadE2ECredential(),
-    Promise.resolve(readVerifiedProductionBackendTarget()),
+    Promise.resolve(readVerifiedE2EBackendTarget()),
   ]);
   sensitiveValues.add(credential.email);
   sensitiveValues.add(credential.password);
@@ -603,17 +606,22 @@ async function main(): Promise<number> {
         resolveCandidateReadinessBrowserName(process.env.E2E_READINESS_BROWSER),
       ),
     );
-    await check('safety.production-backend-target', () => {
-      const target = readVerifiedProductionBackendTarget();
-      sensitiveValues.add(target.publishableKey);
-      return {
-        candidateEnvironmentSha256: target.candidateEnvironmentSha256,
-        origin: target.origin,
-        originSha256: target.originSha256,
-        publishableKeySha256: target.publishableKeySha256,
-        trackedMainEnvironmentSha256: target.trackedMainEnvironmentSha256,
-      };
-    });
+    await check(
+      process.env.E2E_QUALIFICATION === 'true'
+        ? 'safety.qualification-backend-target'
+        : 'safety.production-backend-target',
+      () => {
+        const target = readVerifiedE2EBackendTarget();
+        sensitiveValues.add(target.publishableKey);
+        return {
+          candidateEnvironmentSha256: target.candidateEnvironmentSha256,
+          origin: target.origin,
+          originSha256: target.originSha256,
+          publishableKeySha256: target.publishableKeySha256,
+          trackedMainEnvironmentSha256: target.trackedMainEnvironmentSha256,
+        };
+      },
+    );
     if (process.env.E2E_AUTHENTICATED === 'true' && process.env.E2E_QUALIFICATION !== 'true') {
       await check('auth.role-neutral-login', verifyRoleNeutralAuthentication);
     } else {

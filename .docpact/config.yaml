@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-15"
-lastReviewedCommit: "80064ce51904c5d29aa7c0ce9f174355e746b72b"
-lastReviewedNote: 'Reviewed for Next Issue #820: refreshing v0.0.73 provenance-bound production evidence and qualification artifacts does not change the repository routing contract.'
+lastReviewedCommit: "2f4cad4bcf738aae2fb965d3d7ad49fce8832513"
+lastReviewedNote: 'Reviewed for Next Issue #867: deterministic qualification configuration and expanded proof inputs remain covered by the existing environment and testing routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

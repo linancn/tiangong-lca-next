@@ -65,7 +65,27 @@ describe('supabase frontend env resolution (config/supabaseEnv.ts)', () => {
     });
   });
 
-  it('overrides existing runtime Supabase keys with the selected frontend env files', () => {
+  it('uses the deterministic qualification backend instead of a deploy target', () => {
+    fs.mkdirSync(path.join(tempDir, 'docker/e2e'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tempDir, 'docker/e2e/qualification.env'),
+      'SUPABASE_URL=https://semantic-harness.invalid\nSUPABASE_PUBLISHABLE_KEY=harness-key\n',
+    );
+
+    const { applySupabaseFrontendEnv } = require('../../../config/supabaseEnv');
+
+    process.env.SUPABASE_URL = 'https://ambient-deployment.invalid';
+    process.env.SUPABASE_PUBLISHABLE_KEY = 'ambient-deployment-key';
+
+    expect(applySupabaseFrontendEnv(tempDir, 'qualification')).toEqual({
+      SUPABASE_URL: 'https://semantic-harness.invalid',
+      SUPABASE_PUBLISHABLE_KEY: 'harness-key',
+    });
+    expect(process.env.SUPABASE_URL).toBe('https://semantic-harness.invalid');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('harness-key');
+  });
+
+  it('lets explicit build environment keys override repository defaults', () => {
     fs.writeFileSync(
       path.join(tempDir, '.env'),
       'SUPABASE_URL=https://main.supabase.co\nSUPABASE_PUBLISHABLE_KEY=main-key\n',
@@ -82,8 +102,8 @@ describe('supabase frontend env resolution (config/supabaseEnv.ts)', () => {
 
     applySupabaseFrontendEnv(tempDir, 'dev');
 
-    expect(process.env.SUPABASE_URL).toBe('https://dev.supabase.co');
-    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('dev-key');
+    expect(process.env.SUPABASE_URL).toBe('https://unexpected.supabase.co');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('unexpected-key');
   });
 
   it('falls back to existing runtime Supabase keys when the selected env files omit them', () => {

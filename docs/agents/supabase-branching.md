@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: 8c735ca300f4505f436df2d1f2db4f7adc830e39
-lastReviewedNote: 'Reviewed for Next Issue #820 on the current queue/LCIA baseline: stable dataset submission carries no Gate assertion, the Review Admin diagnostic uses a separate authenticated Edge boundary, and Database remains authoritative for queue filtering and pagination.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: explicit build environment values override repository defaults, while closed semantic qualification uses a deterministic non-production backend profile.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -63,6 +63,8 @@ Rules:
 
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
+- explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults; selected `.env*` files are fallback configuration, not an immutable deployment target
+- closed semantic qualification builds with `REACT_APP_ENV=qualification` and `docker/e2e/qualification.env`; this fixed `.invalid` target is intercepted completely and is never a production or deployable backend identity
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - the shared shipped client defaults to `db.schema = api`; non-core reads use Database-owned query facades and mutations use established command/Edge boundaries
 - browser startup reads `api.qry_system_status()` once before authentication through `src/services/general/systemStatus.ts`; `APP_RUNTIME_CONFIG_ENABLED` defaults to enabled, and only an explicit case-insensitive `false` skips the RPC and continues with the normal status; maintenance and verification phases render the localized app-shell boundary, while an unavailable or malformed control response fails open to normal startup and is checked again only after a full page refresh
@@ -81,7 +83,7 @@ Rules:
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
 - Process keyword searches call `search_processes` through `src/services/processes/api.ts`, pass explicit query terms, and use no app-side ILIKE field filter. The `public_plus_owner_draft` picker asks the database for actor-owned state-zero drafts and public rows separately; database-engine owns actor/state eligibility, latest-version selection, workflow metadata, and `search_text` index constraints
 - LCA solve, result-query, and contribution-path requests use the shared `LcaScope` contract from `src/services/lca/scope.ts`. The default snapshot family is `full_library`; `data_product` is the only alternate value. Deployment names and cache namespaces are not valid LCA scope values, and persisted task recovery normalizes historical non-canonical values before resubmission
-- the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger
+- the authenticated production-backed semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger. Closed qualification is a separate credential-free simulator and never reads tracked `main` environment configuration
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
 
@@ -98,7 +100,7 @@ Rules:
 | database schema-boundary cutover | pair the exact Database and Edge revisions, default shipped RPC calls to `api`, route only the nine public core entities through `publicEntity()`, audit every literal RPC against the Database facade catalog, and run the schema-boundary plus data-workflow proof |
 | self-hosted Edge Function mirror refresh | first review and promote the owning Edge commit, then run the Next helper with that full SHA, verify byte-for-byte parity/source receipt/stale deletion, and require a no-diff second run |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
-| semantic localization release evidence | run the local candidate with the tracked `main` backend only inside the guarded Playwright workflow; use user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |
+| semantic localization release evidence | use fixed non-production configuration for closed qualification; run the separate authenticated local candidate against tracked `main` only when production-backed evidence is explicitly required, with user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |
 
 ## Database-Side Webhook Secrets
 

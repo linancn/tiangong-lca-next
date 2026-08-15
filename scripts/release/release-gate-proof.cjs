@@ -17,7 +17,7 @@ const PROOF_SCOPE = Object.freeze([
   'public-browser-semantics',
 ]);
 const PROOF_FILE_NAME = 'release-gate-proof.json';
-const SHA_PATTERN = /^[0-9a-f]{40}$/u;
+const GIT_OBJECT_ID_PATTERN = /^[0-9a-f]{40}$/u;
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
 const MAX_CAPTURE_BYTES = 8 * 1024 * 1024;
 
@@ -46,7 +46,7 @@ function requireText(value, name) {
 
 function requireSha(value, name) {
   const sha = requireText(value, name);
-  if (!SHA_PATTERN.test(sha)) {
+  if (!GIT_OBJECT_ID_PATTERN.test(sha)) {
     fail('invalid_sha', `${name} must be a full lowercase 40-character commit SHA.`, {
       argument: name,
       value: sha,

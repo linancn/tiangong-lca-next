@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: testing strategy now separates fast local gates from mandatory content-addressed pre-merge browser proof.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: semantic proof now separates deterministic simulator behavior from deployment-target configuration.'
 ---
 
 # Testing Strategy
@@ -48,7 +48,7 @@ lastReviewedNote: 'Reviewed for Next Issue #867: testing strategy now separates 
 - the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and external digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes
 - production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; GitHub Actions runs only credential-free qualification plus the read-only browser matrix on demand and in the main-target aggregate gate. Host `CI`/`GITHUB_ACTIONS` rejects production-data mode before Docker; an authorized local closure still requires authenticated mode, two explicit production-write guards, a separate verified-evidence opt-in, intent before create, UUID/owner/five-field marker verification before delete, and `created=cleaned`, `leaked=0`
 - local release proof now treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
-- semantic-harness qualification is content-addressed credential-free proof owned by the main-target PR gate; canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, so moving or adding a workflow below a subdirectory cannot silently escape qualification. `release:to-dev --apply` runs no browser and writes no proof. Root version-only metadata is normalized out of the behavior key, while source/public/config/runtime/test or environment-contract drift forces a fresh run
+- semantic-harness qualification is content-addressed credential-free proof owned by the main-target PR gate; it builds against a fixed `.invalid` backend profile and intercepts every backend request, so deployment-target `.env` is not part of the semantic identity. Canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, while the key also covers shared helpers plus Git mode/type. `release:to-dev --apply` runs no browser and writes no proof. Root version-only and deployment-only metadata are normalized out; actual source/public/config/runtime/test or environment-contract drift forces a fresh run
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests

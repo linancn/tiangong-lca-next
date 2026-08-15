@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d475ccfe
-lastReviewedNote: 'Reviewed for Next Issue #867: static preflight and aggregate pre-merge browser proof have separate, explicit validation semantics.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: closed qualification uses deterministic non-production configuration and excludes deployment-only environment drift from its reusable behavior proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -107,7 +107,7 @@ The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is one creden
 
 The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Before Docker execution, the host controller rejects production-data mode whenever `CI` or `GITHUB_ACTIONS` is set. Only after that local check passes does it override the release image's inherited CI markers to empty inside the container; the container's safety check remains unchanged. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified external evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
 
-For a normal release, `release:to-dev --apply` changes only version metadata plus bounded Docpact review metadata and runs `release:static-preflight`; it never runs browsers or changes proof files. The `dev -> main` PR is the mandatory browser-proof boundary. Its reusable aggregate Release Gate runs static/full tests, content-addressed semantic qualification, and the public three-browser matrix before merge. Qualification proof is external to Git, keyed by behavior-affecting inputs and the browser environment contract, and stored only in ignored local state, Actions cache, or Actions artifacts. Root application version metadata is normalized out of the key; any behavior-affecting source, public asset, config, runtime, test, or environment-contract change forces a fresh qualification.
+For a normal release, `release:to-dev --apply` changes only version metadata plus bounded Docpact review metadata and runs `release:static-preflight`; it never runs browsers or changes proof files. The `dev -> main` PR is the mandatory browser-proof boundary. Its reusable aggregate Release Gate runs static/full tests, content-addressed semantic qualification, and the public three-browser matrix before merge. Qualification builds against the fixed `.invalid` profile in `docker/e2e/qualification.env`, intercepts every backend request, and never reads deployment `.env` or `origin/main:.env`. Its external proof key covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime/test inputs, and the browser environment contract. Deployment-only `.env` and root application version metadata are excluded. The separate authenticated local closure continues to verify its real candidate target against tracked `main`.
 
 The full route/view proof has 49 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
 

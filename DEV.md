@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
-lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 evidence refresh, qualification, and release preflight use the existing bootstrap workflow without changing local setup commands.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: semantic qualification uses deterministic non-production configuration and deployment env remains separately selectable.'
 ---
 
 # Development Bootstrap
@@ -152,7 +152,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 
 For the normal deterministic flow, `release:to-dev --apply` changes only the three root version fields plus bounded Docpact review metadata and runs `release:static-preflight`. It does not run browsers and never writes proof into the branch. The `dev -> main` PR is the proof boundary: the reusable Release Gate runs static/full tests, content-addressed semantic qualification against the closed simulator, and the public Chromium/Firefox/WebKit matrix before merge. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. Unknown simulator requests, external origins, and production writes fail the qualification.
 
-Qualification identity is derived from behavior-affecting source, public assets, config, runtime contracts, and the browser environment contract. Root release-version metadata is normalized out, so a version-only release may reuse an exact behavior-equivalent proof. Any behavior-affecting input changes the key and forces a new run. Proof lives only under ignored `.local/e2e-release/**`, in the GitHub Actions cache, or as a 30-day Actions artifact; source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
+Qualification builds with the fixed non-production profile in `docker/e2e/qualification.env`; it never reads or connects to the deployment target in `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime contracts, and the browser environment contract. Deployment-only `.env` and root release-version metadata are excluded, so those changes may reuse an exact behavior-equivalent proof; changing a real qualification input forces a new run. Proof lives only under ignored `.local/e2e-release/**`, in the GitHub Actions cache, or as a 30-day Actions artifact; source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
 
 After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 
