@@ -199,6 +199,14 @@ const releaseInput = () => ({
 });
 
 describe('release gate proof', () => {
+  it('defines one static gate and one hermetic semantic qualification as the proof scope', () => {
+    expect(proofModule.PROOF_SCHEMA_VERSION).toBe('tiangong.next.release-gate-proof.v4');
+    expect(proofModule.PROOF_SCOPE).toEqual([
+      'static-release-gate',
+      'content-addressed-semantic-qualification',
+    ]);
+  });
+
   it('binds proof identity to the main/dev bases, candidate tree, version, run, and attempt', () => {
     expect(exactProof()).toEqual({
       schema_version: proofModule.PROOF_SCHEMA_VERSION,
