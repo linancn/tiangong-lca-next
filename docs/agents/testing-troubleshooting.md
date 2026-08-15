@@ -27,9 +27,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
-lastReviewedNote: 'Reviewed for Next Issue #846: maintenance startup, timeout, fallback, environment bypass, and refresh behavior require no troubleshooting rule beyond the existing focused-test and gate workflow.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
+lastReviewedNote: 'Reviewed for Next Issue #820: evidence digest rebinding and current-candidate qualification require no troubleshooting rule beyond the existing release and gate workflow.'
 ---
 
 # Testing Troubleshooting
