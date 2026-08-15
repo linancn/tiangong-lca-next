@@ -30,6 +30,22 @@ const DEFAULT_RECOVERY_LEDGER_PATH = path.join(
   os.homedir(),
   '.local/state/tiangong-lca-next/e2e-production-ledger.json',
 );
+const LOCAL_GIT_ENVIRONMENT_KEYS = [
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+];
 
 const EXIT = Object.freeze({
   INPUT: 2,
@@ -225,8 +241,17 @@ function runStreaming(command, args, options = {}) {
   return result.status ?? 1;
 }
 
+function isolatedGitEnvironment(environment = process.env) {
+  const isolated = { ...environment };
+  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete isolated[key]);
+  return isolated;
+}
+
 function git(args, options = {}) {
-  return runCapture('git', args, options).stdout.trim();
+  return runCapture('git', args, {
+    ...options,
+    env: isolatedGitEnvironment(options.env ?? process.env),
+  }).stdout.trim();
 }
 
 function gitShow(relativePath) {

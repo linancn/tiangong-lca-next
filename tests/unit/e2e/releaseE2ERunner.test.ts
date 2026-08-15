@@ -56,6 +56,28 @@ const buildVerifier = require('../../../scripts/e2e/verify-build-input.cjs') as 
 
 const controllerPath = path.resolve(process.cwd(), 'scripts/e2e/release-e2e.cjs');
 const temporaryDirectories: string[] = [];
+const LOCAL_GIT_ENVIRONMENT_KEYS = [
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+] as const;
+
+function isolatedGitEnvironment() {
+  const environment = { ...process.env };
+  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
+  return environment;
+}
 
 function makeTemporaryDirectory(): string {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'release-e2e-runner-'));
@@ -174,8 +196,9 @@ describe('release E2E controller contracts', () => {
     write('public/scripts/loading.js', 'window.loaded = true;\n');
     write('config/routes.ts', 'export default [];\n');
     write('.github/workflows/release-gate.yml', 'name: Release Gate\n');
-    expect(spawnSync('git', ['init', '-q'], { cwd: root }).status).toBe(0);
-    expect(spawnSync('git', ['add', '.'], { cwd: root }).status).toBe(0);
+    const gitEnvironment = isolatedGitEnvironment();
+    expect(spawnSync('git', ['init', '-q'], { cwd: root, env: gitEnvironment }).status).toBe(0);
+    expect(spawnSync('git', ['add', '.'], { cwd: root, env: gitEnvironment }).status).toBe(0);
 
     const initial = controller.qualificationIdentity(root);
     write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.1' })}\n`);
