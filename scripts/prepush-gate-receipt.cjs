@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { isDeepStrictEqual } = require('node:util');
 
 const RECEIPT_SCHEMA_VERSION = 2;
 const RECEIPT_RELATIVE_PATH = '.local/prepush-gate/failed-transport-receipt.json';
@@ -15,6 +16,16 @@ const CAPTURED_COMMAND_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const ZERO_SHA = '0'.repeat(40);
 const BASE_GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
 const RELEASE_PREFLIGHT_COMMAND = 'npm run release:preflight';
+const GATE_PROFILE_ENV = 'TIANGONG_PREPUSH_GATE_PROFILE';
+const GATE_PROFILES = Object.freeze({
+  full: 'full',
+  releaseCandidate: 'release-candidate',
+  immutablePromotion: 'immutable-promotion',
+});
+const RELEASE_CANDIDATE_BRANCH_PATTERN =
+  /^refs\/heads\/codex\/issue-[1-9]\d*-version-v(?<version>(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/u;
+const IMMUTABLE_PROMOTION_BRANCH_PATTERN =
+  /^refs\/heads\/codex\/promote-v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-dev-to-main-issue-[1-9]\d*$/u;
 const ACTIVE_RECEIPT_KIND = 'tiangong-bounded-failed-transport-receipt';
 const PENDING_PAYLOAD_KIND = 'tiangong-prepush-gate-pending-payload';
 const NO_UPDATE_PAYLOAD_KIND = 'tiangong-prepush-no-update-payload';
@@ -196,6 +207,127 @@ function selectDocpactBaseRef(root, updates, explicitOverride) {
   return bases[0];
 }
 
+function normalizeGateProfile(value = '') {
+  const profile = String(value || GATE_PROFILES.full).trim();
+  if (!Object.values(GATE_PROFILES).includes(profile)) {
+    throw new IneligibleReceiptError(`unsupported pre-push gate profile: ${profile}`);
+  }
+  return profile;
+}
+
+function changedPaths(root, base, head) {
+  return git(root, ['diff', '--name-only', '--diff-filter=ACDMRTUXB', `${base}..${head}`])
+    .stdout.split(/\r?\n/u)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function isReleaseCandidateAllowedPath(filePath) {
+  return (
+    filePath === 'package.json' ||
+    filePath === 'package-lock.json' ||
+    filePath.endsWith('.md') ||
+    /^\.docpact\/.*\.ya?ml$/u.test(filePath)
+  );
+}
+
+function jsonAtRef(root, ref, filePath) {
+  try {
+    return JSON.parse(git(root, ['show', `${ref}:${filePath}`]).stdout);
+  } catch (error) {
+    throw new IneligibleReceiptError(
+      `release-candidate profile could not parse ${filePath}: ${error.message}`,
+    );
+  }
+}
+
+function assertVersionOnlyPackageChange(root, base, head, branchMatch) {
+  const basePackage = jsonAtRef(root, base, 'package.json');
+  const candidatePackage = jsonAtRef(root, head, 'package.json');
+  const baseLock = jsonAtRef(root, base, 'package-lock.json');
+  const candidateLock = jsonAtRef(root, head, 'package-lock.json');
+  const candidateVersion = candidatePackage.version;
+  if (
+    candidateVersion !== branchMatch.groups?.version ||
+    candidateLock.version !== candidateVersion ||
+    candidateLock.packages?.['']?.version !== candidateVersion
+  ) {
+    throw new IneligibleReceiptError(
+      'release-candidate profile requires one matching stable version in its branch, package, and lock roots',
+    );
+  }
+
+  const normalizedPackage = structuredClone(candidatePackage);
+  const normalizedLock = structuredClone(candidateLock);
+  normalizedPackage.version = basePackage.version;
+  normalizedLock.version = baseLock.version;
+  if (!normalizedLock.packages?.[''] || !baseLock.packages?.['']) {
+    throw new IneligibleReceiptError(
+      'release-candidate profile requires package-lock root package metadata',
+    );
+  }
+  normalizedLock.packages[''].version = baseLock.packages[''].version;
+  if (
+    !isDeepStrictEqual(normalizedPackage, basePackage) ||
+    !isDeepStrictEqual(normalizedLock, baseLock)
+  ) {
+    throw new IneligibleReceiptError(
+      'release-candidate profile permits only the package and lock root version fields',
+    );
+  }
+}
+
+function validateGateProfile(root, profile, update, checkpoint) {
+  if (profile === GATE_PROFILES.full) return;
+  if (!update) {
+    throw new IneligibleReceiptError(`${profile} requires one exact managed branch update`);
+  }
+  if (update.localRef !== update.remoteRef || update.localRef !== checkpoint.branch) {
+    throw new IneligibleReceiptError(`${profile} requires the same exact local and remote branch`);
+  }
+
+  if (profile === GATE_PROFILES.releaseCandidate) {
+    const branchMatch = RELEASE_CANDIDATE_BRANCH_PATTERN.exec(update.localRef);
+    if (!branchMatch) {
+      throw new IneligibleReceiptError(
+        'release-candidate profile requires the deterministic version branch',
+      );
+    }
+    if (
+      checkpoint.docpactBaseRef !== 'origin/dev' ||
+      checkpoint.docpactMergeBase !== checkpoint.docpactBaseTip
+    ) {
+      throw new IneligibleReceiptError(
+        'release-candidate profile requires the current origin/dev tip',
+      );
+    }
+    const paths = changedPaths(root, checkpoint.docpactBaseTip, checkpoint.head);
+    if (
+      !paths.includes('package.json') ||
+      !paths.includes('package-lock.json') ||
+      paths.some((filePath) => !isReleaseCandidateAllowedPath(filePath))
+    ) {
+      throw new IneligibleReceiptError(
+        `release-candidate profile found unsupported paths: ${paths.join(', ')}`,
+      );
+    }
+    assertVersionOnlyPackageChange(root, checkpoint.docpactBaseTip, checkpoint.head, branchMatch);
+    return;
+  }
+
+  if (!IMMUTABLE_PROMOTION_BRANCH_PATTERN.test(update.localRef)) {
+    throw new IneligibleReceiptError(
+      'immutable-promotion profile requires the deterministic promotion branch',
+    );
+  }
+  const originDev = git(root, ['rev-parse', '--verify', 'origin/dev^{commit}']).stdout.trim();
+  if (checkpoint.head !== originDev) {
+    throw new IneligibleReceiptError(
+      'immutable-promotion profile must point exactly at origin/dev',
+    );
+  }
+}
+
 function stableNpmConfigDigest(root) {
   const effective = JSON.parse(run('npm', ['config', 'list', '--json'], { cwd: root }).stdout);
   const stable = Object.fromEntries(
@@ -235,7 +367,11 @@ function resolveDocpactState(root, docpactBaseRef) {
   return { docpactBaseRef, docpactBaseTip: baseTip, docpactMergeBase: mergeBase, head };
 }
 
-function collectCheckpoint(root, docpactBaseRef) {
+function collectCheckpoint(
+  root,
+  docpactBaseRef,
+  gateProfile = normalizeGateProfile(process.env[GATE_PROFILE_ENV]),
+) {
   const status = git(root, ['status', '--porcelain=v1', '--untracked-files=all']).stdout.trim();
   if (status) {
     throw new IneligibleReceiptError('the repository worktree is not clean');
@@ -259,6 +395,7 @@ function collectCheckpoint(root, docpactBaseRef) {
 
   return {
     checkpointVersion: 2,
+    gateProfile,
     head: docpact.head,
     tree: git(root, ['rev-parse', 'HEAD^{tree}']).stdout.trim(),
     branch: git(root, ['symbolic-ref', '--quiet', 'HEAD']).stdout.trim(),
@@ -462,17 +599,17 @@ function authoritativeGateEnvironment() {
   return environment;
 }
 
-function runAuthoritativeGates({ root, head, mergeBase, releasePreflight }) {
+function runAuthoritativeGates({ root, head, mergeBase, releasePreflight, gateProfile }) {
   const environment = authoritativeGateEnvironment();
-  const commands = [...BASE_GATE_COMMANDS];
+  const commands = [BASE_GATE_COMMANDS[0]];
   process.stdout.write(`Running docpact gate against immutable ${mergeBase}..${head}.\n`);
   run('npm', ['run', 'docpact:gate', '--', '--base', mergeBase, '--head', head], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
   });
-  if (releasePreflight) {
-    process.stdout.write('Running main-candidate release preflight.\n');
+  if (releasePreflight || gateProfile !== GATE_PROFILES.full) {
+    process.stdout.write('Running release-candidate static preflight.\n');
     run('npm', ['run', 'release:preflight'], {
       cwd: root,
       env: environment,
@@ -480,17 +617,25 @@ function runAuthoritativeGates({ root, head, mergeBase, releasePreflight }) {
     });
     commands.splice(1, 0, RELEASE_PREFLIGHT_COMMAND);
   }
+  if (gateProfile !== GATE_PROFILES.full) {
+    process.stdout.write(
+      `Deferred the aggregate test/browser acceptance to the exact dev Release PR (${gateProfile}).\n`,
+    );
+    return commands;
+  }
   process.stdout.write('Running local test gate.\n');
   run('npm', ['run', 'prepush:gate'], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
   });
+  commands.push(BASE_GATE_COMMANDS[1]);
   return commands;
 }
 
 function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, updatesFile }) {
   const session = checkedPushSessionFromEnvironment();
+  const gateProfile = normalizeGateProfile(process.env[GATE_PROFILE_ENV]);
   const updates = parsePushUpdates(updatesFile);
   if (updates.length === 0) {
     if (session) writeNoUpdatePayload(session);
@@ -508,7 +653,7 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
   );
   let before;
   try {
-    before = collectCheckpoint(root, docpactBaseRef);
+    before = collectCheckpoint(root, docpactBaseRef, gateProfile);
   } catch (error) {
     invalidateReceipt(root);
     throw new Error(`cannot establish a clean immutable pre-push checkpoint: ${error.message}`, {
@@ -533,6 +678,10 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
     ineligibleReason = error instanceof Error ? error.message : String(error);
   }
 
+  if (gateProfile !== GATE_PROFILES.full) {
+    validateGateProfile(root, gateProfile, update, before);
+  }
+
   let gateCommands;
   try {
     gateCommands = runAuthoritativeGates({
@@ -540,6 +689,7 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
       head: before.head,
       mergeBase: before.docpactMergeBase,
       releasePreflight,
+      gateProfile,
     });
   } catch (error) {
     invalidateReceipt(root);
@@ -548,7 +698,7 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
 
   let after;
   try {
-    after = collectCheckpoint(root, docpactBaseRef);
+    after = collectCheckpoint(root, docpactBaseRef, gateProfile);
   } catch (error) {
     invalidateReceipt(root);
     throw new Error(
@@ -608,7 +758,22 @@ function activateFailedTransportReceipt(root, pending, originalPushExitCode) {
   return receiptPath(root);
 }
 
-function checkedPush(root, pushArgs) {
+function parseCheckedPushArguments(args) {
+  const pushArgs = [...args];
+  let gateProfile = GATE_PROFILES.full;
+  if (pushArgs[0] === '--gate-profile') {
+    if (!pushArgs[1]) throw new Error('--gate-profile requires a value');
+    gateProfile = normalizeGateProfile(pushArgs[1]);
+    pushArgs.splice(0, 2);
+  }
+  if (pushArgs.includes('--gate-profile')) {
+    throw new Error('--gate-profile must be the first push:checked option');
+  }
+  return { gateProfile, pushArgs };
+}
+
+function checkedPush(root, rawPushArgs) {
+  const { gateProfile, pushArgs } = parseCheckedPushArguments(rawPushArgs);
   if (
     pushArgs.some((argument) => argument === '--no-verify' || argument.startsWith('--no-verify='))
   ) {
@@ -626,6 +791,7 @@ function checkedPush(root, pushArgs) {
       env: {
         ...process.env,
         HUSKY: '1',
+        [GATE_PROFILE_ENV]: gateProfile,
         [SESSION_DIRECTORY_ENV]: session.directory,
         [SESSION_NONCE_ENV]: session.nonce,
       },
@@ -656,7 +822,7 @@ function checkedPush(root, pushArgs) {
     if (pending?.kind === PENDING_PAYLOAD_KIND) {
       const target = activateFailedTransportReceipt(root, pending, exitCode);
       process.stderr.write(
-        `Git transport failed after both gates passed. Bounded retry receipt activated at ${target}.\n`,
+        `Git transport failed after the selected managed gates passed. Bounded retry receipt activated at ${target}.\n`,
       );
       process.stderr.write('Next: npm run push:retry\n');
     } else {
@@ -715,7 +881,11 @@ function loadReceipt(root, now = Date.now()) {
 
 function assertExactCheckpoint(root, receipt) {
   try {
-    const current = collectCheckpoint(root, receipt.checkpoint.docpactBaseRef);
+    const current = collectCheckpoint(
+      root,
+      receipt.checkpoint.docpactBaseRef,
+      receipt.checkpoint.gateProfile,
+    );
     if (JSON.stringify(current) !== JSON.stringify(receipt.checkpoint)) {
       const changed = differingCheckpointKeys(receipt.checkpoint, current);
       const changedSuffix = changed.length > 0 ? ` (${changed.join(', ')})` : '';
@@ -870,6 +1040,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  GATE_PROFILES,
   RECEIPT_RELATIVE_PATH,
   RECEIPT_TTL_MS,
   ZERO_SHA,
@@ -878,6 +1049,8 @@ module.exports = {
   invalidateReceipt,
   loadReceipt,
   main,
+  normalizeGateProfile,
+  parseCheckedPushArguments,
   readPushUpdate,
   retryTransport,
   selectDocpactBaseRef,

@@ -31,7 +31,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: semantic qualification uses deterministic non-production configuration and deployment env remains separately selectable.'
+lastReviewedNote: 'Reviewed for Next Issue #867: the exact dev Release PR owns aggregate acceptance and later release stages verify its external proof.'
 ---
 
 # Development Bootstrap
@@ -89,7 +89,7 @@ npm run e2e:env:doctor
 4. run focused validation
 5. run `npm run lint`
 6. run `npm run build` when the change affects shipped behavior or static assets
-7. commit the final controlled tracked change and run `npm run push:checked -- origin <branch>`; its ordinary hook owns the one full gate
+7. commit the final controlled tracked change and run `npm run push:checked -- origin <branch>`; its ordinary hook owns the one full gate. Do not pass a reduced gate profile manually; the deterministic release commands own those restricted profiles.
 
 If no push will occur and a standalone handoff needs final evidence, run `npm run docpact:gate` and then `npm run prepush:gate` manually instead. Do not also push the same unchanged checkpoint merely to repeat those gates.
 
@@ -150,7 +150,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-For the normal deterministic flow, `release:to-dev --apply` changes only the three root version fields plus bounded Docpact review metadata and runs `release:static-preflight`. It does not run browsers and never writes proof into the branch. The `dev -> main` PR is the proof boundary: the reusable Release Gate runs static/full tests, content-addressed semantic qualification against the closed simulator, and the public Chromium/Firefox/WebKit matrix before merge. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. Unknown simulator requests, external origins, and production writes fail the qualification.
+For the normal deterministic flow, `release:to-dev --apply` changes only the three root version fields plus bounded Docpact review metadata. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` is the proof boundary: the reusable Release Gate runs static/full tests, content-addressed semantic qualification against the closed simulator, and the public Chromium/Firefox/WebKit matrix before merge, then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main PR, and normal main publication verify that identity and proof without rerunning the aggregate. Canonical discovery recursively includes nested spec directories, so adding a runtime workflow below `tests/e2e/i18n/**` cannot escape the fail-closed qualification count. Unknown simulator requests, external origins, and production writes fail the qualification.
 
 Qualification builds with the fixed non-production profile in `docker/e2e/qualification.env`; it never reads or connects to the deployment target in `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime contracts, and the browser environment contract. Deployment-only `.env` and root release-version metadata are excluded, so those changes may reuse an exact behavior-equivalent proof; changing a real qualification input forces a new run. Proof lives only under ignored `.local/e2e-release/**`, in the GitHub Actions cache, or as a 30-day Actions artifact; source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
 
@@ -167,7 +167,7 @@ npm run e2e:release -- \
 
 The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
-The authenticated production-data closure remains an explicit local operator diagnostic and is not a normal release prerequisite. Create the `dev -> main` Promote PR from the immutable merged `dev` candidate; its Release Readiness check creates the required credential-free proof before merge. The repository still keeps production credentials and production-write authority out of GitHub Actions.
+The authenticated production-data closure remains an explicit local operator diagnostic and is not a normal release prerequisite. Merge the deterministic dev Release PR only after its aggregate Release Readiness proof succeeds, then create the `dev -> main` Promote PR from that immutable merged candidate. The promotion check verifies the dev proof without obtaining production credentials, write authority, or another browser run.
 
 ## Preferred Release PR Flow
 
@@ -179,7 +179,7 @@ Use these commands for every normal versioned release. They replace manual packa
    npm --silent run release:to-dev -- --version <x.y.z> --issue <number>
    ```
 
-2. Apply that exact plan. This reuses or generates credential-free qualification, composes the version and bounded Docpact evidence, runs production preflight, and creates or reuses the Release PR targeting `dev`:
+2. Apply that exact plan. This composes the version and bounded Docpact evidence, runs the restricted structural/static candidate push, and creates or reuses the Release PR targeting `dev`. That PR, not the local command, runs the one aggregate acceptance:
 
    ```bash
    npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply
@@ -191,15 +191,15 @@ Use these commands for every normal versioned release. They replace manual packa
    npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number>
    ```
 
-4. Apply the promotion plan. This creates or reuses the PR targeting `main`:
+4. Apply the promotion plan. This structurally verifies the immutable candidate and creates or reuses the proof-only PR targeting `main`:
 
    ```bash
    npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply
    ```
 
-The commands create or reuse PRs but never merge them. Review required GitHub checks before merging. Use a manual path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
+The commands create or reuse PRs but never merge them. Merge the dev Release PR only after its aggregate gate passes; the later main check is expected to be proof/identity-only and must fail closed if the candidate or main baseline drifted. Use a manual path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
 
-Both release commands default to read-only planning when `--apply` is omitted. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; preflight, managed-gate, and Docpact output is retained under `.local/release-automation/`. The version-to-dev command proves that only `package.json.version`, `package-lock.json.version`, `package-lock.json`'s root package version, and bounded Docpact review metadata changed. It independently checks the version candidate's `dev`-relative paths and the complete `main`-to-candidate promotion paths, then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point. The composed commit must pass `release:static-preflight` before the checked push. Any dependency, document-body, uncovered, stale, missing, untracked, or unsupported change stops the command. Release-line validation accepts direct `main` ancestry in `dev`; after a normal promotion, it also accepts the exact two-parent `main` merge only when its second parent remains in `dev` history and the merge tree equals that promoted parent. The promotion command pins the exact merged dev SHA and leaves browser proof to the main-candidate Release Gate. Both commands reuse a matching open PR and fail closed on version, branch, or dev-candidate drift.
+Both release commands default to read-only planning when `--apply` is omitted. `--apply` is the only mode that creates branches, commits, pushes, or pull requests. Their stdout is one schema-versioned JSON document; preflight, managed-gate, and Docpact output is retained under `.local/release-automation/`. The version-to-dev command proves that only `package.json.version`, `package-lock.json.version`, `package-lock.json`'s root package version, and bounded Docpact review metadata changed. It independently checks the version candidate's `dev`-relative paths and the complete `main`-to-candidate promotion paths, then resolves only active Docpact `missing-review` findings whose mode is `review_or_update`, to a bounded fixed point. The composed commit must pass `release:static-preflight` before the checked push. Any dependency, document-body, uncovered, stale, missing, untracked, or unsupported change stops the command. Release-line validation accepts direct `main` ancestry in `dev`; after a normal promotion, it also accepts the exact two-parent `main` merge only when its second parent remains in `dev` history and the merge tree equals that promoted parent. The promotion command pins the exact merged dev SHA and requires the dev Release PR's bound proof; its main-candidate check does not repeat browser or full-suite acceptance. Both commands reuse a matching open PR and fail closed on version, branch, main-baseline, proof, or dev-candidate drift.
 
 ## Command Rules
 
@@ -218,7 +218,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - a failed build, server, or preflight phase may activate one ignored one-hour HMAC-bound continuation receipt; argument-free `npm run e2e:release:resume` revalidates the exact commit/tree/lock/environment/source/image/arguments and reruns preflight, while browser results and production-fixture phases are never reused
 - race diagnosis may add `--project <browser> --spec <path>` or `--grep <pattern> --repeat-each <1-5>`; repeat is accepted only for a focused read-only scope and cannot write verified evidence
 - diagnostics retain the sanitized original error chain and emit stable phase/check IDs, coarse exit classes (`2`, `10`, `20`, `30`, `40`, `50`), cleanup state, output path, and one exact next command
-- semantic E2E GitHub Actions is credential-free and read-only: `workflow_dispatch` runs the three-browser public semantic/boundary matrix on demand, and the canonical release workflow calls the same matrix for the exact release SHA; routine PR/dev pushes do not trigger it
+- semantic E2E GitHub Actions is credential-free and read-only: `workflow_dispatch` runs the three-browser public semantic/boundary matrix on demand, and the exact deterministic dev Release PR aggregate calls the same matrix for its candidate SHA; routine PR/dev pushes do not trigger it
 - the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; the host controller refuses production-data mode when `CI` or `GITHUB_ACTIONS` is set, then an accepted local run overrides the image-inherited markers to empty inside the container; production write still requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
 - before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
 - use one protected `E2E_RECOVERY_LEDGER_PATH` per active invocation; recovery may proceed from the external copy alone after a crash, but a primary ledger without the configured recovery copy fails closed so a stale teardown cannot adopt another run
@@ -228,8 +228,8 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
-- local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run the static `npm run release:preflight` compatibility alias between them, while `dev` pushes keep the two-gate path
-- PRs targeting `main` run the reusable clean-runner aggregate Release Gate against the exact PR base/head before merge: static/full tests, content-addressed semantic qualification, and public three-browser semantics. It emits an exact aggregate proof only after all lanes succeed; the post-merge workflow reuses it only for a matching two-parent merge with an unchanged candidate tree, otherwise reruns the aggregate gate before creating the tag
+- ordinary local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
+- exact marker-bound Release PRs targeting `dev` run the reusable clean-runner aggregate Release Gate: static/full tests, content-addressed semantic qualification, and public three-browser semantics. PRs targeting `main` and normal post-merge publication only verify the resulting exact proof and unchanged-tree merge chain; they fail closed instead of rerunning the aggregate
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint

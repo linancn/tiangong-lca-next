@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
-lastReviewedNote: 'Reviewed for Next Issue #867: reusable qualification proof uses deterministic non-production configuration and a closed behavior-input identity.'
+lastReviewedNote: 'Reviewed for Next Issue #867: aggregate qualification belongs to the exact dev Release PR and later release stages verify its proof.'
 ---
 
 # Testing Patterns Reference
@@ -128,10 +128,10 @@ Browser semantic E2E pattern:
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
-- normal release orchestration keeps version mutation and browser proof separate: `release:to-dev --apply` runs static preflight and writes no proof, while the `main`-target PR runs the aggregate Release Gate before merge
+- normal release orchestration keeps version mutation and browser proof separate: `release:to-dev --apply` uses a restricted structural/static push and writes no proof, while the exact generated Release PR into `dev` runs the one aggregate Release Gate before merge
 - local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it
-- release-workflow unit fixtures must prove release-to-dev never invokes browser qualification or writes tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
-- publication-workflow contract tests must prove proof reuse can pass an intentionally skipped full-gate ancestor with `!cancelled()`, while every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
+- release-workflow unit fixtures must prove release-to-dev and promotion invoke only their exact restricted push profiles, never invoke browser qualification or write tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, main-baseline binding, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
+- publication-workflow contract tests must prove normal main pushes fail closed on an invalid dev proof without selecting a full-gate fallback, while explicit tag/dispatch recovery selects one full aggregate; every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence
@@ -151,10 +151,11 @@ Browser semantic E2E pattern:
 
 Release Gate proof pattern:
 
-- emit proof only after every main-target PR gate step succeeds, and bind repository, PR number, PR base, candidate commit/tree, workflow path, run ID, run attempt, and artifact name in one short-lived artifact
-- resolve reuse from the release merge itself: require exactly two parents, first-parent equality with the gated base, second-parent equality with the gated candidate, and equal release/candidate trees before consulting GitHub metadata
-- require exactly one matching merged PR, successful readiness workflow and named Release Gate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
-- return the full reusable gate as the successful fallback decision for every missing, ambiguous, expired, mismatched, unavailable, direct, squash, rebase, tag, or recovery-dispatch case; downstream publication depends on one aggregate qualification job, never directly on a conditionally skipped gate
+- emit proof only after every exact dev Release PR aggregate step succeeds, and bind repository, dev PR number, main baseline, dev base, candidate commit/tree/version, workflow path, run ID, run attempt, and artifact name in one short-lived artifact
+- resolve promotion reuse from the dev merge itself: require exactly two parents, first-parent equality with the gated dev base, second-parent equality with the gated candidate, and equal merge/candidate trees before consulting GitHub metadata
+- resolve publication reuse through both merges: require the main merge's first parent to equal the proof-bound main baseline, its second parent to equal the verified dev merge, and all promotion/release/candidate trees to remain equal
+- require exactly one matching merged dev PR and main PR, a successful readiness workflow and named aggregate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
+- fail closed on missing, ambiguous, expired, mismatched, unavailable, direct, squash, or rebase identity during a normal promotion/main release; use a fresh full aggregate only for explicit tag or recovery-dispatch events
 
 Documentation capture profile pattern:
 

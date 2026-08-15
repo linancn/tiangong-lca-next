@@ -6,11 +6,12 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v2';
-const RESOLUTION_SCHEMA_VERSION = 'tiangong.next.release-gate-proof-resolution.v1';
+const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v3';
+const RESOLUTION_SCHEMA_VERSION = 'tiangong.next.release-gate-proof-resolution.v2';
 const READINESS_WORKFLOW_FILE = 'release-readiness.yml';
 const READINESS_WORKFLOW_PATH = `.github/workflows/${READINESS_WORKFLOW_FILE}`;
-const RELEASE_GATE_JOB_NAME = 'Main Candidate / Aggregate Exact Release Proof';
+const RELEASE_GATE_JOB_NAME = 'Release Candidate / Aggregate Exact Release Proof';
+const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v2';
 const PROOF_SCOPE = Object.freeze([
   'static-release-gate',
   'content-addressed-semantic-qualification',
@@ -74,10 +75,41 @@ function requireRepository(value) {
   return repository;
 }
 
-function artifactName({ releaseBase, releaseHead, runId, runAttempt }) {
+function requireStableVersion(value, name) {
+  const version = requireText(value, name);
+  if (!/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u.test(version)) {
+    fail('invalid_version', `${name} must be a stable x.y.z version.`, {
+      argument: name,
+      value: version,
+    });
+  }
+  return version;
+}
+
+function parseReleaseMarker(body) {
+  const escapedPrefix = RELEASE_MARKER_PREFIX.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const pattern = new RegExp(
+    `<!-- ${escapedPrefix} issue=(\\d+) version=(\\d+\\.\\d+\\.\\d+) dev-base=([0-9a-f]{40}) main-base=([0-9a-f]{40}) candidate=([0-9a-f]{40}) -->`,
+    'u',
+  );
+  const match = pattern.exec(String(body || ''));
+  if (!match) {
+    fail('release_candidate_marker_invalid', 'The dev Release PR marker is missing or invalid.');
+  }
+  return {
+    issue: requirePositiveInteger(match[1], 'release Issue'),
+    version: requireStableVersion(match[2], 'release version'),
+    candidateBase: requireSha(match[3], 'candidate base'),
+    releaseBase: requireSha(match[4], 'release base'),
+    candidateHead: requireSha(match[5], 'candidate head'),
+  };
+}
+
+function artifactName({ releaseBase, candidateBase, releaseHead, runId, runAttempt }) {
   return [
     'release-gate-proof',
     requireSha(releaseBase, 'release base'),
+    requireSha(candidateBase, 'candidate base'),
     requireSha(releaseHead, 'release head'),
     requirePositiveInteger(runId, 'workflow run ID'),
     requirePositiveInteger(runAttempt, 'workflow run attempt'),
@@ -121,8 +153,10 @@ function buildProof({
   repository,
   pullRequestNumber,
   releaseBase,
+  candidateBase,
   releaseHead,
   releaseHeadTree,
+  releaseVersion,
   runId,
   runAttempt,
 }) {
@@ -130,8 +164,10 @@ function buildProof({
     repository: requireRepository(repository),
     pull_request_number: requirePositiveInteger(pullRequestNumber, 'pull request number'),
     release_base: requireSha(releaseBase, 'release base'),
+    candidate_base: requireSha(candidateBase, 'candidate base'),
     release_head: requireSha(releaseHead, 'release head'),
     release_head_tree: requireSha(releaseHeadTree, 'release head tree'),
+    release_version: requireStableVersion(releaseVersion, 'release version'),
     workflow_path: READINESS_WORKFLOW_PATH,
     workflow_run_id: requirePositiveInteger(runId, 'workflow run ID'),
     workflow_run_attempt: requirePositiveInteger(runAttempt, 'workflow run attempt'),
@@ -142,6 +178,7 @@ function buildProof({
     proof_scope: [...PROOF_SCOPE],
     artifact_name: artifactName({
       releaseBase: normalized.release_base,
+      candidateBase: normalized.candidate_base,
       releaseHead: normalized.release_head,
       runId: normalized.workflow_run_id,
       runAttempt: normalized.workflow_run_attempt,
@@ -154,7 +191,9 @@ function writeProof({
   repository,
   pullRequestNumber,
   releaseBase,
+  candidateBase,
   releaseHead,
+  releaseVersion,
   runId,
   runAttempt,
   outputPath,
@@ -175,8 +214,10 @@ function writeProof({
     repository,
     pullRequestNumber,
     releaseBase,
+    candidateBase,
     releaseHead: normalizedHead,
     releaseHeadTree,
+    releaseVersion,
     runId,
     runAttempt,
   });
@@ -281,8 +322,10 @@ function assertProofMatches(proof, expected) {
     repository: expected.repository,
     pull_request_number: expected.pullRequestNumber,
     release_base: expected.releaseBase,
+    candidate_base: expected.candidateBase,
     release_head: expected.releaseHead,
     release_head_tree: expected.releaseHeadTree,
+    release_version: expected.releaseVersion,
     workflow_path: READINESS_WORKFLOW_PATH,
     workflow_run_id: expected.runId,
     workflow_run_attempt: expected.runAttempt,
@@ -305,19 +348,19 @@ function assertProofMatches(proof, expected) {
   }
 }
 
-function selectMergedPullRequest(pullRequests, { releaseBase, releaseHead, candidateHead }) {
+function selectMergedPullRequest(pullRequests, { mergeCommit, baseRef, baseSha, candidateHead }) {
   const matches = (Array.isArray(pullRequests) ? pullRequests : []).filter(
     (pullRequest) =>
       pullRequest?.merged_at &&
-      pullRequest?.merge_commit_sha === releaseHead &&
-      pullRequest?.base?.ref === 'main' &&
-      pullRequest?.base?.sha === releaseBase &&
+      pullRequest?.merge_commit_sha === mergeCommit &&
+      pullRequest?.base?.ref === baseRef &&
+      pullRequest?.base?.sha === baseSha &&
       pullRequest?.head?.sha === candidateHead,
   );
   if (matches.length !== 1) {
     fail(
       'merged_pull_request_not_exact',
-      'The release commit did not resolve to one exact merged main PR.',
+      `The merge commit did not resolve to one exact merged ${baseRef} PR.`,
       {
         matching_pull_requests: matches.map((pullRequest) => pullRequest.number),
       },
@@ -326,13 +369,82 @@ function selectMergedPullRequest(pullRequests, { releaseBase, releaseHead, candi
   return matches[0];
 }
 
-async function resolveExactProof(
-  { root, repository, releaseBase, releaseHead, token },
+function candidateContextFromPullRequest(pullRequest) {
+  if (pullRequest?.base?.ref !== 'dev') {
+    fail('release_candidate_wrong_base', 'The Release PR must target dev.', {
+      base_ref: pullRequest?.base?.ref ?? null,
+    });
+  }
+  const marker = parseReleaseMarker(pullRequest?.body);
+  const pullRequestNumber = requirePositiveInteger(pullRequest?.number, 'pull request number');
+  const candidateBase = requireSha(pullRequest?.base?.sha, 'candidate base');
+  const candidateHead = requireSha(pullRequest?.head?.sha, 'candidate head');
+  const mismatches = [];
+  if (marker.candidateBase !== candidateBase) {
+    mismatches.push({
+      field: 'candidate_base',
+      expected: candidateBase,
+      actual: marker.candidateBase,
+    });
+  }
+  if (marker.candidateHead !== candidateHead) {
+    mismatches.push({
+      field: 'candidate_head',
+      expected: candidateHead,
+      actual: marker.candidateHead,
+    });
+  }
+  if (mismatches.length > 0) {
+    fail('release_candidate_marker_mismatch', 'The Release PR marker does not match the PR.', {
+      mismatches,
+    });
+  }
+  return {
+    pullRequestNumber,
+    issue: marker.issue,
+    releaseVersion: marker.version,
+    releaseBase: marker.releaseBase,
+    candidateBase,
+    candidateHead,
+  };
+}
+
+function readCandidateContext({ root, eventPath }) {
+  const event = JSON.parse(
+    fs.readFileSync(path.resolve(requireText(eventPath, '--event-path')), 'utf8'),
+  );
+  const context = candidateContextFromPullRequest(event.pull_request);
+  const checkedOutHead = requireSha(gitText(root, ['rev-parse', 'HEAD']), 'checked-out HEAD');
+  if (checkedOutHead !== context.candidateHead) {
+    fail('checked_out_head_mismatch', 'The checked-out commit is not the Release PR head.', {
+      checked_out_head: checkedOutHead,
+      candidate_head: context.candidateHead,
+    });
+  }
+  const packageVersion = requireStableVersion(
+    JSON.parse(gitText(root, ['show', `${context.candidateHead}:package.json`])).version,
+    'candidate package version',
+  );
+  if (packageVersion !== context.releaseVersion) {
+    fail(
+      'release_candidate_version_mismatch',
+      'The candidate package version does not match the Release PR marker.',
+      {
+        marker_version: context.releaseVersion,
+        package_version: packageVersion,
+      },
+    );
+  }
+  return context;
+}
+
+async function resolvePromotionProof(
+  { root, repository, releaseBase, promotionHead, token },
   dependencies = {},
 ) {
   const normalizedRepository = requireRepository(repository);
   const normalizedBase = requireSha(releaseBase, 'release base');
-  const normalizedHead = requireSha(releaseHead, 'release head');
+  const normalizedPromotionHead = requireSha(promotionHead, 'promotion head');
   const git = dependencies.gitText || gitText;
   const api =
     dependencies.apiJson ||
@@ -345,50 +457,70 @@ async function resolveExactProof(
         { fetchImpl: dependencies.fetchImpl },
       ));
 
-  const parentLine = git(root, ['rev-list', '--parents', '-n', '1', normalizedHead]);
+  const parentLine = git(root, ['rev-list', '--parents', '-n', '1', normalizedPromotionHead]);
   const parentParts = parentLine.split(/\s+/u).filter(Boolean);
-  if (parentParts.length !== 3 || parentParts[0] !== normalizedHead) {
-    fail('release_head_not_merge_commit', 'The release head is not a two-parent merge commit.', {
-      release_head: normalizedHead,
-      parent_count: Math.max(parentParts.length - 1, 0),
-    });
+  if (parentParts.length !== 3 || parentParts[0] !== normalizedPromotionHead) {
+    fail(
+      'promotion_head_not_dev_merge',
+      'The promotion head is not a two-parent dev merge commit.',
+      {
+        promotion_head: normalizedPromotionHead,
+        parent_count: Math.max(parentParts.length - 1, 0),
+      },
+    );
   }
-  const [, firstParent, candidateHead] = parentParts;
-  if (firstParent !== normalizedBase) {
-    fail('release_base_parent_mismatch', 'The release base is not the merge commit first parent.', {
-      release_base: normalizedBase,
-      first_parent: firstParent,
-    });
-  }
+  const [, candidateBase, candidateHead] = parentParts;
+  requireSha(candidateBase, 'candidate base');
   requireSha(candidateHead, 'candidate head');
-  const releaseHeadTree = requireSha(
-    git(root, ['rev-parse', `${normalizedHead}^{tree}`]),
-    'release head tree',
+  const promotionTree = requireSha(
+    git(root, ['rev-parse', `${normalizedPromotionHead}^{tree}`]),
+    'promotion tree',
   );
   const candidateTree = requireSha(
     git(root, ['rev-parse', `${candidateHead}^{tree}`]),
     'candidate tree',
   );
-  if (releaseHeadTree !== candidateTree) {
+  if (promotionTree !== candidateTree) {
     fail(
-      'release_tree_changed_after_pr_gate',
-      'The merged release tree differs from the PR candidate tree.',
+      'dev_merge_tree_changed_after_candidate_gate',
+      'The merged dev tree differs from the qualified Release PR tree.',
       {
-        release_tree: releaseHeadTree,
+        promotion_tree: promotionTree,
         candidate_tree: candidateTree,
       },
     );
   }
 
   const pullRequests = await api(
-    `/repos/${normalizedRepository}/commits/${normalizedHead}/pulls?per_page=100`,
+    `/repos/${normalizedRepository}/commits/${normalizedPromotionHead}/pulls?per_page=100`,
   );
   const pullRequest = selectMergedPullRequest(pullRequests, {
-    releaseBase: normalizedBase,
-    releaseHead: normalizedHead,
+    mergeCommit: normalizedPromotionHead,
+    baseRef: 'dev',
+    baseSha: candidateBase,
     candidateHead,
   });
-  const pullRequestNumber = requirePositiveInteger(pullRequest.number, 'pull request number');
+  const candidateContext = candidateContextFromPullRequest(pullRequest);
+  if (candidateContext.releaseBase !== normalizedBase) {
+    fail(
+      'release_base_changed_after_candidate_gate',
+      'main changed after the Release PR was qualified.',
+      {
+        qualified_main_base: candidateContext.releaseBase,
+        current_main_base: normalizedBase,
+      },
+    );
+  }
+  if (
+    candidateContext.candidateBase !== candidateBase ||
+    candidateContext.candidateHead !== candidateHead
+  ) {
+    fail(
+      'release_candidate_merge_identity_mismatch',
+      'The dev merge does not match the qualified Release PR identity.',
+    );
+  }
+  const pullRequestNumber = candidateContext.pullRequestNumber;
   const runsResponse = await api(
     `/repos/${normalizedRepository}/actions/workflows/${READINESS_WORKFLOW_FILE}/runs` +
       `?event=pull_request&status=completed&head_sha=${candidateHead}&per_page=100`,
@@ -422,6 +554,7 @@ async function resolveExactProof(
 
     const expectedArtifactName = artifactName({
       releaseBase: normalizedBase,
+      candidateBase,
       releaseHead: candidateHead,
       runId,
       runAttempt,
@@ -447,8 +580,10 @@ async function resolveExactProof(
         repository: normalizedRepository,
         pullRequestNumber,
         releaseBase: normalizedBase,
+        candidateBase,
         releaseHead: candidateHead,
         releaseHeadTree: candidateTree,
+        releaseVersion: candidateContext.releaseVersion,
         runId,
         runAttempt,
         artifactName: expectedArtifactName,
@@ -458,13 +593,15 @@ async function resolveExactProof(
         command: 'resolve',
         complete: true,
         gate_mode: 'reuse',
-        reason: 'exact_main_pr_release_gate_proof',
+        reason: 'exact_dev_release_candidate_proof',
         repository: normalizedRepository,
-        pull_request_number: pullRequestNumber,
+        release_pull_request_number: pullRequestNumber,
         release_base: normalizedBase,
-        release_head: normalizedHead,
+        promotion_head: normalizedPromotionHead,
+        candidate_base: candidateBase,
         candidate_head: candidateHead,
         candidate_tree: candidateTree,
+        release_version: candidateContext.releaseVersion,
         workflow_run_id: runId,
         workflow_run_attempt: runAttempt,
         artifact_id: proofArtifact.id,
@@ -480,12 +617,86 @@ async function resolveExactProof(
 
   fail(
     'no_exact_successful_pr_gate_proof',
-    'No exact successful PR Release Gate proof was reusable.',
+    'No exact successful dev Release PR proof was reusable.',
     {
       candidate_run_count: candidateRuns.length,
       rejected_runs: rejectedRuns,
     },
   );
+}
+
+async function resolveExactProof(
+  { root, repository, releaseBase, releaseHead, token },
+  dependencies = {},
+) {
+  const normalizedRepository = requireRepository(repository);
+  const normalizedBase = requireSha(releaseBase, 'release base');
+  const normalizedHead = requireSha(releaseHead, 'release head');
+  const git = dependencies.gitText || gitText;
+  const api =
+    dependencies.apiJson ||
+    ((apiPath) => apiJson(apiPath, { token, fetchImpl: dependencies.fetchImpl }));
+  const parentParts = git(root, ['rev-list', '--parents', '-n', '1', normalizedHead])
+    .split(/\s+/u)
+    .filter(Boolean);
+  if (parentParts.length !== 3 || parentParts[0] !== normalizedHead) {
+    fail('release_head_not_main_merge', 'The release head is not a two-parent main merge commit.', {
+      release_head: normalizedHead,
+      parent_count: Math.max(parentParts.length - 1, 0),
+    });
+  }
+  const [, firstParent, promotionHead] = parentParts;
+  if (firstParent !== normalizedBase) {
+    fail('release_base_parent_mismatch', 'The release base is not the main merge first parent.', {
+      release_base: normalizedBase,
+      first_parent: firstParent,
+    });
+  }
+  const releaseTree = requireSha(
+    git(root, ['rev-parse', `${normalizedHead}^{tree}`]),
+    'release tree',
+  );
+  const promotionTree = requireSha(
+    git(root, ['rev-parse', `${promotionHead}^{tree}`]),
+    'promotion tree',
+  );
+  if (releaseTree !== promotionTree) {
+    fail(
+      'main_merge_tree_changed_after_candidate_gate',
+      'The main merge changed the qualified promotion tree.',
+      {
+        release_tree: releaseTree,
+        promotion_tree: promotionTree,
+      },
+    );
+  }
+  const mainPullRequests = await api(
+    `/repos/${normalizedRepository}/commits/${normalizedHead}/pulls?per_page=100`,
+  );
+  const mainPullRequest = selectMergedPullRequest(mainPullRequests, {
+    mergeCommit: normalizedHead,
+    baseRef: 'main',
+    baseSha: normalizedBase,
+    candidateHead: promotionHead,
+  });
+  const promotion = await resolvePromotionProof(
+    {
+      root,
+      repository: normalizedRepository,
+      releaseBase: normalizedBase,
+      promotionHead,
+      token,
+    },
+    dependencies,
+  );
+  return {
+    ...promotion,
+    release_head: normalizedHead,
+    promotion_pull_request_number: requirePositiveInteger(
+      mainPullRequest.number,
+      'promotion pull request number',
+    ),
+  };
 }
 
 async function resolveWithFallback(options, dependencies = {}) {
@@ -500,7 +711,7 @@ async function resolveWithFallback(options, dependencies = {}) {
       schema_version: RESOLUTION_SCHEMA_VERSION,
       command: 'resolve',
       complete: true,
-      gate_mode: 'full',
+      gate_mode: 'invalid',
       reason: normalizedError.code,
       details: normalizedError.details,
     };
@@ -533,13 +744,37 @@ function parseArguments(argv) {
 }
 
 function helpText() {
-  return `Create or resolve an exact GitHub Release Gate proof.\n\nUsage:\n  node scripts/release/release-gate-proof.cjs create --repository owner/repo --pr-number 123 --release-base <sha> --release-head <sha> --run-id <id> --run-attempt <n> --output <path> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs resolve --repository owner/repo --release-base <sha> --release-head <sha> [--github-output <path>]\n\nResolve behavior:\n  Exact proof emits gate_mode=reuse. Missing, expired, ambiguous, or mismatched proof emits gate_mode=full so the canonical reusable full gate remains the fail-closed fallback.`;
+  return `Create or verify an exact dev Release PR proof.\n\nUsage:\n  node scripts/release/release-gate-proof.cjs candidate-context --event-path <event.json> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs create --repository owner/repo --pr-number 123 --release-base <main-sha> --candidate-base <dev-sha> --release-head <candidate-sha> --release-version <x.y.z> --run-id <id> --run-attempt <n> --output <path> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs verify-promotion --repository owner/repo --release-base <main-sha> --promotion-head <dev-merge-sha> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs resolve --repository owner/repo --release-base <main-sha> --release-head <main-merge-sha> [--github-output <path>]\n\nResolve behavior:\n  A normal promotion or main release reuses only the exact successful dev Release PR proof. Missing, expired, ambiguous, or mismatched proof fails closed without rerunning the aggregate gate. Explicit tag/workflow-dispatch recovery remains the only full-gate fallback.`;
 }
 
 async function main(argv = process.argv.slice(2)) {
   const { command, options } = parseArguments(argv);
   if (command === 'help') {
     process.stdout.write(`${helpText()}\n`);
+    return;
+  }
+  if (command === 'candidate-context') {
+    const root = repositoryRoot();
+    const result = readCandidateContext({ root, eventPath: options['event-path'] });
+    appendGithubOutput(options['github-output'], {
+      release_base: result.releaseBase,
+      candidate_base: result.candidateBase,
+      release_head: result.candidateHead,
+      release_version: result.releaseVersion,
+      proof_pr_number: result.pullRequestNumber,
+    });
+    process.stdout.write(
+      `${JSON.stringify({
+        schema_version: RESOLUTION_SCHEMA_VERSION,
+        command: 'candidate-context',
+        complete: true,
+        release_base: result.releaseBase,
+        candidate_base: result.candidateBase,
+        release_head: result.candidateHead,
+        release_version: result.releaseVersion,
+        pull_request_number: result.pullRequestNumber,
+      })}\n`,
+    );
     return;
   }
   if (command === 'create') {
@@ -549,7 +784,9 @@ async function main(argv = process.argv.slice(2)) {
       repository: options.repository,
       pullRequestNumber: options['pr-number'],
       releaseBase: options['release-base'],
+      candidateBase: options['candidate-base'],
       releaseHead: options['release-head'],
+      releaseVersion: options['release-version'],
       runId: options['run-id'],
       runAttempt: options['run-attempt'],
       outputPath: options.output,
@@ -569,6 +806,26 @@ async function main(argv = process.argv.slice(2)) {
     );
     return;
   }
+  if (command === 'verify-promotion') {
+    const root = repositoryRoot();
+    const result = await resolvePromotionProof({
+      root,
+      repository: options.repository,
+      releaseBase: options['release-base'],
+      promotionHead: options['promotion-head'],
+      token: process.env.GITHUB_TOKEN,
+    });
+    appendGithubOutput(options['github-output'], {
+      gate_mode: result.gate_mode,
+      gate_reason: result.reason,
+      proof_run_id: result.workflow_run_id,
+      proof_pr_number: result.release_pull_request_number,
+      proof_artifact_id: result.artifact_id,
+      proof_artifact_name: result.artifact_name,
+    });
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    return;
+  }
   if (command === 'resolve') {
     const root = repositoryRoot();
     const result = await resolveWithFallback({
@@ -582,7 +839,7 @@ async function main(argv = process.argv.slice(2)) {
       gate_mode: result.gate_mode,
       gate_reason: result.reason,
       proof_run_id: result.workflow_run_id || '',
-      proof_pr_number: result.pull_request_number || '',
+      proof_pr_number: result.release_pull_request_number || '',
       proof_artifact_id: result.artifact_id || '',
       proof_artifact_name: result.artifact_name || '',
     });
@@ -615,11 +872,15 @@ module.exports = {
   PROOF_SCHEMA_VERSION,
   READINESS_WORKFLOW_PATH,
   RELEASE_GATE_JOB_NAME,
+  RELEASE_MARKER_PREFIX,
   ReleaseGateProofError,
   artifactName,
   assertProofMatches,
   buildProof,
+  candidateContextFromPullRequest,
+  parseReleaseMarker,
   resolveExactProof,
+  resolvePromotionProof,
   resolveWithFallback,
   selectMergedPullRequest,
   writeProof,
