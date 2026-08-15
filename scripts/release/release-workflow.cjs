@@ -12,7 +12,6 @@ const DEFAULT_CANONICAL_REMOTE = 'origin';
 const DEFAULT_PUSH_REMOTE = 'fork';
 const DEFAULT_LOG_DIRECTORY = '.local/release-automation';
 const TRANSPORT_RECEIPT_PATH = '.local/prepush-gate/failed-transport-receipt.json';
-const QUALIFICATION_RECEIPT_PATH = 'docs/plans/i18n/semantic-harness-qualification-receipt.json';
 const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v1';
 const MAX_CAPTURE_BYTES = 64 * 1024 * 1024;
 const MAIN_SEMANTIC_BRANCH_PATTERN = /^(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u;
@@ -497,63 +496,6 @@ function reviewCommitFromDocument(source) {
   return match?.[1] ?? null;
 }
 
-function assertQualificationReceiptProvenance(root, baseRef) {
-  const receipt = readJson(path.join(root, QUALIFICATION_RECEIPT_PATH), QUALIFICATION_RECEIPT_PATH);
-  if (
-    receipt.schemaVersion !== 'tiangong.semantic-harness-qualification.v1' ||
-    !/^[0-9a-f]{40}$/u.test(receipt.qualifiedCommit || '') ||
-    !/^[0-9a-f]{40}$/u.test(receipt.qualifiedTree || '')
-  ) {
-    throw new ReleaseAutomationError(
-      'release_qualification_receipt_invalid',
-      'The generated qualification receipt has invalid provenance fields.',
-      {
-        exitCode: EXIT.gate,
-        details: { path: QUALIFICATION_RECEIPT_PATH },
-        nextAction: 'Remove the invalid generated receipt and rerun release:to-dev --apply.',
-      },
-    );
-  }
-  const qualifiedCommit = git(root, ['rev-parse', `${receipt.qualifiedCommit}^{commit}`], {
-    allowFailure: true,
-  });
-  if (
-    qualifiedCommit.status !== 0 ||
-    !isAncestor(root, baseRef, receipt.qualifiedCommit) ||
-    !isAncestor(root, receipt.qualifiedCommit, 'HEAD')
-  ) {
-    throw new ReleaseAutomationError(
-      'release_qualification_provenance_mismatch',
-      'The changed qualification receipt was not generated from this release branch.',
-      {
-        exitCode: EXIT.drift,
-        details: {
-          base_ref: baseRef,
-          qualified_commit: receipt.qualifiedCommit,
-          current_head: git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim(),
-        },
-      },
-    );
-  }
-  const actualTree = git(root, ['rev-parse', `${receipt.qualifiedCommit}^{tree}`]).stdout.trim();
-  if (actualTree !== receipt.qualifiedTree) {
-    throw new ReleaseAutomationError(
-      'release_qualification_tree_mismatch',
-      'The changed qualification receipt tree does not match its qualified commit.',
-      {
-        exitCode: EXIT.drift,
-        details: { expected_tree: actualTree, receipt_tree: receipt.qualifiedTree },
-      },
-    );
-  }
-  return {
-    receipt_path: QUALIFICATION_RECEIPT_PATH,
-    qualified_commit: receipt.qualifiedCommit,
-    qualified_tree: receipt.qualifiedTree,
-    qualification_input_sha256: receipt.qualificationInputSha256 ?? null,
-  };
-}
-
 function assertReleaseCandidateScope(root, baseRef, targetVersion) {
   const changedPaths = changedPathsSince(root, baseRef);
   const requiredVersionPaths = ['package.json', 'package-lock.json'];
@@ -618,14 +560,7 @@ function assertReleaseCandidateScope(root, baseRef, targetVersion) {
     );
   }
 
-  const qualificationReceiptChanged = changedPaths.includes(QUALIFICATION_RECEIPT_PATH);
-  const qualification = qualificationReceiptChanged
-    ? assertQualificationReceiptProvenance(root, baseRef)
-    : null;
-  const reviewPaths = changedPaths.filter(
-    (filePath) =>
-      !requiredVersionPaths.includes(filePath) && filePath !== QUALIFICATION_RECEIPT_PATH,
-  );
+  const reviewPaths = changedPaths.filter((filePath) => !requiredVersionPaths.includes(filePath));
   for (const filePath of reviewPaths) {
     if (!/\.(?:md|ya?ml)$/u.test(filePath)) {
       throw new ReleaseAutomationError(
@@ -666,88 +601,15 @@ function assertReleaseCandidateScope(root, baseRef, targetVersion) {
     }
   }
 
-  return { changedPaths, reviewPaths, qualification };
+  return { changedPaths, reviewPaths };
 }
 
-function qualificationCheck(root) {
-  const result = run('npm', ['run', 'e2e:qualification:check'], {
-    cwd: root,
-    allowFailure: true,
-  });
-  if (result.status === 0) {
-    return {
-      status: 'valid',
-      action: 'reuse',
-      receipt_path: QUALIFICATION_RECEIPT_PATH,
-    };
-  }
-  return {
-    status: 'regeneration_required',
-    action: 'generate_on_apply',
-    receipt_path: QUALIFICATION_RECEIPT_PATH,
-    check_exit_code: result.status,
-    reason: truncate(result.stderr || result.stdout),
-  };
-}
-
-function generateQualification(root, logFile) {
-  const sourceCommit = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
-  const sourceTree = git(root, ['rev-parse', 'HEAD^{tree}']).stdout.trim();
-  const result = runLogged('npm', ['run', 'e2e:qualify'], { cwd: root, logFile });
-  if (result.status !== 0) {
-    throw new ReleaseAutomationError(
-      'semantic_qualification_failed',
-      'Credential-free semantic harness qualification failed.',
-      {
-        exitCode: EXIT.gate,
-        details: { log_path: relativeLogPath(root, logFile) },
-        nextAction: `Inspect ${relativeLogPath(root, logFile)} and fix the first qualification failure.`,
-      },
-    );
-  }
-  const changed = worktreeStatus(root)
-    .split(/\r?\n/u)
-    .filter(Boolean)
-    .map((line) => line.slice(3));
-  if (changed.length !== 1 || changed[0] !== QUALIFICATION_RECEIPT_PATH) {
-    throw new ReleaseAutomationError(
-      'semantic_qualification_scope_invalid',
-      'Qualification changed files outside its one generated receipt.',
-      {
-        exitCode: EXIT.drift,
-        details: { changed_paths: changed },
-      },
-    );
-  }
-  const provenance = assertQualificationReceiptProvenance(root, sourceCommit);
-  if (provenance.qualified_commit !== sourceCommit || provenance.qualified_tree !== sourceTree) {
-    throw new ReleaseAutomationError(
-      'semantic_qualification_source_mismatch',
-      'Qualification did not bind the exact clean source commit and tree.',
-      {
-        exitCode: EXIT.drift,
-        details: {
-          expected_commit: sourceCommit,
-          actual_commit: provenance.qualified_commit,
-          expected_tree: sourceTree,
-          actual_tree: provenance.qualified_tree,
-        },
-      },
-    );
-  }
-  return {
-    status: 'generated',
-    action: 'included_in_release_pr',
-    ...provenance,
-  };
-}
-
-function releasePreflight(root, logFile) {
-  const result = runLogged('npm', ['run', 'release:preflight'], { cwd: root, logFile });
+function releaseStaticPreflight(root, logFile) {
+  const result = runLogged('npm', ['run', 'release:static-preflight'], { cwd: root, logFile });
   if (result.status !== 0) {
     throw new ReleaseAutomationError(
       'release_preflight_failed',
-      'The composed Release PR candidate failed production preflight.',
+      'The composed Release PR candidate failed static release preflight.',
       {
         exitCode: EXIT.gate,
         details: { log_path: relativeLogPath(root, logFile) },
@@ -1250,7 +1112,7 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Qualify, review Docpact, preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nAutomatic qualification and review boundary:\n  The command reuses a current semantic qualification receipt or generates the\n  credential-free receipt before changing the version, then includes it in the\n  same Release PR. The command proves that only package.json.version,\n  package-lock.json.version, package-lock.json packages[""].version, that exact\n  generated receipt, and bounded Docpact review metadata changed. Every other\n  finding or semantic change fails closed.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review Docpact, run static preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nMutation boundary:\n  The command proves that only package.json.version, package-lock.json.version,\n  package-lock.json packages[""].version, and bounded Docpact review metadata\n  changed. It never runs browser qualification or writes a proof into Git.\n  Exact-candidate browser proof belongs to the later main-target PR gate.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
@@ -1273,7 +1135,7 @@ function releasePrBody({
     reviewedPaths.length > 0
       ? reviewedPaths.map((filePath) => `  - \`${filePath}\``).join('\n')
       : '  - none required';
-  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- ${qualification.status === 'generated' ? 'Generate and include' : 'Reuse'} the current credential-free semantic qualification receipt.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Main baseline: \`${mainSha}\`\n- Semantic qualification: \`${qualification.status}\`; composed-candidate preflight: \`${qualification.preflight_status}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Docpact checked the complete main-to-candidate promotion range before the dev PR was created.\n- Final push used the repository-managed dev gate; full logs remain local and are not copied into the PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
+  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} base=${baseSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: repository-managed dev gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- Do not generate or commit browser proof from the version-only release command.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Main baseline: \`${mainSha}\`\n- Semantic qualification: \`${qualification.status}\`; static preflight: \`${qualification.preflight_status}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Docpact checked the complete main-to-candidate promotion range before the dev PR was created.\n- Final push used the repository-managed dev gate; exact browser qualification is required by the later main-target PR.\n\n## Risks And Follow-Up\n\n- Merge this PR into dev, then run the deterministic dev-to-main promotion command with this PR number.\n`;
 }
 
 function releaseMarker(body) {
@@ -1360,9 +1222,8 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       pull_request: { number: existing.number, url: existing.url },
       docpact_review: { status: 'previously_completed', report_path: null },
       qualification: {
-        status: 'previously_completed',
+        status: 'deferred_to_main_candidate_gate',
         action: 'reuse_existing_release_pr',
-        receipt_path: QUALIFICATION_RECEIPT_PATH,
         preflight_status: 'previously_completed',
       },
       gate: { status: 'previously_completed', log_path: null },
@@ -1399,7 +1260,11 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     options.logDirectory,
     `release-to-dev-v${target.text}-docpact.json`,
   );
-  const plannedQualification = qualificationCheck(root);
+  const plannedQualification = {
+    status: 'deferred_to_main_candidate_gate',
+    action: 'no_tracked_proof_mutation',
+    preflight_status: 'planned',
+  };
   if (!options.apply) {
     return {
       ...baseResult('release-to-dev', options),
@@ -1488,11 +1353,10 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   }
   switchToBranch(root, branch, `${options.remote}/dev`);
   assertClean(root);
-  let qualification = qualificationCheck(root);
-  qualification =
-    qualification.status === 'valid'
-      ? { ...qualification, status: 'reused' }
-      : generateQualification(root, plannedLog);
+  let qualification = {
+    status: 'deferred_to_main_candidate_gate',
+    action: 'no_tracked_proof_mutation',
+  };
   let candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
   let docpactReview;
   if (candidateSha === fetchedDevSha) {
@@ -1537,7 +1401,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       reportFile: docpactReport,
       additionalLintPaths: promotionRangePaths,
     });
-    if (docpactReview.reviewed_paths.length > 0 || qualification.status === 'generated') {
+    if (docpactReview.reviewed_paths.length > 0) {
       const finalScope = assertReleaseCandidateScope(root, fetchedDevSha, target.text);
       const allowedReviewPaths = new Set([
         ...docpactReview.reviewed_paths,
@@ -1554,11 +1418,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
         );
       }
       const evidenceToCommit = [
-        ...new Set([
-          ...docpactReview.reviewed_paths,
-          ...docpactReview.evidence_paths,
-          ...(qualification.status === 'generated' ? [QUALIFICATION_RECEIPT_PATH] : []),
-        ]),
+        ...new Set([...docpactReview.reviewed_paths, ...docpactReview.evidence_paths]),
       ];
       git(root, ['add', '--', ...evidenceToCommit]);
       git(root, [
@@ -1572,7 +1432,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
 
   qualification = {
     ...qualification,
-    preflight_status: releasePreflight(root, plannedLog),
+    preflight_status: releaseStaticPreflight(root, plannedLog),
   };
 
   let gate = { status: 'previously_completed', transport_retry_attempted: false };
@@ -1718,8 +1578,8 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
         reason: 'promotion_preserves_the_exact_merged_dev_candidate',
       },
       qualification: {
-        status: 'verified_by_main_semantic_gate',
-        receipt_path: QUALIFICATION_RECEIPT_PATH,
+        status: 'required_by_main_candidate_gate',
+        proof_storage: 'github_actions_artifact',
       },
       gate: { status: 'previously_completed', log_path: null },
       next_action: 'merge_promotion_pr',
@@ -1762,7 +1622,7 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       },
       qualification: {
         status: 'planned_for_main_semantic_gate',
-        receipt_path: QUALIFICATION_RECEIPT_PATH,
+        proof_storage: 'github_actions_artifact',
       },
       gate: { status: 'not_run', log_path: relativeLogPath(root, plannedLog) },
       warnings: initialStatus
@@ -1884,8 +1744,8 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       reason: 'promotion_preserves_the_exact_merged_dev_candidate',
     },
     qualification: {
-      status: 'verified_by_main_semantic_gate',
-      receipt_path: QUALIFICATION_RECEIPT_PATH,
+      status: 'required_by_main_candidate_gate',
+      proof_storage: 'github_actions_artifact',
     },
     gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
     next_action: 'merge_promotion_pr',

@@ -74,10 +74,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "cbcf80392fe057d8d3fbf852f16290d4a490a0d81ba928286bcab32e54943102",
-    "qualityDigest": "feda2c3db5dfe58a60c698822cdc8b66bab85a3c1583483621e8f808d9e14485",
+    "contextDigest": "819492a7b09e5b8c5f9fcc578c0521145e49785a41bf102a8e321016416cac92",
+    "qualityDigest": "d193c7ac56ce5834ef41d1c0edf0fd09713e2713edf4e25219639a71dbc50b0a",
     "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e",
-    "routeViewCoverageDigest": "f0d812a92bb7c0f39948ee1301a2eb73415d8eb194763729d3819d28ff62b1d0",
+    "routeViewCoverageDigest": "e87f82cd28d22834eb8f4a7dd036bc2c58d9b010a0250628a6dc770f627aced0",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -100,17 +100,26 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": true,
+    "semanticRouteAndE2EContractReady": true,
+    "semanticRouteAndE2EReady": false,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": true,
+    "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [],
-  "activationDigest": "066e5bc24ee08e91b88c4e0c75c4c4c0b780303a900f810d31ccd6935b0d76a7"
+  "productionActivationBlockers": [
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#867"
+    }
+  ],
+  "activationDigest": "a82de971c7bb56cdbf6ca131b9a7c98966eeeceb8bfb5fedf66bc778f2294bef"
 }

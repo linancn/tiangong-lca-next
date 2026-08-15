@@ -7,6 +7,7 @@ const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as c
 const SUPABASE_ENV_FILE_ORDER = {
   dev: ['.env.development', '.env.local', '.env.development.local'],
   main: ['.env', '.env.local'],
+  qualification: ['docker/e2e/qualification.env'],
 } as const;
 
 type FrontendSupabaseTarget = keyof typeof SUPABASE_ENV_FILE_ORDER;
@@ -37,7 +38,9 @@ const readMergedEnvFiles = (
 export const resolveSupabaseFrontendTarget = (
   appEnv: FrontendRuntimeEnv,
 ): FrontendSupabaseTarget => {
-  return appEnv === 'dev' ? 'dev' : 'main';
+  if (appEnv === 'dev') return 'dev';
+  if (appEnv === 'qualification') return 'qualification';
+  return 'main';
 };
 
 export const getSupabaseFrontendEnv = (
@@ -57,12 +60,13 @@ export const applySupabaseFrontendEnv = (
   rootDir: string,
   appEnv: FrontendRuntimeEnv,
 ): SupabaseFrontendEnv => {
+  const target = resolveSupabaseFrontendTarget(appEnv);
   const fileEnv = getSupabaseFrontendEnv(rootDir, appEnv);
 
   return SUPABASE_FRONTEND_KEYS.reduce<SupabaseFrontendEnv>((merged, key) => {
     const runtimeValue = process.env[key];
-    // const value = hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
-    const value = hasEnvValue(fileEnv[key]) ? fileEnv[key] : runtimeValue;
+    const value =
+      target !== 'qualification' && hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
 
     if (hasEnvValue(value)) {
       process.env[key] = value;

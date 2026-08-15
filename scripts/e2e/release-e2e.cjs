@@ -15,15 +15,14 @@ const RECEIPT_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.json');
 const RECEIPT_KEY_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.key');
 const INVOCATION_LOCK_PATH = path.join(RUNTIME_ROOT, 'invocation.lock');
 const ENVIRONMENT_MANIFEST_PATH = path.join(RUNTIME_ROOT, 'environment-manifest.json');
-const QUALIFICATION_RECEIPT_PATH = path.join(
-  REPOSITORY_ROOT,
-  'docs/plans/i18n/semantic-harness-qualification-receipt.json',
-);
+const DEFAULT_QUALIFICATION_PROOF_PATH = path.join(RUNTIME_ROOT, 'qualification-proof.json');
+const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v3';
 const ENVIRONMENT_CONTRACT_RELATIVE_PATH = 'docker/e2e/environment.json';
 const DOCKERFILE_RELATIVE_PATH = 'docker/e2e/Dockerfile';
+const QUALIFICATION_ENVIRONMENT_RELATIVE_PATH = 'docker/e2e/qualification.env';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const RECEIPT_SCHEMA_VERSION = 5;
-const MANIFEST_SCHEMA_VERSION = 3;
+const MANIFEST_SCHEMA_VERSION = 4;
 const REPORT_SCHEMA_VERSION = 2;
 const CANONICAL_REPOSITORY = 'linancn/tiangong-lca-next';
 const IMAGE_LABEL = 'org.tiangong.lca.next.release-e2e';
@@ -32,6 +31,22 @@ const DEFAULT_RECOVERY_LEDGER_PATH = path.join(
   os.homedir(),
   '.local/state/tiangong-lca-next/e2e-production-ledger.json',
 );
+const LOCAL_GIT_ENVIRONMENT_KEYS = [
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+];
 
 const EXIT = Object.freeze({
   INPUT: 2,
@@ -109,7 +124,7 @@ function processIsRunning(pid) {
 function lockRetryCommand(command) {
   return {
     clean: 'npm run e2e:env:clean',
-    'check-qualification': 'npm run e2e:qualification:check',
+    'check-qualification': 'npm run release:proof:verify',
     install: 'npm run e2e:env:install',
     qualify: 'npm run e2e:qualify',
     resume: 'npm run e2e:release:resume',
@@ -227,8 +242,17 @@ function runStreaming(command, args, options = {}) {
   return result.status ?? 1;
 }
 
+function isolatedGitEnvironment(environment = process.env) {
+  const isolated = { ...environment };
+  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete isolated[key]);
+  return isolated;
+}
+
 function git(args, options = {}) {
-  return runCapture('git', args, options).stdout.trim();
+  return runCapture('git', args, {
+    ...options,
+    env: isolatedGitEnvironment(options.env ?? process.env),
+  }).stdout.trim();
 }
 
 function gitShow(relativePath) {
@@ -262,8 +286,9 @@ function commandHelp() {
     '  npm run e2e:env:install -- [--format json] [--output <path>]',
     '  npm run e2e:env:doctor -- [--format json] [--output <path>]',
     '  npm run e2e:release -- [options]',
-    '  npm run e2e:qualify -- [--offline] [--format human|json] [--output <path>]',
-    '  npm run e2e:qualification:check',
+    '  npm run e2e:qualification:key -- [--format human|json] [--output <path>]',
+    '  npm run e2e:qualify -- [--offline] [--proof <path>] [--format human|json]',
+    '  npm run release:proof:verify -- [--proof <path>] [--format human|json]',
     '  npm run e2e:release:resume',
     '  npm run e2e:env:clean -- [--purge-images]',
     '  npm run e2e:dev -- [Playwright arguments]',
@@ -280,6 +305,7 @@ function commandHelp() {
     '  --grep <pattern>                Focus matching tests (diagnostic scope only).',
     '  --repeat-each <1-5>             Repeat a focused read-only scope to reproduce a race.',
     '  --offline                       Never pull; fail if the pinned image/cache is unavailable.',
+    '  --proof <path>                  Read or write the external qualification proof.',
     '  --format human|json             Keep stdout human-readable or emit one JSON object.',
     '  --output <path>                 Also write the sanitized controller report.',
     '',
@@ -322,6 +348,7 @@ function parseOptions(command, argv) {
     help: false,
     offline: false,
     output: undefined,
+    proof: undefined,
     project: undefined,
     purgeImages: false,
     recoveryLedger: DEFAULT_RECOVERY_LEDGER_PATH,
@@ -333,10 +360,11 @@ function parseOptions(command, argv) {
   };
   const allowedFlags = {
     clean: new Set(['format', 'help', 'output', 'purge-images']),
-    'check-qualification': new Set(['format', 'help', 'output']),
+    'check-qualification': new Set(['format', 'help', 'output', 'proof']),
     doctor: new Set(['format', 'help', 'output']),
     install: new Set(['format', 'help', 'offline', 'output']),
-    qualify: new Set(['format', 'help', 'offline', 'output']),
+    'qualification-key': new Set(['format', 'help', 'output']),
+    qualify: new Set(['format', 'help', 'offline', 'output', 'proof']),
     run: new Set([
       'allow-production-data',
       'authenticated',
@@ -414,6 +442,7 @@ function parseOptions(command, argv) {
         'format',
         'output',
         'project',
+        'proof',
         'spec',
         'grep',
         'users-env-file',
@@ -529,8 +558,8 @@ function assertLocalOperatorHostEnvironment(options, environment = process.env) 
   }
 }
 
-function loadEnvironmentContractFromWorkingTree() {
-  const contractPath = path.join(REPOSITORY_ROOT, ENVIRONMENT_CONTRACT_RELATIVE_PATH);
+function loadEnvironmentContractFromWorkingTree(repositoryRoot = REPOSITORY_ROOT) {
+  const contractPath = path.join(repositoryRoot, ENVIRONMENT_CONTRACT_RELATIVE_PATH);
   const raw = fs.readFileSync(contractPath, 'utf8');
   const contract = JSON.parse(raw);
   if (
@@ -824,7 +853,7 @@ function requireCleanCommittedCandidate() {
   };
 }
 
-function createCandidateBuildContext(candidate, environment, runId) {
+function createCandidateBuildContext(candidate, environment, runId, options = {}) {
   const directory = path.join(BUILD_ROOT, runId);
   fs.rmSync(directory, { recursive: true, force: true });
   fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -869,6 +898,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
     });
   }
 
+  const frontendTarget = options.qualification ? 'qualification' : 'main';
   const manifest = {
     kind: 'tiangong-next-release-e2e-candidate',
     schemaVersion: MANIFEST_SCHEMA_VERSION,
@@ -895,6 +925,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
     environment: {
       contractSha256: sha256(environmentRaw),
       dockerfileSha256: sha256(dockerfileRaw),
+      frontendTarget,
       nodeMajor: committedEnvironment.nodeMajor,
       playwrightImage: committedEnvironment.playwrightImage,
       playwrightVersion: committedEnvironment.playwrightVersion,
@@ -908,7 +939,7 @@ function createCandidateBuildContext(candidate, environment, runId) {
   };
   const manifestText = jsonText(manifest);
   const manifestSha256 = sha256(manifestText);
-  const imageTag = `tiangong-lca-next-e2e:${candidate.tree.slice(0, 12)}-${manifest.environment.contractSha256.slice(0, 12)}`;
+  const imageTag = `tiangong-lca-next-e2e:${candidate.tree.slice(0, 12)}-${manifest.environment.contractSha256.slice(0, 12)}-${frontendTarget}`;
 
   writeBuildFile(path.join(directory, 'package.json'), packageJsonRaw, 0o600);
   writeBuildFile(path.join(directory, 'package-lock.json'), packageLockRaw, 0o600);
@@ -955,6 +986,8 @@ function ensureCandidateImage(context, environment, options = {}) {
     `org.tiangong.lca.next.manifest-sha256=${context.manifestSha256}`,
     '--build-arg',
     `PLAYWRIGHT_IMAGE=${environment.contract.playwrightImage}`,
+    '--build-arg',
+    `E2E_FRONTEND_ENV=${context.manifest.environment.frontendTarget}`,
   ];
   if (options.offline) args.push('--network=none');
   args.push(context.directory);
@@ -1014,81 +1047,197 @@ function playwrightArguments(options) {
   return args;
 }
 
-function qualificationInputSha256() {
+function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
   const pathPrefixes = [
     'src',
+    'public',
+    'config',
     'tests/e2e/i18n',
+    'tests/data-workflows/workflows/workflow-shared.ts',
     'scripts/e2e',
+    'scripts/i18n/check-semantic-evidence-format.mjs',
+    'scripts/i18n/semantic-evidence-format.ts',
     'docker/e2e',
+    '.github/workflows/release-gate.yml',
     'playwright.config.ts',
+    '.nvmrc',
+    'tsconfig.json',
     'docs/plans/i18n/route-view-coverage.json',
     'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   ];
-  const files = git(['ls-files', '--', ...pathPrefixes])
-    .split(/\r?\n/u)
-    .filter((file) => file && file !== path.relative(REPOSITORY_ROOT, QUALIFICATION_RECEIPT_PATH))
-    .sort();
-  const packageJson = JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json')));
-  const packageLock = JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, 'package-lock.json')));
+  const trackedEntries = runCapture('git', ['ls-files', '--stage', '-z', '--', ...pathPrefixes], {
+    cwd: repositoryRoot,
+    env: isolatedGitEnvironment(),
+  }).stdout
+    .split('\0')
+    .filter(Boolean)
+    .map((line) => {
+      const match = /^([0-7]{6}) ([0-9a-f]+) ([0-3])\t([\s\S]+)$/u.exec(line);
+      if (!match || match[3] !== '0') {
+        throw new ReleaseE2EError('Qualification inputs contain an unsupported Git index entry.', {
+          exitCode: EXIT.CANDIDATE,
+          failureCode: 'E2E_QUALIFICATION_GIT_ENTRY_INVALID',
+          phase: 'candidate',
+        });
+      }
+      const [, mode, objectId, , file] = match;
+      const type = mode === '120000' ? 'symlink' : mode === '160000' ? 'gitlink' : 'blob';
+      let contents;
+      if (type === 'symlink') {
+        contents = Buffer.from(fs.readlinkSync(path.join(repositoryRoot, file)), 'utf8');
+      } else if (type === 'gitlink') {
+        contents = Buffer.from(objectId, 'utf8');
+      } else {
+        contents = fs.readFileSync(path.join(repositoryRoot, file));
+      }
+      return { mode, path: file, sha256: sha256(contents), type };
+    })
+    .sort((left, right) => left.path.localeCompare(right.path, 'en'));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json')));
+  const packageLock = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package-lock.json')));
   delete packageJson.version;
   delete packageLock.version;
   if (packageLock.packages?.['']) delete packageLock.packages[''].version;
-  const entries = files.map((file) => ({
-    path: file,
-    sha256: sha256(fs.readFileSync(path.join(REPOSITORY_ROOT, file))),
-  }));
+  const packageEntries = runCapture(
+    'git',
+    ['ls-files', '--stage', '--', 'package.json', 'package-lock.json'],
+    { cwd: repositoryRoot, env: isolatedGitEnvironment() },
+  ).stdout
+    .trim()
+    .split(/\r?\n/u)
+    .map((line) => {
+      const match = /^([0-7]{6}) [0-9a-f]+ 0\t(.+)$/u.exec(line);
+      if (!match) throw new Error(`Invalid package Git index entry: ${line}`);
+      return { mode: match[1], path: match[2], type: 'blob' };
+    });
+  const packageEntry = (packagePath) => {
+    const entry = packageEntries.find(({ path: entryPath }) => entryPath === packagePath);
+    if (!entry) throw new Error(`Missing tracked qualification input: ${packagePath}`);
+    return entry;
+  };
+  const entries = [...trackedEntries];
   entries.push(
-    { path: 'package.json#without-version', sha256: sha256(jsonText(packageJson)) },
-    { path: 'package-lock.json#without-root-version', sha256: sha256(jsonText(packageLock)) },
+    {
+      ...packageEntry('package.json'),
+      path: 'package.json#without-version',
+      sha256: sha256(jsonText(packageJson)),
+    },
+    {
+      ...packageEntry('package-lock.json'),
+      path: 'package-lock.json#without-root-version',
+      sha256: sha256(jsonText(packageLock)),
+    },
   );
   return sha256(jsonText(entries));
 }
 
-function validateQualificationReceipt(receipt, expectedInput) {
-  if (
-    receipt?.schemaVersion !== 'tiangong.semantic-harness-qualification.v1' ||
-    receipt.status !== 'qualified' ||
-    receipt.coverage?.discoveredCases !== 81 ||
-    receipt.coverage?.contractAssertionCount !== 49 ||
-    receipt.coverage?.liveAssertionCount !== 49 ||
-    receipt.coverage?.executedCases !== 51 ||
-    receipt.coverage?.skippedCases !== 30 ||
-    receipt.coverage?.harnessControlCases !== 12 ||
-    receipt.coverage?.qualificationDiscoveredCases !== 93 ||
-    receipt.productionWrites !== 0 ||
-    receipt.externalRequests !== 0 ||
-    receipt.cleanup?.created !== 0 ||
-    receipt.cleanup?.cleaned !== 0 ||
-    receipt.cleanup?.leaked !== 0 ||
-    receipt.qualificationInputSha256 !== expectedInput ||
-    JSON.stringify(receipt.browsers?.map(({ name }) => name)) !==
-      JSON.stringify(['chromium', 'firefox', 'webkit']) ||
-    receipt.browsers.some(({ version }) => typeof version !== 'string' || version.length === 0)
-  ) {
+function qualificationIdentity(repositoryRoot = REPOSITORY_ROOT) {
+  const inputSha256 = qualificationInputSha256(repositoryRoot);
+  const environmentContractSha256 = loadEnvironmentContractFromWorkingTree(repositoryRoot).sha256;
+  return {
+    schemaVersion: 'tiangong.semantic-harness-qualification-identity.v1',
+    inputSha256,
+    environmentContractSha256,
+    proofKey: sha256(
+      jsonText({
+        qualificationProofSchemaVersion: QUALIFICATION_PROOF_SCHEMA_VERSION,
+        inputSha256,
+        environmentContractSha256,
+      }),
+    ),
+  };
+}
+
+function resolveQualificationProofPath(proofPath) {
+  return path.resolve(proofPath || DEFAULT_QUALIFICATION_PROOF_PATH);
+}
+
+function assertExternalProofPath(proofPath) {
+  const relativePath = path.relative(REPOSITORY_ROOT, proofPath);
+  if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`)) return;
+  const ignored = runCapture('git', ['check-ignore', '--quiet', '--', relativePath], {
+    allowFailure: true,
+  });
+  if (ignored.status !== 0) {
     throw new ReleaseE2EError(
-      'The semantic harness qualification receipt is missing, stale, or incomplete.',
+      'Qualification proof output must be outside Git or under an ignored runtime path.',
       {
-        exitCode: EXIT.CANDIDATE,
-        failureCode: 'E2E_QUALIFICATION_RECEIPT_INVALID',
-        phase: 'candidate',
-        nextCommand: 'npm run e2e:qualify',
+        exitCode: EXIT.INPUT,
+        failureCode: 'E2E_QUALIFICATION_PROOF_PATH_TRACKED',
+        phase: 'input',
+        details: { proofPath },
+        nextCommand: 'npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json',
       },
     );
   }
-  return receipt;
 }
 
-function readQualificationReceipt() {
-  if (!fs.existsSync(QUALIFICATION_RECEIPT_PATH)) {
-    throw new ReleaseE2EError('A current semantic harness qualification receipt is required.', {
+function validateQualificationProof(proof, expectedIdentity = qualificationIdentity()) {
+  if (
+    proof?.schemaVersion !== QUALIFICATION_PROOF_SCHEMA_VERSION ||
+    proof.status !== 'qualified' ||
+    proof.coverage?.discoveredCases !== 81 ||
+    proof.coverage?.contractAssertionCount !== 49 ||
+    proof.coverage?.liveAssertionCount !== 49 ||
+    proof.coverage?.executedCases !== 51 ||
+    proof.coverage?.skippedCases !== 30 ||
+    proof.coverage?.harnessControlCases !== 12 ||
+    proof.coverage?.qualificationDiscoveredCases !== 93 ||
+    proof.productionWrites !== 0 ||
+    proof.externalRequests !== 0 ||
+    proof.cleanup?.created !== 0 ||
+    proof.cleanup?.cleaned !== 0 ||
+    proof.cleanup?.leaked !== 0 ||
+    proof.qualificationInputSha256 !== expectedIdentity.inputSha256 ||
+    proof.environmentContractSha256 !== expectedIdentity.environmentContractSha256 ||
+    proof.proofKey !== expectedIdentity.proofKey ||
+    !/^[0-9a-f]{64}$/u.test(proof.environmentManifestSha256 || '') ||
+    !/^[0-9a-f]{40}$/u.test(proof.candidate?.commit || '') ||
+    !/^[0-9a-f]{40}$/u.test(proof.candidate?.tree || '') ||
+    JSON.stringify(proof.browsers?.map(({ name }) => name)) !==
+      JSON.stringify(['chromium', 'firefox', 'webkit']) ||
+    proof.browsers.some(({ version }) => typeof version !== 'string' || version.length === 0)
+  ) {
+    throw new ReleaseE2EError(
+      'The external semantic qualification proof is missing, stale, or incomplete.',
+      {
+        exitCode: EXIT.CANDIDATE,
+        failureCode: 'E2E_QUALIFICATION_PROOF_INVALID',
+        phase: 'candidate',
+        nextCommand: 'npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json',
+      },
+    );
+  }
+  return proof;
+}
+
+function readQualificationProof(options) {
+  const proofPath = resolveQualificationProofPath(options.proof);
+  if (!fs.existsSync(proofPath)) {
+    throw new ReleaseE2EError('A current external semantic qualification proof is required.', {
       exitCode: EXIT.CANDIDATE,
-      failureCode: 'E2E_QUALIFICATION_RECEIPT_MISSING',
+      failureCode: 'E2E_QUALIFICATION_PROOF_MISSING',
       phase: 'candidate',
-      nextCommand: 'npm run e2e:qualify',
+      details: { proofPath },
+      nextCommand: `npm run e2e:qualify -- --proof ${proofPath}`,
     });
   }
-  const receipt = readJson(QUALIFICATION_RECEIPT_PATH);
-  return validateQualificationReceipt(receipt, qualificationInputSha256());
+  const proof = validateQualificationProof(readJson(proofPath));
+  const currentCandidate = {
+    commit: git(['rev-parse', 'HEAD^{commit}']),
+    tree: git(['rev-parse', 'HEAD^{tree}']),
+  };
+  return {
+    ...proof,
+    proofPath,
+    verification: {
+      currentCandidate,
+      reuseScope:
+        proof.candidate.commit === currentCandidate.commit
+          ? 'exact-candidate'
+          : 'behavior-equivalent',
+    },
+  };
 }
 
 function receiptOptions(options) {
@@ -1262,9 +1411,11 @@ function prepareRuntimeInputs(context, options, runDirectory) {
   const trackedMainEnvironmentPath = path.join(inputDirectory, 'tracked-main.env');
   let trackedMainEnvironment;
   try {
-    trackedMainEnvironment = git(['show', 'origin/main:.env']);
+    trackedMainEnvironment = options.qualification
+      ? fs.readFileSync(path.join(REPOSITORY_ROOT, QUALIFICATION_ENVIRONMENT_RELATIVE_PATH), 'utf8')
+      : `${git(['show', 'origin/main:.env'])}\n`;
   } catch (error) {
-    throw new ReleaseE2EError('The tracked origin/main production environment is unavailable.', {
+    throw new ReleaseE2EError('The selected E2E backend environment is unavailable.', {
       cause: error,
       exitCode: EXIT.CANDIDATE,
       failureCode: 'E2E_TRACKED_MAIN_ENVIRONMENT_UNAVAILABLE',
@@ -1272,7 +1423,7 @@ function prepareRuntimeInputs(context, options, runDirectory) {
       nextCommand: 'git fetch origin main',
     });
   }
-  writeBuildFile(trackedMainEnvironmentPath, `${trackedMainEnvironment}\n`, 0o600);
+  writeBuildFile(trackedMainEnvironmentPath, trackedMainEnvironment, 0o600);
 
   let usersEnvFile;
   if (options.authenticated) {
@@ -1395,7 +1546,7 @@ function runRelease(options, state = {}) {
   const runId = makeRunId(candidate);
   let context;
   try {
-    context = createCandidateBuildContext(candidate, environment, runId);
+    context = createCandidateBuildContext(candidate, environment, runId, options);
   } catch (error) {
     fs.rmSync(path.join(BUILD_ROOT, runId), { recursive: true, force: true });
     throw error;
@@ -1587,13 +1738,18 @@ function runQualification(options) {
       phase: 'finalization',
     });
   }
-  const receipt = {
-    schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+  const identity = qualificationIdentity();
+  const proof = {
+    schemaVersion: QUALIFICATION_PROOF_SCHEMA_VERSION,
     status: 'qualified',
     generatedAt: new Date().toISOString(),
-    qualifiedCommit: result.candidate.commit,
-    qualifiedTree: result.candidate.tree,
-    qualificationInputSha256: qualificationInputSha256(),
+    proofKey: identity.proofKey,
+    candidate: {
+      commit: result.candidate.commit,
+      tree: result.candidate.tree,
+    },
+    qualificationInputSha256: identity.inputSha256,
+    environmentContractSha256: identity.environmentContractSha256,
     environmentManifestSha256: result.environment.manifestSha256,
     browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
       name,
@@ -1616,8 +1772,10 @@ function runQualification(options) {
       runResultSha256: sha256(fs.readFileSync(result.artifacts.containerResult)),
     },
   };
-  fs.writeFileSync(QUALIFICATION_RECEIPT_PATH, jsonText(receipt), 'utf8');
-  return { ...result, qualificationReceipt: QUALIFICATION_RECEIPT_PATH };
+  const proofPath = resolveQualificationProofPath(options.proof);
+  assertExternalProofPath(proofPath);
+  writePrivateJson(proofPath, proof);
+  return { ...result, qualificationProof: proofPath, proofKey: proof.proofKey };
 }
 
 function runDoctor(options) {
@@ -1838,7 +1996,8 @@ function emitReport(report, options) {
 
 function execute(command, options) {
   if (command === 'doctor') return runDoctor(options);
-  if (command === 'check-qualification') return readQualificationReceipt();
+  if (command === 'qualification-key') return qualificationIdentity();
+  if (command === 'check-qualification') return readQualificationProof(options);
   const releaseLock = acquireInvocationLock(command);
   try {
     if (command === 'install') return runInstall(options);
@@ -1921,6 +2080,7 @@ module.exports = {
   EXIT,
   MANIFEST_SCHEMA_VERSION,
   RECEIPT_SCHEMA_VERSION,
+  QUALIFICATION_PROOF_SCHEMA_VERSION,
   ReleaseE2EError,
   acquireInvocationLock,
   assertLocalOperatorHostEnvironment,
@@ -1936,7 +2096,9 @@ module.exports = {
   stableJson,
   receiptHmac,
   validateReceipt,
-  validateQualificationReceipt,
+  qualificationIdentity,
+  qualificationInputSha256,
+  validateQualificationProof,
   validateRunOptions,
 };
 

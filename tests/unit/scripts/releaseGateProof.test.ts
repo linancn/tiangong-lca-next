@@ -1,4 +1,5 @@
 const proofModule = require('../../../scripts/release/release-gate-proof.cjs') as {
+  PROOF_SCOPE: string[];
   PROOF_SCHEMA_VERSION: string;
   READINESS_WORKFLOW_PATH: string;
   RELEASE_GATE_JOB_NAME: string;
@@ -147,6 +148,7 @@ describe('release gate proof', () => {
   it('binds proof identity to the exact PR base, candidate tree, run, and attempt', () => {
     expect(exactProof()).toEqual({
       schema_version: proofModule.PROOF_SCHEMA_VERSION,
+      proof_scope: proofModule.PROOF_SCOPE,
       repository,
       pull_request_number: pullRequestNumber,
       release_base: releaseBase,

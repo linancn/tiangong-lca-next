@@ -71,8 +71,8 @@ jobs:
           RELEASE_HEAD: ${{ inputs.release_head }}
         run: npm run docpact:gate -- --base "$RELEASE_BASE" --head "$RELEASE_HEAD"
 
-      - name: Verify production readiness
-        run: npm run release:preflight
+      - name: Verify static release readiness
+        run: npm run release:static-preflight
 
       - name: Run full release gate
         env:
@@ -89,9 +89,91 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Write exact release gate proof
+  semantic-qualification:
+    name: Content-addressed Semantic Qualification
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.release_head }}
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Resolve qualification proof key
+        id: qualification-identity
+        run: |
+          set -euo pipefail
+          identity_json="$(npm --silent run e2e:qualification:key -- --format=json)"
+          proof_key="$(jq -r '.result.proofKey' <<< "$identity_json")"
+          if [[ ! "$proof_key" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "::error::Qualification identity did not return a valid proof key."
+            exit 1
+          fi
+          echo "proof_key=$proof_key" >> "$GITHUB_OUTPUT"
+
+      - name: Restore behavior-equivalent qualification proof
+        id: qualification-cache
+        uses: actions/cache@v5
+        with:
+          path: .local/e2e-release/qualification-proof.json
+          key: semantic-qualification-${{ runner.os }}-${{ steps.qualification-identity.outputs.proof_key }}
+
+      - name: Verify restored qualification proof
+        if: steps.qualification-cache.outputs.cache-hit == 'true'
+        run: >-
+          npm --silent run release:proof:verify -- --proof .local/e2e-release/qualification-proof.json --format=json
+
+      - name: Run complete semantic qualification
+        if: steps.qualification-cache.outputs.cache-hit != 'true'
+        run: >-
+          npm --silent run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json --format=json --output .local/e2e-release/qualification-controller-report.json
+
+      - name: Verify generated qualification proof
+        run: >-
+          npm --silent run release:proof:verify -- --proof .local/e2e-release/qualification-proof.json --format=json
+
+      - name: Upload semantic qualification proof
+        uses: actions/upload-artifact@v6
+        with:
+          name: semantic-qualification-${{ steps.qualification-identity.outputs.proof_key }}
+          path: |
+            .local/e2e-release/qualification-proof.json
+            .local/e2e-release/qualification-controller-report.json
+          if-no-files-found: error
+          retention-days: 30
+
+  public-semantic-e2e:
+    name: Public Browser Semantics
+    uses: ./.github/workflows/i18n-semantic-e2e.yml
+    with:
+      ref: ${{ inputs.release_head }}
+
+  release-proof:
+    name: Aggregate Exact Release Proof
+    needs:
+      - release-gate
+      - semantic-qualification
+      - public-semantic-e2e
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out exact candidate
+        if: inputs.emit_proof
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.release_head }}
+          fetch-depth: 0
+
+      - name: Write exact aggregate release proof
         id: release-proof
-        if: ${{ inputs.emit_proof && success() }}
+        if: inputs.emit_proof
         env:
           PROOF_OUTPUT: ${{ runner.temp }}/release-gate-proof.json
           PROOF_PR_NUMBER: ${{ inputs.proof_pr_number }}
@@ -100,8 +182,8 @@ jobs:
         run: >-
           node scripts/release/release-gate-proof.cjs create --repository "$GITHUB_REPOSITORY" --pr-number "$PROOF_PR_NUMBER" --release-base "$RELEASE_BASE" --release-head "$RELEASE_HEAD" --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" --output "$PROOF_OUTPUT" --github-output "$GITHUB_OUTPUT"
 
-      - name: Upload exact release gate proof
-        if: ${{ inputs.emit_proof && success() }}
+      - name: Upload exact aggregate release proof
+        if: inputs.emit_proof
         uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.release-proof.outputs.artifact_name }}

@@ -74,10 +74,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "f4b514f5534ea357a37d9b1f41482f8705155a2fa24342a664b19ba9e213bf6e",
-    "qualityDigest": "aebc2995f5548ca49cbe77404d1cf331e0f76846be23cf6d3b42bb37bf197854",
+    "contextDigest": "5191f3e6de62b54fa24fb35cfb5cc8e94929db2ef3b072c1d534e8b300f0dade",
+    "qualityDigest": "d7b738ad3cbab6acc23f8d34f5dbeeee9537377a30b59c0b9fd1104523d3c9ba",
     "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e",
-    "routeViewCoverageDigest": "f0d812a92bb7c0f39948ee1301a2eb73415d8eb194763729d3819d28ff62b1d0",
+    "routeViewCoverageDigest": "e87f82cd28d22834eb8f4a7dd036bc2c58d9b010a0250628a6dc770f627aced0",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -100,17 +100,26 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": true,
+    "semanticRouteAndE2EContractReady": true,
+    "semanticRouteAndE2EReady": false,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": true,
+    "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [],
-  "activationDigest": "f391ceda7121297c1c4b11d19b4ebaefba5be63f70638326205ddffbf65b79fc"
+  "productionActivationBlockers": [
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#867"
+    }
+  ],
+  "activationDigest": "4bebe553a2c0f2eb29db90e8ab040eb0bf6dce35badeb831109ca3ba18b80316"
 }

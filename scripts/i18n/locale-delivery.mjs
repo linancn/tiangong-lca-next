@@ -102,7 +102,6 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
 ]);
 const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
 const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
-const SEMANTIC_E2E_DIGEST_COMPATIBILITY = 'docs/plans/i18n/semantic-e2e-digest-compatibility.json';
 const LOCALE_ARTIFACT_DEPENDENCIES = Object.freeze({
   context: Object.freeze([]),
   structuralValidation: Object.freeze(['context']),
@@ -754,34 +753,6 @@ function collectEvidenceFiles(root, relativeDirectory, include = () => true) {
   return files.sort();
 }
 
-function digestTree(root, relativeDirectory) {
-  const paths = execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '--', relativeDirectory],
-    { cwd: root, encoding: 'utf8' },
-  )
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .filter((relativeFile) => {
-      try {
-        return fs.statSync(path.resolve(root, relativeFile)).isFile();
-      } catch {
-        return false;
-      }
-    })
-    .sort();
-  if (paths.length === 0) {
-    throw new Error(`Semantic E2E candidate snapshot is empty: ${relativeDirectory}.`);
-  }
-  return digestJson(
-    paths.map((relativeFile) => ({
-      path: relativeFile,
-      sha256: fileDigest(root, relativeFile),
-    })),
-  );
-}
-
 function semanticRuntimeAssetPaths(root) {
   const gzipAssets = ['public/classifications', 'public/locations'].flatMap((directory) =>
     collectEvidenceFiles(root, directory, (absolutePath) => absolutePath.endsWith('.gz')),
@@ -943,163 +914,7 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
   };
 }
 
-function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry) {
-  if (!fs.existsSync(path.resolve(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY))) return false;
-  const manifest = readJson(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY);
-  assertRecordShape(
-    manifest,
-    ['schemaVersion', 'entries'],
-    ['releaseCandidateWaivers'],
-    'Semantic E2E digest compatibility manifest',
-  );
-  if (
-    manifest.schemaVersion !== 'tiangong.i18n-semantic-e2e-digest-compatibility.v1' ||
-    !Array.isArray(manifest.entries)
-  ) {
-    throw new Error('Semantic E2E digest compatibility manifest is invalid.');
-  }
-  const allowedScopePaths = {
-    'non-browser-semantic-release-harness-only': new Set([
-      'scripts/i18n/locale-delivery.mjs',
-      'tests/e2e/i18n/evidence-reporter.ts',
-      'tests/unit/e2e/evidenceReporter.test.ts',
-      'tests/unit/i18n/localeDeliveryContracts.test.ts',
-    ]),
-    'reviewed-read-only-request-guard-expansion': new Set([
-      'tests/e2e/i18n/production-request-guard.ts',
-      'tests/unit/e2e/productionRequestGuard.test.ts',
-    ]),
-  };
-  const requestGuardProof =
-    'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage';
-  const seen = new Set();
-  for (const [index, entry] of manifest.entries.entries()) {
-    assertRecordShape(
-      entry,
-      [
-        'path',
-        'evidenceObservedHeadCommit',
-        'evidenceSha256',
-        'compatibleSha256',
-        'scope',
-        'ownerIssue',
-        'reviewedAt',
-        'sunset',
-        'proofCommands',
-      ],
-      [],
-      `Semantic E2E digest compatibility manifest entries[${index}]`,
-    );
-    if (
-      typeof entry.path !== 'string' ||
-      !/^[0-9a-f]{40}$/u.test(entry.evidenceObservedHeadCommit ?? '') ||
-      !/^[0-9a-f]{64}$/u.test(entry.evidenceSha256 ?? '') ||
-      !/^[0-9a-f]{64}$/u.test(entry.compatibleSha256 ?? '') ||
-      !allowedScopePaths[entry.scope]?.has(entry.path) ||
-      !/^#[0-9]+$/u.test(entry.ownerIssue ?? '') ||
-      !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u.test(entry.reviewedAt ?? '') ||
-      entry.sunset !== 'next-verified-evidence-for-compatible-sha' ||
-      !Array.isArray(entry.proofCommands) ||
-      entry.proofCommands.length === 0 ||
-      entry.proofCommands.some((command) => typeof command !== 'string' || command.length === 0) ||
-      (entry.scope === 'reviewed-read-only-request-guard-expansion' &&
-        !entry.proofCommands.includes(requestGuardProof))
-    ) {
-      throw new Error(
-        `Semantic E2E digest compatibility manifest entry is invalid for ${entry.path ?? index}.`,
-      );
-    }
-    const key = `${entry.path}\0${entry.evidenceObservedHeadCommit}\0${entry.evidenceSha256}`;
-    if (seen.has(key)) {
-      throw new Error(`Semantic E2E digest compatibility manifest duplicates ${entry.path}.`);
-    }
-    seen.add(key);
-  }
-  return manifest.entries.some(
-    (entry) =>
-      entry.path === expectedEntry.path &&
-      entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
-      entry.evidenceSha256 === actualEntry.sha256 &&
-      entry.compatibleSha256 === expectedEntry.sha256,
-  );
-}
-
-function reviewedReleaseCandidateWaiver(root, evidence) {
-  const manifest = readJson(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY);
-  if (
-    !Array.isArray(manifest.releaseCandidateWaivers) ||
-    manifest.releaseCandidateWaivers.length !== 1
-  ) {
-    return false;
-  }
-  const waiver = manifest.releaseCandidateWaivers[0];
-  assertRecordShape(
-    waiver,
-    [
-      'scope',
-      'ownerIssue',
-      'reviewedAt',
-      'evidenceObservedHeadCommit',
-      'evidenceCandidateIdentity',
-      'compatibleCandidateIdentity',
-      'proofCommands',
-      'sunset',
-    ],
-    [],
-    'Semantic E2E release-candidate waiver',
-  );
-  const candidateIdentityKeys = [
-    'configTreeDigest',
-    'packageManifestDigest',
-    'sourceTreeDigest',
-    'unitTestTreeDigest',
-  ];
-  assertRecordShape(
-    waiver.evidenceCandidateIdentity,
-    candidateIdentityKeys,
-    [],
-    'Semantic E2E release-candidate evidence identity',
-  );
-  assertRecordShape(
-    waiver.compatibleCandidateIdentity,
-    candidateIdentityKeys,
-    [],
-    'Semantic E2E release-candidate compatible identity',
-  );
-  const currentCandidateIdentity = {
-    configTreeDigest: digestTree(root, 'config'),
-    packageManifestDigest: fileDigest(root, 'package.json'),
-    sourceTreeDigest: digestTree(root, 'src'),
-    unitTestTreeDigest: digestTree(root, 'tests/unit'),
-  };
-  const requiredProofCommands = [
-    'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts tests/unit/i18n/localeDeliveryContracts.test.ts --runInBand --no-coverage',
-    'npm run release:preflight',
-    'npm run prepush:gate',
-  ];
-  const evidenceCandidateIdentity = Object.fromEntries(
-    candidateIdentityKeys.map((key) => [key, evidence.candidate[key]]),
-  );
-  return (
-    waiver.scope === 'user-authorized-release-candidate-e2e-skip' &&
-    waiver.ownerIssue === '#703' &&
-    waiver.reviewedAt === '2026-07-28' &&
-    waiver.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
-    waiver.sunset === 'next-verified-evidence-for-compatible-sha' &&
-    Array.isArray(waiver.proofCommands) &&
-    requiredProofCommands.every((command) => waiver.proofCommands.includes(command)) &&
-    JSON.stringify(waiver.evidenceCandidateIdentity) ===
-      JSON.stringify(evidenceCandidateIdentity) &&
-    JSON.stringify(waiver.compatibleCandidateIdentity) === JSON.stringify(currentCandidateIdentity)
-  );
-}
-
-function assertExactFileDigests(
-  actual,
-  expected,
-  label,
-  { requireCurrentBindings = true, digestCompatibility = null } = {},
-) {
+function assertExactFileDigests(actual, expected, label, { requireCurrentBindings = true } = {}) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
   const actualPaths = actual.map((entry) => entry?.path);
   if (
@@ -1123,11 +938,7 @@ function assertExactFileDigests(
   for (let index = 0; index < expected.length; index += 1) {
     const actualEntry = actual[index];
     const expectedEntry = expected[index];
-    const digestMatches =
-      actualEntry.sha256 === expectedEntry.sha256 ||
-      (typeof digestCompatibility === 'function' &&
-        digestCompatibility(actualEntry, expectedEntry));
-    if (!digestMatches) {
+    if (actualEntry.sha256 !== expectedEntry.sha256) {
       throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
     }
   }
@@ -1155,6 +966,9 @@ function validateSemanticEvidenceContract(root, coverage, routeRows) {
   );
   if (contract.schemaVersion !== SEMANTIC_E2E_EVIDENCE_SCHEMA) {
     throw new Error('Semantic E2E evidence contract uses an unsupported schema.');
+  }
+  if (typeof contract.evidencePath !== 'string' || !contract.evidencePath.startsWith('.local/')) {
+    throw new Error('Semantic E2E evidence must be emitted under an ignored local artifact path.');
   }
   if (contract.requiredAssertionCount !== routeRows.length) {
     throw new Error('Semantic E2E evidence assertion count differs from route/view coverage.');
@@ -1404,7 +1218,6 @@ function validateSemanticE2EEvidence(
     'Semantic E2E digests',
   );
   const expectedDigests = expectedSemanticEvidenceDigests(root, routeRows, evidenceContract);
-  const releaseCandidateWaiver = reviewedReleaseCandidateWaiver(root, evidence);
   assertRecordShape(
     evidence.digests.packageLock,
     ['path', 'sha256'],
@@ -1431,21 +1244,13 @@ function validateSemanticE2EEvidence(
     evidence.digests.tests,
     expectedDigests.tests,
     'Semantic E2E test digests',
-    {
-      requireCurrentBindings,
-      digestCompatibility: (actualEntry, expectedEntry) =>
-        reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry) ||
-        (expectedEntry.path.startsWith('tests/unit/') && releaseCandidateWaiver),
-    },
+    { requireCurrentBindings },
   );
   assertExactFileDigests(
     evidence.digests.sources,
     expectedDigests.sources,
     'Semantic E2E source digests',
-    {
-      requireCurrentBindings,
-      digestCompatibility: () => releaseCandidateWaiver,
-    },
+    { requireCurrentBindings },
   );
 
   if (!Array.isArray(evidence.assertions)) {
@@ -2006,35 +1811,39 @@ function validateRouteCoverage(root, manifest, { requireCurrentSemanticEvidence 
   const viewStateRegistryEvidence = validateViewStateRegistry(root, coverage, routeRows, manifest);
   const evidenceContract = validateSemanticEvidenceContract(root, coverage, routeRows);
   const browserProof = coverage.proofPolicy?.browserProof;
-  const plannedBrowserInventory =
-    coverage.proofPolicy?.status === 'inventory-only' &&
-    browserProof?.status === 'planned' &&
+  const externalBrowserProof =
+    coverage.proofPolicy?.status === 'ci-required' &&
+    browserProof?.status === 'external-artifact' &&
+    browserProof?.ownerIssue === '#867' &&
+    browserProof?.requiredAt === 'main-candidate-release-gate' &&
+    browserProof?.storage === 'ignored-local-or-github-actions-artifact' &&
     Array.isArray(browserProof?.executedEvidence) &&
     browserProof.executedEvidence.length === 0;
-  const declaredVerifiedBrowserEvidence =
-    coverage.proofPolicy?.status === 'execution-evidence' &&
-    browserProof?.status === 'verified' &&
-    Array.isArray(browserProof?.executedEvidence) &&
-    browserProof.executedEvidence.length === 1;
-  if (
-    browserProof?.ownerIssue !== '#635' ||
-    (!plannedBrowserInventory && !declaredVerifiedBrowserEvidence)
-  ) {
+  if (!externalBrowserProof) {
     throw new Error(
-      'Route-view coverage must keep planned browser assertions inventory-only until executable semantic E2E evidence is recorded.',
+      'Route-view coverage must require external browser proof at the main-candidate release gate.',
     );
   }
-  const semanticExecutionEvidence = declaredVerifiedBrowserEvidence
+  const externalEvidencePath = path.resolve(root, evidenceContract.evidencePath);
+  if (requireCurrentSemanticEvidence && !fs.existsSync(externalEvidencePath)) {
+    throw new Error(
+      `Semantic E2E evidence is required at ${evidenceContract.evidencePath}; run the release qualification first.`,
+    );
+  }
+  const semanticExecutionEvidence = fs.existsSync(externalEvidencePath)
     ? validateSemanticE2EEvidence(
         root,
         coverage,
         routeRows,
-        browserProof.executedEvidence[0],
+        {
+          path: evidenceContract.evidencePath,
+          sha256: fileDigest(root, evidenceContract.evidencePath),
+        },
         evidenceContract,
         { requireCurrentBindings: requireCurrentSemanticEvidence },
       )
     : null;
-  const verifiedBrowserEvidence = semanticExecutionEvidence !== null;
+  const browserProofContractReady = externalBrowserProof;
   const routeKeys = routeRows.map(({ route, viewState }) => `${route}\0${viewState}`);
   if (new Set(routeKeys).size !== routeKeys.length) {
     throw new Error('Route-view coverage contains duplicate route/view-state rows.');
@@ -2266,13 +2075,17 @@ function validateRouteCoverage(root, manifest, { requireCurrentSemanticEvidence 
     browserProof: {
       status: browserProof.status,
       ownerIssue: browserProof.ownerIssue,
-      inventoryOnly: coverage.proofPolicy.status === 'inventory-only',
+      inventoryOnly: false,
       executedEvidenceCount: browserProof.executedEvidence.length,
       evidenceSchemaVersion: evidenceContract.schemaVersion,
+      proofStorage: browserProof.storage,
+      requiredAt: browserProof.requiredAt,
       routeCoverageContractDigest: routeCoverageContractDigest(coverage),
       requiredAssertionCount: routeRows.length,
       executionEvidence: semanticExecutionEvidence,
-      ready: verifiedBrowserEvidence,
+      contractReady: browserProofContractReady,
+      evidencePresent: semanticExecutionEvidence !== null,
+      ready: semanticExecutionEvidence !== null,
     },
     anonymousRoutePolicy,
     viewStateRegistry: viewStateRegistryEvidence,
@@ -3097,8 +2910,10 @@ function buildQualityManifest(root, locale, manifest, context) {
       typedContentTopologyComplete: context.typedContentDossiers.blockedContextCount === 0,
       allHighRiskMessageStructuresValidated:
         structuralValidation.highRiskMessageCount === context.messageDossiers.highRiskMessageCount,
+      semanticRouteAndE2EContractReady:
+        context.routeViewCoverage.derivedEvidence.browserProof.contractReady,
       semanticRouteAndE2EReady: context.routeViewCoverage.derivedEvidence.browserProof.ready,
-      semanticRouteAndE2EOwnerIssue: '#635',
+      semanticRouteAndE2EOwnerIssue: '#867',
       humanTranslationReviewRequired: false,
       blockedContextCount: context.inventory.blockedContextCount,
     },
@@ -3487,7 +3302,7 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
             kind: 'semantic-route-and-e2e',
             status: 'pending',
             deliveryStatus: null,
-            ownerIssue: quality.automatedChecks.semanticRouteAndE2EOwnerIssue ?? '#635',
+            ownerIssue: quality.automatedChecks.semanticRouteAndE2EOwnerIssue ?? '#867',
           },
         ]),
   ];
@@ -3572,6 +3387,8 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
       exactTopology: true,
       contextComplete,
       structuralQualityPassed,
+      semanticRouteAndE2EContractReady:
+        quality.automatedChecks.semanticRouteAndE2EContractReady === true,
       semanticRouteAndE2EReady,
       correctionOverlayPassed: true,
       fallbackContractPassed: true,
@@ -3611,7 +3428,7 @@ function assertCurrentSemanticEvidenceReady(root, locale, manifest) {
     });
   } catch (error) {
     throw new Error(
-      `${locale} is not production-ready; unresolved activation blocker: semantic-route-and-e2e-proof (#635): ${
+      `${locale} is not production-ready; unresolved activation blocker: semantic-route-and-e2e-proof (#867): ${
         error instanceof Error ? error.message : String(error)
       }`,
     );

@@ -3,11 +3,13 @@
 ARG PLAYWRIGHT_IMAGE=mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
 FROM ${PLAYWRIGHT_IMAGE} AS dependencies
 
+ARG E2E_FRONTEND_ENV=main
+
 ENV CI=true \
     HOME=/root \
     XDG_CACHE_HOME=/root/.cache \
     npm_config_cache=/root/.npm \
-    REACT_APP_ENV=main \
+    REACT_APP_ENV=${E2E_FRONTEND_ENV} \
     UMI_ENV=prod
 
 WORKDIR /app

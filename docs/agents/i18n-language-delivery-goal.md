@@ -49,7 +49,6 @@ checkPaths:
   - docs/plans/i18n/fallback-contract.json
   - docs/plans/i18n/route-view-coverage.json
   - docs/plans/i18n/semantic-e2e-evidence.schema.json
-  - docs/plans/i18n/semantic-e2e-evidence.json
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
@@ -57,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
-lastReviewedNote: 'Reviewed for Next Issue #820: the refreshed v0.0.73 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
+lastReviewedCommit: 2f4cad4b
+lastReviewedNote: 'Reviewed for Next Issue #867: closed semantic qualification uses deterministic non-production configuration, separate from deployment-target evidence.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -523,7 +522,7 @@ npm run i18n:locale:audit -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:manifest:write -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:artifacts:write
 npm run i18n:locale:artifacts:idempotence
-npm run i18n:evidence:canonical:check
+npm run i18n:evidence:canonical:check -- --path <artifact>
 npm run i18n:context:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:quality:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:corrections:check
@@ -535,7 +534,7 @@ npm run i18n:hardcoding:audit
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
 
-tracked semantic evidence reporter 必须直接写出仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。格式策略必须从 repository-owned evidence path 解析并与实际输出目的地解耦，因此容器挂载的 `/e2e-output` 也必须一次写出可由同一 canonical checker 原样接受的 bytes。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
+semantic evidence reporter 必须直接把外部 artifact 写成仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。格式策略必须从 repository-owned canonical path 解析并与实际输出目的地解耦，因此容器挂载的 `/e2e-output` 或 ignored `.local/**` 也必须一次写出可由同一 canonical checker 原样接受的 bytes。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
 
 CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二元条件、固定 supported-locale union、手写语言下拉数组、缓存资产数组、`locale || 'en-US'` / `locale ?? 'zh-CN'` 一类逻辑或空值默认，以及“非 zh 即 en”归一逻辑。下载报告等导出完整 HTML 文档的根 `<html lang>` 与 `dir` 也属于运行时语言能力，必须从 registry/runtime policy 动态派生；门禁必须拒绝嵌入模板中的固定根语言元数据。允许项必须落在最小 allowlist，并说明它是外部 adapter、canonical source、历史冻结验证，或故意 fail-closed 的产品支持语言快照门禁；新增语言后，不修改业务页面即可让 registry 驱动的测试发现其所有必需能力。
 
@@ -616,10 +615,10 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 只有一个 CI 信任边界：
 
-- 日常 PR 与 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，canonical release workflow 对 exact release SHA 强制复用同一 workflow；
+- 日常 PR 与 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，`main`-target PR 的 aggregate Release Gate 对 exact candidate SHA 强制复用同一 workflow；
 - semantic E2E GitHub Actions 一律不接收生产凭据、不写生产数据，只运行合同发现以及 Chromium、Firefox、WebKit 三浏览器 public semantics/认证边界矩阵；`workflow_dispatch` 与 release 调用都不扩权，也不承载 authenticated production-data closure。
 
-完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 tracked verified evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
+完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 verified external evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
 
 route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观察合同共 49 个 assertion ID；每个 ID 除 live route scenario 外，还必须闭合其 `executableTarget.requiredScenarios` 声明的匿名保护、fallback/refresh、状态机、authoring、响应式、持久化或参考数据刷新场景。Chromium 执行完整 route/view 矩阵，登录/语言选择器、团队内容语言录入和流程数据生命周期等关键场景在 Chromium、Firefox、WebKit 三种引擎中执行。locale 和可编辑内容语言集合必须从 `LOCALE_REGISTRY` 与 `CONTENT_LANGUAGE_REGISTRY` 动态派生；新增 registry locale 会自动扩大期望集合并使旧证据失效，不得人工修改旧证据继续使用。
 
@@ -627,11 +626,9 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
-tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+browser proof 不进入 Git。`main`-target PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
 
-通常只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。另一个受限范围 `reviewed-read-only-request-guard-expansion` 只允许在用户明确授权跳过 E2E、改动仅向 production request guard 增加具名只读 endpoint、且 focused guard tests 覆盖全部新增 endpoint 时使用。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
-
-Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，可以跳过完整 authenticated E2E。该授权只能通过 `user-authorized-release-candidate-e2e-skip` 保存为完整 `config`、package manifest、`src`、`tests/unit` tree identity，并要求 focused request-guard proof、`release:preflight` 与完整 `prepush:gate`；任何 tree drift 立即失效，且 route coverage、E2E harness、package lock、runtime assets、backend target 与 production safety 均不在授权范围内。
+显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代 release aggregate proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
 ---
 
@@ -647,7 +644,7 @@ Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，�
 - source manifest digest；
 - shared dynamic-family registry；
 - route-view coverage manifest/digest；
-- semantic E2E evidence schema，以及通过 49-ID closure、browser/locale matrix、source/test digest 和零泄漏 ledger 校验的紧凑执行证据；
+- semantic E2E evidence schema、route-view proof contract 和外部 artifact 路径策略；
 - glossary/style guide/context override；
 - context-completeness schema 和自动检查结果摘要；
 - existing-translation correction ledger；
@@ -935,7 +932,7 @@ npm run push:retry
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
-| 仅 canonical evidence formatting / locale artifact orchestration 变化，且 focused proof 证明 browser 语义不变 | 记录精确旧/新 digest compatibility，运行 canonical check、双生成幂等、focused contracts 和 production preflight | 永不需要 | tracked HEAD 变化则一次 | 精确兼容 pair 内不失效；任何后续漂移立即失效 |
+| 仅 root release version metadata 变化 | 计算 qualification key 并严格校验外部 proof；行为 key 应保持不变 | 永不需要 | tracked HEAD 变化则一次 | proof key 不变，但 aggregate PR proof 仍绑定 exact candidate |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + affected proof | 永不需要 | tracked HEAD 变化则一次 | 已有确认失效，发布前重确认一次 |
