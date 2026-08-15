@@ -143,8 +143,9 @@ jest.mock('antd', () => {
   const React = require('react');
 
   const Card = ({ children }: any) => <section>{children}</section>;
-  const Button = ({ children, onClick }: any) => (
-    <button type='button' onClick={onClick}>
+  const Button = ({ children, icon, onClick, 'aria-label': ariaLabel }: any) => (
+    <button type='button' aria-label={ariaLabel} onClick={onClick}>
+      {icon}
       {children}
     </button>
   );
@@ -685,6 +686,38 @@ describe('AssignmentReview', () => {
     expect(dataTypeSelect).toHaveValue('all');
     expect(screen.queryByRole('option', { name: 'menu.processes' })).not.toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'menu.mydata.sources' })).toBeInTheDocument();
+  });
+
+  it('opens the Review Admin quality diagnostic from the list toolbar', async () => {
+    const onOpenQualityDiagnostic = jest.fn();
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: { reload: jest.fn() } }}
+        onOpenQualityDiagnostic={onOpenQualityDiagnostic}
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Run quality diagnostic' }));
+
+    expect(onOpenQualityDiagnostic).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the quality diagnostic action from the rejected admin list', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='admin-rejected'
+        actionRef={{ current: { reload: jest.fn() } }}
+        onOpenQualityDiagnostic={jest.fn()}
+      />,
+    );
+
+    await screen.findByTestId('protable');
+    expect(
+      screen.queryByRole('button', { name: 'Run quality diagnostic' }),
+    ).not.toBeInTheDocument();
   });
 
   it('selects a flat reference row directly without loading a child table', async () => {

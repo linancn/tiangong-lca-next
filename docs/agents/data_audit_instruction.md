@@ -18,8 +18,8 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 3784deb29e1da1a2e15833214315a455c7cb2369
 lastReviewedNote: 'Reviewed for Next Issue #820: submission admission is separated from the Review Admin informational quality diagnostic without changing review-state transitions.'
 ---
 

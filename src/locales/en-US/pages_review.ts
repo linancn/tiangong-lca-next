@@ -19,7 +19,7 @@ export default {
   'pages.review.qualityDiagnostic.empty': 'No quality diagnostic has been run yet.',
   'pages.review.qualityDiagnostic.updatedAt': 'Updated {time}',
   'pages.review.qualityDiagnostic.runtimeFailed': 'The diagnostic did not produce a report.',
-  'pages.review.qualityDiagnostic.running': 'The diagnostic is running in the background. Review actions remain available.',
+  'pages.review.qualityDiagnostic.running': 'The diagnostic is checking the joint pending-review matrix in the background for information only; review actions remain available.',
   'pages.review.qualityDiagnostic.scope.reviews': 'Reviews checked',
   'pages.review.qualityDiagnostic.scope.datasets': 'Datasets checked',
   'pages.review.qualityDiagnostic.scope.processes': 'Pending Processes',

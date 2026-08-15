@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
-lastReviewedNote: 'Reviewed for Next Issue #846: the runtime-config service, maintenance UI, static fallback, locale artifacts, focused tests, lint, and production build follow the existing shared-runtime validation contract.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
+lastReviewedNote: 'Reviewed for Next Issue #820: v0.0.73 semantic evidence, regenerated locale artifacts, qualification, and release preflight follow the existing validation contract.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

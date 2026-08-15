@@ -19,8 +19,8 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-08-13
-lastReviewedCommit: 6ca549026b03097cfd9e9fdf81d0cee7469337e0
+lastReviewedAt: 2026-08-14
+lastReviewedCommit: 3784deb29e1da1a2e15833214315a455c7cb2369
 lastReviewedNote: 'Reviewed for Next Issue #820: the manual quality diagnostic belongs only to Review Admin and grants no workflow authority to team roles or Review Members.'
 ---
 

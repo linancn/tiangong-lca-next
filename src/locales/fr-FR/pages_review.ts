@@ -19,7 +19,7 @@ export default {
   'pages.review.qualityDiagnostic.empty': 'Aucun diagnostic qualité n’a encore été exécuté.',
   'pages.review.qualityDiagnostic.updatedAt': 'Mis à jour à {time}',
   'pages.review.qualityDiagnostic.runtimeFailed': 'Le diagnostic n’a produit aucun rapport.',
-  'pages.review.qualityDiagnostic.running': 'Le diagnostic s’exécute en arrière-plan. Les actions de revue restent disponibles.',
+  'pages.review.qualityDiagnostic.running': 'Le diagnostic vérifie en arrière-plan la matrice conjointe des révisions en attente, à titre informatif uniquement ; les actions de revue restent disponibles.',
   'pages.review.qualityDiagnostic.scope.reviews': 'Revues vérifiées',
   'pages.review.qualityDiagnostic.scope.datasets': 'Jeux de données vérifiés',
   'pages.review.qualityDiagnostic.scope.processes': 'Processus en attente',

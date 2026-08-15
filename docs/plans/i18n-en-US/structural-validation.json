@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "a3f28c7ecc55713f38a02b0d2c87d826d7acedb64e600c628e2d5723c918cb06",
+    "auditedInputDigest": "e77df81f1c50318d0bcf944bc81db86f71aa5b69f0c52d60ee7d2347f1081c09",
     "validatedMessageCount": 3169,
     "validatedModules": [
       "$entry",
@@ -41,10 +41,10 @@
     ],
     "highRiskMessageCount": 1433,
     "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
-    "catalogDigest": "467d24cabc55fc92fcd112386a9020f4b8b55e71e970559d9c4006a8323a265e",
-    "dossierDigest": "c81633a407d0a7d0f7c67c5a514eced89f4357d2fc0d081b397ad382509f1b14",
+    "catalogDigest": "9fabd08ff44e959db39d1b511126d18154db14458c4811d9e40d2f0d0d57e34f",
+    "dossierDigest": "e3e531d9d21e2920f8dcfc998b6e48df6135981257ea9f6d60381d052f8decb5",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "63115bb60cd34c1e5602f2cb4e6669fee1581f79588bc2116b44c581d9375b49",
+    "routeEvidenceDigest": "b9be0c6b0415d774ad4cd5fabadc4215261b4e116ced14a869dca1e82583cf8a",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "720ffdb462f7c139597e6d9e9bb59f4641cd1fd1b5099b671fdef39cc900c87f",
         "highRiskMessageCount": 1433,
         "highRiskMessageDigest": "3e0a2033e69c686a6f32c3c1887192e3c5c168978256724bf2063930f7d20493",
-        "dossierDigest": "c81633a407d0a7d0f7c67c5a514eced89f4357d2fc0d081b397ad382509f1b14",
+        "dossierDigest": "e3e531d9d21e2920f8dcfc998b6e48df6135981257ea9f6d60381d052f8decb5",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "130337bbf27b5e88fcaae66f0809135427444a614e3f06543240122457f5cef9"
+  "validationDigest": "1c59c51f9c26015d988266e451e5e2db0579ec3cdb25772bbc48c3a84f84760d"
 }

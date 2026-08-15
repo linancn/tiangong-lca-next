@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-08-14T11:17:52.396Z",
-  "runId": "local-451d36df-cd3e-4d10-8669-026451b45ee0",
+  "generatedAt": "2026-08-15T02:14:01.770Z",
+  "runId": "local-69152287-f7b1-41b7-9023-df263728ade0",
   "candidate": {
     "configTreeDigest": "d6ae18f74119b7b90412411bfb2f034c8c6ab9ec959d614b67b8006fed87c189",
-    "observedHeadCommit": "2864ff58b2778e75baee64375c906ce14c70546c",
+    "observedHeadCommit": "30c76a8fbb3791aad3106e75c9b6d6e758730178",
     "packageManifestDigest": "5101399bc561b0c10e04e1ab5af1ed059ad39f346d7e12c79757ebd2cca95858",
-    "sourceTreeDigest": "7703d24cd13e213addf77f5fd049c640bb8403d077582cb67accac1e8a141cfb",
-    "unitTestTreeDigest": "8810a6c9cdf79addcdabf7675f015f318317d2e04a9018d1c7a1c4b5022261a7"
+    "sourceTreeDigest": "e31480aeba670f1f6de67beaf64fdd200e9f3a4e24ee9c30af6b7187ec489d7a",
+    "unitTestTreeDigest": "44d8a2bbeb208dd18286ed02bd06353a52027ff80362449757a1eaee21f78906"
   },
   "target": {
     "frontend": "candidate-local",
@@ -425,11 +425,11 @@
       },
       {
         "path": "tests/unit/pages/Review/Components/AssignmentReview.test.tsx",
-        "sha256": "f2ebb8349076983763284b4cc467cca1a019fb37ffe455d75ca6fab9abe1ffb3"
+        "sha256": "3215d4fbef9fef285a6b471a9cb8bddc14b7c9bac0ad4a5daeddd97ae6049387"
       },
       {
         "path": "tests/unit/pages/Review/index.test.tsx",
-        "sha256": "553f85cd073d0580976697488343ffe3f55dd5cd6173be3c00e1320f58166c4f"
+        "sha256": "1377925ca44e8a8be972ac64164d2b699e9deeb0e14db2a54f7ba5b7be944494"
       },
       {
         "path": "tests/unit/pages/Sources/index.test.tsx",
@@ -583,7 +583,7 @@
       },
       {
         "path": "src/pages/Review/index.tsx",
-        "sha256": "66014539541e015ccb4e25a042104f1b3d8215803636fb99ab6f6724437584d7"
+        "sha256": "ec1bd7394f07b3c8d2c336abd27efbcb9b253d7c5ce6b8b7601c660dca75ef22"
       },
       {
         "path": "src/pages/Sources/index.tsx",

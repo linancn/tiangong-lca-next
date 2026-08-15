@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-14
-lastReviewedCommit: 313c80a7081a68464221a669b2cd630464d08b0c
+lastReviewedCommit: 3784deb29e1da1a2e15833214315a455c7cb2369
 lastReviewedNote: 'Reviewed for Next Issue #820: Process submission now checks only the editable current record, while Review Admin owns a manual, informational joint quality diagnostic.'
 related:
   - ../AGENTS.md

@@ -33,9 +33,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
-lastReviewedNote: 'Reviewed for Next Issue #845: refreshed v0.0.71 production evidence and qualification follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
+lastReviewedNote: 'Reviewed for Next Issue #820: refreshed v0.0.73 production evidence, qualification, and Docpact records follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

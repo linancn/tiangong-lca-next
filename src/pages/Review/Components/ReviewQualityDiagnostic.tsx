@@ -6,9 +6,15 @@ import {
   type ReviewQualityDiagnosticSection,
   type ReviewQualityDiagnosticStatus,
 } from '@/services/reviews/api';
-import { ExperimentOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  CopyOutlined,
+  ExperimentOutlined,
+  InfoCircleOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Button, Card, Collapse, Empty, List, Space, Tag, Typography, theme } from 'antd';
+import { Alert, Button, Collapse, Empty, List, Modal, Space, Tag, Typography, theme } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const { Paragraph, Text } = Typography;
@@ -187,7 +193,7 @@ const findingColor = (level: ReviewQualityDiagnosticFinding['level']) => {
     case 'warning':
       return 'orange';
     default:
-      return 'blue';
+      return undefined;
   }
 };
 
@@ -236,7 +242,12 @@ const Metric = ({ label, value }: { label: React.ReactNode; value?: number }) =>
   );
 };
 
-const ReviewQualityDiagnostic = () => {
+type ReviewQualityDiagnosticProps = {
+  open: boolean;
+  onClose: () => void;
+};
+
+const ReviewQualityDiagnostic = ({ open, onClose }: ReviewQualityDiagnosticProps) => {
   const intl = useIntl();
   const { token } = theme.useToken();
   const [diagnostic, setDiagnostic] = useState<ReviewQualityDiagnosticRun>();
@@ -296,6 +307,31 @@ const ReviewQualityDiagnostic = () => {
     typeof report?.summary?.findingCount === 'number'
       ? report.summary.findingCount
       : report?.findings?.length;
+  const primaryTagStyle = useMemo(
+    () => ({
+      color: token.colorPrimaryText,
+      background: token.colorPrimaryBg,
+      borderColor: token.colorPrimaryBorder,
+    }),
+    [token.colorPrimaryBg, token.colorPrimaryBorder, token.colorPrimaryText],
+  );
+  const informationalTagStyle = useMemo(
+    () => ({
+      color: token.colorPrimaryText,
+      background: 'transparent',
+      border: 'none',
+      paddingInline: 0,
+    }),
+    [token.colorPrimaryText],
+  );
+  const activeStatusTagStyle = useMemo(
+    () => ({
+      color: token.colorPrimaryText,
+      background: 'transparent',
+      borderColor: token.colorPrimaryBorder,
+    }),
+    [token.colorPrimaryBorder, token.colorPrimaryText],
+  );
 
   const sectionItems = useMemo(
     () =>
@@ -329,7 +365,10 @@ const ReviewQualityDiagnostic = () => {
                   <List.Item key={`${finding.code}-${index}`}>
                     <Space direction='vertical' size={4} style={{ width: '100%' }}>
                       <Space wrap>
-                        <Tag color={findingColor(finding.level)}>
+                        <Tag
+                          color={findingColor(finding.level)}
+                          style={finding.level === 'info' ? primaryTagStyle : undefined}
+                        >
                           {formatDiagnosticFindingLevel(intl, finding.level)}
                         </Tag>
                         <Text code>{finding.code}</Text>
@@ -371,7 +410,7 @@ const ReviewQualityDiagnostic = () => {
             </Text>
           ),
       })),
-    [intl, report?.sections, token],
+    [intl, primaryTagStyle, report?.sections, token],
   );
 
   const statusLabel = diagnostic ? formatDiagnosticStatus(intl, diagnostic.status) : null;
@@ -381,32 +420,11 @@ const ReviewQualityDiagnostic = () => {
   const isActive = isDiagnosticActive(diagnostic?.status);
 
   return (
-    <Card
+    <Modal
       data-testid='review-quality-diagnostic'
-      size='small'
-      style={{
-        marginBottom: 16,
-        borderInlineStart: `3px solid ${token.colorInfo}`,
-        boxShadow: token.boxShadowTertiary,
-      }}
-      title={
-        <Space wrap>
-          <ExperimentOutlined />
-          <span>
-            {intl.formatMessage({
-              id: 'pages.review.qualityDiagnostic.title',
-              defaultMessage: 'Pending-review quality diagnostic',
-            })}
-          </span>
-          <Tag icon={<InfoCircleOutlined />} color='blue'>
-            {intl.formatMessage({
-              id: 'pages.review.qualityDiagnostic.informationalOnly',
-              defaultMessage: 'Informational only',
-            })}
-          </Tag>
-        </Space>
-      }
-      extra={
+      open={open}
+      onCancel={onClose}
+      footer={
         <Space wrap>
           <Button
             icon={<ReloadOutlined />}
@@ -437,17 +455,50 @@ const ReviewQualityDiagnostic = () => {
           </Button>
         </Space>
       }
+      width={960}
+      centered
+      styles={{
+        body: {
+          maxHeight: 'calc(100vh - 180px)',
+          overflowY: 'auto',
+          paddingTop: token.paddingXS,
+        },
+      }}
+      title={
+        <Space wrap>
+          <ExperimentOutlined style={{ color: token.colorPrimary }} />
+          <span>
+            {intl.formatMessage({
+              id: 'pages.review.qualityDiagnostic.title',
+              defaultMessage: 'Pending-review quality diagnostic',
+            })}
+          </span>
+          <Tag icon={<InfoCircleOutlined />} style={informationalTagStyle}>
+            {intl.formatMessage({
+              id: 'pages.review.qualityDiagnostic.informationalOnly',
+              defaultMessage: 'Informational only',
+            })}
+          </Tag>
+        </Space>
+      }
     >
       <Space direction='vertical' size='middle' style={{ width: '100%' }} aria-live='polite'>
-        <Alert
-          showIcon
-          type='info'
-          message={intl.formatMessage({
-            id: 'pages.review.qualityDiagnostic.nonBlockingNotice',
-            defaultMessage:
-              'This manual report checks the joint pending-review matrix. Its findings and failures never disable assignment, approval, or rejection.',
-          })}
-        />
+        <Space size='small' align='start'>
+          <InfoCircleOutlined style={{ color: token.colorTextTertiary, marginTop: 3 }} />
+          <Text type='secondary'>
+            {isActive
+              ? intl.formatMessage({
+                  id: 'pages.review.qualityDiagnostic.running',
+                  defaultMessage:
+                    'The diagnostic is checking the joint pending-review matrix in the background for information only; review actions remain available.',
+                })
+              : intl.formatMessage({
+                  id: 'pages.review.qualityDiagnostic.nonBlockingNotice',
+                  defaultMessage:
+                    'This manual report checks the joint pending-review matrix. Its findings and failures never disable assignment, approval, or rejection.',
+                })}
+          </Text>
+        </Space>
 
         {requestError && (
           <Alert
@@ -479,9 +530,23 @@ const ReviewQualityDiagnostic = () => {
         ) : (
           <>
             <Space wrap>
-              <Tag color={statusColor(diagnostic.status)}>{statusLabel}</Tag>
+              <Tag
+                color={isActive ? undefined : statusColor(diagnostic.status)}
+                style={isActive ? activeStatusTagStyle : undefined}
+              >
+                {statusLabel}
+              </Tag>
               {outcomeLabel && <Tag color={outcomeColor(outcome)}>{outcomeLabel}</Tag>}
-              <Text type='secondary' copyable={{ text: diagnostic.runId }}>
+              <Text
+                type='secondary'
+                copyable={{
+                  text: diagnostic.runId,
+                  icon: [
+                    <CopyOutlined key='copy' style={{ color: token.colorPrimary }} />,
+                    <CheckOutlined key='copied' style={{ color: token.colorSuccess }} />,
+                  ],
+                }}
+              >
                 {diagnostic.runId}
               </Text>
               {lastUpdatedAt && (
@@ -506,18 +571,6 @@ const ReviewQualityDiagnostic = () => {
                   defaultMessage: 'The diagnostic did not produce a report.',
                 })}
                 description={diagnostic.error?.message ?? diagnostic.error?.code}
-              />
-            )}
-
-            {isActive && (
-              <Alert
-                showIcon
-                type='info'
-                message={intl.formatMessage({
-                  id: 'pages.review.qualityDiagnostic.running',
-                  defaultMessage:
-                    'The diagnostic is running in the background. Review actions remain available.',
-                })}
               />
             )}
 
@@ -608,7 +661,7 @@ const ReviewQualityDiagnostic = () => {
           </>
         )}
       </Space>
-    </Card>
+    </Modal>
   );
 };
 

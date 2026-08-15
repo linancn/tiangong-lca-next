@@ -92,7 +92,7 @@ describe('ReviewQualityDiagnostic', () => {
       statusText: 'OK',
     });
 
-    render(<ReviewQualityDiagnostic />);
+    render(<ReviewQualityDiagnostic open onClose={jest.fn()} />);
 
     expect(await screen.findByText('Pending-review quality diagnostic')).toBeInTheDocument();
     await waitFor(() =>
@@ -134,7 +134,7 @@ describe('ReviewQualityDiagnostic', () => {
         statusText: 'Accepted',
       });
 
-    const { unmount } = render(<ReviewQualityDiagnostic />);
+    const { unmount } = render(<ReviewQualityDiagnostic open onClose={jest.fn()} />);
 
     expect(await screen.findByText('No quality diagnostic has been run yet.')).toBeInTheDocument();
     expect(mockRequestReviewQualityDiagnosticApi).toHaveBeenCalledTimes(1);
@@ -176,7 +176,7 @@ describe('ReviewQualityDiagnostic', () => {
         statusText: 'Service Unavailable',
       });
 
-    render(<ReviewQualityDiagnostic />);
+    render(<ReviewQualityDiagnostic open onClose={jest.fn()} />);
 
     expect(await screen.findByText('No quality diagnostic has been run yet.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Refresh report/i }));
@@ -202,7 +202,7 @@ describe('ReviewQualityDiagnostic', () => {
       statusText: 'OK',
     });
 
-    render(<ReviewQualityDiagnostic />);
+    render(<ReviewQualityDiagnostic open onClose={jest.fn()} />);
 
     expect(await screen.findByText('The diagnostic did not produce a report.')).toBeInTheDocument();
     expect(screen.getByText('Worker unavailable')).toBeInTheDocument();

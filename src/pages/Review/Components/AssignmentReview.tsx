@@ -21,9 +21,23 @@ import {
 } from '@/services/reviews/api';
 import { ReviewsTable } from '@/services/reviews/data';
 import { isCurrentAssignedReviewerCommentState } from '@/services/reviews/util';
+import { ExperimentOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Card, Col, Input, Row, Select, Space, Spin, Table, Tag, theme, Tooltip } from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  theme,
+  Tooltip,
+} from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
 import { useEffect, useRef, useState } from 'react';
@@ -72,6 +86,7 @@ type AssignmentReviewProps = {
   actionRef: any;
   actionFrom?: 'reviewMember';
   hideReviewButton?: boolean;
+  onOpenQualityDiagnostic?: () => void;
 };
 
 export const isReferenceMatchingReviewTab = (
@@ -140,6 +155,7 @@ const AssignmentReview = ({
   actionRef,
   actionFrom,
   hideReviewButton = false,
+  onOpenQualityDiagnostic,
 }: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
@@ -1121,6 +1137,23 @@ const AssignmentReview = ({
           },
         }}
         toolBarRender={() => {
+          const qualityDiagnosticLabel = intl.formatMessage({
+            id: 'pages.review.qualityDiagnostic.run',
+            defaultMessage: 'Run quality diagnostic',
+          });
+          const qualityDiagnosticAction =
+            userData?.role === 'review-admin' &&
+            tableType !== 'admin-rejected' &&
+            onOpenQualityDiagnostic ? (
+              <Tooltip key='review-quality-diagnostic' title={qualityDiagnosticLabel}>
+                <Button
+                  type='text'
+                  aria-label={qualityDiagnosticLabel}
+                  icon={<ExperimentOutlined />}
+                  onClick={onOpenQualityDiagnostic}
+                />
+              </Tooltip>
+            ) : null;
           const filterControls = (
             <Space key='review-list-filters' wrap>
               <Select<ReviewDisplayMode>
@@ -1177,9 +1210,10 @@ const AssignmentReview = ({
                   onFinished={reloadAfterChildAction}
                 />
               </Space>,
+              qualityDiagnosticAction,
             ];
           }
-          return [filterControls];
+          return [filterControls, qualityDiagnosticAction];
         }}
         headerTitle={
           <>

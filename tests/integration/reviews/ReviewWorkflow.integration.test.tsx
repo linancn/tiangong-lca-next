@@ -95,6 +95,7 @@ jest.mock('@ant-design/icons', () => ({
   CloseOutlined: () => <span data-testid='icon-close' />,
   CrownOutlined: () => <span data-testid='icon-crown' />,
   DeleteOutlined: () => <span data-testid='icon-delete' />,
+  ExperimentOutlined: () => <span data-testid='icon-experiment' />,
   PlusOutlined: () => <span data-testid='icon-plus' />,
   UserOutlined: () => <span data-testid='icon-user' />,
 }));
