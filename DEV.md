@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
-lastReviewedNote: 'Reviewed for Next Issue #846: the startup runtime-config switch, maintenance boundary, static fallback, and focused validation use the existing bootstrap workflow without changing local setup commands.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: f99036c60dbda9a7adabc735f0037fca9d2197c6
+lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 evidence refresh, qualification, and release preflight use the existing bootstrap workflow without changing local setup commands.'
 ---
 
 # Development Bootstrap

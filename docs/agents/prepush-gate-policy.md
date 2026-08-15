@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
-lastReviewedNote: 'Reviewed for Next Issue #846: maintenance runtime, locale, component-test, and packaging changes remain covered by the existing Docpact-first managed push gate.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
+lastReviewedNote: 'Reviewed for Next Issue #820: refreshed production evidence, locale artifacts, and qualification receipts remain covered by the existing Docpact-first managed push gate.'
 ---
 
 # Pre-Push Gate Policy

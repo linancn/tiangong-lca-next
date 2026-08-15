@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: 2864ff58b2778e75baee64375c906ce14c70546c
-lastReviewedNote: 'Reviewed for Next Issue #845: the refreshed v0.0.71 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
+lastReviewedNote: 'Reviewed for Next Issue #820: the refreshed v0.0.73 production proof preserves the existing evidence-binding, explicit authorization, and exact-cleanup boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

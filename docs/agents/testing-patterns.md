@@ -30,9 +30,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-14
-lastReviewedCommit: f56913ac642a6c83f789bc6687702ad11dcbdfce
-lastReviewedNote: 'Reviewed for Next Issue #846: startup maintenance, fail-open service, static fallback, refresh interaction, and environment-switch tests follow the existing component and service test patterns.'
+lastReviewedAt: 2026-08-15
+lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
+lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 semantic evidence refresh follows the existing qualification and evidence-binding test patterns.'
 ---
 
 # Testing Patterns Reference
