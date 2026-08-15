@@ -86,9 +86,9 @@ describe('Publication workflow gates', () => {
     expect(packageJson.scripts['prepush:gate']).toContain('npm run lcia-cache:verify');
   });
 
-  it('keeps browser semantic E2E optional for daily work and mandatory on dev release candidates', () => {
+  it('keeps the dev-server browser matrix diagnostic and uses hermetic qualification for releases', () => {
     const semanticWorkflow = read('.github/workflows/i18n-semantic-e2e.yml');
-    expect(semanticWorkflow).toContain('  workflow_call:');
+    expect(semanticWorkflow).not.toContain('  workflow_call:');
     expect(semanticWorkflow).toContain('  workflow_dispatch:');
     expect(semanticWorkflow).not.toContain('  pull_request:');
     expect(semanticWorkflow).not.toContain('  push:');
@@ -103,9 +103,8 @@ describe('Publication workflow gates', () => {
     expect(aggregateGate).toContain('npm --silent run e2e:qualification:key');
     expect(aggregateGate).toContain('npm --silent run release:proof:verify');
     expect(aggregateGate).toContain('npm --silent run e2e:qualify');
-    expect(aggregateGate).toContain('  public-semantic-e2e:');
-    expect(aggregateGate).toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
-    expect(aggregateGate).toContain('ref: ${{ inputs.release_head }}');
+    expect(aggregateGate).not.toContain('  public-semantic-e2e:');
+    expect(aggregateGate).not.toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
     expect(aggregateGate).not.toContain('secrets:');
 
     const releaseWorkflow = read('.github/workflows/build.yml');

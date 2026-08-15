@@ -466,6 +466,56 @@ describe('bounded checked-push transport receipt', () => {
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
+  it('skips the checkpoint and gates for a raw ref deletion', () => {
+    const current = fixture();
+
+    const result = run(current.root, 'git', ['push', 'origin', '--delete', 'dev']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(
+      'Only ref deletions requested; skipped the checkpoint and gates.',
+    );
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current, 'refs/heads/dev')).toBe('');
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
+  it('accepts HEAD as the exact current-branch source for a managed push', () => {
+    const current = fixture();
+
+    const result = run(current.root, 'npm', [
+      'run',
+      'push:checked',
+      '--',
+      'origin',
+      'HEAD:refs/heads/main',
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(readGateLog(current)).toHaveLength(3);
+    expect(remoteSha(current)).toBe(current.head);
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
+  it('rejects an ineligible managed ref update before running either gate', () => {
+    const current = fixture();
+    git(current.root, ['tag', 'ineligible-managed-tag']);
+
+    const result = run(current.root, 'npm', [
+      'run',
+      'push:checked',
+      '--',
+      'origin',
+      'refs/tags/ineligible-managed-tag:refs/tags/ineligible-managed-tag',
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('checked push requires one eligible exact-HEAD branch update');
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current, 'refs/tags/ineligible-managed-tag')).toBe('');
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
   it('rejects a successful managed update when the hook returns no private payload', () => {
     const current = fixture();
     git(current.root, ['config', 'core.hooksPath', '.missing-hooks']);

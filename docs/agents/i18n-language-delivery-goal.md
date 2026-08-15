@@ -57,7 +57,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-08-15
 lastReviewedCommit: 2f4cad4b
-lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs own aggregate acceptance and later immutable release stages reuse their proof.'
+lastReviewedNote: 'Reviewed for Next Issue #867: exact dev Release PRs use one hermetic browser qualification and exclude duplicate dev-server blocking.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -613,10 +613,11 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 当前浏览器执行合同使用 `@playwright/test` `1.61.1`，canonical 入口为 `npm run test:e2e:i18n`，配置位于 `playwright.config.ts`，测试与 ledger/reporter helper 位于 `tests/e2e/i18n/**`。候选前端必须由 `npm run start:main` 在 loopback URL 启动并连接 production backend；`E2E_BASE_URL` 指向真实生产前端时必须 fail closed。
 
-独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 只有一个 CI 信任边界：
+独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 只保留一个可选的 dev-server 诊断边界：
 
-- 日常 PR 与普通 `dev` push 不触发浏览器矩阵；`workflow_dispatch` 提供可选的按需验证，只有 marker-bound 的 exact dev Release PR aggregate 对 candidate SHA 强制调用同一 workflow；
-- semantic E2E GitHub Actions 一律不接收生产凭据、不写生产数据，只运行合同发现以及 Chromium、Firefox、WebKit 三浏览器 public semantics/认证边界矩阵；`workflow_dispatch` 与 release 调用都不扩权，也不承载 authenticated production-data closure。
+- 日常 PR、普通 `dev` push 和 release aggregate 都不触发该 dev-server 浏览器矩阵；仅 `workflow_dispatch` 提供可选的按需诊断；
+- 该诊断一律不接收生产凭据、不写生产数据，只运行合同发现以及 Chromium、Firefox、WebKit 三浏览器 public semantics/认证边界矩阵；其冷启动开发服务器行为不能作为 release proof，也不承载 authenticated production-data closure；
+- marker-bound exact dev Release PR 使用预构建候选、固定 closed simulator 的 content-addressed hermetic qualification；它覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景，是唯一 release-required 浏览器证明。
 
 完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 verified external evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
 
@@ -626,7 +627,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
-browser proof 不进入 Git。exact dev Release PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 执行完整 closed-simulator qualification，并与 public Chromium/Firefox/WebKit workflow 以及 static/full gate 聚合。成功后生成绑定 main baseline、dev base/head/tree、version、PR、run attempt 与 artifact 的外部 proof。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
+browser proof 不进入 Git。exact dev Release PR 使用行为输入与浏览器环境合同计算 qualification key，先严格验证命中的外部 proof；未命中或校验失败时，使用固定 `.invalid` backend profile 对预构建候选执行完整 closed-simulator qualification，并与 static/full gate 聚合。该 qualification 自身闭合 Chromium 全矩阵及 Firefox/WebKit 关键场景，因此 release 不再追加一套 dev-server public matrix。成功后生成绑定 main baseline、dev base/head/tree、version、PR、run attempt 与 artifact 的外部 proof。qualification 不读取 deployment `.env` 或 `origin/main:.env`；根应用 release version 与 deployment-only metadata 不进入行为 key，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。
 
 显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代 release aggregate proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
@@ -806,7 +807,7 @@ browser proof 不进入 Git。exact dev Release PR 使用行为输入与浏览�
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
 - 以 `npm run test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
-- 日常 PR/`dev` push 不触发 semantic browser E2E；按需 `workflow_dispatch` 与 exact-release-SHA 强制调用只执行无生产凭据、无写入的三浏览器 public semantics/合同边界矩阵；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
+- 日常 PR/`dev` push 不触发 semantic browser E2E；exact-release-SHA 强制执行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；按需 `workflow_dispatch` 只保留 dev-server public semantics 诊断，不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
 - semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
@@ -859,7 +860,7 @@ npm run push:retry
 4. 三个 PR required checks 通过后按依赖顺序自主合并到 `dev`，不请求翻译或合并确认。
 5. 执行 dev smoke；匿名态覆盖登录流程和受保护入口跳登录，已登录态完整覆盖 route-view matrix，特别是 `/welcome` 与 `/welcome?view=carbon-footprint`；若角色走同一 selector 代码路径，只做代表性 smoke。
 6. 枚举完整 `dev...main` commits/paths/batch members，确认版本/tag/release 唯一。
-7. 用 `release:to-dev --apply` 创建唯一确定性 version PR 到 `dev`。该命令的 restricted push 只跑 Docpact 与 static preflight；exact dev Release PR 必须完成一次 aggregate static/full、content-addressed qualification 与 public three-browser proof。若失败，回 `dev` 修复并生成新 patch candidate；不得把失败推迟到 main。
+7. 用 `release:to-dev --apply` 创建唯一确定性 version PR 到 `dev`。该命令的 restricted push 只跑 Docpact 与 static preflight；exact dev Release PR 必须完成一次 aggregate static/full 与 content-addressed hermetic qualification，后者已覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景，不再叠加 dev-server public matrix。若失败，回 `dev` 修复并生成新 patch candidate；不得把失败推迟到 main。
 8. dev Release PR 合并后，用 `release:promote-dev-to-main --apply` 创建唯一 immutable promote PR。其本地 push 与 `Main Candidate / Release Gate` 只验证 exact dev proof、main/dev lineage 和 tree identity，不重跑 candidate acceptance。
 9. 重新审计 production-effective action：若 promote merge 会直接上线，停在其合并前进入阶段 J；若 promote merge 已不再上线，则自主合并到 `main`，继续完成所有非生产生效准备，只在真实 deploy/promote/publish 动作前进入阶段 J。
 
@@ -1069,7 +1070,7 @@ npm run push:retry
 - [ ] `npm run test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `npm run start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
-- [ ] 日常 PR/普通 `dev` push 不触发浏览器矩阵；exact dev Release PR 运行一次 aggregate Release Gate 但不获得生产凭据或写权限；main-target PR 与正常 post-merge main 仅验证该 proof；按需 `workflow_dispatch` recovery 同样无生产凭据、无生产写；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
+- [ ] 日常 PR/普通 `dev` push 不触发浏览器矩阵；exact dev Release PR 运行一次 aggregate Release Gate，其中 hermetic qualification 覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景，但不获得生产凭据或写权限；main-target PR 与正常 post-merge main 仅验证该 proof；按需 `workflow_dispatch` 只是无凭据、无生产写的 dev-server 诊断；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
 - [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
@@ -1149,7 +1150,7 @@ npm run push:retry
 - 哪些语言事实属于 UI locale registry、content-language registry 和 reference-resource Manifest？
 - 如何阻止下一种语言再次引入固定 union、下拉数组、文件 map、缓存列表和语言特判？
 - 为什么新增 registry locale 会自动扩大 Playwright 期望集合并使旧 semantic evidence 失效？
-- 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，而按需 `workflow_dispatch` 与 exact-release-SHA release gate 都只能运行无凭据、无写入的三浏览器 public proof；同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
+- 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，exact-release-SHA 只运行无凭据、无写入、预构建候选的 hermetic qualification，而按需 `workflow_dispatch` 只保留 dev-server 诊断；同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
 - 49 个 assertion ID、Chromium 全矩阵、三浏览器关键场景和 digest/ledger closure 如何共同防止 prose-only 或伪造浏览器证据？
 - 为什么生产测试数据只能是 UUID-scoped `codex-e2e` tuple，必须 create 前写 intent、delete 前验证 UUID/owner/五字段全语言 markers，并且最终 `created=cleaned`、`leaked=0`？
 - `SelectLang reload={false}` 如何让 same-document locale refresh 与旧请求 race 成为可验证合同，而不是由整页 reload 掩盖？

@@ -6,7 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v3';
+const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v4';
 const RESOLUTION_SCHEMA_VERSION = 'tiangong.next.release-gate-proof-resolution.v2';
 const READINESS_WORKFLOW_FILE = 'release-readiness.yml';
 const READINESS_WORKFLOW_PATH = `.github/workflows/${READINESS_WORKFLOW_FILE}`;
@@ -15,7 +15,6 @@ const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v2';
 const PROOF_SCOPE = Object.freeze([
   'static-release-gate',
   'content-addressed-semantic-qualification',
-  'public-browser-semantics',
 ]);
 const PROOF_FILE_NAME = 'release-gate-proof.json';
 const GIT_OBJECT_ID_PATTERN = /^[0-9a-f]{40}$/u;

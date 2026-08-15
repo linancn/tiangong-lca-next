@@ -1,19 +1,19 @@
 name: I18n semantic E2E
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       ref:
-        description: Exact candidate commit to validate.
-        required: true
+        description: Optional commit or ref to diagnose; defaults to the dispatched commit.
+        required: false
+        default: ''
         type: string
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: i18n-semantic-e2e-${{ inputs.ref || github.ref }}
+  group: i18n-semantic-e2e-diagnostic-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
