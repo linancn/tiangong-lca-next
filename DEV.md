@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: f99036c60dbda9a7adabc735f0037fca9d2197c6
+lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
 lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 evidence refresh, qualification, and release preflight use the existing bootstrap workflow without changing local setup commands.'
 ---
 

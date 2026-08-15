@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: d6b543eeb49679d1cccbb71ea69b2d2475f1bd57
+lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
 lastReviewedNote: 'Reviewed for Next Issue #820: v0.0.73 semantic evidence, regenerated locale artifacts, qualification, and release preflight follow the existing validation contract.'
 related:
   - ../AGENTS.md
