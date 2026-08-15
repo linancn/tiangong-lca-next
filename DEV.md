@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
+lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
 lastReviewedNote: 'Reviewed for Next Issue #867: semantic qualification uses deterministic non-production configuration and deployment env remains separately selectable.'
 ---
 

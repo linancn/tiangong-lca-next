@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4bcf738aae2fb965d3d7ad49fce8832513
+lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
 lastReviewedNote: 'Reviewed for Next Issue #867: release proof remains external and content-addressed, while closed qualification is independent of deployment configuration.'
 related:
   - .docpact/config.yaml

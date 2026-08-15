@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
+lastReviewedCommit: c8e47ab3c22a0f5457ba9db3114272a7b0fc9152
 lastReviewedNote: 'Reviewed for Next Issue #867: closed qualification uses deterministic non-production configuration and excludes deployment-only environment drift from its reusable behavior proof.'
 related:
   - ../AGENTS.md
