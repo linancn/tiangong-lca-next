@@ -34,8 +34,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
-lastReviewedNote: 'Reviewed for Next Issue #820: refreshed v0.0.73 production evidence, qualification, and Docpact records follow the existing explicit-authorization, exact-cleanup, and deterministic-release contract.'
+lastReviewedCommit: d475ccfe
+lastReviewedNote: 'Reviewed for Next Issue #867: release proof is external, content-addressed, mandatory before main merge, and never written by version orchestration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -149,11 +149,13 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - exact-candidate scope-closure proof: `npm run test:qualification:scope-closure:browser -- --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
-- credential-free production preflight for main candidates: `npm run release:preflight`
+- static release preflight: `npm run release:static-preflight` (`release:preflight` is a compatibility alias); this validates tracked locale/reference contracts but does not claim browser execution
+- content-addressed browser qualification: `npm run e2e:qualification:key`, then `npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json`; verify with `npm run release:proof:verify -- --proof <path>`
 - preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
 - preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
-- `release:to-dev --apply` reuses a current semantic-harness qualification receipt or runs credential-free qualification before changing the version; a newly generated exact receipt is committed in the same Release PR, and the composed candidate must pass `release:preflight` before push
+- `release:to-dev --apply` changes only version metadata and bounded Docpact review metadata, runs static preflight, and never runs browsers or writes proof into the branch
+- every `main`-target PR runs the aggregate Release Gate before merge: static/full tests, content-addressed semantic qualification, and the public Chromium/Firefox/WebKit matrix; proof is stored only in ignored local state, Actions cache, or Actions artifacts
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`

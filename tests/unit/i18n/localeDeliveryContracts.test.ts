@@ -2,7 +2,6 @@ import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities'
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
 import { REFERENCE_RESOURCE_MANIFEST } from '@/services/referenceResources/manifest';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -14,36 +13,9 @@ import {
 
 const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const DELIVERY_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/locale-delivery.mjs');
-const DIGEST_COMPATIBILITY_PATH = 'docs/plans/i18n/semantic-e2e-digest-compatibility.json';
-const { packageLockRuntimeDigest } =
-  require('../../../scripts/i18n/package-lock-runtime-fingerprint.cjs') as {
-    packageLockRuntimeDigest: (input: Buffer | string | object) => string;
-  };
 
 const readJson = (relativePath: string) =>
   JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), 'utf8'));
-
-const sha256File = (relativePath: string) =>
-  createHash('sha256')
-    .update(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath)))
-    .digest('hex');
-
-const digestTree = (relativeDirectory: string) => {
-  const paths = execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '--', relativeDirectory],
-    { cwd: REPOSITORY_ROOT, encoding: 'utf8' },
-  )
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .sort();
-  return createHash('sha256')
-    .update(
-      `${JSON.stringify(paths.map((relativePath) => ({ path: relativePath, sha256: sha256File(relativePath) })))}\n`,
-    )
-    .digest('hex');
-};
 
 describe('shared locale delivery contracts', () => {
   it('generates every locale artifact twice without inheriting source Git state', () => {
@@ -83,17 +55,10 @@ describe('shared locale delivery contracts', () => {
       })),
     );
     const coverageRows = [...coverage.rows, ...familyRows];
-    const expectedEvidencePath = 'docs/plans/i18n/semantic-e2e-evidence.json';
-    const expectedEvidenceDescriptor = {
-      path: expectedEvidencePath,
-      sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
-    };
-    const hasVerifiedBrowserProof =
-      coverage.proofPolicy.status === 'execution-evidence' &&
-      coverage.proofPolicy.browserProof.status === 'verified';
+    const expectedEvidencePath = '.local/e2e-release/semantic-e2e-evidence.json';
     expect(coverage.proofPolicy).toEqual(
       expect.objectContaining({
-        status: hasVerifiedBrowserProof ? 'execution-evidence' : 'inventory-only',
+        status: 'ci-required',
         assertionSemantics: expect.stringContaining('never execution evidence'),
         evidenceContract: expect.objectContaining({
           schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
@@ -110,19 +75,18 @@ describe('shared locale delivery contracts', () => {
             maximumLeaked: 0,
           }),
         }),
-        browserProof: hasVerifiedBrowserProof
-          ? {
-              status: 'verified',
-              ownerIssue: '#635',
-              executedEvidence: [expectedEvidenceDescriptor],
-            }
-          : {
-              status: 'planned',
-              ownerIssue: '#635',
-              executedEvidence: [],
-            },
+        browserProof: {
+          status: 'external-artifact',
+          ownerIssue: '#867',
+          requiredAt: 'main-candidate-release-gate',
+          storage: 'ignored-local-or-github-actions-artifact',
+          executedEvidence: [],
+        },
       }),
     );
+    expect(
+      fs.existsSync(path.join(REPOSITORY_ROOT, 'docs/plans/i18n/semantic-e2e-evidence.json')),
+    ).toBe(false);
     expect(coverageRows).toHaveLength(49);
     const executableAssertionIds = coverageRows.map(
       ({ executableAssertionId }: any) => executableAssertionId,
@@ -451,11 +415,7 @@ describe('shared locale delivery contracts', () => {
       const structuralValidation = readJson(`docs/plans/i18n-${locale}/structural-validation.json`);
       const quality = readJson(`docs/plans/i18n-${locale}/quality-manifest.json`);
       const activation = readJson(`docs/plans/i18n-${locale}/locale-activation-manifest.json`);
-      const routeCoverage = readJson('docs/plans/i18n/route-view-coverage.json');
-      const semanticRouteAndE2EReady =
-        routeCoverage.proofPolicy.status === 'execution-evidence' &&
-        routeCoverage.proofPolicy.browserProof.status === 'verified' &&
-        routeCoverage.proofPolicy.browserProof.executedEvidence.length === 1;
+      const semanticRouteAndE2EReady = false;
       const capability = LOCALE_CAPABILITY_MATRIX.find(({ appLocale }) => appLocale === locale)!;
       const expectedReferenceBlockerIds = REFERENCE_RESOURCE_MANIFEST.filter((resource) => {
         const localized = capability.referenceResources.find(
@@ -498,14 +458,18 @@ describe('shared locale delivery contracts', () => {
           configuredRouteCount: 46,
           coveredConfiguredRouteCount: 46,
           browserProof: expect.objectContaining({
-            status: semanticRouteAndE2EReady ? 'verified' : 'planned',
-            ownerIssue: '#635',
-            inventoryOnly: !semanticRouteAndE2EReady,
-            executedEvidenceCount: semanticRouteAndE2EReady ? 1 : 0,
+            status: 'external-artifact',
+            ownerIssue: '#867',
+            inventoryOnly: false,
+            executedEvidenceCount: 0,
             evidenceSchemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+            proofStorage: 'ignored-local-or-github-actions-artifact',
+            requiredAt: 'main-candidate-release-gate',
             routeCoverageContractDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
             requiredAssertionCount: 49,
-            ready: semanticRouteAndE2EReady,
+            contractReady: true,
+            evidencePresent: false,
+            ready: false,
           }),
           blockedDerivedStateCount: 0,
           unownedVisibleLiteralCount: 0,
@@ -544,8 +508,9 @@ describe('shared locale delivery contracts', () => {
           everyMessageDossierComplete: true,
           typedContentTopologyComplete: true,
           allHighRiskMessageStructuresValidated: true,
+          semanticRouteAndE2EContractReady: true,
           semanticRouteAndE2EReady,
-          semanticRouteAndE2EOwnerIssue: '#635',
+          semanticRouteAndE2EOwnerIssue: '#867',
           humanTranslationReviewRequired: false,
         }),
       );
@@ -580,6 +545,7 @@ describe('shared locale delivery contracts', () => {
             languageHardcodingPassed: true,
             fallbackContractPassed: true,
             referenceResourcesReady,
+            semanticRouteAndE2EContractReady: true,
             semanticRouteAndE2EReady,
             productionActivationReady: referenceResourcesReady && semanticRouteAndE2EReady,
           }),
@@ -617,7 +583,7 @@ describe('shared locale delivery contracts', () => {
       );
       expect(Boolean(semanticProofBlocker)).toBe(!semanticRouteAndE2EReady);
       expect(semanticProofBlocker?.ownerIssue ?? null).toBe(
-        semanticRouteAndE2EReady ? null : '#635',
+        semanticRouteAndE2EReady ? null : '#867',
       );
     },
   );
@@ -795,68 +761,7 @@ describe('shared locale delivery contracts', () => {
     },
   );
 
-  it('makes the explicit production-readiness gate follow verified semantic evidence', () => {
-    const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
-    const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
-    const digestCompatibility = readJson(DIGEST_COMPATIBILITY_PATH);
-    const releaseCandidateWaiver = digestCompatibility.releaseCandidateWaivers?.[0];
-    const releaseCandidateWaiverReady =
-      releaseCandidateWaiver?.scope === 'user-authorized-release-candidate-e2e-skip' &&
-      releaseCandidateWaiver?.ownerIssue === '#703' &&
-      JSON.stringify(releaseCandidateWaiver.evidenceCandidateIdentity) ===
-        JSON.stringify({
-          configTreeDigest: evidence.candidate.configTreeDigest,
-          packageManifestDigest: evidence.candidate.packageManifestDigest,
-          sourceTreeDigest: evidence.candidate.sourceTreeDigest,
-          unitTestTreeDigest: evidence.candidate.unitTestTreeDigest,
-        }) &&
-      JSON.stringify(releaseCandidateWaiver.compatibleCandidateIdentity) ===
-        JSON.stringify({
-          configTreeDigest: digestTree('config'),
-          packageManifestDigest: sha256File('package.json'),
-          sourceTreeDigest: digestTree('src'),
-          unitTestTreeDigest: digestTree('tests/unit'),
-        });
-    const compatibleDigest = ({ path: evidencePath, sha256 }: any) =>
-      digestCompatibility.entries.some(
-        (entry: any) =>
-          entry.path === evidencePath &&
-          entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
-          entry.evidenceSha256 === sha256 &&
-          entry.compatibleSha256 === sha256File(evidencePath),
-      );
-    const boundFiles = [
-      ...evidence.digests.runtimeAssets,
-      ...evidence.digests.tests,
-      ...evidence.digests.sources,
-    ];
-    const currentPackageLock = fs.readFileSync(
-      path.join(REPOSITORY_ROOT, evidence.digests.packageLock.path),
-    );
-    const observedPackageLock = execFileSync(
-      'git',
-      ['show', `${evidence.candidate.observedHeadCommit}:${evidence.digests.packageLock.path}`],
-      { cwd: REPOSITORY_ROOT, maxBuffer: 32 * 1024 * 1024 },
-    );
-    const packageLockReady =
-      sha256File(evidence.digests.packageLock.path) === evidence.digests.packageLock.sha256 ||
-      (createHash('sha256').update(observedPackageLock).digest('hex') ===
-        evidence.digests.packageLock.sha256 &&
-        packageLockRuntimeDigest(observedPackageLock) ===
-          packageLockRuntimeDigest(currentPackageLock));
-    const semanticRouteAndE2EReady =
-      coverage.proofPolicy.status === 'execution-evidence' &&
-      coverage.proofPolicy.browserProof.status === 'verified' &&
-      coverage.proofPolicy.browserProof.executedEvidence.length === 1 &&
-      packageLockReady &&
-      boundFiles.every(
-        ({ path: evidencePath, sha256 }: { path: string; sha256: string }) =>
-          fs.existsSync(path.join(REPOSITORY_ROOT, evidencePath)) &&
-          (sha256File(evidencePath) === sha256 ||
-            compatibleDigest({ path: evidencePath, sha256 }) ||
-            (releaseCandidateWaiverReady &&
-              (evidencePath.startsWith('src/') || evidencePath.startsWith('tests/unit/')))),
-      );
+  it('keeps production readiness strict when external semantic proof is absent', () => {
     const result = spawnSync(
       process.execPath,
       [
@@ -877,87 +782,29 @@ describe('shared locale delivery contracts', () => {
       },
     );
 
-    expect(result.status).toBe(semanticRouteAndE2EReady ? 0 : 1);
-    expect(result.stderr.includes('is not production-ready')).toBe(!semanticRouteAndE2EReady);
-    expect(result.stderr.includes('#635')).toBe(!semanticRouteAndE2EReady);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('is not production-ready');
+    expect(result.stderr).toContain('#867');
+    expect(result.stderr).toContain('.local/e2e-release/semantic-e2e-evidence.json');
     expect(result.stderr).not.toContain('rights-clearance-required');
     expect(result.stderr).not.toContain('file-specific-owner-confirmation-required');
   });
 
-  it('limits semantic E2E digest compatibility to exact reviewed inputs and scopes', () => {
-    const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
-    const compatibility = readJson(DIGEST_COMPATIBILITY_PATH);
-    const expectedReviews: Record<
-      string,
-      { ownerIssue: string; reviewedAt: string; scope: string; requiredProof: string }
-    > = {
-      'scripts/i18n/locale-delivery.mjs': {
-        ownerIssue: '#703',
-        reviewedAt: '2026-07-28',
-        scope: 'non-browser-semantic-release-harness-only',
-        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
-      },
-      'tests/e2e/i18n/evidence-reporter.ts': {
-        ownerIssue: '#688',
-        reviewedAt: '2026-07-24',
-        scope: 'non-browser-semantic-release-harness-only',
-        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
-      },
-      'tests/e2e/i18n/production-request-guard.ts': {
-        ownerIssue: '#858',
-        reviewedAt: '2026-08-14',
-        scope: 'reviewed-read-only-request-guard-expansion',
-        requiredProof:
-          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
-      },
-      'tests/unit/e2e/productionRequestGuard.test.ts': {
-        ownerIssue: '#858',
-        reviewedAt: '2026-08-14',
-        scope: 'reviewed-read-only-request-guard-expansion',
-        requiredProof:
-          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
-      },
-      'tests/unit/e2e/evidenceReporter.test.ts': {
-        ownerIssue: '#688',
-        reviewedAt: '2026-07-24',
-        scope: 'non-browser-semantic-release-harness-only',
-        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
-      },
-      'tests/unit/i18n/localeDeliveryContracts.test.ts': {
-        ownerIssue: '#858',
-        reviewedAt: '2026-08-14',
-        scope: 'non-browser-semantic-release-harness-only',
-        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
-      },
-    };
-    expect(compatibility.schemaVersion).toBe('tiangong.i18n-semantic-e2e-digest-compatibility.v1');
-    const entryPaths = compatibility.entries.map(({ path: entryPath }: any) => entryPath);
-    expect(new Set(entryPaths).size).toBe(entryPaths.length);
-    for (const entry of compatibility.entries) {
-      const expectedReview = expectedReviews[entry.path];
-      expect(expectedReview).toBeDefined();
-      const evidenceEntry = evidence.digests.tests.find(
-        ({ path: evidencePath }: any) => evidencePath === entry.path,
-      );
-      expect(evidenceEntry).toBeDefined();
-      expect(evidenceEntry.sha256).not.toBe(sha256File(entry.path));
-      expect(entry).toEqual(
-        expect.objectContaining({
-          evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
-          evidenceSha256: evidenceEntry.sha256,
-          compatibleSha256: sha256File(entry.path),
-          scope: expectedReview.scope,
-          ownerIssue: expectedReview.ownerIssue,
-          reviewedAt: expectedReview.reviewedAt,
-          sunset: 'next-verified-evidence-for-compatible-sha',
-          proofCommands: expect.arrayContaining([
-            'npm run i18n:evidence:canonical:check',
-            expectedReview.requiredProof,
-          ]),
-        }),
-      );
-    }
-    expect(compatibility.releaseCandidateWaivers).toEqual([]);
+  it('keeps semantic proof outside tracked source and ignores its canonical local path', () => {
+    const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
+    const evidencePath = coverage.proofPolicy.evidenceContract.evidencePath;
+    expect(evidencePath).toBe('.local/e2e-release/semantic-e2e-evidence.json');
+    expect(
+      execFileSync('git', ['check-ignore', evidencePath], {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+      }).trim(),
+    ).toBe(evidencePath);
+    expect(
+      fs.existsSync(
+        path.join(REPOSITORY_ROOT, 'docs/plans/i18n/semantic-harness-qualification-receipt.json'),
+      ),
+    ).toBe(false);
   });
 
   it('requires the production locale gate in the release workflow', () => {
@@ -965,16 +812,20 @@ describe('shared locale delivery contracts', () => {
       path.join(REPOSITORY_ROOT, '.github/workflows/release-gate.yml'),
       'utf8',
     );
-    expect(releaseWorkflow).toContain('npm run release:preflight');
+    expect(releaseWorkflow).toContain('npm run release:static-preflight');
 
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json'), 'utf8'),
     ) as { scripts: Record<string, string> };
-    expect(packageJson.scripts['release:preflight']).toContain(
-      'npm run i18n:locale:all:production:check',
+    expect(packageJson.scripts['release:preflight']).toBe('npm run release:static-preflight');
+    expect(packageJson.scripts['release:static-preflight']).toContain(
+      'npm run i18n:locale:all:check',
     );
-    expect(packageJson.scripts['release:preflight']).toContain(
+    expect(packageJson.scripts['release:static-preflight']).toContain(
       'npm run reference-data:production:check',
+    );
+    expect(packageJson.scripts['release:static-preflight']).not.toContain(
+      'i18n:locale:all:production:check',
     );
 
     const manualWorkflow = fs.readFileSync(

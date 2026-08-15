@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-15
-lastReviewedCommit: 80064ce51904c5d29aa7c0ce9f174355e746b72b
-lastReviewedNote: 'Reviewed for Next Issue #820: the v0.0.73 semantic evidence refresh follows the existing qualification and evidence-binding test patterns.'
+lastReviewedCommit: d475ccfe
+lastReviewedNote: 'Reviewed for Next Issue #867: proof reuse is computed from behavior inputs and external artifacts, never maintained with source hashes.'
 ---
 
 # Testing Patterns Reference
@@ -121,16 +121,16 @@ Special cases:
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
-17. when a digest-bound change is proven to affect only release-harness generation/formatting and not browser semantics, record only its exact evidence/current digest pair in the reviewed compatibility manifest; never exclude the path or accept future drift
+17. keep reusable browser proof outside the repository and key it from behavior-affecting inputs; never maintain reuse by committing generated hashes or compatibility records
 
 Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
-- normal release orchestration checks qualification before version mutation: dry-run reports `valid` or `regeneration_required`, while `release:to-dev --apply` reuses the receipt or generates the exact provenance-bound receipt, includes it in the same Release PR, and runs `release:preflight` on the composed commit before checked push
-- direct release proof outside that deterministic flow still requires `npm run e2e:qualify`, a separately reviewed receipt PR, and retry from the clean merged candidate; the receipt file and root version fields are excluded from the qualification input digest
-- release-workflow unit fixtures must cover qualification reuse, automatic generation, generation failure, composed-candidate preflight failure, unexpected untracked JSON, immutable promotion identity, direct ancestry, the normal tree-identical two-parent promotion after `dev` advances, changed-tree rejection, and the rule that no failed qualification/preflight path reaches push or PR creation
+- normal release orchestration keeps version mutation and browser proof separate: `release:to-dev --apply` runs static preflight and writes no proof, while the `main`-target PR runs the aggregate Release Gate before merge
+- local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; root version-only changes preserve the key, while behavior-affecting inputs invalidate it
+- release-workflow unit fixtures must prove release-to-dev never invokes browser qualification or writes tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
 - publication-workflow contract tests must prove proof reuse can pass an intentionally skipped full-gate ancestor with `!cancelled()`, while every tag, draft, web, Electron, and verification job still names each direct prerequisite and requires its result to be `success`
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
@@ -191,7 +191,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
-| canonical semantic evidence format | `npm run i18n:evidence:canonical:check` |
+| canonical semantic evidence format | `npm run i18n:evidence:canonical:check -- --path <artifact>` |
 | language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
 | all-active-locale activation | `npm run i18n:locale:all:check` |
 | existing-translation correction overlay | `npm run i18n:corrections:check` |

@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-export const SEMANTIC_EVIDENCE_REPOSITORY_PATH = 'docs/plans/i18n/semantic-e2e-evidence.json';
+export const SEMANTIC_EVIDENCE_REPOSITORY_PATH = '.local/e2e-release/semantic-e2e-evidence.json';
 
 export async function formatCanonicalSemanticEvidence(
   value: unknown,

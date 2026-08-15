@@ -40,7 +40,7 @@ type EvidenceRecord = {
 };
 
 describe('i18n evidence reporter', () => {
-  it('renders checked-in evidence in the repository canonical format', () => {
+  it('renders external evidence with the repository canonical formatter', () => {
     const reporterSource = readFileSync(
       path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
       'utf8',
@@ -50,17 +50,8 @@ describe('i18n evidence reporter', () => {
       'utf8',
     );
     expect(formatterSource).toContain('prettier.format(JSON.stringify(value, null, 2)');
+    expect(formatterSource).toContain("'.local/e2e-release/semantic-e2e-evidence.json'");
     expect(reporterSource).toContain('await formatCanonicalEvidenceJson(evidence)');
-    expect(
-      execFileSync(
-        process.execPath,
-        ['--import', 'tsx', 'scripts/i18n/check-semantic-evidence-format.mjs'],
-        {
-          cwd: REPOSITORY_ROOT,
-          encoding: 'utf8',
-        },
-      ),
-    ).toBe('Semantic E2E evidence is canonical.\n');
   });
 
   it('renders an external container evidence path with the repository canonical config', () => {

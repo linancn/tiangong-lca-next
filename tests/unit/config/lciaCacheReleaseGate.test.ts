@@ -24,15 +24,15 @@ describe('Publication workflow gates', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
-    expect(releaseGate).toContain('run: npm run release:preflight');
+    expect(releaseGate).toContain('run: npm run release:static-preflight');
     expect(releaseGate).toContain('run: npm run prepush:gate');
     expect(releaseGate).toContain("TIANGONG_AGENT_MODE: '1'");
     expect(releaseGate).toContain('uses: actions/upload-artifact@v6');
     expect(releaseGate).toContain('path: .local/test-logs/**');
     expect(releaseGate.indexOf('npm run lcia-cache:verify')).toBeLessThan(
-      releaseGate.indexOf('npm run release:preflight'),
+      releaseGate.indexOf('npm run release:static-preflight'),
     );
-    expect(releaseGate.indexOf('npm run release:preflight')).toBeLessThan(
+    expect(releaseGate.indexOf('npm run release:static-preflight')).toBeLessThan(
       releaseGate.indexOf('npm run prepush:gate'),
     );
     expect(releaseGate).not.toContain('run: npm run test:ci');
@@ -51,7 +51,7 @@ describe('Publication workflow gates', () => {
     );
     const releaseQualification = workflow.slice(
       workflow.indexOf('  release-qualified:'),
-      workflow.indexOf('  release-semantic-e2e:'),
+      workflow.indexOf('  release-tag:'),
     );
     expect(releaseContext).toContain('node scripts/release/release-gate-proof.cjs resolve');
     expect(releaseContext).toContain("github.ref == 'refs/heads/main'");
@@ -97,14 +97,18 @@ describe('Publication workflow gates', () => {
     expect(semanticWorkflow).not.toContain('E2E_PRODUCTION_WRITE_CONFIRMATION');
     expect(semanticWorkflow).not.toContain('E2E_WRITE_VERIFIED_EVIDENCE');
 
+    const aggregateGate = read('.github/workflows/release-gate.yml');
+    expect(aggregateGate).toContain('  semantic-qualification:');
+    expect(aggregateGate).toContain('npm --silent run e2e:qualification:key');
+    expect(aggregateGate).toContain('npm --silent run release:proof:verify');
+    expect(aggregateGate).toContain('npm --silent run e2e:qualify');
+    expect(aggregateGate).toContain('  public-semantic-e2e:');
+    expect(aggregateGate).toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
+    expect(aggregateGate).toContain('ref: ${{ inputs.release_head }}');
+    expect(aggregateGate).not.toContain('secrets:');
+
     const releaseWorkflow = read('.github/workflows/build.yml');
-    const semanticJob = releaseWorkflow.slice(
-      releaseWorkflow.indexOf('  release-semantic-e2e:'),
-      releaseWorkflow.indexOf('  release-tag:'),
-    );
-    expect(semanticJob).toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
-    expect(semanticJob).toContain('ref: ${{ needs.release-context.outputs.release_head }}');
-    expect(semanticJob).not.toContain('secrets:');
+    expect(releaseWorkflow).not.toContain('  release-semantic-e2e:');
 
     const publicationJobs = [
       releaseWorkflow.slice(
@@ -121,7 +125,7 @@ describe('Publication workflow gates', () => {
       ),
     ];
     for (const publicationJob of publicationJobs) {
-      expect(publicationJob).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
+      expect(publicationJob).toMatch(/needs:[\s\S]*- release-qualified/);
       expect(publicationJob).toMatch(/needs:[\s\S]*- release-tag/);
     }
   });
@@ -139,11 +143,11 @@ describe('Publication workflow gates', () => {
       "proof_pr_number: ${{ format('{0}', github.event.pull_request.number) }}",
     );
     expect(releaseGate).toContain('node scripts/release/release-gate-proof.cjs create');
-    expect(releaseGate).toContain('Upload exact release gate proof');
+    expect(releaseGate).toContain('Upload exact aggregate release proof');
     expect(releaseGate).toContain('retention-days: 30');
   });
 
-  it('publishes a release tag only after release qualification and semantic E2E pass', () => {
+  it('publishes a release tag only after aggregate release qualification passes', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseContext = workflow.slice(
       workflow.indexOf('  release-context:'),
@@ -157,7 +161,7 @@ describe('Publication workflow gates', () => {
     expect(releaseContext).not.toContain('git tag "${tag_name}"');
     expect(releaseContext).not.toContain('git push origin "refs/tags/${tag_name}"');
     expect(releaseTag).toMatch(/needs:[\s\S]*- release-qualified/);
-    expect(releaseTag).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
+    expect(releaseTag).not.toContain('release-semantic-e2e');
     expect(releaseTag).toContain('git tag "${TAG_NAME}" "${RELEASE_HEAD}"');
     expect(releaseTag).toContain('git push origin "refs/tags/${TAG_NAME}"');
   });
@@ -167,25 +171,19 @@ describe('Publication workflow gates', () => {
     const publicationJobs = [
       {
         source: job(workflow, 'release-tag', 'release-draft'),
-        required: ['release-context', 'release-qualified', 'release-semantic-e2e'],
+        required: ['release-context', 'release-qualified'],
       },
       {
         source: job(workflow, 'release-draft', 'web-deploy'),
-        required: ['release-context', 'release-qualified', 'release-semantic-e2e', 'release-tag'],
+        required: ['release-context', 'release-qualified', 'release-tag'],
       },
       {
         source: job(workflow, 'web-deploy', 'release'),
-        required: ['release-context', 'release-qualified', 'release-semantic-e2e', 'release-tag'],
+        required: ['release-context', 'release-qualified', 'release-tag'],
       },
       {
         source: job(workflow, 'release', 'verify-release'),
-        required: [
-          'release-context',
-          'release-qualified',
-          'release-draft',
-          'release-semantic-e2e',
-          'release-tag',
-        ],
+        required: ['release-context', 'release-qualified', 'release-draft', 'release-tag'],
       },
       {
         source: job(workflow, 'verify-release'),

@@ -24,7 +24,7 @@ export const E2E_LEDGER_PATH = path.join(E2E_RUNTIME_DIR, 'production-data-ledge
 export const E2E_LEDGER_RESULT_PATH = path.join(E2E_RUNTIME_DIR, 'production-data-result.json');
 export const E2E_EVIDENCE_PATH =
   process.env.E2E_EVIDENCE_PATH ??
-  path.join(REPOSITORY_ROOT, 'docs/plans/i18n/semantic-e2e-evidence.json');
+  path.join(REPOSITORY_ROOT, '.local/e2e-release/semantic-e2e-evidence.json');
 export const ROUTE_COVERAGE_PATH = 'docs/plans/i18n/route-view-coverage.json';
 
 export const APP_LOCALES: readonly SupportedAppLocale[] = E2E_LOCALE_CATALOG_ADAPTER.locales;

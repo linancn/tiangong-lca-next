@@ -6,11 +6,16 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v1';
+const PROOF_SCHEMA_VERSION = 'tiangong.next.release-gate-proof.v2';
 const RESOLUTION_SCHEMA_VERSION = 'tiangong.next.release-gate-proof-resolution.v1';
 const READINESS_WORKFLOW_FILE = 'release-readiness.yml';
 const READINESS_WORKFLOW_PATH = `.github/workflows/${READINESS_WORKFLOW_FILE}`;
-const RELEASE_GATE_JOB_NAME = 'Main Candidate / Release Gate';
+const RELEASE_GATE_JOB_NAME = 'Main Candidate / Aggregate Exact Release Proof';
+const PROOF_SCOPE = Object.freeze([
+  'static-release-gate',
+  'content-addressed-semantic-qualification',
+  'public-browser-semantics',
+]);
 const PROOF_FILE_NAME = 'release-gate-proof.json';
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u;
@@ -134,6 +139,7 @@ function buildProof({
   return {
     schema_version: PROOF_SCHEMA_VERSION,
     ...normalized,
+    proof_scope: [...PROOF_SCOPE],
     artifact_name: artifactName({
       releaseBase: normalized.release_base,
       releaseHead: normalized.release_head,
@@ -285,6 +291,13 @@ function assertProofMatches(proof, expected) {
   const mismatches = Object.entries(required)
     .filter(([key, value]) => proof[key] !== value)
     .map(([key, value]) => ({ field: key, expected: value, actual: proof[key] ?? null }));
+  if (JSON.stringify(proof.proof_scope) !== JSON.stringify(PROOF_SCOPE)) {
+    mismatches.push({
+      field: 'proof_scope',
+      expected: PROOF_SCOPE,
+      actual: proof.proof_scope ?? null,
+    });
+  }
   if (mismatches.length > 0) {
     fail('proof_payload_mismatch', 'The release-gate proof does not match the merged release.', {
       mismatches,
@@ -597,6 +610,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  PROOF_SCOPE,
   PROOF_FILE_NAME,
   PROOF_SCHEMA_VERSION,
   READINESS_WORKFLOW_PATH,

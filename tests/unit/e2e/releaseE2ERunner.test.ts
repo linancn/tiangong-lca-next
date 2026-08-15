@@ -10,6 +10,7 @@ import {
 import { readVerifiedProductionBackendTarget } from '../../e2e/i18n/production-backend-target';
 
 const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
+  QUALIFICATION_PROOF_SCHEMA_VERSION: string;
   RECEIPT_SCHEMA_VERSION: number;
   acquireInvocationLock: (command: string, lockPath: string) => () => void;
   assertLocalOperatorHostEnvironment: (
@@ -25,6 +26,11 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     runtimeInputs: Record<string, any>,
   ) => string[];
   parseOptions: (command: string, args: string[]) => Record<string, any>;
+  qualificationIdentity: (root?: string) => {
+    environmentContractSha256: string;
+    inputSha256: string;
+    proofKey: string;
+  };
   playwrightArguments: (options: Record<string, any>) => string[];
   redactString: (value: string, sensitiveValues?: string[]) => string;
   sanitize: (value: unknown, sensitiveValues?: string[]) => unknown;
@@ -33,9 +39,9 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     now: number,
     key: Buffer,
   ) => Record<string, unknown>;
-  validateQualificationReceipt: (
-    receipt: Record<string, unknown>,
-    expectedInput: string,
+  validateQualificationProof: (
+    proof: Record<string, unknown>,
+    expectedIdentity: Record<string, string>,
   ) => Record<string, unknown>;
   validateRunOptions: (options: Record<string, any>) => void;
 };
@@ -71,7 +77,8 @@ describe('release E2E controller contracts', () => {
     expect(help).toContain('npm run e2e:release');
     expect(help).toContain('npm run e2e:release:resume');
     expect(help).toContain('npm run e2e:qualify');
-    expect(help).toContain('npm run e2e:qualification:check');
+    expect(help).toContain('npm run e2e:qualification:key');
+    expect(help).toContain('npm run release:proof:verify');
     expect(help).toContain('npm run e2e:env:clean');
     expect(help).toContain('npm run e2e:dev');
     expect(() => controller.parseOptions('resume', ['--format=json'])).toThrow(
@@ -86,8 +93,12 @@ describe('release E2E controller contracts', () => {
   });
 
   it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
-    const input = 'a'.repeat(64);
-    const receipt = {
+    const identity = {
+      inputSha256: 'a'.repeat(64),
+      environmentContractSha256: 'b'.repeat(64),
+      proofKey: 'c'.repeat(64),
+    };
+    const proof = {
       browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
         name,
         version: '1.61.1',
@@ -104,26 +115,89 @@ describe('release E2E controller contracts', () => {
       },
       externalRequests: 0,
       productionWrites: 0,
-      qualificationInputSha256: input,
-      schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+      candidate: { commit: 'd'.repeat(40), tree: 'e'.repeat(40) },
+      qualificationInputSha256: identity.inputSha256,
+      environmentContractSha256: identity.environmentContractSha256,
+      environmentManifestSha256: 'a'.repeat(64),
+      proofKey: identity.proofKey,
+      schemaVersion: controller.QUALIFICATION_PROOF_SCHEMA_VERSION,
       status: 'qualified',
     };
-    expect(controller.validateQualificationReceipt(receipt, input)).toBe(receipt);
+    expect(controller.validateQualificationProof(proof, identity)).toBe(proof);
     expect(() =>
-      controller.validateQualificationReceipt(
+      controller.validateQualificationProof(
         {
-          ...receipt,
-          coverage: { ...receipt.coverage, liveAssertionCount: 48 },
+          ...proof,
+          coverage: { ...proof.coverage, liveAssertionCount: 48 },
         },
-        input,
+        identity,
       ),
     ).toThrow('missing, stale, or incomplete');
     expect(() =>
-      controller.validateQualificationReceipt({ ...receipt, externalRequests: 1 }, input),
+      controller.validateQualificationProof({ ...proof, externalRequests: 1 }, identity),
     ).toThrow('missing, stale, or incomplete');
-    expect(() => controller.validateQualificationReceipt(receipt, 'b'.repeat(64))).toThrow(
-      'missing, stale, or incomplete',
+    expect(() =>
+      controller.validateQualificationProof(proof, {
+        ...identity,
+        inputSha256: 'f'.repeat(64),
+      }),
+    ).toThrow('missing, stale, or incomplete');
+  });
+
+  it('keeps proof identity stable for version-only changes and invalidates shipped inputs', () => {
+    const root = makeTemporaryDirectory();
+    const write = (relativePath: string, value: string) => {
+      const filePath = path.join(root, relativePath);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, value);
+    };
+    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.0' })}\n`);
+    write(
+      'package-lock.json',
+      `${JSON.stringify({
+        name: 'proof-fixture',
+        version: '1.0.0',
+        lockfileVersion: 3,
+        packages: { '': { name: 'proof-fixture', version: '1.0.0' } },
+      })}\n`,
     );
+    write(
+      'docker/e2e/environment.json',
+      `${JSON.stringify({
+        schemaVersion: 1,
+        playwrightVersion: '1.61.1',
+        nodeMajor: 24,
+        playwrightImage: `image@sha256:${'1'.repeat(64)}`,
+      })}\n`,
+    );
+    write('src/app.tsx', 'export const app = true;\n');
+    write('public/scripts/loading.js', 'window.loaded = true;\n');
+    write('config/routes.ts', 'export default [];\n');
+    write('.github/workflows/release-gate.yml', 'name: Release Gate\n');
+    expect(spawnSync('git', ['init', '-q'], { cwd: root }).status).toBe(0);
+    expect(spawnSync('git', ['add', '.'], { cwd: root }).status).toBe(0);
+
+    const initial = controller.qualificationIdentity(root);
+    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.1' })}\n`);
+    write(
+      'package-lock.json',
+      `${JSON.stringify({
+        name: 'proof-fixture',
+        version: '1.0.1',
+        lockfileVersion: 3,
+        packages: { '': { name: 'proof-fixture', version: '1.0.1' } },
+      })}\n`,
+    );
+    expect(controller.qualificationIdentity(root)).toEqual(initial);
+
+    write('public/scripts/loading.js', 'window.loaded = false;\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write('public/scripts/loading.js', 'window.loaded = true;\n');
+    write('config/routes.ts', 'export default [{ path: "/" }];\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
+    write('config/routes.ts', 'export default [];\n');
+    write('.github/workflows/release-gate.yml', 'name: Mutated Release Gate\n');
+    expect(controller.qualificationIdentity(root).proofKey).not.toBe(initial.proofKey);
   });
 
   it('keeps the global login identity role-neutral while requiring explicit write authorization', () => {
