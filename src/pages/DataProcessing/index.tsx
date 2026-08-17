@@ -9,9 +9,12 @@ import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
   createClosureCheck,
   createLciaResultBuildRequest,
+  createLciaResultSet,
   getClosureCheck,
+  getLciaResultSet,
   listClosureCheckIssues,
   listLciaResultPublications,
+  listLciaResultSets,
   previewLciaResultPackage,
   publishLciaResultPackage,
   unpublishLciaResultPublication,
@@ -19,6 +22,7 @@ import {
   type ClosureCheckSummaryV1,
   type ClosureScopeIdentityV1,
   type LciaResultPublication,
+  type LciaResultSetV1,
 } from '@/services/dataProducts';
 import {
   listDataProductTasks,
@@ -36,11 +40,13 @@ import { toCanonicalLciaMethodId } from '@/services/lciaMethods/evidence';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { taskProgressPercent, type TaskSummaryV2 } from '@/services/taskCenter/types';
 import {
+  ArrowRightOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
   DownloadOutlined,
   EyeOutlined,
+  PlusOutlined,
   StopOutlined,
   SyncOutlined,
   WarningOutlined,
@@ -60,7 +66,9 @@ import {
   Spin,
   Table,
   Tabs,
+  Tag,
   Tooltip,
+  Typography,
 } from 'antd';
 import {
   useCallback,
@@ -80,6 +88,7 @@ type CommandStatus = {
 };
 
 type CommandAction =
+  | 'createResultSet'
   | 'createClosureCheck'
   | 'createBuild'
   | 'previewPackage'
@@ -121,6 +130,18 @@ type LciaResultPackageOption = {
 };
 
 type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
+
+export type ResultSetNextAction =
+  'start_closure' | 'view_closure' | 'start_build' | 'view_build' | 'preview' | 'view_publication';
+
+export type ResultSetWorkflowSummary = {
+  closureStatus: 'not_checked' | 'checking' | 'needs_attention' | 'ready' | 'failed';
+  buildStatus: 'not_started' | 'running' | 'ready' | 'failed';
+  publicationStatus: 'not_published' | 'published';
+  nextAction: ResultSetNextAction;
+  closureCheckId?: string;
+  packageId?: string;
+};
 
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
@@ -174,6 +195,7 @@ export function parseDataProcessingDeepLink(search: string): {
   processVersion?: string;
   closureCheckId?: string;
   resultBuildId?: string;
+  resultSetId?: string;
 } {
   const params = new URLSearchParams(search);
   const activeTabKey = resolveRouteViewState('data-processing-tab', params.get('tab')) as
@@ -186,6 +208,115 @@ export function parseDataProcessingDeepLink(search: string): {
     processVersion: value('processVersion'),
     closureCheckId: value('closureCheckId'),
     resultBuildId: value('resultBuildId'),
+    resultSetId: value('resultSetId'),
+  };
+}
+
+export function deriveResultSetWorkflowSummary(
+  resultSetId: string,
+  tasks: TaskSummaryV2[],
+  publications: LciaResultPublication[],
+): ResultSetWorkflowSummary {
+  const related = tasks
+    .filter((task) => task.resultSetId === resultSetId)
+    .sort((left, right) => right.projectionUpdatedAt.localeCompare(left.projectionUpdatedAt));
+  const closures = related.filter((task) => task.jobKind === 'lcia.scope_closure_check');
+  const builds = related.filter((task) => task.jobKind === 'lcia_result.package_build');
+  const latestClosure = closures[0];
+  const latestBuild = builds[0];
+  const packageIds = new Set(
+    builds.map((task) => task.resultPackageId).filter((value): value is string => Boolean(value)),
+  );
+  const currentPublication = publications.find(
+    (publication) =>
+      (publication.status === 'published' ||
+        publication.status === 'current' ||
+        publication.isCurrent === true) &&
+      Boolean(publication.packageId && packageIds.has(publication.packageId)),
+  );
+
+  const closureStatus: ResultSetWorkflowSummary['closureStatus'] = !latestClosure
+    ? 'not_checked'
+    : latestClosure.workerStatus === 'failed' || latestClosure.workerStatus === 'cancelled'
+      ? 'failed'
+      : latestClosure.runState === 'active' ||
+          latestClosure.workerStatus === 'queued' ||
+          latestClosure.workerStatus === 'running' ||
+          latestClosure.workerStatus === 'waiting'
+        ? 'checking'
+        : latestClosure.domainStatus === 'passed' && latestClosure.domainValidity === 'valid'
+          ? 'ready'
+          : 'needs_attention';
+  const buildStatus: ResultSetWorkflowSummary['buildStatus'] = !latestBuild
+    ? 'not_started'
+    : latestBuild.workerStatus === 'failed' || latestBuild.workerStatus === 'cancelled'
+      ? 'failed'
+      : latestBuild.resultPackageId
+        ? 'ready'
+        : latestBuild.runState === 'active' ||
+            latestBuild.workerStatus === 'queued' ||
+            latestBuild.workerStatus === 'running' ||
+            latestBuild.workerStatus === 'waiting'
+          ? 'running'
+          : 'failed';
+
+  if (currentPublication?.packageId) {
+    return {
+      closureStatus,
+      buildStatus,
+      publicationStatus: 'published',
+      nextAction: 'view_publication',
+      closureCheckId: latestClosure?.closureCheckId,
+      packageId: currentPublication.packageId,
+    };
+  }
+  if (latestBuild?.resultPackageId) {
+    return {
+      closureStatus,
+      buildStatus,
+      publicationStatus: 'not_published',
+      nextAction: 'preview',
+      closureCheckId: latestClosure?.closureCheckId,
+      packageId: latestBuild.resultPackageId,
+    };
+  }
+  if (
+    latestBuild?.runState === 'active' ||
+    latestBuild?.workerStatus === 'queued' ||
+    latestBuild?.workerStatus === 'running' ||
+    latestBuild?.workerStatus === 'waiting'
+  ) {
+    return {
+      closureStatus,
+      buildStatus,
+      publicationStatus: 'not_published',
+      nextAction: 'view_build',
+      closureCheckId: latestClosure?.closureCheckId,
+    };
+  }
+  if (closureStatus === 'ready') {
+    return {
+      closureStatus,
+      buildStatus,
+      publicationStatus: 'not_published',
+      nextAction: 'start_build',
+      closureCheckId: latestClosure?.closureCheckId,
+    };
+  }
+  if (latestClosure) {
+    return {
+      closureStatus,
+      buildStatus,
+      publicationStatus: 'not_published',
+      nextAction: 'view_closure',
+      closureCheckId: latestClosure.closureCheckId,
+    };
+  }
+  return {
+    closureStatus,
+    buildStatus,
+    publicationStatus: 'not_published',
+    nextAction: 'start_closure',
   };
 }
 
@@ -626,10 +757,30 @@ const DataProcessing = () => {
     listDataProductTasks,
     listDataProductTasks,
   );
-  const buildJobs = useMemo(
+  const allBuildJobs = useMemo(
     () => dataProductTasks.filter((job) => job.jobKind === 'lcia_result.package_build'),
     [dataProductTasks],
   );
+  const buildJobs = useMemo(
+    () =>
+      deepLink.resultSetId
+        ? allBuildJobs.filter((job) => job.resultSetId === deepLink.resultSetId)
+        : allBuildJobs.filter((job) => !job.resultSetId),
+    [allBuildJobs, deepLink.resultSetId],
+  );
+  const closureTasks = useMemo(
+    () =>
+      dataProductTasks.filter(
+        (job) =>
+          job.jobKind === 'lcia.scope_closure_check' &&
+          (deepLink.resultSetId ? job.resultSetId === deepLink.resultSetId : !job.resultSetId),
+      ),
+    [dataProductTasks, deepLink.resultSetId],
+  );
+  const [resultSets, setResultSets] = useState<LciaResultSetV1[]>([]);
+  const [resultSetsLoading, setResultSetsLoading] = useState(false);
+  const [resultSetsError, setResultSetsError] = useState<string | null>(null);
+  const [resultSetContextError, setResultSetContextError] = useState<string | null>(null);
   const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
   const closureCheckRef = useRef<ClosureCheckSummaryV1 | null>(null);
   const activeClosureCheckIdRef = useRef<string>();
@@ -668,6 +819,7 @@ const DataProcessing = () => {
   const [publicationsLoading, setPublicationsLoading] = useState(false);
   const [publicationsError, setPublicationsError] = useState<string | null>(null);
   const [buildForm] = Form.useForm();
+  const [resultSetForm] = Form.useForm();
   const [previewForm] = Form.useForm();
   const [publishForm] = Form.useForm();
 
@@ -741,6 +893,15 @@ const DataProcessing = () => {
   }, [locale]);
 
   const isAuthorized = role === 'data_product_manager';
+  const selectedResultSet = useMemo(
+    () => resultSets.find((resultSet) => resultSet.resultSetId === deepLink.resultSetId),
+    [deepLink.resultSetId, resultSets],
+  );
+  const selectedClosureCheckId =
+    deepLink.closureCheckId ??
+    (deepLink.resultSetId
+      ? closureTasks.find((task) => task.closureCheckId)?.closureCheckId
+      : undefined);
 
   const activateClosureCheckId = useCallback((closureCheckId: string | undefined) => {
     if (activeClosureCheckIdRef.current === closureCheckId) return;
@@ -792,6 +953,40 @@ const DataProcessing = () => {
     }
   }, []);
 
+  const loadResultSets = useCallback(async () => {
+    setResultSetsLoading(true);
+    setResultSetsError(null);
+    setResultSetContextError(null);
+    try {
+      const result = await listLciaResultSets(200);
+      if (result.error || !result.data) {
+        setResultSets([]);
+        setResultSetsError(result.error?.message ?? 'Unable to load result sets.');
+        return;
+      }
+      let rows = result.data.items;
+      if (
+        deepLink.resultSetId &&
+        !rows.some((resultSet) => resultSet.resultSetId === deepLink.resultSetId)
+      ) {
+        const linkedResult = await getLciaResultSet(deepLink.resultSetId);
+        if (linkedResult.data) {
+          rows = [linkedResult.data, ...rows];
+        } else {
+          setResultSetContextError(
+            linkedResult.error?.message ?? 'The selected result set was not found.',
+          );
+        }
+      }
+      setResultSets(rows);
+    } catch (error) {
+      setResultSets([]);
+      setResultSetsError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setResultSetsLoading(false);
+    }
+  }, [deepLink.resultSetId]);
+
   const loadPublications = useCallback(async () => {
     setPublicationsLoading(true);
     setPublicationsError(null);
@@ -812,25 +1007,36 @@ const DataProcessing = () => {
 
   useEffect(() => {
     if (isAuthorized) {
+      void loadResultSets();
       void loadBuildJobs();
+      void loadPublications();
     }
-  }, [isAuthorized, loadBuildJobs]);
+  }, [isAuthorized, loadBuildJobs, loadPublications, loadResultSets]);
 
   useEffect(() => {
-    if (!isAuthorized || !deepLink.closureCheckId) {
+    const closureCheckId = selectedClosureCheckId;
+    if (!isAuthorized || !closureCheckId) {
       activateClosureCheckId(undefined);
+      closureCheckRef.current = null;
+      setClosureCheck(null);
+      setClosureSelectionKey(null);
       return;
     }
-    activateClosureCheckId(deepLink.closureCheckId);
-    const closureCheckId = deepLink.closureCheckId;
+    activateClosureCheckId(closureCheckId);
     void refreshClosureCheck(closureCheckId);
-  }, [activateClosureCheckId, deepLink.closureCheckId, isAuthorized, refreshClosureCheck]);
+  }, [activateClosureCheckId, isAuthorized, refreshClosureCheck, selectedClosureCheckId]);
+
+  useEffect(() => {
+    if (selectedResultSet) {
+      buildForm.setFieldsValue?.({ name: selectedResultSet.name });
+    }
+  }, [buildForm, selectedResultSet]);
 
   useEffect(() => {
     if (
       isAuthorized &&
-      deepLink.closureCheckId &&
-      closureCheck?.closureCheckId === deepLink.closureCheckId
+      selectedClosureCheckId &&
+      closureCheck?.closureCheckId === selectedClosureCheckId
     ) {
       const selectionKey = scopeSelectionKey(
         buildForm.getFieldsValue?.() ?? {},
@@ -842,9 +1048,9 @@ const DataProcessing = () => {
   }, [
     buildForm,
     closureCheck?.closureCheckId,
-    deepLink.closureCheckId,
     impactCategoryOptions,
     isAuthorized,
+    selectedClosureCheckId,
   ]);
 
   const closurePollingKey = closureCheck
@@ -937,16 +1143,43 @@ const DataProcessing = () => {
     void loadClosureIssues();
   }, [closureCheck?.closureCheckId, closureCheck?.runStatus, loadClosureIssues]);
 
-  useEffect(() => {
-    if (isAuthorized && activeTabKey === 'publication') {
-      void loadPublications();
-    }
-  }, [activeTabKey, isAuthorized, loadPublications]);
-
   const visibleBuildJobs = useMemo(() => buildJobs, [buildJobs]);
   const packageOptions = useMemo(
     () => packageOptionsFromTaskSummaries(visibleBuildJobs),
     [visibleBuildJobs],
+  );
+  const selectedResultSetPackageIds = useMemo(
+    () => new Set(packageOptions.map((option) => option.packageId)),
+    [packageOptions],
+  );
+  const visiblePublications = useMemo(
+    () =>
+      deepLink.resultSetId
+        ? publications.filter(
+            (publication) =>
+              Boolean(publication.packageId) &&
+              selectedResultSetPackageIds.has(publication.packageId as string),
+          )
+        : publications,
+    [deepLink.resultSetId, publications, selectedResultSetPackageIds],
+  );
+  const resultSetOptions = useMemo(
+    () =>
+      resultSets.map((resultSet) => ({
+        label: resultSet.name,
+        value: resultSet.resultSetId,
+      })),
+    [resultSets],
+  );
+  const closureTaskOptions = useMemo(
+    () =>
+      closureTasks
+        .filter((task) => Boolean(task.closureCheckId))
+        .map((task) => ({
+          label: `${formatTimestamp(task.updatedAt)} · ${task.domainStatus ?? task.workerStatus}`,
+          value: task.closureCheckId as string,
+        })),
+    [closureTasks],
   );
 
   useEffect(() => {
@@ -974,6 +1207,10 @@ const DataProcessing = () => {
 
   const commandSuccessTitle = (action: CommandAction) => {
     const messages: Record<CommandAction, { defaultMessage: string; id: string }> = {
+      createResultSet: {
+        id: 'pages.dataProcessing.command.createResultSetSuccess',
+        defaultMessage: 'Result set created',
+      },
       createClosureCheck: {
         id: 'pages.dataProcessing.command.createClosureCheckSuccess',
         defaultMessage: 'Data completeness check submitted',
@@ -1008,6 +1245,14 @@ const DataProcessing = () => {
         rows.push({ label, value });
       }
     };
+
+    if (action === 'createResultSet') {
+      addRow(
+        t('pages.dataProcessing.command.resultSetId', 'Result set ID'),
+        firstString(record?.resultSetId),
+      );
+      return rows;
+    }
 
     if (action === 'createClosureCheck') {
       addRow(
@@ -1173,6 +1418,85 @@ const DataProcessing = () => {
     }
   };
 
+  const navigateToResultSet = (
+    resultSetId: string,
+    options: {
+      tab?: 'builds' | 'preview' | 'publication';
+      closureCheckId?: string;
+      packageId?: string;
+    } = {},
+  ) => {
+    const tab = options.tab ?? 'builds';
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('resultSetId', resultSetId);
+    searchParams.set('tab', tab);
+    ['closureCheckId', 'packageId', 'resultBuildId'].forEach((key) => searchParams.delete(key));
+    if (options.closureCheckId) searchParams.set('closureCheckId', options.closureCheckId);
+    if (options.packageId) searchParams.set('packageId', options.packageId);
+    setActiveTabKey(tab);
+    setSelectedPackageId(options.packageId);
+    setPreviewData(null);
+    setCommandStatus(null);
+    activateClosureCheckId(options.closureCheckId);
+    closureCheckRef.current = null;
+    setClosureCheck(null);
+    setClosureSelectionKey(null);
+    history.replace({ pathname: location.pathname, search: `?${searchParams.toString()}` });
+  };
+
+  const handleCreateResultSet = async () => {
+    const values = await resultSetForm.validateFields();
+    const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
+    if (!result?.data || result.error) return;
+    setResultSets((current) => [
+      result.data as LciaResultSetV1,
+      ...current.filter((item) => item.resultSetId !== result.data?.resultSetId),
+    ]);
+    resultSetForm.resetFields?.();
+    navigateToResultSet(result.data.resultSetId);
+  };
+
+  const clearResultSetContext = () => {
+    setActiveTabKey('builds');
+    setSelectedPackageId(undefined);
+    setPreviewData(null);
+    setCommandStatus(null);
+    activateClosureCheckId(undefined);
+    closureCheckRef.current = null;
+    setClosureCheck(null);
+    setClosureSelectionKey(null);
+    history.replace({ pathname: location.pathname });
+  };
+
+  const handleResultSetAction = (
+    resultSet: LciaResultSetV1,
+    summary = deriveResultSetWorkflowSummary(resultSet.resultSetId, dataProductTasks, publications),
+  ) => {
+    if (summary.nextAction === 'preview') {
+      navigateToResultSet(resultSet.resultSetId, {
+        tab: 'preview',
+        packageId: summary.packageId,
+      });
+      return;
+    }
+    if (summary.nextAction === 'view_publication') {
+      navigateToResultSet(resultSet.resultSetId, {
+        tab: 'publication',
+        packageId: summary.packageId,
+      });
+      return;
+    }
+    navigateToResultSet(resultSet.resultSetId, {
+      tab: 'builds',
+      closureCheckId: summary.closureCheckId,
+    });
+  };
+
+  const handleSelectClosureCheck = (closureCheckId: string) => {
+    if (!deepLink.resultSetId) return;
+    navigateToResultSet(deepLink.resultSetId, { tab: 'builds', closureCheckId });
+  };
+
   const handleCreateBuild = async () => {
     const values = await buildForm.validateFields();
     const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
@@ -1204,7 +1528,7 @@ const DataProcessing = () => {
     }
     const result = await runCommand('createBuild', () =>
       createLciaResultBuildRequest({
-        name: values.name,
+        name: selectedResultSet?.name ?? values.name,
         coverageMode: values.coverageMode || 'global_eligible',
         ...(values.defaultImpactCategory
           ? { defaultImpactCategory: values.defaultImpactCategory }
@@ -1245,6 +1569,7 @@ const DataProcessing = () => {
       const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
       const result = await runCommand('createClosureCheck', () =>
         createClosureCheck({
+          ...(deepLink.resultSetId ? { resultSetId: deepLink.resultSetId } : {}),
           requestedScope: {
             coverageMode: values.coverageMode || 'global_eligible',
             lciaMethods,
@@ -1257,6 +1582,7 @@ const DataProcessing = () => {
         activateClosureCheckId(closureCheckId);
         const searchParams = new URLSearchParams(location.search);
         searchParams.set('tab', 'builds');
+        if (deepLink.resultSetId) searchParams.set('resultSetId', deepLink.resultSetId);
         searchParams.set('closureCheckId', closureCheckId);
         history.replace({
           pathname: location.pathname,
@@ -1303,6 +1629,13 @@ const DataProcessing = () => {
     },
   ) => {
     setSelectedPackageId(packageId);
+    if (deepLink.resultSetId) {
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('resultSetId', deepLink.resultSetId);
+      searchParams.set('tab', 'preview');
+      searchParams.set('packageId', packageId);
+      history.replace({ pathname: location.pathname, search: `?${searchParams.toString()}` });
+    }
     const rowOffset = options.rowOffset;
     const impactCategoryId = options.impactCategoryId ?? previewImpactCategoryId;
     const result = await runCommand('previewPackage', () =>
@@ -1370,6 +1703,9 @@ const DataProcessing = () => {
   const handleTabChange = (key: string) => {
     setActiveTabKey(key);
     setCommandStatus(null);
+    if (key === 'publication' && !publicationsLoading && publications.length === 0) {
+      void loadPublications();
+    }
     const queryValue = resolveRouteViewState('data-processing-tab', key);
     const searchParams = new URLSearchParams(location.search);
     searchParams.set('tab', queryValue);
@@ -1524,6 +1860,227 @@ const DataProcessing = () => {
     />
   );
 
+  const resultSetStatusLabel = (kind: 'closure' | 'build' | 'publication', value: string) => {
+    switch (`${kind}:${value}`) {
+      case 'closure:not_checked':
+        return t('pages.dataProcessing.resultSets.closure.notChecked', 'Not checked');
+      case 'closure:checking':
+        return t('pages.dataProcessing.resultSets.closure.checking', 'Checking');
+      case 'closure:needs_attention':
+        return t('pages.dataProcessing.resultSets.closure.needsAttention', 'Needs attention');
+      case 'closure:ready':
+        return t('pages.dataProcessing.resultSets.closure.ready', 'Ready to calculate');
+      case 'closure:failed':
+        return t('pages.dataProcessing.resultSets.closure.failed', 'Check failed');
+      case 'build:not_started':
+        return t('pages.dataProcessing.resultSets.build.notStarted', 'Not calculated');
+      case 'build:running':
+        return t('pages.dataProcessing.resultSets.build.running', 'Calculating');
+      case 'build:ready':
+        return t('pages.dataProcessing.resultSets.build.ready', 'Ready to preview');
+      case 'build:failed':
+        return t('pages.dataProcessing.resultSets.build.failed', 'Calculation failed');
+      case 'publication:not_published':
+        return t('pages.dataProcessing.resultSets.publication.notPublished', 'Not published');
+      case 'publication:published':
+        return t('pages.dataProcessing.resultSets.publication.published', 'Published');
+      default:
+        return value;
+    }
+  };
+
+  const resultSetActionLabel = (action: ResultSetNextAction) => {
+    switch (action) {
+      case 'start_closure':
+        return t('pages.dataProcessing.resultSets.action.startClosure', 'Start check');
+      case 'view_closure':
+        return t('pages.dataProcessing.resultSets.action.viewClosure', 'View check');
+      case 'start_build':
+        return t('pages.dataProcessing.resultSets.action.startBuild', 'Start calculation');
+      case 'view_build':
+        return t('pages.dataProcessing.resultSets.action.viewBuild', 'View progress');
+      case 'preview':
+        return t('pages.dataProcessing.resultSets.action.preview', 'Preview result');
+      case 'view_publication':
+        return t('pages.dataProcessing.resultSets.action.viewPublication', 'View publication');
+    }
+  };
+
+  const renderResultSetWorkspace = () => (
+    <Card
+      className={styles.resultSetWorkspace}
+      title={t('pages.dataProcessing.resultSets.title', 'Result sets')}
+      extra={
+        <Button onClick={loadResultSets} loading={resultSetsLoading}>
+          {t('pages.dataProcessing.resultSets.refresh', 'Refresh')}
+        </Button>
+      }
+    >
+      <Space direction='vertical' size='middle' className={styles.resultSetWorkspaceContent}>
+        <Typography.Text type='secondary'>
+          {t(
+            'pages.dataProcessing.resultSets.description',
+            'Create a named result set before starting an asynchronous check. Return here at any time to continue its current step.',
+          )}
+        </Typography.Text>
+        <div className={styles.resultSetToolbar}>
+          <Form form={resultSetForm} layout='inline' className={styles.resultSetCreateForm}>
+            <Form.Item
+              name='name'
+              rules={[
+                {
+                  required: true,
+                  message: t(
+                    'pages.dataProcessing.validation.packageNameRequired',
+                    'Result set name is required',
+                  ),
+                },
+              ]}
+            >
+              <Input
+                aria-label={t('pages.dataProcessing.resultSets.newName', 'New result set name')}
+                maxLength={200}
+                placeholder={t(
+                  'pages.dataProcessing.resultSets.namePlaceholder',
+                  'Name this result set',
+                )}
+              />
+            </Form.Item>
+            <Button
+              type='primary'
+              icon={<PlusOutlined />}
+              loading={submittingAction === 'createResultSet'}
+              onClick={handleCreateResultSet}
+            >
+              {t('pages.dataProcessing.resultSets.create', 'Create result set')}
+            </Button>
+          </Form>
+          <Select
+            aria-label={t('pages.dataProcessing.resultSets.select', 'Current result set')}
+            className={styles.resultSetSelector}
+            value={deepLink.resultSetId}
+            allowClear
+            showSearch
+            optionFilterProp='label'
+            options={resultSetOptions}
+            placeholder={t(
+              'pages.dataProcessing.resultSets.selectPlaceholder',
+              'Select an existing result set',
+            )}
+            onChange={(resultSetId) => {
+              if (!resultSetId) {
+                clearResultSetContext();
+                return;
+              }
+              const resultSet = resultSets.find((item) => item.resultSetId === resultSetId);
+              if (resultSet) handleResultSetAction(resultSet);
+            }}
+          />
+        </div>
+        {resultSetsError ? <Alert type='error' message={resultSetsError} /> : null}
+        {resultSetContextError ? (
+          <Alert
+            type='error'
+            message={resultSetContextError}
+            action={
+              <Button size='small' onClick={clearResultSetContext}>
+                {t('pages.dataProcessing.resultSets.backToList', 'Back to result sets')}
+              </Button>
+            }
+          />
+        ) : null}
+        <Spin spinning={resultSetsLoading}>
+          {resultSets.length === 0 && !resultSetsLoading ? (
+            <div className={styles.resultSetEmpty}>
+              <Typography.Text strong>
+                {t('pages.dataProcessing.resultSets.emptyTitle', 'No result sets yet')}
+              </Typography.Text>
+              <Typography.Text type='secondary'>
+                {t(
+                  'pages.dataProcessing.resultSets.emptyDescription',
+                  'Create the first result set to begin a completeness check.',
+                )}
+              </Typography.Text>
+            </div>
+          ) : (
+            <div className={styles.resultSetList} role='list'>
+              {resultSets.map((resultSet) => {
+                const summary = deriveResultSetWorkflowSummary(
+                  resultSet.resultSetId,
+                  dataProductTasks,
+                  publications,
+                );
+                const selected = resultSet.resultSetId === deepLink.resultSetId;
+                return (
+                  <section
+                    key={resultSet.resultSetId}
+                    className={`${styles.resultSetRow} ${selected ? styles.resultSetRowSelected : ''}`}
+                    data-testid={`data-processing-result-set-${resultSet.resultSetId}`}
+                    role='listitem'
+                  >
+                    <div className={styles.resultSetIdentity}>
+                      <Typography.Text strong ellipsis={{ tooltip: resultSet.name }}>
+                        {resultSet.name}
+                      </Typography.Text>
+                      <Typography.Text type='secondary'>
+                        {formatTimestamp(resultSet.createdAt)}
+                      </Typography.Text>
+                    </div>
+                    <div className={styles.resultSetStatuses}>
+                      <Tag>
+                        {`${t('pages.dataProcessing.resultSets.status.closure', 'Completeness')}: ${resultSetStatusLabel('closure', summary.closureStatus)}`}
+                      </Tag>
+                      <Tag>
+                        {`${t('pages.dataProcessing.resultSets.status.build', 'Calculation')}: ${resultSetStatusLabel('build', summary.buildStatus)}`}
+                      </Tag>
+                      <Tag
+                        color={summary.publicationStatus === 'published' ? 'success' : undefined}
+                      >
+                        {resultSetStatusLabel('publication', summary.publicationStatus)}
+                      </Tag>
+                    </div>
+                    <Button
+                      type={selected ? 'default' : 'primary'}
+                      icon={<ArrowRightOutlined />}
+                      onClick={() => handleResultSetAction(resultSet, summary)}
+                    >
+                      {resultSetActionLabel(summary.nextAction)}
+                    </Button>
+                  </section>
+                );
+              })}
+            </div>
+          )}
+        </Spin>
+      </Space>
+    </Card>
+  );
+
+  const hasWorkflowContext = deepLink.resultSetId
+    ? Boolean(selectedResultSet || resultSetsLoading)
+    : Boolean(deepLink.closureCheckId || deepLink.packageId);
+  const renderWorkflowContextRequired = (content: ReactNode) =>
+    hasWorkflowContext ? (
+      content
+    ) : (
+      <Card className={styles.workflowEmpty}>
+        <Space direction='vertical' size='small'>
+          <Typography.Text strong>
+            {t(
+              'pages.dataProcessing.resultSets.selectToContinue',
+              'Select a result set to continue',
+            )}
+          </Typography.Text>
+          <Typography.Text type='secondary'>
+            {t(
+              'pages.dataProcessing.resultSets.selectToContinueDescription',
+              'The selected result set keeps completeness checks, calculations, previews, and publication in one recoverable context.',
+            )}
+          </Typography.Text>
+        </Space>
+      </Card>
+    );
+
   const renderBuildRequests = () => (
     <Space direction='vertical' size='middle' className={styles.workbenchPanel}>
       <Card>
@@ -1549,7 +2106,10 @@ const DataProcessing = () => {
               },
             ]}
           >
-            <Input aria-label={t('pages.dataProcessing.form.packageName', 'Result set name')} />
+            <Input
+              aria-label={t('pages.dataProcessing.form.packageName', 'Result set name')}
+              disabled={Boolean(selectedResultSet)}
+            />
           </Form.Item>
           <Form.Item
             label={t('pages.dataProcessing.form.coverageMode', 'Coverage mode')}
@@ -1574,6 +2134,20 @@ const DataProcessing = () => {
             className={styles.closureCard}
           >
             <Space direction='vertical' size='small'>
+              {deepLink.resultSetId && closureTaskOptions.length > 0 ? (
+                <Space wrap className={styles.closureHistoryToolbar}>
+                  <Typography.Text>
+                    {t('pages.dataProcessing.closure.history', 'Check history')}
+                  </Typography.Text>
+                  <Select
+                    aria-label={t('pages.dataProcessing.closure.history', 'Check history')}
+                    className={styles.closureHistorySelect}
+                    value={closureCheck?.closureCheckId ?? selectedClosureCheckId}
+                    options={closureTaskOptions}
+                    onChange={handleSelectClosureCheck}
+                  />
+                </Space>
+              ) : null}
               {!closureCheck ? (
                 <Alert
                   type='info'
@@ -1710,7 +2284,7 @@ const DataProcessing = () => {
               ) : null}
               <Space wrap>
                 <Button
-                  disabled={recoveryLoading}
+                  disabled={recoveryLoading || Boolean(deepLink.resultSetId && !selectedResultSet)}
                   loading={recoveryLoading || submittingAction === 'createClosureCheck'}
                   onClick={handleRecoverClosureCheck}
                 >
@@ -1723,6 +2297,7 @@ const DataProcessing = () => {
             type='primary'
             loading={submittingAction === 'createBuild'}
             disabled={
+              Boolean(deepLink.resultSetId && !selectedResultSet) ||
               closurePrerequisiteUnavailable ||
               closureCheck?.runStatus !== 'passed' ||
               closureCheck?.certificateValidity !== 'valid' ||
@@ -1731,7 +2306,12 @@ const DataProcessing = () => {
             }
             onClick={handleCreateBuild}
           >
-            {t('pages.dataProcessing.action.createBuild', 'Generate result set')}
+            {deepLink.resultSetId
+              ? t(
+                  'pages.dataProcessing.action.calculateFromCheck',
+                  'Use this check to start calculation',
+                )
+              : t('pages.dataProcessing.action.createBuild', 'Generate result set')}
           </Button>
         </Form>
       </Card>
@@ -2056,7 +2636,9 @@ const DataProcessing = () => {
           </Form.Item>
           <Button
             type='primary'
-            disabled={packageOptions.length === 0}
+            disabled={
+              packageOptions.length === 0 || Boolean(deepLink.resultSetId && !selectedResultSet)
+            }
             loading={submittingAction === 'previewPackage'}
             onClick={handlePreviewPackage}
           >
@@ -2341,6 +2923,7 @@ const DataProcessing = () => {
           </Form.Item>
           <Button
             type='primary'
+            disabled={Boolean(deepLink.resultSetId && !selectedResultSet)}
             loading={submittingAction === 'publishPackage'}
             onClick={handlePublishPackage}
           >
@@ -2360,7 +2943,7 @@ const DataProcessing = () => {
         <Spin spinning={publicationsLoading}>
           <Space direction='vertical' size='small' className={styles.publicationList}>
             {publicationsError ? <Alert message={publicationsError} type='error' /> : null}
-            {publications.length === 0 ? (
+            {visiblePublications.length === 0 ? (
               <div className={styles.emptyJobs} data-testid='data-product-publications-empty'>
                 {t('pages.dataProcessing.publications.empty', 'No publications yet')}
               </div>
@@ -2387,7 +2970,7 @@ const DataProcessing = () => {
                   </span>
                   <span role='columnheader'>{t('pages.dataProcessing.jobs.action', 'Action')}</span>
                 </div>
-                {publications.map((publication, index) => {
+                {visiblePublications.map((publication, index) => {
                   const publicationId = firstString(
                     publication.publicationId,
                     (publication as { id?: unknown }).id,
@@ -2483,27 +3066,30 @@ const DataProcessing = () => {
         {!authResolved ? null : !isAuthorized ? (
           <AccessDenied />
         ) : (
-          <Tabs
-            activeKey={activeTabKey}
-            onChange={handleTabChange}
-            items={[
-              {
-                key: 'builds',
-                label: t('pages.dataProcessing.tabs.builds', 'Result Generation'),
-                children: renderBuildRequests(),
-              },
-              {
-                key: 'preview',
-                label: t('pages.dataProcessing.tabs.preview', 'Result Preview'),
-                children: renderPackagePreview(),
-              },
-              {
-                key: 'publication',
-                label: t('pages.dataProcessing.tabs.publication', 'Publication'),
-                children: renderPublication(),
-              },
-            ]}
-          />
+          <Space direction='vertical' size='large' className={styles.pageStack}>
+            {renderResultSetWorkspace()}
+            <Tabs
+              activeKey={activeTabKey}
+              onChange={handleTabChange}
+              items={[
+                {
+                  key: 'builds',
+                  label: t('pages.dataProcessing.tabs.builds', 'Completeness & Calculation'),
+                  children: renderWorkflowContextRequired(renderBuildRequests()),
+                },
+                {
+                  key: 'preview',
+                  label: t('pages.dataProcessing.tabs.preview', 'Result Preview'),
+                  children: renderWorkflowContextRequired(renderPackagePreview()),
+                },
+                {
+                  key: 'publication',
+                  label: t('pages.dataProcessing.tabs.publication', 'Publication'),
+                  children: renderWorkflowContextRequired(renderPublication()),
+                },
+              ]}
+            />
+          </Space>
         )}
       </Spin>
     </PageContainer>

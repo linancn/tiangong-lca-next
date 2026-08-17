@@ -31,8 +31,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: 4ee99ba45e8b29a521c57b6033fb001481ed564b
-lastReviewedNote: 'Reviewed for Next Issue #867: manual browser evidence stays outside release proof and checked-push gate budgeting.'
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Pre-Push Gate Policy

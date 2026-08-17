@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: 4ee99ba45e8b29a521c57b6033fb001481ed564b
-lastReviewedNote: 'Reviewed for Next Issue #867: manual browser failures stay on the business PR and release proof is non-browser.'
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Testing Troubleshooting

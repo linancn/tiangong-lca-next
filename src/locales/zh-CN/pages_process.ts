@@ -46,6 +46,7 @@ export default {
   'pages.process.lca.taskCenter.details': '详情',
   'pages.process.lca.taskCenter.view': '查看',
   'pages.process.lca.taskCenter.openWorkbench': '打开',
+  'pages.process.lca.taskCenter.continueProcessing': '继续处理',
   'pages.process.lca.taskCenter.diagnostics': '诊断信息',
   'pages.process.lca.taskCenter.filter.all': '全部',
   'pages.process.lca.taskCenter.type.lca': 'LCA 计算',

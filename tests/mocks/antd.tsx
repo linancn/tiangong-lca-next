@@ -576,6 +576,13 @@ export const createAntdMock = () => {
     },
   };
 
+  const Tag = ({ children, color, icon, ...rest }: any) => (
+    <span data-color={color ?? ''} {...rest}>
+      {icon}
+      {children}
+    </span>
+  );
+
   const FormContext = React.createContext<any>(null);
 
   const Form = React.forwardRef(
@@ -823,6 +830,7 @@ export const createAntdMock = () => {
     Switch,
     Table,
     Tabs,
+    Tag,
     Tooltip,
     Typography,
     message,

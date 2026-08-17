@@ -46,6 +46,7 @@ export default {
   'pages.process.lca.taskCenter.details': 'Aufgabendetails',
   'pages.process.lca.taskCenter.view': 'Anzeigen',
   'pages.process.lca.taskCenter.openWorkbench': 'Öffnen',
+  'pages.process.lca.taskCenter.continueProcessing': 'Fortfahren',
   'pages.process.lca.taskCenter.diagnostics': 'Diagnose',
   'pages.process.lca.taskCenter.filter.all': 'Alle',
   'pages.process.lca.taskCenter.type.lca': 'LCA-Berechnung',

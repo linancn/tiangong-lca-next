@@ -55,9 +55,14 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       progressFraction: 0.8,
       progressCounters: { scanned: 8, completed: 7, total: 10, unit: 'documents' },
       capabilities: { canDownloadReport: true },
+      resultSetId: '77777777-7777-4777-8777-777777777777',
+      resultSetName: 'August result set',
       deepLink: {
         routeKey: 'data_product.closure_check',
-        params: { closureCheckId: 'closure-1' },
+        params: {
+          resultSetId: '77777777-7777-4777-8777-777777777777',
+          closureCheckId: 'closure-1',
+        },
       },
       result: { certificateValidity: 'valid', payload: 'must never be read' },
     });
@@ -72,9 +77,14 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       progressFraction: 0.8,
       progressCounters: { scanned: 8, completed: 7, total: 10, unit: 'documents' },
       capabilities: { canDownloadReport: true },
+      resultSetId: '77777777-7777-4777-8777-777777777777',
+      resultSetName: 'August result set',
       deepLink: {
         routeKey: 'data_product.closure_check',
-        params: { closureCheckId: 'closure-1' },
+        params: {
+          resultSetId: '77777777-7777-4777-8777-777777777777',
+          closureCheckId: 'closure-1',
+        },
       },
     });
     expect(summary).not.toHaveProperty('result');
@@ -219,7 +229,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
       statuses: ['running'],
       cursor: { updatedAt: '2026-07-22T00:00:00Z', jobId: 'job-1' },
-      limit: 50,
+      limit: 200,
       rootOnly: false,
     });
   });
