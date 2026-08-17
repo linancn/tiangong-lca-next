@@ -56,8 +56,16 @@ describe('dataProducts result sets', () => {
   });
 
   it('rejects malformed or expanded projections', async () => {
+    expect(decodeLciaResultSet(null)).toBeNull();
+    expect(decodeLciaResultSet([])).toBeNull();
     expect(decodeLciaResultSet({ ...resultSet, ownerId: 'private-owner' })).toBeNull();
     expect(decodeLciaResultSet({ ...resultSet, resultSetId: 'not-a-uuid' })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, resultSetId: 7 })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, name: 7 })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, name: '   ' })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, createdAt: 7 })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, createdAt: 'not-a-date' })).toBeNull();
+    expect(decodeLciaResultSet({ ...resultSet, schemaVersion: 'future' })).toBeNull();
 
     mockInvokeDataProductCommand.mockResolvedValueOnce({
       data: { items: [{ ...resultSet, status: 'invented-state' }] },
@@ -68,6 +76,18 @@ describe('dataProducts result sets', () => {
       data: null,
       error: { code: 'INVALID_RESULT_SET_PROJECTION' },
     });
+
+    for (const projection of [null, { extra: true }, { items: 'not-an-array' }]) {
+      mockInvokeDataProductCommand.mockResolvedValueOnce({
+        data: projection,
+        error: null,
+        status: 200,
+      });
+      await expect(listLciaResultSets(12)).resolves.toMatchObject({
+        data: null,
+        error: { code: 'INVALID_RESULT_SET_PROJECTION' },
+      });
+    }
   });
 
   it('preserves command errors without reinterpretation', async () => {

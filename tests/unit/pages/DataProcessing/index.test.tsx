@@ -11,6 +11,8 @@ import DataProcessing, {
   parseDataProcessingDeepLink,
   parseImpactCategoryOptionLabel,
   resolveLocalizedText,
+  resultSetActionMessage,
+  resultSetStatusMessage,
   reviewedLciaMethodSet,
   scopeSelectionKey,
   selectedImpactCategoryIdentity,
@@ -509,6 +511,70 @@ describe('DataProcessing page', () => {
         packageId: 'package-ready',
       }),
     );
+
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [
+          closureTask,
+          {
+            ...buildTask,
+            resultPackageId: undefined,
+            workerStatus: 'completed',
+            runState: 'succeeded',
+          },
+        ],
+        [],
+      ),
+    ).toEqual(expect.objectContaining({ buildStatus: 'failed', nextAction: 'start_build' }));
+  });
+
+  it('maps every ResultSet workflow state and action to stable copy', () => {
+    const translate = (_id: string, defaultMessage: string) => defaultMessage;
+    expect([
+      resultSetStatusMessage(translate, 'closure', 'not_checked'),
+      resultSetStatusMessage(translate, 'closure', 'checking'),
+      resultSetStatusMessage(translate, 'closure', 'needs_attention'),
+      resultSetStatusMessage(translate, 'closure', 'ready'),
+      resultSetStatusMessage(translate, 'closure', 'failed'),
+      resultSetStatusMessage(translate, 'build', 'not_started'),
+      resultSetStatusMessage(translate, 'build', 'running'),
+      resultSetStatusMessage(translate, 'build', 'ready'),
+      resultSetStatusMessage(translate, 'build', 'failed'),
+      resultSetStatusMessage(translate, 'publication', 'not_published'),
+      resultSetStatusMessage(translate, 'publication', 'published'),
+      resultSetStatusMessage(translate, 'closure', 'future'),
+    ]).toEqual([
+      'Not checked',
+      'Checking',
+      'Needs attention',
+      'Ready to calculate',
+      'Check failed',
+      'Not calculated',
+      'Calculating',
+      'Ready to preview',
+      'Calculation failed',
+      'Not published',
+      'Published',
+      'future',
+    ]);
+    expect(
+      [
+        'start_closure',
+        'view_closure',
+        'start_build',
+        'view_build',
+        'preview',
+        'view_publication',
+      ].map((action) => resultSetActionMessage(translate, action as any)),
+    ).toEqual([
+      'Start check',
+      'View check',
+      'Start calculation',
+      'View progress',
+      'Preview result',
+      'View publication',
+    ]);
   });
 
   it('creates the first ResultSet and establishes its stable URL context', async () => {
@@ -532,6 +598,271 @@ describe('DataProcessing page', () => {
     expect(
       await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
     ).toHaveTextContent('Test result set');
+  });
+
+  it('replaces an existing ResultSet projection after creation', async () => {
+    mockInjectResultSet = false;
+    mockLocation = { pathname: '/data-processing', search: '' };
+    mockListLciaResultSets.mockResolvedValueOnce({
+      data: { items: [{ ...TEST_RESULT_SET, name: 'Previous name' }] },
+      error: null,
+    });
+    mockCreateLciaResultSet.mockResolvedValueOnce({ data: TEST_RESULT_SET, error: null });
+
+    render(<DataProcessing />);
+
+    fireEvent.change(await screen.findByLabelText('New result set name'), {
+      target: { value: 'Test result set' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create result set' }));
+
+    expect(
+      await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
+    ).toHaveTextContent('Test result set');
+    expect(screen.queryByText('Previous name')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [
+      'command error',
+      () =>
+        mockListLciaResultSets.mockResolvedValueOnce({
+          data: null,
+          error: { message: 'Result sets unavailable' },
+        }),
+      'Result sets unavailable',
+    ],
+    [
+      'empty envelope',
+      () => mockListLciaResultSets.mockResolvedValueOnce({ data: null, error: null }),
+      'Unable to load result sets.',
+    ],
+    [
+      'Error rejection',
+      () => mockListLciaResultSets.mockRejectedValueOnce(new Error('Result set request exploded')),
+      'Result set request exploded',
+    ],
+    [
+      'non-Error rejection',
+      () => mockListLciaResultSets.mockRejectedValueOnce('Result set request stopped'),
+      'Result set request stopped',
+    ],
+  ])('surfaces a %s while loading ResultSets', async (_caseName, arrange, expected) => {
+    arrange();
+    render(<DataProcessing />);
+    expect(await screen.findByText(expected)).toBeInTheDocument();
+  });
+
+  it('hydrates a direct ResultSet link that is outside the first list page', async () => {
+    mockListLciaResultSets.mockResolvedValueOnce({ data: { items: [] }, error: null });
+    mockGetLciaResultSet.mockResolvedValueOnce({ data: TEST_RESULT_SET, error: null });
+
+    render(<DataProcessing />);
+
+    expect(
+      await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
+    ).toHaveTextContent('Test result set');
+    expect(mockGetLciaResultSet).toHaveBeenCalledWith(TEST_RESULT_SET_ID);
+  });
+
+  it.each([
+    [{ message: 'Linked result set is unavailable' }, 'Linked result set is unavailable'],
+    [null, 'The selected result set was not found.'],
+  ])('fails a missing direct ResultSet context closed', async (error, expected) => {
+    mockListLciaResultSets.mockResolvedValueOnce({ data: { items: [] }, error: null });
+    mockGetLciaResultSet.mockResolvedValueOnce({ data: null, error });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByText(expected)).toBeInTheDocument();
+  });
+
+  it('navigates from ResultSet summaries, clears selection, and exposes closure history', async () => {
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'closure-history-job',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        resultSetId: TEST_RESULT_SET_ID,
+        closureCheckId: 'closure-history',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainStatus: 'passed',
+        domainValidity: 'valid',
+        projectionUpdatedAt: '2026-08-17T09:00:00Z',
+        updatedAt: '2026-08-17T09:00:00Z',
+        capabilities: {},
+      },
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'closure-history-fallback-job',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        resultSetId: TEST_RESULT_SET_ID,
+        closureCheckId: 'closure-history-fallback',
+        workerStatus: 'failed',
+        runState: 'failed',
+        domainValidity: 'none',
+        projectionUpdatedAt: '2026-08-16T09:00:00Z',
+        capabilities: {},
+      },
+    ];
+    mockLocation = { pathname: '/data-processing', search: '' };
+    mockGetClosureCheck.mockImplementation(async (closureCheckId: string) => ({
+      data: closureSummary(['ready', 'ready'], { closureCheckId }),
+      error: null,
+    }));
+
+    render(<DataProcessing />);
+
+    const resultSetRow = await screen.findByTestId(
+      `data-processing-result-set-${TEST_RESULT_SET_ID}`,
+    );
+    expect(resultSetRow).toHaveTextContent('Ready to calculate');
+    fireEvent.click(within(resultSetRow).getByRole('button', { name: 'Start calculation' }));
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds&closureCheckId=closure-history`,
+    });
+
+    const historySelect = await screen.findByLabelText('Check history');
+    fireEvent.change(historySelect, { target: { value: 'closure-history' } });
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith({
+      pathname: '/data-processing',
+      search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds&closureCheckId=closure-history`,
+    });
+
+    fireEvent.change(screen.getByLabelText('Current result set'), {
+      target: { value: '99999999-9999-4999-8999-999999999999' },
+    });
+    fireEvent.change(screen.getByLabelText('Current result set'), { target: { value: '' } });
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith({ pathname: '/data-processing' });
+  });
+
+  it('uses the package destination selected by a ResultSet summary', async () => {
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'preview-ready-job',
+        jobKind: 'lcia_result.package_build',
+        category: 'data_product',
+        resultSetId: TEST_RESULT_SET_ID,
+        resultPackageId: 'package-from-result-set',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainValidity: 'none',
+        projectionUpdatedAt: '2026-08-17T10:00:00Z',
+        capabilities: {},
+      },
+    ];
+    mockLocation = { pathname: '/data-processing', search: '' };
+
+    render(<DataProcessing />);
+
+    fireEvent.change(await screen.findByLabelText('Current result set'), {
+      target: { value: TEST_RESULT_SET_ID },
+    });
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=preview&packageId=package-from-result-set`,
+    });
+  });
+
+  it('opens a published ResultSet at its publication destination', async () => {
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'published-package-job',
+        jobKind: 'lcia_result.package_build',
+        category: 'data_product',
+        resultSetId: TEST_RESULT_SET_ID,
+        resultPackageId: 'published-package',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainValidity: 'none',
+        projectionUpdatedAt: '2026-08-17T10:00:00Z',
+        capabilities: {},
+      },
+    ];
+    mockListLciaResultPublications.mockResolvedValueOnce({
+      data: [
+        { publicationId: 'published-result', packageId: 'published-package', status: 'current' },
+      ],
+      error: null,
+    });
+    mockLocation = { pathname: '/data-processing', search: '' };
+
+    render(<DataProcessing />);
+
+    const row = await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`);
+    fireEvent.click(within(row).getByRole('button', { name: 'View publication' }));
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=publication&packageId=published-package`,
+    });
+  });
+
+  it('does not establish context when ResultSet creation fails', async () => {
+    mockInjectResultSet = false;
+    mockLocation = { pathname: '/data-processing', search: '' };
+    mockListLciaResultSets.mockResolvedValueOnce({ data: { items: [] }, error: null });
+    mockCreateLciaResultSet.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Unable to create result set' },
+    });
+
+    render(<DataProcessing />);
+    fireEvent.change(await screen.findByLabelText('New result set name'), {
+      target: { value: 'Rejected result set' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create result set' }));
+
+    expect(await screen.findByText('Unable to create result set')).toBeInTheDocument();
+    expect(mockHistoryReplace).not.toHaveBeenCalled();
+  });
+
+  it('keeps legacy closure and build commands compatible without a ResultSet id', async () => {
+    mockInjectResultSet = false;
+    mockLocation = { pathname: '/data-processing', search: '?closureCheckId=closure-valid' };
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'legacy-closure-job',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        resultSetId: '',
+        closureCheckId: 'closure-valid',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainStatus: 'passed',
+        domainValidity: 'valid',
+        projectionUpdatedAt: '2026-08-17T09:00:00Z',
+        capabilities: {},
+      },
+    ];
+
+    render(<DataProcessing />);
+    await waitFor(() => expect(mockGetClosureCheck).toHaveBeenCalledWith('closure-valid'));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Generate result set' })).not.toBeDisabled(),
+    );
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Legacy result set' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Generate result set' }));
+    await waitFor(() =>
+      expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Legacy result set', closureCheckId: 'closure-valid' }),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+    await waitFor(() =>
+      expect(mockCreateClosureCheck).toHaveBeenCalledWith(
+        expect.not.objectContaining({ resultSetId: expect.anything() }),
+      ),
+    );
   });
 
   it('normalizes localized impact category option metadata', () => {
@@ -2298,6 +2629,10 @@ describe('DataProcessing page', () => {
           displayDefaultImpactCategory: 'climate-change',
           publishedAt: '2026-06-24T09:00:00Z',
         },
+        {
+          status: 'unpublished',
+          packageName: 'Unidentified result set',
+        },
       ],
       error: null,
     });
@@ -2310,6 +2645,9 @@ describe('DataProcessing page', () => {
     await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }));
     const currentRow = await screen.findByTestId('data-product-publication-publication-current');
     const oldRow = screen.getByTestId('data-product-publication-publication-old');
+    expect(screen.getByTestId('data-product-publication-2')).toHaveTextContent(
+      'Unidentified result set',
+    );
     expect(currentRow.compareDocumentPosition(oldRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );

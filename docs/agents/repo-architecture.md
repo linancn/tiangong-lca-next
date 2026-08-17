@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedCommit: a3e698836494da8ddc6f4263cf77425ea683348f
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 related:
   - ../AGENTS.md

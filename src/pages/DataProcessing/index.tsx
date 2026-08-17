@@ -320,6 +320,62 @@ export function deriveResultSetWorkflowSummary(
   };
 }
 
+export function resultSetStatusMessage(
+  translate: (id: string, defaultMessage: string) => string,
+  kind: 'closure' | 'build' | 'publication',
+  value: string,
+): string {
+  switch (`${kind}:${value}`) {
+    case 'closure:not_checked':
+      return translate('pages.dataProcessing.resultSets.closure.notChecked', 'Not checked');
+    case 'closure:checking':
+      return translate('pages.dataProcessing.resultSets.closure.checking', 'Checking');
+    case 'closure:needs_attention':
+      return translate('pages.dataProcessing.resultSets.closure.needsAttention', 'Needs attention');
+    case 'closure:ready':
+      return translate('pages.dataProcessing.resultSets.closure.ready', 'Ready to calculate');
+    case 'closure:failed':
+      return translate('pages.dataProcessing.resultSets.closure.failed', 'Check failed');
+    case 'build:not_started':
+      return translate('pages.dataProcessing.resultSets.build.notStarted', 'Not calculated');
+    case 'build:running':
+      return translate('pages.dataProcessing.resultSets.build.running', 'Calculating');
+    case 'build:ready':
+      return translate('pages.dataProcessing.resultSets.build.ready', 'Ready to preview');
+    case 'build:failed':
+      return translate('pages.dataProcessing.resultSets.build.failed', 'Calculation failed');
+    case 'publication:not_published':
+      return translate('pages.dataProcessing.resultSets.publication.notPublished', 'Not published');
+    case 'publication:published':
+      return translate('pages.dataProcessing.resultSets.publication.published', 'Published');
+    default:
+      return value;
+  }
+}
+
+export function resultSetActionMessage(
+  translate: (id: string, defaultMessage: string) => string,
+  action: ResultSetNextAction,
+): string {
+  switch (action) {
+    case 'start_closure':
+      return translate('pages.dataProcessing.resultSets.action.startClosure', 'Start check');
+    case 'view_closure':
+      return translate('pages.dataProcessing.resultSets.action.viewClosure', 'View check');
+    case 'start_build':
+      return translate('pages.dataProcessing.resultSets.action.startBuild', 'Start calculation');
+    case 'view_build':
+      return translate('pages.dataProcessing.resultSets.action.viewBuild', 'View progress');
+    case 'preview':
+      return translate('pages.dataProcessing.resultSets.action.preview', 'Preview result');
+    case 'view_publication':
+      return translate(
+        'pages.dataProcessing.resultSets.action.viewPublication',
+        'View publication',
+      );
+  }
+}
+
 export function stringifyCommandData(value: unknown): string {
   if (value === null || value === undefined) {
     return '-';
@@ -1448,9 +1504,10 @@ const DataProcessing = () => {
     const values = await resultSetForm.validateFields();
     const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
     if (!result?.data || result.error) return;
-    setResultSets((current) => [
-      result.data as LciaResultSetV1,
-      ...current.filter((item) => item.resultSetId !== result.data?.resultSetId),
+    const createdResultSet = result.data as LciaResultSetV1;
+    setResultSets([
+      createdResultSet,
+      ...resultSets.filter((item) => item.resultSetId !== createdResultSet.resultSetId),
     ]);
     resultSetForm.resetFields?.();
     navigateToResultSet(result.data.resultSetId);
@@ -1493,8 +1550,7 @@ const DataProcessing = () => {
   };
 
   const handleSelectClosureCheck = (closureCheckId: string) => {
-    if (!deepLink.resultSetId) return;
-    navigateToResultSet(deepLink.resultSetId, { tab: 'builds', closureCheckId });
+    navigateToResultSet(deepLink.resultSetId!, { tab: 'builds', closureCheckId });
   };
 
   const handleCreateBuild = async () => {
@@ -1861,49 +1917,11 @@ const DataProcessing = () => {
   );
 
   const resultSetStatusLabel = (kind: 'closure' | 'build' | 'publication', value: string) => {
-    switch (`${kind}:${value}`) {
-      case 'closure:not_checked':
-        return t('pages.dataProcessing.resultSets.closure.notChecked', 'Not checked');
-      case 'closure:checking':
-        return t('pages.dataProcessing.resultSets.closure.checking', 'Checking');
-      case 'closure:needs_attention':
-        return t('pages.dataProcessing.resultSets.closure.needsAttention', 'Needs attention');
-      case 'closure:ready':
-        return t('pages.dataProcessing.resultSets.closure.ready', 'Ready to calculate');
-      case 'closure:failed':
-        return t('pages.dataProcessing.resultSets.closure.failed', 'Check failed');
-      case 'build:not_started':
-        return t('pages.dataProcessing.resultSets.build.notStarted', 'Not calculated');
-      case 'build:running':
-        return t('pages.dataProcessing.resultSets.build.running', 'Calculating');
-      case 'build:ready':
-        return t('pages.dataProcessing.resultSets.build.ready', 'Ready to preview');
-      case 'build:failed':
-        return t('pages.dataProcessing.resultSets.build.failed', 'Calculation failed');
-      case 'publication:not_published':
-        return t('pages.dataProcessing.resultSets.publication.notPublished', 'Not published');
-      case 'publication:published':
-        return t('pages.dataProcessing.resultSets.publication.published', 'Published');
-      default:
-        return value;
-    }
+    return resultSetStatusMessage(t, kind, value);
   };
 
   const resultSetActionLabel = (action: ResultSetNextAction) => {
-    switch (action) {
-      case 'start_closure':
-        return t('pages.dataProcessing.resultSets.action.startClosure', 'Start check');
-      case 'view_closure':
-        return t('pages.dataProcessing.resultSets.action.viewClosure', 'View check');
-      case 'start_build':
-        return t('pages.dataProcessing.resultSets.action.startBuild', 'Start calculation');
-      case 'view_build':
-        return t('pages.dataProcessing.resultSets.action.viewBuild', 'View progress');
-      case 'preview':
-        return t('pages.dataProcessing.resultSets.action.preview', 'Preview result');
-      case 'view_publication':
-        return t('pages.dataProcessing.resultSets.action.viewPublication', 'View publication');
-    }
+    return resultSetActionMessage(t, action);
   };
 
   const renderResultSetWorkspace = () => (
@@ -2315,7 +2333,6 @@ const DataProcessing = () => {
           </Button>
         </Form>
       </Card>
-      {renderCommandStatus()}
       {renderBuildJobs()}
     </Space>
   );
@@ -2646,7 +2663,6 @@ const DataProcessing = () => {
           </Button>
         </Form>
       </Card>
-      {renderCommandStatus()}
       {previewData ? (
         <Space direction='vertical' size='middle' className={styles.previewDetails}>
           <Card title={t('pages.dataProcessing.preview.summaryTitle', 'Result set overview')}>
@@ -2931,7 +2947,6 @@ const DataProcessing = () => {
           </Button>
         </Form>
       </Card>
-      {renderCommandStatus()}
       <Card
         title={t('pages.dataProcessing.publications.title', 'Publication management')}
         extra={
@@ -3068,6 +3083,7 @@ const DataProcessing = () => {
         ) : (
           <Space direction='vertical' size='large' className={styles.pageStack}>
             {renderResultSetWorkspace()}
+            {renderCommandStatus()}
             <Tabs
               activeKey={activeTabKey}
               onChange={handleTabChange}
