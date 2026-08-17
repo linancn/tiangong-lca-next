@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: 16d0d2954cffbb97c9595f76df064a8bd8d2b6a6
+lastReviewedCommit: b2eb8cbd10bdf47942650fad60efea5e8416f3a2
 lastReviewedNote: 'Reviewed for Next Issue #867: manual browser evidence stays outside release proof and checked-push gate budgeting.'
 ---
 

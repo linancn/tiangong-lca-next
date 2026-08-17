@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: 16d0d2954cffbb97c9595f76df064a8bd8d2b6a6
+lastReviewedCommit: b2eb8cbd10bdf47942650fad60efea5e8416f3a2
 lastReviewedNote: 'Reviewed for Next Issue #867: hermetic browser qualification is manual and release proof is non-browser.'
 ---
 
