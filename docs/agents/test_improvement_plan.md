@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: b2eb8cbd10bdf47942650fad60efea5e8416f3a2
 lastReviewedNote: 'Reviewed for Next Issue #867: hermetic browser evidence is manual at business-PR stage and outside release proof.'
 ---
 

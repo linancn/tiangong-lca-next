@@ -36,6 +36,7 @@ import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { ConfigProvider, theme as antdTheme } from 'antd';
+import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
@@ -58,6 +59,18 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
 export const locale = {
   getLocale: resolveBrowserRuntimeLocale,
 };
+
+/**
+ * Wraps every Umi route, including routes that opt out of ProLayout with
+ * `layout: false`, in the shared boot-success and render-failure boundary.
+ */
+export function rootContainer(container: ReactNode) {
+  return (
+    <StaticFallbackErrorBoundary>
+      <AppBootMarker>{container}</AppBootMarker>
+    </StaticFallbackErrorBoundary>
+  );
+}
 
 async function getSystemAccess(): Promise<Auth.CurrentUser['access'] | undefined> {
   try {
@@ -304,24 +317,20 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               : antdTheme.defaultAlgorithm,
           }}
         >
-          <StaticFallbackErrorBoundary>
-            <AppBootMarker>
-              {renderedChildren}
-              {isDev && !maintenanceActive && (
-                <SettingDrawer
-                  disableUrlParams
-                  enableDarkTheme
-                  settings={initialState?.settings}
-                  onSettingChange={(settings) => {
-                    setInitialState((preInitialState: any) => ({
-                      ...preInitialState,
-                      settings,
-                    }));
-                  }}
-                />
-              )}
-            </AppBootMarker>
-          </StaticFallbackErrorBoundary>
+          {renderedChildren}
+          {isDev && !maintenanceActive && (
+            <SettingDrawer
+              disableUrlParams
+              enableDarkTheme
+              settings={initialState?.settings}
+              onSettingChange={(settings) => {
+                setInitialState((preInitialState: any) => ({
+                  ...preInitialState,
+                  settings,
+                }));
+              }}
+            />
+          )}
         </ConfigProvider>
       );
     },

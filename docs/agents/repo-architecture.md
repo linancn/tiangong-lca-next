@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: 16d0d2954cffbb97c9595f76df064a8bd8d2b6a6
 lastReviewedNote: 'Reviewed for Next Issue #867: frontend environment selection now separates explicit deployment inputs from the deterministic semantic-qualification profile.'
 related:
   - ../AGENTS.md

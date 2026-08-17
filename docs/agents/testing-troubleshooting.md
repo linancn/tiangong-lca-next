@@ -27,8 +27,8 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: b2eb8cbd10bdf47942650fad60efea5e8416f3a2
 lastReviewedNote: 'Reviewed for Next Issue #867: manual browser failures stay on the business PR and release proof is non-browser.'
 ---
 
