@@ -30,8 +30,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: 16d0d2954cffbb97c9595f76df064a8bd8d2b6a6
 lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 related:
   - ../AGENTS.md
