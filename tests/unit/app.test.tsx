@@ -50,8 +50,10 @@ jest.mock('@/components/SystemMaintenance', () => ({
 
 jest.mock('@/components/SystemMaintenance/AppBootBoundary', () => ({
   __esModule: true,
-  AppBootMarker: ({ children }: any) => children,
-  StaticFallbackErrorBoundary: ({ children }: any) => children,
+  AppBootMarker: ({ children }: any) => <div data-testid='app-boot-marker'>{children}</div>,
+  StaticFallbackErrorBoundary: ({ children }: any) => (
+    <div data-testid='static-fallback-error-boundary'>{children}</div>
+  ),
 }));
 
 jest.mock('@/components/AccessDenied', () => ({
@@ -185,6 +187,19 @@ describe('app runtime config', () => {
 
     expect(locale.getLocale()).toBe('de-DE');
     expect(mockResolveBrowserRuntimeLocale).toHaveBeenCalledTimes(1);
+  });
+
+  it('wraps every Umi route in the global boot and render-failure boundary', () => {
+    const { rootContainer } = require('@/app');
+
+    render(rootContainer(<div data-testid='root-route'>layout-free route</div>));
+
+    expect(screen.getByTestId('static-fallback-error-boundary')).toContainElement(
+      screen.getByTestId('app-boot-marker'),
+    );
+    expect(screen.getByTestId('app-boot-marker')).toContainElement(
+      screen.getByTestId('root-route'),
+    );
   });
 
   it('getInitialState returns current user and merged settings on protected routes', async () => {

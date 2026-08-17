@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "e77df81f1c50318d0bcf944bc81db86f71aa5b69f0c52d60ee7d2347f1081c09",
+    "auditedInputDigest": "8a5111d4e13ba82fd42d7b22a671386d089016a38d13eebe0dfdb5da4f8dd667",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -13732,7 +13732,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 267,
+          "line": 280,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13745,7 +13745,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 267, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 280, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25614,7 +25614,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 204,
+          "line": 217,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25627,7 +25627,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 204, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 217, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25751,7 +25751,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 220,
+          "line": 233,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25764,7 +25764,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 220, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 233, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -131434,7 +131434,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 147,
+          "line": 160,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,

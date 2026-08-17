@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 32df9d9db48bb1bf5ec577a5e9c20e84c91ad189
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: 4ee99ba45e8b29a521c57b6033fb001481ed564b
 lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual PR-stage evidence and release proof covers the non-browser gate.'
 ---
 
