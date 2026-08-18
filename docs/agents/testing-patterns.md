@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-18
-lastReviewedCommit: 099718185617d240e4e1849837b0b446f3a4e5c7
+lastReviewedCommit: 917ed4add359b2d8f0c952d365d893badaa61c4e
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 

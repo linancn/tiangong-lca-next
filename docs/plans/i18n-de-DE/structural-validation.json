@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "599fda1a714cefeb582493881f995ce37be3e2787488e5c1d93b740fd95990ca",
+    "auditedInputDigest": "3ac7a3aa040a7748977442ca12d4bbff60cbbb664a728ad17b7776a37f50a219",
     "validatedMessageCount": 3207,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1438,
     "highRiskMessageDigest": "f04d46071b685e2e8f18b83dcdc6b333345ccde36366e5c1a1b05a7b1944677f",
     "catalogDigest": "ebe1a99a1cdb1231fefa9cea59309b1e3a2d778338f2d9587dc4fd5e8a151f88",
-    "dossierDigest": "92ec7b3f91d5377510197a616ded3f9d31fc8f6592e966e120513c06d2e40abd",
+    "dossierDigest": "2d2092a8a9953c2d6a1cd3730e285048884ba3b8c9c9f9d97ef8defa20402067",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "0f0f573f13c33592e0167581beaf12e5f7dbf4b7790573be3cca02ed7c89aa91",
+    "routeEvidenceDigest": "b8af4daf42442c6f8e3ef8c0381a3ea186dd67dc706686c18a29ba60e6591df4",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "1c44907a709976d8e99335c2656623bc9ea0d5379f10f6d81b58e724a773ab67",
         "highRiskMessageCount": 1438,
         "highRiskMessageDigest": "f04d46071b685e2e8f18b83dcdc6b333345ccde36366e5c1a1b05a7b1944677f",
-        "dossierDigest": "92ec7b3f91d5377510197a616ded3f9d31fc8f6592e966e120513c06d2e40abd",
+        "dossierDigest": "2d2092a8a9953c2d6a1cd3730e285048884ba3b8c9c9f9d97ef8defa20402067",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "d3eda3c25cf8783460fa7dd291b528675478f32d1b9ce786cfef02964af6ede2"
+  "validationDigest": "bfa9c458caac2ee2e4b4c813a78bedc697b3b106469405de8a6b095bba57b208"
 }
