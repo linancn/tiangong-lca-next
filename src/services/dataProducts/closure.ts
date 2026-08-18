@@ -117,7 +117,7 @@ export type ClosureCheckRequestV1 = {
 /** A curated issue row; never a raw worker log, stack trace, or closure artifact. */
 export type ClosureCheckIssueV1 = {
   issueId: string;
-  severity: 'blocking' | 'warning' | 'info';
+  severity: 'blocker' | 'warning' | 'info';
   blocking: boolean;
   code: string;
   title: string;
@@ -422,7 +422,7 @@ export function decodeClosureCheckIssue(value: unknown): ClosureCheckIssueV1 | n
   const affectedRootCount = numberValue(value.affectedRootCount);
   if (
     !isNonEmptyString(issueId) ||
-    !['blocking', 'warning', 'info'].includes(String(severity)) ||
+    !['blocker', 'warning', 'info'].includes(String(severity)) ||
     typeof value.blocking !== 'boolean' ||
     !isNonEmptyString(code) ||
     !isNonEmptyString(title) ||

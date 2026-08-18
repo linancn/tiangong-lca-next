@@ -287,10 +287,11 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
         schemaVersion: 'lcia.scope-closure-issues-page.v1',
         closureCheckId: 'closure-1',
         totalCount: 1,
+        nextCursor: null,
         issues: [
           {
             issueId: 'issue-1',
-            severity: 'blocking',
+            severity: 'blocker',
             blocking: true,
             code: 'missing_reference',
             title: 'missing_reference',
@@ -316,7 +317,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     });
     expect(result.data?.issues[0]).toEqual({
       issueId: 'issue-1',
-      severity: 'blocking',
+      severity: 'blocker',
       blocking: true,
       code: 'missing_reference',
       title: 'missing_reference',
@@ -325,6 +326,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     });
     expect(result.data?.issues[0]).not.toHaveProperty('affectedProcess');
     expect(result.data?.totalCount).toBe(1);
+    expect(result.data).not.toHaveProperty('nextCursor');
   });
 
   it('whitelists only the safe short-lived report descriptor fields', async () => {
@@ -759,7 +761,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
   it('validates closure issues, pages, and report descriptors field by field', () => {
     const issueBase = {
       issueId: 'issue-1',
-      severity: 'blocking',
+      severity: 'blocker',
       blocking: true,
       code: 'missing_ref',
       title: 'Missing reference',
@@ -769,6 +771,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     expect(decodeClosureCheckIssue(null)).toBeNull();
     for (const patch of [
       { issueId: '' },
+      { severity: 'blocking' },
       { severity: 'invalid' },
       { blocking: 'yes' },
       { code: '' },

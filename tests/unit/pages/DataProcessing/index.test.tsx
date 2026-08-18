@@ -1432,7 +1432,7 @@ describe('DataProcessing page', () => {
           issues: [
             {
               issueId: 'issue-1',
-              severity: 'blocking',
+              severity: 'blocker',
               blocking: true,
               code: 'missing_provider',
               title: 'Missing provider',
@@ -1453,7 +1453,7 @@ describe('DataProcessing page', () => {
           issues: [
             {
               issueId: 'issue-1',
-              severity: 'blocking',
+              severity: 'blocker',
               blocking: true,
               code: 'missing_provider',
               title: 'Missing provider',
