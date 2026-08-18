@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedAt: 2026-08-18
+lastReviewedCommit: 51e83e35b7dc048626c107d4f0683cce1f6f1181
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
