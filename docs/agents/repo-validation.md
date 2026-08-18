@@ -30,8 +30,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: a3e698836494da8ddc6f4263cf77425ea683348f
+lastReviewedAt: 2026-08-18
+lastReviewedCommit: 099718185617d240e4e1849837b0b446f3a4e5c7
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 related:
   - ../AGENTS.md
