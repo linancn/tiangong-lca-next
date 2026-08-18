@@ -341,6 +341,7 @@ describe('DataProcessing page', () => {
       data: { items: [TEST_RESULT_SET] },
       error: null,
     });
+    mockPreviewLciaResultPackage.mockReset();
     mockPreviewLciaResultPackage.mockResolvedValue({
       data: {
         summary: {
@@ -446,6 +447,14 @@ describe('DataProcessing page', () => {
       expect(
         screen.getByRole('button', { name: 'Use this check to start calculation' }),
       ).not.toBeDisabled(),
+    );
+  }
+
+  async function waitForReadyPreviewPackage() {
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText('Select result set').querySelector('option[value="package-1"]'),
+      ).not.toBeNull(),
     );
   }
 
@@ -2139,6 +2148,7 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-preview'));
+    await waitForReadyPreviewPackage();
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
     });
@@ -2240,6 +2250,7 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-preview'));
+    await waitForReadyPreviewPackage();
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
     });
@@ -2295,6 +2306,7 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-preview'));
+    await waitForReadyPreviewPackage();
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
     });
@@ -2368,6 +2380,7 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     await screen.findByText('Plain impact (01.00.000)');
     fireEvent.click(screen.getByTestId('tab-preview'));
+    await waitForReadyPreviewPackage();
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
     });
@@ -2452,6 +2465,7 @@ describe('DataProcessing page', () => {
     await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
 
     fireEvent.click(screen.getByTestId('tab-preview'));
+    await waitForReadyPreviewPackage();
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
     });
