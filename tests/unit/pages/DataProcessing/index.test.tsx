@@ -1506,7 +1506,16 @@ describe('DataProcessing page', () => {
 
   it('shows an empty closure-issue state without blocking task history rendering', async () => {
     render(<DataProcessing />);
-    expect(await screen.findByText('No closure issues found.')).toBeInTheDocument();
+    await waitFor(
+      () =>
+        expect(mockListClosureCheckIssues).toHaveBeenCalledWith('closure-valid', {
+          limit: 50,
+        }),
+      { timeout: 5000 },
+    );
+    expect(
+      await screen.findByText('No closure issues found.', undefined, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('data-product-job-worker-job-1')).toBeInTheDocument();
   });
 
