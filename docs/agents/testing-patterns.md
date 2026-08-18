@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-17
-lastReviewedCommit: 4ee99ba45e8b29a521c57b6033fb001481ed564b
-lastReviewedNote: 'Reviewed for Next Issue #867: browser qualification is manual PR-stage evidence and outside release proof.'
+lastReviewedCommit: a3e698836494da8ddc6f4263cf77425ea683348f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Testing Patterns Reference

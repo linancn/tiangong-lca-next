@@ -77,6 +77,7 @@ function deepLink(value: unknown): TaskCenterDeepLink | undefined {
   return {
     routeKey,
     params: {
+      ...(text(params?.resultSetId) ? { resultSetId: text(params?.resultSetId) } : {}),
       ...(text(params?.closureCheckId) ? { closureCheckId: text(params?.closureCheckId) } : {}),
       ...(text(params?.packageId) ? { packageId: text(params?.packageId) } : {}),
     },
@@ -141,6 +142,8 @@ export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | nu
     createdAt: projectionUpdatedAt,
     updatedAt: projectionUpdatedAt,
     ...(deepLink(row?.deepLink) ? { deepLink: deepLink(row?.deepLink) } : {}),
+    ...(text(row?.resultSetId) ? { resultSetId: text(row?.resultSetId) } : {}),
+    ...(text(row?.resultSetName) ? { resultSetName: text(row?.resultSetName) } : {}),
     ...(text(row?.closureCheckId) ? { closureCheckId: text(row?.closureCheckId) } : {}),
     ...(text(row?.resultPackageId) ? { resultPackageId: text(row?.resultPackageId) } : {}),
     ...(Array.isArray(row?.blockerCodes)
@@ -184,7 +187,7 @@ export async function listDataProductTaskFeed(
     ...(request.statuses?.length ? { statuses: request.statuses } : {}),
     ...(request.updatedSince ? { updatedSince: request.updatedSince } : {}),
     ...(request.cursor ? { cursor: request.cursor } : {}),
-    limit: request.limit ?? 50,
+    limit: request.limit ?? 200,
     rootOnly: request.rootOnly ?? false,
   });
 }

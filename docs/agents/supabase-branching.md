@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: 2f4cad4b
-lastReviewedNote: 'Reviewed for Next Issue #867: explicit build environment values override repository defaults, while closed semantic qualification uses a deterministic non-production backend profile.'
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -75,7 +75,7 @@ Rules:
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - TIDAS package task reconciliation in `src/services/tidasPackage/taskCenter.ts` may coalesce local aliases by backend `workerJobId` or package `jobId` and adopt backend timestamps, but `database-engine` remains authoritative for mutable-scope cache lifecycle, fresh Worker job creation, package contents, and authorization
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
-- closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
+- ResultSet create/list/get, closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`. Database owns ResultSet identity and ResultSet-to-closure/task joins; Next keeps `resultSetId` as URL/workbench context and derives lifecycle presentation from safe projections without adding a frontend status store. Closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - review queue services forward display mode and exact target type to the Database-owned v3 RPCs. Database applies their intersection before count and pagination and validates values; Next owns the controls, compatible-option presentation, state reset, and matching 50-row UI default.

@@ -55,9 +55,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-15
-lastReviewedCommit: a29f4f3392fc22e7800b407cfe5596396d1d783b
-lastReviewedNote: 'Reviewed for Next Issue #867: browser E2E is manual on the open feature PR and release proof is non-browser.'
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

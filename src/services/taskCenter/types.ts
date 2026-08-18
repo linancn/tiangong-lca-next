@@ -23,6 +23,7 @@ export type TaskDomainValidity =
 export type TaskCenterDeepLink = {
   routeKey: 'data_product.closure_check' | 'data_product.package';
   params: {
+    resultSetId?: string;
     closureCheckId?: string;
     packageId?: string;
   };
@@ -58,6 +59,8 @@ export type TaskSummaryV2 = {
   createdAt: string;
   updatedAt: string;
   deepLink?: TaskCenterDeepLink;
+  resultSetId?: string;
+  resultSetName?: string;
   closureCheckId?: string;
   resultPackageId?: string;
   blockerCodes?: string[];

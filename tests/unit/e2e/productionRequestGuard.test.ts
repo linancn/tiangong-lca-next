@@ -343,12 +343,26 @@ describe('production browser request guard', () => {
       action: 'list_task_feed',
       category: 'data_product',
       jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
-      limit: 50,
+      limit: 200,
       rootOnly: false,
     };
     expect(
       classify('POST', '/functions/v1/app_data_product_commands', JSON.stringify(taskFeedBody)),
     ).toBe('allow');
+    expect(
+      classify(
+        'POST',
+        '/functions/v1/app_data_product_commands',
+        JSON.stringify({ action: 'list_result_sets', limit: 200 }),
+      ),
+    ).toBe('allow');
+    expect(
+      classify(
+        'POST',
+        '/functions/v1/app_data_product_commands',
+        JSON.stringify({ action: 'list_result_sets', limit: 50 }),
+      ),
+    ).toBe('block');
     expect(
       classify(
         'POST',

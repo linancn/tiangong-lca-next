@@ -99,6 +99,8 @@ export type ClosureScopeIdentityV1 = {
 };
 
 export type ClosureCheckRequestV1 = {
+  /** Optional only for legacy callers; the persistent Data Processing workflow always supplies it. */
+  resultSetId?: string;
   requestedScope: {
     coverageMode: 'global_eligible' | 'subset';
     processes?: ClosureScopeIdentityV1[];

@@ -210,9 +210,12 @@ function isExactDataProductReadBody(postData: string | null | undefined): boolea
         Array.isArray(body.jobKinds) &&
         JSON.stringify(body.jobKinds) ===
           JSON.stringify(['lcia.scope_closure_check', 'lcia_result.package_build']) &&
-        body.limit === 50 &&
+        body.limit === 200 &&
         body.rootOnly === false
       );
+    }
+    if (body.action === 'list_result_sets') {
+      return hasExactObjectKeys(body, ['action', 'limit']) && body.limit === 200;
     }
     return (
       hasExactObjectKeys(body, ['action', 'limit']) &&
