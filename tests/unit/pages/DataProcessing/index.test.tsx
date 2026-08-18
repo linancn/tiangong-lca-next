@@ -1801,7 +1801,7 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    fireEvent.change(screen.getByLabelText('Result set name'), {
+    fireEvent.change(await screen.findByLabelText('Result set name'), {
       target: { value: 'Missing LCIA method' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
