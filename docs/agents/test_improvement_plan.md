@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-18
-lastReviewedCommit: 51e83e35b7dc048626c107d4f0683cce1f6f1181
+lastReviewedCommit: 9cb49b0bd80a87fd490f81e9dac570e6d7c2930c
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
