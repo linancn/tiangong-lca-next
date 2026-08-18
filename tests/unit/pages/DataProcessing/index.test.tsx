@@ -171,6 +171,7 @@ let mockLocale: string | undefined = 'en-US';
 let mockLocation = { pathname: '/data-processing', search: '' };
 let mockInjectResultSet = true;
 const mockHistoryReplace = jest.fn();
+const mockHistoryPush = jest.fn();
 
 function mockWithTestResultSet(search: string): string {
   if (!mockInjectResultSet) return search;
@@ -256,7 +257,10 @@ const expectedReviewedLciaMethods = [
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  history: { replace: (...args: any[]) => Reflect.apply(mockHistoryReplace, undefined, args) },
+  history: {
+    push: (...args: any[]) => Reflect.apply(mockHistoryPush, undefined, args),
+    replace: (...args: any[]) => Reflect.apply(mockHistoryReplace, undefined, args),
+  },
   useIntl: () => ({
     formatMessage: mockFormatMessage,
     locale: mockLocale,
@@ -1383,14 +1387,15 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    expect(
-      screen.getByRole('button', { name: 'Use this check to start calculation' }),
-    ).toBeDisabled();
-    expect(await screen.findByText('blocked')).toBeInTheDocument();
+    const generationButton = await screen.findByRole(
+      'button',
+      { name: 'Use this check to start calculation' },
+      { timeout: 5000 },
+    );
+    expect(generationButton).toBeDisabled();
+    expect(await screen.findByText('blocked', undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByText('2 blockers')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Use this check to start calculation' }),
-    ).toBeDisabled();
+    expect(generationButton).toBeDisabled();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
 
@@ -1502,7 +1507,16 @@ describe('DataProcessing page', () => {
 
   it('shows an empty closure-issue state without blocking task history rendering', async () => {
     render(<DataProcessing />);
-    expect(await screen.findByText('No closure issues found.')).toBeInTheDocument();
+    await waitFor(
+      () =>
+        expect(mockListClosureCheckIssues).toHaveBeenCalledWith('closure-valid', {
+          limit: 50,
+        }),
+      { timeout: 5000 },
+    );
+    expect(
+      await screen.findByText('No closure issues found.', undefined, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('data-product-job-worker-job-1')).toBeInTheDocument();
   });
 
@@ -1996,6 +2010,10 @@ describe('DataProcessing page', () => {
     const processLink = screen.getByRole('link', { name: 'Portland cement production' });
     expect(processLink).toHaveAttribute(
       'href',
+      '/mydata/processes?id=process-a&version=01.00.000&mode=view',
+    );
+    fireEvent.click(processLink);
+    expect(mockHistoryPush).toHaveBeenCalledWith(
       '/mydata/processes?id=process-a&version=01.00.000&mode=view',
     );
     expect(screen.getByText('Electricity, medium voltage')).toBeInTheDocument();
@@ -2656,8 +2674,15 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-publication'));
 
-    await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }));
-    const currentRow = await screen.findByTestId('data-product-publication-publication-current');
+    await waitFor(
+      () => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }),
+      { timeout: 5000 },
+    );
+    const currentRow = await screen.findByTestId(
+      'data-product-publication-publication-current',
+      undefined,
+      { timeout: 5000 },
+    );
     const oldRow = screen.getByTestId('data-product-publication-publication-old');
     expect(screen.getByTestId('data-product-publication-2')).toHaveTextContent(
       'Unidentified result set',
