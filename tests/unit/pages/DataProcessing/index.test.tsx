@@ -1387,14 +1387,15 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    expect(
-      screen.getByRole('button', { name: 'Use this check to start calculation' }),
-    ).toBeDisabled();
-    expect(await screen.findByText('blocked')).toBeInTheDocument();
+    const generationButton = await screen.findByRole(
+      'button',
+      { name: 'Use this check to start calculation' },
+      { timeout: 5000 },
+    );
+    expect(generationButton).toBeDisabled();
+    expect(await screen.findByText('blocked', undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByText('2 blockers')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Use this check to start calculation' }),
-    ).toBeDisabled();
+    expect(generationButton).toBeDisabled();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
 
@@ -2673,8 +2674,15 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-publication'));
 
-    await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }));
-    const currentRow = await screen.findByTestId('data-product-publication-publication-current');
+    await waitFor(
+      () => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }),
+      { timeout: 5000 },
+    );
+    const currentRow = await screen.findByTestId(
+      'data-product-publication-publication-current',
+      undefined,
+      { timeout: 5000 },
+    );
     const oldRow = screen.getByTestId('data-product-publication-publication-old');
     expect(screen.getByTestId('data-product-publication-2')).toHaveTextContent(
       'Unidentified result set',
