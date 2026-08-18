@@ -34,7 +34,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-18
-lastReviewedCommit: 51e83e35b7dc048626c107d4f0683cce1f6f1181
+lastReviewedCommit: f7c1a218ae82806a98b7db45f792394ea423c578
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 related:
   - .docpact/config.yaml
