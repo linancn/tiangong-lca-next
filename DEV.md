@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-18
-lastReviewedCommit: f7c1a218ae82806a98b7db45f792394ea423c578
+lastReviewedCommit: af1437a706df9d068bbda1324be3ef5bb93878f0
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
