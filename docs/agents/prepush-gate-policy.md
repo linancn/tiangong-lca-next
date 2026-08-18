@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-18
-lastReviewedCommit: 917ed4add359b2d8f0c952d365d893badaa61c4e
+lastReviewedCommit: c1e61084060150fba9c17aee0cb3c2d1981ebcd4
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
