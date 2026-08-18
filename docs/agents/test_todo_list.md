@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: 4ee99ba45e8b29a521c57b6033fb001481ed564b
-lastReviewedNote: 'Reviewed for Next Issue #867: hermetic browser qualification is manual and release proof is non-browser.'
+lastReviewedAt: 2026-08-18
+lastReviewedCommit: 099718185617d240e4e1849837b0b446f3a4e5c7
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Testing Execution State

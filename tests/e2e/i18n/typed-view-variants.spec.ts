@@ -213,7 +213,8 @@ async function fulfillEmptyBuildJobs(route: Route): Promise<AuditedWorkerReadKin
   return readKind;
 }
 
-type AuditedDataProductReadKind = 'publications' | 'task-feed';
+type AuditedDataProductReadKind = 'publications' | 'result-sets' | 'task-feed';
+const SYNTHETIC_RESULT_SET_ID = '77777777-7777-4777-8777-777777777777';
 
 async function fulfillEmptyDataProductRead(
   route: Route,
@@ -227,18 +228,25 @@ async function fulfillEmptyDataProductRead(
     requestBody !== null &&
     !Array.isArray(requestBody) &&
     (requestBody as Record<string, unknown>).action === 'list_task_feed';
+  const isResultSetRead =
+    typeof requestBody === 'object' &&
+    requestBody !== null &&
+    !Array.isArray(requestBody) &&
+    (requestBody as Record<string, unknown>).action === 'list_result_sets';
   const body = isTaskFeedRead
     ? {
         action: 'list_task_feed',
         category: 'data_product',
         jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
-        limit: 50,
+        limit: 200,
         rootOnly: false,
       }
-    : {
-        action: 'list_publications',
-        limit: 50,
-      };
+    : isResultSetRead
+      ? { action: 'list_result_sets', limit: 200 }
+      : {
+          action: 'list_publications',
+          limit: 50,
+        };
   assertAuditedSyntheticReadRequest(route.request(), {
     expectedOrigin: productionBackendTarget.origin,
     expectedPublishableKey: productionBackendTarget.publishableKey,
@@ -248,12 +256,28 @@ async function fulfillEmptyDataProductRead(
     searchParams: { forceFunctionRegion: 'us-east-1' },
   });
   await route.fulfill({
-    body: JSON.stringify({ data: isTaskFeedRead ? { items: [] } : [], ok: true }),
+    body: JSON.stringify({
+      data: isTaskFeedRead
+        ? { items: [] }
+        : isResultSetRead
+          ? {
+              items: [
+                {
+                  schemaVersion: 'lcia.result-set.v1',
+                  resultSetId: SYNTHETIC_RESULT_SET_ID,
+                  name: 'Semantic qualification result set',
+                  createdAt: '2026-08-17T00:00:00.000Z',
+                },
+              ],
+            }
+          : [],
+      ok: true,
+    }),
     contentType: 'application/json',
     headers: { 'access-control-allow-origin': '*' },
     status: 200,
   });
-  return isTaskFeedRead ? 'task-feed' : 'publications';
+  return isTaskFeedRead ? 'task-feed' : isResultSetRead ? 'result-sets' : 'publications';
 }
 
 async function expectSelectedDataProcessingTab(
@@ -312,6 +336,7 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
   });
   const fulfilledDataProductReads: Record<AuditedDataProductReadKind, number> = {
     publications: 0,
+    'result-sets': 0,
     'task-feed': 0,
   };
   await page.route(DATA_PRODUCT_COMMANDS_API_PATTERN, async (route) => {
@@ -327,7 +352,7 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
     for (const variant of DATA_PROCESSING_VARIANTS) {
       const location = {
         hashPath: '/data-processing',
-        hashQuery: { tab: variant.id },
+        hashQuery: { resultSetId: SYNTHETIC_RESULT_SET_ID, tab: variant.id },
       } satisfies SpaLocationTarget;
       for (const locale of APP_LOCALES) {
         // The mutable counter is the intentional closure proving each full navigation
@@ -367,6 +392,7 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
     expect(fulfilledWorkerReads['lcia-package-job']).toBeGreaterThan(0);
     expect(fulfilledWorkerReads['review-submit']).toBeGreaterThan(0);
     expect(fulfilledDataProductReads['task-feed']).toBeGreaterThan(0);
+    expect(fulfilledDataProductReads['result-sets']).toBeGreaterThan(0);
   } finally {
     // Closing the page aborts all mounted effects before the context-level production guard
     // performs its final no-blocked-request assertion.

@@ -27,9 +27,9 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-08-06
-lastReviewedCommit: 21a66d230858179097bba98e114f2aca9eefc9da
-lastReviewedNote: 'Reviewed for Issue #771: distinguish LCIA result transport state from calculation-evidence trust while retaining fail-closed validation after successful responses.'
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # LCIA Method Bundle and Calculation Evidence Contract

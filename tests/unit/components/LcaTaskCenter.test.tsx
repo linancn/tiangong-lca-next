@@ -1544,6 +1544,8 @@ describe('LcaTaskCenter', () => {
         id: 'closure-job',
         jobKind: 'lcia.scope_closure_check',
         title: 'Closure passed',
+        resultSetId: '77777777-7777-4777-8777-777777777777',
+        resultSetName: 'August result set',
         workerStatus: 'completed',
         runState: 'succeeded',
         domainValidity: 'valid',

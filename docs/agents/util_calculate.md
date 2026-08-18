@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-08-09
-lastReviewedCommit: dd592739b3c11a3cb3dd2ba149f338970c6349e6
-lastReviewedNote: 'Reviewed for Next Issue #805 / workspace Issue #565: lifecycle-model lexical search RPC migration does not change allocation, scaling, submodel, or LCIA semantics.'
+lastReviewedAt: 2026-08-17
+lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
 # Lifecycle Model Calculation Reference

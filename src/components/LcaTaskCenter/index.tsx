@@ -2235,9 +2235,11 @@ const LcaTaskCenter: React.FC = () => {
                     task.deepLink?.routeKey === 'data_product.closure_check'
                       ? task.deepLink.params.closureCheckId
                       : task.closureCheckId;
+                  const resultSetId = task.deepLink?.params.resultSetId ?? task.resultSetId;
                   const expanded = expandedTaskKeys.includes(itemKey);
                   const taskHref = `/data-processing?${new URLSearchParams({
                     tab: 'builds',
+                    ...(resultSetId ? { resultSetId } : {}),
                     ...(task.deepLink?.routeKey === 'data_product.closure_check' &&
                     task.deepLink.params.closureCheckId
                       ? { closureCheckId: task.deepLink.params.closureCheckId }
@@ -2321,30 +2323,38 @@ const LcaTaskCenter: React.FC = () => {
                       </Space>
                       <Space size={6} wrap>
                         {isClosureCheck ? (
-                          <Tooltip
-                            title={intl.formatMessage({
-                              id: 'pages.process.lca.taskCenter.view',
-                              defaultMessage: 'View',
-                            })}
-                          >
-                            <Button
-                              aria-label={intl.formatMessage({
+                          <>
+                            <Tooltip
+                              title={intl.formatMessage({
                                 id: 'pages.process.lca.taskCenter.view',
                                 defaultMessage: 'View',
                               })}
-                              icon={<EyeOutlined />}
-                              size='small'
-                              type='text'
-                              style={expanded ? { color: token.colorPrimary } : undefined}
-                              onClick={() => {
-                                setExpandedTaskKeys((current) =>
-                                  current.includes(itemKey)
-                                    ? current.filter((key) => key !== itemKey)
-                                    : [...current, itemKey],
-                                );
-                              }}
-                            />
-                          </Tooltip>
+                            >
+                              <Button
+                                aria-label={intl.formatMessage({
+                                  id: 'pages.process.lca.taskCenter.view',
+                                  defaultMessage: 'View',
+                                })}
+                                icon={<EyeOutlined />}
+                                size='small'
+                                type='text'
+                                style={expanded ? { color: token.colorPrimary } : undefined}
+                                onClick={() => {
+                                  setExpandedTaskKeys((current) =>
+                                    current.includes(itemKey)
+                                      ? current.filter((key) => key !== itemKey)
+                                      : [...current, itemKey],
+                                  );
+                                }}
+                              />
+                            </Tooltip>
+                            <Button size='small' type='link' href={taskHref}>
+                              {intl.formatMessage({
+                                id: 'pages.process.lca.taskCenter.continueProcessing',
+                                defaultMessage: 'Continue',
+                              })}
+                            </Button>
+                          </>
                         ) : (
                           <Button size='small' type='link' href={taskHref} icon={<EyeOutlined />}>
                             {intl.formatMessage({

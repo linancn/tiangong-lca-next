@@ -1400,7 +1400,49 @@
         "Responsive browser layout check at 360, 720, 900, 1100, 1300, and 1500 px"
       ],
       "correctionDigest": "7914004ff751186c3957c090d37e2804a9e0e743c14c1811d9f880c275d95e16"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.dataProcessing.tabs.builds",
+      "before": "结果生成",
+      "after": "完整性与计算",
+      "evidence": [
+        "Next Issue #880 defines one recoverable ResultSet journey from completeness checking through calculation, preview, and publication.",
+        "Workspace PR #598 records the approved product design and keeps the first workflow tab responsible for both completeness and calculation."
+      ],
+      "affectedClosure": [
+        "Data Processing ResultSet workflow",
+        "zh-CN active locale catalog",
+        "Stable data-processing tab routing"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/locales.test.ts tests/unit/pages/DataProcessing/index.test.tsx --runInBand --no-watchman",
+        "npm run i18n:locale:artifacts:write"
+      ],
+      "correctionDigest": "6a09c48cbf452b5ef2c6e6f6cfaeeca459d49fe7387e76db3c6ef44444725684"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.dataProcessing.tabs.builds",
+      "before": "Ergebnisgenerierung",
+      "after": "Vollständigkeit und Berechnung",
+      "evidence": [
+        "Next Issue #880 defines one recoverable ResultSet journey from completeness checking through calculation, preview, and publication.",
+        "Workspace PR #598 records the approved product design and keeps the first workflow tab responsible for both completeness and calculation."
+      ],
+      "affectedClosure": [
+        "Data Processing ResultSet workflow",
+        "de-DE active locale catalog",
+        "Stable data-processing tab routing"
+      ],
+      "tests": [
+        "npm run i18n:corrections:check",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/locales.test.ts tests/unit/pages/DataProcessing/index.test.tsx --runInBand --no-watchman",
+        "npm run i18n:locale:artifacts:write"
+      ],
+      "correctionDigest": "6323e74e841543eff7366eaaf2938d6c1df2fc6eb1d0f3763eb835dafde1df34"
     }
   ],
-  "correctionLedgerDigest": "0834cbfd3977baf45d0dd34cb90ee793025c3ee23b2914f034e7d56dae51bf0e"
+  "correctionLedgerDigest": "b35bc2dcc3ea1f6eb3036150f15bbcec42e87614409563ffe04d3da374d36035"
 }

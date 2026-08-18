@@ -56,6 +56,9 @@ jest.mock('@/services/roles/api', () => ({
 }));
 
 jest.mock('@/services/dataProducts', () => ({
+  createLciaResultSet: jest.fn(),
+  getLciaResultSet: jest.fn(),
+  listLciaResultSets: jest.fn(async () => ({ data: { items: [] }, error: null })),
   createClosureCheck: jest.fn(),
   createLciaResultBuildRequest: jest.fn(),
   getClosureCheck: (...args: any[]) => Reflect.apply(mockGetClosureCheck, undefined, args),
