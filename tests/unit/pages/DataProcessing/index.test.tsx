@@ -171,6 +171,7 @@ let mockLocale: string | undefined = 'en-US';
 let mockLocation = { pathname: '/data-processing', search: '' };
 let mockInjectResultSet = true;
 const mockHistoryReplace = jest.fn();
+const mockHistoryPush = jest.fn();
 
 function mockWithTestResultSet(search: string): string {
   if (!mockInjectResultSet) return search;
@@ -256,7 +257,10 @@ const expectedReviewedLciaMethods = [
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  history: { replace: (...args: any[]) => Reflect.apply(mockHistoryReplace, undefined, args) },
+  history: {
+    push: (...args: any[]) => Reflect.apply(mockHistoryPush, undefined, args),
+    replace: (...args: any[]) => Reflect.apply(mockHistoryReplace, undefined, args),
+  },
   useIntl: () => ({
     formatMessage: mockFormatMessage,
     locale: mockLocale,
@@ -1996,6 +2000,10 @@ describe('DataProcessing page', () => {
     const processLink = screen.getByRole('link', { name: 'Portland cement production' });
     expect(processLink).toHaveAttribute(
       'href',
+      '/mydata/processes?id=process-a&version=01.00.000&mode=view',
+    );
+    fireEvent.click(processLink);
+    expect(mockHistoryPush).toHaveBeenCalledWith(
       '/mydata/processes?id=process-a&version=01.00.000&mode=view',
     );
     expect(screen.getByText('Electricity, medium voltage')).toBeInTheDocument();

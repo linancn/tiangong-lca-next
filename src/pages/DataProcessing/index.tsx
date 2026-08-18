@@ -2537,7 +2537,18 @@ const DataProcessing = () => {
         if (!processId || !processVersion) {
           return processName;
         }
-        return <a href={processDetailHref(processId, processVersion)}>{processName}</a>;
+        const href = processDetailHref(processId, processVersion);
+        return (
+          <a
+            href={href}
+            onClick={(event) => {
+              event.preventDefault();
+              history.push(href);
+            }}
+          >
+            {processName}
+          </a>
+        );
       },
     },
     {
