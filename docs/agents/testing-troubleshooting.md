@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-19
-lastReviewedCommit: a90fc6e4878cff963bbe3cee14641c60bac80193
+lastReviewedCommit: 9bae84a4cc7479ccebb42579c416287ecf5130ae
 lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
 ---
 
