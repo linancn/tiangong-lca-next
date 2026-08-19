@@ -432,6 +432,28 @@ describe('requestReviewQualityDiagnosticApi', () => {
     });
   });
 
+  it('falls back to the invocation error when the error context has no JSON reader', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned no readable response body',
+        context: { status: 503 },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: {
+        code: 'FUNCTION_ERROR',
+        message: 'Edge Function returned no readable response body',
+      },
+      status: 503,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
   it('falls back to the invocation error when the JSON error body cannot be parsed', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: null,
