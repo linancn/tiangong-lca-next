@@ -14,8 +14,6 @@ import {
   getRefTableName,
   getRejectedComments,
   mergeCommentsToData,
-  requestReviewSubmitGate,
-  requestReviewSubmitJob,
   submitDatasetReview,
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
@@ -87,17 +85,11 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 }));
 
 const mockGetRejectReviewsByProcess = jest.fn();
-const mockComputeStableJsonSha256 = jest.fn();
-const mockRequestReviewSubmitGateApi = jest.fn();
-const mockRequestReviewSubmitJobApi = jest.fn();
 const mockSubmitDatasetReviewApi = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
-  computeStableJsonSha256: (...args: any[]) => mockComputeStableJsonSha256(...args),
   getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
-  requestReviewSubmitGateApi: (...args: any[]) => mockRequestReviewSubmitGateApi(...args),
-  requestReviewSubmitJobApi: (...args: any[]) => mockRequestReviewSubmitJobApi(...args),
   submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
@@ -123,9 +115,6 @@ describe('review utilities', () => {
     mockUpdateStateCodeApi.mockReset();
     mockGetLifeCycleModelDetail.mockReset();
     mockGetRejectReviewsByProcess.mockReset();
-    mockComputeStableJsonSha256.mockReset();
-    mockRequestReviewSubmitGateApi.mockReset();
-    mockRequestReviewSubmitJobApi.mockReset();
     mockSubmitDatasetReviewApi.mockReset();
     mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
@@ -1706,209 +1695,6 @@ describe('review utilities', () => {
       '01.00.000',
     );
     expect(result).toEqual({ data: [{ review: { id: 'review-1' } }] });
-  });
-
-  it('uses the server revision checksum returned by the review-submit gate', async () => {
-    const checksum = 'd'.repeat(64);
-    const orderedJson = {
-      processDataSet: {
-        processInformation: { name: 'Process' },
-      },
-    };
-    mockRequestReviewSubmitGateApi.mockResolvedValue({
-      data: [
-        {
-          status: 'passed',
-          gateRunId: 'gate-run-1',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-    });
-
-    const result = await requestReviewSubmitGate(
-      'processes',
-      '11111111-1111-4111-8111-111111111111',
-      '01.00.000',
-      orderedJson,
-      {
-        action: 'rerun',
-        gateRunId: 'gate-run-1',
-      },
-    );
-
-    expect(mockComputeStableJsonSha256).not.toHaveBeenCalled();
-    expect(mockRequestReviewSubmitGateApi).toHaveBeenCalledWith({
-      table: 'processes',
-      id: '11111111-1111-4111-8111-111111111111',
-      version: '01.00.000',
-      action: 'rerun',
-      gateRunId: 'gate-run-1',
-    });
-    expect(result).toEqual({
-      data: [
-        {
-          status: 'passed',
-          gateRunId: 'gate-run-1',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-      revisionChecksum: checksum,
-    });
-  });
-
-  it('defaults review-submit gate requests to ensure action', async () => {
-    const checksum = 'e'.repeat(64);
-    const orderedJson = {
-      processDataSet: {
-        processInformation: { name: 'Default action process' },
-      },
-    };
-    mockRequestReviewSubmitGateApi.mockResolvedValue({
-      data: [
-        {
-          status: 'running',
-          gateRunId: 'gate-run-default',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-    });
-
-    const result = await requestReviewSubmitGate(
-      'processes',
-      '22222222-2222-4222-8222-222222222222',
-      '01.00.000',
-      orderedJson,
-    );
-
-    expect(mockRequestReviewSubmitGateApi).toHaveBeenCalledWith({
-      table: 'processes',
-      id: '22222222-2222-4222-8222-222222222222',
-      version: '01.00.000',
-      action: 'ensure',
-      gateRunId: undefined,
-    });
-    expect(result).toEqual({
-      data: [
-        {
-          status: 'running',
-          gateRunId: 'gate-run-default',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-      revisionChecksum: checksum,
-    });
-  });
-
-  it('forwards review-submit job enqueue requests and exposes the server checksum', async () => {
-    const checksum = 'f'.repeat(64);
-    mockRequestReviewSubmitJobApi.mockResolvedValue({
-      data: [
-        {
-          status: 'queued',
-          reviewSubmitJobId: 'job-1',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-    });
-
-    const result = await requestReviewSubmitJob(
-      'processes',
-      '33333333-3333-4333-8333-333333333333',
-      '01.00.000',
-      { processDataSet: {} },
-    );
-
-    expect(mockComputeStableJsonSha256).not.toHaveBeenCalled();
-    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
-      table: 'processes',
-      id: '33333333-3333-4333-8333-333333333333',
-      version: '01.00.000',
-      action: 'enqueue',
-    });
-    expect(result).toEqual({
-      data: [
-        {
-          status: 'queued',
-          reviewSubmitJobId: 'job-1',
-          datasetRevision: { revisionChecksum: checksum },
-        },
-      ],
-      error: null,
-      reviewSubmitJobId: 'job-1',
-      revisionChecksum: checksum,
-    });
-  });
-
-  it('forwards review-submit job read requests by job id', async () => {
-    mockRequestReviewSubmitJobApi.mockResolvedValue({
-      data: [{ status: 'submitted', reviewSubmitJobId: 'job-1' }],
-      error: null,
-    });
-
-    await requestReviewSubmitJob(
-      'processes',
-      '33333333-3333-4333-8333-333333333333',
-      '01.00.000',
-      null,
-      {
-        action: 'read',
-        reviewSubmitJobId: 'job-1',
-      },
-    );
-
-    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
-      action: 'read',
-      reviewSubmitJobId: 'job-1',
-    });
-  });
-
-  it('defaults review-submit job requests with a job id to read action', async () => {
-    mockRequestReviewSubmitJobApi.mockResolvedValue({
-      data: [{ status: 'waiting_gate', reviewSubmitJobId: 'job-default-read' }],
-      error: null,
-    });
-
-    await requestReviewSubmitJob(
-      'processes',
-      '33333333-3333-4333-8333-333333333333',
-      '01.00.000',
-      null,
-      {
-        reviewSubmitJobId: 'job-default-read',
-      },
-    );
-
-    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
-      action: 'read',
-      reviewSubmitJobId: 'job-default-read',
-    });
-  });
-
-  it('uses an empty job id fallback for explicit read requests without an id', async () => {
-    mockRequestReviewSubmitJobApi.mockResolvedValue({
-      data: null,
-      error: { message: 'missing job id' },
-    });
-
-    await requestReviewSubmitJob(
-      'processes',
-      '33333333-3333-4333-8333-333333333333',
-      '01.00.000',
-      null,
-      {
-        action: 'read',
-      },
-    );
-
-    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
-      action: 'read',
-      reviewSubmitJobId: '',
-    });
   });
 
   it('returns references that remain under review when checking reports', async () => {

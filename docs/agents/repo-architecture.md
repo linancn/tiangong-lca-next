@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-18
-lastReviewedCommit: c1e61084060150fba9c17aee0cb3c2d1981ebcd4
+lastReviewedAt: 2026-08-19
+lastReviewedCommit: e991feacf23090647455cd28e9f7f45a01ee74a6
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 related:
   - ../AGENTS.md
