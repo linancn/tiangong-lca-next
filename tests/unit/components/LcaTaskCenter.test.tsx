@@ -265,6 +265,8 @@ describe('LcaTaskCenter', () => {
   });
 
   it('renders running and completed tasks, task details, and diagnostics', () => {
+    const circularRequest: Record<string, unknown> = {};
+    circularRequest.self = circularRequest;
     mockTasks = [
       {
         id: 'task-running',
@@ -280,7 +282,7 @@ describe('LcaTaskCenter', () => {
         rootJobId: 'root-lca-1',
         jobKind: 'lca.solve',
         solveJobId: 'solve-1',
-        request: { processId: 'process-1' },
+        request: circularRequest,
         error: 'Solve failed once',
         phaseTimeline: [
           {
@@ -379,6 +381,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('Snapshot ID').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Result ID').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Request').length).toBeGreaterThan(0);
+    expect(screen.getByText('[object Object]')).toBeInTheDocument();
     expect(screen.queryByText('Solve failed once')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
 

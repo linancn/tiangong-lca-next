@@ -412,6 +412,90 @@ describe('requestReviewQualityDiagnosticApi', () => {
       statusText: 'DIAGNOSTIC_FAILED',
     });
   });
+
+  it('falls back to the invocation error when no JSON error context is available', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: { message: 'Edge Function failed without a response body' },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: {
+        code: 'FUNCTION_ERROR',
+        message: 'Edge Function failed without a response body',
+      },
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
+  it('falls back to the invocation error when the error context has no JSON reader', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned no readable response body',
+        context: { status: 503 },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: {
+        code: 'FUNCTION_ERROR',
+        message: 'Edge Function returned no readable response body',
+      },
+      status: 503,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
+  it('uses the generic request failure when the invocation error has no message', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: { context: { status: 500 } },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: { code: 'FUNCTION_ERROR', message: 'Request failed' },
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
+  it('falls back to the invocation error when the JSON error body cannot be parsed', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Edge Function returned an invalid response body',
+        context: {
+          status: 502,
+          json: jest.fn(async () => {
+            throw new Error('invalid json');
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'start' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: {
+        code: 'FUNCTION_ERROR',
+        message: 'Edge Function returned an invalid response body',
+      },
+      status: 502,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
 });
 
 describe('submitSimpleReviewDecision', () => {

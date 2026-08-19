@@ -326,71 +326,6 @@
         "pages.reviewDetail.unknownAction"
       ]
     },
-    "reviewGateGuidance": {
-      "proof": "The three descriptors are selected from the finite REVIEW_SUBMIT_GATE_REASON_GUIDANCE registry.",
-      "unknownHandling": {
-        "kind": "localizedRuntimeFallback",
-        "status": "implemented",
-        "strategy": "guarded-localized-fallback-summary",
-        "keys": [
-          "pages.process.reviewSubmitTaskCenter.fallback.action",
-          "pages.process.reviewSubmitTaskCenter.fallback.description",
-          "pages.process.reviewSubmitTaskCenter.fallback.title"
-        ],
-        "proof": "Unknown reason codes are guarded before descriptor formatting and use the localized task-center title, description, and action fallbacks."
-      },
-      "keys": [
-        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.action",
-        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.description",
-        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.title",
-        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.action",
-        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.description",
-        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.title",
-        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.action",
-        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.description",
-        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.title",
-        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.action",
-        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.description",
-        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title",
-        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.action",
-        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.description",
-        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title",
-        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.action",
-        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.description",
-        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.title",
-        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.action",
-        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.description",
-        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.title",
-        "pages.process.reviewSubmitGate.reason.invalidScopeState.action",
-        "pages.process.reviewSubmitGate.reason.invalidScopeState.description",
-        "pages.process.reviewSubmitGate.reason.invalidScopeState.title",
-        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.action",
-        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.description",
-        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.title",
-        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.action",
-        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.description",
-        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.title",
-        "pages.process.reviewSubmitGate.reason.revisionReportStale.action",
-        "pages.process.reviewSubmitGate.reason.revisionReportStale.description",
-        "pages.process.reviewSubmitGate.reason.revisionReportStale.title",
-        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.action",
-        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.description",
-        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.title",
-        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action",
-        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description",
-        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title",
-        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.action",
-        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.description",
-        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.title",
-        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.action",
-        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.description",
-        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.title",
-        "pages.process.reviewSubmitGate.reasonFallbackMessage",
-        "pages.process.reviewSubmitTaskCenter.fallback.action",
-        "pages.process.reviewSubmitTaskCenter.fallback.description",
-        "pages.process.reviewSubmitTaskCenter.fallback.title"
-      ]
-    },
     "reviewMembers": {
       "keys": ["pages.review.members.pending", "pages.review.members.reviewed"],
       "proof": "drawerTabType is a two-value component-owned state union and therefore a finite family.",
@@ -558,27 +493,6 @@
       "file": "src/components/DatasetUuidMentionSearch/index.tsx",
       "expression": "ENTITY_KIND_MESSAGES[value]",
       "family": "datasetEntityKinds"
-    },
-    {
-      "api": "formatMessage",
-      "count": 1,
-      "file": "src/components/LcaTaskCenter/index.tsx",
-      "expression": "guidance.actionId",
-      "family": "reviewGateGuidance"
-    },
-    {
-      "api": "formatMessage",
-      "count": 1,
-      "file": "src/components/LcaTaskCenter/index.tsx",
-      "expression": "guidance.descriptionId",
-      "family": "reviewGateGuidance"
-    },
-    {
-      "api": "formatMessage",
-      "count": 1,
-      "file": "src/components/LcaTaskCenter/index.tsx",
-      "expression": "guidance.titleId",
-      "family": "reviewGateGuidance"
     },
     {
       "api": "formatMessage",
