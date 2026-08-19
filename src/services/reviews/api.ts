@@ -7,7 +7,6 @@ import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { getUserId, getUsersByIds } from '@/services/users/api';
-import type { WorkerJobResult } from '@/services/workerJobs/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText, jsonToList } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
@@ -20,117 +19,6 @@ export type ReviewQueueFilters = {
   displayMode?: ReviewDisplayMode;
   targetTable?: ReviewSubmitDatasetTable;
 };
-export type ReviewSubmitGateDatasetTable = Extract<ReviewSubmitDatasetTable, 'processes'>;
-export const REVIEW_SUBMIT_GATE_POLICY_PROFILE = 'review_submit_fast.v1';
-export const REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION = 'review_submit_gate_report.v1';
-
-export type ReviewSubmitGateAction = 'ensure' | 'read' | 'rerun';
-export type ReviewSubmitGateStatus =
-  'queued' | 'running' | 'passed' | 'blocked' | 'stale' | 'error';
-
-export type ReviewSubmitGateBlockingReason = {
-  code?: string;
-  message?: string;
-  severity?: string;
-  details?: unknown;
-  [key: string]: unknown;
-};
-
-export type ReviewSubmitGateResult = {
-  status: ReviewSubmitGateStatus;
-  gateRunId?: string;
-  datasetRevision?: {
-    table?: string;
-    id?: string;
-    version?: string;
-    revisionChecksum?: string;
-  };
-  policy?: {
-    profile?: string;
-  };
-  calculatorReport?: {
-    schemaVersion?: string;
-    reportId?: string;
-    generatedAt?: string;
-  } | null;
-  blockingReasons?: ReviewSubmitGateBlockingReason[];
-  [key: string]: unknown;
-};
-
-export type ReviewSubmitGateRequest = {
-  table: ReviewSubmitGateDatasetTable;
-  id: string;
-  version: string;
-  revisionChecksum?: string;
-  action?: ReviewSubmitGateAction;
-  gateRunId?: string;
-  policyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
-  reportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
-};
-
-export type ReviewSubmitJobAction = 'enqueue' | 'read' | 'read_latest';
-export type ReviewSubmitJobStatus =
-  | 'queued'
-  | 'waiting_gate'
-  | 'submitting'
-  | 'submitted'
-  | 'blocked'
-  | 'stale'
-  | 'error'
-  | 'cancelled';
-
-export type ReviewSubmitJobResult = {
-  status: ReviewSubmitJobStatus;
-  reviewSubmitJobId?: string;
-  submitWorkerJobId?: string | null;
-  rootJobId?: string | null;
-  gateRunId?: string | null;
-  gateWorkerJobId?: string | null;
-  datasetRevision?: {
-    table?: string;
-    id?: string;
-    version?: string;
-    revisionChecksum?: string;
-  };
-  policy?: {
-    profile?: string;
-    reportSchemaVersion?: string;
-  };
-  gate?: ReviewSubmitGateResult | null;
-  submitWorkerJob?: WorkerJobResult | null;
-  workerJob?: WorkerJobResult | null;
-  gateWorkerJob?: WorkerJobResult | null;
-  error?: {
-    code?: string;
-    message?: string;
-    details?: unknown;
-  } | null;
-  result?: unknown;
-  [key: string]: unknown;
-};
-
-export type ReviewSubmitJobRequest =
-  | {
-      action?: 'enqueue';
-      table: ReviewSubmitGateDatasetTable;
-      id: string;
-      version: string;
-      revisionChecksum?: string;
-      policyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
-      reportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
-    }
-  | {
-      action: 'read';
-      reviewSubmitJobId: string;
-    }
-  | {
-      action: 'read_latest';
-      table: ReviewSubmitGateDatasetTable;
-      id: string;
-      version: string;
-      revisionChecksum?: string;
-    };
-
 export type ReviewQualityDiagnosticStatus =
   'queued' | 'running' | 'waiting' | 'stale' | 'completed' | 'failed' | 'cancelled';
 
@@ -223,8 +111,6 @@ export type ReviewBatchDecisionResult = {
   }>;
 };
 
-const STABLE_HASH_KEY_ENCODER = new TextEncoder();
-
 type DataNotificationRpcRow = {
   id: string;
   state_code: number;
@@ -296,85 +182,11 @@ type VisibleReviewUser = {
   display_name?: string | null;
 };
 
-function compareStableHashKeys(left: string, right: string): number {
-  const leftBytes = STABLE_HASH_KEY_ENCODER.encode(left);
-  const rightBytes = STABLE_HASH_KEY_ENCODER.encode(right);
-  const length = Math.min(leftBytes.length, rightBytes.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const diff = leftBytes[index] - rightBytes[index];
-    if (diff !== 0) {
-      return diff;
-    }
-  }
-
-  return leftBytes.length - rightBytes.length;
-}
-
 async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
   functionName: ReviewWorkflowCommandFunctionName,
   body: Record<string, unknown>,
 ) {
   return invokeDatasetCommand<Row>(functionName as never, body);
-}
-
-function stringifyStableJsonValue(value: unknown): string | undefined {
-  if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
-    return undefined;
-  }
-
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stringifyStableJsonValue(item) ?? 'null').join(',')}]`;
-  }
-
-  if (value && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>)
-      .sort(([left], [right]) => compareStableHashKeys(left, right))
-      .flatMap(([key, childValue]) => {
-        const serialized = stringifyStableJsonValue(childValue);
-        return serialized === undefined ? [] : [`${JSON.stringify(key)}:${serialized}`];
-      });
-
-    return `{${entries.join(',')}}`;
-  }
-
-  return JSON.stringify(value);
-}
-
-export function stableJsonStringifyForReviewSubmit(value: unknown): string {
-  if (value === undefined) {
-    throw new Error('Cannot hash an undefined dataset revision payload');
-  }
-
-  const serialized = stringifyStableJsonValue(value);
-  if (serialized === undefined) {
-    throw new Error('Cannot hash an undefined dataset revision payload');
-  }
-  return serialized;
-}
-
-export async function computeStableJsonSha256(value: unknown): Promise<string> {
-  const subtle = globalThis.crypto?.subtle;
-  if (!subtle?.digest) {
-    throw new Error('SHA-256 digest is unavailable in this browser');
-  }
-
-  const normalizedJson = stableJsonStringifyForReviewSubmit(value);
-  const encoded = new TextEncoder().encode(normalizedJson);
-  const digest = await subtle.digest('SHA-256', encoded);
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function normalizeReviewSubmitCommandRows<Row extends Record<string, unknown>>(payload: unknown) {
-  if (payload && typeof payload === 'object' && !Array.isArray(payload) && 'data' in payload) {
-    const data = (payload as { data?: unknown }).data;
-    return data === null || data === undefined ? [] : [data as Row];
-  }
-
-  return payload === null || payload === undefined ? [] : [payload as Row];
 }
 
 async function parseReviewSubmitCommandErrorPayload(error: any) {
@@ -387,37 +199,6 @@ async function parseReviewSubmitCommandErrorPayload(error: any) {
   } catch (_parseError) {
     return null;
   }
-}
-
-function isReviewSubmitGateEnvelope(payload: unknown): payload is {
-  command?: string;
-  data?: ReviewSubmitGateResult;
-} {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return false;
-  }
-
-  const candidate = payload as { command?: unknown; data?: { status?: unknown } };
-  return (
-    candidate.command === 'dataset_review_submit_gate' && typeof candidate.data?.status === 'string'
-  );
-}
-
-function isReviewSubmitJobEnvelope(payload: unknown): payload is {
-  command?: string;
-  data?: ReviewSubmitJobResult;
-} {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return false;
-  }
-
-  const candidate = payload as { command?: unknown; data?: { status?: unknown } };
-  return (
-    (candidate.command === 'dataset_review_submit_job_enqueue' ||
-      candidate.command === 'dataset_review_submit_job_read' ||
-      candidate.command === 'dataset_review_submit_job_read_latest') &&
-    typeof candidate.data?.status === 'string'
-  );
 }
 
 function isReviewQualityDiagnosticEnvelope(payload: unknown): payload is {
@@ -673,152 +454,6 @@ export async function requestReviewQualityDiagnosticApi(
     count: null,
     status: request.action === 'start' ? 202 : 200,
     statusText: request.action === 'start' ? 'Accepted' : 'OK',
-  };
-}
-
-export async function requestReviewSubmitGateApi<
-  Row extends ReviewSubmitGateResult = ReviewSubmitGateResult,
->(request: ReviewSubmitGateRequest): Promise<SupabaseMutationResult<Row>> {
-  const session = await supabase.auth.getSession();
-  if (!session?.data?.session) {
-    return {
-      data: null,
-      error: {
-        message: 'Authentication required',
-        code: 'AUTH_REQUIRED',
-        details: '',
-        hint: '',
-      } as SupabaseError,
-      count: null,
-      status: 401,
-      statusText: 'AUTH_REQUIRED',
-    };
-  }
-
-  const result = await supabase.functions.invoke('app_dataset_review_submit_gate', {
-    headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-    },
-    body: {
-      table: request.table,
-      id: request.id,
-      version: request.version,
-      ...(request.revisionChecksum ? { revisionChecksum: request.revisionChecksum } : {}),
-      action: request.action ?? 'ensure',
-      gateRunId: request.gateRunId,
-      policyProfile: request.policyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-      reportSchemaVersion: request.reportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-    },
-    region: FunctionRegion.UsEast1,
-  });
-
-  if (result.error) {
-    const payload = await parseReviewSubmitCommandErrorPayload(result.error);
-    if (isReviewSubmitGateEnvelope(payload)) {
-      return {
-        data: [payload.data as Row],
-        error: null,
-        count: null,
-        status: result.error.context?.status ?? 200,
-        statusText: 'OK',
-      };
-    }
-
-    const normalizedError = normalizeReviewSubmitCommandError(result.error, payload);
-    return {
-      data: null,
-      error: normalizedError,
-      count: null,
-      status: result.error.context?.status ?? 500,
-      statusText: normalizedError.code,
-    };
-  }
-
-  return {
-    data: normalizeReviewSubmitCommandRows<Row>(result.data),
-    error: null,
-    count: null,
-    status: 200,
-    statusText: 'OK',
-  };
-}
-
-export async function requestReviewSubmitJobApi<
-  Row extends ReviewSubmitJobResult = ReviewSubmitJobResult,
->(request: ReviewSubmitJobRequest): Promise<SupabaseMutationResult<Row>> {
-  const session = await supabase.auth.getSession();
-  if (!session?.data?.session) {
-    return {
-      data: null,
-      error: {
-        message: 'Authentication required',
-        code: 'AUTH_REQUIRED',
-        details: '',
-        hint: '',
-      } as SupabaseError,
-      count: null,
-      status: 401,
-      statusText: 'AUTH_REQUIRED',
-    };
-  }
-
-  const body =
-    request.action === 'read'
-      ? {
-          action: 'read',
-          reviewSubmitJobId: request.reviewSubmitJobId,
-        }
-      : {
-          table: request.table,
-          id: request.id,
-          version: request.version,
-          ...(request.revisionChecksum ? { revisionChecksum: request.revisionChecksum } : {}),
-          action: request.action ?? 'enqueue',
-          ...(request.action === 'read_latest'
-            ? {}
-            : {
-                policyProfile: request.policyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-                reportSchemaVersion:
-                  request.reportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-              }),
-        };
-
-  const result = await supabase.functions.invoke('app_dataset_review_submit_jobs', {
-    headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
-    },
-    body,
-    region: FunctionRegion.UsEast1,
-  });
-
-  if (result.error) {
-    const payload = await parseReviewSubmitCommandErrorPayload(result.error);
-    if (isReviewSubmitJobEnvelope(payload)) {
-      return {
-        data: [payload.data as Row],
-        error: null,
-        count: null,
-        status: result.error.context?.status ?? 200,
-        statusText: 'OK',
-      };
-    }
-
-    const normalizedError = normalizeReviewSubmitCommandError(result.error, payload);
-    return {
-      data: null,
-      error: normalizedError,
-      count: null,
-      status: result.error.context?.status ?? 500,
-      statusText: normalizedError.code,
-    };
-  }
-
-  return {
-    data: normalizeReviewSubmitCommandRows<Row>(result.data),
-    error: null,
-    count: null,
-    status: 200,
-    statusText: 'OK',
   };
 }
 

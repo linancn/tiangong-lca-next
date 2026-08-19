@@ -120,7 +120,7 @@ async function fulfillDataProductManagerRole(route: Route): Promise<boolean> {
   return true;
 }
 
-type AuditedWorkerReadKind = 'lca-job' | 'lcia-package-job' | 'lcia-result-build' | 'review-submit';
+type AuditedWorkerReadKind = 'lca-job' | 'lcia-package-job' | 'lcia-result-build';
 
 function hasExactKeys(value: unknown, keys: string[]): value is Record<string, unknown> {
   return (
@@ -162,21 +162,14 @@ async function fulfillEmptyBuildJobs(route: Route): Promise<AuditedWorkerReadKin
     body.limit === 30 &&
     body.subjectType === 'lca_job' &&
     JSON.stringify(body.statuses) === JSON.stringify(expectedPackageStatuses);
-  const isReviewSubmitRead =
-    hasExactKeys(body, ['action', 'limit', 'subjectType']) &&
-    body.action === 'list' &&
-    body.limit === 50 &&
-    body.subjectType === 'processes';
   const readKind: AuditedWorkerReadKind | undefined = isLciaResultBuildRead
     ? 'lcia-result-build'
     : isLcaPackageJobRead
       ? 'lcia-package-job'
       : isLcaJobRead
         ? 'lca-job'
-        : isReviewSubmitRead
-          ? 'review-submit'
-          : undefined;
-  expect(readKind, 'Only four exact audited worker list bodies may be fulfilled.').toBeTruthy();
+        : undefined;
+  expect(readKind, 'Only three exact audited worker list bodies may be fulfilled.').toBeTruthy();
   const expectedBody =
     readKind === 'lcia-result-build'
       ? { action: 'list', limit: 50, subjectType: 'lcia_result_build', visibility: 'operator' }
@@ -187,14 +180,12 @@ async function fulfillEmptyBuildJobs(route: Route): Promise<AuditedWorkerReadKin
             statuses: expectedPackageStatuses,
             subjectType: 'lca_package_job',
           }
-        : readKind === 'lca-job'
-          ? {
-              action: 'list',
-              limit: 30,
-              statuses: expectedPackageStatuses,
-              subjectType: 'lca_job',
-            }
-          : { action: 'list', limit: 50, subjectType: 'processes' };
+        : {
+            action: 'list',
+            limit: 30,
+            statuses: expectedPackageStatuses,
+            subjectType: 'lca_job',
+          };
   expect(body).toEqual(expectedBody);
   assertAuditedSyntheticReadRequest(route.request(), {
     expectedOrigin: productionBackendTarget.origin,
@@ -326,7 +317,6 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
     'lca-job': 0,
     'lcia-package-job': 0,
     'lcia-result-build': 0,
-    'review-submit': 0,
   };
   await page.route(WORKER_JOBS_API_PATTERN, async (route) => {
     const readKind = await fulfillEmptyBuildJobs(route);
@@ -390,7 +380,6 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
     expect(fulfilledWorkerReads['lca-job']).toBeGreaterThan(0);
     expect(fulfilledWorkerReads['lcia-result-build']).toBe(0);
     expect(fulfilledWorkerReads['lcia-package-job']).toBeGreaterThan(0);
-    expect(fulfilledWorkerReads['review-submit']).toBeGreaterThan(0);
     expect(fulfilledDataProductReads['task-feed']).toBeGreaterThan(0);
     expect(fulfilledDataProductReads['result-sets']).toBeGreaterThan(0);
   } finally {

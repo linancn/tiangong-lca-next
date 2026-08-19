@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedAt: 2026-08-19
+lastReviewedCommit: e991feacf23090647455cd28e9f7f45a01ee74a6
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 

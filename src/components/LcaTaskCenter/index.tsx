@@ -17,18 +17,6 @@ import {
   subscribeLcaTaskCenterOpenRequests,
   subscribeLcaTasks,
 } from '@/services/lca/taskCenter';
-import type {
-  ReviewSubmitBackgroundTask,
-  ReviewSubmitTaskPhase,
-} from '@/services/reviews/taskCenter';
-import {
-  cancelReviewSubmitTask,
-  clearFinishedReviewSubmitTasks,
-  listReviewSubmitTasks,
-  refreshReviewSubmitTasks,
-  retryReviewSubmitTask,
-  subscribeReviewSubmitTasks,
-} from '@/services/reviews/taskCenter';
 import {
   taskProgressPercent as taskSummaryProgressPercent,
   type TaskSummaryV2,
@@ -49,7 +37,6 @@ import {
   subscribeTidasPackageTasks,
 } from '@/services/tidasPackage/taskCenter';
 import { formatLocaleDateTime } from '@/utils/localeFormatting';
-import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -87,28 +74,9 @@ type TaskCenterItem =
   | {
       kind: 'package';
       task: TidasPackageBackgroundTask;
-    }
-  | {
-      kind: 'reviewSubmit';
-      task: ReviewSubmitBackgroundTask;
     };
 
-type TaskKindFilter =
-  'all' | 'lca' | 'tidas_export' | 'tidas_import' | 'review_submit' | 'data_product';
-
-type ReviewSubmitBlockingReason = NonNullable<
-  ReviewSubmitBackgroundTask['blockingReasons']
->[number];
-
-type FormattedReviewSubmitReason = {
-  title: string;
-  description: string;
-  action?: string;
-  isFallback?: boolean;
-  diagnosticCode?: string;
-  diagnosticMessage?: string;
-  diagnosticDetails?: string;
-};
+type TaskKindFilter = 'all' | 'lca' | 'tidas_export' | 'tidas_import' | 'data_product';
 
 const DIAGNOSTICS_POPOVER_WIDTH = 520;
 const DIAGNOSTICS_POPOVER_MAX_HEIGHT = 520;
@@ -122,14 +90,6 @@ function useTidasPackageTasks(): TidasPackageBackgroundTask[] {
     subscribeTidasPackageTasks,
     listTidasPackageTasks,
     listTidasPackageTasks,
-  );
-}
-
-function useReviewSubmitTasks(): ReviewSubmitBackgroundTask[] {
-  return useSyncExternalStore(
-    subscribeReviewSubmitTasks,
-    listReviewSubmitTasks,
-    listReviewSubmitTasks,
   );
 }
 
@@ -253,68 +213,9 @@ function packagePhaseLabel(phase: TidasPackageTaskPhase, intl: IntlShapeLike): s
   });
 }
 
-function reviewSubmitPhaseLabel(phase: ReviewSubmitTaskPhase, intl: IntlShapeLike): string {
-  switch (phase) {
-    case 'queued':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.queued',
-        defaultMessage: 'Queued',
-      });
-    case 'running':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.running',
-        defaultMessage: 'Gate running',
-      });
-    case 'waiting_gate':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.waitingGate',
-        defaultMessage: 'Waiting for gate',
-      });
-    case 'submitting':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.submitting',
-        defaultMessage: 'Submitting review',
-      });
-    case 'submitted':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.submitted',
-        defaultMessage: 'Submitted',
-      });
-    case 'passed':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.passed',
-        defaultMessage: 'Gate passed',
-      });
-    case 'blocked':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.blocked',
-        defaultMessage: 'Blocked',
-      });
-    case 'stale':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.stale',
-        defaultMessage: 'Stale',
-      });
-    case 'cancelled':
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.cancelled',
-        defaultMessage: 'Cancelled',
-      });
-    case 'error':
-    default:
-      return intl.formatMessage({
-        id: 'pages.process.reviewSubmitTaskCenter.phase.error',
-        defaultMessage: 'Error',
-      });
-  }
-}
-
 function phaseLabel(item: TaskCenterItem, intl: IntlShapeLike): string {
   if (item.kind === 'lca') {
     return lcaPhaseLabel(item.task.phase, intl);
-  }
-  if (item.kind === 'reviewSubmit') {
-    return reviewSubmitPhaseLabel(item.task.phase, intl);
   }
   return packagePhaseLabel(item.task.phase, intl);
 }
@@ -775,76 +676,6 @@ function packageProcessSteps(
   });
 }
 
-function reviewSubmitProcessStageLabel(
-  phase: 'queued' | 'running' | 'submitting' | 'submitted',
-  intl: IntlShapeLike,
-): string {
-  if (phase === 'queued') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.process.step.queued',
-      defaultMessage: 'Queue task',
-    });
-  }
-  if (phase === 'running') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.process.step.gate',
-      defaultMessage: 'Run gate',
-    });
-  }
-  if (phase === 'submitting') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.process.step.submitReview',
-      defaultMessage: 'Submit review',
-    });
-  }
-  return intl.formatMessage({
-    id: 'pages.process.reviewSubmitTaskCenter.process.step.done',
-    defaultMessage: 'Finish',
-  });
-}
-
-function reviewSubmitProcessSteps(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): ProcessStepItem[] {
-  const phases: Array<'queued' | 'running' | 'submitting' | 'submitted'> = [
-    'queued',
-    'running',
-    'submitting',
-    'submitted',
-  ];
-  const currentPhase =
-    task.phase === 'waiting_gate' || task.phase === 'blocked' || task.phase === 'stale'
-      ? 'running'
-      : task.phase === 'passed' || task.phase === 'submitted'
-        ? 'submitted'
-        : task.phase === 'error' || task.phase === 'cancelled'
-          ? 'running'
-          : task.phase;
-  const currentIndex = Math.max(
-    0,
-    phases.findIndex((phase) => phase === currentPhase),
-  );
-
-  return phases.map((phase, index) => {
-    const state = processStepStatus(index, currentIndex, task.state);
-    const description =
-      index === 0
-        ? formatDateTime(task.createdAt, intl)
-        : index === currentIndex && task.state !== 'completed'
-          ? phaseLabel({ kind: 'reviewSubmit', task }, intl)
-          : state === 'completed'
-            ? processStateLabel(state, intl)
-            : undefined;
-    return {
-      key: phase,
-      title: reviewSubmitProcessStageLabel(phase, intl),
-      description,
-      state,
-    };
-  });
-}
-
 const LcaProcessDetail: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> = ({
   task,
   intl,
@@ -883,79 +714,6 @@ function diagnosticJson(value: unknown): string | undefined {
   }
 }
 
-function formatReviewSubmitFallbackSummary(
-  intl: IntlShapeLike,
-): Pick<FormattedReviewSubmitReason, 'title' | 'description' | 'action'> {
-  return {
-    title: intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.fallback.title',
-      defaultMessage: 'Review submission did not complete',
-    }),
-    description: intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.fallback.description',
-      defaultMessage: 'The current data could not complete the pre-review check.',
-    }),
-    action: intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.fallback.action',
-      defaultMessage: 'Save the data and retry. If it still fails, contact an administrator.',
-    }),
-  };
-}
-
-function formatReviewSubmitReason(
-  reason: ReviewSubmitBlockingReason,
-  intl: IntlShapeLike,
-): FormattedReviewSubmitReason {
-  const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
-  const rawMessage = typeof reason?.message === 'string' ? reason.message.trim() : '';
-  const reasonMessage =
-    rawMessage ||
-    intl.formatMessage({
-      id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
-      defaultMessage: 'No detailed message returned.',
-    });
-  const guidance = rawCode
-    ? REVIEW_SUBMIT_GATE_REASON_GUIDANCE[rawCode as keyof typeof REVIEW_SUBMIT_GATE_REASON_GUIDANCE]
-    : undefined;
-  const diagnosticDetails = diagnosticJson('details' in reason ? reason.details : undefined);
-
-  if (!guidance) {
-    return {
-      ...formatReviewSubmitFallbackSummary(intl),
-      isFallback: true,
-      diagnosticCode: rawCode || undefined,
-      diagnosticMessage: reasonMessage,
-      diagnosticDetails,
-    };
-  }
-
-  return {
-    title: intl.formatMessage({
-      id: guidance.titleId,
-      defaultMessage: guidance.defaultTitle,
-    }),
-    description: intl.formatMessage({
-      id: guidance.descriptionId,
-      defaultMessage: guidance.defaultDescription,
-    }),
-    action: intl.formatMessage({
-      id: guidance.actionId,
-      defaultMessage: guidance.defaultAction,
-    }),
-    diagnosticCode: rawCode,
-    diagnosticMessage: reasonMessage,
-    diagnosticDetails,
-  };
-}
-
-function normalizedReviewSubmitReasons(
-  task: ReviewSubmitBackgroundTask,
-): ReviewSubmitBlockingReason[] {
-  const reasons = task.blockingReasons ?? [];
-  const blockerCodes = task.blockerCodes ?? [];
-  return reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
-}
-
 type DetailRow = {
   label: string;
   value?: React.ReactNode;
@@ -973,9 +731,6 @@ function taskItemKey(item: TaskCenterItem): string {
 function taskKindFilter(item: TaskCenterItem): TaskKindFilter {
   if (item.kind === 'lca') {
     return 'lca';
-  }
-  if (item.kind === 'reviewSubmit') {
-    return 'review_submit';
   }
   return item.task.kind === 'tidas_package_import' ? 'tidas_import' : 'tidas_export';
 }
@@ -1039,12 +794,6 @@ function taskTypeLabel(filter: TaskKindFilter, intl: IntlShapeLike): string {
       defaultMessage: 'TIDAS Import',
     });
   }
-  if (filter === 'review_submit') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.kind',
-      defaultMessage: 'Review Submit',
-    });
-  }
   if (filter === 'data_product') {
     return intl.formatMessage({
       id: 'pages.dataProcessing.taskCenter.kind',
@@ -1062,12 +811,6 @@ function taskTitle(item: TaskCenterItem, intl: IntlShapeLike): string {
     return intl.formatMessage({
       id: 'pages.process.lca.taskCenter.title.lca',
       defaultMessage: 'LCA calculation',
-    });
-  }
-  if (item.kind === 'reviewSubmit') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.title',
-      defaultMessage: 'Submit for review',
     });
   }
   if (item.task.kind === 'tidas_package_export') {
@@ -1098,24 +841,6 @@ function taskTitle(item: TaskCenterItem, intl: IntlShapeLike): string {
       });
 }
 
-function clampPercent(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.min(100, Math.max(0, Math.round(value)));
-}
-
-function reviewSubmitProgressPercent(task: ReviewSubmitBackgroundTask): number | undefined {
-  if (typeof task.progress === 'number') {
-    return clampPercent(task.progress);
-  }
-  if (typeof task.progress === 'string') {
-    const parsed = Number.parseFloat(task.progress);
-    return Number.isFinite(parsed) ? clampPercent(parsed) : undefined;
-  }
-  return undefined;
-}
-
 function taskProgressPercent(item: TaskCenterItem): number {
   if (item.task.state === 'completed') {
     return 100;
@@ -1131,22 +856,6 @@ function taskProgressPercent(item: TaskCenterItem): number {
       return 38;
     }
     return 12;
-  }
-  if (item.kind === 'reviewSubmit') {
-    const progress = reviewSubmitProgressPercent(item.task);
-    if (progress !== undefined) {
-      return progress;
-    }
-    if (item.task.phase === 'submitting') {
-      return 86;
-    }
-    if (item.task.phase === 'waiting_gate') {
-      return 62;
-    }
-    if (item.task.phase === 'running') {
-      return 42;
-    }
-    return 15;
   }
   if (item.task.phase === 'finalize_zip' || item.task.phase === 'import_package') {
     return 82;
@@ -1425,13 +1134,6 @@ const PackageProcessDetail: React.FC<{
   <HorizontalProcessSteps steps={packageProcessSteps(item.task, intl)} intl={intl} />
 );
 
-const ReviewSubmitProcessDetail: React.FC<{
-  item: Extract<TaskCenterItem, { kind: 'reviewSubmit' }>;
-  intl: IntlShapeLike;
-}> = ({ item, intl }) => (
-  <HorizontalProcessSteps steps={reviewSubmitProcessSteps(item.task, intl)} intl={intl} />
-);
-
 function lcaBusinessDetail(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
   const errorText = task.error?.trim();
   return (
@@ -1545,312 +1247,16 @@ function packageBusinessDetail(
   );
 }
 
-function reviewSubmitBlockerSummaryContent(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): React.ReactNode {
-  const normalizedReasons = normalizedReviewSubmitReasons(task);
-  if (normalizedReasons.length === 0) {
-    return null;
-  }
-  const visibleReasons: FormattedReviewSubmitReason[] = [];
-  let hasFallbackReason = false;
-
-  for (const reason of normalizedReasons) {
-    const formattedReason = formatReviewSubmitReason(reason, intl);
-    if (formattedReason.isFallback) {
-      if (hasFallbackReason) {
-        continue;
-      }
-      hasFallbackReason = true;
-    }
-    visibleReasons.push(formattedReason);
-  }
-
-  return (
-    <Space
-      data-testid='review-submit-blocker-summary'
-      direction='vertical'
-      size={6}
-      style={{ display: 'flex', width: '100%' }}
-    >
-      {visibleReasons.map((formattedReason, index) => {
-        return (
-          <div key={`${formattedReason.isFallback ? 'fallback' : 'reason'}-${index}`}>
-            <Typography.Text strong>{formattedReason.title}</Typography.Text>
-            <br />
-            <Typography.Text>{formattedReason.description}</Typography.Text>
-            {formattedReason.action && (
-              <>
-                <br />
-                <Typography.Text type='secondary'>{formattedReason.action}</Typography.Text>
-              </>
-            )}
-          </div>
-        );
-      })}
-    </Space>
-  );
-}
-
-function reviewSubmitErrorSummaryContent(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): React.ReactNode {
-  if (task.phase !== 'error' || !task.error || normalizedReviewSubmitReasons(task).length > 0) {
-    return null;
-  }
-
-  const fallbackSummary = formatReviewSubmitFallbackSummary(intl);
-  return (
-    <Space direction='vertical' size={2} style={{ display: 'flex', width: '100%' }}>
-      <Typography.Text strong>{fallbackSummary.title}</Typography.Text>
-      <Typography.Text>{fallbackSummary.description}</Typography.Text>
-      <Typography.Text type='secondary'>{fallbackSummary.action}</Typography.Text>
-    </Space>
-  );
-}
-
-function reviewSubmitDiagnosticText(
-  label: string,
-  value: string | null | undefined,
-  key: React.Key,
-): React.ReactNode {
-  const text = typeof value === 'string' ? value.trim() : '';
-  if (!text) {
-    return null;
-  }
-
-  return (
-    <div key={key}>
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {label}
-      </Typography.Text>
-      <Typography.Text
-        copyable
-        style={{
-          display: 'block',
-          fontSize: 12,
-          marginBottom: 0,
-          maxHeight: 180,
-          maxWidth: 420,
-          overflowY: 'auto',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {text}
-      </Typography.Text>
-    </div>
-  );
-}
-
-function reviewSubmitDiagnosticsContent(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): React.ReactNode {
-  const normalizedReasons = normalizedReviewSubmitReasons(task);
-  const workerErrorCode =
-    typeof task.workerJob?.errorCode === 'string' ? task.workerJob.errorCode.trim() : '';
-  const workerErrorMessage =
-    typeof task.workerJob?.errorMessage === 'string' ? task.workerJob.errorMessage.trim() : '';
-  const taskError = typeof task.error === 'string' ? task.error.trim() : '';
-  const formattedReasons = normalizedReasons.map((reason) =>
-    formatReviewSubmitReason(reason, intl),
-  );
-  const hasDiagnostics =
-    Boolean(taskError || workerErrorCode || workerErrorMessage) ||
-    formattedReasons.some(
-      (reason) => Boolean(reason.diagnosticCode) || Boolean(reason.diagnosticMessage),
-    );
-
-  if (!hasDiagnostics) {
-    return null;
-  }
-
-  const codeLabel = intl.formatMessage({
-    id: 'pages.process.reviewSubmitGate.diagnostics.code',
-    defaultMessage: 'code',
-  });
-  const messageLabel = intl.formatMessage({
-    id: 'pages.process.reviewSubmitGate.diagnostics.message',
-    defaultMessage: 'message',
-  });
-  const detailsLabel = intl.formatMessage({
-    id: 'pages.process.reviewSubmitGate.diagnostics.details',
-    defaultMessage: 'details',
-  });
-
-  return (
-    <Space direction='vertical' size={6} style={{ maxWidth: 440 }}>
-      <Typography.Text strong>
-        {intl.formatMessage({
-          id: 'pages.process.reviewSubmitGate.diagnostics.title',
-          defaultMessage: 'Diagnostics',
-        })}
-      </Typography.Text>
-      {reviewSubmitDiagnosticText(
-        intl.formatMessage({
-          id: 'pages.process.reviewSubmitGate.diagnostics.error',
-          defaultMessage: 'error',
-        }),
-        taskError,
-        'task-error',
-      )}
-      {reviewSubmitDiagnosticText(codeLabel, workerErrorCode, 'worker-error-code')}
-      {reviewSubmitDiagnosticText(messageLabel, workerErrorMessage, 'worker-error-message')}
-      {formattedReasons.map((reason, index) => (
-        <Space
-          key={`reason-diagnostic-${index}`}
-          direction='vertical'
-          size={2}
-          style={{ width: '100%' }}
-        >
-          <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-            {intl.formatMessage(
-              {
-                id: 'pages.process.reviewSubmitGate.diagnostics.reason',
-                defaultMessage: 'reason {index}',
-              },
-              { index: index + 1 },
-            )}
-          </Typography.Text>
-          {reviewSubmitDiagnosticText(codeLabel, reason.diagnosticCode, `reason-code-${index}`)}
-          {reviewSubmitDiagnosticText(
-            messageLabel,
-            reason.diagnosticMessage,
-            `reason-message-${index}`,
-          )}
-          {reviewSubmitDiagnosticText(
-            detailsLabel,
-            reason.diagnosticDetails,
-            `reason-details-${index}`,
-          )}
-        </Space>
-      ))}
-    </Space>
-  );
-}
-
-function reviewSubmitDiagnosticContent(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): React.ReactNode {
-  return (
-    <Space direction='vertical' size={8} style={{ maxWidth: 460 }}>
-      <DiagnosticRows
-        intl={intl}
-        fields={[
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.taskId',
-              defaultMessage: 'Task ID',
-            }),
-            value: task.id,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
-              defaultMessage: 'Submit worker job ID',
-            }),
-            value: task.submitWorkerJobId,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
-              defaultMessage: 'Root job ID',
-            }),
-            value: task.rootJobId,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId',
-              defaultMessage: 'Gate worker job ID',
-            }),
-            value: task.gateWorkerJobId,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId',
-              defaultMessage: 'Review submission job ID',
-            }),
-            value: task.reviewSubmitJobId,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.gateRunId',
-              defaultMessage: 'Gate run ID',
-            }),
-            value: task.gateRunId,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.revisionChecksum',
-              defaultMessage: 'Revision checksum',
-            }),
-            value: task.datasetRevision?.revisionChecksum,
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.progress',
-              defaultMessage: 'Progress',
-            }),
-            value: task.progress,
-          },
-        ]}
-      />
-      {reviewSubmitDiagnosticsContent(task, intl)}
-    </Space>
-  );
-}
-
 function taskDiagnosticContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
   if (item.kind === 'lca') {
     return lcaDiagnosticContent(item.task, intl);
   }
-  if (item.kind === 'reviewSubmit') {
-    return reviewSubmitDiagnosticContent(item.task, intl);
-  }
   return packageDiagnosticContent(item.task, intl);
-}
-
-function reviewSubmitDetailContent(
-  task: ReviewSubmitBackgroundTask,
-  intl: IntlShapeLike,
-): React.ReactNode {
-  const revision = task.datasetRevision;
-  return (
-    <Space direction='vertical' size={14} style={{ width: '100%' }}>
-      <DetailGrid
-        rows={[
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.dataset',
-              defaultMessage: 'Dataset',
-            }),
-            value: revision?.table ?? '-',
-          },
-          {
-            label: intl.formatMessage({
-              id: 'pages.process.reviewSubmitTaskCenter.detail.version',
-              defaultMessage: 'Version',
-            }),
-            value: revision?.version ?? '-',
-          },
-        ]}
-      />
-      {reviewSubmitBlockerSummaryContent(task, intl)}
-      {reviewSubmitErrorSummaryContent(task, intl)}
-    </Space>
-  );
 }
 
 function taskBusinessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
   if (item.kind === 'lca') {
     return lcaBusinessDetail(item.task, intl);
-  }
-  if (item.kind === 'reviewSubmit') {
-    return reviewSubmitDetailContent(item.task, intl);
   }
   return packageBusinessDetail(item.task, intl);
 }
@@ -1868,18 +1274,6 @@ function taskProcessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): Re
       </DetailSection>
     );
   }
-  if (item.kind === 'package') {
-    return (
-      <DetailSection
-        title={intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.process.title',
-          defaultMessage: 'Execution stages',
-        })}
-      >
-        <PackageProcessDetail item={item} intl={intl} />
-      </DetailSection>
-    );
-  }
   return (
     <DetailSection
       title={intl.formatMessage({
@@ -1887,7 +1281,7 @@ function taskProcessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): Re
         defaultMessage: 'Execution stages',
       })}
     >
-      <ReviewSubmitProcessDetail item={item} intl={intl} />
+      <PackageProcessDetail item={item} intl={intl} />
     </DetailSection>
   );
 }
@@ -1944,21 +1338,17 @@ const LcaTaskCenter: React.FC = () => {
   const { token } = theme.useToken();
   const [open, setOpen] = useState(false);
   const [downloadingTaskId, setDownloadingTaskId] = useState<string | null>(null);
-  const [cancellingTaskId, setCancellingTaskId] = useState<string | null>(null);
-  const [retryingTaskId, setRetryingTaskId] = useState<string | null>(null);
   const [refreshingTasks, setRefreshingTasks] = useState(false);
   const [activeFilter, setActiveFilter] = useState<TaskKindFilter>('all');
   const [expandedTaskKeys, setExpandedTaskKeys] = useState<string[]>([]);
   const lcaTasks = useLcaTasks();
   const packageTasks = useTidasPackageTasks();
-  const reviewSubmitTasks = useReviewSubmitTasks();
   const dataProductTasks = useDataProductTaskSummaries();
 
   const refreshAllTasks = useCallback(async () => {
     await Promise.all([
       refreshLcaTasksFromWorkerJobs(),
       refreshTidasPackageTasksFromWorkerJobs(),
-      refreshReviewSubmitTasks(),
       refreshDataProductTasks(),
     ]);
   }, []);
@@ -1987,9 +1377,8 @@ const LcaTaskCenter: React.FC = () => {
       [
         ...lcaTasks.map((task) => ({ kind: 'lca' as const, task })),
         ...packageTasks.map((task) => ({ kind: 'package' as const, task })),
-        ...reviewSubmitTasks.map((task) => ({ kind: 'reviewSubmit' as const, task })),
       ].sort((left, right) => Date.parse(right.task.updatedAt) - Date.parse(left.task.updatedAt)),
-    [lcaTasks, packageTasks, reviewSubmitTasks],
+    [lcaTasks, packageTasks],
   );
 
   const runningCount = useMemo(
@@ -1997,11 +1386,6 @@ const LcaTaskCenter: React.FC = () => {
       items.filter((item) => item.task.state === 'running').length +
       dataProductTasks.filter((task) => task.runState === 'active').length,
     [dataProductTasks, items],
-  );
-  const attentionCount = useMemo(
-    () =>
-      items.filter((item) => item.kind === 'reviewSubmit' && item.task.state === 'failed').length,
-    [items],
   );
   const filteredItems = useMemo(
     () =>
@@ -2012,9 +1396,7 @@ const LcaTaskCenter: React.FC = () => {
   );
   const filterOptions = useMemo(
     () =>
-      (
-        ['all', 'lca', 'tidas_export', 'tidas_import', 'review_submit', 'data_product'] as const
-      ).map((value) => ({
+      (['all', 'lca', 'tidas_export', 'tidas_import', 'data_product'] as const).map((value) => ({
         value,
         label: taskTypeLabel(value, intl),
       })),
@@ -2070,58 +1452,12 @@ const LcaTaskCenter: React.FC = () => {
       message.error(
         error?.message ||
           intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.refresh.error',
-            defaultMessage: 'Failed to refresh review-submit tasks',
+            id: 'pages.process.lca.taskCenter.refresh.error',
+            defaultMessage: 'Failed to refresh tasks',
           }),
       );
     } finally {
       setRefreshingTasks(false);
-    }
-  };
-
-  const handleCancelReviewSubmit = async (task: ReviewSubmitBackgroundTask) => {
-    try {
-      setCancellingTaskId(task.id);
-      await cancelReviewSubmitTask(task.id);
-      message.success(
-        intl.formatMessage({
-          id: 'pages.process.reviewSubmitTaskCenter.cancel.success',
-          defaultMessage: 'Review-submit task cancelled',
-        }),
-      );
-    } catch (error: any) {
-      message.error(
-        error?.message ||
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.cancel.error',
-            defaultMessage: 'Failed to cancel review-submit task',
-          }),
-      );
-    } finally {
-      setCancellingTaskId(null);
-    }
-  };
-
-  const handleRetryReviewSubmit = async (task: ReviewSubmitBackgroundTask) => {
-    try {
-      setRetryingTaskId(task.id);
-      await retryReviewSubmitTask(task.id);
-      message.success(
-        intl.formatMessage({
-          id: 'pages.process.reviewSubmitTaskCenter.retry.success',
-          defaultMessage: 'Review-submit task restarted',
-        }),
-      );
-    } catch (error: any) {
-      message.error(
-        error?.message ||
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.retry.error',
-            defaultMessage: 'Failed to retry review-submit task',
-          }),
-      );
-    } finally {
-      setRetryingTaskId(null);
     }
   };
 
@@ -2158,7 +1494,6 @@ const LcaTaskCenter: React.FC = () => {
           onClick={() => {
             clearFinishedLcaTasks();
             clearFinishedTidasPackageTasks();
-            clearFinishedReviewSubmitTasks();
           }}
         >
           {intl.formatMessage({
@@ -2178,7 +1513,7 @@ const LcaTaskCenter: React.FC = () => {
           defaultMessage: 'Task Center',
         })}
         icon={<ClockCircleOutlined />}
-        badgeCount={runningCount + attentionCount}
+        badgeCount={runningCount}
         badgeStyle={badgeStyle}
         onClick={() => {
           setOpen(true);
@@ -2552,51 +1887,6 @@ const LcaTaskCenter: React.FC = () => {
                               />
                             </Tooltip>
                           )}
-                        {item.kind === 'reviewSubmit' && item.task.state === 'running' && (
-                          <Tooltip
-                            title={intl.formatMessage({
-                              id: 'pages.process.reviewSubmitTaskCenter.cancel',
-                              defaultMessage: 'Cancel',
-                            })}
-                          >
-                            <Button
-                              aria-label={intl.formatMessage({
-                                id: 'pages.process.reviewSubmitTaskCenter.cancel',
-                                defaultMessage: 'Cancel',
-                              })}
-                              danger
-                              icon={<CloseCircleOutlined />}
-                              loading={cancellingTaskId === item.task.id}
-                              size='small'
-                              type='text'
-                              onClick={() => {
-                                void handleCancelReviewSubmit(item.task);
-                              }}
-                            />
-                          </Tooltip>
-                        )}
-                        {item.kind === 'reviewSubmit' && item.task.state === 'failed' && (
-                          <Tooltip
-                            title={intl.formatMessage({
-                              id: 'pages.process.reviewSubmitTaskCenter.retry',
-                              defaultMessage: 'Retry',
-                            })}
-                          >
-                            <Button
-                              aria-label={intl.formatMessage({
-                                id: 'pages.process.reviewSubmitTaskCenter.retry',
-                                defaultMessage: 'Retry',
-                              })}
-                              icon={<ReloadOutlined />}
-                              loading={retryingTaskId === item.task.id}
-                              size='small'
-                              type='text'
-                              onClick={() => {
-                                void handleRetryReviewSubmit(item.task);
-                              }}
-                            />
-                          </Tooltip>
-                        )}
                       </Space>
                       {expanded && (
                         <div
