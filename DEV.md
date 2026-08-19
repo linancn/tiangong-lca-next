@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-08-19
-lastReviewedCommit: e991feacf23090647455cd28e9f7f45a01ee74a6
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedCommit: f68a38c862f839002e58da92f5be1b2330b4090c
+lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
 ---
 
 # Development Bootstrap
