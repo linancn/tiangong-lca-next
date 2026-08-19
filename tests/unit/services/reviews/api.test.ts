@@ -454,6 +454,22 @@ describe('requestReviewQualityDiagnosticApi', () => {
     });
   });
 
+  it('uses the generic request failure when the invocation error has no message', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: { context: { status: 500 } },
+    });
+
+    const result = await reviewsApi.requestReviewQualityDiagnosticApi({ action: 'read' });
+
+    expect(result).toMatchObject({
+      data: null,
+      error: { code: 'FUNCTION_ERROR', message: 'Request failed' },
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
   it('falls back to the invocation error when the JSON error body cannot be parsed', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: null,
