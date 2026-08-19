@@ -704,9 +704,6 @@ function packageTaskErrorText(
 }
 
 function diagnosticJson(value: unknown): string | undefined {
-  if (value === undefined || value === null) {
-    return undefined;
-  }
   try {
     return JSON.stringify(value, null, 2);
   } catch (_error) {
