@@ -41,6 +41,7 @@ export default {
   'pages.process.lca.taskCenter.title': 'Aufgabenübersicht',
   'pages.process.lca.taskCenter.clearFinished': 'Abgeschlossene entfernen',
   'pages.process.lca.taskCenter.refresh': 'Aktualisieren',
+  'pages.process.lca.taskCenter.refresh.error': 'Aufgaben konnten nicht aktualisiert werden',
   'pages.process.lca.taskCenter.empty': 'Keine Aufgaben',
   'pages.process.lca.taskCenter.remove': 'Entfernen',
   'pages.process.lca.taskCenter.details': 'Aufgabendetails',

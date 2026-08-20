@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-18
-lastReviewedCommit: c1e61084060150fba9c17aee0cb3c2d1981ebcd4
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedAt: 2026-08-19
+lastReviewedCommit: a90fc6e4878cff963bbe3cee14641c60bac80193
+lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

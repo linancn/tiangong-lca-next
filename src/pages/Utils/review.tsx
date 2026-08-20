@@ -5,15 +5,8 @@ import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { FormProcess } from '@/services/processes/data';
 import {
   getRejectReviewsByProcess,
-  requestReviewSubmitGateApi,
-  requestReviewSubmitJobApi,
   submitDatasetReviewApi,
   type ReviewSubmitDatasetTable,
-  type ReviewSubmitGateAction,
-  type ReviewSubmitGateDatasetTable,
-  type ReviewSubmitGateResult,
-  type ReviewSubmitJobAction,
-  type ReviewSubmitJobResult,
 } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
@@ -1621,66 +1614,6 @@ export const submitDatasetReview = async (
   version: string,
 ) => {
   return submitDatasetReviewApi(table, id, version);
-};
-
-export const requestReviewSubmitGate = async (
-  table: ReviewSubmitGateDatasetTable,
-  id: string,
-  version: string,
-  orderedJson: unknown,
-  options: {
-    action?: ReviewSubmitGateAction;
-    gateRunId?: string;
-  } = {},
-) => {
-  void orderedJson;
-  const result = await requestReviewSubmitGateApi<ReviewSubmitGateResult>({
-    table,
-    id,
-    version,
-    action: options.action ?? 'ensure',
-    gateRunId: options.gateRunId,
-  });
-  const revisionChecksum = result.data?.[0]?.datasetRevision?.revisionChecksum;
-
-  return {
-    ...result,
-    revisionChecksum,
-  };
-};
-
-export const requestReviewSubmitJob = async (
-  table: ReviewSubmitGateDatasetTable,
-  id: string,
-  version: string,
-  orderedJson: unknown,
-  options: {
-    action?: ReviewSubmitJobAction;
-    reviewSubmitJobId?: string;
-  } = {},
-) => {
-  void orderedJson;
-  const action = options.action ?? (options.reviewSubmitJobId ? 'read' : 'enqueue');
-  const result =
-    action === 'read'
-      ? await requestReviewSubmitJobApi<ReviewSubmitJobResult>({
-          action,
-          reviewSubmitJobId: options.reviewSubmitJobId ?? '',
-        })
-      : await requestReviewSubmitJobApi<ReviewSubmitJobResult>({
-          table,
-          id,
-          version,
-          action,
-        });
-  const job = result.data?.[0];
-  const revisionChecksum = job?.datasetRevision?.revisionChecksum;
-
-  return {
-    ...result,
-    reviewSubmitJobId: job?.reviewSubmitJobId,
-    revisionChecksum,
-  };
 };
 
 const checkValidationFields = (data: any) => {

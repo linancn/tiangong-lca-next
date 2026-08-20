@@ -1,27 +1,17 @@
 // @ts-nocheck
 import LcaTaskCenter from '@/components/LcaTaskCenter';
-import {
-  REVIEW_SUBMIT_GATE_BLOCKER_CODES,
-  REVIEW_SUBMIT_GATE_REASON_GUIDANCE,
-} from '@/utils/reviewSubmitGateGuidance';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 let mockTasks: any[] = [];
 let mockPackageTasks: any[] = [];
-let mockReviewSubmitTasks: any[] = [];
 let mockDataProductTasks: any[] = [];
 const mockClearFinishedLcaTasks = jest.fn();
 const mockClearFinishedTidasPackageTasks = jest.fn();
-const mockClearFinishedReviewSubmitTasks = jest.fn();
 const mockDownloadTidasPackageExportTask = jest.fn();
-const mockCancelReviewSubmitTask = jest.fn();
 const mockRefreshLcaTasksFromWorkerJobs = jest.fn();
 const mockRefreshTidasPackageTasksFromWorkerJobs = jest.fn();
-const mockRefreshReviewSubmitTasks = jest.fn();
-const mockRetryReviewSubmitTask = jest.fn();
 const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
 const mockSubscribeTidasPackageTasks = jest.fn(() => jest.fn());
-const mockSubscribeReviewSubmitTasks = jest.fn(() => jest.fn());
 const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
 const mockRefreshDataProductTasks = jest.fn();
 const mockSubscribeDataProductTasks = jest.fn(() => jest.fn());
@@ -58,16 +48,6 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
   refreshTidasPackageTasksFromWorkerJobs: (...args: any[]) =>
     mockRefreshTidasPackageTasksFromWorkerJobs(...args),
   subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
-}));
-
-jest.mock('@/services/reviews/taskCenter', () => ({
-  __esModule: true,
-  cancelReviewSubmitTask: (...args: any[]) => mockCancelReviewSubmitTask(...args),
-  clearFinishedReviewSubmitTasks: () => mockClearFinishedReviewSubmitTasks(),
-  listReviewSubmitTasks: () => mockReviewSubmitTasks,
-  refreshReviewSubmitTasks: (...args: any[]) => mockRefreshReviewSubmitTasks(...args),
-  retryReviewSubmitTask: (...args: any[]) => mockRetryReviewSubmitTask(...args),
-  subscribeReviewSubmitTasks: (...args: any[]) => mockSubscribeReviewSubmitTasks(...args),
 }));
 
 jest.mock('@/services/dataProducts/taskCenter', () => ({
@@ -258,14 +238,10 @@ describe('LcaTaskCenter', () => {
     jest.clearAllMocks();
     mockTasks = [];
     mockPackageTasks = [];
-    mockReviewSubmitTasks = [];
     mockDataProductTasks = [];
     mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
-    mockCancelReviewSubmitTask.mockResolvedValue(undefined);
     mockRefreshLcaTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshTidasPackageTasksFromWorkerJobs.mockResolvedValue([]);
-    mockRefreshReviewSubmitTasks.mockResolvedValue([]);
-    mockRetryReviewSubmitTask.mockResolvedValue(undefined);
     mockRefreshDataProductTasks.mockResolvedValue([]);
   });
 
@@ -283,14 +259,14 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
     expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
-    expect(mockClearFinishedReviewSubmitTasks).toHaveBeenCalledTimes(1);
     expect(mockSubscribeLcaTasks).toHaveBeenCalled();
     expect(mockSubscribeTidasPackageTasks).toHaveBeenCalled();
-    expect(mockSubscribeReviewSubmitTasks).toHaveBeenCalled();
     expect(mockSubscribeLcaTaskCenterOpenRequests).toHaveBeenCalled();
   });
 
   it('renders running and completed tasks, task details, and diagnostics', () => {
+    const circularRequest: Record<string, unknown> = {};
+    circularRequest.self = circularRequest;
     mockTasks = [
       {
         id: 'task-running',
@@ -306,7 +282,7 @@ describe('LcaTaskCenter', () => {
         rootJobId: 'root-lca-1',
         jobKind: 'lca.solve',
         solveJobId: 'solve-1',
-        request: { processId: 'process-1' },
+        request: circularRequest,
         error: 'Solve failed once',
         phaseTimeline: [
           {
@@ -405,13 +381,13 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('Snapshot ID').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Result ID').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Request').length).toBeGreaterThan(0);
+    expect(screen.getByText('[object Object]')).toBeInTheDocument();
     expect(screen.queryByText('Solve failed once')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
     expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
-    expect(mockClearFinishedReviewSubmitTasks).toHaveBeenCalledTimes(1);
   });
 
   it('renders failed, building, and submitting summaries with their status labels', () => {
@@ -531,127 +507,6 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
   });
 
-  it('renders service-backed review-submit tasks with blocker guidance and cancel actions', async () => {
-    mockReviewSubmitTasks = [
-      {
-        id: 'submit-worker-running',
-        submitWorkerJobId: 'submit-worker-running',
-        gateWorkerJobId: 'gate-worker-running',
-        reviewSubmitJobId: 'review-job-running',
-        state: 'running',
-        phase: 'waiting_gate',
-        message: 'waiting',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:01:00.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-1',
-          version: '01.00.000',
-          revisionChecksum: 'a'.repeat(64),
-        },
-      },
-      {
-        id: 'submit-worker-blocked',
-        submitWorkerJobId: 'submit-worker-blocked',
-        rootJobId: 'root-worker-blocked',
-        gateWorkerJobId: 'gate-worker-blocked',
-        reviewSubmitJobId: 'review-job-blocked',
-        state: 'failed',
-        phase: 'blocked',
-        message: 'blocked',
-        createdAt: '2026-03-12T11:00:00.000Z',
-        updatedAt: '2026-03-12T11:02:00.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-2',
-          version: '01.00.000',
-          revisionChecksum: 'b'.repeat(64),
-        },
-        blockingReasons: [
-          {
-            code: 'flow_lcia_semantic_mismatch',
-            message: 'same input/output flow',
-            details: { flowId: 'flow-1' },
-          },
-        ],
-      },
-    ];
-
-    render(<LcaTaskCenter />);
-
-    expect(screen.getByTestId('badge-count')).toHaveTextContent('2');
-    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
-
-    expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Waiting for gate').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Blocked').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Flow and LCIA semantics are inconsistent')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        'Check flow types, biosphere exchanges, and LCIA factor mappings, then correct the mismatched data before retrying.',
-      ),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('same input/output flow')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        (_, element) => element?.textContent?.includes('flow_lcia_semantic_mismatch') ?? false,
-      ),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText((_, element) => element?.textContent?.includes('"flowId"') ?? false),
-    ).not.toBeInTheDocument();
-
-    const viewButtons = screen.getAllByRole('button', { name: 'View' });
-    fireEvent.click(viewButtons[1]);
-    expect(screen.getByText('Dataset')).toBeInTheDocument();
-    expect(screen.getByText('processes')).toBeInTheDocument();
-    expect(screen.getByText('Version')).toBeInTheDocument();
-    expect(screen.getAllByText('01.00.000').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Flow and LCIA semantics are inconsistent').length).toBeGreaterThan(
-      0,
-    );
-    expect(
-      screen.getAllByText(
-        'Check flow types, biosphere exchanges, and LCIA factor mappings, then correct the mismatched data before retrying.',
-      ).length,
-    ).toBeGreaterThan(0);
-
-    const diagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
-    fireEvent.click(diagnosticsButtons[1]);
-    expect(screen.getByText('Submit worker job ID')).toBeInTheDocument();
-    expect(screen.getAllByText('submit-worker-blocked').length).toBeGreaterThan(0);
-    expect(screen.getByText('Root job ID')).toBeInTheDocument();
-    expect(screen.getAllByText('root-worker-blocked').length).toBeGreaterThan(0);
-    expect(screen.getByText('same input/output flow')).toBeInTheDocument();
-    expect(screen.getAllByText('flow_lcia_semantic_mismatch').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('"flowId"') ?? false)
-        .length,
-    ).toBeGreaterThan(0);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalled());
-    await waitFor(() => expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalled());
-    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
-
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    await waitFor(() =>
-      expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked'),
-    );
-    await waitFor(() =>
-      expect(message.success).toHaveBeenCalledWith('Review-submit task restarted'),
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() =>
-      expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('submit-worker-running'),
-    );
-    await waitFor(() =>
-      expect(message.success).toHaveBeenCalledWith('Review-submit task cancelled'),
-    );
-    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
-  });
-
   it('refreshes worker-backed task families on mount, timer, open request, and manual refresh failures', async () => {
     jest.useFakeTimers();
     let openRequestListener: (() => void) | undefined;
@@ -659,11 +514,11 @@ describe('LcaTaskCenter', () => {
       openRequestListener = listener;
       return jest.fn();
     });
-    mockRefreshReviewSubmitTasks.mockRejectedValue({});
+    mockRefreshDataProductTasks.mockRejectedValue({});
 
     render(<LcaTaskCenter />);
 
-    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(1));
     await waitFor(() =>
       expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(1),
@@ -672,7 +527,7 @@ describe('LcaTaskCenter', () => {
     await act(async () => {
       jest.advanceTimersByTime(5000);
     });
-    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(2),
@@ -682,302 +537,27 @@ describe('LcaTaskCenter', () => {
       openRequestListener?.();
     });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(3));
     await waitFor(() =>
       expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(3),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
-    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(4));
     await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(4));
     await waitFor(() =>
       expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(4),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Failed to refresh review-submit tasks'),
-    );
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to refresh tasks'));
 
-    mockRefreshReviewSubmitTasks.mockRejectedValueOnce(new Error('refresh failed'));
+    mockRefreshDataProductTasks.mockRejectedValueOnce(new Error('refresh failed'));
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('refresh failed'));
 
     jest.useRealTimers();
-  });
-
-  it('renders all review-submit phases and sparse blocker diagnostics', () => {
-    const circularDetails: any = { flowId: 'flow-circular' };
-    circularDetails.self = circularDetails;
-    const longDetails = { note: 'x'.repeat(400) };
-    mockReviewSubmitTasks = [
-      {
-        id: 'review-queued',
-        state: 'running',
-        phase: 'queued',
-        message: 'queued',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:01.000Z',
-      },
-      {
-        id: 'review-running',
-        state: 'running',
-        phase: 'running',
-        message: 'running',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:02.000Z',
-      },
-      {
-        id: 'review-submitting',
-        state: 'running',
-        phase: 'submitting',
-        message: 'submitting',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:03.000Z',
-      },
-      {
-        id: 'review-submitted',
-        state: 'completed',
-        phase: 'submitted',
-        message: 'submitted',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:04.000Z',
-        gateRunId: 'gate-run-submitted',
-        datasetRevision: {
-          id: 'process-no-version',
-          revisionChecksum: 'checksum-submitted',
-        },
-      },
-      {
-        id: 'review-passed',
-        state: 'completed',
-        phase: 'passed',
-        message: 'passed',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:05.000Z',
-      },
-      {
-        id: 'review-stale',
-        state: 'failed',
-        phase: 'stale',
-        message: 'stale',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:06.000Z',
-        blockerCodes: ['revision_report_stale'],
-      },
-      {
-        id: 'review-cancelled',
-        state: 'failed',
-        phase: 'cancelled',
-        message: 'cancelled',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:07.000Z',
-        blockingReasons: [
-          {
-            code: '  ',
-            message: '  ',
-            details: null,
-          },
-        ],
-      },
-      {
-        id: 'review-error',
-        state: 'failed',
-        phase: 'error',
-        message: 'error',
-        error: 'worker failed',
-        workerJob: {
-          status: 'failed',
-          errorCode: 'worker_error_code',
-          errorMessage: 'worker backend message',
-        },
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:08.000Z',
-        blockingReasons: [
-          {
-            code: 'custom_blocker',
-            message: 'custom blocker message',
-            details: circularDetails,
-          },
-          {
-            message: 'missing code reason',
-            details: longDetails,
-          },
-        ],
-      },
-    ];
-
-    render(<LcaTaskCenter />);
-    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
-
-    expect(screen.getAllByText('Queued').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Gate running').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Submitting review').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Submitted').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Gate passed').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Stale').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Cancelled').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Review submission completed')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Numerical stability gate passed; final submission is being coordinated'),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('Gate passed; submitting review')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Gate result is stale; save the latest data and submit again'),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
-
-    const reviewViewButtons = screen.getAllByRole('button', { name: 'View' });
-    reviewViewButtons.forEach((button) => {
-      fireEvent.click(button);
-    });
-    expect(
-      screen.queryByText('Numerical stability gate passed; final submission is being coordinated'),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission completed')).not.toBeInTheDocument();
-    expect(screen.queryByText('Gate passed; submitting review')).not.toBeInTheDocument();
-    expect(screen.getByText('Gate result is stale')).toBeInTheDocument();
-    expect(
-      screen.getByText('Save the current data and submit for review again.'),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText('Execution stages').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Run gate').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Submit review').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Review submission did not complete')).toHaveLength(2);
-    expect(screen.queryByText('worker failed')).not.toBeInTheDocument();
-    expect(screen.queryByText('custom_blocker')).not.toBeInTheDocument();
-    expect(screen.queryByText('custom blocker message')).not.toBeInTheDocument();
-    expect(screen.queryByText('missing code reason')).not.toBeInTheDocument();
-
-    expect(
-      screen.getAllByText('Save the data and retry. If it still fails, contact an administrator.')
-        .length,
-    ).toBeGreaterThan(0);
-
-    const reviewDiagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
-    fireEvent.click(reviewDiagnosticsButtons[0]);
-    expect(screen.getAllByText('worker failed').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('worker_error_code').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('worker backend message').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('custom_blocker').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('custom blocker message').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('missing code reason').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('"note"') ?? false).length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
-
-    fireEvent.click(reviewDiagnosticsButtons[4]);
-    expect(screen.getByText('Gate run ID')).toBeInTheDocument();
-    expect(screen.getByText('gate-run-submitted')).toBeInTheDocument();
-    expect(screen.getByText('Revision checksum')).toBeInTheDocument();
-    expect(screen.getByText('checksum-submitted')).toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        (_, element) => element?.textContent?.includes('process-no-version') ?? false,
-      ),
-    ).not.toBeInTheDocument();
-  });
-
-  it('renders friendly task-center guidance for every stable review-submit blocker code', () => {
-    mockReviewSubmitTasks = [
-      {
-        id: 'review-all-stable-blockers',
-        state: 'failed',
-        phase: 'blocked',
-        message: 'blocked',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:01:00.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-all-blockers',
-          version: '01.00.000',
-        },
-        blockingReasons: REVIEW_SUBMIT_GATE_BLOCKER_CODES.map((code) => ({
-          code,
-          message: `worker message for ${code}`,
-          details: { code },
-        })),
-      },
-    ];
-
-    render(<LcaTaskCenter />);
-    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
-    fireEvent.click(screen.getByRole('button', { name: 'View' }));
-
-    expect(screen.getByTestId('review-submit-blocker-summary')).toHaveStyle({
-      width: '100%',
-    });
-    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
-    for (const code of REVIEW_SUBMIT_GATE_BLOCKER_CODES) {
-      const guidance = REVIEW_SUBMIT_GATE_REASON_GUIDANCE[code];
-      expect(screen.getByText(guidance.defaultTitle)).toBeInTheDocument();
-      expect(screen.getByText(guidance.defaultAction)).toBeInTheDocument();
-    }
-  });
-
-  it('reports review-submit refresh, cancel, and retry errors with fallback and explicit messages', async () => {
-    mockReviewSubmitTasks = [
-      {
-        id: 'review-running',
-        state: 'running',
-        phase: 'running',
-        message: 'running',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:01.000Z',
-      },
-      {
-        id: 'review-failed',
-        state: 'failed',
-        phase: 'error',
-        message: 'failed',
-        error: 'transient worker failure',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:02.000Z',
-      },
-    ];
-    mockCancelReviewSubmitTask
-      .mockRejectedValueOnce({})
-      .mockRejectedValueOnce(new Error('cancel failed'));
-    mockRetryReviewSubmitTask
-      .mockRejectedValueOnce({})
-      .mockRejectedValueOnce(new Error('retry failed'));
-
-    render(<LcaTaskCenter />);
-    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
-
-    expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
-    expect(screen.queryByText('transient worker failure')).not.toBeInTheDocument();
-
-    const viewButtons = screen.getAllByRole('button', { name: 'View' });
-    fireEvent.click(viewButtons[0]);
-    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.getByText('Review submission did not complete')).toBeInTheDocument();
-    expect(
-      screen.getByText('The current data could not complete the pre-review check.'),
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Failed to cancel review-submit task'),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('cancel failed'));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Failed to retry review-submit task'),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('retry failed'));
   });
 
   it('covers modal close and task-summary fallbacks for sparse or inconsistent task metadata', () => {
@@ -1124,67 +704,10 @@ describe('LcaTaskCenter', () => {
         rootCount: 0,
       },
     ];
-    mockReviewSubmitTasks = [
-      {
-        id: 'review-progress-string',
-        state: 'running',
-        phase: 'running',
-        progress: '67.4',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:01:00.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-progress-string',
-          version: '01.00.000',
-        },
-      },
-      {
-        id: 'review-progress-infinity',
-        state: 'running',
-        phase: 'waiting_gate',
-        progress: Number.POSITIVE_INFINITY,
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:30.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-progress-infinity',
-          version: '01.00.000',
-        },
-      },
-      {
-        id: 'review-progress-invalid',
-        state: 'running',
-        phase: 'submitting',
-        progress: 'not-a-number',
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:10.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-progress-invalid',
-          version: '01.00.000',
-        },
-      },
-      {
-        id: 'review-empty-blocker',
-        state: 'failed',
-        phase: 'blocked',
-        blockingReasons: [{ code: ' ', message: ' ' }],
-        createdAt: '2026-03-12T12:00:00.000Z',
-        updatedAt: '2026-03-12T12:00:05.000Z',
-        datasetRevision: {
-          table: 'processes',
-          id: 'process-empty-blocker',
-          version: '01.00.000',
-        },
-      },
-    ];
-
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getAllByRole('progressbar').map((bar) => bar.textContent)).toEqual(
-      expect.arrayContaining(['67%', '0%']),
-    );
+    expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('tab', { name: 'LCA Calculation' }));
     expect(screen.queryByText('Import TIDAS package')).not.toBeInTheDocument();
@@ -1213,11 +736,6 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'TIDAS Import' }));
     expect(screen.getByText('Import package: package.zip')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Review Submit' }));
-    expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[3]);
-    expect(screen.getByText('No detailed message returned.')).toBeInTheDocument();
   });
 
   it('renders package tasks, supports download actions, and handles download errors', async () => {

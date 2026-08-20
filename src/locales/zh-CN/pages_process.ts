@@ -41,6 +41,7 @@ export default {
   'pages.process.lca.taskCenter.title': '任务中心',
   'pages.process.lca.taskCenter.clearFinished': '清除已完成',
   'pages.process.lca.taskCenter.refresh': '刷新',
+  'pages.process.lca.taskCenter.refresh.error': '刷新任务失败',
   'pages.process.lca.taskCenter.empty': '暂无任务',
   'pages.process.lca.taskCenter.remove': '移除',
   'pages.process.lca.taskCenter.details': '详情',

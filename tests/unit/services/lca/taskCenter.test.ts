@@ -463,8 +463,8 @@ describe('lca task center', () => {
             updatedAt: '2026-03-12T10:10:00.000Z',
           },
           {
-            id: 'review-worker',
-            jobKind: 'review_submit.submit',
+            id: 'package-worker',
+            jobKind: 'tidas.export_package',
             status: 'running',
           },
         ],

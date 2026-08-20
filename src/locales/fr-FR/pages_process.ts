@@ -41,6 +41,7 @@ export default {
   'pages.process.lca.taskCenter.title': 'Centre des tâches',
   'pages.process.lca.taskCenter.clearFinished': 'Effacer les tâches terminées',
   'pages.process.lca.taskCenter.refresh': 'Actualiser',
+  'pages.process.lca.taskCenter.refresh.error': 'Échec de l’actualisation des tâches',
   'pages.process.lca.taskCenter.empty': 'Aucune tâche',
   'pages.process.lca.taskCenter.remove': 'Supprimer',
   'pages.process.lca.taskCenter.details': 'Détails',

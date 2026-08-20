@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedAt: 2026-08-19
+lastReviewedCommit: a26d646a9fc6def3857504d9e62a7a1e29c45c0e
+lastReviewedNote: 'Reviewed for Next Issue #901: removing an unreachable Task Center diagnostic guard and covering retained diagnostic fallbacks does not change calculation, analysis, or contribution-path contracts.'
 ---
 
 # Lifecycle Model Calculation Reference

@@ -37,7 +37,7 @@ describe('workerJobs api', () => {
         data: [
           {
             id: '66666666-6666-4666-8666-666666666666',
-            jobKind: 'review_submit.gate',
+            jobKind: 'lca.build_snapshot',
             status: 'running',
           },
         ],
@@ -68,7 +68,7 @@ describe('workerJobs api', () => {
     expect(result.data).toEqual([
       {
         id: '66666666-6666-4666-8666-666666666666',
-        jobKind: 'review_submit.gate',
+        jobKind: 'lca.build_snapshot',
         status: 'running',
       },
     ]);

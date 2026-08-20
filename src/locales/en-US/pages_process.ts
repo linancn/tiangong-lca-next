@@ -41,6 +41,7 @@ export default {
   'pages.process.lca.taskCenter.title': 'Task Center',
   'pages.process.lca.taskCenter.clearFinished': 'Clear finished',
   'pages.process.lca.taskCenter.refresh': 'Refresh',
+  'pages.process.lca.taskCenter.refresh.error': 'Failed to refresh tasks',
   'pages.process.lca.taskCenter.empty': 'No tasks',
   'pages.process.lca.taskCenter.remove': 'Remove',
   'pages.process.lca.taskCenter.details': 'Details',

@@ -30,9 +30,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-18
-lastReviewedCommit: b2138e512f91a0e09eba0c0470cfacfef3e519d8
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedAt: 2026-08-19
+lastReviewedCommit: 9bae84a4cc7479ccebb42579c416287ecf5130ae
+lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
 ---
 
 # Pre-Push Gate Policy
