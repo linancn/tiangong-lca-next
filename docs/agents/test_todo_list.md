@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: focused scalar-normalizer, serializer, and save-gate coverage preserves full-closure maintenance mode and creates no queue.'
+lastReviewedNote: 'Reviewed for Next Issue #910: focused scalar-normalizer, serializer, save-gate, and locale-contract coverage preserves full-closure maintenance mode and creates no queue.'
 ---
 
 # Testing Execution State

@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-08-21'
 lastReviewedCommit: '9319742112a8e9dd980762789895b4f4c074e531'
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization changes remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and the resulting locale artifact digest refresh remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

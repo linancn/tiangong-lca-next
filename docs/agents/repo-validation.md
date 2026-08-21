@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar storage changes use focused normalization, serializer, and all-save-entrypoint proof without changing the repository gate.'
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar storage changes use focused normalization, serializer, all-save-entrypoint, and regenerated locale-artifact proof without changing the repository gate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

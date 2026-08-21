@@ -35,7 +35,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS year and percentage scalar normalization stays in the existing frontend/service ownership boundary and does not change repo workflow or branch policy.'
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and its generated locale digest refresh stay in the existing frontend/service ownership boundary and do not change repo workflow or branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

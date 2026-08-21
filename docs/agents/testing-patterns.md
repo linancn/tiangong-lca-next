@@ -32,7 +32,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: the new scalar helper uses direct unit proof and the service save gates use explicit side-effect assertions under the existing patterns.'
+lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct unit proof, save gates use explicit side-effect assertions, and generated locale digests use the existing idempotence contract.'
 ---
 
 # Testing Patterns Reference

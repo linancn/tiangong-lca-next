@@ -29,7 +29,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar failures are deterministic focused-test or save-boundary findings and require no new troubleshooting workflow.'
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar failures remain deterministic focused-test or save-boundary findings; locale digest drift is recovered with the existing artifact writer and contract rerun.'
 ---
 
 # Testing Troubleshooting

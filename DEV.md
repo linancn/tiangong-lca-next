@@ -31,7 +31,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
-lastReviewedNote: 'Reviewed for Next Issue #910: the TIDAS scalar storage fix uses the existing focused-test, lint, build, Docpact, and managed-push loop without changing bootstrap commands.'
+lastReviewedNote: 'Reviewed for Next Issue #910: the TIDAS scalar fix and locale artifact refresh use the existing focused-test, artifact-writer, lint, build, Docpact, and managed-push loop without changing bootstrap commands.'
 ---
 
 # Development Bootstrap
