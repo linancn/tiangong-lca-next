@@ -26,7 +26,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && node scripts/qualification/serve-scope-closure-candidate.mjs',
+    command: 'pnpm build && node scripts/qualification/serve-scope-closure-candidate.mjs',
     env: {
       QUALIFICATION_APP_PORT: appPort,
       SUPABASE_PUBLISHABLE_KEY: 'qualification-public-placeholder',

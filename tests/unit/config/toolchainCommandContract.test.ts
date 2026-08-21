@@ -43,7 +43,7 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
   };
 
   it('keeps every compiler and linter command on the repository-owned single track', () => {
-    expect(scripts.lint).toBe('npm run lint:js && npm run lint:prettier && npm run tsc');
+    expect(scripts.lint).toBe('pnpm lint:js && pnpm lint:prettier && pnpm tsc');
     expect(scripts['lint-staged:js']).toBe('oxlint --format=stylish');
     expect(scripts['lint:fix']).toBe('oxlint --fix --format=stylish ./src ./tests');
     expect(scripts['lint:js']).toBe('oxlint --format=stylish ./src ./tests');
@@ -52,9 +52,12 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
       'node ./node_modules/typescript/bin/tsc --project tsconfig.electron.json',
     );
     expect(scripts.dist).toBe(
-      'npm run build && npm run tsc:electron && electron-builder --config electron-builder.json',
+      'pnpm build && pnpm tsc:electron && electron-builder --config electron-builder.json',
     );
-    expect(scripts.electron).toBe('npm run tsc:electron && electron dist-electron/main.js');
+    expect(scripts.electron).toBe('pnpm tsc:electron && electron dist-electron/main.js');
+    for (const command of Object.values(scripts)) {
+      expect(command).not.toMatch(/\b(?:npm|npx)\b/u);
+    }
     expect(scripts).not.toHaveProperty('lint:deprecated');
     expect(scripts).not.toHaveProperty('tsc:compat');
   });
@@ -148,8 +151,11 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
     expect(oxlint.rules).not.toHaveProperty('sort-imports');
 
     const buildWorkflow = read('.github/workflows/build.yml');
-    expect(buildWorkflow).toContain('npm run tsc:electron');
-    expect(buildWorkflow).not.toContain('npx tsc');
+    expect(buildWorkflow).toContain('uses: pnpm/setup@v2');
+    expect(buildWorkflow).toContain('pnpm install --frozen-lockfile');
+    expect(buildWorkflow).toContain('pnpm tsc:electron');
+    expect(buildWorkflow).toContain('pnpm exec electron-builder');
+    expect(buildWorkflow).not.toMatch(/\b(?:npm|npx)\b/u);
 
     const umiConfigSource = firstPartyJavaScriptFiles()
       .filter((relativeFile) => relativeFile.startsWith('config/'))

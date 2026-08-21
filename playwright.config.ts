@@ -76,7 +76,7 @@ export default defineConfig({
   webServer: externalCandidateServer
     ? undefined
     : {
-        command: 'npm run start:main',
+        command: 'pnpm start:main',
         url: baseURL,
         // Evidence must always exercise the server spawned for this invocation. If the URL is
         // already occupied, Playwright fails instead of silently proving an unrelated local build.

@@ -54,7 +54,7 @@ export const FLOWPROPERTY_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = buildFullTextSea
   defaultSearchFixturePath: DEFAULT_FLOWPROPERTY_FULL_TEXT_SEARCH_FIXTURE_PATH,
   defaultSeedExpectedPath: DEFAULT_FLOWPROPERTY_EXPECTED_PATH,
   defaultSeedFixturePath: DEFAULT_FLOWPROPERTY_FIXTURE_PATH,
-  npmCommand: 'test:flowproperties:full-text-search',
+  packageCommand: 'test:flowproperties:full-text-search',
   title: 'Flow property full-text-search data workflow',
 });
 

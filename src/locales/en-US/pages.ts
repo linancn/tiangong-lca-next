@@ -12,7 +12,7 @@ export default {
   'pages.accessDenied.message': 'You do not have permission to access this page.',
   'pages.404.buttonText': 'Back Home',
   'pages.404.subTitle': 'Sorry, the page you visited does not exist.',
-  'pages.admin.subPage.alertMessage': 'Umi ui is now released, welcome to use npm run ui to start the experience.',
+  'pages.admin.subPage.alertMessage': 'Umi UI is available on this administrator-only page.',
   'pages.admin.subPage.title': 'This page can only be viewed by Admin',
   'pages.getCaptchaSecondText': 'sec(s)',
   'pages.login.accountLogin.tab': 'Account Login',

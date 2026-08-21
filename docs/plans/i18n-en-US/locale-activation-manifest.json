@@ -3,7 +3,7 @@
   "locale": "en-US",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "c7d504088e7684d4d98139d507992a40f34dc92a42ee9ca75ed7e1532cd90374"
+    "sourceManifestDigest": "67e8fa495aae4e3cd53f2f0f543bfe0fcb76be29f11d4c6054f6013b783d669e"
   },
   "registry": {
     "canonicalLocale": "en-US",
@@ -69,30 +69,30 @@
     },
     "contentLanguageRegistryDigest": "c5e1ef5afbad36dfce86d327801390e0347707c1ad8126c45064e913fbf406a4",
     "capabilityMatrixDigest": "d8903f58f8b5582bb4a491a8724b9ba5b8adf93f5f48dcfc7c908bb4eaa5dcd7",
-    "referenceResourceManifestDigest": "002bf11147f566b701c6365791fab31ffeaac87edd5d810a42417c9f2dfad281",
+    "referenceResourceManifestDigest": "31fa7e3569f6434b60d2422953102180d19f010a5bbb2e16fa5037724bdd1fdb",
     "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "c723c323fe5bb043a34d5423f7fe04875b19409edafbb8787098adc0a585e7b7",
-    "qualityDigest": "c18e5256d100c01a6e3d0002e735eaa8bb0c09bc9f79c2d3429441e1a300ebfb",
-    "correctionLedgerDigest": "b35bc2dcc3ea1f6eb3036150f15bbcec42e87614409563ffe04d3da374d36035",
-    "routeViewCoverageDigest": "134baf5f810bdfb469b07e0ecf241e6500b749c2e9925004916d99bde09cef98",
+    "contextDigest": "e46bec04dfb367ea5e26de318049713791360e01a0b92fb73adb3b087cc0e5b2",
+    "qualityDigest": "b2cbb0ca0a99f973dbf08ef0d8cc6c70c64567440957133667d6151c0b9c1a0e",
+    "correctionLedgerDigest": "aa1ce07437550c229c6835918fe64d8200f0c251910c4723bad48b684ac6af9b",
+    "routeViewCoverageDigest": "10509fc904d3b274f7a6905ab9d08de828638eaea6b4adc6b739ea22fd2b5103",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
   "ciSafeCommands": {
-    "localeAudit": "npm run i18n:locale:audit -- --locale en-US",
-    "context": "npm run i18n:context:check -- --locale en-US",
-    "quality": "npm run i18n:locale:quality:check -- --locale en-US",
-    "corrections": "npm run i18n:corrections:check",
-    "languagePlatform": "npm run i18n:platform:audit",
-    "referenceData": "npm run reference-data:check",
-    "languageHardcoding": "npm run i18n:hardcoding:audit",
-    "allLocales": "npm run i18n:locale:all:check",
-    "productionLocale": "npm run i18n:locale:production:check -- --locale en-US",
-    "productionAllLocales": "npm run i18n:locale:all:production:check",
-    "activation": "npm run i18n:locale:activation:check -- --locale en-US"
+    "localeAudit": "pnpm i18n:locale:audit --locale en-US",
+    "context": "pnpm i18n:context:check --locale en-US",
+    "quality": "pnpm i18n:locale:quality:check --locale en-US",
+    "corrections": "pnpm i18n:corrections:check",
+    "languagePlatform": "pnpm i18n:platform:audit",
+    "referenceData": "pnpm reference-data:check",
+    "languageHardcoding": "pnpm i18n:hardcoding:audit",
+    "allLocales": "pnpm i18n:locale:all:check",
+    "productionLocale": "pnpm i18n:locale:production:check --locale en-US",
+    "productionAllLocales": "pnpm i18n:locale:all:production:check",
+    "activation": "pnpm i18n:locale:activation:check --locale en-US"
   },
   "privateConfirmationDependencies": [],
   "historicalGermanBoundary": "Not applicable; this locale has never used translation confirmation files.",
@@ -121,5 +121,5 @@
       "ownerIssue": "#867"
     }
   ],
-  "activationDigest": "1daf8d1824f868ff17e4bac251a4a4ed89b33e686abb96a5cc98971530bd4a4d"
+  "activationDigest": "437f7d99d551a6dc3b4c9c633959f3823977efa533a22897fa7874f5e475a1b6"
 }

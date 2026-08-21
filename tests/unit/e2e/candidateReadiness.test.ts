@@ -95,7 +95,7 @@ describe('candidate frontend readiness', () => {
       path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
       'utf8',
     );
-    expect(workflow).toContain('npm --silent run e2e:qualify');
+    expect(workflow).toContain('pnpm --silent e2e:qualify');
     expect(workflow).not.toContain('E2E_READINESS_BROWSER: ${{ matrix.browser }}');
 
     const globalSetup = readFileSync(

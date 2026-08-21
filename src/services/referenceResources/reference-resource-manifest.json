@@ -69,7 +69,7 @@
             "sources": [
               "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -109,7 +109,7 @@
             "sources": [
               "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv"
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -137,7 +137,7 @@
             "sources": [
               "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -165,7 +165,7 @@
             "sources": [
               "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -417,7 +417,7 @@
             "sources": [
               "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -457,7 +457,7 @@
             "sources": [
               "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv"
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -485,7 +485,7 @@
             "sources": [
               "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -513,7 +513,7 @@
             "sources": [
               "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -765,7 +765,7 @@
             "sources": [
               "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -805,7 +805,7 @@
             "sources": [
               "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip#stylesheets/ILCDClassification_Reference.xml"
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -833,7 +833,7 @@
             "sources": [
               "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -861,7 +861,7 @@
             "sources": [
               "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1116,7 +1116,7 @@
             "sources": [
               "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1145,7 +1145,7 @@
               "EF 3.1 exact comparison for 55 official nodes",
               "TianGong project-extension record for node 1.3.6"
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1173,7 +1173,7 @@
             "sources": [
               "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1201,7 +1201,7 @@
             "sources": [
               "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1498,7 +1498,7 @@
             "sources": [
               "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1527,7 +1527,7 @@
               "EF 3.1 entry comparison: 225 exact official-derived entries",
               "project provenance: 45 modified labels and 377 extensions"
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1555,7 +1555,7 @@
             "sources": [
               "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",
@@ -1583,7 +1583,7 @@
             "sources": [
               "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
             ],
-            "tests": ["npm run reference-data:check"]
+            "tests": ["pnpm reference-data:check"]
           },
           "labelDigest": {
             "algorithm": "sha256",

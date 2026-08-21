@@ -38,7 +38,7 @@ lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuati
 
 The frontend and Worker share one immutable LCIA bundle. Its relative manifest path is `lciamethods/cache_manifest.json`; the client cannot choose another path or base URL. The current manifest uses `lcia.static_cache_bundle.v1`, bundle version `1.2.4`, and contains exactly 25 method identities.
 
-Run `npm run lcia-cache:generate` only when intentionally regenerating the reviewed manifest. Run `npm run lcia-cache:verify` for normal validation. Both commands execute `scripts/validate-lcia-cache.cjs` with a 512 MiB V8 heap cap. Validation recomputes the exact list, factor, method, identity, source-snapshot, and raw-manifest hashes and checks the frontend's pinned raw-manifest hash. CI, the local pre-push gate, and the release gate run verification before any web or Electron publication.
+Run `pnpm lcia-cache:generate` only when intentionally regenerating the reviewed manifest. Run `pnpm lcia-cache:verify` for normal validation. Both commands execute `scripts/validate-lcia-cache.cjs` with a 512 MiB V8 heap cap. Validation recomputes the exact list, factor, method, identity, source-snapshot, and raw-manifest hashes and checks the frontend's pinned raw-manifest hash. CI, the local pre-push gate, and the release gate run verification before any web or Electron publication.
 
 The bundle has one verified identity alias:
 

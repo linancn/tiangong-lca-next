@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { logout } from '@/services/auth';
 import { getReviewUserRoleApi, getSystemUserRoleApi, getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
-import type { MenuInfo } from 'rc-menu/lib/interface';
+import type { MenuProps } from 'antd';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
 import AllTeams from '../AllTeams';
@@ -105,7 +105,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
-    async (event: MenuInfo) => {
+    async (event: Parameters<NonNullable<MenuProps['onClick']>>[0]) => {
       const { key } = event;
       if (key === 'logout') {
         flushSync(() => {

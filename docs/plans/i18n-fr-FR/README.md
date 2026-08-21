@@ -56,18 +56,18 @@ The route/view matrix covers the anonymous login and account-recovery flow, lega
 After controlled catalog and route-view changes are final, refresh in dependency order:
 
 ```bash
-npm run i18n:locale:manifest:write -- --locale fr-FR
-npm run i18n:locale:artifacts:write -- --locale fr-FR
+pnpm i18n:locale:manifest:write --locale fr-FR
+pnpm i18n:locale:artifacts:write --locale fr-FR
 ```
 
 Then check:
 
 ```bash
-npm run i18n:locale:audit -- --locale fr-FR
-npm run i18n:context:check -- --locale fr-FR
-npm run i18n:locale:quality:check -- --locale fr-FR
-npm run i18n:corrections:check
-npm run i18n:locale:activation:check -- --locale fr-FR
+pnpm i18n:locale:audit --locale fr-FR
+pnpm i18n:context:check --locale fr-FR
+pnpm i18n:locale:quality:check --locale fr-FR
+pnpm i18n:corrections:check
+pnpm i18n:locale:activation:check --locale fr-FR
 ```
 
 The fallback contract is explicit: documentation and legal documents resolve to English with disclosure; dataset and service adapters resolve to English where the upstream contract has no French; the TIDAS import report emits `fr_FR`; environment branding uses `APP_TITLE_FR_FR` and `APP_LOGIN_SUBTITLE_FR_FR`; UI formatting uses `Intl` `fr-FR` and Day.js `fr`. The locale is LTR, so RTL implementation is not applicable.

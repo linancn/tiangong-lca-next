@@ -12,7 +12,7 @@ export default {
   'pages.accessDenied.message': '您没有权限访问此页面。',
   'pages.404.buttonText': '返回首页',
   'pages.404.subTitle': '抱歉，您访问的页面不存在。',
-  'pages.admin.subPage.alertMessage': 'umi ui 现已发布，欢迎使用 npm run ui 启动体验。',
+  'pages.admin.subPage.alertMessage': 'Umi UI 已可用于此管理员页面。',
   'pages.admin.subPage.title': ' 这个页面只有 admin 权限才能查看',
   'pages.getCaptchaSecondText': '秒后重新获取',
   'pages.login.accountLogin.tab': '账户密码登录',

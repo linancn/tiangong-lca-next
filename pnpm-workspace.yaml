@@ -1,0 +1,17 @@
+packages:
+  - .
+
+# Keep pnpm's isolated linker. These narrowly expose only the legacy Umi/Ant Design
+# plugin dependencies that their current toolchain still resolves from the project root.
+publicHoistPattern:
+  - '@ant-design/*'
+  - '@babel/*'
+  - umi
+
+# pnpm 11 requires every dependency lifecycle script to be decided explicitly.
+allowBuilds:
+  core-js: false
+  core-js-pure: false
+  electron-winstaller: true
+  es5-ext: false
+  esbuild: true

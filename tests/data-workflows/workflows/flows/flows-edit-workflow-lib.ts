@@ -206,8 +206,8 @@ export type FlowEditDependencies = {
 export const FLOW_EDIT_DATA_WORKFLOW_HELP = `Flow edit data workflow
 
 Usage:
-  npm run test:workflows -- --flows:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
-  npm run test:workflows -- --flows:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
+  pnpm test:workflows --flows:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  pnpm test:workflows --flows:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one flow from tests/data-workflows/fixtures/data/flows/001_create.json

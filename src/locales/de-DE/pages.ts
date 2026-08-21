@@ -12,7 +12,7 @@ export default {
   'pages.accessDenied.message': 'Sie sind nicht berechtigt, auf diese Seite zuzugreifen.',
   'pages.404.buttonText': 'Zur Startseite',
   'pages.404.subTitle': 'Die aufgerufene Seite ist leider nicht vorhanden.',
-  'pages.admin.subPage.alertMessage': 'Umi UI ist jetzt verfügbar. Starten Sie die Oberfläche mit npm run ui.',
+  'pages.admin.subPage.alertMessage': 'Umi UI ist auf dieser Administratorseite verfügbar.',
   'pages.admin.subPage.title': 'Für diese Seite sind Administratorrechte erforderlich',
   'pages.getCaptchaSecondText': 'Sek.',
   'pages.login.accountLogin.tab': 'Kontoanmeldung',

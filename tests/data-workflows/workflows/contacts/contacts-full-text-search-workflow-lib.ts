@@ -54,7 +54,7 @@ export const CONTACT_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = buildFullTextSearchHe
   defaultSearchFixturePath: DEFAULT_CONTACT_FULL_TEXT_SEARCH_FIXTURE_PATH,
   defaultSeedExpectedPath: DEFAULT_CONTACT_EXPECTED_PATH,
   defaultSeedFixturePath: DEFAULT_CONTACT_FIXTURE_PATH,
-  npmCommand: 'test:contacts:full-text-search',
+  packageCommand: 'test:contacts:full-text-search',
   title: 'Contact full-text-search data workflow',
 });
 

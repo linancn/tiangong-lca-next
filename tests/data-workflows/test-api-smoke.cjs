@@ -79,9 +79,9 @@ const FAILURE_TAIL_LINE_COUNT = 5;
 const HELP_TEXT = `API smoke workflow suite
 
 Usage:
-  npm run test:api:smoke -- --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
-  npm run test:api:smoke -- --detail-result --no-keep-data
-  npm run test:api:smoke -- --list
+  pnpm test:api:smoke --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
+  pnpm test:api:smoke --detail-result --no-keep-data
+  pnpm test:api:smoke --list
 
 Behavior:
   - Runs supported live API smoke workflows sequentially, with team workflows first

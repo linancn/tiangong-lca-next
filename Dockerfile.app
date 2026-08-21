@@ -1,15 +1,20 @@
+# syntax=docker/dockerfile:1.7
+
 FROM node:24-alpine
 
 WORKDIR /app
 
-COPY package.json ./
+RUN corepack enable \
+    && corepack install --global pnpm@11.22.0
 
-RUN npm install
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN pnpm build
 
 EXPOSE 8000
 
-CMD ["npm", "start"] 
+CMD ["pnpm", "start"]

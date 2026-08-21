@@ -5,8 +5,7 @@ description = "Global Allowlist"
 paths = [
     '''node_modules''',
     '''dist''',
-    '''package-lock.json''',
-    '''yarn.lock''',
+    '''pnpm-lock.yaml''',
     '''go.sum''',
     '''.gitleaks.toml''',
     '''tests/'''

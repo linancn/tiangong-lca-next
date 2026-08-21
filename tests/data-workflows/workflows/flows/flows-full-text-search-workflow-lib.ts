@@ -53,7 +53,7 @@ export const FLOW_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = buildFullTextSearchHelpT
   defaultSearchFixturePath: DEFAULT_FLOW_FULL_TEXT_SEARCH_FIXTURE_PATH,
   defaultSeedExpectedPath: DEFAULT_FLOW_EXPECTED_PATH,
   defaultSeedFixturePath: DEFAULT_FLOW_FIXTURE_PATH,
-  npmCommand: 'test:flows:full-text-search',
+  packageCommand: 'test:flows:full-text-search',
   title: 'Flow full-text-search data workflow',
 });
 

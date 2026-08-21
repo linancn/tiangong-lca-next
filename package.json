@@ -1,6 +1,7 @@
 {
   "name": "tiangong-lca-next",
   "version": "0.0.82",
+  "packageManager": "pnpm@11.22.0",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -10,11 +11,11 @@
   "scripts": {
     "analyze": "cross-env ANALYZE=1 max build",
     "build": "max build",
-    "deploy": "npm run build && npm run gh-pages",
-    "dev": "npm run start:dev",
+    "deploy": "pnpm build && pnpm gh-pages",
+    "dev": "pnpm start:dev",
     "docpact:gate": "node scripts/docpact-gate.js",
-    "dist": "npm run build && npm run tsc:electron && electron-builder --config electron-builder.json",
-    "electron": "npm run tsc:electron && electron dist-electron/main.js",
+    "dist": "pnpm build && pnpm tsc:electron && electron-builder --config electron-builder.json",
+    "electron": "pnpm tsc:electron && electron dist-electron/main.js",
     "gh-pages": "gh-pages -d dist",
     "i18n:audit": "node --import tsx scripts/i18n/audit-locales.mjs --mode enforce --check",
     "i18n:audit:write": "node --import tsx scripts/i18n/audit-locales.mjs --mode report --write",
@@ -36,8 +37,8 @@
     "i18n:locale:artifacts:write": "node --import tsx scripts/i18n/locale-delivery.mjs artifacts --write",
     "i18n:locale:artifacts:idempotence": "node scripts/i18n/check-artifact-idempotence.mjs",
     "i18n:evidence:canonical:check": "node --import tsx scripts/i18n/check-semantic-evidence-format.mjs",
-    "release:preflight": "npm run release:static-preflight",
-    "release:static-preflight": "npm run i18n:locale:all:check && npm run reference-data:production:check",
+    "release:preflight": "pnpm release:static-preflight",
+    "release:static-preflight": "pnpm i18n:locale:all:check && pnpm reference-data:production:check",
     "release:proof:verify": "node scripts/e2e/release-e2e.cjs check-qualification",
     "i18n:de:audit": "node --import tsx scripts/i18n/locale-delivery.mjs activation --locale de-DE --check",
     "i18n:de:audit:write": "node --import tsx scripts/i18n/locale-delivery.mjs artifacts --locale de-DE --write",
@@ -57,7 +58,7 @@
     "i18n-remove": "pro i18n-remove --locale=zh-CN --write",
     "postinstall": "max setup",
     "jest": "jest",
-    "lint": "npm run lint:js && npm run lint:prettier && npm run tsc",
+    "lint": "pnpm lint:js && pnpm lint:prettier && pnpm tsc",
     "lint-staged": "lint-staged",
     "lint-staged:js": "oxlint --format=stylish",
     "lint:fix": "oxlint --fix --format=stylish ./src ./tests",
@@ -68,7 +69,7 @@
     "openapi": "max openapi",
     "prepare": "husky",
     "prettier": "prettier --write \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",
-    "preview": "npm run build && max preview --port 8000",
+    "preview": "pnpm build && max preview --port 8000",
     "reference-data:check": "node --import tsx scripts/reference-data/reference-resource-pipeline.mjs --check",
     "reference-data:production:check": "node --import tsx scripts/reference-data/reference-resource-pipeline.mjs --production-check",
     "reference-data:write": "node --import tsx scripts/reference-data/reference-resource-pipeline.mjs --write",
@@ -81,11 +82,11 @@
     "start:no-mock": "cross-env REACT_APP_ENV=main MOCK=none UMI_ENV=dev max dev",
     "start:pre": "cross-env REACT_APP_ENV=pre UMI_ENV=dev max dev",
     "start:test": "cross-env REACT_APP_ENV=test MOCK=none UMI_ENV=dev max dev",
-    "test": "cross-env CI=true npm run test:ci",
+    "test": "cross-env CI=true pnpm test:ci",
     "test:unit": "jest tests/unit src --testTimeout=20000",
     "test:integration": "jest tests/integration --runInBand --testTimeout=20000",
     "test:ci": "node scripts/test-runner.cjs",
-    "test:data-workflows:unit": "jest --testMatch \"<rootDir>/tests/data-workflows/unit/**/*.test.{ts,tsx,js,jsx}\" --runInBand --testTimeout=20000",
+    "test:data-workflows:unit": "cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --testMatch \"<rootDir>/tests/data-workflows/unit/**/*.test.{ts,tsx,js,jsx}\" --runInBand --testTimeout=20000",
     "e2e:env:install": "node scripts/e2e/release-e2e.cjs install",
     "e2e:env:doctor": "node scripts/e2e/release-e2e.cjs doctor",
     "e2e:qualification:key": "node scripts/e2e/release-e2e.cjs qualification-key",
@@ -104,23 +105,23 @@
     "test:prepush-receipt": "cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage prepush-receipt --runInBand --runTestsByPath tests/unit/scripts/prepushGateReceipt.test.ts --testTimeout=20000 --no-coverage",
     "test:release-workflow": "jest tests/unit/scripts/releaseWorkflow.test.ts --runInBand --no-watchman --testTimeout=30000",
     "test:coverage:collect": "cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=2 --workerIdleMemoryLimit=512MB --testTimeout=20000 --coverage --testPathIgnorePatterns=\"<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$\"",
-    "test:coverage": "npm run test:prepush-receipt && npm run test:coverage:collect",
+    "test:coverage": "pnpm test:prepush-receipt && pnpm test:coverage:collect",
     "test:coverage:assert-full": "node scripts/test-coverage-report.js --assert-full",
-    "test:coverage:report": "npm run test:coverage && node scripts/test-coverage-report.js",
-    "test:report": "npm run test:coverage:report",
+    "test:coverage:report": "pnpm test:coverage && node scripts/test-coverage-report.js",
+    "test:report": "pnpm test:coverage:report",
     "test:update": "jest --runInBand --testTimeout=20000 -u",
     "tsc": "node ./node_modules/typescript/bin/tsc --noEmit",
     "tsc:electron": "node ./node_modules/typescript/bin/tsc --project tsconfig.electron.json",
-    "prepush:gate": "npm run lcia-cache:verify && npm run reference-data:check && npm run lint && npm run test:coverage && npm run test:coverage:assert-full",
-    "prepush:gate:agent": "cross-env TIANGONG_AGENT_MODE=1 npm run prepush:gate",
+    "prepush:gate": "pnpm lcia-cache:verify && pnpm reference-data:check && pnpm lint && pnpm test:coverage && pnpm test:coverage:assert-full",
+    "prepush:gate:agent": "cross-env TIANGONG_AGENT_MODE=1 pnpm prepush:gate",
     "push:checked": "node scripts/prepush-gate-receipt.cjs checked-push",
     "push:retry": "node scripts/prepush-gate-receipt.cjs retry",
-    "test:antchain": "npx tsx src/services/antchain/api.ts",
+    "test:antchain": "tsx src/services/antchain/api.ts",
     "ncu": "ncu",
     "ncu:update": "ncu -u"
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": "npm run lint-staged:js",
+    "**/*.{js,jsx,ts,tsx}": "pnpm lint-staged:js",
     "**/*.{js,jsx,tsx,ts,less,md,json}": [
       "prettier --write"
     ]
@@ -156,6 +157,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "@jest/test-sequencer": "^29.7.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -187,6 +189,7 @@
     "umi-presets-pro": "^2.0.3"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.0.0",
+    "pnpm": "11.22.0"
   }
 }
