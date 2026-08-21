@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-21"
-lastReviewedCommit: "5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1"
+lastReviewedCommit: "e8d8734970e7f56aed2fecca1b9ac886a1c0c047"
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and the resulting locale artifact digest refresh remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
@@ -51,6 +51,13 @@ ownership:
           - tests/**
           - tests/e2e/**
           - .gitignore
+          - .oxlintrc.json
+          - .prettierignore
+          - .prettierrc.js
+          - .ncurc.json
+          - jsconfig.json
+          - tsconfig.json
+          - tsconfig.electron.json
           - playwright.config.ts
           - config/docs-capture/**
           - package.json
@@ -61,6 +68,9 @@ ownership:
           - scripts/docpact
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
+          - scripts/jest-sequencer.cjs
+          - scripts/oxlint-plugin-tiangong.mjs
+          - scripts/typescript-native-parser.*
           - scripts/test-coverage-report.js
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
@@ -107,6 +117,13 @@ coverage:
     - tests/**
     - tests/e2e/**
     - .gitignore
+    - .oxlintrc.json
+    - .prettierignore
+    - .prettierrc.js
+    - .ncurc.json
+    - jsconfig.json
+    - tsconfig.json
+    - tsconfig.electron.json
     - playwright.config.ts
     - config/docs-capture/**
     - package.json
@@ -117,6 +134,9 @@ coverage:
     - scripts/docpact
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
+    - scripts/jest-sequencer.cjs
+    - scripts/oxlint-plugin-tiangong.mjs
+    - scripts/typescript-native-parser.*
     - scripts/test-coverage-report.js
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
@@ -165,6 +185,14 @@ routing:
     testing-gates:
       paths:
         - package.json
+        - .gitignore
+        - .oxlintrc.json
+        - .prettierignore
+        - .prettierrc.js
+        - .ncurc.json
+        - jsconfig.json
+        - tsconfig.json
+        - tsconfig.electron.json
         - playwright.config.ts
         - config/docs-capture/**
         - .nvmrc
@@ -174,6 +202,9 @@ routing:
         - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/test-runner.cjs
+        - scripts/jest-sequencer.cjs
+        - scripts/oxlint-plugin-tiangong.mjs
+        - scripts/typescript-native-parser.*
         - scripts/test-coverage-report.js
         - scripts/validate-lcia-cache.cjs
         - scripts/prepush-gate-receipt.cjs
@@ -222,6 +253,14 @@ routing:
     proof:
       paths:
         - package.json
+        - .gitignore
+        - .oxlintrc.json
+        - .prettierignore
+        - .prettierrc.js
+        - .ncurc.json
+        - jsconfig.json
+        - tsconfig.json
+        - tsconfig.electron.json
         - playwright.config.ts
         - .nvmrc
         - jest.config.cjs
@@ -229,6 +268,10 @@ routing:
         - .github/workflows/**
         - scripts/docpact
         - scripts/docpact-gate.js
+        - scripts/test-runner.cjs
+        - scripts/jest-sequencer.cjs
+        - scripts/oxlint-plugin-tiangong.mjs
+        - scripts/typescript-native-parser.*
         - scripts/prepush-gate-receipt.cjs
         - scripts/release/**
         - scripts/qualification/**
@@ -345,6 +388,24 @@ rules:
         kind: deep-doc
       - path: docs/agents/repo-architecture.md
         kind: deep-doc
+      - path: package.json
+        kind: command-and-dependency-surface
+      - path: .nvmrc
+        kind: runtime-baseline
+      - path: .oxlintrc.json
+        kind: lint-config
+      - path: .prettierrc.js
+        kind: formatter-config
+      - path: .prettierignore
+        kind: formatter-config
+      - path: .ncurc.json
+        kind: dependency-update-policy
+      - path: jsconfig.json
+        kind: editor-module-resolution
+      - path: tsconfig*.json
+        kind: typecheck-config
+      - path: scripts/oxlint-plugin-tiangong.mjs
+        kind: lint-plugin
     requiredDocs:
       - path: AGENTS.md
         mode: review_or_update
@@ -425,6 +486,8 @@ rules:
         kind: localized-reference-asset
       - path: scripts/i18n/**
         kind: locale-governance
+      - path: scripts/typescript-native-parser.*
+        kind: locale-source-analysis-adapter
       - path: scripts/reference-data/**
         kind: reference-resource-generation
       - path: docs/plans/i18n/fallback-contract.json
@@ -571,6 +634,18 @@ rules:
         kind: runtime-config
       - path: .gitignore
         kind: local-runtime-boundary
+      - path: .oxlintrc.json
+        kind: lint-gate
+      - path: .prettierrc.js
+        kind: format-gate
+      - path: .prettierignore
+        kind: format-gate
+      - path: .ncurc.json
+        kind: dependency-update-policy
+      - path: jsconfig.json
+        kind: editor-module-resolution
+      - path: tsconfig*.json
+        kind: typecheck-gate
       - path: playwright.config.ts
         kind: semantic-e2e-config
       - path: docker/e2e/**
@@ -599,6 +674,12 @@ rules:
         kind: test-gate
       - path: scripts/test-runner.cjs
         kind: test-gate
+      - path: scripts/jest-sequencer.cjs
+        kind: test-gate
+      - path: scripts/oxlint-plugin-tiangong.mjs
+        kind: lint-gate
+      - path: scripts/typescript-native-parser.*
+        kind: source-analysis-gate
       - path: scripts/test-coverage-report.js
         kind: test-gate
       - path: scripts/validate-lcia-cache.cjs

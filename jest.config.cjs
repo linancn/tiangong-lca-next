@@ -87,6 +87,7 @@ module.exports = async () => {
       ...config.moduleNameMapper,
     },
     reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
+    testSequencer: '<rootDir>/scripts/jest-sequencer.cjs',
     verbose: !isCI,
     watchPathIgnorePatterns: [...(config.watchPathIgnorePatterns || []), ...dockerPathIgnores],
   };

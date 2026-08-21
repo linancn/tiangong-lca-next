@@ -2,13 +2,10 @@
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import ts from '../typescript-native-parser.mjs';
 
 const REPORT_SCHEMA_VERSION = 'tiangong.i18n-language-platform-audit.v1';
 const ALLOWLIST_SCHEMA_VERSION = 'tiangong.i18n-language-hardcoding-allowlist.v2';

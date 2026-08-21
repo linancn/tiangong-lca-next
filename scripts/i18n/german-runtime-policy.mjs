@@ -1,11 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
-
-const require = createRequire(import.meta.url);
-const ts = require('typescript');
+import ts from '../typescript-native-parser.mjs';
 
 export const RUNTIME_ACTIVATION_SCHEMA = 'tiangong.i18n-de-runtime-activation.v1';
 export const RUNTIME_ACTIVATION_MANIFEST = 'docs/plans/i18n-de-DE/runtime-activation-manifest.json';

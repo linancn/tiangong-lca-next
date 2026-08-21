@@ -8,7 +8,7 @@ owner: next
 targetRepo: linancn/tiangong-lca-next
 project: https://github.com/users/tiangong-lca/projects/1
 language: zh-CN
-version: 3.6
+version: 3.7
 translationGovernance: autonomous-context-grounded
 referenceDataLocalization: official-first-version-locked
 languageExtensibilityContract: registry-manifest-derived-no-business-hardcoding
@@ -46,6 +46,7 @@ checkPaths:
   - public/classifications/**
   - public/locations/**
   - scripts/i18n/**
+  - scripts/typescript-native-parser.*
   - docs/plans/i18n/fallback-contract.json
   - docs/plans/i18n/route-view-coverage.json
   - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -533,6 +534,10 @@ npm run i18n:hardcoding:audit
 ```
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
+
+仓库 source-analysis 工具使用单一 TypeScript `7.0.2` compiler/API track，不保留 TypeScript 6 alias 或 `tsc6`。`scripts/typescript-native-parser.mjs` 与其 `scripts/typescript-native-parser.d.mts` 声明是唯一允许导入 `typescript/unstable/*` 的边界；所有 i18n audit、locale delivery 和测试 helper 只能导入该 adapter，不得直接导入 `typescript` 或 unstable 子路径。adapter 必须复用一个 native API session，同时为每次输入替换并释放虚拟 source，保持 `createSourceFile`、`parseJsonText`、AST traversal/parent/text range、TSX node guards 和 syntactic diagnostics 的兼容语义。TypeScript 升级前后必须运行 adapter contract 与全部受影响的 i18n/source-analysis focused proof，不能以加入旧 compiler 作为兼容方案。
+
+Prettier 只负责格式化，不再通过 Compiler API 组织 imports；Oxlint 负责 unused 与 deprecated API correctness。不得为语言脚本恢复 ESLint、自定义 deprecated scanner 或 `prettier-plugin-organize-imports`。
 
 semantic evidence reporter 必须直接把外部 artifact 写成仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。格式策略必须从 repository-owned canonical path 解析并与实际输出目的地解耦，因此容器挂载的 `/e2e-output` 或 ignored `.local/**` 也必须一次写出可由同一 canonical checker 原样接受的 bytes。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
 

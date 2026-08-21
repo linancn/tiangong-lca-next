@@ -1,22 +1,31 @@
 import path from 'node:path';
 
-const { agentLogDirectory, failedItems, parseRunnerArgs, safeStageName, stageSummary } =
-  require('../../../scripts/test-runner.cjs') as {
-    agentLogDirectory: () => string;
-    failedItems: (
-      summary: Record<string, any>,
-      root?: string,
-    ) => Array<{ assertions: string[]; suite: string }>;
-    parseRunnerArgs: (args: string[]) => { args: string[]; stage?: string };
-    safeStageName: (value: string) => string;
-    stageSummary: (
-      stage: string,
-      summary: Record<string, number>,
-      exitCode: number,
-      durationMs: number,
-      logPath: string,
-    ) => string;
-  };
+const {
+  agentLogDirectory,
+  failedItems,
+  jestNodeArgs,
+  parseRunnerArgs,
+  safeStageName,
+  stageSummary,
+  unitWorkerArgs,
+} = require('../../../scripts/test-runner.cjs') as {
+  agentLogDirectory: () => string;
+  failedItems: (
+    summary: Record<string, any>,
+    root?: string,
+  ) => Array<{ assertions: string[]; suite: string }>;
+  jestNodeArgs: (platform?: NodeJS.Platform) => string[];
+  parseRunnerArgs: (args: string[]) => { args: string[]; stage?: string };
+  safeStageName: (value: string) => string;
+  stageSummary: (
+    stage: string,
+    summary: Record<string, number>,
+    exitCode: number,
+    durationMs: number,
+    logPath: string,
+  ) => string;
+  unitWorkerArgs: (platform?: NodeJS.Platform) => string[];
+};
 
 describe('agent-aware Jest runner', () => {
   it('removes runner-only stage arguments before invoking Jest', () => {
@@ -76,5 +85,16 @@ describe('agent-aware Jest runner', () => {
     ).toBe(
       'Summary coverage: failed; suites=10; failedSuites=1; tests=100; failedTests=2; durationMs=1234; log=.local/test-logs/coverage.log',
     );
+  });
+
+  it('recycles long-lived macOS workers before the known Node 24 V8 failure boundary', () => {
+    expect(unitWorkerArgs('darwin')).toEqual(['--maxWorkers=25%', '--workerIdleMemoryLimit=512MB']);
+    expect(unitWorkerArgs('linux')).toEqual(['--maxWorkers=50%']);
+  });
+
+  it('disables the crashing macOS V8 optimization tiers in every Jest worker', () => {
+    expect(jestNodeArgs('darwin')).toEqual(['--no-concurrent-recompilation', '--no-maglev']);
+    expect(jestNodeArgs('linux')).toEqual([]);
+    expect(process.execArgv).toEqual(expect.arrayContaining(jestNodeArgs(process.platform)));
   });
 });

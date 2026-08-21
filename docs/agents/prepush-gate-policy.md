@@ -19,6 +19,13 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - playwright.config.ts
   - scripts/e2e/**
   - docker/e2e/**
@@ -28,10 +35,13 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/release/**
   - scripts/test-runner.cjs
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
 lastReviewedNote: 'Reviewed for Next Issue #910: focused TIDAS scalar regression tests and regenerated locale digests fit the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 

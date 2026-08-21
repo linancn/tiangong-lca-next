@@ -6,6 +6,7 @@ import path from 'node:path';
 const receiptHelper = require('../../../scripts/prepush-gate-receipt.cjs') as {
   RECEIPT_RELATIVE_PATH: string;
   RECEIPT_TTL_MS: number;
+  collectCheckpoint: (root: string, docpactBaseRef: string) => { gateInputsDigest: string };
   retryTransport: (root: string) => void;
   sha256: (value: string) => string;
 };
@@ -21,6 +22,8 @@ type Fixture = {
   devBase: string;
   head: string;
 };
+
+type FixtureSeed = Pick<Fixture, 'container' | 'root' | 'remote' | 'mainBase' | 'devBase' | 'head'>;
 
 const LOCAL_GIT_ENVIRONMENT_KEYS = [
   'GIT_ALTERNATE_OBJECT_DIRECTORIES',
@@ -78,8 +81,8 @@ const remoteSha = (fixture: Fixture, ref = 'refs/heads/main') => {
   return output ? output.split(/\s+/u)[0] : '';
 };
 
-const createFixture = (): Fixture => {
-  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'prepush-receipt-'));
+const createFixtureSeed = (): FixtureSeed => {
+  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'prepush-receipt-seed-'));
   const root = path.join(container, 'repo');
   const remote = path.join(container, 'remote.git');
   fs.mkdirSync(root);
@@ -102,9 +105,35 @@ const createFixture = (): Fixture => {
     },
   };
   writeJson(path.join(root, 'package.json'), packageJsonFixture);
+  writeJson(path.join(root, 'package-lock.json'), {
+    name: packageJsonFixture.name,
+    version: packageJsonFixture.version,
+    lockfileVersion: 3,
+    requires: true,
+    packages: {
+      '': {
+        name: packageJsonFixture.name,
+        version: packageJsonFixture.version,
+      },
+    },
+  });
   fs.writeFileSync(
     path.join(root, '.gitignore'),
     'node_modules/\n/.local/prepush-gate/\n/.local/test-gates.log\n',
+  );
+  fs.writeFileSync(path.join(root, '.prettierignore'), 'node_modules/\n');
+  fs.writeFileSync(path.join(root, '.prettierrc.js'), 'module.exports = {};\n');
+  for (const configPath of [
+    '.oxlintrc.json',
+    'jsconfig.json',
+    'tsconfig.json',
+    'tsconfig.electron.json',
+  ]) {
+    writeJson(path.join(root, configPath), {});
+  }
+  fs.writeFileSync(
+    path.join(root, 'jest.config.cjs'),
+    "module.exports = { testSequencer: '<rootDir>/scripts/jest-sequencer.cjs' };\n",
   );
 
   const scriptsDirectory = path.join(root, 'scripts');
@@ -112,6 +141,10 @@ const createFixture = (): Fixture => {
   fs.copyFileSync(
     path.join(process.cwd(), 'scripts/prepush-gate-receipt.cjs'),
     path.join(scriptsDirectory, 'prepush-gate-receipt.cjs'),
+  );
+  fs.copyFileSync(
+    path.join(process.cwd(), 'scripts/jest-sequencer.cjs'),
+    path.join(scriptsDirectory, 'jest-sequencer.cjs'),
   );
   writeExecutable(
     path.join(scriptsDirectory, 'fake-docpact'),
@@ -153,11 +186,6 @@ const createFixture = (): Fixture => {
   );
   fs.chmodSync(path.join(hookDirectory, 'pre-push'), 0o755);
 
-  execFileSync('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], {
-    cwd: root,
-    stdio: 'ignore',
-    env: isolatedEnvironment(),
-  });
   fs.mkdirSync(path.join(root, 'node_modules'), { recursive: true });
   fs.copyFileSync(
     path.join(root, 'package-lock.json'),
@@ -189,11 +217,33 @@ const createFixture = (): Fixture => {
     container,
     root,
     remote,
-    receipt: path.join(root, receiptHelper.RECEIPT_RELATIVE_PATH),
-    gateLog: path.join(root, '.local/test-gates.log'),
     mainBase,
     devBase,
     head,
+  };
+};
+
+let sharedFixtureSeed: FixtureSeed | undefined;
+
+const createFixture = (): Fixture => {
+  if (!sharedFixtureSeed) throw new Error('the shared receipt fixture seed is unavailable');
+
+  const container = fs.mkdtempSync(path.join(os.tmpdir(), 'prepush-receipt-'));
+  const root = path.join(container, 'repo');
+  const remote = path.join(container, 'remote.git');
+  fs.cpSync(sharedFixtureSeed.root, root, { recursive: true });
+  fs.cpSync(sharedFixtureSeed.remote, remote, { recursive: true });
+  git(root, ['remote', 'set-url', 'origin', remote]);
+
+  return {
+    container,
+    root,
+    remote,
+    receipt: path.join(root, receiptHelper.RECEIPT_RELATIVE_PATH),
+    gateLog: path.join(root, '.local/test-gates.log'),
+    mainBase: sharedFixtureSeed.mainBase,
+    devBase: sharedFixtureSeed.devBase,
+    head: sharedFixtureSeed.head,
   };
 };
 
@@ -298,9 +348,14 @@ describe('bounded checked-push transport receipt', () => {
 
   beforeAll(() => {
     LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete process.env[key]);
+    sharedFixtureSeed = createFixtureSeed();
   });
 
   afterAll(() => {
+    if (sharedFixtureSeed) {
+      fs.rmSync(sharedFixtureSeed.container, { recursive: true, force: true });
+      sharedFixtureSeed = undefined;
+    }
     inheritedLocalGitEnvironment.forEach((value, key) => {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
@@ -350,6 +405,48 @@ describe('bounded checked-push transport receipt', () => {
     expect((receiptHelper as Record<string, unknown>).gateAndCreateReceipt).toBeUndefined();
     expect(fixtureEnvironment).not.toHaveProperty('GIT_DIR');
     expect(fixtureEnvironment).not.toHaveProperty('GIT_WORK_TREE');
+  });
+
+  it('binds every compiler, linter, Jest, and runner input into the gate checkpoint', () => {
+    const current = fixture();
+    const gateInputs = [
+      '.gitignore',
+      '.oxlintrc.json',
+      '.prettierignore',
+      '.prettierrc.js',
+      'jsconfig.json',
+      'jest.config.cjs',
+      'scripts/jest-sequencer.cjs',
+      'tsconfig.json',
+      'tsconfig.electron.json',
+    ];
+    let previousDigest = receiptHelper.collectCheckpoint(
+      current.root,
+      'origin/main',
+    ).gateInputsDigest;
+
+    for (const gateInput of gateInputs) {
+      fs.appendFileSync(path.join(current.root, gateInput), '\n');
+      git(current.root, ['add', gateInput]);
+      git(current.root, ['commit', '-m', `change ${gateInput}`]);
+      const nextDigest = receiptHelper.collectCheckpoint(
+        current.root,
+        'origin/main',
+      ).gateInputsDigest;
+      expect(nextDigest).not.toBe(previousDigest);
+      previousDigest = nextDigest;
+    }
+  });
+
+  it('invalidates a transport receipt after committed lint configuration drift', () => {
+    const current = fixture();
+    activateFailedTransportReceipt(current);
+    fs.appendFileSync(path.join(current.root, '.oxlintrc.json'), '\n');
+    git(current.root, ['add', '.oxlintrc.json']);
+    git(current.root, ['commit', '-m', 'change lint configuration']);
+
+    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/changed/u);
+    expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
   it('uses an already-active Node 24 without requiring an NVM-managed install', () => {

@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "5c53affba3fa029ef9630ba390b9cd625d719fdbeddcee628c8235fbad2827af",
+    "auditedInputDigest": "e02524201c4740e081b49d6d182780df2c836d4fd816a6d07ac80cf076a5993a",
     "validatedMessageCount": 3208,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
     "catalogDigest": "e613c3d8b43dba89a92524f1dbd64dd0ab664eebb919ef7608aebccb7e6fa801",
-    "dossierDigest": "37ae668d115ff4c85abc460e38eaf7e638f9c18619780a09a8aa34d9a1e1425e",
+    "dossierDigest": "f4cc4456d6a204fc6d6de60fc4cc705aca269422bea14500f42fe803a05b263f",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "6ce8d29cb181ca8e760b3421864daed85db54b4b8a9e57d3778e756b4ccddd04",
+    "routeEvidenceDigest": "85513186548e68a8dc3a0ea89c00c4388cf0633c586bb8063736f83a9d1ab39d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "17a6482556654636b754f8bfe3765ec88f012e72fe24aa2e864b322942d7483d",
         "highRiskMessageCount": 1439,
         "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
-        "dossierDigest": "37ae668d115ff4c85abc460e38eaf7e638f9c18619780a09a8aa34d9a1e1425e",
+        "dossierDigest": "f4cc4456d6a204fc6d6de60fc4cc705aca269422bea14500f42fe803a05b263f",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "a9f7e4fd73f41a8c4460aa0d26f6850e827f581722bbd2d65135abd6adba233f"
+  "validationDigest": "9b8ebe5a040a4601318baa8f700acc01228f336787654eaa5927459463feff7a"
 }

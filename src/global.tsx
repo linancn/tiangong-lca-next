@@ -54,7 +54,7 @@ if (pwa) {
       return true;
     };
     const key = `open${Date.now()}`;
-    const btn = (
+    const actions = (
       <Button
         type='primary'
         onClick={async () => {
@@ -77,7 +77,7 @@ if (pwa) {
     notification.open({
       message: useIntl().formatMessage({ id: 'app.pwa.serviceworker.updated' }),
       description: useIntl().formatMessage({ id: 'app.pwa.serviceworker.updated.hint' }),
-      btn,
+      actions,
       key,
       onClose: async () => null,
     });

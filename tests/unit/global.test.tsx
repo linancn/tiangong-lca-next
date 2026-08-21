@@ -171,7 +171,7 @@ describe('global runtime side effects', () => {
     expect(openPayload.message).toBe('app.pwa.serviceworker.updated');
     expect(openPayload.description).toBe('app.pwa.serviceworker.updated.hint');
 
-    openPayload.btn.props.onClick();
+    openPayload.actions.props.onClick();
     await flushAsync();
 
     expect(mockNotification.destroy).toHaveBeenCalledWith(openPayload.key);
@@ -201,7 +201,7 @@ describe('global runtime side effects', () => {
 
     await expect(openPayload.onClose()).resolves.toBeNull();
 
-    openPayload.btn.props.onClick();
+    openPayload.actions.props.onClick();
     await flushAsync();
 
     expect(mockNotification.destroy).toHaveBeenCalledWith(openPayload.key);
@@ -232,7 +232,7 @@ describe('global runtime side effects', () => {
     });
 
     const openPayload = mockNotification.open.mock.calls[0][0];
-    await openPayload.btn.props.onClick();
+    await openPayload.actions.props.onClick();
     await flushAsync();
 
     expect(mockMessage.error).toHaveBeenCalledWith(
@@ -268,7 +268,7 @@ describe('global runtime side effects', () => {
     });
 
     const openPayload = mockNotification.open.mock.calls[0][0];
-    openPayload.btn.props.onClick();
+    openPayload.actions.props.onClick();
     await flushAsync();
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));

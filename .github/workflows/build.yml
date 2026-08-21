@@ -488,7 +488,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run build
-          npx tsc --project tsconfig.electron.json
+          npm run tsc:electron
           npx electron-builder --config electron-builder.json --publish always --${{ matrix.arch }}
 
   verify-release:

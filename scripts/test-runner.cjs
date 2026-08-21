@@ -81,9 +81,19 @@ function stageSummary(stage, summary, exitCode, durationMs, logPath) {
   return `Summary ${stage}: ${status}; suites=${suites}; failedSuites=${failedSuites}; tests=${tests}; failedTests=${failedTests}; durationMs=${durationMs}; log=${logPath}`;
 }
 
+function unitWorkerArgs(platform = process.platform) {
+  return platform === 'darwin'
+    ? ['--maxWorkers=25%', '--workerIdleMemoryLimit=512MB']
+    : ['--maxWorkers=50%'];
+}
+
+function jestNodeArgs(platform = process.platform) {
+  return platform === 'darwin' ? ['--no-concurrent-recompilation', '--no-maglev'] : [];
+}
+
 function runJest(args, stage = 'jest') {
   if (!isAgentMode) {
-    const result = spawnSync(process.execPath, [jestBin, ...args], {
+    const result = spawnSync(process.execPath, [...jestNodeArgs(), jestBin, ...args], {
       stdio: 'inherit',
       env: {
         ...process.env,
@@ -112,7 +122,7 @@ function runJest(args, stage = 'jest') {
   try {
     result = spawnSync(
       process.execPath,
-      [jestBin, ...args, '--json', `--outputFile=${summaryPath}`],
+      [...jestNodeArgs(), jestBin, ...args, '--json', `--outputFile=${summaryPath}`],
       {
         stdio: ['inherit', logFd, logFd],
         env: {
@@ -159,11 +169,9 @@ function main(argv = process.argv.slice(2)) {
   }
 
   const ciArgs = isCI ? ['--ci'] : [];
-  const unitWorkerArgs =
-    process.platform === 'darwin' ? ['--maxWorkers=25%'] : ['--maxWorkers=50%'];
   const stages = [
     {
-      args: [...ciArgs, 'tests/unit', 'src', ...unitWorkerArgs, '--testTimeout=20000'],
+      args: [...ciArgs, 'tests/unit', 'src', ...unitWorkerArgs(), '--testTimeout=20000'],
       name: 'unit-src',
     },
     {
@@ -195,10 +203,12 @@ function main(argv = process.argv.slice(2)) {
 module.exports = {
   agentLogDirectory,
   failedItems,
+  jestNodeArgs,
   main,
   parseRunnerArgs,
   safeStageName,
   stageSummary,
+  unitWorkerArgs,
 };
 
 if (require.main === module) {
