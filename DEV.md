@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedCommit: 4ce0e0a2cc99928a9eb8466518e30d05889841ab
 lastReviewedNote: 'Reviewed for Next Issue #910: the TIDAS scalar fix and locale artifact refresh use the existing focused-test, artifact-writer, lint, build, Docpact, and managed-push loop without changing bootstrap commands.'
 ---
 
@@ -174,7 +174,7 @@ The qualified production bundle remains Umi's current Webpack path followed by t
 
 `npm test` still discovers and executes the complete Jest inventory. The repository sequencer starts the three known process-heavy suites first, while preserving Jest's normal ordering within the remaining group. The pre-push receipt contract builds one reusable seed and gives every test its own copied repository and bare remote; never share mutable Git state between cases.
 
-On macOS, the unit stage keeps its 25% worker pool but applies Jest's `512MB` idle-memory recycle boundary. This contains the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash signature without turning the complete suite into a serial run.
+On macOS, the Jest child process disables V8 concurrent recompilation and Maglev after the documented Node 24 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced while those optimization tiers were active. The unit stage also keeps its 25% worker pool with Jest's `512MB` idle-memory recycle boundary, so the mitigation does not turn the complete suite into a serial run.
 
 For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
 

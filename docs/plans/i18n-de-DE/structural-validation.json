@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "64735c64cd68bfcae606bd3a68c63bad05bc2dccba3219c1f55cc81f29295391",
+    "auditedInputDigest": "e02524201c4740e081b49d6d182780df2c836d4fd816a6d07ac80cf076a5993a",
     "validatedMessageCount": 3208,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
     "catalogDigest": "eedb0e7243bf231ee4867c31135403f77fe62cda0c4f495b4b66a0846efe2064",
-    "dossierDigest": "ca34875fa1ce1c1eb9897ed7f7c2d26e91bff289ea14cb7da2179d89e19f9a3d",
+    "dossierDigest": "2deee11610aec069e070efe9a2310b635f872411e82a47d5e9df98ebdcbd7703",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "6ce8d29cb181ca8e760b3421864daed85db54b4b8a9e57d3778e756b4ccddd04",
+    "routeEvidenceDigest": "85513186548e68a8dc3a0ea89c00c4388cf0633c586bb8063736f83a9d1ab39d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "17a6482556654636b754f8bfe3765ec88f012e72fe24aa2e864b322942d7483d",
         "highRiskMessageCount": 1439,
         "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
-        "dossierDigest": "ca34875fa1ce1c1eb9897ed7f7c2d26e91bff289ea14cb7da2179d89e19f9a3d",
+        "dossierDigest": "2deee11610aec069e070efe9a2310b635f872411e82a47d5e9df98ebdcbd7703",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "f3b2e0b295e4b830b5d3bb93556e6a7742d57f233750e40577de25458227c978"
+  "validationDigest": "b1d378e1293d99a5c4533eac311aebcf4bdfb7bfd59bdca6e89e04ed8e188f96"
 }

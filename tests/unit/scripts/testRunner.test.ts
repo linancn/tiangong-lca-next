@@ -3,6 +3,7 @@ import path from 'node:path';
 const {
   agentLogDirectory,
   failedItems,
+  jestNodeArgs,
   parseRunnerArgs,
   safeStageName,
   stageSummary,
@@ -13,6 +14,7 @@ const {
     summary: Record<string, any>,
     root?: string,
   ) => Array<{ assertions: string[]; suite: string }>;
+  jestNodeArgs: (platform?: NodeJS.Platform) => string[];
   parseRunnerArgs: (args: string[]) => { args: string[]; stage?: string };
   safeStageName: (value: string) => string;
   stageSummary: (
@@ -88,5 +90,11 @@ describe('agent-aware Jest runner', () => {
   it('recycles long-lived macOS workers before the known Node 24 V8 failure boundary', () => {
     expect(unitWorkerArgs('darwin')).toEqual(['--maxWorkers=25%', '--workerIdleMemoryLimit=512MB']);
     expect(unitWorkerArgs('linux')).toEqual(['--maxWorkers=50%']);
+  });
+
+  it('disables the crashing macOS V8 optimization tiers in every Jest worker', () => {
+    expect(jestNodeArgs('darwin')).toEqual(['--no-concurrent-recompilation', '--no-maglev']);
+    expect(jestNodeArgs('linux')).toEqual([]);
+    expect(process.execArgv).toEqual(expect.arrayContaining(jestNodeArgs(process.platform)));
   });
 });

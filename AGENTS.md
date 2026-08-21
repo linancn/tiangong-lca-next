@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedCommit: 4ce0e0a2cc99928a9eb8466518e30d05889841ab
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and its generated locale digest refresh stay in the existing frontend/service ownership boundary and do not change repo workflow or branch policy.'
 related:
   - .docpact/config.yaml
@@ -127,7 +127,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
 - Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
 - Jest uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
-- on macOS, the shared unit runner retains its existing 25% worker pool and recycles workers at `512MB` to bound the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` failure without serializing the suite
+- on macOS, the shared Jest runner disables concurrent recompilation and Maglev after the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced inside those optimization tiers; the unit stage retains its 25% worker pool and `512MB` idle-memory recycle boundary without serializing the suite
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
