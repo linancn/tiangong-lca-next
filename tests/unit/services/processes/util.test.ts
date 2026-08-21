@@ -521,6 +521,55 @@ describe('Process Utility Functions', () => {
       ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
     });
 
+    it('should cap every localized annual supply volume value while saving', () => {
+      const dataWithLongAnnualSupplyContexts = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'e'.repeat(600) },
+                  { '@xml:lang': 'zh', '#text': '中'.repeat(600) },
+                ],
+              },
+              refUnitRes: {
+                refUnitName: 'kg',
+              },
+              exchangeDirection: 'Output',
+              meanAmount: '1',
+              quantitativeReference: true,
+            },
+          ],
+        },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [
+              { '@xml:lang': 'en', '#text': '100 old suffix' },
+              { '@xml:lang': 'zh', '#text': '100 旧后缀' },
+            ],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithLongAnnualSupplyContexts);
+      const annualSupplyValues =
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume;
+
+      expect(annualSupplyValues).toHaveLength(2);
+      expect(annualSupplyValues.map((item: { '#text': string }) => item['#text'].length)).toEqual([
+        500, 500,
+      ]);
+      expect(
+        annualSupplyValues.every((item: { '#text': string }) => item['#text'].endsWith('...')),
+      ).toBe(true);
+    });
+
     it('should preserve a previously resolved annual supply volume unit suffix while saving', () => {
       const dataWithAnnualSupplyVolume = {
         ...mockProcessData,
