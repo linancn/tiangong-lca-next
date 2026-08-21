@@ -33,9 +33,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-19
-lastReviewedCommit: 9bae84a4cc7479ccebb42579c416287ecf5130ae
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedAt: 2026-08-21
+lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and its generated locale digest refresh stay in the existing frontend/service ownership boundary and do not change repo workflow or branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

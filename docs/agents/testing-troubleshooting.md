@@ -27,9 +27,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-19
-lastReviewedCommit: 9bae84a4cc7479ccebb42579c416287ecf5130ae
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedAt: 2026-08-21
+lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar failures remain deterministic focused-test or save-boundary findings; locale digest drift is recovered with the existing artifact writer and contract rerun.'
 ---
 
 # Testing Troubleshooting

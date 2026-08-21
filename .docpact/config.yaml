@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-19"
-lastReviewedCommit: "9bae84a4cc7479ccebb42579c416287ecf5130ae"
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedAt: "2026-08-21"
+lastReviewedCommit: "5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1"
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and the resulting locale artifact digest refresh remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

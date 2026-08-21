@@ -452,7 +452,14 @@ const ProcessExchangeCreate: FC<Props> = ({
                 }
                 name={['allocations', 'allocation', '@allocatedFraction']}
               >
-                <InputNumber min={0} max={100} suffix='%' style={{ width: '100%' }} />
+                <InputNumber
+                  min={0}
+                  max={100}
+                  precision={3}
+                  stringMode
+                  suffix='%'
+                  style={{ width: '100%' }}
+                />
               </Form.Item>
             </Card>
             <br />

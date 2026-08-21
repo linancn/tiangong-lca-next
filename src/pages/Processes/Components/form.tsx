@@ -1139,7 +1139,7 @@ export const ProcessForm: FC<Props> = ({
                 : []
             }
           >
-            <InputNumber style={{ width: '100%' }} />
+            <InputNumber min={1000} max={9999} precision={0} step={1} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             label={
@@ -1159,7 +1159,7 @@ export const ProcessForm: FC<Props> = ({
                 : []
             }
           >
-            <Input />
+            <InputNumber min={1000} max={9999} precision={0} step={1} style={{ width: '100%' }} />
           </Form.Item>
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage

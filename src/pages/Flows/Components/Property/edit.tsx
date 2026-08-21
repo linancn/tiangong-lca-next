@@ -491,7 +491,14 @@ const PropertyEdit: FC<Props> = ({
               }
               name={['relativeStandardDeviation95In']}
             >
-              <InputNumber suffix='%' min={0} max={100} style={{ width: '100%' }} />
+              <InputNumber
+                suffix='%'
+                min={0}
+                max={100}
+                precision={3}
+                stringMode
+                style={{ width: '100%' }}
+              />
             </Form.Item>
             <Form.Item
               label={

@@ -29,9 +29,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-19
-lastReviewedCommit: 9bae84a4cc7479ccebb42579c416287ecf5130ae
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedAt: 2026-08-21
+lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
+lastReviewedNote: 'Reviewed for Next Issue #910: focused scalar-normalizer, serializer, save-gate, and locale-contract coverage preserves full-closure maintenance mode and creates no queue.'
 ---
 
 # Testing Execution State
@@ -83,6 +83,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - checked-push eligibility now accepts the normal exact-branch `HEAD` spelling and fails every other invalid ref shape before gates; raw deletion-only pushes skip gates, so branch cleanup cannot spend the full-suite budget
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
+- Issue #910 adds focused TIDAS scalar normalization, Process/Flow serializer, and six save-entrypoint regression coverage; it creates no open coverage queue
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell and the Review Admin quality-diagnostic report panel; the latter retains focused component proof for latest-report loading, explicit manual start, non-blocking active state, report rendering, and retryable runtime failure. If that list changes, re-check save, validation, navigation, highlighting, diagnostic-report, or visual screenshot flows before treating the baseline as settled
 

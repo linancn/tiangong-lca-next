@@ -521,6 +521,55 @@ describe('Process Utility Functions', () => {
       ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
     });
 
+    it('should cap every localized annual supply volume value while saving', () => {
+      const dataWithLongAnnualSupplyContexts = {
+        ...mockProcessData,
+        exchanges: {
+          exchange: [
+            {
+              '@dataSetInternalID': '1',
+              referenceToFlowDataSet: {
+                '@refObjectId': 'flow-id-1',
+                '@version': '01.00.000',
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'e'.repeat(600) },
+                  { '@xml:lang': 'zh', '#text': '中'.repeat(600) },
+                ],
+              },
+              refUnitRes: {
+                refUnitName: 'kg',
+              },
+              exchangeDirection: 'Output',
+              meanAmount: '1',
+              quantitativeReference: true,
+            },
+          ],
+        },
+        modellingAndValidation: {
+          ...mockProcessData.modellingAndValidation,
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [
+              { '@xml:lang': 'en', '#text': '100 old suffix' },
+              { '@xml:lang': 'zh', '#text': '100 旧后缀' },
+            ],
+          },
+        },
+      };
+
+      const result = genProcessJsonOrdered('test-id', dataWithLongAnnualSupplyContexts);
+      const annualSupplyValues =
+        result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume;
+
+      expect(annualSupplyValues).toHaveLength(2);
+      expect(annualSupplyValues.map((item: { '#text': string }) => item['#text'].length)).toEqual([
+        500, 500,
+      ]);
+      expect(
+        annualSupplyValues.every((item: { '#text': string }) => item['#text'].endsWith('...')),
+      ).toBe(true);
+    });
+
     it('should preserve a previously resolved annual supply volume unit suffix while saving', () => {
       const dataWithAnnualSupplyVolume = {
         ...mockProcessData,
@@ -802,7 +851,7 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
     });
 
-    it('should drop invalid reference year strings instead of serializing NaN', () => {
+    it('should preserve invalid reference year strings for the save-boundary validation gate', () => {
       const dataWithInvalidReferenceYear = {
         ...mockProcessData,
         processInformation: {
@@ -816,7 +865,45 @@ describe('Process Utility Functions', () => {
 
       const result = genProcessJsonOrdered('test-id', dataWithInvalidReferenceYear);
 
-      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
+      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBe(
+        'not-a-number',
+      );
+    });
+
+    it('should normalize process year and percentage scalars to canonical TIDAS types', () => {
+      const result = genProcessJsonOrdered('test-id', {
+        ...mockProcessData,
+        processInformation: {
+          ...mockProcessData.processInformation,
+          time: {
+            ...mockProcessData.processInformation.time,
+            'common:dataSetValidUntil': '2030',
+          },
+          mathematicalRelations: {
+            variableParameter: { relativeStandardDeviation95In: 1.25 },
+          },
+        },
+        exchanges: {
+          exchange: [
+            {
+              ...mockProcessData.exchanges.exchange[0],
+              relativeStandardDeviation95In: 12.5,
+              allocations: { allocation: { '@allocatedFraction': 0 } },
+            },
+          ],
+        },
+      });
+
+      const time = result.processDataSet.processInformation.time;
+      const exchange = result.processDataSet.exchanges.exchange[0];
+      expect(time['common:referenceYear']).toBe(2024);
+      expect(time['common:dataSetValidUntil']).toBe(2030);
+      expect(exchange.relativeStandardDeviation95In).toBe('12.5');
+      expect(exchange.allocations.allocation['@allocatedFraction']).toBe('0');
+      expect(
+        result.processDataSet.processInformation.mathematicalRelations.variableParameter
+          .relativeStandardDeviation95In,
+      ).toBe('1.25');
     });
 
     it('should not stringify missing exchange amounts to undefined', () => {
