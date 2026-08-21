@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 4ce0e0a2cc99928a9eb8466518e30d05889841ab
+lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
 lastReviewedNote: 'Reviewed for Next Issue #910: the TIDAS scalar fix and locale artifact refresh use the existing focused-test, artifact-writer, lint, build, Docpact, and managed-push loop without changing bootstrap commands.'
 ---
 
