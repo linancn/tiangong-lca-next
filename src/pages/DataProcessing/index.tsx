@@ -874,6 +874,7 @@ const DataProcessing = () => {
   const [publications, setPublications] = useState<LciaResultPublication[]>([]);
   const [publicationsLoading, setPublicationsLoading] = useState(false);
   const [publicationsError, setPublicationsError] = useState<string | null>(null);
+  const publicationsLoadInFlightRef = useRef(false);
   const [buildForm] = Form.useForm();
   const [resultSetForm] = Form.useForm();
   const [previewForm] = Form.useForm();
@@ -1044,21 +1045,27 @@ const DataProcessing = () => {
   }, [deepLink.resultSetId]);
 
   const loadPublications = useCallback(async () => {
+    if (publicationsLoadInFlightRef.current) return;
+    publicationsLoadInFlightRef.current = true;
     setPublicationsLoading(true);
     setPublicationsError(null);
-    const result = await listLciaResultPublications({ limit: 50 });
-    const rows = [...(result.data ?? [])].sort((left, right) => {
-      const currentRank = Number(Boolean(right.isCurrent)) - Number(Boolean(left.isCurrent));
-      if (currentRank !== 0) {
-        return currentRank;
-      }
-      return String(right.publishedAt ?? right.unpublishedAt ?? '').localeCompare(
-        String(left.publishedAt ?? left.unpublishedAt ?? ''),
-      );
-    });
-    setPublications(rows);
-    setPublicationsError(result.error?.message ?? null);
-    setPublicationsLoading(false);
+    try {
+      const result = await listLciaResultPublications({ limit: 50 });
+      const rows = [...(result.data ?? [])].sort((left, right) => {
+        const currentRank = Number(Boolean(right.isCurrent)) - Number(Boolean(left.isCurrent));
+        if (currentRank !== 0) {
+          return currentRank;
+        }
+        return String(right.publishedAt ?? right.unpublishedAt ?? '').localeCompare(
+          String(left.publishedAt ?? left.unpublishedAt ?? ''),
+        );
+      });
+      setPublications(rows);
+      setPublicationsError(result.error?.message ?? null);
+    } finally {
+      publicationsLoadInFlightRef.current = false;
+      setPublicationsLoading(false);
+    }
   }, []);
 
   useEffect(() => {

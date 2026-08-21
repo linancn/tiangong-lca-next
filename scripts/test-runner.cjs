@@ -87,9 +87,13 @@ function unitWorkerArgs(platform = process.platform) {
     : ['--maxWorkers=50%'];
 }
 
+function jestNodeArgs(platform = process.platform) {
+  return platform === 'darwin' ? ['--no-concurrent-recompilation', '--no-maglev'] : [];
+}
+
 function runJest(args, stage = 'jest') {
   if (!isAgentMode) {
-    const result = spawnSync(process.execPath, [jestBin, ...args], {
+    const result = spawnSync(process.execPath, [...jestNodeArgs(), jestBin, ...args], {
       stdio: 'inherit',
       env: {
         ...process.env,
@@ -118,7 +122,7 @@ function runJest(args, stage = 'jest') {
   try {
     result = spawnSync(
       process.execPath,
-      [jestBin, ...args, '--json', `--outputFile=${summaryPath}`],
+      [...jestNodeArgs(), jestBin, ...args, '--json', `--outputFile=${summaryPath}`],
       {
         stdio: ['inherit', logFd, logFd],
         env: {
@@ -199,6 +203,7 @@ function main(argv = process.argv.slice(2)) {
 module.exports = {
   agentLogDirectory,
   failedItems,
+  jestNodeArgs,
   main,
   parseRunnerArgs,
   safeStageName,

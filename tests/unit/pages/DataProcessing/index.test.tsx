@@ -2636,6 +2636,53 @@ describe('DataProcessing page', () => {
     );
   });
 
+  it('deduplicates publication loading when the tab opens before the mount request settles', async () => {
+    mockInjectResultSet = false;
+    let resolvePublications!: (value: {
+      data: Array<Record<string, unknown>>;
+      error: null;
+    }) => void;
+    const pendingPublications = new Promise<{
+      data: Array<Record<string, unknown>>;
+      error: null;
+    }>((resolve) => {
+      resolvePublications = resolve;
+    });
+    mockListLciaResultPublications.mockImplementationOnce(() => pendingPublications);
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId('tab-publication'));
+    fireEvent.click(
+      within(screen.getByTestId('tab-panel-publication')).getByRole('button', {
+        name: 'Refresh publications',
+      }),
+    );
+    expect(mockListLciaResultPublications).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolvePublications({
+        data: [
+          {
+            publicationId: 'publication-delayed',
+            packageId: 'package-delayed',
+            packageName: 'Delayed publication',
+            status: 'published',
+            isCurrent: true,
+          },
+        ],
+        error: null,
+      });
+      await pendingPublications;
+    });
+
+    expect(
+      await screen.findByTestId('data-product-publication-publication-delayed'),
+    ).toHaveTextContent('Delayed publication');
+  });
+
   it('lists current publications first and unpublishes from the management list', async () => {
     mockInjectResultSet = false;
     mockListLciaResultPublications.mockResolvedValueOnce({
