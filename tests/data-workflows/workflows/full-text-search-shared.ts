@@ -174,14 +174,14 @@ export function buildFullTextSearchHelpText(input: {
   defaultSearchFixturePath: string;
   defaultSeedExpectedPath: string;
   defaultSeedFixturePath: string;
-  npmCommand: string;
+  packageCommand: string;
   title: string;
 }) {
   return `${input.title}
 
 Usage:
-  npm run ${input.npmCommand} -- --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
-  npm run ${input.npmCommand} -- --detail-result --no-keep-data
+  pnpm ${input.packageCommand} --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  pnpm ${input.packageCommand} --detail-result --no-keep-data
 
 Flags:
   --role <name>                    Role key from .env.users.local / TEST_USERS_JSON / TEST_<ROLE>_* (defaults to "user")

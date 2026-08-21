@@ -2,15 +2,12 @@
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
 const MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const REQUIRED_REMOTE_REFS = Object.freeze(['refs/remotes/origin/main']);
-const require = createRequire(import.meta.url);
-const installedNodeModules = path.dirname(path.dirname(require.resolve('tsx/package.json')));
 const gitEnvironment = { ...process.env };
 const localGitEnvironmentVariables = execFileSync('git', ['rev-parse', '--local-env-vars'], {
   cwd: process.cwd(),
@@ -43,7 +40,7 @@ function snapshot(root) {
 function assertSnapshot(actual, expected, generation) {
   if (actual.diff !== expected.diff || actual.status !== expected.status) {
     throw new Error(
-      `Locale artifact generation ${generation} changed the repository; run npm run i18n:locale:artifacts:write and commit the canonical outputs.`,
+      `Locale artifact generation ${generation} changed the repository; run pnpm i18n:locale:artifacts:write and commit the canonical outputs.`,
     );
   }
 }
@@ -72,6 +69,7 @@ function reproduceRequiredRemoteRefs(sourceRoot, cloneRoot) {
 }
 
 const sourceRoot = git(process.cwd(), ['rev-parse', '--show-toplevel']).trim();
+const installedNodeModules = path.join(sourceRoot, 'node_modules');
 const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), 'tiangong-locale-idempotence-'));
 const cloneRoot = path.join(temporaryRoot, 'repository');
 

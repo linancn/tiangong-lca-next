@@ -34,11 +34,7 @@ const workflow = require('../../../scripts/release/release-workflow.cjs') as {
   };
   humanResult: (result: Record<string, any>) => string;
   releaseLineAlignment: (root: string, mainRef: string, devRef: string) => Record<string, any>;
-  versionsFromDocuments: (
-    packageJson: Record<string, any>,
-    packageLock: Record<string, any>,
-    source: string,
-  ) => { version: string };
+  versionsFromDocuments: (packageJson: Record<string, any>, source: string) => { version: string };
 };
 
 type Fixture = {
@@ -50,7 +46,7 @@ type Fixture = {
   mainSha: string;
   devSha: string;
   packageJson: Record<string, any>;
-  packageLock: Record<string, any>;
+  pnpmLock: string;
 };
 
 const sourceRoot = process.cwd();
@@ -100,13 +96,8 @@ const writeExecutable = (filePath: string, source: string) => {
 
 const versionDocuments = (version: string) => ({
   packageJson: { name: 'release-fixture', version, private: true },
-  packageLock: {
-    name: 'release-fixture',
-    version,
-    lockfileVersion: 3,
-    requires: true,
-    packages: { '': { name: 'release-fixture', version } },
-  },
+  pnpmLock:
+    "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n\nimporters:\n  .: {}\n",
 });
 
 const installFakeCommands = (fixture: Fixture) => {
@@ -123,12 +114,12 @@ if (args[0] === 'pr' && args[1] === 'list') {
   process.stdout.write((process.env.FAKE_GH_CREATED_URL || 'https://example.test/pull/1') + '\\n');
 } else if (args[0] === 'api') {
   const endpoint = args[1] || '';
-  const value = endpoint.includes('package-lock.json')
-    ? process.env.FAKE_GH_PACKAGE_LOCK
+  const value = endpoint.includes('pnpm-lock.yaml')
+    ? process.env.FAKE_GH_PNPM_LOCK
     : process.env.FAKE_GH_PACKAGE_JSON;
   if (endpoint.includes('/git/blobs/')) {
-    process.stdout.write(JSON.stringify({ encoding: 'base64', content: Buffer.from(process.env.FAKE_GH_PACKAGE_LOCK || '{}').toString('base64') }));
-  } else if (endpoint.includes('package-lock.json') && process.env.FAKE_GH_PACKAGE_LOCK_ENCODING_NONE === '1') {
+    process.stdout.write(JSON.stringify({ encoding: 'base64', content: Buffer.from(process.env.FAKE_GH_PNPM_LOCK || '').toString('base64') }));
+  } else if (endpoint.includes('pnpm-lock.yaml') && process.env.FAKE_GH_PNPM_LOCK_ENCODING_NONE === '1') {
     process.stdout.write(JSON.stringify({ encoding: 'none', content: '', sha: 'b'.repeat(40) }));
   } else {
     process.stdout.write(JSON.stringify({ encoding: 'base64', content: Buffer.from(value || '{}').toString('base64') }));
@@ -140,27 +131,26 @@ if (args[0] === 'pr' && args[1] === 'list') {
 `,
   );
   writeExecutable(
-    path.join(fixture.bin, 'npm'),
+    path.join(fixture.bin, 'pnpm'),
     `#!/usr/bin/env node
 'use strict';
 const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const args = process.argv.slice(2);
-if (process.env.FAKE_NPM_LOG) fs.appendFileSync(process.env.FAKE_NPM_LOG, JSON.stringify(args) + '\\n');
+if (process.env.FAKE_PNPM_LOG) fs.appendFileSync(process.env.FAKE_PNPM_LOG, JSON.stringify(args) + '\\n');
 if (args[0] === 'run' && args[1] === 'release:static-preflight') {
   process.exitCode = process.env.FAKE_RELEASE_PREFLIGHT_FAIL === '1' ? 12 : 0;
 } else if (args[0] === 'run' && args[1] === 'push:checked') {
-  const separator = args.indexOf('--');
-  const profileFlag = args[separator + 1];
+  const profileFlag = args[2];
   if (profileFlag !== '--gate-profile') throw new Error('missing gate profile');
-  const remote = args[separator + 3];
-  const ref = args[separator + 4];
+  const remote = args[4];
+  const ref = args[5];
   const result = spawnSync('git', ['push', '--no-verify', remote, ref], { cwd: process.cwd(), stdio: 'inherit' });
   process.exitCode = result.status || 0;
 } else if (args[0] === 'run' && args[1] === 'push:retry') {
   process.exitCode = 92;
 } else {
-  process.stderr.write('unsupported fake npm invocation: ' + JSON.stringify(args));
+  process.stderr.write('unsupported fake pnpm invocation: ' + JSON.stringify(args));
   process.exitCode = 93;
 }
 `,
@@ -235,7 +225,7 @@ const createFixture = (devVersion = '1.0.0'): Fixture => {
 
   const mainDocuments = versionDocuments('1.0.0');
   writeJson(path.join(root, 'package.json'), mainDocuments.packageJson);
-  writeJson(path.join(root, 'package-lock.json'), mainDocuments.packageLock);
+  fs.writeFileSync(path.join(root, 'pnpm-lock.yaml'), mainDocuments.pnpmLock);
   fs.writeFileSync(path.join(root, '.gitignore'), '.local/\n');
   fs.writeFileSync(
     path.join(root, 'AGENTS.md'),
@@ -258,7 +248,6 @@ const createFixture = (devVersion = '1.0.0'): Fixture => {
   if (devVersion !== '1.0.0') {
     const devDocuments = versionDocuments(devVersion);
     writeJson(path.join(root, 'package.json'), devDocuments.packageJson);
-    writeJson(path.join(root, 'package-lock.json'), devDocuments.packageLock);
   }
   fs.writeFileSync(path.join(root, 'dev.txt'), 'dev\n');
   git(root, ['add', '.']);
@@ -277,7 +266,7 @@ const createFixture = (devVersion = '1.0.0'): Fixture => {
     mainSha,
     devSha,
     packageJson: versionDocuments(devVersion).packageJson,
-    packageLock: versionDocuments(devVersion).packageLock,
+    pnpmLock: versionDocuments(devVersion).pnpmLock,
   };
   installFakeCommands(fixture);
   return fixture;
@@ -295,7 +284,7 @@ const runCli = (
     env: isolatedEnvironment({
       PATH: `${fixture.bin}${path.delimiter}${process.env.PATH}`,
       FAKE_GH_PACKAGE_JSON: JSON.stringify(fixture.packageJson),
-      FAKE_GH_PACKAGE_LOCK: JSON.stringify(fixture.packageLock),
+      FAKE_GH_PNPM_LOCK: fixture.pnpmLock,
       FAKE_DOCPACT_BASE_SHA: fixture.devSha,
       RELEASE_AUTOMATION_DOCPACT_BIN: path.join(fixture.bin, 'docpact'),
       ...environment,
@@ -382,14 +371,10 @@ describe('release automation public contracts', () => {
     ).toContain('Docpact review: completed (1 evidence path)');
   });
 
-  it('fails closed when package and lock versions disagree', () => {
-    expect(() =>
-      workflow.versionsFromDocuments(
-        { version: '1.0.1' },
-        { version: '1.0.0', packages: { '': { version: '1.0.0' } } },
-        'fixture',
-      ),
-    ).toThrow('Version fields do not agree');
+  it('fails closed when package.json has no version', () => {
+    expect(() => workflow.versionsFromDocuments({}, 'fixture')).toThrow(
+      'The package version is missing',
+    );
   });
 
   it('rejects a dev release branch name that would select the main gate', () => {
@@ -547,7 +532,7 @@ describe('release automation public contracts', () => {
       fixture,
       releaseScript,
       ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture'],
-      { FAKE_GH_PACKAGE_LOCK_ENCODING_NONE: '1' },
+      { FAKE_GH_PNPM_LOCK_ENCODING_NONE: '1' },
     );
 
     expect(result.status).toBe(0);
@@ -559,13 +544,13 @@ describe('release automation public contracts', () => {
 
   it('applies the release once, uses checked push, and creates the dev PR', () => {
     const fixture = createFixture();
-    const npmLog = path.join(fixture.container, 'npm.log');
+    const pnpmLog = path.join(fixture.container, 'pnpm.log');
     const result = runCli(
       fixture,
       releaseScript,
       ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
       {
-        FAKE_NPM_LOG: npmLog,
+        FAKE_PNPM_LOG: pnpmLog,
         FAKE_GH_CREATED_URL: 'https://example.test/pull/51',
         FAKE_DOCPACT_MODE: 'review',
       },
@@ -592,6 +577,9 @@ describe('release automation public contracts', () => {
     });
     expect(git(fixture.root, ['branch', '--show-current'])).toBe('codex/issue-778-version-v1.0.1');
     expect(git(fixture.root, ['show', 'HEAD:package.json'])).toContain('"version": "1.0.1"');
+    expect(git(fixture.root, ['show', 'HEAD:pnpm-lock.yaml'])).toBe(
+      git(fixture.root, ['show', `${fixture.devSha}:pnpm-lock.yaml`]),
+    );
     expect(git(fixture.root, ['show', 'HEAD:AGENTS.md'])).toContain(
       `lastReviewedCommit: ${fixture.devSha}`,
     );
@@ -603,12 +591,12 @@ describe('release automation public contracts', () => {
         'refs/heads/codex/issue-778-version-v1.0.1',
       ]),
     ).toContain(output.candidate_sha);
-    const npmInvocations = fs.readFileSync(npmLog, 'utf8');
-    expect(npmInvocations).not.toContain('e2e:qualification:check');
-    expect(npmInvocations).not.toContain('e2e:qualify');
-    expect(npmInvocations).toContain('release:static-preflight');
-    expect(npmInvocations).toContain('push:checked');
-    expect(npmInvocations).toContain('release-candidate');
+    const pnpmInvocations = fs.readFileSync(pnpmLog, 'utf8');
+    expect(pnpmInvocations).not.toContain('e2e:qualification:check');
+    expect(pnpmInvocations).not.toContain('e2e:qualify');
+    expect(pnpmInvocations).toContain('release:static-preflight');
+    expect(pnpmInvocations).toContain('push:checked');
+    expect(pnpmInvocations).toContain('release-candidate');
 
     const previousBinary = process.env.RELEASE_AUTOMATION_DOCPACT_BIN;
     const previousMode = process.env.FAKE_DOCPACT_MODE;
@@ -641,13 +629,13 @@ describe('release automation public contracts', () => {
 
   it('never runs browser qualification or writes a tracked proof from release-to-dev', () => {
     const fixture = createFixture();
-    const npmLog = path.join(fixture.container, 'npm.log');
+    const pnpmLog = path.join(fixture.container, 'pnpm.log');
     const result = runCli(
       fixture,
       releaseScript,
       ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
       {
-        FAKE_NPM_LOG: npmLog,
+        FAKE_PNPM_LOG: pnpmLog,
         FAKE_GH_CREATED_URL: 'https://example.test/pull/54',
       },
     );
@@ -663,9 +651,9 @@ describe('release automation public contracts', () => {
       },
       pull_request: { url: 'https://example.test/pull/54' },
     });
-    const npmInvocations = fs.readFileSync(npmLog, 'utf8');
-    expect(npmInvocations).not.toContain('e2e:qualification:check');
-    expect(npmInvocations).not.toContain('e2e:qualify');
+    const pnpmInvocations = fs.readFileSync(pnpmLog, 'utf8');
+    expect(pnpmInvocations).not.toContain('e2e:qualification:check');
+    expect(pnpmInvocations).not.toContain('e2e:qualify');
     expect(
       git(fixture.root, [
         'ls-tree',
@@ -779,7 +767,7 @@ describe('release automation public contracts', () => {
     ).toBe('');
   });
 
-  it('rejects package semantics beyond the three version fields', () => {
+  it('rejects package semantics beyond package.json.version', () => {
     const fixture = createFixture();
     git(fixture.root, ['switch', 'dev']);
     const documents = versionDocuments('1.0.1');
@@ -787,18 +775,29 @@ describe('release automation public contracts', () => {
       ...documents.packageJson,
       description: 'not a release-only change',
     });
-    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
 
     const previousIndex = process.env.GIT_INDEX_FILE;
     process.env.GIT_INDEX_FILE = path.join(fixture.container, 'unrelated-hook-index');
     try {
       expect(() =>
         workflow.assertReleaseCandidateScope(fixture.root, fixture.devSha, '1.0.1'),
-      ).toThrow('beyond the three root version fields');
+      ).toThrow('beyond its version field');
     } finally {
       if (previousIndex === undefined) delete process.env.GIT_INDEX_FILE;
       else process.env.GIT_INDEX_FILE = previousIndex;
     }
+  });
+
+  it('rejects any pnpm-lock.yaml drift in a release candidate', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['switch', 'dev']);
+    const documents = versionDocuments('1.0.1');
+    writeJson(path.join(fixture.root, 'package.json'), documents.packageJson);
+    fs.appendFileSync(path.join(fixture.root, 'pnpm-lock.yaml'), '# dependency drift\n');
+
+    expect(() =>
+      workflow.assertReleaseCandidateScope(fixture.root, fixture.devSha, '1.0.1'),
+    ).toThrow('pnpm-lock.yaml byte-for-byte unchanged');
   });
 
   it('rejects a governed document body change disguised as review evidence', () => {
@@ -806,7 +805,6 @@ describe('release automation public contracts', () => {
     git(fixture.root, ['switch', 'dev']);
     const documents = versionDocuments('1.0.1');
     writeJson(path.join(fixture.root, 'package.json'), documents.packageJson);
-    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
     fs.writeFileSync(
       path.join(fixture.root, 'AGENTS.md'),
       `---\nlastReviewedAt: 2026-08-06\nlastReviewedCommit: ${fixture.devSha}\n---\n\n# Changed contract body\n`,
@@ -822,7 +820,6 @@ describe('release automation public contracts', () => {
     git(fixture.root, ['switch', 'dev']);
     const documents = versionDocuments('1.0.1');
     writeJson(path.join(fixture.root, 'package.json'), documents.packageJson);
-    writeJson(path.join(fixture.root, 'package-lock.json'), documents.packageLock);
     writeJson(path.join(fixture.root, 'unexpected.json'), { release: true });
 
     expect(() =>
@@ -852,7 +849,7 @@ describe('release automation public contracts', () => {
       {
         FAKE_GH_PR_LIST: JSON.stringify(existing),
         FAKE_GH_PACKAGE_JSON: JSON.stringify(candidateDocuments.packageJson),
-        FAKE_GH_PACKAGE_LOCK: JSON.stringify(candidateDocuments.packageLock),
+        FAKE_GH_PNPM_LOCK: candidateDocuments.pnpmLock,
       },
     );
 
@@ -868,7 +865,7 @@ describe('release automation public contracts', () => {
 
   it('creates an immutable promotion branch from the exact merged dev SHA', () => {
     const fixture = createFixture('1.0.1');
-    const npmLog = path.join(fixture.container, 'npm.log');
+    const pnpmLog = path.join(fixture.container, 'pnpm.log');
     const result = runCli(
       fixture,
       promotionScript,
@@ -876,7 +873,7 @@ describe('release automation public contracts', () => {
       {
         FAKE_GH_PR_VIEW: promotionPr(fixture),
         FAKE_GH_CREATED_URL: 'https://example.test/pull/53',
-        FAKE_NPM_LOG: npmLog,
+        FAKE_PNPM_LOG: pnpmLog,
       },
     );
 
@@ -896,8 +893,8 @@ describe('release automation public contracts', () => {
       'codex/promote-v1.0.1-dev-to-main-issue-778',
     );
     expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.devSha);
-    expect(fs.readFileSync(npmLog, 'utf8')).toContain('push:checked');
-    expect(fs.readFileSync(npmLog, 'utf8')).toContain('immutable-promotion');
+    expect(fs.readFileSync(pnpmLog, 'utf8')).toContain('push:checked');
+    expect(fs.readFileSync(pnpmLog, 'utf8')).toContain('immutable-promotion');
   });
 
   it('promotes after an earlier tree-identical two-parent main promotion', () => {

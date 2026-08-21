@@ -28,6 +28,7 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     runDirectory: string,
     runtimeInputs: Record<string, any>,
   ) => string[];
+  lockedDependencyVersion: (packageName: string, root?: string) => string;
   parseOptions: (command: string, args: string[]) => Record<string, any>;
   qualificationIdentity: (root?: string) => {
     environmentContractSha256: string;
@@ -97,15 +98,15 @@ afterEach(() => {
 describe('release E2E controller contracts', () => {
   it('exposes one discoverable command surface with an argument-free exact resume', () => {
     const help = controller.commandHelp();
-    expect(help).toContain('npm run e2e:env:install');
-    expect(help).toContain('npm run e2e:env:doctor');
-    expect(help).toContain('npm run e2e:release');
-    expect(help).toContain('npm run e2e:release:resume');
-    expect(help).toContain('npm run e2e:qualify');
-    expect(help).toContain('npm run e2e:qualification:key');
-    expect(help).toContain('npm run release:proof:verify');
-    expect(help).toContain('npm run e2e:env:clean');
-    expect(help).toContain('npm run e2e:dev');
+    expect(help).toContain('pnpm e2e:env:install');
+    expect(help).toContain('pnpm e2e:env:doctor');
+    expect(help).toContain('pnpm e2e:release');
+    expect(help).toContain('pnpm e2e:release:resume');
+    expect(help).toContain('pnpm e2e:qualify');
+    expect(help).toContain('pnpm e2e:qualification:key');
+    expect(help).toContain('pnpm release:proof:verify');
+    expect(help).toContain('pnpm e2e:env:clean');
+    expect(help).toContain('pnpm e2e:dev');
     expect(() => controller.parseOptions('resume', ['--format=json'])).toThrow(
       'Resume accepts no arguments',
     );
@@ -115,6 +116,10 @@ describe('release E2E controller contracts', () => {
     expect(() => controller.parseOptions('run', ['--authenticated=false'])).toThrow(
       'does not accept a value',
     );
+  });
+
+  it('resolves the Playwright pin from pnpm lockfile state', () => {
+    expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.61.1');
   });
 
   it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
@@ -176,16 +181,19 @@ describe('release E2E controller contracts', () => {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(filePath, value);
     };
-    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.0' })}\n`);
     write(
-      'package-lock.json',
+      'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
+        packageManager: 'pnpm@11.22.0',
         version: '1.0.0',
-        lockfileVersion: 3,
-        packages: { '': { name: 'proof-fixture', version: '1.0.0' } },
       })}\n`,
     );
+    write(
+      'pnpm-lock.yaml',
+      "lockfileVersion: '9.0'\nsettings:\n  autoInstallPeers: true\nimporters:\n  .: {}\n",
+    );
+    write('pnpm-workspace.yaml', 'packages:\n  - .\n');
     write(
       'docker/e2e/environment.json',
       `${JSON.stringify({
@@ -213,14 +221,12 @@ describe('release E2E controller contracts', () => {
     expect(spawnSync('git', ['add', '.'], { cwd: root, env: gitEnvironment }).status).toBe(0);
 
     const initial = controller.qualificationIdentity(root);
-    write('package.json', `${JSON.stringify({ name: 'proof-fixture', version: '1.0.1' })}\n`);
     write(
-      'package-lock.json',
+      'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
+        packageManager: 'pnpm@11.22.0',
         version: '1.0.1',
-        lockfileVersion: 3,
-        packages: { '': { name: 'proof-fixture', version: '1.0.1' } },
       })}\n`,
     );
     expect(controller.qualificationIdentity(root)).toEqual(initial);
@@ -397,7 +403,7 @@ describe('release E2E controller contracts', () => {
     });
   });
 
-  it('accepts only the exact unexpired F4 continuation receipt envelope', () => {
+  it('accepts only the exact unexpired continuation receipt envelope', () => {
     const key = Buffer.alloc(32, 7);
     const trackedMainEnvironmentPath = path.join(makeTemporaryDirectory(), 'tracked-main.env');
     fs.writeFileSync(trackedMainEnvironmentPath, 'SUPABASE_URL=https://example.test\n');
@@ -409,7 +415,8 @@ describe('release E2E controller contracts', () => {
         manifest: {
           candidate: {
             commit: 'a'.repeat(40),
-            packageLockSha256: 'b'.repeat(64),
+            dependencyLockSha256: 'b'.repeat(64),
+            pnpmWorkspaceSha256: 'f'.repeat(64),
             tree: 'c'.repeat(40),
           },
           environment: { contractSha256: 'd'.repeat(64) },
@@ -432,9 +439,13 @@ describe('release E2E controller contracts', () => {
         key,
       ),
     ).toThrow('integrity check failed');
-    expect(() => controller.validateReceipt({ ...receipt, schemaVersion: 3 }, now, key)).toThrow(
-      'unsupported shape',
-    );
+    expect(() =>
+      controller.validateReceipt(
+        { ...receipt, schemaVersion: controller.RECEIPT_SCHEMA_VERSION - 1 },
+        now,
+        key,
+      ),
+    ).toThrow('unsupported shape');
     expect(() => controller.validateReceipt(receipt, now, Buffer.alloc(32, 8))).toThrow(
       'integrity check failed',
     );
@@ -506,9 +517,11 @@ describe('release E2E controller contracts', () => {
     expect(dockerfile).toContain(`ARG PLAYWRIGHT_IMAGE=${environment.playwrightImage}`);
     expect(dockerfile).toContain('ARG E2E_FRONTEND_ENV=main');
     expect(dockerfile).toContain('REACT_APP_ENV=${E2E_FRONTEND_ENV}');
-    expect(dockerfile).toContain('npm ci --ignore-scripts');
+    expect(dockerfile).toContain('pnpm install --frozen-lockfile --ignore-scripts');
     expect(dockerfile).toContain('node /tmp/verify-build-input.cjs');
     expect(controllerSource).toContain('org.tiangong.lca.next.package-json-sha256');
+    expect(controllerSource).toContain('org.tiangong.lca.next.dependency-lock-sha256');
+    expect(controllerSource).toContain('org.tiangong.lca.next.pnpm-workspace-sha256');
     expect(controllerSource).not.toContain('.git/modules');
     expect(controllerSource).not.toContain('lca-workspace');
     expect(controllerSource).toContain(`${'${runDirectory}'}:/e2e-output`);
@@ -523,7 +536,7 @@ describe('release E2E controller contracts', () => {
       path.resolve(process.cwd(), '.github/workflows/i18n-semantic-e2e.yml'),
       'utf8',
     );
-    expect(manualWorkflow).toContain('npm --silent run e2e:qualify');
+    expect(manualWorkflow).toContain('pnpm --silent e2e:qualify');
     expect(manualWorkflow).not.toContain("E2E_RELEASE_MODE: 'true'");
     expect(
       fs.readFileSync(path.resolve(process.cwd(), 'tests/e2e/i18n/evidence-reporter.ts'), 'utf8'),
@@ -554,7 +567,7 @@ describe('release E2E isolated runtime inputs', () => {
   it('verifies every candidate build input before extracting the archive', () => {
     const directory = makeTemporaryDirectory();
     const files = Object.fromEntries(
-      ['archive', 'environment', 'packageJson', 'packageLock'].map((name) => {
+      ['archive', 'dependencyLock', 'environment', 'packageJson', 'pnpmWorkspace'].map((name) => {
         const filePath = path.join(directory, `${name}.input`);
         fs.writeFileSync(filePath, `${name}\n`);
         return [name, filePath];
@@ -566,8 +579,9 @@ describe('release E2E isolated runtime inputs', () => {
       `${JSON.stringify({
         candidate: {
           archiveSha256: buildVerifier.sha256File(files.archive),
+          dependencyLockSha256: buildVerifier.sha256File(files.dependencyLock),
           packageJsonSha256: buildVerifier.sha256File(files.packageJson),
-          packageLockSha256: buildVerifier.sha256File(files.packageLock),
+          pnpmWorkspaceSha256: buildVerifier.sha256File(files.pnpmWorkspace),
         },
         environment: {
           contractSha256: buildVerifier.sha256File(files.environment),
@@ -576,10 +590,11 @@ describe('release E2E isolated runtime inputs', () => {
     );
     const input = {
       archivePath: files.archive,
+      dependencyLockPath: files.dependencyLock,
       environmentPath: files.environment,
       manifestPath,
       packageJsonPath: files.packageJson,
-      packageLockPath: files.packageLock,
+      pnpmWorkspacePath: files.pnpmWorkspace,
     };
     expect(() => buildVerifier.verifyBuildInputs(input)).not.toThrow();
     fs.writeFileSync(files.archive, 'mutated\n');

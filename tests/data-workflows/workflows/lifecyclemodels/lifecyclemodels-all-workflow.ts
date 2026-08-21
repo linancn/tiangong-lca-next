@@ -42,8 +42,8 @@ export const LIFECYCLEMODEL_DATA_WORKFLOWS = [
 export const LIFECYCLEMODEL_ALL_DATA_WORKFLOW_HELP = `Lifecycle models data workflow suite
 
 Usage:
-  npm run test:workflows -- --lifecyclemodels:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
-  npm run test:workflows -- --lifecyclemodels:all --detail-result --no-keep-data
+  pnpm test:workflows --lifecyclemodels:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
+  pnpm test:workflows --lifecyclemodels:all --detail-result --no-keep-data
 
 Behavior:
   - Runs all current lifecycle model data workflows sequentially

@@ -123,14 +123,14 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
-- the compiler/tooling track is TypeScript `7.0.2` only: `npm run tsc` checks the web project and `npm run tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
+- the compiler/tooling track is TypeScript `7.0.2` only: `pnpm tsc` checks the web project and `pnpm tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
 - `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
 - Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
 - Jest uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
 - on macOS, the shared Jest runner disables concurrent recompilation and Maglev after the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced inside those optimization tiers; the unit stage retains its 25% worker pool and `512MB` idle-memory recycle boundary without serializing the suite
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
-- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `pnpm e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
 - scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
@@ -138,39 +138,39 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
-- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Run manual hermetic browser qualification on the open business PR before merge or release-to-dev when the change risk warrants it, so a failure can be fixed on that same PR. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns the non-browser release gate. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
-- new npm dependencies require human approval
+- run Umi-generating focused tests, coverage, and `pnpm prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Run manual hermetic browser qualification on the open business PR before merge or release-to-dev when the change risk warrants it, so a failure can be fixed on that same PR. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns the non-browser release gate. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
+- new dependencies require human approval
 - production-writing E2E requires a host without `CI` or `GITHUB_ACTIONS`; only after that check may the controller clear image-inherited CI markers for the local container. Authenticated mode plus two write guards remain mandatory: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 
 ## Minimal Execution Facts
 
 Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
-- package manager: `npm`
+- package manager: repository-pinned `pnpm` `11.22.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: `24` via `.nvmrc` and `nvm use 24`
-- shared dev environment: `npm start` (`npm run start:dev` is equivalent)
-- explicit main-environment run: `npm run start:main`
-- default lint gate: `npm run lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
-- Electron TypeScript 7 check: `npm run tsc:electron`
-- deterministic locale audit: `npm run i18n:audit`
-- language registry/Manifest contract audit: `npm run i18n:platform:audit`
-- business-language hardcoding audit: `npm run i18n:hardcoding:audit`
-- governed classification/location asset check: `npm run reference-data:check`; regenerate only through `npm run reference-data:write`; production publication must also pass `npm run reference-data:production:check`
-- locale-specific context/quality/activation proof: `npm run i18n:locale:activation:check -- --locale <canonical-locale>`
-- all-active-locale activation proof: `npm run i18n:locale:all:check`
-- production-readiness gate (expected to fail while owned blockers remain): `npm run i18n:locale:all:production:check`
-- existing-translation correction proof: `npm run i18n:corrections:check`
-- local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
-- default CI-style test entry: `npm test`; slow-first scheduling changes start order only and preserves the complete suite inventory
-- direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
-- exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
-- exact-candidate scope-closure proof: `npm run test:qualification:scope-closure:browser -- --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
-- build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
-- protected-branch parity gate: `npm run prepush:gate`
-- static release preflight: `npm run release:static-preflight` (`release:preflight` is a compatibility alias); this validates tracked locale/reference contracts but does not claim browser execution
-- optional content-addressed browser qualification: dispatch `.github/workflows/i18n-semantic-e2e.yml` for the chosen business-PR ref, or run `npm run e2e:qualification:key` then `npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json`; verify with `npm run release:proof:verify -- --proof <path>`
-- preferred normal version-bump PR into `dev`: `npm --silent run release:to-dev -- --version <x.y.z> --issue <number> --apply`
-- preferred normal merged-candidate promotion into `main`: `npm --silent run release:promote-dev-to-main -- --release-pr <merged-dev-pr-number> --issue <number> --apply`
+- shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)
+- explicit main-environment run: `pnpm start:main`
+- default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
+- Electron TypeScript 7 check: `pnpm tsc:electron`
+- deterministic locale audit: `pnpm i18n:audit`
+- language registry/Manifest contract audit: `pnpm i18n:platform:audit`
+- business-language hardcoding audit: `pnpm i18n:hardcoding:audit`
+- governed classification/location asset check: `pnpm reference-data:check`; regenerate only through `pnpm reference-data:write`; production publication must also pass `pnpm reference-data:production:check`
+- locale-specific context/quality/activation proof: `pnpm i18n:locale:activation:check --locale <canonical-locale>`
+- all-active-locale activation proof: `pnpm i18n:locale:all:check`
+- production-readiness gate (expected to fail while owned blockers remain): `pnpm i18n:locale:all:production:check`
+- existing-translation correction proof: `pnpm i18n:corrections:check`
+- local documentation gate before push: `pnpm docpact:gate`, backed by `scripts/docpact` for local CLI discovery
+- default CI-style test entry: `pnpm test`; slow-first scheduling changes start order only and preserves the complete suite inventory
+- direct semantic localization E2E: `pnpm e2e:dev` (`pnpm test:e2e:i18n` remains the CI-compatible alias)
+- exact-candidate local release E2E: `pnpm e2e:env:install`, `pnpm e2e:env:doctor`, then `pnpm e2e:release`
+- exact-candidate scope-closure proof: `pnpm test:qualification:scope-closure:browser --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
+- build when shipped behavior, branding/package surfaces, or static assets change: `pnpm build`
+- protected-branch parity gate: `pnpm prepush:gate`
+- static release preflight: `pnpm release:static-preflight` (`release:preflight` is a compatibility alias); this validates tracked locale/reference contracts but does not claim browser execution
+- optional content-addressed browser qualification: dispatch `.github/workflows/i18n-semantic-e2e.yml` for the chosen business-PR ref, or run `pnpm e2e:qualification:key` then `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json`; verify with `pnpm release:proof:verify --proof <path>`
+- preferred normal version-bump PR into `dev`: `pnpm --silent release:to-dev --version <x.y.z> --issue <number> --apply`
+- preferred normal merged-candidate promotion into `main`: `pnpm --silent release:promote-dev-to-main --release-pr <merged-dev-pr-number> --issue <number> --apply`
 - omit `--apply` from either release command for a read-only plan; do not replace the normal path with manual version editing, branch/commit/push assembly, or direct `gh pr create`
 - `release:to-dev --apply` changes only version metadata and bounded Docpact review metadata; its restricted local push runs Docpact plus static preflight and never runs browsers or writes proof into the branch
 - the exact marker-bound Release PR into `dev` runs one non-browser Release Gate before merge and emits an external proof for later main checks; it does not run or require browser E2E
@@ -234,7 +234,7 @@ Use the role table in this file as the update map.
 
 - do not author schema or migration truth here
 - do not add a TypeScript 6 compatibility package or import `typescript/unstable/*` outside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`
-- do not enable Umi/Mako `forkTSChecker` until that path is proved compatible with the TypeScript 7 package, whose CommonJS root no longer exposes the legacy Compiler API; the qualified production build remains the current Webpack path plus repo-owned `npm run tsc`
+- do not enable Umi/Mako `forkTSChecker` until that path is proved compatible with the TypeScript 7 package, whose CommonJS root no longer exposes the legacy Compiler API; the qualified production build remains the current Webpack path plus repo-owned `pnpm tsc`
 - do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial

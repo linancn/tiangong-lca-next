@@ -61,7 +61,7 @@ describe('shared locale delivery contracts', () => {
         status: 'ci-required',
         assertionSemantics: expect.stringContaining('never execution evidence'),
         evidenceContract: expect.objectContaining({
-          schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+          schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v2',
           schemaPath: 'docs/plans/i18n/semantic-e2e-evidence.schema.json',
           evidencePath: expectedEvidencePath,
           requiredAssertionCount: 49,
@@ -308,7 +308,7 @@ describe('shared locale delivery contracts', () => {
           'digests',
         ]),
         properties: expect.objectContaining({
-          schemaVersion: { const: 'tiangong.i18n-semantic-e2e-evidence.v1' },
+          schemaVersion: { const: 'tiangong.i18n-semantic-e2e-evidence.v2' },
           status: { const: 'verified' },
           candidate: expect.objectContaining({
             additionalProperties: false,
@@ -343,7 +343,7 @@ describe('shared locale delivery contracts', () => {
           }),
           digests: expect.objectContaining({
             additionalProperties: false,
-            required: ['packageLock', 'runtimeAssets', 'tests', 'sources'],
+            required: ['dependencyLock', 'pnpmWorkspace', 'runtimeAssets', 'tests', 'sources'],
           }),
           assertions: expect.objectContaining({ minItems: 49, maxItems: 49 }),
           productionData: expect.objectContaining({
@@ -377,7 +377,8 @@ describe('shared locale delivery contracts', () => {
     expect(reporter).toContain("observer: 'chromium-auth-request'");
     expect(reporter).toContain('backendObservedOriginSha256');
     expect(reporter).toContain('backendObservedPublishableKeySha256');
-    expect(reporter).toContain("packageLock: digestFiles(['package-lock.json'])[0]");
+    expect(reporter).toContain("dependencyLock: digestFiles(['pnpm-lock.yaml'])[0]");
+    expect(reporter).toContain("pnpmWorkspace: digestFiles(['pnpm-workspace.yaml'])[0]");
     expect(reporter).toContain('runtimeAssets: digestFiles(runtimeAssetPaths())');
     expect(reporter).toContain("'tests/data-workflows/data-workflow-paths.ts'");
     expect(reporter).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
@@ -462,7 +463,7 @@ describe('shared locale delivery contracts', () => {
             ownerIssue: '#867',
             inventoryOnly: false,
             executedEvidenceCount: 0,
-            evidenceSchemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+            evidenceSchemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v2',
             proofStorage: 'ignored-local-or-github-actions-artifact',
             requiredAt: 'dev-release-candidate-gate',
             routeCoverageContractDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
@@ -812,17 +813,15 @@ describe('shared locale delivery contracts', () => {
       path.join(REPOSITORY_ROOT, '.github/workflows/release-gate.yml'),
       'utf8',
     );
-    expect(releaseWorkflow).toContain('npm run release:static-preflight');
+    expect(releaseWorkflow).toContain('pnpm release:static-preflight');
 
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json'), 'utf8'),
     ) as { scripts: Record<string, string> };
-    expect(packageJson.scripts['release:preflight']).toBe('npm run release:static-preflight');
+    expect(packageJson.scripts['release:preflight']).toBe('pnpm release:static-preflight');
+    expect(packageJson.scripts['release:static-preflight']).toContain('pnpm i18n:locale:all:check');
     expect(packageJson.scripts['release:static-preflight']).toContain(
-      'npm run i18n:locale:all:check',
-    );
-    expect(packageJson.scripts['release:static-preflight']).toContain(
-      'npm run reference-data:production:check',
+      'pnpm reference-data:production:check',
     );
     expect(packageJson.scripts['release:static-preflight']).not.toContain(
       'i18n:locale:all:production:check',
@@ -832,7 +831,7 @@ describe('shared locale delivery contracts', () => {
       path.join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
       'utf8',
     );
-    expect(manualWorkflow).toContain('npm run i18n:locale:all:check');
-    expect(manualWorkflow).toContain('npm run reference-data:production:check');
+    expect(manualWorkflow).toContain('pnpm i18n:locale:all:check');
+    expect(manualWorkflow).toContain('pnpm reference-data:production:check');
   });
 });

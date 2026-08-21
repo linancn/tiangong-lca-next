@@ -248,7 +248,7 @@ export async function run(argv = process.argv.slice(2)) {
   validateQualificationEnvironment(process.env);
   const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
   if (!existsSync(path.join(repo, 'node_modules', '.bin', 'playwright'))) {
-    fail('exact npm dependencies are not installed');
+    fail('exact pnpm dependencies are not installed');
   }
   if (git(repo, 'status', '--porcelain', '--untracked-files=no')) {
     fail('qualification requires a clean tracked checkout');

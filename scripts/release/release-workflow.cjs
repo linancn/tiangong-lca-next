@@ -364,20 +364,15 @@ function readJson(filePath, description) {
   }
 }
 
-function versionsFromDocuments(packageJson, packageLock, source) {
-  const values = {
-    package_json: packageJson.version,
-    package_lock: packageLock.version,
-    package_lock_root: packageLock.packages?.['']?.version,
-  };
-  if (!values.package_json || new Set(Object.values(values)).size !== 1) {
+function versionsFromDocuments(packageJson, source) {
+  const values = { package_json: packageJson.version };
+  if (!values.package_json) {
     throw new ReleaseAutomationError(
-      'version_fields_mismatch',
-      `Version fields do not agree in ${source}.`,
+      'version_field_missing',
+      `The package version is missing in ${source}.`,
       {
         details: { source, versions: values },
-        nextAction:
-          'Repair package.json and both package-lock.json root version fields before continuing.',
+        nextAction: 'Repair package.json.version before continuing.',
       },
     );
   }
@@ -387,11 +382,10 @@ function versionsFromDocuments(packageJson, packageLock, source) {
 
 function readVersionsAtRef(root, ref) {
   const packageJson = JSON.parse(git(root, ['show', `${ref}:package.json`]).stdout);
-  const packageLock = JSON.parse(git(root, ['show', `${ref}:package-lock.json`]).stdout);
-  return versionsFromDocuments(packageJson, packageLock, ref);
+  return versionsFromDocuments(packageJson, ref);
 }
 
-function readGithubJsonFile(root, repository, ref, filePath) {
+function readGithubFile(root, repository, ref, filePath) {
   const endpoint = `repos/${repository}/contents/${filePath}?ref=${encodeURIComponent(ref)}`;
   let payload = parseJsonOutput(gh(root, ['api', endpoint]), `GitHub ${filePath}`);
   if (payload.encoding === 'none' && /^[0-9a-f]{40}$/u.test(payload.sha || '')) {
@@ -411,7 +405,23 @@ function readGithubJsonFile(root, repository, ref, filePath) {
     );
   }
   try {
-    return JSON.parse(Buffer.from(payload.content.replace(/\s/gu, ''), 'base64').toString('utf8'));
+    return Buffer.from(payload.content.replace(/\s/gu, ''), 'base64').toString('utf8');
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'invalid_github_content',
+      `GitHub ${filePath} could not be decoded.`,
+      {
+        exitCode: EXIT.external,
+        details: { file: filePath, reason: error.message },
+      },
+    );
+  }
+}
+
+function readGithubJsonFile(root, repository, ref, filePath) {
+  const source = readGithubFile(root, repository, ref, filePath);
+  try {
+    return JSON.parse(source);
   } catch (error) {
     throw new ReleaseAutomationError(
       'invalid_github_content',
@@ -427,27 +437,31 @@ function readGithubJsonFile(root, repository, ref, filePath) {
 function readGithubVersions(root, repository, ref) {
   return versionsFromDocuments(
     readGithubJsonFile(root, repository, ref, 'package.json'),
-    readGithubJsonFile(root, repository, ref, 'package-lock.json'),
     `${repository}@${ref}`,
   );
 }
 
-function writeVersionFiles(root, version) {
-  const packagePath = path.join(root, 'package.json');
-  const lockPath = path.join(root, 'package-lock.json');
-  const packageJson = readJson(packagePath, 'package.json');
-  const packageLock = readJson(lockPath, 'package-lock.json');
-  packageJson.version = version;
-  packageLock.version = version;
-  if (!packageLock.packages || !packageLock.packages['']) {
+function assertGithubPnpmLockUnchanged(root, repository, baseRef, candidateRef) {
+  const baseLock = readGithubFile(root, repository, baseRef, 'pnpm-lock.yaml');
+  const candidateLock = readGithubFile(root, repository, candidateRef, 'pnpm-lock.yaml');
+  if (candidateLock !== baseLock) {
     throw new ReleaseAutomationError(
-      'package_lock_root_missing',
-      'package-lock.json has no root package entry.',
+      'release_candidate_lockfile_changed',
+      'The release candidate changes pnpm-lock.yaml.',
+      {
+        exitCode: EXIT.drift,
+        details: { base_ref: baseRef, candidate_ref: candidateRef },
+        nextAction: 'Move dependency changes to a separately reviewed feature PR.',
+      },
     );
   }
-  packageLock.packages[''].version = version;
+}
+
+function writeVersionFile(root, version) {
+  const packagePath = path.join(root, 'package.json');
+  const packageJson = readJson(packagePath, 'package.json');
+  packageJson.version = version;
   fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
-  fs.writeFileSync(lockPath, `${JSON.stringify(packageLock, null, 2)}\n`);
 }
 
 function jsonAtRef(root, ref, filePath) {
@@ -498,14 +512,11 @@ function reviewCommitFromDocument(source) {
 
 function assertReleaseCandidateScope(root, baseRef, targetVersion) {
   const changedPaths = changedPathsSince(root, baseRef);
-  const requiredVersionPaths = ['package.json', 'package-lock.json'];
-  if (
-    changedPaths.length < requiredVersionPaths.length ||
-    requiredVersionPaths.some((filePath) => !changedPaths.includes(filePath))
-  ) {
+  const requiredVersionPaths = ['package.json'];
+  if (!changedPaths.includes('package.json')) {
     throw new ReleaseAutomationError(
       'release_candidate_not_version_only',
-      'The release candidate must change both package version files.',
+      'The release candidate must change package.json.version.',
       {
         exitCode: EXIT.drift,
         details: { base_ref: baseRef, changed_paths: changedPaths },
@@ -514,14 +525,8 @@ function assertReleaseCandidateScope(root, baseRef, targetVersion) {
   }
 
   const basePackage = jsonAtRef(root, baseRef, 'package.json');
-  const baseLock = jsonAtRef(root, baseRef, 'package-lock.json');
   const candidatePackage = readJson(path.join(root, 'package.json'), 'package.json');
-  const candidateLock = readJson(path.join(root, 'package-lock.json'), 'package-lock.json');
-  const candidateVersions = versionsFromDocuments(
-    candidatePackage,
-    candidateLock,
-    'release candidate',
-  );
+  const candidateVersions = versionsFromDocuments(candidatePackage, 'release candidate');
   if (candidateVersions.version !== targetVersion) {
     throw new ReleaseAutomationError(
       'release_candidate_version_mismatch',
@@ -534,28 +539,42 @@ function assertReleaseCandidateScope(root, baseRef, targetVersion) {
   }
 
   const normalizedPackage = JSON.parse(JSON.stringify(candidatePackage));
-  const normalizedLock = JSON.parse(JSON.stringify(candidateLock));
   normalizedPackage.version = basePackage.version;
-  normalizedLock.version = baseLock.version;
-  if (!normalizedLock.packages?.[''] || !baseLock.packages?.['']) {
-    throw new ReleaseAutomationError(
-      'package_lock_root_missing',
-      'package-lock.json has no root package entry.',
-    );
-  }
-  normalizedLock.packages[''].version = baseLock.packages[''].version;
-  if (
-    !isDeepStrictEqual(normalizedPackage, basePackage) ||
-    !isDeepStrictEqual(normalizedLock, baseLock)
-  ) {
+  if (!isDeepStrictEqual(normalizedPackage, basePackage)) {
     throw new ReleaseAutomationError(
       'release_candidate_contains_semantic_changes',
-      'The release candidate changes package content beyond the three root version fields.',
+      'The release candidate changes package.json beyond its version field.',
       {
         exitCode: EXIT.drift,
         details: { base_ref: baseRef },
         nextAction:
           'Move dependency or package metadata changes to a separately reviewed feature PR.',
+      },
+    );
+  }
+
+  let baseLock;
+  try {
+    baseLock = git(root, ['show', `${baseRef}:pnpm-lock.yaml`]).stdout;
+  } catch (error) {
+    throw new ReleaseAutomationError(
+      'pnpm_lock_missing',
+      'pnpm-lock.yaml is missing at the release base.',
+      {
+        exitCode: EXIT.drift,
+        details: { base_ref: baseRef, reason: error.message },
+      },
+    );
+  }
+  const lockPath = path.join(root, 'pnpm-lock.yaml');
+  if (!fs.existsSync(lockPath) || fs.readFileSync(lockPath, 'utf8') !== baseLock) {
+    throw new ReleaseAutomationError(
+      'release_candidate_lockfile_changed',
+      'The release candidate must leave pnpm-lock.yaml byte-for-byte unchanged.',
+      {
+        exitCode: EXIT.drift,
+        details: { base_ref: baseRef },
+        nextAction: 'Move dependency changes to a separately reviewed feature PR.',
       },
     );
   }
@@ -605,7 +624,7 @@ function assertReleaseCandidateScope(root, baseRef, targetVersion) {
 }
 
 function releaseStaticPreflight(root, logFile) {
-  const result = runLogged('npm', ['run', 'release:static-preflight'], { cwd: root, logFile });
+  const result = runLogged('pnpm', ['run', 'release:static-preflight'], { cwd: root, logFile });
   if (result.status !== 0) {
     throw new ReleaseAutomationError(
       'release_preflight_failed',
@@ -1076,7 +1095,6 @@ function checkedPush(root, { pushRemote, branch, logFile, gateProfile }) {
   const args = [
     'run',
     'push:checked',
-    '--',
     '--gate-profile',
     gateProfile,
     pushRemote,
@@ -1084,14 +1102,14 @@ function checkedPush(root, { pushRemote, branch, logFile, gateProfile }) {
   ];
   const receiptFile = path.join(root, TRANSPORT_RECEIPT_PATH);
   const receiptBefore = fs.existsSync(receiptFile) ? fs.readFileSync(receiptFile) : null;
-  let result = runLogged('npm', args, { cwd: root, logFile });
+  let result = runLogged('pnpm', args, { cwd: root, logFile });
   let retried = false;
   const receiptAfter = fs.existsSync(receiptFile) ? fs.readFileSync(receiptFile) : null;
   const newReceipt =
     receiptAfter !== null && (receiptBefore === null || !receiptBefore.equals(receiptAfter));
   if (result.status !== 0 && newReceipt) {
     retried = true;
-    result = runLogged('npm', ['run', 'push:retry'], { cwd: root, logFile });
+    result = runLogged('pnpm', ['run', 'push:retry'], { cwd: root, logFile });
   }
   if (result.status !== 0) {
     throw new ReleaseAutomationError(
@@ -1120,7 +1138,7 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review Docpact, run static preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nMutation boundary:\n  The command proves that only package.json.version, package-lock.json.version,\n  package-lock.json packages[""].version, and bounded Docpact review metadata\n  changed. Its push runs only Docpact and static preflight; the exact Release PR\n  targeting dev owns one non-browser full release gate and external proof. Browser\n  E2E is an operator-selected manual qualification to run on the open business PR\n  before release-to-dev when its change risk warrants it.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR only after its Release Candidate release proof succeeds, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review Docpact, run static preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nMutation boundary:\n  The command proves that only package.json.version and bounded Docpact review\n  metadata changed, while pnpm-lock.yaml remains byte-for-byte unchanged. Its push\n  runs only Docpact and static preflight; the exact Release PR targeting dev owns\n  one non-browser full release gate and external proof. Browser E2E is an\n  operator-selected manual qualification to run on the open business PR before\n  release-to-dev when its change risk warrants it.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR only after its Release Candidate release proof succeeds, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
@@ -1143,7 +1161,7 @@ function releasePrBody({
     reviewedPaths.length > 0
       ? reviewedPaths.map((filePath) => `  - \`${filePath}\``).join('\n')
       : '  - none required';
-  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} dev-base=${baseSha} main-base=${mainSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: exact dev Release PR non-browser gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Keep package.json and both package-lock root version fields aligned.\n- Keep release proof external to Git and bind it to the exact main/dev bases, candidate SHA/tree, version, workflow run, and artifact.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Main baseline: \`${mainSha}\`\n- Release gate: \`${qualification.status}\`; static preflight: \`${qualification.preflight_status}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Docpact checked the complete main-to-candidate promotion range before the dev PR was created.\n- The managed candidate push ran only structural/static checks; this PR owns one non-browser full release gate and its exact proof.\n- Browser E2E is not evaluated or required by this PR. Run the manual hermetic workflow on the open business PR before release-to-dev when the change risk warrants browser evidence.\n\n## Risks And Follow-Up\n\n- Merge only after the exact Release Candidate release proof succeeds, then run the deterministic dev-to-main promotion command with this PR number.\n`;
+  return `<!-- ${RELEASE_MARKER_PREFIX} issue=${issue} version=${version} dev-base=${baseSha} main-base=${mainSha} candidate=${candidateSha} -->\n\n## Branch Contract\n\n- base branch: \`dev\`\n- validated environment: exact dev Release PR non-browser gate\n- back-merge required after merge: No\n- root workspace integration expected: after later dev-to-main promotion\n\n## Linked Issue\n\nRefs #${issue}\n\n## Change Facts\n\n- Prepare version \`${version}\` from exact dev base \`${baseSha}\`.\n- Change only package.json.version and keep pnpm-lock.yaml byte-for-byte unchanged.\n- Keep release proof external to Git and bind it to the exact main/dev bases, candidate SHA/tree, version, workflow run, and artifact.\n- Record Docpact review evidence only after the command proves the candidate has no other semantic change.\n- Reviewed paths:\n${reviewSummary}\n\n## Validation Facts\n\n- Candidate: \`${candidateSha}\`\n- Main baseline: \`${mainSha}\`\n- Release gate: \`${qualification.status}\`; static preflight: \`${qualification.preflight_status}\`\n- Docpact automatic-review status: \`${docpactReview.status}\`\n- Docpact checked the complete main-to-candidate promotion range before the dev PR was created.\n- The managed candidate push ran only structural/static checks; this PR owns one non-browser full release gate and its exact proof.\n- Browser E2E is not evaluated or required by this PR. Run the manual hermetic workflow on the open business PR before release-to-dev when the change risk warrants browser evidence.\n\n## Risks And Follow-Up\n\n- Merge only after the exact Release Candidate release proof succeeds, then run the deterministic dev-to-main promotion command with this PR number.\n`;
 }
 
 function releaseMarker(body) {
@@ -1195,6 +1213,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   if (existing) {
     const marker = releaseMarker(existing.body);
     const existingVersions = readGithubVersions(root, options.repository, existing.headRefOid);
+    assertGithubPnpmLockUnchanged(root, options.repository, remoteDevSha, existing.headRefOid);
     if (
       marker.issue !== options.issue ||
       marker.version !== target.text ||
@@ -1370,7 +1389,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   let candidateSha = git(root, ['rev-parse', 'HEAD^{commit}']).stdout.trim();
   let docpactReview;
   if (candidateSha === fetchedDevSha) {
-    writeVersionFiles(root, target.text);
+    writeVersionFile(root, target.text);
     assertReleaseCandidateScope(root, fetchedDevSha, target.text);
     docpactReview = automaticDocpactReview(root, {
       baseSha: fetchedDevSha,

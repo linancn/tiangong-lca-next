@@ -12,8 +12,8 @@ const job = (workflow: string, name: string, nextName?: string) => {
 describe('Publication workflow gates', () => {
   it('verifies the reviewed bundle before the manual web build and deploy', () => {
     const workflow = read('.github/workflows/ci.yml');
-    const verifyAt = workflow.indexOf('run: npm run lcia-cache:verify');
-    const buildAt = workflow.indexOf('run: npm run build');
+    const verifyAt = workflow.indexOf('run: pnpm lcia-cache:verify');
+    const buildAt = workflow.indexOf('run: pnpm build');
     const deployAt = workflow.indexOf('Deploy to EdgeOne Pages');
     expect(verifyAt).toBeGreaterThan(0);
     expect(verifyAt).toBeLessThan(buildAt);
@@ -23,19 +23,21 @@ describe('Publication workflow gates', () => {
   it('keeps the aggregate gate for dev candidates and explicit release recovery', () => {
     const workflow = read('.github/workflows/build.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
-    expect(releaseGate).toContain('run: npm run lcia-cache:verify');
-    expect(releaseGate).toContain('run: npm run release:static-preflight');
-    expect(releaseGate).toContain('run: npm run prepush:gate');
+    expect(releaseGate).toContain('uses: pnpm/setup@v2');
+    expect(releaseGate).toContain('run: pnpm install --frozen-lockfile');
+    expect(releaseGate).toContain('run: pnpm lcia-cache:verify');
+    expect(releaseGate).toContain('run: pnpm release:static-preflight');
+    expect(releaseGate).toContain('run: pnpm prepush:gate');
     expect(releaseGate).toContain("TIANGONG_AGENT_MODE: '1'");
     expect(releaseGate).toContain('uses: actions/upload-artifact@v6');
     expect(releaseGate).toContain('path: .local/test-logs/**');
-    expect(releaseGate.indexOf('npm run lcia-cache:verify')).toBeLessThan(
-      releaseGate.indexOf('npm run release:static-preflight'),
+    expect(releaseGate.indexOf('pnpm lcia-cache:verify')).toBeLessThan(
+      releaseGate.indexOf('pnpm release:static-preflight'),
     );
-    expect(releaseGate.indexOf('npm run release:static-preflight')).toBeLessThan(
-      releaseGate.indexOf('npm run prepush:gate'),
+    expect(releaseGate.indexOf('pnpm release:static-preflight')).toBeLessThan(
+      releaseGate.indexOf('pnpm prepush:gate'),
     );
-    expect(releaseGate).not.toContain('run: npm run test:ci');
+    expect(releaseGate).not.toContain('run: pnpm test:ci');
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
     expect(workflow).toContain('release_head: ${{ needs.release-context.outputs.release_head }}');
     expect(workflow).toContain('actions: read');
@@ -83,7 +85,7 @@ describe('Publication workflow gates', () => {
 
   it('keeps the local pre-push gate aligned with the release gate', () => {
     const packageJson = JSON.parse(read('package.json'));
-    expect(packageJson.scripts['prepush:gate']).toContain('npm run lcia-cache:verify');
+    expect(packageJson.scripts['prepush:gate']).toContain('pnpm lcia-cache:verify');
   });
 
   it('keeps hermetic browser qualification manual and outside release blocking', () => {
@@ -94,9 +96,9 @@ describe('Publication workflow gates', () => {
     expect(semanticWorkflow).not.toContain('  push:');
     expect(semanticWorkflow).toContain('ref: ${{ inputs.ref || github.sha }}');
     expect(semanticWorkflow).toContain('Manual Hermetic Semantic Qualification');
-    expect(semanticWorkflow).toContain('npm --silent run e2e:qualification:key');
-    expect(semanticWorkflow).toContain('npm --silent run e2e:qualify');
-    expect(semanticWorkflow).toContain('npm --silent run release:proof:verify');
+    expect(semanticWorkflow).toContain('pnpm --silent e2e:qualification:key');
+    expect(semanticWorkflow).toContain('pnpm --silent e2e:qualify');
+    expect(semanticWorkflow).toContain('pnpm --silent release:proof:verify');
     expect(semanticWorkflow).toContain('Upload manual semantic qualification proof');
     expect(semanticWorkflow).not.toContain('uses: actions/cache@');
     expect(semanticWorkflow).not.toContain('E2E_PRODUCTION_WRITE_CONFIRMATION');
@@ -105,9 +107,9 @@ describe('Publication workflow gates', () => {
 
     const aggregateGate = read('.github/workflows/release-gate.yml');
     expect(aggregateGate).not.toContain('  semantic-qualification:');
-    expect(aggregateGate).not.toContain('npm --silent run e2e:qualification:key');
-    expect(aggregateGate).not.toContain('npm --silent run release:proof:verify');
-    expect(aggregateGate).not.toContain('npm --silent run e2e:qualify');
+    expect(aggregateGate).not.toContain('pnpm --silent e2e:qualification:key');
+    expect(aggregateGate).not.toContain('pnpm --silent release:proof:verify');
+    expect(aggregateGate).not.toContain('pnpm --silent e2e:qualify');
     expect(aggregateGate).not.toContain('  public-semantic-e2e:');
     expect(aggregateGate).not.toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
     expect(aggregateGate).toMatch(

@@ -43,9 +43,10 @@ type CandidateManifest = {
       sourceTreeDigest: string;
       unitTestTreeDigest: string;
     };
+    dependencyLockSha256: string;
     packageJsonSha256: string;
-    packageLockSha256: string;
     packageVersion: string;
+    pnpmWorkspaceSha256: string;
     sourceDateEpoch: number;
     tree: string;
   };
@@ -235,7 +236,7 @@ async function verifyCandidateIdentity(
 ): Promise<Record<string, unknown>> {
   if (
     manifest.kind !== 'tiangong-next-release-e2e-candidate' ||
-    manifest.schemaVersion !== 4 ||
+    manifest.schemaVersion !== 5 ||
     manifest.repository?.canonical !== 'linancn/tiangong-lca-next' ||
     manifest.repository?.packageName !== 'tiangong-lca-next'
   ) {
@@ -247,19 +248,22 @@ async function verifyCandidateIdentity(
   ) {
     throw new Error('Environment contract kind or schema version is unsupported.');
   }
-  const [packageJsonRaw, packageLockRaw, dockerfileRaw, environmentRaw] = await Promise.all([
-    readFile(path.join(process.cwd(), 'package.json')),
-    readFile(path.join(process.cwd(), 'package-lock.json')),
-    readFile(path.join(process.cwd(), 'docker/e2e/Dockerfile')),
-    readFile(path.join(process.cwd(), 'docker/e2e/environment.json')),
-  ]);
+  const [packageJsonRaw, dependencyLockRaw, pnpmWorkspaceRaw, dockerfileRaw, environmentRaw] =
+    await Promise.all([
+      readFile(path.join(process.cwd(), 'package.json')),
+      readFile(path.join(process.cwd(), 'pnpm-lock.yaml')),
+      readFile(path.join(process.cwd(), 'pnpm-workspace.yaml')),
+      readFile(path.join(process.cwd(), 'docker/e2e/Dockerfile')),
+      readFile(path.join(process.cwd(), 'docker/e2e/environment.json')),
+    ]);
   const packageJson = JSON.parse(packageJsonRaw.toString('utf8')) as { version?: string };
   const installedPlaywright = await readJson<{ version: string }>(
     path.join(process.cwd(), 'node_modules/@playwright/test/package.json'),
   );
   const mismatches = [
     [sha256(packageJsonRaw), manifest.candidate.packageJsonSha256, 'package.json'],
-    [sha256(packageLockRaw), manifest.candidate.packageLockSha256, 'package-lock.json'],
+    [sha256(dependencyLockRaw), manifest.candidate.dependencyLockSha256, 'pnpm-lock.yaml'],
+    [sha256(pnpmWorkspaceRaw), manifest.candidate.pnpmWorkspaceSha256, 'pnpm-workspace.yaml'],
     [sha256(dockerfileRaw), manifest.environment.dockerfileSha256, 'Dockerfile'],
     [sha256(environmentRaw), manifest.environment.contractSha256, 'environment contract'],
     [packageJson.version, manifest.candidate.packageVersion, 'package version'],
@@ -811,7 +815,7 @@ async function main(): Promise<number> {
       fixtureIntentCreated,
       nextCommand:
         normalized.phase === 'preflight' || normalized.phase === 'candidate-server'
-          ? 'npm run e2e:release:resume'
+          ? 'pnpm e2e:release:resume'
           : undefined,
       phase: normalized.phase,
       preflight: {

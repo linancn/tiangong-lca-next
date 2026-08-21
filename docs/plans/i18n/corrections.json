@@ -1442,7 +1442,49 @@
         "npm run i18n:locale:artifacts:write"
       ],
       "correctionDigest": "6323e74e841543eff7366eaaf2938d6c1df2fc6eb1d0f3763eb835dafde1df34"
+    },
+    {
+      "locale": "zh-CN",
+      "messageId": "pages.admin.subPage.alertMessage",
+      "before": "umi ui 现已发布，欢迎使用 npm run ui 启动体验。",
+      "after": "Umi UI 已可用于此管理员页面。",
+      "evidence": [
+        "Next Issue #920 migrates every active package-manager entrypoint to pnpm and removes the obsolete npm command from shipped administrator-page copy.",
+        "The replacement is package-manager-neutral because the repository has no ui script; locale topology and the administrator-only route boundary are unchanged."
+      ],
+      "affectedClosure": [
+        "Reserved administrator-only Ant Design Pro page",
+        "zh-CN active locale catalog",
+        "Package-manager command guidance"
+      ],
+      "tests": [
+        "pnpm i18n:corrections:check",
+        "pnpm i18n:locale:artifacts:write",
+        "pnpm test:ci tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/locales.test.ts --runInBand --no-coverage"
+      ],
+      "correctionDigest": "c527c819edcdf258a1984e086053d3f69c96dea333f12bf5eb03e6f9e16a26d7"
+    },
+    {
+      "locale": "de-DE",
+      "messageId": "pages.admin.subPage.alertMessage",
+      "before": "Umi UI ist jetzt verfügbar. Starten Sie die Oberfläche mit npm run ui.",
+      "after": "Umi UI ist auf dieser Administratorseite verfügbar.",
+      "evidence": [
+        "Next Issue #920 migrates every active package-manager entrypoint to pnpm and removes the obsolete npm command from shipped administrator-page copy.",
+        "The replacement is package-manager-neutral because the repository has no ui script; locale topology and the administrator-only route boundary are unchanged."
+      ],
+      "affectedClosure": [
+        "Reserved administrator-only Ant Design Pro page",
+        "de-DE active locale catalog",
+        "Package-manager command guidance"
+      ],
+      "tests": [
+        "pnpm i18n:corrections:check",
+        "pnpm i18n:locale:artifacts:write",
+        "pnpm test:ci tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/locales.test.ts --runInBand --no-coverage"
+      ],
+      "correctionDigest": "e1eb269af64b5cbd1d7dfa51aec65fd2e8b66e11c03abe8d6551bc4f819ba6a7"
     }
   ],
-  "correctionLedgerDigest": "b35bc2dcc3ea1f6eb3036150f15bbcec42e87614409563ffe04d3da374d36035"
+  "correctionLedgerDigest": "aa1ce07437550c229c6835918fe64d8200f0c251910c4723bad48b684ac6af9b"
 }

@@ -8,17 +8,19 @@ ARG E2E_FRONTEND_ENV=main
 ENV CI=true \
     HOME=/root \
     XDG_CACHE_HOME=/root/.cache \
-    npm_config_cache=/root/.npm \
     REACT_APP_ENV=${E2E_FRONTEND_ENV} \
     UMI_ENV=prod
 
 WORKDIR /app
 
+RUN corepack enable \
+    && corepack install --global pnpm@11.22.0
+
 # The lockfile layer is intentionally before the candidate archive. Docker can therefore reuse
-# the exact npm dependency tree when application commits change without changing package-lock.
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,id=tiangong-next-e2e-npm,target=/root/.npm \
-    npm ci --ignore-scripts --no-audit --no-fund
+# the exact pnpm dependency graph when application commits change without changing the lockfile.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=tiangong-next-e2e-pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --ignore-scripts --store-dir=/root/.local/share/pnpm/store
 
 FROM dependencies AS candidate
 
@@ -31,7 +33,7 @@ RUN node /tmp/verify-build-input.cjs \
     && tar -xf /tmp/tiangong-candidate.tar -C /app \
     && rm /tmp/tiangong-candidate.tar \
     && rm /tmp/verify-build-input.cjs \
-    && npm run postinstall \
-    && npm run build
+    && pnpm postinstall \
+    && pnpm build
 
 ENTRYPOINT ["node", "--import", "tsx", "scripts/e2e/container-runner.ts"]

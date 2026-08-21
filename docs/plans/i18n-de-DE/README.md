@@ -78,18 +78,18 @@ The three dimensions are review questions, not three required identities. The ca
 Refresh the deterministic shared topology and compact current German artifacts in dependency order:
 
 ```bash
-npm run i18n:locale:manifest:write -- --locale de-DE
-npm run i18n:locale:artifacts:write -- --locale de-DE
+pnpm i18n:locale:manifest:write --locale de-DE
+pnpm i18n:locale:artifacts:write --locale de-DE
 ```
 
 Check the active path:
 
 ```bash
-npm run i18n:locale:audit -- --locale de-DE
-npm run i18n:context:check -- --locale de-DE
-npm run i18n:locale:quality:check -- --locale de-DE
-npm run i18n:corrections:check
-npm run i18n:de:audit
+pnpm i18n:locale:audit --locale de-DE
+pnpm i18n:context:check --locale de-DE
+pnpm i18n:locale:quality:check --locale de-DE
+pnpm i18n:corrections:check
+pnpm i18n:de:audit
 ```
 
 The commands below are historical compatibility commands. Run them only for a task explicitly concerning the frozen #601/#602/#606 evidence; never use them to approve a current correction.
@@ -97,7 +97,7 @@ The commands below are historical compatibility commands. Run them only for a ta
 Generate the local #606 delta form without overwriting an existing file:
 
 ```bash
-npm run i18n:de:delta:review:generate
+pnpm i18n:de:delta:review:generate
 ```
 
 Use `-- --force` only when intentionally replacing an obsolete form after preserving any useful notes. The generator writes atomically with local-only permissions. Repository-local input/output is accepted only below the ignored `.local/i18n-de-DE/` directory; tracked or non-ignored review files are rejected.
@@ -105,21 +105,21 @@ Use `-- --force` only when intentionally replacing an obsolete form after preser
 Check the filled delta form:
 
 ```bash
-npm run i18n:de:delta:review:check
+pnpm i18n:de:delta:review:check
 ```
 
 Inspect historical work-in-progress state without claiming active approval:
 
 ```bash
-npm run i18n:de:pilot:report
-npm run i18n:de:runtime:manifest:check
+pnpm i18n:de:pilot:report
+pnpm i18n:de:runtime:manifest:check
 ```
 
 No command in this workflow posts a GitHub comment or calls the GitHub API.
 
 ## Frozen #601 pilot confirmation workflow (historical)
 
-The steps below document how the original Pilot was reviewed. In active #602 work, do not regenerate these artifacts. `npm run i18n:de:pilot` now verifies that the tracked review pack still equals the immutable #601 snapshot and that the existing local confirmation still matches it.
+The steps below document how the original Pilot was reviewed. In active #602 work, do not regenerate these artifacts. `pnpm i18n:de:pilot` now verifies that the tracked review pack still equals the immutable #601 snapshot and that the existing local confirmation still matches it.
 
 1. Refresh the candidate ledger and pilot pack.
 2. Generate `.local/i18n-de-DE/pilot-review-confirmation.md`.
@@ -127,7 +127,7 @@ The steps below document how the original Pilot was reviewed. In active #602 wor
 4. Review the separate summaries for all 9 reserved-context proposals and both blocked glossary terms. `tidas.result-set` is included even though no pilot message directly uses it, because the pilot gate covers the complete current blocked-term policy.
 5. Put message-specific change requests only inside the marked local note regions. If any Critical/Major issue remains, keep the applicable decision `PENDING` or use `CHANGES_REQUESTED`.
 6. When everything is acceptable, fill the one JSON confirmation block: add a local reviewer reference and date, change all three decisions to `APPROVED`, and change all three approval flags to boolean `true`.
-7. Run `npm run i18n:de:review:check`, then `npm run i18n:de:pilot`.
+7. Run `pnpm i18n:de:review:check`, then `pnpm i18n:de:pilot`.
 8. Do not add, commit, upload, paste, or quote the completed file. The gate reads it as a local input and never rewrites tracked artifacts.
 
 The confirmation binds both:
@@ -146,11 +146,11 @@ Validation has three independent evidence domains. Do not invalidate or rerun a 
 | Frozen #601 Pilot/catalog | immutable #601 commit, 90-message Pilot pack, 2,665-message ledger/catalog, activation entries, provenance policy, and their existing ignored confirmations | frozen-snapshot comparison plus local Pilot/catalog confirmation checks; never regenerate these forms during #602 | a mismatch against the immutable #601 inputs blocks carry-forward and requires explicit investigation; #602 changes do not silently rewrite the baseline |
 | Accepted active baseline | merged `dev` commit `36836f2c`, its 2,689-message three-locale manifest, and unchanged runtime policy | immutable Git snapshot and exact baseline-value comparison | a baseline commit, value, topology, or policy mismatch blocks carry-forward |
 | Issue #606 runtime delta | the exact 48 new Calculation Bundle/Release messages, canonical three-locale manifest, dynamic-family callsite proof, runtime policy, and deterministic renderer | runtime-manifest report, private 48-item delta form, active topology/ICU/token/baseline-value audit, and focused locale/runtime tests | regenerate and re-confirm only after one of these delta inputs changes |
-| Repository delivery checkpoint | exact committed `HEAD`, tracked tree, Node/dependency state, and lint/build/test/coverage/Docpact/gate configuration | the normal push hook runs Docpact and `npm run prepush:gate` once after the last controlled tracked change | a new controlled tracked change or relevant toolchain/dependency/configuration change requires one new final run |
+| Repository delivery checkpoint | exact committed `HEAD`, tracked tree, Node/dependency state, and lint/build/test/coverage/Docpact/gate configuration | the normal push hook runs Docpact and `pnpm prepush:gate` once after the last controlled tracked change | a new controlled tracked change or relevant toolchain/dependency/configuration change requires one new final run |
 
-Ignored local confirmation content and GitHub metadata are not repository full-gate inputs. They invalidate only the applicable local Pilot or catalog evidence. During normal delivery, do not run `npm run prepush:gate` manually and then immediately run a push whose hook repeats it. Let the hook own the one final full-gate execution. Run the full gate manually only for a no-push evidence handoff.
+Ignored local confirmation content and GitHub metadata are not repository full-gate inputs. They invalidate only the applicable local Pilot or catalog evidence. During normal delivery, do not run `pnpm prepush:gate` manually and then immediately run a push whose hook repeats it. Let the hook own the one final full-gate execution. Run the full gate manually only for a no-push evidence handoff.
 
-This workflow does not add a reusable passed-gate cache. Final delivery uses `npm run push:checked -- <normal git push arguments>` so the ordinary hook owns Docpact and the full gate once. A successful managed push leaves no receipt. Only a non-zero original transport result after a valid hook payload activates the ignored, one-hour, exact-intent receipt; argument-free `npm run push:retry` verifies the bound remote/refspec, commit, clean tree, toolchain, dependencies, gate inputs, and Docpact base before its internal exact-SHA `--no-verify` transport. Already-reached remote state succeeds idempotently; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed. Raw `git push` still runs the hook but cannot activate this recovery path, and operators must never use `--no-verify` or `HUSKY=0` manually. Any Umi-generating focused test, coverage command, or full gate must finish before another starts because they share `.umi-test` state.
+This workflow does not add a reusable passed-gate cache. Final delivery uses `pnpm push:checked <normal git push arguments>` so the ordinary hook owns Docpact and the full gate once. A successful managed push leaves no receipt. Only a non-zero original transport result after a valid hook payload activates the ignored, one-hour, exact-intent receipt; argument-free `pnpm push:retry` verifies the bound remote/refspec, commit, clean tree, toolchain, dependencies, gate inputs, and Docpact base before its internal exact-SHA `--no-verify` transport. Already-reached remote state succeeds idempotently; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed. Raw `git push` still runs the hook but cannot activate this recovery path, and operators must never use `--no-verify` or `HUSKY=0` manually. Any Umi-generating focused test, coverage command, or full gate must finish before another starts because they share `.umi-test` state.
 
 ## Frozen #601 Pilot and catalog separation (historical)
 
@@ -164,7 +164,7 @@ After the 30 leaf modules, all context proposals, and all producer records exist
 2. Keep the one `de-DE` top-level bundle and its runtime/configuration adapters unchanged; no country-specific German bundle is allowed.
 3. Generate the canonical three-locale manifest and deterministic runtime activation manifest.
 4. Review and approve the separate private 48-item #606 delta form with its direct and dynamic-family callsite context.
-5. Pass `npm run i18n:de:audit`, focused runtime/locale tests, and Docpact/scoped static checks.
-6. Freeze the delivery commit and run the repository full gate once through `npm run push:checked -- <normal git push arguments>`; rerun it only if a controlled tracked input changes afterward or an expired failed-transport receipt has removed the bounded retry authority.
+5. Pass `pnpm i18n:de:audit`, focused runtime/locale tests, and Docpact/scoped static checks.
+6. Freeze the delivery commit and run the repository full gate once through `pnpm push:checked <normal git push arguments>`; rerun it only if a controlled tracked input changes afterward or an expired failed-transport receipt has removed the bounded retry authority.
 
 If step 4 becomes incomplete because a review-bound input changes, structural reports remain valid work-in-progress evidence but enforcement must fail closed until a fresh private form passes. A pending local human form is not a GitHub blocker record and must not be committed.

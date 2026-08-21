@@ -29,16 +29,22 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
         with:
-          node-version: 24
+          version: 11.22.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Resolve qualification proof key
         id: qualification-identity
         run: |
           set -euo pipefail
-          identity_json="$(npm --silent run e2e:qualification:key -- --format=json)"
+          identity_json="$(pnpm --silent e2e:qualification:key --format=json)"
           proof_key="$(jq -r '.result.proofKey' <<< "$identity_json")"
           if [[ ! "$proof_key" =~ ^[0-9a-f]{64}$ ]]; then
             echo "::error::Qualification identity did not return a valid proof key."
@@ -48,11 +54,11 @@ jobs:
 
       - name: Run complete semantic qualification
         run: >-
-          npm --silent run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json --format=json --output .local/e2e-release/qualification-controller-report.json
+          pnpm --silent e2e:qualify --proof .local/e2e-release/qualification-proof.json --format=json --output .local/e2e-release/qualification-controller-report.json
 
       - name: Verify generated qualification proof
         run: >-
-          npm --silent run release:proof:verify -- --proof .local/e2e-release/qualification-proof.json --format=json
+          pnpm --silent release:proof:verify --proof .local/e2e-release/qualification-proof.json --format=json
 
       - name: Upload manual semantic qualification proof
         uses: actions/upload-artifact@v6

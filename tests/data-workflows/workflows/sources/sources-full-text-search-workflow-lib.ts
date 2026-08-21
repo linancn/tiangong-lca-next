@@ -54,7 +54,7 @@ export const SOURCE_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = buildFullTextSearchHel
   defaultSearchFixturePath: DEFAULT_SOURCE_FULL_TEXT_SEARCH_FIXTURE_PATH,
   defaultSeedExpectedPath: DEFAULT_SOURCE_EXPECTED_PATH,
   defaultSeedFixturePath: DEFAULT_SOURCE_FIXTURE_PATH,
-  npmCommand: 'test:sources:full-text-search',
+  packageCommand: 'test:sources:full-text-search',
   title: 'Source full-text-search data workflow',
 });
 

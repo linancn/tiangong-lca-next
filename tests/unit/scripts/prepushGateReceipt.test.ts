@@ -6,7 +6,22 @@ import path from 'node:path';
 const receiptHelper = require('../../../scripts/prepush-gate-receipt.cjs') as {
   RECEIPT_RELATIVE_PATH: string;
   RECEIPT_TTL_MS: number;
-  collectCheckpoint: (root: string, docpactBaseRef: string) => { gateInputsDigest: string };
+  collectCheckpoint: (
+    root: string,
+    docpactBaseRef: string,
+  ) => {
+    checkpointVersion: number;
+    gateInputsDigest: string;
+    pnpmVersion: string;
+    pnpmExecutableDigest: string;
+    pnpmConfigDigest: string;
+    pnpmWorkspaceDigest: string;
+    pnpmLockDigest: string;
+    installedPnpmLockDigest: string;
+    installedModulesManifestDigest: string;
+    installedDependencyTreeDigest: string;
+  };
+  dependencyTreeDigest: (source: string) => string;
   retryTransport: (root: string) => void;
   sha256: (value: string) => string;
 };
@@ -96,6 +111,7 @@ const createFixtureSeed = (): FixtureSeed => {
     name: 'receipt-fixture',
     version: '1.0.0',
     private: true,
+    packageManager: 'pnpm@11.22.0',
     scripts: {
       'docpact:gate': 'node scripts/fake-gate.cjs docpact',
       'prepush:gate': 'node scripts/fake-gate.cjs prepush',
@@ -105,18 +121,11 @@ const createFixtureSeed = (): FixtureSeed => {
     },
   };
   writeJson(path.join(root, 'package.json'), packageJsonFixture);
-  writeJson(path.join(root, 'package-lock.json'), {
-    name: packageJsonFixture.name,
-    version: packageJsonFixture.version,
-    lockfileVersion: 3,
-    requires: true,
-    packages: {
-      '': {
-        name: packageJsonFixture.name,
-        version: packageJsonFixture.version,
-      },
-    },
-  });
+  fs.writeFileSync(
+    path.join(root, 'pnpm-lock.yaml'),
+    "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n\nimporters:\n  .: {}\n",
+  );
+  fs.writeFileSync(path.join(root, 'pnpm-workspace.yaml'), "packages:\n  - '.'\n");
   fs.writeFileSync(
     path.join(root, '.gitignore'),
     'node_modules/\n/.local/prepush-gate/\n/.local/test-gates.log\n',
@@ -186,11 +195,12 @@ const createFixtureSeed = (): FixtureSeed => {
   );
   fs.chmodSync(path.join(hookDirectory, 'pre-push'), 0o755);
 
-  fs.mkdirSync(path.join(root, 'node_modules'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'node_modules/.pnpm'), { recursive: true });
   fs.copyFileSync(
-    path.join(root, 'package-lock.json'),
-    path.join(root, 'node_modules/.package-lock.json'),
+    path.join(root, 'pnpm-lock.yaml'),
+    path.join(root, 'node_modules/.pnpm/lock.yaml'),
   );
+  fs.writeFileSync(path.join(root, 'node_modules/.modules.yaml'), 'nodeLinker: isolated\n');
   fs.writeFileSync(path.join(root, 'node_modules/.receipt-dependency-fixture'), 'original\n');
 
   git(root, ['add', '.']);
@@ -277,11 +287,10 @@ const checkedPush = (
   const localRef = git(fixture.root, ['symbolic-ref', 'HEAD']);
   return run(
     fixture.root,
-    'npm',
+    'pnpm',
     [
       'run',
       'push:checked',
-      '--',
       ...(gateProfile ? ['--gate-profile', gateProfile] : []),
       'origin',
       `${localRef}:${remoteRef}`,
@@ -298,15 +307,10 @@ const rawPush = (fixture: Fixture, remoteRef = 'refs/heads/main') => {
 const prepareReleaseCandidate = (fixture: Fixture) => {
   git(fixture.root, ['switch', '-c', 'codex/issue-867-version-v1.0.1', 'refs/remotes/origin/dev']);
   const packagePath = path.join(fixture.root, 'package.json');
-  const lockPath = path.join(fixture.root, 'package-lock.json');
   const packageDocument = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-  const lockDocument = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
   packageDocument.version = '1.0.1';
-  lockDocument.version = '1.0.1';
-  lockDocument.packages[''].version = '1.0.1';
   writeJson(packagePath, packageDocument);
-  writeJson(lockPath, lockDocument);
-  git(fixture.root, ['add', 'package.json', 'package-lock.json']);
+  git(fixture.root, ['add', 'package.json']);
   git(fixture.root, ['commit', '-m', 'prepare release candidate']);
 };
 
@@ -320,13 +324,13 @@ const prepareImmutablePromotion = (fixture: Fixture) => {
 };
 
 const retryPush = (fixture: Fixture, args: string[] = []) =>
-  run(fixture.root, 'npm', ['run', 'push:retry', ...(args.length > 0 ? ['--', ...args] : [])]);
+  run(fixture.root, 'pnpm', ['run', 'push:retry', ...args]);
 
 const activateFailedTransportReceipt = (fixture: Fixture) => {
   installRemoteRejection(fixture);
   const result = checkedPush(fixture);
   expect(result.status).not.toBe(0);
-  expect(result.stderr.split(/\r?\n/u)).toContain('Next: npm run push:retry');
+  expect(result.stderr.split(/\r?\n/u)).toContain('Next: pnpm run push:retry');
   expect(fs.existsSync(fixture.receipt)).toBe(true);
   expect(remoteSha(fixture)).toBe(fixture.mainBase);
   removeRemoteRejection(fixture);
@@ -397,10 +401,10 @@ describe('bounded checked-push transport receipt', () => {
       'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=2 --workerIdleMemoryLimit=512MB --testTimeout=20000 --coverage --testPathIgnorePatterns="<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$"',
     );
     expect(packageJson.scripts['test:coverage']).toBe(
-      'npm run test:prepush-receipt && npm run test:coverage:collect',
+      'pnpm test:prepush-receipt && pnpm test:coverage:collect',
     );
     expect(packageJson.scripts['test:coverage:report']).toBe(
-      'npm run test:coverage && node scripts/test-coverage-report.js',
+      'pnpm test:coverage && node scripts/test-coverage-report.js',
     );
     expect((receiptHelper as Record<string, unknown>).gateAndCreateReceipt).toBeUndefined();
     expect(fixtureEnvironment).not.toHaveProperty('GIT_DIR');
@@ -416,6 +420,7 @@ describe('bounded checked-push transport receipt', () => {
       '.prettierrc.js',
       'jsconfig.json',
       'jest.config.cjs',
+      'pnpm-workspace.yaml',
       'scripts/jest-sequencer.cjs',
       'tsconfig.json',
       'tsconfig.electron.json',
@@ -438,6 +443,78 @@ describe('bounded checked-push transport receipt', () => {
     }
   });
 
+  it('binds the pnpm runtime, configuration, workspace, lockfiles, and installed graph', () => {
+    const current = fixture();
+    const checkpoint = receiptHelper.collectCheckpoint(current.root, 'origin/main');
+
+    expect(checkpoint).toMatchObject({
+      checkpointVersion: 3,
+      pnpmVersion: expect.any(String),
+      pnpmExecutableDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      pnpmConfigDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      pnpmWorkspaceDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      pnpmLockDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      installedPnpmLockDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      installedModulesManifestDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      installedDependencyTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+    });
+  });
+
+  it('canonicalizes pnpm dependency object order without hiding content drift', () => {
+    const first = JSON.stringify([
+      { dependencies: { alpha: { version: '1.0.0' }, beta: { version: '2.0.0' } } },
+    ]);
+    const reordered = JSON.stringify([
+      { dependencies: { beta: { version: '2.0.0' }, alpha: { version: '1.0.0' } } },
+    ]);
+    const changed = JSON.stringify([
+      { dependencies: { beta: { version: '2.0.1' }, alpha: { version: '1.0.0' } } },
+    ]);
+
+    expect(receiptHelper.dependencyTreeDigest(reordered)).toBe(
+      receiptHelper.dependencyTreeDigest(first),
+    );
+    expect(receiptHelper.dependencyTreeDigest(changed)).not.toBe(
+      receiptHelper.dependencyTreeDigest(first),
+    );
+  });
+
+  it('excludes registry authentication from the stable pnpm configuration digest', () => {
+    const current = fixture();
+    const fakeBin = path.join(current.container, 'auth-config-bin');
+    const actualPnpm = execFileSync('which', ['pnpm'], {
+      encoding: 'utf8',
+      env: isolatedEnvironment(),
+    }).trim();
+    writeExecutable(
+      path.join(fakeBin, 'pnpm'),
+      [
+        '#!/bin/sh',
+        'if [ "$1" = "config" ] && [ "$2" = "list" ] && [ "$3" = "--json" ]; then',
+        `  exec node -e "process.stdout.write(JSON.stringify({ nodeLinker: 'isolated', '//registry.npmjs.org/:_authToken': process.env.RECEIPT_TEST_AUTH_TOKEN }))"`,
+        'fi',
+        `exec ${shellQuote(actualPnpm)} "$@"`,
+        '',
+      ].join('\n'),
+    );
+
+    const originalPath = process.env.PATH;
+    const originalToken = process.env.RECEIPT_TEST_AUTH_TOKEN;
+    process.env.PATH = `${fakeBin}:${originalPath ?? ''}`;
+    try {
+      process.env.RECEIPT_TEST_AUTH_TOKEN = 'first-secret';
+      const first = receiptHelper.collectCheckpoint(current.root, 'origin/main');
+      process.env.RECEIPT_TEST_AUTH_TOKEN = 'second-secret';
+      const second = receiptHelper.collectCheckpoint(current.root, 'origin/main');
+      expect(second.pnpmConfigDigest).toBe(first.pnpmConfigDigest);
+    } finally {
+      if (originalPath === undefined) delete process.env.PATH;
+      else process.env.PATH = originalPath;
+      if (originalToken === undefined) delete process.env.RECEIPT_TEST_AUTH_TOKEN;
+      else process.env.RECEIPT_TEST_AUTH_TOKEN = originalToken;
+    }
+  });
+
   it('invalidates a transport receipt after committed lint configuration drift', () => {
     const current = fixture();
     activateFailedTransportReceipt(current);
@@ -445,7 +522,9 @@ describe('bounded checked-push transport receipt', () => {
     git(current.root, ['add', '.oxlintrc.json']);
     git(current.root, ['commit', '-m', 'change lint configuration']);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/changed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/changed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -473,18 +552,18 @@ describe('bounded checked-push transport receipt', () => {
   it('captures dependency trees larger than the Node spawnSync default buffer', () => {
     const current = fixture();
     const fakeBin = path.join(current.container, 'large-output-bin');
-    const actualNpm = execFileSync('which', ['npm'], {
+    const actualPnpm = execFileSync('which', ['pnpm'], {
       encoding: 'utf8',
       env: isolatedEnvironment(),
     }).trim();
     writeExecutable(
-      path.join(fakeBin, 'npm'),
+      path.join(fakeBin, 'pnpm'),
       [
         '#!/bin/sh',
-        'if [ "$1" = "ls" ] && [ "$2" = "--all" ] && [ "$3" = "--json" ]; then',
+        'if [ "$1" = "list" ] && [ "$2" = "--depth" ] && [ "$3" = "Infinity" ] && [ "$4" = "--json" ]; then',
         `  exec node -e "process.stdout.write(JSON.stringify({ padding: 'x'.repeat(2 * 1024 * 1024) }))"`,
         'fi',
-        `exec ${shellQuote(actualNpm)} "$@"`,
+        `exec ${shellQuote(actualPnpm)} "$@"`,
         '',
       ].join('\n'),
     );
@@ -554,7 +633,7 @@ describe('bounded checked-push transport receipt', () => {
   it('treats raw and checked pushes with no ref updates as pre-checkpoint no-ops', () => {
     const current = fixture();
     git(current.root, ['push', '--no-verify', 'origin', 'refs/heads/main:refs/heads/main']);
-    fs.rmSync(path.join(current.root, 'node_modules/.package-lock.json'));
+    fs.rmSync(path.join(current.root, 'node_modules/.pnpm/lock.yaml'));
 
     expect(rawPush(current).status).toBe(0);
     expect(checkedPush(current).status).toBe(0);
@@ -580,10 +659,9 @@ describe('bounded checked-push transport receipt', () => {
   it('accepts HEAD as the exact current-branch source for a managed push', () => {
     const current = fixture();
 
-    const result = run(current.root, 'npm', [
+    const result = run(current.root, 'pnpm', [
       'run',
       'push:checked',
-      '--',
       'origin',
       'HEAD:refs/heads/main',
     ]);
@@ -598,10 +676,9 @@ describe('bounded checked-push transport receipt', () => {
     const current = fixture();
     git(current.root, ['tag', 'ineligible-managed-tag']);
 
-    const result = run(current.root, 'npm', [
+    const result = run(current.root, 'pnpm', [
       'run',
       'push:checked',
-      '--',
       'origin',
       'refs/tags/ineligible-managed-tag:refs/tags/ineligible-managed-tag',
     ]);
@@ -683,7 +760,7 @@ describe('bounded checked-push transport receipt', () => {
 
   it('rejects --no-verify before invoking Git', () => {
     const current = fixture();
-    const result = run(current.root, 'npm', ['run', 'push:checked', '--', '--no-verify', 'origin']);
+    const result = run(current.root, 'pnpm', ['run', 'push:checked', '--no-verify', 'origin']);
 
     expect(result.status).not.toBe(0);
     expect(readGateLog(current)).toEqual([]);
@@ -759,11 +836,9 @@ describe('bounded checked-push transport receipt', () => {
   it('rejects dependency drift hidden behind the release-candidate profile', () => {
     const current = fixture();
     prepareReleaseCandidate(current);
-    const lockPath = path.join(current.root, 'package-lock.json');
-    const lockDocument = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
-    lockDocument.packages['node_modules/hidden-drift'] = { version: '9.9.9' };
-    writeJson(lockPath, lockDocument);
-    git(current.root, ['add', 'package-lock.json']);
+    const lockPath = path.join(current.root, 'pnpm-lock.yaml');
+    fs.appendFileSync(lockPath, '# hidden dependency drift\n');
+    git(current.root, ['add', 'pnpm-lock.yaml']);
     git(current.root, ['commit', '--amend', '--no-edit']);
 
     const result = checkedPush(
@@ -775,7 +850,7 @@ describe('bounded checked-push transport receipt', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain(
-      'release-candidate profile permits only the package and lock root version fields',
+      'release-candidate profile requires pnpm-lock.yaml to remain byte-for-byte unchanged',
     );
     expect(readGateLog(current)).toEqual([]);
   });
@@ -818,10 +893,9 @@ describe('bounded checked-push transport receipt', () => {
 
   it('fails closed before gates for a multi-ref push with mixed baselines', () => {
     const current = fixture();
-    const result = run(current.root, 'npm', [
+    const result = run(current.root, 'pnpm', [
       'run',
       'push:checked',
-      '--',
       'origin',
       'refs/heads/main:refs/heads/main',
       'refs/heads/main:refs/heads/dev',
@@ -837,7 +911,7 @@ describe('bounded checked-push transport receipt', () => {
   it.each([
     [
       'tracked worktree',
-      (current: Fixture) => fs.writeFileSync(path.join(current.root, 'package.json'), '{}\n'),
+      (current: Fixture) => fs.appendFileSync(path.join(current.root, 'delivery.txt'), 'drift\n'),
     ],
     [
       'untracked worktree',
@@ -851,12 +925,24 @@ describe('bounded checked-push transport receipt', () => {
           'changed\n',
         ),
     ],
+    [
+      'installed pnpm lock',
+      (current: Fixture) =>
+        fs.appendFileSync(path.join(current.root, 'node_modules/.pnpm/lock.yaml'), '# drift\n'),
+    ],
+    [
+      'installed modules manifest',
+      (current: Fixture) =>
+        fs.appendFileSync(path.join(current.root, 'node_modules/.modules.yaml'), '# drift\n'),
+    ],
   ])('invalidates after %s changes', (_kind, mutate) => {
     const current = fixture();
     activateFailedTransportReceipt(current);
     mutate(current);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/no longer valid|changed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/no longer valid|changed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -865,16 +951,39 @@ describe('bounded checked-push transport receipt', () => {
     activateFailedTransportReceipt(current);
     process.env.APP_TITLE_DE_DE = 'changed after gate';
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/changed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/changed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
+
+  it.each(['NPM_CONFIG_AUDIT', 'PNPM_HOME'])(
+    'binds the %s environment family into the checkpoint',
+    (environmentKey) => {
+      const current = fixture();
+      const original = process.env[environmentKey];
+      activateFailedTransportReceipt(current);
+      process.env[environmentKey] = 'changed-after-gate';
+      try {
+        const result = retryPush(current);
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toMatch(/changed/u);
+        expect(fs.existsSync(current.receipt)).toBe(false);
+      } finally {
+        if (original === undefined) delete process.env[environmentKey];
+        else process.env[environmentKey] = original;
+      }
+    },
+  );
 
   it('invalidates when the resolved Docpact base moves', () => {
     const current = fixture();
     activateFailedTransportReceipt(current);
     git(current.root, ['update-ref', 'refs/remotes/origin/main', current.devBase]);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/changed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/changed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -893,7 +1002,9 @@ describe('bounded checked-push transport receipt', () => {
     activateFailedTransportReceipt(current);
     mutate(current);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/missing or malformed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/missing or malformed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -904,7 +1015,9 @@ describe('bounded checked-push transport receipt', () => {
       receipt.createdAt = new Date(Date.now() - receiptHelper.RECEIPT_TTL_MS - 1_000).toISOString();
     });
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/stale/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/stale/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -915,7 +1028,9 @@ describe('bounded checked-push transport receipt', () => {
     git(current.container, ['init', '--bare', otherRemote]);
     git(current.root, ['remote', 'set-url', '--push', 'origin', otherRemote]);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/remote changed/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/remote changed/u);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -964,7 +1079,9 @@ describe('bounded checked-push transport receipt', () => {
     activateFailedTransportReceipt(current);
     fs.renameSync(current.remote, `${current.remote}.offline`);
 
-    expect(() => receiptHelper.retryTransport(current.root)).toThrow(/could not verify/u);
+    const result = retryPush(current);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(/could not verify/u);
     expect(fs.existsSync(current.receipt)).toBe(true);
   });
 });

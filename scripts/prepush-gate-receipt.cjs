@@ -8,14 +8,14 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { isDeepStrictEqual } = require('node:util');
 
-const RECEIPT_SCHEMA_VERSION = 2;
+const RECEIPT_SCHEMA_VERSION = 3;
 const RECEIPT_RELATIVE_PATH = '.local/prepush-gate/failed-transport-receipt.json';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
 const CAPTURED_COMMAND_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const ZERO_SHA = '0'.repeat(40);
-const BASE_GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
-const RELEASE_PREFLIGHT_COMMAND = 'npm run release:preflight';
+const BASE_GATE_COMMANDS = ['pnpm run docpact:gate', 'pnpm run prepush:gate'];
+const RELEASE_PREFLIGHT_COMMAND = 'pnpm run release:preflight';
 const GATE_PROFILE_ENV = 'TIANGONG_PREPUSH_GATE_PROFILE';
 const GATE_PROFILES = Object.freeze({
   full: 'full',
@@ -35,23 +35,80 @@ const SESSION_NONCE_ENV = 'TIANGONG_CHECKED_PUSH_SESSION_NONCE';
 const SESSION_MANIFEST_FILE = 'session.json';
 const SESSION_PAYLOAD_FILE = 'gate-payload.json';
 const GATE_ENV_PATTERN =
-  /^(?:APP_|BABEL_ENV$|CI$|COREPACK_|DOCPACT_|FAIL_ON_ACT_WARNING$|GIT_CONFIG_|HOME$|LANG$|LANGUAGE$|LC_|MOCK$|NODE_ENV$|NODE_OPTIONS$|NPM_CONFIG_|REACT_APP_|SHELL$|SUPABASE_|TZ$|UMI_|XDG_CONFIG_HOME$)/u;
-const STABLE_NPM_CONFIG_KEYS = [
-  'foreground-scripts',
-  'if-present',
+  /^(?:APP_|BABEL_ENV$|CI$|COREPACK_|DOCPACT_|FAIL_ON_ACT_WARNING$|GIT_CONFIG_|HOME$|LANG$|LANGUAGE$|LC_|MOCK$|NODE_ENV$|NODE_OPTIONS$|NPM_CONFIG_|PNPM_|REACT_APP_|SHELL$|SUPABASE_|TZ$|UMI_|XDG_CONFIG_HOME$)/u;
+const STABLE_PNPM_CONFIG_KEYS = new Set([
+  'allow-builds',
+  'auto-install-peers',
+  'child-concurrency',
+  'dangerously-allow-all-builds',
+  'dedupe-direct-deps',
+  'dedupe-injected-deps',
+  'dedupe-peer-dependents',
+  'enable-modules-dir',
+  'enable-pre-post-scripts',
+  'engine-strict',
+  'exclude-links-from-lockfile',
+  'frozen-lockfile',
+  'hoist',
+  'hoist-pattern',
+  'ignore-compatibility-db',
   'ignore-scripts',
-  'include-workspace-root',
+  'inject-workspace-packages',
+  'link-workspace-packages',
+  'lockfile',
+  'minimum-release-age',
+  'minimum-release-age-exclude',
+  'modules-cache-max-age',
+  'never-built-dependencies',
+  'node-linker',
   'node-options',
+  'only-built-dependencies',
+  'only-built-dependencies-file',
+  'package-import-method',
+  'peers-suffix-max-length',
+  'prefer-frozen-lockfile',
+  'prefer-symlinked-executables',
+  'prefer-workspace-packages',
+  'public-hoist-pattern',
+  'resolution-mode',
+  'resolve-peers-from-workspace-root',
+  'save-workspace-protocol',
   'script-shell',
-  'shell',
-  'workspace',
-  'workspaces',
-];
+  'shared-workspace-lockfile',
+  'shell-emulator',
+  'shamefully-hoist',
+  'side-effects-cache',
+  'side-effects-cache-readonly',
+  'strict-dep-builds',
+  'strict-peer-dependencies',
+  'supported-architectures',
+  'symlink',
+  'verify-deps-before-run',
+  'verify-store-integrity',
+  'virtual-store-dir',
+  'virtual-store-dir-max-length',
+]);
 
 class IneligibleReceiptError extends Error {}
 class RemoteVerificationUnavailableError extends Error {}
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
+
+function stableJson(value) {
+  if (Array.isArray(value)) return value.map(stableJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right, 'en'))
+        .map(([key, item]) => [key, stableJson(item)]),
+    );
+  }
+  return value;
+}
+
+function dependencyTreeDigest(source) {
+  return sha256(JSON.stringify(stableJson(JSON.parse(source))));
+}
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -133,7 +190,12 @@ function gateEnvironmentDigest() {
   const values = Object.keys(process.env)
     .filter(
       (key) =>
-        GATE_ENV_PATTERN.test(key) && key !== 'DOCPACT_BASE_REF' && key !== 'DOCPACT_HEAD_REF',
+        GATE_ENV_PATTERN.test(key) &&
+        key !== 'COREPACK_ENABLE_DOWNLOAD_PROMPT' &&
+        key !== 'COREPACK_ROOT' &&
+        key !== 'DOCPACT_BASE_REF' &&
+        key !== 'DOCPACT_HEAD_REF' &&
+        key !== 'PNPM_PACKAGE_NAME',
     )
     .sort()
     .map((key) => [key, process.env[key] ?? null]);
@@ -225,7 +287,6 @@ function changedPaths(root, base, head) {
 function isReleaseCandidateAllowedPath(filePath) {
   return (
     filePath === 'package.json' ||
-    filePath === 'package-lock.json' ||
     filePath.endsWith('.md') ||
     /^\.docpact\/.*\.ya?ml$/u.test(filePath)
   );
@@ -241,38 +302,36 @@ function jsonAtRef(root, ref, filePath) {
   }
 }
 
+function textAtRef(root, ref, filePath) {
+  try {
+    return git(root, ['show', `${ref}:${filePath}`]).stdout;
+  } catch (error) {
+    throw new IneligibleReceiptError(
+      `release-candidate profile could not read ${filePath}: ${error.message}`,
+    );
+  }
+}
+
 function assertVersionOnlyPackageChange(root, base, head, branchMatch) {
   const basePackage = jsonAtRef(root, base, 'package.json');
   const candidatePackage = jsonAtRef(root, head, 'package.json');
-  const baseLock = jsonAtRef(root, base, 'package-lock.json');
-  const candidateLock = jsonAtRef(root, head, 'package-lock.json');
   const candidateVersion = candidatePackage.version;
-  if (
-    candidateVersion !== branchMatch.groups?.version ||
-    candidateLock.version !== candidateVersion ||
-    candidateLock.packages?.['']?.version !== candidateVersion
-  ) {
+  if (candidateVersion !== branchMatch.groups?.version) {
     throw new IneligibleReceiptError(
-      'release-candidate profile requires one matching stable version in its branch, package, and lock roots',
+      'release-candidate profile requires one matching stable version in its branch and package.json',
     );
   }
 
   const normalizedPackage = structuredClone(candidatePackage);
-  const normalizedLock = structuredClone(candidateLock);
   normalizedPackage.version = basePackage.version;
-  normalizedLock.version = baseLock.version;
-  if (!normalizedLock.packages?.[''] || !baseLock.packages?.['']) {
+  if (!isDeepStrictEqual(normalizedPackage, basePackage)) {
     throw new IneligibleReceiptError(
-      'release-candidate profile requires package-lock root package metadata',
+      'release-candidate profile permits only package.json.version to change',
     );
   }
-  normalizedLock.packages[''].version = baseLock.packages[''].version;
-  if (
-    !isDeepStrictEqual(normalizedPackage, basePackage) ||
-    !isDeepStrictEqual(normalizedLock, baseLock)
-  ) {
+  if (textAtRef(root, base, 'pnpm-lock.yaml') !== textAtRef(root, head, 'pnpm-lock.yaml')) {
     throw new IneligibleReceiptError(
-      'release-candidate profile permits only the package and lock root version fields',
+      'release-candidate profile requires pnpm-lock.yaml to remain byte-for-byte unchanged',
     );
   }
 }
@@ -302,9 +361,13 @@ function validateGateProfile(root, profile, update, checkpoint) {
       );
     }
     const paths = changedPaths(root, checkpoint.docpactBaseTip, checkpoint.head);
+    if (paths.includes('pnpm-lock.yaml')) {
+      throw new IneligibleReceiptError(
+        'release-candidate profile requires pnpm-lock.yaml to remain byte-for-byte unchanged',
+      );
+    }
     if (
       !paths.includes('package.json') ||
-      !paths.includes('package-lock.json') ||
       paths.some((filePath) => !isReleaseCandidateAllowedPath(filePath))
     ) {
       throw new IneligibleReceiptError(
@@ -328,10 +391,13 @@ function validateGateProfile(root, profile, update, checkpoint) {
   }
 }
 
-function stableNpmConfigDigest(root) {
-  const effective = JSON.parse(run('npm', ['config', 'list', '--json'], { cwd: root }).stdout);
+function stablePnpmConfigDigest(root) {
+  const effective = JSON.parse(run('pnpm', ['config', 'list', '--json'], { cwd: root }).stdout);
   const stable = Object.fromEntries(
-    STABLE_NPM_CONFIG_KEYS.map((key) => [key, effective[key] ?? null]),
+    Object.entries(effective)
+      .map(([key, value]) => [key.replace(/([a-z\d])([A-Z])/gu, '$1-$2').toLowerCase(), value])
+      .filter(([key]) => STABLE_PNPM_CONFIG_KEYS.has(key))
+      .sort(([left], [right]) => left.localeCompare(right, 'en')),
   );
   return sha256(JSON.stringify(stable));
 }
@@ -340,7 +406,12 @@ function ignoredGateInputDigests(root) {
   return fs
     .readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isFile() || entry.isSymbolicLink())
-    .filter((entry) => entry.name === '.npmrc' || /^\.env(?:\.|$)/u.test(entry.name))
+    .filter(
+      (entry) =>
+        entry.name === '.npmrc' ||
+        entry.name === '.pnpmfile.cjs' ||
+        /^\.env(?:\.|$)/u.test(entry.name),
+    )
     .map((entry) => ({ path: entry.name, sha256: hashFile(path.join(root, entry.name)) }))
     .sort((left, right) => left.path.localeCompare(right.path, 'en'));
 }
@@ -378,9 +449,11 @@ function collectCheckpoint(
   }
 
   const docpact = resolveDocpactState(root, docpactBaseRef);
-  const npmVersion = run('npm', ['--version'], { cwd: root }).stdout.trim();
-  const npmExecutable = run('which', ['npm'], { cwd: root }).stdout.trim().split(/\r?\n/u)[0];
-  const dependencyTree = run('npm', ['ls', '--all', '--json'], { cwd: root }).stdout;
+  const pnpmVersion = run('pnpm', ['--version'], { cwd: root }).stdout.trim();
+  const pnpmExecutable = run('which', ['pnpm'], { cwd: root }).stdout.trim().split(/\r?\n/u)[0];
+  const dependencyTree = run('pnpm', ['list', '--depth', 'Infinity', '--json'], {
+    cwd: root,
+  }).stdout;
   const gateInputs = git(root, [
     'ls-files',
     '-s',
@@ -394,14 +467,15 @@ function collectCheckpoint(
     'jsconfig.json',
     'jest.config.cjs',
     'package.json',
-    'package-lock.json',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
     'scripts',
     'tsconfig.json',
     'tsconfig.electron.json',
   ]).stdout;
 
   return {
-    checkpointVersion: 2,
+    checkpointVersion: 3,
     gateProfile,
     head: docpact.head,
     tree: git(root, ['rev-parse', 'HEAD^{tree}']).stdout.trim(),
@@ -411,12 +485,14 @@ function collectCheckpoint(
     architecture: process.arch,
     nodeVersion: process.version,
     nodeExecutableDigest: hashFile(process.execPath),
-    npmVersion,
-    npmExecutableDigest: hashFile(npmExecutable),
-    npmConfigDigest: stableNpmConfigDigest(root),
-    packageLockDigest: hashFile(path.join(root, 'package-lock.json')),
-    installedLockDigest: hashFile(path.join(root, 'node_modules/.package-lock.json')),
-    installedDependencyTreeDigest: sha256(dependencyTree),
+    pnpmVersion,
+    pnpmExecutableDigest: hashFile(pnpmExecutable),
+    pnpmConfigDigest: stablePnpmConfigDigest(root),
+    pnpmWorkspaceDigest: hashFile(path.join(root, 'pnpm-workspace.yaml')),
+    pnpmLockDigest: hashFile(path.join(root, 'pnpm-lock.yaml')),
+    installedPnpmLockDigest: hashFile(path.join(root, 'node_modules/.pnpm/lock.yaml')),
+    installedModulesManifestDigest: hashFile(path.join(root, 'node_modules/.modules.yaml')),
+    installedDependencyTreeDigest: dependencyTreeDigest(dependencyTree),
     installedDependencyContentDigest: hashInstalledDependencies(path.join(root, 'node_modules')),
     gateInputsDigest: sha256(gateInputs),
     gateEnvironmentDigest: gateEnvironmentDigest(),
@@ -611,14 +687,14 @@ function runAuthoritativeGates({ root, head, mergeBase, releasePreflight, gatePr
   const environment = authoritativeGateEnvironment();
   const commands = [BASE_GATE_COMMANDS[0]];
   process.stdout.write(`Running docpact gate against immutable ${mergeBase}..${head}.\n`);
-  run('npm', ['run', 'docpact:gate', '--', '--base', mergeBase, '--head', head], {
+  run('pnpm', ['run', 'docpact:gate', '--base', mergeBase, '--head', head], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
   });
   if (releasePreflight || gateProfile !== GATE_PROFILES.full) {
     process.stdout.write('Running release-candidate static preflight.\n');
-    run('npm', ['run', 'release:preflight'], {
+    run('pnpm', ['run', 'release:preflight'], {
       cwd: root,
       env: environment,
       stdio: 'inherit',
@@ -632,7 +708,7 @@ function runAuthoritativeGates({ root, head, mergeBase, releasePreflight, gatePr
     return commands;
   }
   process.stdout.write('Running local test gate.\n');
-  run('npm', ['run', 'prepush:gate'], {
+  run('pnpm', ['run', 'prepush:gate'], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
@@ -845,7 +921,7 @@ function checkedPush(root, rawPushArgs) {
       process.stderr.write(
         `Git transport failed after the selected managed gates passed. Bounded retry receipt activated at ${target}.\n`,
       );
-      process.stderr.write('Next: npm run push:retry\n');
+      process.stderr.write('Next: pnpm run push:retry\n');
     } else {
       invalidateReceipt(root);
       process.stderr.write(
@@ -1066,6 +1142,7 @@ module.exports = {
   RECEIPT_TTL_MS,
   ZERO_SHA,
   collectCheckpoint,
+  dependencyTreeDigest,
   hashInstalledDependencies,
   invalidateReceipt,
   loadReceipt,

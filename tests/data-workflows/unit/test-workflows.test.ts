@@ -19,7 +19,7 @@ const WORKFLOW_FILE_FIXTURE = [
 ];
 
 describe('test-workflows runner', () => {
-  it('builds workflow instructions from workflow files without npm script entries', () => {
+  it('builds workflow instructions from workflow files without package-script entries', () => {
     const registry = buildWorkflowCommandRegistry(WORKFLOW_FILE_FIXTURE);
 
     expect(registry.get('processes:create')).toEqual({
@@ -87,7 +87,7 @@ describe('test-workflows runner', () => {
     expect(formatWorkflowRunnerHelp(registry)).toContain(
       '--processes:create (tests/data-workflows/workflows/processes/processes-create-workflow.ts)',
     );
-    expect(formatWorkflowRunnerHelp(registry)).toContain('npm run test:workflows -- --teams:all');
+    expect(formatWorkflowRunnerHelp(registry)).toContain('pnpm test:workflows --teams:all');
   });
 
   it('rejects missing, unknown, or multiple workflow instructions', () => {

@@ -508,7 +508,7 @@ glossary、style rule、context override、dynamic family 或 source semantics �
 2. `CONTENT_LANGUAGE_REGISTRY`：基础语言码、TIDAS/ILCD enum 支持、读取优先级、编辑能力、服务查询能力和显式 fallback；
 3. `REFERENCE_RESOURCE_MANIFEST`：分类/地点 resource ID、edition、基础结构、各语言 overlay、来源/授权/digest/coverage 和缓存资产。
 
-当前实现中第三项的可编辑 source of truth 是 `src/services/referenceResources/reference-resource-manifest.json` 与 `src/services/referenceResources/data/**`；`src/services/referenceResources/generatedManifest.ts`、`public/classifications/*.gz` 和 `public/locations/*.gz` 都是确定性派生物。任何参考资源变更必须运行 `npm run reference-data:write` 后以 `npm run reference-data:check` 复核，禁止手改派生文件；任何 production-effective workflow 还必须通过 `npm run reference-data:production:check`，不能用非生产结构闭包检查替代版权与 native delivery readiness。
+当前实现中第三项的可编辑 source of truth 是 `src/services/referenceResources/reference-resource-manifest.json` 与 `src/services/referenceResources/data/**`；`src/services/referenceResources/generatedManifest.ts`、`public/classifications/*.gz` 和 `public/locations/*.gz` 都是确定性派生物。任何参考资源变更必须运行 `pnpm reference-data:write` 后以 `pnpm reference-data:check` 复核，禁止手改派生文件；任何 production-effective workflow 还必须通过 `pnpm reference-data:production:check`，不能用非生产结构闭包检查替代版权与 native delivery readiness。
 
 `LOCALE_CAPABILITY_MATRIX` 由三者连接计算，不在第四处复制布尔值。`SupportedAppLocale`、`SupportedContentLanguage`、选择器顺序、`LangTextItem` options/labels、alias normalization、文档链接、格式化、服务查询、分类/地点 resolver、缓存预热文件列表和参数化测试都必须从这些 source of truth 派生。
 
@@ -519,18 +519,18 @@ glossary、style rule、context override、dynamic family 或 source semantics �
 当前 German 专用资产是历史兼容层，不得为新语言复制整套 `german-*` 脚本、测试和数十万行派生证据。公共能力应最小参数化为类似：
 
 ```bash
-npm run i18n:locale:audit -- --locale <CANONICAL_LOCALE>
-npm run i18n:locale:manifest:write -- --locale <CANONICAL_LOCALE>
-npm run i18n:locale:artifacts:write
-npm run i18n:locale:artifacts:idempotence
-npm run i18n:evidence:canonical:check -- --path <artifact>
-npm run i18n:context:check -- --locale <CANONICAL_LOCALE>
-npm run i18n:locale:quality:check -- --locale <CANONICAL_LOCALE>
-npm run i18n:corrections:check
-npm run i18n:locale:activation:check -- --locale <CANONICAL_LOCALE>
-npm run i18n:locale:production:check -- --locale <CANONICAL_LOCALE>
-npm run i18n:platform:audit
-npm run i18n:hardcoding:audit
+pnpm i18n:locale:audit --locale <CANONICAL_LOCALE>
+pnpm i18n:locale:manifest:write --locale <CANONICAL_LOCALE>
+pnpm i18n:locale:artifacts:write
+pnpm i18n:locale:artifacts:idempotence
+pnpm i18n:evidence:canonical:check --path <artifact>
+pnpm i18n:context:check --locale <CANONICAL_LOCALE>
+pnpm i18n:locale:quality:check --locale <CANONICAL_LOCALE>
+pnpm i18n:corrections:check
+pnpm i18n:locale:activation:check --locale <CANONICAL_LOCALE>
+pnpm i18n:locale:production:check --locale <CANONICAL_LOCALE>
+pnpm i18n:platform:audit
+pnpm i18n:hardcoding:audit
 ```
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
@@ -616,7 +616,7 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 ### 5.11 Playwright 语义 E2E 与生产数据边界
 
-当前浏览器执行合同使用 `@playwright/test` `1.61.1`，canonical 入口为 `npm run test:e2e:i18n`，配置位于 `playwright.config.ts`，测试与 ledger/reporter helper 位于 `tests/e2e/i18n/**`。候选前端必须由 `npm run start:main` 在 loopback URL 启动并连接 production backend；`E2E_BASE_URL` 指向真实生产前端时必须 fail closed。
+当前浏览器执行合同使用 `@playwright/test` `1.61.1`，canonical 入口为 `pnpm test:e2e:i18n`，配置位于 `playwright.config.ts`，测试与 ledger/reporter helper 位于 `tests/e2e/i18n/**`。候选前端必须由 `pnpm start:main` 在 loopback URL 启动并连接 production backend；`E2E_BASE_URL` 指向真实生产前端时必须 fail closed。
 
 独立 workflow `.github/workflows/i18n-semantic-e2e.yml` 是可选的手动 hermetic qualification 边界：
 
@@ -634,7 +634,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环境合同计算 qualification key，在固定 `.invalid` backend profile 对预构建候选执行完整 closed-simulator qualification，并上传短期 artifact；它不读取 deployment `.env` 或 `origin/main:.env`，也不复用 Actions proof cache。根应用 release version 与 deployment-only metadata 不进入行为 identity，而 source、public asset、qualification config、runtime、test/shared-helper、Git mode/type 或环境合同变化都会生成新 key。禁止通过 tracked receipt、evidence、digest compatibility 或 waiver 文件维护复用状态。exact dev Release PR 只聚合 static/full 非浏览器 gate，并生成绑定 main baseline、dev base/head/tree、version、PR、run attempt 与 artifact 的独立 release proof。
 
-显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、package-lock 可执行依赖语义、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代非浏览器 release proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+显式 production-readiness command 可以读取 ignored `.local/**` 或其他外部 authenticated evidence，并严格验证当前 backend、route contract、原始 `pnpm-lock.yaml`、`pnpm-workspace.yaml` 安装策略、runtime assets、test/source digest 与 cleanup closure。该 operator-only 证据不替代非浏览器 release proof，也不得复制进 source branch。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
 ---
 
@@ -811,8 +811,8 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 - 匿名登录流程和一个代表性已登录 shared Header browser smoke；匿名访问 `/`、`/welcome`、`/welcome?view=carbon-footprint` 及代表性未匹配/大小写变体路径时，必须逐项证明跳转 canonical login 且未挂载受保护内容；
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
-- 以 `npm run test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
-- 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
+- 以 `pnpm test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
+- 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `pnpm start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
 - semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
@@ -828,28 +828,28 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
 3. 选择/确认唯一 package version，但此阶段不手工修改；最终 version bump 由阶段 I 的确定性 `release:to-dev` 命令一次完成。
-4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `npm run i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `npm run i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
+4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `pnpm i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `pnpm i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `pnpm i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
    - 使用当前受支持 Node；
-   - `npm ci`；
+   - `pnpm install --frozen-lockfile`；
    - 断言目标新 locale 没有创建、读取或依赖任何人工 translation review 文件；
    - 历史 German frozen confirmation 兼容逻辑可以仍在仓库中，但不得成为本次新语言或 clean runner 的输入；
    - 审计 activation/full-gate 命令依赖图，确保不读取 `.local/**confirmation*`；
-   - 运行 `npm run i18n:audit`；
+   - 运行 `pnpm i18n:audit`；
    - 运行 activation manifest 记录的 CI-safe checks；
    - 确认输出不依赖人工批准；
    - 不运行第二套完整 coverage。
 7. 使用受控 push 让 hook 执行该 HEAD 唯一一次本地 full gate：
 
 ```bash
-npm run push:checked -- <正常 git push 参数>
+pnpm push:checked <正常 git push 参数>
 ```
 
 8. 若门禁成功但 Git transport 失败，只执行：
 
 ```bash
-npm run push:retry
+pnpm push:retry
 ```
 
 9. 只有受控 tracked 输入、依赖、Node/toolchain 或 gate config 改变，才为新 HEAD 再跑一次。Project/Issue 文本、只读检查和 tree-identical merge 不使其失效。
@@ -944,7 +944,7 @@ npm run push:retry
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + proof identity | 永不需要 | version/promotion 本地不跑；若 identity 改变则新 dev non-browser gate | 已有确认失效，发布前重确认一次 |
 | Issue/PR/Project 文本变化 | 远端状态核验 | 永不需要 | 不跑 | 不失效 |
-| 门禁成功、transport 失败 | `npm run push:retry` | 永不需要 | 不重跑 | 不失效 |
+| 门禁成功、transport 失败 | `pnpm push:retry` | 永不需要 | 不重跑 | 不失效 |
 | 同 SHA release job 瞬时失败 | 只重跑失败 job | 永不需要 | 不重跑 | 不失效 |
 | tag 后 tracked 修复/新 patch | 受影响检查点 + 新版本 | 永不需要 | 新 HEAD 一次 | 新候选重确认一次 |
 | tree-identical merge | 核对 tree/CI | 永不需要 | 不重跑 | 不失效 |
@@ -1072,7 +1072,7 @@ npm run push:retry
 - [ ] 有效会话下直接打开或切换语言后，所有受保护静态视图的 path/query/view state 保持不变；Welcome overview 与 carbon-footprint guide 的正常、加载、失败/fallback 和关键交互均显示目标语言；匿名访问这些入口只到 canonical login。
 - [ ] 明暗主题、窄屏、长文本和 RTL 条件矩阵通过。
 - [ ] 既有 locale 行为无回归，自动修订项达到预期。
-- [ ] `npm run test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `npm run start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
+- [ ] `pnpm test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `pnpm start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
 - [ ] 日常 PR/普通 `dev` push 不自动触发浏览器矩阵；按风险在仍开放的业务 PR 上通过 `workflow_dispatch` 手动运行无凭据、无生产写的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；exact dev Release PR 只运行非浏览器 static/full gate，main-target PR 与正常 post-merge main 仅验证 release proof；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。

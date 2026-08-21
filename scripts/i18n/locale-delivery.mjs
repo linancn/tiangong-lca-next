@@ -25,7 +25,6 @@ import ts from '../typescript-native-parser.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
-const { packageLockRuntimeDigest } = require('./package-lock-runtime-fingerprint.cjs');
 
 const AUDIT_SCRIPT = 'scripts/i18n/audit-locales.mjs';
 const CANONICAL_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
@@ -65,7 +64,7 @@ const REQUIRED_FALLBACK_SURFACES = [
   'environment-branding',
 ];
 const SEMANTIC_E2E_BROWSERS = Object.freeze(['chromium', 'firefox', 'webkit']);
-const SEMANTIC_E2E_EVIDENCE_SCHEMA = 'tiangong.i18n-semantic-e2e-evidence.v1';
+const SEMANTIC_E2E_EVIDENCE_SCHEMA = 'tiangong.i18n-semantic-e2e-evidence.v2';
 const SEMANTIC_E2E_PROOF_SCOPES = new Set([
   'internal-localization',
   'access-boundary-observed',
@@ -89,7 +88,6 @@ const SEMANTIC_E2E_CRITICAL_SOURCE_PATHS = Object.freeze([
 const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
-  'scripts/i18n/package-lock-runtime-fingerprint.cjs',
   'tests/data-workflows/data-workflow-paths.ts',
   'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
@@ -97,10 +95,10 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
   'tests/unit/e2e/evidenceReporter.test.ts',
   'tests/unit/e2e/productionDataLedger.test.ts',
   'tests/unit/e2e/productionRequestGuard.test.ts',
-  'tests/unit/i18n/packageLockRuntimeFingerprint.test.js',
   'tests/unit/services/general/routeViewStateRegistry.test.ts',
 ]);
-const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
+const SEMANTIC_E2E_DEPENDENCY_LOCK = 'pnpm-lock.yaml';
+const SEMANTIC_E2E_PNPM_WORKSPACE = 'pnpm-workspace.yaml';
 const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
 const LOCALE_ARTIFACT_DEPENDENCIES = Object.freeze({
   context: Object.freeze([]),
@@ -312,24 +310,11 @@ function gitLocaleCatalogDigest(root, commit, locale) {
   return hash.digest('hex');
 }
 
-function packageLockBindingMatchesCurrentRuntime(root, evidence, expectedPackageLock) {
-  if (evidence.digests.packageLock.sha256 === expectedPackageLock.sha256) {
-    return true;
-  }
-  try {
-    const observedPackageLock = gitText(
-      root,
-      evidence.candidate.observedHeadCommit,
-      SEMANTIC_E2E_PACKAGE_LOCK,
-    );
-    return (
-      sha256(observedPackageLock) === evidence.digests.packageLock.sha256 &&
-      packageLockRuntimeDigest(observedPackageLock) ===
-        packageLockRuntimeDigest(readText(root, SEMANTIC_E2E_PACKAGE_LOCK))
-    );
-  } catch {
-    return false;
-  }
+function dependencyIdentityMatchesCurrentRuntime(evidence, expectedDigests) {
+  return (
+    evidence.digests.dependencyLock.sha256 === expectedDigests.dependencyLock.sha256 &&
+    evidence.digests.pnpmWorkspace.sha256 === expectedDigests.pnpmWorkspace.sha256
+  );
 }
 
 function planDirectory(locale) {
@@ -907,7 +892,8 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
     }));
   const runtimeAssetPaths = semanticRuntimeAssetPaths(root);
   return {
-    packageLock: toDigests([SEMANTIC_E2E_PACKAGE_LOCK])[0],
+    dependencyLock: toDigests([SEMANTIC_E2E_DEPENDENCY_LOCK])[0],
+    pnpmWorkspace: toDigests([SEMANTIC_E2E_PNPM_WORKSPACE])[0],
     runtimeAssets: toDigests(runtimeAssetPaths),
     tests: toDigests(testPaths),
     sources: toDigests(sourcePaths),
@@ -1049,7 +1035,8 @@ function validateSemanticEvidenceContract(root, coverage, routeRows) {
     schema?.properties?.target?.properties?.proof?.properties?.observer?.const !==
       'chromium-auth-request' ||
     !schema?.required?.includes('candidate') ||
-    !schema?.properties?.digests?.required?.includes('packageLock') ||
+    !schema?.properties?.digests?.required?.includes('dependencyLock') ||
+    !schema?.properties?.digests?.required?.includes('pnpmWorkspace') ||
     !schema?.properties?.digests?.required?.includes('runtimeAssets')
   ) {
     throw new Error('Semantic E2E evidence schema differs from the executable contract.');
@@ -1104,7 +1091,7 @@ function validateSemanticE2EEvidence(
     'Semantic E2E evidence',
   );
   if (evidence.schemaVersion !== SEMANTIC_E2E_EVIDENCE_SCHEMA || evidence.status !== 'verified') {
-    throw new Error('Semantic E2E evidence is not a verified v1 execution record.');
+    throw new Error('Semantic E2E evidence is not a verified v2 execution record.');
   }
   if (
     typeof evidence.generatedAt !== 'string' ||
@@ -1213,25 +1200,32 @@ function validateSemanticE2EEvidence(
   }
   assertRecordShape(
     evidence.digests,
-    ['packageLock', 'runtimeAssets', 'tests', 'sources'],
+    ['dependencyLock', 'pnpmWorkspace', 'runtimeAssets', 'tests', 'sources'],
     [],
     'Semantic E2E digests',
   );
   const expectedDigests = expectedSemanticEvidenceDigests(root, routeRows, evidenceContract);
   assertRecordShape(
-    evidence.digests.packageLock,
+    evidence.digests.dependencyLock,
     ['path', 'sha256'],
     [],
-    'Semantic E2E package-lock digest',
+    'Semantic E2E dependency-lock digest',
+  );
+  assertRecordShape(
+    evidence.digests.pnpmWorkspace,
+    ['path', 'sha256'],
+    [],
+    'Semantic E2E pnpm-workspace digest',
   );
   if (
-    evidence.digests.packageLock.path !== expectedDigests.packageLock.path ||
-    !/^[0-9a-f]{64}$/u.test(evidence.digests.packageLock.sha256 ?? '') ||
-    (requireCurrentBindings &&
-      !packageLockBindingMatchesCurrentRuntime(root, evidence, expectedDigests.packageLock))
+    evidence.digests.dependencyLock.path !== expectedDigests.dependencyLock.path ||
+    !/^[0-9a-f]{64}$/u.test(evidence.digests.dependencyLock.sha256 ?? '') ||
+    evidence.digests.pnpmWorkspace.path !== expectedDigests.pnpmWorkspace.path ||
+    !/^[0-9a-f]{64}$/u.test(evidence.digests.pnpmWorkspace.sha256 ?? '') ||
+    (requireCurrentBindings && !dependencyIdentityMatchesCurrentRuntime(evidence, expectedDigests))
   ) {
     throw new Error(
-      'Semantic E2E evidence is not bound to the current executable package-lock semantics.',
+      'Semantic E2E evidence is not bound to the current executable dependency identity.',
     );
   }
   assertExactFileDigests(
@@ -2506,7 +2500,7 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
       literalReferenceCount: manifest.summary.literalReferenceCount,
       dynamicCallsiteCount: manifest.summary.dynamicCallsiteCount,
       glossaryRuleScope: 'full target catalog at the automated quality gate',
-      onDemandCommand: `npm run i18n:context:dossier -- --locale ${locale} --message <MESSAGE_ID>`,
+      onDemandCommand: `pnpm i18n:context:dossier --locale ${locale} --message <MESSAGE_ID>`,
     },
     routeViewCoverage: {
       path: ROUTE_VIEW_COVERAGE,
@@ -3309,17 +3303,17 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
   const productionActivationReady =
     contextComplete && structuralQualityPassed && productionActivationBlockers.length === 0;
   const activeCommands = {
-    localeAudit: `npm run i18n:locale:audit -- --locale ${locale}`,
-    context: `npm run i18n:context:check -- --locale ${locale}`,
-    quality: `npm run i18n:locale:quality:check -- --locale ${locale}`,
-    corrections: 'npm run i18n:corrections:check',
-    languagePlatform: 'npm run i18n:platform:audit',
-    referenceData: 'npm run reference-data:check',
-    languageHardcoding: 'npm run i18n:hardcoding:audit',
-    allLocales: 'npm run i18n:locale:all:check',
-    productionLocale: `npm run i18n:locale:production:check -- --locale ${locale}`,
-    productionAllLocales: 'npm run i18n:locale:all:production:check',
-    activation: `npm run i18n:locale:activation:check -- --locale ${locale}`,
+    localeAudit: `pnpm i18n:locale:audit --locale ${locale}`,
+    context: `pnpm i18n:context:check --locale ${locale}`,
+    quality: `pnpm i18n:locale:quality:check --locale ${locale}`,
+    corrections: 'pnpm i18n:corrections:check',
+    languagePlatform: 'pnpm i18n:platform:audit',
+    referenceData: 'pnpm reference-data:check',
+    languageHardcoding: 'pnpm i18n:hardcoding:audit',
+    allLocales: 'pnpm i18n:locale:all:check',
+    productionLocale: `pnpm i18n:locale:production:check --locale ${locale}`,
+    productionAllLocales: 'pnpm i18n:locale:all:production:check',
+    activation: `pnpm i18n:locale:activation:check --locale ${locale}`,
   };
   const commandSources = [
     'package.json',

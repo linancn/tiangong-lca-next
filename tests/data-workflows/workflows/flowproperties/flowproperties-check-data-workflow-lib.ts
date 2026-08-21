@@ -194,8 +194,8 @@ type LoadedValidationModules = {
 export const FLOWPROPERTY_CHECK_DATA_WORKFLOW_HELP = `Flowproperty check-data data workflow
 
 Usage:
-  npm run test:workflows -- --flowproperties:check-data --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
-  npm run test:workflows -- --flowproperties:check-data --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
+  pnpm test:workflows --flowproperties:check-data --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  pnpm test:workflows --flowproperties:check-data --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one flowproperty from tests/data-workflows/fixtures/data/flowProperties/001_create.json

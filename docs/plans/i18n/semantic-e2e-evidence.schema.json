@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://lca.tiangong.earth/schemas/i18n/semantic-e2e-evidence.v1.json",
+  "$id": "https://lca.tiangong.earth/schemas/i18n/semantic-e2e-evidence.v2.json",
   "title": "TianGong semantic i18n E2E evidence",
   "description": "Digest-bound, credential-redacted execution evidence for the registry-derived route/view localization contract.",
   "type": "object",
@@ -21,7 +21,7 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": "tiangong.i18n-semantic-e2e-evidence.v1"
+      "const": "tiangong.i18n-semantic-e2e-evidence.v2"
     },
     "status": {
       "const": "verified"
@@ -55,7 +55,7 @@
         },
         "packageManifestDigest": {
           "$ref": "#/$defs/sha256",
-          "description": "Execution-time package manifest provenance; current production readiness uses the declared package-lock and semantic input digests."
+          "description": "Execution-time package manifest provenance; current production readiness uses the declared dependency-lock, pnpm-workspace, and semantic input digests."
         },
         "sourceTreeDigest": {
           "$ref": "#/$defs/sha256",
@@ -156,15 +156,28 @@
     "digests": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["packageLock", "runtimeAssets", "tests", "sources"],
+      "required": ["dependencyLock", "pnpmWorkspace", "runtimeAssets", "tests", "sources"],
       "properties": {
-        "packageLock": {
+        "dependencyLock": {
           "type": "object",
           "additionalProperties": false,
           "required": ["path", "sha256"],
           "properties": {
             "path": {
-              "const": "package-lock.json"
+              "const": "pnpm-lock.yaml"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "pnpmWorkspace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {
+              "const": "pnpm-workspace.yaml"
             },
             "sha256": {
               "$ref": "#/$defs/sha256"

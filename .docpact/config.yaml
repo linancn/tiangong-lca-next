@@ -50,7 +50,9 @@ ownership:
         include:
           - tests/**
           - tests/e2e/**
+          - .dockerignore
           - .gitignore
+          - .gitleaks.toml
           - .oxlintrc.json
           - .prettierignore
           - .prettierrc.js
@@ -61,8 +63,12 @@ ownership:
           - playwright.config.ts
           - config/docs-capture/**
           - package.json
+          - pnpm-lock.yaml
+          - pnpm-workspace.yaml
           - .nvmrc
           - jest.config.cjs
+          - Dockerfile.app
+          - .husky/pre-commit
           - .husky/pre-push
           - .github/workflows/**
           - scripts/docpact
@@ -116,7 +122,9 @@ coverage:
     - icons/**
     - tests/**
     - tests/e2e/**
+    - .dockerignore
     - .gitignore
+    - .gitleaks.toml
     - .oxlintrc.json
     - .prettierignore
     - .prettierrc.js
@@ -127,8 +135,12 @@ coverage:
     - playwright.config.ts
     - config/docs-capture/**
     - package.json
+    - pnpm-lock.yaml
+    - pnpm-workspace.yaml
     - .nvmrc
     - jest.config.cjs
+    - Dockerfile.app
+    - .husky/pre-commit
     - .husky/pre-push
     - .github/workflows/**
     - scripts/docpact
@@ -185,7 +197,11 @@ routing:
     testing-gates:
       paths:
         - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - .dockerignore
         - .gitignore
+        - .gitleaks.toml
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -197,6 +213,8 @@ routing:
         - config/docs-capture/**
         - .nvmrc
         - jest.config.cjs
+        - Dockerfile.app
+        - .husky/pre-commit
         - .husky/pre-push
         - .github/workflows/**
         - scripts/docpact
@@ -253,7 +271,11 @@ routing:
     proof:
       paths:
         - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - .dockerignore
         - .gitignore
+        - .gitleaks.toml
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -264,6 +286,8 @@ routing:
         - playwright.config.ts
         - .nvmrc
         - jest.config.cjs
+        - Dockerfile.app
+        - .husky/pre-commit
         - .husky/pre-push
         - .github/workflows/**
         - scripts/docpact
@@ -390,6 +414,14 @@ rules:
         kind: deep-doc
       - path: package.json
         kind: command-and-dependency-surface
+      - path: pnpm-lock.yaml
+        kind: dependency-lock
+      - path: pnpm-workspace.yaml
+        kind: package-manager-config
+      - path: .dockerignore
+        kind: container-build-input
+      - path: .gitleaks.toml
+        kind: secret-scan-config
       - path: .nvmrc
         kind: runtime-baseline
       - path: .oxlintrc.json
@@ -632,8 +664,16 @@ rules:
     triggers:
       - path: package.json
         kind: runtime-config
+      - path: pnpm-lock.yaml
+        kind: dependency-lock
+      - path: pnpm-workspace.yaml
+        kind: package-manager-config
+      - path: .dockerignore
+        kind: container-build-input
       - path: .gitignore
         kind: local-runtime-boundary
+      - path: .gitleaks.toml
+        kind: secret-scan-config
       - path: .oxlintrc.json
         kind: lint-gate
       - path: .prettierrc.js
@@ -663,6 +703,10 @@ rules:
       - path: docs/agents/test_improvement_plan.md
         kind: testing-strategy
       - path: jest.config.cjs
+        kind: test-gate
+      - path: Dockerfile.app
+        kind: container-build
+      - path: .husky/pre-commit
         kind: test-gate
       - path: .husky/pre-push
         kind: test-gate

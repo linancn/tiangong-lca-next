@@ -137,7 +137,7 @@ describe('i18n evidence reporter', () => {
       `${JSON.stringify({
         candidate: { evidenceIdentity: identity },
         kind: 'tiangong-next-release-e2e-candidate',
-        schemaVersion: 4,
+        schemaVersion: 5,
       })}\n`,
     );
     const originalManifestPath = process.env.E2E_CANDIDATE_MANIFEST_PATH;
@@ -380,7 +380,8 @@ describe('i18n evidence reporter', () => {
     );
     expect(targetProbeIndex).toBeGreaterThan(-1);
     expect(finalCaptureIndex).toBeGreaterThan(targetProbeIndex);
-    expect(source).toContain('packageLock: finalExecutionInputs.packageLock');
+    expect(source).toContain('dependencyLock: finalExecutionInputs.dependencyLock');
+    expect(source).toContain('pnpmWorkspace: finalExecutionInputs.pnpmWorkspace');
     expect(source).toContain('runtimeAssets: finalExecutionInputs.runtimeAssets');
     expect(source).toContain('tests: finalExecutionInputs.tests');
     expect(source).toContain('sources: finalExecutionInputs.sources');

@@ -6,6 +6,9 @@ import * as nativeAst from 'typescript/unstable/ast';
 
 const VIRTUAL_ROOT = '/__tiangong_typescript_native_parser__';
 const requireFromWorkingDirectory = createRequire(path.resolve(process.cwd(), 'package.json'));
+const requireFromTypescriptPackage = createRequire(
+  requireFromWorkingDirectory.resolve('typescript/package.json'),
+);
 
 let parserRuntime;
 let apiStartCount = 0;
@@ -14,7 +17,7 @@ let parseCount = 0;
 function createParserRuntime() {
   const fileSystem = createVirtualFileSystem({});
   const platformPackage = `@typescript/typescript-${process.platform}-${process.arch}`;
-  const platformPackageJson = requireFromWorkingDirectory.resolve(
+  const platformPackageJson = requireFromTypescriptPackage.resolve(
     `${platformPackage}/package.json`,
   );
   const executableName = process.platform === 'win32' ? 'tsc.exe' : 'tsc';
