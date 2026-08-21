@@ -5,6 +5,10 @@ import {
   normalizeSupportedContentLanguage,
 } from '../general/contentLanguageRegistry';
 import {
+  normalizeOptionalTidasPercentage,
+  normalizeOptionalTidasYear,
+} from '../general/tidasScalarStorage';
+import {
   capitalize,
   classificationToJsonList,
   classificationToStringList,
@@ -50,19 +54,8 @@ const getExchangeLocationField = (value: unknown) => {
   return location ? { location } : {};
 };
 
-const normalizeReferenceYearValue = (value: string | number | null | undefined) => {
-  if (value === null || value === undefined || value === '' || value === 'undefined') {
-    return undefined;
-  }
-
-  const normalizedValue = Number(value);
-
-  if (Number.isNaN(normalizedValue)) {
-    return undefined;
-  }
-
-  return normalizedValue;
-};
+const normalizeAllocationPercentageValue = (value: unknown) =>
+  normalizeOptionalTidasPercentage(typeof value === 'string' ? value.replace('%', '') : value);
 
 export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
@@ -122,12 +115,14 @@ export function genProcessJsonOrdered(id: string, data: any) {
         allocation: {
           '@internalReferenceToCoProduct':
             item?.allocations?.allocation?.['@internalReferenceToCoProduct'],
-          '@allocatedFraction': item?.allocations?.allocation?.['@allocatedFraction']
-            ? item?.allocations?.allocation?.['@allocatedFraction']?.toString()?.replace('%', '')
-            : undefined,
+          '@allocatedFraction': normalizeAllocationPercentageValue(
+            item?.allocations?.allocation?.['@allocatedFraction'],
+          ),
         },
       },
-      relativeStandardDeviation95In: item.relativeStandardDeviation95In,
+      relativeStandardDeviation95In: normalizeOptionalTidasPercentage(
+        item.relativeStandardDeviation95In,
+      ),
       dataSourceType: item.dataSourceType,
       dataDerivationTypeStatus: item.dataDerivationTypeStatus,
       referencesToDataSource: {
@@ -216,11 +211,12 @@ export function genProcessJsonOrdered(id: string, data: any) {
         },
         quantitativeReference: { ...quantitativeReference },
         time: {
-          'common:referenceYear': normalizeReferenceYearValue(
+          'common:referenceYear': normalizeOptionalTidasYear(
             data?.processInformation?.time?.['common:referenceYear'],
           ),
-          'common:dataSetValidUntil':
-            data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
+          'common:dataSetValidUntil': normalizeOptionalTidasYear(
+            data?.processInformation?.time?.['common:dataSetValidUntil'],
+          ),
           'common:timeRepresentativenessDescription': getLangJson(
             data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
           ),
@@ -326,9 +322,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
             uncertaintyDistributionType:
               data?.processInformation?.mathematicalRelations?.variableParameter
                 ?.uncertaintyDistributionType,
-            relativeStandardDeviation95In:
+            relativeStandardDeviation95In: normalizeOptionalTidasPercentage(
               data?.processInformation?.mathematicalRelations?.variableParameter
                 ?.relativeStandardDeviation95In,
+            ),
             comment: data?.processInformation?.mathematicalRelations?.variableParameter?.comment,
           },
         },
@@ -942,11 +939,12 @@ export function genProcessFromData(data: any): FormProcess {
           ),
         },
         time: {
-          'common:referenceYear': normalizeReferenceYearValue(
+          'common:referenceYear': normalizeOptionalTidasYear(
             data?.processInformation?.time?.['common:referenceYear'],
           ),
-          'common:dataSetValidUntil':
-            data?.processInformation?.time?.['common:dataSetValidUntil'] ?? {},
+          'common:dataSetValidUntil': normalizeOptionalTidasYear(
+            data?.processInformation?.time?.['common:dataSetValidUntil'],
+          ),
           'common:timeRepresentativenessDescription': getLangList(
             data?.processInformation?.time?.['common:timeRepresentativenessDescription'],
           ),

@@ -186,20 +186,29 @@
       },
       "time": {
         "common:referenceYear": {
-          "value": "str",
+          "value": "number",
           "rules": [
             {
               "required": true,
               "messageKey": "pages.process.validator.referenceYear.required",
               "defaultMessage": "Please input reference year"
+            },
+            {
+              "type": "integer",
+              "min": 1000,
+              "max": 9999,
+              "messageKey": "validator.Year.pattern",
+              "defaultMessage": "Please enter a valid year (e.g., 2023)"
             }
           ]
         },
         "common:dataSetValidUntil": {
-          "value": "str",
+          "value": "number",
           "rules": [
             {
-              "pattern": "year",
+              "type": "integer",
+              "min": 1000,
+              "max": 9999,
               "messageKey": "validator.Year.pattern",
               "defaultMessage": "Please enter a valid year (e.g., 2023)"
             }

@@ -34,6 +34,10 @@ import {
 } from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
 import {
+  createTidasScalarValidationError,
+  validateProcessTidasScalarStorage,
+} from '../general/tidasScalarStorage';
+import {
   classificationToString,
   genLocalizedClassification,
   getLangText,
@@ -68,6 +72,11 @@ type ProcessCommandRow = {
 
 export type UpdateProcessResult = SupabaseMutationResult<ProcessCommandRow> &
   LangNormalizationMetadata;
+
+const getProcessTidasScalarValidationError = (payload: unknown) => {
+  const issues = validateProcessTidasScalarStorage(payload);
+  return issues.length > 0 ? createTidasScalarValidationError(issues) : undefined;
+};
 
 export type LcaMyProcessOption = {
   id: string;
@@ -353,6 +362,10 @@ export async function createProcess(
       options,
     );
   }
+  const scalarValidationError = getProcessTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'process data set',
@@ -406,6 +419,10 @@ export async function createProcessVersion(
       options,
     );
   }
+  const scalarValidationError = getProcessTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'process data set',
@@ -458,6 +475,10 @@ export async function updateProcess(
       langMetadata,
       options,
     );
+  }
+  const scalarValidationError = getProcessTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(

@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 1395ddb24b9ee75a269df363eba303cea7bac513
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar storage changes use focused normalization, serializer, all-save-entrypoint, and regenerated locale-artifact proof without changing the repository gate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -72,6 +72,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints; Process LCIA query/evidence state changes include `tests/unit/pages/Processes/Components/processLciaResultsPanel.test.tsx` |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
+| Process or Flow TIDAS scalar storage normalization | `npm run lint`; focused general scalar-normalizer, Process/Flow serializer, and Process/Flow API suites; `npm run build` | final `npm run prepush:gate` through `push:checked` | Assert Process years persist as integers in `1000..9999`, affected percentage values persist as TIDAS-compatible strings with at most three fractional digits, zero is retained, and create/update/create-version reject non-canonical non-empty values before persistence. |
 | TIDAS package export task identity or recovery | `npm run test:ci -- --runInBand tests/unit/services/tidasPackage/taskCenter.test.ts`; `npm run lint`; `npm run build` | final `npm run prepush:gate`; pair with Database package-cache pgTAP proof when enqueue semantics changed | Assert repeated queue responses, persisted aliases, poll completion/failure, and Worker refreshes sharing `workerJobId` or `jobId` produce one visible task; retain the earliest local presentation identity, use backend timestamps/state, and never revive an alias after canonical reconciliation. |
 | Process keyword search service or LCA picker scope | focused `tests/unit/services/processes/api.test.ts` plus the Process full-text data-workflow unit; `npm run lint`; `npm run build` | smoke against the exact non-production Database revision that exposes `search_processes`; cover public, personal, and `public_plus_owner_draft` scopes, including actor-owned state-zero rows with non-null team/review metadata | Assert explicit `query_terms`, no direct app-side ILIKE field filter, and `owner_draft_only=true` only for the personal branch of the calculation scope. Database owns latest-version, actor/state eligibility, workflow metadata, and `search_text` index semantics. |
 | LCA solve, result-query, contribution-path, or task-recovery scope contract | focused LCA API, task-center service/component, Process analysis, solve toolbar, impact compare/hotspot, and LCIA result panel suites; `npm run lint`; `npm run build` | smoke the authenticated Process analysis paths against matching non-production Edge and Database revisions | Assert every new request uses `full_library` by default or explicit `data_product`; deployment/cache labels never cross the API boundary; persisted historical task requests are normalized before recovery resubmission. |

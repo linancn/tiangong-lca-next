@@ -652,6 +652,39 @@ describe('updateProcess', () => {
   });
 });
 
+describe.each([
+  ['createProcess', () => processesApi.createProcess(sampleId, { raw: true })],
+  [
+    'createProcessVersion',
+    () => processesApi.createProcessVersion(sampleId, sampleVersion, { raw: true }),
+  ],
+  ['updateProcess', () => processesApi.updateProcess(sampleId, sampleVersion, { raw: true })],
+])('%s TIDAS scalar save gate', (_name, save) => {
+  it('rejects a non-canonical process year before persistence', async () => {
+    mockGenProcessJsonOrdered.mockReturnValue({
+      processDataSet: {
+        processInformation: {
+          time: { 'common:dataSetValidUntil': '2030' },
+        },
+      },
+    });
+
+    const result = await save();
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'TIDAS_SCALAR_VALIDATION_ERROR',
+        error: expect.objectContaining({ code: 'TIDAS_SCALAR_VALIDATION_ERROR' }),
+      }),
+    );
+    expect(mockValidateDatasetRuleVerification).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCommand).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCreateVersion).not.toHaveBeenCalled();
+  });
+});
+
 describe('updateProcessApi', () => {
   it('returns a structured deprecation error', async () => {
     const payload = { json_ordered: { foo: 'bar' } };

@@ -533,6 +533,21 @@ describe('Flow Utility Functions', () => {
       ).toHaveProperty('common:elementaryFlowCategorization');
     });
 
+    it('should normalize numeric relative standard deviation to a TIDAS percentage string', () => {
+      const result = genFlowJsonOrdered('test-flow-id', {
+        flowProperties: {
+          flowProperty: {
+            '@dataSetInternalID': '0',
+            relativeStandardDeviation95In: 12.5,
+          },
+        },
+      });
+
+      expect(result.flowDataSet.flowProperties.flowProperty.relativeStandardDeviation95In).toBe(
+        '12.5',
+      );
+    });
+
     it('should generate ordered JSON structure for Product flow', () => {
       const id = 'test-product-flow-id';
       const data = {

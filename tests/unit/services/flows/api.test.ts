@@ -573,6 +573,38 @@ describe('updateFlows', () => {
   });
 });
 
+const invalidFlowScalarPayload = {
+  flowDataSet: {
+    flowProperties: {
+      flowProperty: { relativeStandardDeviation95In: 12.5 },
+    },
+  },
+};
+
+describe.each([
+  ['createFlows', () => createFlows('flow-id', invalidFlowScalarPayload)],
+  [
+    'createFlowsVersion',
+    () => createFlowsVersion('flow-id', '01.00.000', invalidFlowScalarPayload),
+  ],
+  ['updateFlows', () => updateFlows('flow-id', '01.00.000', invalidFlowScalarPayload)],
+])('%s TIDAS scalar save gate', (_name, save) => {
+  it('rejects a non-canonical flow percentage before persistence', async () => {
+    const result = await save();
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'TIDAS_SCALAR_VALIDATION_ERROR',
+        error: expect.objectContaining({ code: 'TIDAS_SCALAR_VALIDATION_ERROR' }),
+      }),
+    );
+    expect(mockInvokeDatasetCommand).not.toHaveBeenCalled();
+    expect(mockInvokeDatasetCreateVersion).not.toHaveBeenCalled();
+  });
+});
+
 describe('deleteFlows', () => {
   it('removes flow by id and version', async () => {
     const deleteResult = { data: null, error: null, count: null, status: 200, statusText: 'OK' };
