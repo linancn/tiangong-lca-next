@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 4ce0e0a2cc99928a9eb8466518e30d05889841ab
+lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and its generated locale digest refresh stay in the existing frontend/service ownership boundary and do not change repo workflow or branch policy.'
 related:
   - .docpact/config.yaml
