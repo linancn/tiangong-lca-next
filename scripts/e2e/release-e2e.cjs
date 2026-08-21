@@ -16,13 +16,15 @@ const RECEIPT_KEY_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.key');
 const INVOCATION_LOCK_PATH = path.join(RUNTIME_ROOT, 'invocation.lock');
 const ENVIRONMENT_MANIFEST_PATH = path.join(RUNTIME_ROOT, 'environment-manifest.json');
 const DEFAULT_QUALIFICATION_PROOF_PATH = path.join(RUNTIME_ROOT, 'qualification-proof.json');
-const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v3';
+const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v4';
 const ENVIRONMENT_CONTRACT_RELATIVE_PATH = 'docker/e2e/environment.json';
 const DOCKERFILE_RELATIVE_PATH = 'docker/e2e/Dockerfile';
 const QUALIFICATION_ENVIRONMENT_RELATIVE_PATH = 'docker/e2e/qualification.env';
+const DEPENDENCY_LOCK_RELATIVE_PATH = 'pnpm-lock.yaml';
+const PNPM_WORKSPACE_RELATIVE_PATH = 'pnpm-workspace.yaml';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
-const RECEIPT_SCHEMA_VERSION = 5;
-const MANIFEST_SCHEMA_VERSION = 4;
+const RECEIPT_SCHEMA_VERSION = 6;
+const MANIFEST_SCHEMA_VERSION = 5;
 const REPORT_SCHEMA_VERSION = 2;
 const CANONICAL_REPOSITORY = 'linancn/tiangong-lca-next';
 const IMAGE_LABEL = 'org.tiangong.lca.next.release-e2e';
@@ -123,12 +125,12 @@ function processIsRunning(pid) {
 
 function lockRetryCommand(command) {
   return {
-    clean: 'npm run e2e:env:clean',
-    'check-qualification': 'npm run release:proof:verify',
-    install: 'npm run e2e:env:install',
-    qualify: 'npm run e2e:qualify',
-    resume: 'npm run e2e:release:resume',
-    run: 'npm run e2e:release',
+    clean: 'pnpm e2e:env:clean',
+    'check-qualification': 'pnpm release:proof:verify',
+    install: 'pnpm e2e:env:install',
+    qualify: 'pnpm e2e:qualify',
+    resume: 'pnpm e2e:release:resume',
+    run: 'pnpm e2e:release',
   }[command];
 }
 
@@ -259,6 +261,38 @@ function gitShow(relativePath) {
   return runCapture('git', ['show', `HEAD:${relativePath}`]).stdout;
 }
 
+function lockedDependencyVersion(packageName, repositoryRoot = REPOSITORY_ROOT) {
+  const output = runCapture(
+    'pnpm',
+    ['list', '--lockfile-only', '--depth=0', '--json', packageName],
+    { cwd: repositoryRoot },
+  ).stdout;
+  let projects;
+  try {
+    projects = JSON.parse(output);
+  } catch (error) {
+    throw new ReleaseE2EError('pnpm did not return a valid locked dependency inventory.', {
+      cause: error,
+      exitCode: EXIT.CANDIDATE,
+      failureCode: 'E2E_DEPENDENCY_LOCK_INVALID',
+      phase: 'candidate',
+    });
+  }
+  const candidates = (Array.isArray(projects) ? projects : [projects]).flatMap((project) =>
+    ['dependencies', 'devDependencies', 'optionalDependencies']
+      .map((section) => project?.[section]?.[packageName]?.version)
+      .filter((version) => typeof version === 'string' && version.length > 0),
+  );
+  if (new Set(candidates).size !== 1) {
+    throw new ReleaseE2EError(`pnpm lock has no unique ${packageName} version.`, {
+      exitCode: EXIT.CANDIDATE,
+      failureCode: 'E2E_DEPENDENCY_LOCK_AMBIGUOUS',
+      phase: 'candidate',
+    });
+  }
+  return candidates[0];
+}
+
 function digestCommittedTree(relativeDirectory) {
   const paths = git(['ls-tree', '-r', '--name-only', 'HEAD', '--', relativeDirectory])
     .split(/\r?\n/u)
@@ -283,15 +317,15 @@ function commandHelp() {
     'Deterministic Tiangong Next release E2E controller',
     '',
     'Usage:',
-    '  npm run e2e:env:install -- [--format json] [--output <path>]',
-    '  npm run e2e:env:doctor -- [--format json] [--output <path>]',
-    '  npm run e2e:release -- [options]',
-    '  npm run e2e:qualification:key -- [--format human|json] [--output <path>]',
-    '  npm run e2e:qualify -- [--offline] [--proof <path>] [--format human|json]',
-    '  npm run release:proof:verify -- [--proof <path>] [--format human|json]',
-    '  npm run e2e:release:resume',
-    '  npm run e2e:env:clean -- [--purge-images]',
-    '  npm run e2e:dev -- [Playwright arguments]',
+    '  pnpm e2e:env:install [--format json] [--output <path>]',
+    '  pnpm e2e:env:doctor [--format json] [--output <path>]',
+    '  pnpm e2e:release [options]',
+    '  pnpm e2e:qualification:key [--format human|json] [--output <path>]',
+    '  pnpm e2e:qualify [--offline] [--proof <path>] [--format human|json]',
+    '  pnpm release:proof:verify [--proof <path>] [--format human|json]',
+    '  pnpm e2e:release:resume',
+    '  pnpm e2e:env:clean [--purge-images]',
+    '  pnpm e2e:dev [Playwright arguments]',
     '',
     'Release options:',
     '  --authenticated                 Validate a role-neutral UI login identity.',
@@ -322,7 +356,7 @@ function takeValue(argv, index, flag, inlineValue) {
       exitCode: EXIT.INPUT,
       failureCode: 'E2E_MISSING_OPTION_VALUE',
       phase: 'input',
-      nextCommand: 'npm run e2e:release -- --help',
+      nextCommand: 'pnpm e2e:release --help',
     });
   }
   return { nextIndex: index + 1, value };
@@ -336,7 +370,7 @@ function parseOptions(command, argv) {
         exitCode: EXIT.INPUT,
         failureCode: 'E2E_RESUME_ARGUMENTS_FORBIDDEN',
         phase: 'input',
-        nextCommand: 'npm run e2e:release:resume',
+        nextCommand: 'pnpm e2e:release:resume',
       },
     );
   }
@@ -402,7 +436,7 @@ function parseOptions(command, argv) {
         exitCode: EXIT.INPUT,
         failureCode: 'E2E_UNEXPECTED_ARGUMENT',
         phase: 'input',
-        nextCommand: `npm run e2e:${command === 'run' ? 'release' : `env:${command}`} -- --help`,
+        nextCommand: `pnpm e2e:${command === 'run' ? 'release' : `env:${command}`} --help`,
       });
     }
     const separator = argument.indexOf('=');
@@ -465,7 +499,7 @@ function parseOptions(command, argv) {
         exitCode: EXIT.INPUT,
         failureCode: 'E2E_UNKNOWN_OPTION',
         phase: 'input',
-        nextCommand: 'npm run e2e:release -- --help',
+        nextCommand: 'pnpm e2e:release --help',
       });
     }
   }
@@ -588,7 +622,7 @@ function dockerEngineVersion() {
       failureCode: 'E2E_DOCKER_ENGINE_UNAVAILABLE',
       phase: 'environment',
       retryable: true,
-      nextCommand: 'npm run e2e:env:doctor',
+      nextCommand: 'pnpm e2e:env:doctor',
     });
   }
   return result.stdout.trim().replace(/^"|"$/gu, '');
@@ -628,10 +662,18 @@ function assertHostPrerequisites() {
       phase: 'environment',
     });
   }
+  if (!executableExists('pnpm')) {
+    throw new ReleaseE2EError('pnpm is required on the host.', {
+      exitCode: EXIT.ENVIRONMENT,
+      failureCode: 'E2E_PNPM_MISSING',
+      phase: 'environment',
+    });
+  }
   return {
     dockerServerVersion: dockerEngineVersion(),
     gitVersion: git(['--version']),
     nodeVersion: process.version,
+    pnpmVersion: runCapture('pnpm', ['--version']).stdout.trim(),
   };
 }
 
@@ -644,7 +686,7 @@ function ensureBaseImage(environment, options = {}) {
       failureCode: 'E2E_PINNED_IMAGE_MISSING',
       phase: 'environment',
       retryable: true,
-      nextCommand: 'npm run e2e:env:install',
+      nextCommand: 'pnpm e2e:env:install',
     });
   }
   const status = runStreaming('docker', ['pull', environment.contract.playwrightImage]);
@@ -654,7 +696,7 @@ function ensureBaseImage(environment, options = {}) {
       failureCode: 'E2E_PINNED_IMAGE_PULL_FAILED',
       phase: 'environment',
       retryable: true,
-      nextCommand: 'npm run e2e:env:install',
+      nextCommand: 'pnpm e2e:env:install',
     });
   }
   const installed = inspectImage(environment.contract.playwrightImage);
@@ -670,27 +712,36 @@ function ensureBaseImage(environment, options = {}) {
 
 function dependencyImageIdentity(environment) {
   const packageJsonRaw = fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json'));
-  const packageLockRaw = fs.readFileSync(path.join(REPOSITORY_ROOT, 'package-lock.json'));
+  const dependencyLockRaw = fs.readFileSync(
+    path.join(REPOSITORY_ROOT, DEPENDENCY_LOCK_RELATIVE_PATH),
+  );
+  const pnpmWorkspaceRaw = fs.readFileSync(
+    path.join(REPOSITORY_ROOT, PNPM_WORKSPACE_RELATIVE_PATH),
+  );
   const dockerfileRaw = fs.readFileSync(path.join(REPOSITORY_ROOT, DOCKERFILE_RELATIVE_PATH));
   const packageJsonSha256 = sha256(packageJsonRaw);
-  const packageLockSha256 = sha256(packageLockRaw);
+  const dependencyLockSha256 = sha256(dependencyLockRaw);
+  const pnpmWorkspaceSha256 = sha256(pnpmWorkspaceRaw);
   const dockerfileSha256 = sha256(dockerfileRaw);
   const identitySha256 = sha256(
     jsonText({
+      dependencyLockSha256,
       dockerfileSha256,
       environmentSha256: environment.sha256,
       packageJsonSha256,
-      packageLockSha256,
+      pnpmWorkspaceSha256,
     }),
   );
   const tag = `tiangong-lca-next-e2e-dependencies:${identitySha256.slice(0, 24)}`;
   return {
+    dependencyLockRaw,
+    dependencyLockSha256,
     dockerfileRaw,
     dockerfileSha256,
     packageJsonRaw,
     packageJsonSha256,
-    packageLockRaw,
-    packageLockSha256,
+    pnpmWorkspaceRaw,
+    pnpmWorkspaceSha256,
     tag,
   };
 }
@@ -699,8 +750,9 @@ function dependencyImageMatches(image, identity, environment) {
   const labels = image?.Config?.Labels ?? {};
   return (
     labels[ENVIRONMENT_IMAGE_LABEL] === 'true' &&
-    labels['org.tiangong.lca.next.package-lock-sha256'] === identity.packageLockSha256 &&
+    labels['org.tiangong.lca.next.dependency-lock-sha256'] === identity.dependencyLockSha256 &&
     labels['org.tiangong.lca.next.package-json-sha256'] === identity.packageJsonSha256 &&
+    labels['org.tiangong.lca.next.pnpm-workspace-sha256'] === identity.pnpmWorkspaceSha256 &&
     labels['org.tiangong.lca.next.environment-sha256'] === environment.sha256 &&
     labels['org.tiangong.lca.next.dockerfile-sha256'] === identity.dockerfileSha256
   );
@@ -725,7 +777,7 @@ function ensureDependencyImage(environment, options = {}) {
       failureCode: 'E2E_DEPENDENCY_IMAGE_MISSING',
       phase: 'environment',
       retryable: true,
-      nextCommand: 'npm run e2e:env:install',
+      nextCommand: 'pnpm e2e:env:install',
     });
   }
 
@@ -734,7 +786,16 @@ function ensureDependencyImage(environment, options = {}) {
   fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
   try {
     writeBuildFile(path.join(directory, 'package.json'), identity.packageJsonRaw, 0o600);
-    writeBuildFile(path.join(directory, 'package-lock.json'), identity.packageLockRaw, 0o600);
+    writeBuildFile(
+      path.join(directory, DEPENDENCY_LOCK_RELATIVE_PATH),
+      identity.dependencyLockRaw,
+      0o600,
+    );
+    writeBuildFile(
+      path.join(directory, PNPM_WORKSPACE_RELATIVE_PATH),
+      identity.pnpmWorkspaceRaw,
+      0o600,
+    );
     writeBuildFile(path.join(directory, 'Dockerfile'), identity.dockerfileRaw, 0o600);
     const args = [
       'build',
@@ -747,9 +808,11 @@ function ensureDependencyImage(environment, options = {}) {
       '--label',
       `${ENVIRONMENT_IMAGE_LABEL}=true`,
       '--label',
-      `org.tiangong.lca.next.package-lock-sha256=${identity.packageLockSha256}`,
+      `org.tiangong.lca.next.dependency-lock-sha256=${identity.dependencyLockSha256}`,
       '--label',
       `org.tiangong.lca.next.package-json-sha256=${identity.packageJsonSha256}`,
+      '--label',
+      `org.tiangong.lca.next.pnpm-workspace-sha256=${identity.pnpmWorkspaceSha256}`,
       '--label',
       `org.tiangong.lca.next.environment-sha256=${environment.sha256}`,
       '--label',
@@ -766,7 +829,7 @@ function ensureDependencyImage(environment, options = {}) {
         failureCode: 'E2E_DEPENDENCY_IMAGE_BUILD_FAILED',
         phase: 'environment',
         retryable: true,
-        nextCommand: 'npm run e2e:env:install',
+        nextCommand: 'pnpm e2e:env:install',
       });
     }
   } finally {
@@ -807,7 +870,7 @@ function runEnvironmentBrowserSmoke(imageTag) {
       failureCode: 'E2E_ENVIRONMENT_BROWSER_LAUNCH_FAILED',
       phase: 'environment',
       retryable: true,
-      nextCommand: 'npm run e2e:env:install',
+      nextCommand: 'pnpm e2e:env:install',
     });
   }
   try {
@@ -825,7 +888,7 @@ function runEnvironmentBrowserSmoke(imageTag) {
       exitCode: EXIT.ENVIRONMENT,
       failureCode: 'E2E_ENVIRONMENT_BROWSER_RESULT_INVALID',
       phase: 'environment',
-      nextCommand: 'npm run e2e:env:install',
+      nextCommand: 'pnpm e2e:env:install',
     });
   }
 }
@@ -839,7 +902,7 @@ function requireCleanCommittedCandidate() {
         exitCode: EXIT.CANDIDATE,
         failureCode: 'E2E_CANDIDATE_DIRTY',
         phase: 'candidate',
-        nextCommand: 'npm run e2e:dev',
+        nextCommand: 'pnpm e2e:dev',
       },
     );
   }
@@ -875,15 +938,24 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
   }
 
   const packageJsonRaw = gitShow('package.json');
-  const packageLockRaw = gitShow('package-lock.json');
+  const dependencyLockRaw = gitShow(DEPENDENCY_LOCK_RELATIVE_PATH);
+  const pnpmWorkspaceRaw = gitShow(PNPM_WORKSPACE_RELATIVE_PATH);
   const dockerfileRaw = gitShow(DOCKERFILE_RELATIVE_PATH);
   const environmentRaw = gitShow(ENVIRONMENT_CONTRACT_RELATIVE_PATH);
   const buildVerifierRaw = gitShow('scripts/e2e/verify-build-input.cjs');
   const packageJson = JSON.parse(packageJsonRaw);
-  const packageLock = JSON.parse(packageLockRaw);
-  const lockedPlaywright = packageLock.packages?.['node_modules/@playwright/test']?.version;
+  const pinnedPnpmVersion = /^pnpm@([^+]+)(?:\+.+)?$/u.exec(packageJson.packageManager ?? '')?.[1];
+  const hostPnpmVersion = runCapture('pnpm', ['--version']).stdout.trim();
+  if (!pinnedPnpmVersion || hostPnpmVersion !== pinnedPnpmVersion) {
+    throw new ReleaseE2EError('Host pnpm does not match the committed package-manager pin.', {
+      exitCode: EXIT.CANDIDATE,
+      failureCode: 'E2E_PNPM_VERSION_MISMATCH',
+      phase: 'candidate',
+    });
+  }
+  const lockedPlaywright = lockedDependencyVersion('@playwright/test');
   if (lockedPlaywright !== environment.contract.playwrightVersion) {
-    throw new ReleaseE2EError('package-lock Playwright does not match the pinned container.', {
+    throw new ReleaseE2EError('pnpm lock Playwright does not match the pinned container.', {
       exitCode: EXIT.CANDIDATE,
       failureCode: 'E2E_PLAYWRIGHT_VERSION_MISMATCH',
       phase: 'candidate',
@@ -909,6 +981,7 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
     candidate: {
       archiveSha256: sha256(fs.readFileSync(archivePath)),
       commit: candidate.commit,
+      dependencyLockSha256: sha256(dependencyLockRaw),
       evidenceIdentity: {
         configTreeDigest: digestCommittedTree('config'),
         observedHeadCommit: candidate.commit,
@@ -917,8 +990,8 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
         unitTestTreeDigest: digestCommittedTree('tests/unit'),
       },
       packageJsonSha256: sha256(packageJsonRaw),
-      packageLockSha256: sha256(packageLockRaw),
       packageVersion: packageJson.version,
+      pnpmWorkspaceSha256: sha256(pnpmWorkspaceRaw),
       sourceDateEpoch: Number(git(['show', '-s', '--format=%ct', candidate.commit])),
       tree: candidate.tree,
     },
@@ -942,7 +1015,8 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
   const imageTag = `tiangong-lca-next-e2e:${candidate.tree.slice(0, 12)}-${manifest.environment.contractSha256.slice(0, 12)}-${frontendTarget}`;
 
   writeBuildFile(path.join(directory, 'package.json'), packageJsonRaw, 0o600);
-  writeBuildFile(path.join(directory, 'package-lock.json'), packageLockRaw, 0o600);
+  writeBuildFile(path.join(directory, DEPENDENCY_LOCK_RELATIVE_PATH), dependencyLockRaw, 0o600);
+  writeBuildFile(path.join(directory, PNPM_WORKSPACE_RELATIVE_PATH), pnpmWorkspaceRaw, 0o600);
   writeBuildFile(path.join(directory, 'Dockerfile'), dockerfileRaw, 0o600);
   writeBuildFile(path.join(directory, 'environment.json'), environmentRaw, 0o600);
   writeBuildFile(path.join(directory, 'verify-build-input.cjs'), buildVerifierRaw, 0o600);
@@ -999,7 +1073,7 @@ function ensureCandidateImage(context, environment, options = {}) {
       phase: 'candidate-build',
       retryable: true,
       receiptEligible: true,
-      nextCommand: 'npm run e2e:release:resume',
+      nextCommand: 'pnpm e2e:release:resume',
     });
   }
   const built = inspectImage(context.imageTag);
@@ -1068,8 +1142,8 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
   const trackedEntries = runCapture('git', ['ls-files', '--stage', '-z', '--', ...pathPrefixes], {
     cwd: repositoryRoot,
     env: isolatedGitEnvironment(),
-  }).stdout
-    .split('\0')
+  })
+    .stdout.split('\0')
     .filter(Boolean)
     .map((line) => {
       const match = /^([0-7]{6}) ([0-9a-f]+) ([0-3])\t([\s\S]+)$/u.exec(line);
@@ -1094,16 +1168,15 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
     })
     .sort((left, right) => left.path.localeCompare(right.path, 'en'));
   const packageJson = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package.json')));
-  const packageLock = JSON.parse(fs.readFileSync(path.join(repositoryRoot, 'package-lock.json')));
   delete packageJson.version;
-  delete packageLock.version;
-  if (packageLock.packages?.['']) delete packageLock.packages[''].version;
+  const packageManagerPaths = [DEPENDENCY_LOCK_RELATIVE_PATH, PNPM_WORKSPACE_RELATIVE_PATH];
+  if (fs.existsSync(path.join(repositoryRoot, '.npmrc'))) packageManagerPaths.push('.npmrc');
   const packageEntries = runCapture(
     'git',
-    ['ls-files', '--stage', '--', 'package.json', 'package-lock.json'],
+    ['ls-files', '--stage', '--', 'package.json', ...packageManagerPaths],
     { cwd: repositoryRoot, env: isolatedGitEnvironment() },
-  ).stdout
-    .trim()
+  )
+    .stdout.trim()
     .split(/\r?\n/u)
     .map((line) => {
       const match = /^([0-7]{6}) [0-9a-f]+ 0\t(.+)$/u.exec(line);
@@ -1116,18 +1189,17 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
     return entry;
   };
   const entries = [...trackedEntries];
-  entries.push(
-    {
-      ...packageEntry('package.json'),
-      path: 'package.json#without-version',
-      sha256: sha256(jsonText(packageJson)),
-    },
-    {
-      ...packageEntry('package-lock.json'),
-      path: 'package-lock.json#without-root-version',
-      sha256: sha256(jsonText(packageLock)),
-    },
-  );
+  entries.push({
+    ...packageEntry('package.json'),
+    path: 'package.json#without-version',
+    sha256: sha256(jsonText(packageJson)),
+  });
+  for (const packageManagerPath of packageManagerPaths) {
+    entries.push({
+      ...packageEntry(packageManagerPath),
+      sha256: sha256(fs.readFileSync(path.join(repositoryRoot, packageManagerPath))),
+    });
+  }
   return sha256(jsonText(entries));
 }
 
@@ -1135,7 +1207,7 @@ function qualificationIdentity(repositoryRoot = REPOSITORY_ROOT) {
   const inputSha256 = qualificationInputSha256(repositoryRoot);
   const environmentContractSha256 = loadEnvironmentContractFromWorkingTree(repositoryRoot).sha256;
   return {
-    schemaVersion: 'tiangong.semantic-harness-qualification-identity.v1',
+    schemaVersion: 'tiangong.semantic-harness-qualification-identity.v2',
     inputSha256,
     environmentContractSha256,
     proofKey: sha256(
@@ -1166,7 +1238,7 @@ function assertExternalProofPath(proofPath) {
         failureCode: 'E2E_QUALIFICATION_PROOF_PATH_TRACKED',
         phase: 'input',
         details: { proofPath },
-        nextCommand: 'npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json',
+        nextCommand: 'pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json',
       },
     );
   }
@@ -1204,7 +1276,7 @@ function validateQualificationProof(proof, expectedIdentity = qualificationIdent
         exitCode: EXIT.CANDIDATE,
         failureCode: 'E2E_QUALIFICATION_PROOF_INVALID',
         phase: 'candidate',
-        nextCommand: 'npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json',
+        nextCommand: 'pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json',
       },
     );
   }
@@ -1219,7 +1291,7 @@ function readQualificationProof(options) {
       failureCode: 'E2E_QUALIFICATION_PROOF_MISSING',
       phase: 'candidate',
       details: { proofPath },
-      nextCommand: `npm run e2e:qualify -- --proof ${proofPath}`,
+      nextCommand: `pnpm e2e:qualify --proof ${proofPath}`,
     });
   }
   const proof = validateQualificationProof(readJson(proofPath));
@@ -1296,8 +1368,9 @@ function createReceipt(input, key) {
     expiresAt,
     candidate: {
       commit: input.manifest.candidate.commit,
+      dependencyLockSha256: input.manifest.candidate.dependencyLockSha256,
+      pnpmWorkspaceSha256: input.manifest.candidate.pnpmWorkspaceSha256,
       tree: input.manifest.candidate.tree,
-      packageLockSha256: input.manifest.candidate.packageLockSha256,
     },
     environment: {
       contractSha256: input.manifest.environment.contractSha256,
@@ -1352,7 +1425,8 @@ function validateReceipt(receipt, now = Date.now(), key) {
     !receipt.candidate ||
     !/^[0-9a-f]{40}$/u.test(receipt.candidate.commit ?? '') ||
     !/^[0-9a-f]{40}$/u.test(receipt.candidate.tree ?? '') ||
-    !/^[0-9a-f]{64}$/u.test(receipt.candidate.packageLockSha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(receipt.candidate.dependencyLockSha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(receipt.candidate.pnpmWorkspaceSha256 ?? '') ||
     !receipt.environment ||
     !/^[0-9a-f]{64}$/u.test(receipt.environment.contractSha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(receipt.environment.sourceIdentitySha256 ?? '') ||
@@ -1389,7 +1463,7 @@ function validateReceipt(receipt, now = Date.now(), key) {
       exitCode: EXIT.FINALIZATION,
       failureCode: 'E2E_RECEIPT_EXPIRED',
       phase: 'resume',
-      nextCommand: 'npm run e2e:release',
+      nextCommand: 'pnpm e2e:release',
     });
   }
   return receipt;
@@ -1535,7 +1609,7 @@ function runRelease(options, state = {}) {
           exitCode: EXIT.FINALIZATION,
           failureCode: 'E2E_RECEIPT_CANDIDATE_DRIFT',
           phase: 'resume',
-          nextCommand: 'npm run e2e:release',
+          nextCommand: 'pnpm e2e:release',
         },
       );
     }
@@ -1558,8 +1632,10 @@ function runRelease(options, state = {}) {
     if (state.receipt) {
       const sourceIdentitySha256 = sha256(jsonText(context.manifest.sources));
       if (
-        context.manifest.candidate.packageLockSha256 !==
-          state.receipt.candidate.packageLockSha256 ||
+        context.manifest.candidate.dependencyLockSha256 !==
+          state.receipt.candidate.dependencyLockSha256 ||
+        context.manifest.candidate.pnpmWorkspaceSha256 !==
+          state.receipt.candidate.pnpmWorkspaceSha256 ||
         context.manifest.environment.contractSha256 !== state.receipt.environment.contractSha256 ||
         sourceIdentitySha256 !== state.receipt.environment.sourceIdentitySha256 ||
         context.imageTag !== state.receipt.image.tag
@@ -1568,7 +1644,7 @@ function runRelease(options, state = {}) {
           exitCode: EXIT.FINALIZATION,
           failureCode: 'E2E_RECEIPT_IDENTITY_DRIFT',
           phase: 'resume',
-          nextCommand: 'npm run e2e:release',
+          nextCommand: 'pnpm e2e:release',
         });
       }
     }
@@ -1582,7 +1658,7 @@ function runRelease(options, state = {}) {
         exitCode: EXIT.FINALIZATION,
         failureCode: 'E2E_RECEIPT_BACKEND_DRIFT',
         phase: 'resume',
-        nextCommand: 'npm run e2e:release',
+        nextCommand: 'pnpm e2e:release',
       });
     }
     candidateImage = ensureCandidateImage(context, environment, { offline: options.offline });
@@ -1595,7 +1671,7 @@ function runRelease(options, state = {}) {
         exitCode: EXIT.FINALIZATION,
         failureCode: 'E2E_RECEIPT_IMAGE_DRIFT',
         phase: 'resume',
-        nextCommand: 'npm run e2e:release',
+        nextCommand: 'pnpm e2e:release',
       });
     }
     const dockerStatus = runStreaming(
@@ -1628,9 +1704,7 @@ function runRelease(options, state = {}) {
           phase,
           retryable: receiptEligible,
           receiptEligible,
-          nextCommand: receiptEligible
-            ? 'npm run e2e:release:resume'
-            : containerResult?.nextCommand,
+          nextCommand: receiptEligible ? 'pnpm e2e:release:resume' : containerResult?.nextCommand,
         },
       );
     }
@@ -1810,7 +1884,7 @@ function runDoctor(options) {
         summary: browserVersions,
       },
     ],
-    nextCommand: 'npm run e2e:release',
+    nextCommand: 'pnpm e2e:release',
   };
 }
 
@@ -1840,7 +1914,7 @@ function runInstall(options) {
     browserVersions,
     reused: image.reused,
     dependencyImageReused: dependencyImage.reused,
-    nextCommand: 'npm run e2e:env:doctor',
+    nextCommand: 'pnpm e2e:env:doctor',
   };
 }
 
@@ -1875,7 +1949,7 @@ function runClean(options) {
     summary: 'Removed only tiangong-next release E2E local runtime state.',
     nextCommand: recoveryLedgerPreserved
       ? 'Inspect the preserved recovery ledger before the next production-data run.'
-      : 'npm run e2e:env:install',
+      : 'pnpm e2e:env:install',
   };
 }
 
@@ -1888,7 +1962,7 @@ function readReceiptKey() {
       exitCode: EXIT.FINALIZATION,
       failureCode: 'E2E_RECEIPT_KEY_INVALID',
       phase: 'resume',
-      nextCommand: 'npm run e2e:release',
+      nextCommand: 'pnpm e2e:release',
     });
   }
 }
@@ -1899,7 +1973,7 @@ function resumeRelease() {
       exitCode: EXIT.FINALIZATION,
       failureCode: 'E2E_RECEIPT_MISSING',
       phase: 'resume',
-      nextCommand: 'npm run e2e:release',
+      nextCommand: 'pnpm e2e:release',
     });
   }
   let receipt;
@@ -1918,7 +1992,7 @@ function resumeRelease() {
         exitCode: EXIT.FINALIZATION,
         failureCode: 'E2E_RECEIPT_CREDENTIAL_DRIFT',
         phase: 'resume',
-        nextCommand: 'npm run e2e:release',
+        nextCommand: 'pnpm e2e:release',
       });
     }
     return runRelease(options, { receipt });
@@ -2088,6 +2162,7 @@ module.exports = {
   createReceipt,
   dockerRunArguments,
   jsonText,
+  lockedDependencyVersion,
   parseOptions,
   playwrightArguments,
   redactString,

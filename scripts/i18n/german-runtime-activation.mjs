@@ -407,7 +407,7 @@ function buildFindings(options, generatedManifest) {
   if (!currentManifest || !valuesEqual(currentManifest, generatedManifest)) {
     findings.staleRuntimeActivationManifest.push({
       path: options.manifest,
-      reason: 'Run npm run i18n:de:runtime:manifest:write after the final controlled copy change.',
+      reason: 'Run pnpm i18n:de:runtime:manifest:write after the final controlled copy change.',
     });
   }
 

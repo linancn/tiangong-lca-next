@@ -163,7 +163,7 @@ function parseCoverageArtifacts() {
 
   if (!fs.existsSync(lcovPath)) {
     console.error(colorize('❌ Error: no coverage artifacts found in coverage/', 'red'));
-    console.log(colorize('Run npm run test:coverage first.', 'yellow'));
+    console.log(colorize('Run pnpm test:coverage first.', 'yellow'));
     process.exit(1);
   }
 

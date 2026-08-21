@@ -40,9 +40,12 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - package.json
+  - pnpm-lock.yaml
+  - pnpm-workspace.yaml
+  - Dockerfile.app
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
-lastReviewedNote: 'Reviewed for Next Issue #910: unit-heavy scalar normalization, save-boundary coverage, and deterministic locale-artifact refresh follow the current maintenance strategy without reopening strategy work.'
+lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
+lastReviewedNote: 'Reviewed for Next Issue #920: the pinned pnpm, isolated-linker compatibility, explicit build policy, and dependency-identity checks extend the maintained validation model without reopening broader strategy work.'
 ---
 
 # Testing Strategy
@@ -53,6 +56,7 @@ lastReviewedNote: 'Reviewed for Next Issue #910: unit-heavy scalar normalization
 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
+- dependency installation is a governed proof input: the repository pins pnpm, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Ant Design/Babel compatibility patterns, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes

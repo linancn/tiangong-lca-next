@@ -54,7 +54,7 @@ export const UNITGROUP_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP = buildFullTextSearch
   defaultSearchFixturePath: DEFAULT_UNITGROUP_FULL_TEXT_SEARCH_FIXTURE_PATH,
   defaultSeedExpectedPath: DEFAULT_UNITGROUP_EXPECTED_PATH,
   defaultSeedFixturePath: DEFAULT_UNITGROUP_FIXTURE_PATH,
-  npmCommand: 'test:unitgroups:full-text-search',
+  packageCommand: 'test:unitgroups:full-text-search',
   title: 'Unit group full-text-search data workflow',
 });
 

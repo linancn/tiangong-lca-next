@@ -289,7 +289,7 @@ export function handleAntchainCliError(
 }
 
 void runAntchainCliEntry().catch(handleAntchainCliError);
-// npx tsx src/services/antchain/api.ts
+// pnpm exec tsx src/services/antchain/api.ts
 
 /*
 // Examples for new functions:

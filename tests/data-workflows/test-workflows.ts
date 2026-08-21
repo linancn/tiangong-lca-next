@@ -108,10 +108,10 @@ export function formatWorkflowRunnerHelp(registry: Map<string, WorkflowCommand>)
   return `Data workflow test runner
 
 Usage:
-  npm run test:workflows -- --processes:create --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
-  npm run test:workflows -- --processes:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
-  npm run test:workflows -- --teams:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
-  npm run test:workflows -- --list
+  pnpm test:workflows --processes:create --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
+  pnpm test:workflows --processes:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
+  pnpm test:workflows --teams:all --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co --supabase-publishable-key <key>
+  pnpm test:workflows --list
 
 Behavior:
   - Resolves --<workflow> to the matching workflow file

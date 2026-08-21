@@ -165,7 +165,7 @@ describe('reference resource generation pipeline', () => {
                   evidence: {
                     generatorVersion: '1', sources: ['https://example.com/fixture.raw'],
                     sourceAuditBinding, reviewDigest: null,
-                    tests: ['npm run reference-data:check'],
+                    tests: ['pnpm reference-data:check'],
                   },
                 },
               },

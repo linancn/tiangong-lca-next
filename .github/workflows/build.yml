@@ -376,24 +376,19 @@ jobs:
         with:
           ref: ${{ needs.release-context.outputs.release_head }}
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
         with:
-          node-version: 24
-
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
+          version: 11.22.0
+          runtime: node@24
+          cache: true
+          install: false
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: npm run build
+        run: pnpm build
 
       - name: Deploy to EdgeOne Pages
         env:
@@ -406,34 +401,15 @@ jobs:
             exit 1
           fi
 
-          edgeone_cli_dir="$(mktemp -d)"
-          cleanup_edgeone_cli() {
-            rm -rf "$edgeone_cli_dir"
-          }
-          trap cleanup_edgeone_cli EXIT
-
-          npm --prefix "$edgeone_cli_dir" install \
-            --prefer-offline \
-            --no-save \
-            --ignore-scripts \
-            --package-lock=false \
-            --no-audit \
-            --no-fund \
-            "edgeone@${EDGEONE_CLI_VERSION}" \
-            "vitest@${EDGEONE_VITEST_VERSION}" \
-            "vite-node@${EDGEONE_VITE_NODE_VERSION}"
-
-          edgeone_bin="$edgeone_cli_dir/node_modules/.bin/edgeone"
-          if [ ! -x "$edgeone_bin" ]; then
-            echo "::error::EdgeOne CLI binary was not installed at ${edgeone_bin}."
-            exit 1
-          fi
-
           max_attempts=3
           for attempt in $(seq 1 "$max_attempts"); do
             echo "Deploying to EdgeOne Pages, attempt ${attempt}/${max_attempts}."
 
-            if timeout 300s "$edgeone_bin" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
+            if timeout 300s pnpm dlx \
+              --package "edgeone@${EDGEONE_CLI_VERSION}" \
+              --package "vitest@${EDGEONE_VITEST_VERSION}" \
+              --package "vite-node@${EDGEONE_VITE_NODE_VERSION}" \
+              edgeone pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
               exit 0
             fi
 
@@ -475,21 +451,24 @@ jobs:
         with:
           ref: ${{ needs.release-context.outputs.release_head }}
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
         with:
-          node-version: 24
+          version: 11.22.0
+          runtime: node@24
+          cache: true
+          install: false
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build/release Electron app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm run build
-          npm run tsc:electron
-          npx electron-builder --config electron-builder.json --publish always --${{ matrix.arch }}
+          pnpm build
+          pnpm tsc:electron
+          pnpm exec electron-builder --config electron-builder.json --publish always --${{ matrix.arch }}
 
   verify-release:
     name: Verify Unique Complete Electron Release

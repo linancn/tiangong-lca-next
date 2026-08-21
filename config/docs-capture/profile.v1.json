@@ -3,7 +3,7 @@
   "productRepo": "linancn/tiangong-lca-next",
   "supportedIntentSchemas": ["docs-impact-capture-intent.v2"],
   "runtime": {
-    "command": ["npm", "run", "start:main"],
+    "command": ["pnpm", "start:main"],
     "readinessPath": "/"
   },
   "authentication": {

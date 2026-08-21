@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
+lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
 lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct unit proof, save gates use explicit side-effect assertions, and generated locale digests use the existing idempotence contract.'
 ---
 
@@ -72,9 +72,9 @@ lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct u
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
 - schedule known process-heavy Jest suites first when that lowers cold-run tail latency, but preserve Jest discovery and the complete inventory. Keep Jest's own failure/duration/file-size order within each priority group and lock the selected paths with a sequencer contract test
-- for process-heavy Git/npm contract suites, build one immutable seed only when setup dominates runtime, then copy a separate repository and bare remote for every test case and rebind `origin` to that case. Never share mutable refs, receipts, gate logs, or transport state between tests
+- for process-heavy Git/pnpm contract suites, build one immutable seed only when setup dominates runtime, then copy a separate repository and bare remote for every test case and rebind `origin` to that case. Never share mutable refs, receipts, gate logs, or transport state between tests
 - retain parallel unit execution on macOS, but start Jest workers with concurrent recompilation and Maglev disabled and recycle a unit worker after it crosses `512MB`; this avoids the documented Node 24/V8 stale-left-trimmed-pointer failure while allowing the slow-first suites to overlap ordinary work
-- test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
+- test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 
 ## Reusable Helpers
@@ -149,8 +149,8 @@ Special cases:
 Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
-- use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
-- use `npm run e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
+- use `pnpm e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `pnpm start:main` and must still reject a non-loopback Playwright base URL
+- use `pnpm e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
 - normal release orchestration keeps browser qualification earlier and separate: run the manual hermetic workflow on the open business PR when change risk warrants it, then `release:to-dev --apply` uses a restricted structural/static push and the exact generated Release PR into `dev` runs one non-browser Release Gate before merge
 - local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it
 - release-workflow unit fixtures must prove release-to-dev and promotion invoke only their exact restricted push profiles, never invoke browser qualification or write tracked proof, and still cover composed-candidate preflight failure, unexpected untracked files, immutable promotion identity, main-baseline binding, direct ancestry, tree-identical promotion, changed-tree rejection, and the rule that no failed preflight path reaches push or PR creation
@@ -168,7 +168,7 @@ Browser semantic E2E pattern:
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
 - stage deliberately stale IndexedDB/localStorage fixtures on a same-origin static document before navigating to the tested deep link, and send menu-dismissal keys to the visible menu/trigger rather than ambient page focus; Firefox may retry one exact navigation only after its known cancellation failed to commit that target
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
-- treat adding a registry locale or changing a bound route/source/test or executable dependency lock as evidence invalidation, not as a request to reuse the old result; a package-lock root application-version-only change may reuse evidence only after the raw evidence lock is verified at its recorded commit and the deterministic dependency projection remains exact
+- treat adding a registry locale or changing a bound route/source/test, raw `pnpm-lock.yaml`, or `pnpm-workspace.yaml` install policy as evidence invalidation, not as a request to reuse the old result; a root `package.json.version`-only release may reuse dependency identity because pnpm does not encode that version in its lockfile
 - when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
 - when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
 
@@ -209,26 +209,26 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 
 | Need | Command shape |
 | --- | --- |
-| focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
-| focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
-| TypeScript 7/Oxlint command and adapter contract | `npm run test:ci -- tests/unit/config/toolchainCommandContract.test.ts tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` |
-| slow-first and receipt-fixture contract | `npm run test:ci -- tests/unit/scripts/slowJestSequencer.test.ts tests/unit/scripts/prepushGateReceipt.test.ts --runInBand --no-coverage` |
-| focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
-| exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
-| open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
-| active German runtime assembly | `npm run i18n:de:audit` |
-| active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
-| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
-| canonical semantic evidence format | `npm run i18n:evidence:canonical:check -- --path <artifact>` |
-| language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
-| all-active-locale activation | `npm run i18n:locale:all:check` |
-| existing-translation correction overlay | `npm run i18n:corrections:check` |
-| historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
-| final managed push | `npm run push:checked -- <normal-git-push-args>` |
-| receipt-bound transport retry | `npm run push:retry` |
-| compact agent full gate | `npm run prepush:gate:agent` (full logs under `.local/test-logs/**`) |
+| focused unit or component run | `pnpm test:ci tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
+| focused integration run | `pnpm test:ci tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
+| TypeScript 7/Oxlint command and adapter contract | `pnpm test:ci tests/unit/config/toolchainCommandContract.test.ts tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` |
+| slow-first and receipt-fixture contract | `pnpm test:ci tests/unit/scripts/slowJestSequencer.test.ts tests/unit/scripts/prepushGateReceipt.test.ts --runInBand --no-coverage` |
+| focused semantic localization browser proof | `pnpm e2e:dev <Playwright arguments>` |
+| exact-candidate release browser proof | `pnpm e2e:env:doctor` then `pnpm e2e:release <release options>` |
+| open-handle debug | `pnpm test:ci <file> --runInBand --detectOpenHandles --no-coverage` |
+| active German runtime assembly | `pnpm i18n:de:audit` |
+| active locale context and quality | `pnpm i18n:context:check --locale <canonical-locale>` then `pnpm i18n:locale:quality:check --locale <canonical-locale>` |
+| one-shot canonical locale summaries | `pnpm i18n:locale:artifacts:write` then `pnpm i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
+| canonical semantic evidence format | `pnpm i18n:evidence:canonical:check --path <artifact>` |
+| language platform and hardcoding | `pnpm i18n:platform:audit` then `pnpm i18n:hardcoding:audit` |
+| all-active-locale activation | `pnpm i18n:locale:all:check` |
+| existing-translation correction overlay | `pnpm i18n:corrections:check` |
+| historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
+| final managed push | `pnpm push:checked <normal-git-push-args>` |
+| receipt-bound transport retry | `pnpm push:retry` |
+| compact agent full gate | `pnpm prepush:gate:agent` (full logs under `.local/test-logs/**`) |
 
-- run Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
+- run Umi-generating focused tests, coverage commands, and `pnpm prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
 
 ## Skip And TODO Policy
 

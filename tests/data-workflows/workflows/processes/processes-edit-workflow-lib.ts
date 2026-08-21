@@ -206,8 +206,8 @@ export type ProcessEditDependencies = {
 export const PROCESS_EDIT_DATA_WORKFLOW_HELP = `Process edit data workflow
 
 Usage:
-  npm run test:workflows -- --processes:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
-  npm run test:workflows -- --processes:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
+  pnpm test:workflows --processes:edit --frontend-url http://127.0.0.1:8000 --supabase-url https://submidrhbtknjxfympna.supabase.co
+  pnpm test:workflows --processes:edit --role admin --frontend-url https://lca.tiangong.earth --supabase-url https://supabase.com/dashboard/project/submidrhbtknjxfympna
 
 Workflow:
   1. Create one process from tests/data-workflows/fixtures/data/processes/001_create.json

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "e02524201c4740e081b49d6d182780df2c836d4fd816a6d07ac80cf076a5993a",
+    "auditedInputDigest": "dfbe6a9505825d2aa319173053d31f0977e861ba7b82f2de683b6137d8dc83fb",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -41166,7 +41166,7 @@
       },
       "translations": {
         "en-US": {
-          "value": "Umi ui is now released, welcome to use npm run ui to start the experience.",
+          "value": "Umi UI is available on this administrator-only page.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -41177,7 +41177,7 @@
           }
         },
         "zh-CN": {
-          "value": "umi ui 现已发布，欢迎使用 npm run ui 启动体验。",
+          "value": "Umi UI 已可用于此管理员页面。",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -41188,7 +41188,7 @@
           }
         },
         "de-DE": {
-          "value": "Umi UI ist jetzt verfügbar. Starten Sie die Oberfläche mit npm run ui.",
+          "value": "Umi UI ist auf dieser Administratorseite verfügbar.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {
@@ -41199,7 +41199,7 @@
           }
         },
         "fr-FR": {
-          "value": "Umi UI est maintenant disponible. Utilisez npm run ui pour démarrer la démonstration.",
+          "value": "Umi UI est disponible sur cette page réservée aux administrateurs.",
           "argumentSignature": [],
           "placeholders": [],
           "source": {

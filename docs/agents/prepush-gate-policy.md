@@ -9,7 +9,7 @@ language: en
 whenToUse:
   - when changing pre-push gate behavior
   - when deciding protected-branch parity expectations
-  - when checking the intended trigger policy for `npm run prepush:gate`
+  - when checking the intended trigger policy for `pnpm prepush:gate`
 whenToUpdate:
   - when hook or CI trigger behavior changes
   - when protected-branch policy changes
@@ -19,6 +19,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
+  - pnpm-lock.yaml
+  - pnpm-workspace.yaml
   - .oxlintrc.json
   - .prettierignore
   - .prettierrc.js
@@ -41,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
+lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
 lastReviewedNote: 'Reviewed for Next Issue #910: focused TIDAS scalar regression tests and regenerated locale digests fit the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 
@@ -51,37 +53,37 @@ lastReviewedNote: 'Reviewed for Next Issue #910: focused TIDAS scalar regression
 
 ## Purpose
 
-Define the intended trigger policy for the existing local docpact gate and `npm run prepush:gate` command without changing the quality bar.
+Define the intended trigger policy for the existing local docpact gate and `pnpm prepush:gate` command without changing the quality bar.
 
 ## Exact Gate Command
 
 ```bash
-npm run docpact:gate
+pnpm docpact:gate
 ```
 
-`npm run docpact:gate` resolves the `docpact` CLI through `scripts/docpact`, so local pushes do not depend on bare `docpact` being available on `PATH`.
+`pnpm docpact:gate` resolves the `docpact` CLI through `scripts/docpact`, so local pushes do not depend on bare `docpact` being available on `PATH`.
 
 ```bash
-npm run prepush:gate
+pnpm prepush:gate
 ```
 
-The full gate runs LCIA verification, `npm run reference-data:check`, lint/type checks, complete coverage, and the unchanged 100% coverage assertion in that order. Reference-data verification fails before the expensive suite when the source manifest, evidence, content-addressed filenames, generated registry, or gzip outputs drift.
+The full gate runs LCIA verification, `pnpm reference-data:check`, lint/type checks, complete coverage, and the unchanged 100% coverage assertion in that order. Reference-data verification fails before the expensive suite when the source manifest, evidence, content-addressed filenames, generated registry, or gzip outputs drift.
 
-`npm run prepush:gate:agent` enables the same gate with compact agent output. Jest writes its complete stdout/stderr and structured result JSON under `.local/test-logs/**`; the console contains only stage starts, failed suites/assertions, and final summaries. The reusable Release Gate enables this mode and uploads those files as a seven-day CI artifact even on failure, so compact output does not discard diagnostic evidence.
+`pnpm prepush:gate:agent` enables the same gate with compact agent output. Jest writes its complete stdout/stderr and structured result JSON under `.local/test-logs/**`; the console contains only stage starts, failed suites/assertions, and final summaries. The reusable Release Gate enables this mode and uploads those files as a seven-day CI artifact even on failure, so compact output does not discard diagnostic evidence.
 
-Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
+Production-effective workflows separately run `pnpm reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
 
-`npm run release:static-preflight` owns the tracked static release boundary by checking all locale artifacts and production reference-data contracts. It does not claim browser execution; `npm run release:preflight` remains a compatibility alias. A local push whose source or destination has `main` semantics (`main`, `master`, `hotfix/*`, `promote/*`, `release/*`, or equivalent `codex/` names) runs this static preflight between Docpact and the full test gate. A push to `dev` remains governed by Docpact plus the full test gate only.
+`pnpm release:static-preflight` owns the tracked static release boundary by checking all locale artifacts and production reference-data contracts. It does not claim browser execution; `pnpm release:preflight` remains a compatibility alias. A local push whose source or destination has `main` semantics (`main`, `master`, `hotfix/*`, `promote/*`, `release/*`, or equivalent `codex/` names) runs this static preflight between Docpact and the full test gate. A push to `dev` remains governed by Docpact plus the full test gate only.
 
-The deterministic release commands preserve this split by construction. `release:to-dev` rejects main-semantic branch names and requires a safe release-line alignment: either current `main` is an ancestor of `dev`, or current `main` is an exact two-parent promotion whose second parent remains in `dev` history and whose tree is identical to that parent. It proves that only the three root version fields and bounded Docpact review metadata changed, preflights both the version candidate's `dev`-relative paths and the complete `main`-to-candidate path set, commits the composed candidate, and delegates transport to `push:checked --gate-profile release-candidate`. That profile rechecks Docpact plus static release contracts, while the exact deterministic Release PR into `dev` owns one non-browser static/full gate. `release:promote-dev-to-main` pins the merged `dev` candidate and uses `push:checked --gate-profile immutable-promotion`; its local push and main-target PR verify structure and the dev proof instead of repeating candidate acceptance. The only automatic transport retry remains the argument-free `push:retry` when the immediately preceding checked push created a new exact-intent receipt.
+The deterministic release commands preserve this split by construction. `release:to-dev` rejects main-semantic branch names and requires a safe release-line alignment: either current `main` is an ancestor of `dev`, or current `main` is an exact two-parent promotion whose second parent remains in `dev` history and whose tree is identical to that parent. It proves that only `package.json.version` and bounded Docpact review metadata changed while `pnpm-lock.yaml` remains byte-identical, preflights both the version candidate's `dev`-relative paths and the complete `main`-to-candidate path set, commits the composed candidate, and delegates transport to `push:checked --gate-profile release-candidate`. That profile rechecks Docpact plus static release contracts, while the exact deterministic Release PR into `dev` owns one non-browser static/full gate. `release:promote-dev-to-main` pins the merged `dev` candidate and uses `push:checked --gate-profile immutable-promotion`; its local push and main-target PR verify structure and the dev proof instead of repeating candidate acceptance. The only automatic transport retry remains the argument-free `push:retry` when the immediately preceding checked push created a new exact-intent receipt.
 
-Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact committed qualification uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. The credential-free/read-only hermetic GitHub workflow is manually dispatched for an open business PR or chosen ref when change risk warrants browser evidence; release PR, promotion, and publication do not require it. The full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `pnpm e2e:dev`; exact committed qualification uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. The credential-free/read-only hermetic GitHub workflow is manually dispatched for an open business PR or chosen ref when change risk warrants browser evidence; release PR, promotion, and publication do not require it. The full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
-Local semantic qualification writes only an ignored proof path supplied with `--proof`. Compute its key with `npm run e2e:qualification:key`, generate with `npm run e2e:qualify -- --proof .local/e2e-release/qualification-proof.json`, and verify with `npm run release:proof:verify -- --proof <path>`. Manual GitHub qualification performs the same sequence without proof-cache reuse and uploads a short-lived artifact; no proof file is committed or reviewed as source.
+Local semantic qualification writes only an ignored proof path supplied with `--proof`. Compute its key with `pnpm e2e:qualification:key`, generate with `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json`, and verify with `pnpm release:proof:verify --proof <path>`. Manual GitHub qualification performs the same sequence without proof-cache reuse and uploads a short-lived artifact; no proof file is committed or reviewed as source.
 
 Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
-Routine locale and pre-push checks validate the external-proof contract without requiring a browser artifact in the checkout. Exact browser execution is an operator-selected business-PR-stage qualification, not a release enforcement condition. If a local operator supplies external authenticated evidence to the explicit production-readiness command, current backend, executable package-lock semantics, runtime assets, semantic tests, and route/source digests must match exactly; only root application release-version fields are normalized in the package-lock comparison.
+Routine locale and pre-push checks validate the external-proof contract without requiring a browser artifact in the checkout. Exact browser execution is an operator-selected business-PR-stage qualification, not a release enforcement condition. If a local operator supplies external authenticated evidence to the explicit production-readiness command, current backend, raw `pnpm-lock.yaml`, `pnpm-workspace.yaml`, runtime assets, semantic tests, and route/source digests must match exactly. pnpm does not store the root application version in its lockfile, so no lock normalization is allowed.
 
 Qualification reuse is content-addressed and computed from current inputs; it is never granted through a tracked digest compatibility or waiver file. The closed simulator uses its fixed non-production backend profile, so deployment-only `.env` drift does not invalidate semantic proof. Source, harness, shared-helper, Git mode/type, or pinned browser-environment drift does. A behavior-key hit still passes proof verification before reuse.
 
@@ -125,7 +127,7 @@ It does not own:
 - docs-impact capture remains on-demand and isolated from semantic E2E; workspace tooling owns its external absolute mode-`0600` account file, mandatory run-scoped origin, non-auth mutation guard, and explicit next-docs output roots, while Next owns only the source-bound profile consumed from the exact rendered commit
 - an authorized local production-data run is rejected before Docker when host `CI` or `GITHUB_ACTIONS` is set; after the local check passes, the controller clears only those image-inherited markers at container runtime and still requires `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, and the exact one-process confirmation token; `E2E_WRITE_VERIFIED_EVIDENCE=true` separately opts into tracked evidence. It writes its intent ledger before create; cleanup verifies the production row UUID, authenticated owner, and all five multilingual-field markers across registry authoring languages before exact-ID deletion, then proves `created=cleaned` and `leaked=0`
 - Header Umi `SelectLang` remains `reload={false}` so same-document locale refresh and delayed old-response race behavior stay browser-verifiable
-- historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `npm run prepush:gate` must never read ignored confirmation files
+- historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `pnpm prepush:gate` must never read ignored confirmation files
 
 ## Short Rule Summary
 
@@ -133,14 +135,14 @@ It does not own:
 - do not require an NVM-managed copy of Node 24 when the runner or operator already has Node 24 active on `PATH`
 - for ordinary delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; deterministic release-candidate and promotion pushes use only their restricted structural/static profiles because the dev Release PR owns aggregate acceptance
 - use manual full-gate execution only when a no-push handoff needs the evidence
-- use `npm run push:checked -- <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper
+- use `pnpm push:checked <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper
 - an already-up-to-date push supplies no ref updates, and a raw deletion-only push supplies no new candidate content, so the hook skips checkpoint collection and both gates; a managed no-op succeeds only with a private nonce-bound no-update acknowledgement, while checked ref deletion is rejected before any gate, and neither path can activate a retry receipt
 - normalize the normal Git source spelling `HEAD` to the current exact branch only when its SHA equals the immutable checkpoint; reject every other ineligible checked ref shape before Docpact or the full gate, rather than reporting a deterministic transport-shape error after expensive validation
 - hook completion alone never creates a reusable receipt: a successful managed original push leaves no receipt, and only a non-zero original push after a valid hook payload activates an ignored, one-hour, bounded single-push-intent receipt under `.local/prepush-gate/`
 - the checked-push session directory and nonce remain private to the hook coordinator and are removed from Docpact and test-gate subprocess environments, so nested tests or helper pushes cannot forge the outer session's successful-gate payload
-- after that uncertain or failed transport, use `npm run push:retry` with no arguments; remote, ref, and commit come only from the receipt, and any operator-supplied target argument is rejected
-- when the original checked transport fails after both gates passed, the wrapper prints the exact standalone next action `Next: npm run push:retry`
-- the helper rechecks the remote/refspec, HEAD/tree/branch, clean worktree, Node/npm, lockfiles and installed dependency tree, hook/gate inputs, and resolved Docpact base before it internally performs the receipt-bound exact-SHA `--no-verify` transport; this internal helper call is the only bypass authority
+- after that uncertain or failed transport, use `pnpm push:retry` with no arguments; remote, ref, and commit come only from the receipt, and any operator-supplied target argument is rejected
+- when the original checked transport fails after both gates passed, the wrapper prints the exact standalone next action `Next: pnpm push:retry`
+- the helper rechecks the remote/refspec, HEAD/tree/branch, clean worktree, Node/pnpm, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, installed pnpm layout and dependency tree, hook/gate inputs, and resolved Docpact base before it internally performs the receipt-bound exact-SHA `--no-verify` transport; this internal helper call is the only bypass authority
 - if the remote already equals the receipt-bound target SHA, the helper clears the receipt and succeeds idempotently without another push or gate run
 - a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
@@ -155,5 +157,5 @@ It does not own:
 - keep publication automation in the same `main` push workflow, but create the tag only after exact dev-candidate proof verification; reserve a fresh aggregate run for explicit tag or `workflow_dispatch` recovery, not a normal main-push fallback
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run
-- reproduce Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially on one workstation when they are needed; the full gate already contains the complete test inventory and unchanged 100% `src/**` coverage
+- reproduce Umi-generating focused tests, coverage commands, and `pnpm prepush:gate` serially on one workstation when they are needed; the full gate already contains the complete test inventory and unchanged 100% `src/**` coverage
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern

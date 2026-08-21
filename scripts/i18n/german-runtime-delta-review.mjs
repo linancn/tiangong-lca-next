@@ -119,7 +119,7 @@ export function buildDeltaReviewScope(root) {
   const runtimeManifest = buildRuntimeActivationManifest(root);
   if (!currentManifestIsFresh(root, runtimeManifest)) {
     throw new Error(
-      `Runtime activation manifest is stale; run npm run i18n:de:runtime:manifest:write first.`,
+      `Runtime activation manifest is stale; run pnpm i18n:de:runtime:manifest:write first.`,
     );
   }
   const canonicalManifest = readJson(root, CANONICAL_MANIFEST);

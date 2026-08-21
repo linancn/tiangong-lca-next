@@ -83,7 +83,8 @@ type FileDigest = { path: string; sha256: string };
 
 type ExecutionInputSnapshot = {
   coverage: SemanticEvidenceCoverage;
-  packageLock: FileDigest;
+  dependencyLock: FileDigest;
+  pnpmWorkspace: FileDigest;
   routeCoverage: FileDigest;
   runtimeAssets: FileDigest[];
   sources: FileDigest[];
@@ -192,7 +193,6 @@ const CRITICAL_SOURCE_PATHS = [
 const CRITICAL_TEST_PATHS = [
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
-  'scripts/i18n/package-lock-runtime-fingerprint.cjs',
   'tests/data-workflows/data-workflow-paths.ts',
   'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
@@ -200,7 +200,6 @@ const CRITICAL_TEST_PATHS = [
   'tests/unit/e2e/evidenceReporter.test.ts',
   'tests/unit/e2e/productionDataLedger.test.ts',
   'tests/unit/e2e/productionRequestGuard.test.ts',
-  'tests/unit/i18n/packageLockRuntimeFingerprint.test.js',
   'tests/unit/services/general/routeViewStateRegistry.test.ts',
 ] as const;
 const SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES = new Set([
@@ -304,7 +303,7 @@ export function readManifestCandidateIdentity(): CandidateIdentity | undefined {
   const sha256Pattern = /^[0-9a-f]{64}$/u;
   if (
     manifest.kind !== 'tiangong-next-release-e2e-candidate' ||
-    manifest.schemaVersion !== 4 ||
+    manifest.schemaVersion !== 5 ||
     !identity ||
     !/^[0-9a-f]{40}$/u.test(identity.observedHeadCommit) ||
     !sha256Pattern.test(identity.configTreeDigest) ||
@@ -367,7 +366,8 @@ function captureExecutionInputs(playwrightTestRoot: string): ExecutionInputSnaps
   }
   return {
     coverage,
-    packageLock: digestFiles(['package-lock.json'])[0],
+    dependencyLock: digestFiles(['pnpm-lock.yaml'])[0],
+    pnpmWorkspace: digestFiles(['pnpm-workspace.yaml'])[0],
     routeCoverage: {
       path: ROUTE_COVERAGE_PATH,
       sha256: sha256(routeCoverageBuffer),
@@ -388,7 +388,8 @@ function captureExecutionInputs(playwrightTestRoot: string): ExecutionInputSnaps
 function executionInputDigest(snapshot: ExecutionInputSnapshot): string {
   return sha256(
     `${JSON.stringify({
-      packageLock: snapshot.packageLock,
+      dependencyLock: snapshot.dependencyLock,
+      pnpmWorkspace: snapshot.pnpmWorkspace,
       routeCoverage: snapshot.routeCoverage,
       runtimeAssets: snapshot.runtimeAssets,
       sources: snapshot.sources,
@@ -711,7 +712,7 @@ export default class I18nEvidenceReporter implements Reporter {
     };
 
     const evidence = {
-      schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+      schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v2',
       status: 'verified',
       generatedAt: new Date().toISOString(),
       runId: process.env.GITHUB_RUN_ID
@@ -730,7 +731,8 @@ export default class I18nEvidenceReporter implements Reporter {
         contractDigest: routeCoverageContractDigest(routeCoverageDigestInput),
       },
       digests: {
-        packageLock: finalExecutionInputs.packageLock,
+        dependencyLock: finalExecutionInputs.dependencyLock,
+        pnpmWorkspace: finalExecutionInputs.pnpmWorkspace,
         runtimeAssets: finalExecutionInputs.runtimeAssets,
         tests: finalExecutionInputs.tests,
         sources: finalExecutionInputs.sources,

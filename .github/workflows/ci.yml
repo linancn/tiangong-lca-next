@@ -19,33 +19,28 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
         with:
-          node-version: 24
-
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
+          version: 11.22.0
+          runtime: node@24
+          cache: true
+          install: false
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Verify reviewed LCIA cache bundle
-        run: npm run lcia-cache:verify
+        run: pnpm lcia-cache:verify
 
       - name: Verify all-locale delivery contracts
-        run: npm run i18n:locale:all:check
+        run: pnpm i18n:locale:all:check
 
       - name: Verify reference-resource production readiness
-        run: npm run reference-data:production:check
+        run: pnpm reference-data:production:check
 
       - name: Build project
-        run: npm run build
+        run: pnpm build
 
       - name: Deploy to EdgeOne Pages
         env:
@@ -62,7 +57,7 @@ jobs:
           for attempt in $(seq 1 "$max_attempts"); do
             echo "Deploying to EdgeOne Pages, attempt ${attempt}/${max_attempts}."
 
-            if timeout 300s npx --yes "edgeone@${EDGEONE_CLI_VERSION}" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
+            if timeout 300s pnpm dlx "edgeone@${EDGEONE_CLI_VERSION}" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
               exit 0
             fi
 
