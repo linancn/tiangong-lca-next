@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar storage changes use focused normalization, serializer, all-save-entrypoint, and regenerated locale-artifact proof without changing the repository gate.'
 related:
   - ../AGENTS.md
