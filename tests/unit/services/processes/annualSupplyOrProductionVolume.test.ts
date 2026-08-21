@@ -1,5 +1,6 @@
 import {
   ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX,
+  ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH,
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
   buildAnnualSupplyVolumeMultiLang,
   buildAnnualSupplyVolumeUnitLookupRows,
@@ -51,6 +52,55 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     );
     expect(formatAnnualSupplyVolumeText('123', '', { useDefaultSuffix: false })).toBe('123');
     expect(formatAnnualSupplyVolumeText(123, 'kg/year')).toBe('');
+  });
+
+  it('keeps annual supply text at the TIDAS limit unchanged and truncates longer text', () => {
+    const suffixAtLimit = 'x'.repeat(ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH - 2);
+    const textAtLimit = `1 ${suffixAtLimit}`;
+    const truncatedText = formatAnnualSupplyVolumeText('1', `${suffixAtLimit}tail`);
+
+    expect(formatAnnualSupplyVolumeText('1', suffixAtLimit)).toBe(textAtLimit);
+    expect(truncatedText).toHaveLength(ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH);
+    expect(truncatedText).toBe(`${textAtLimit.slice(0, -3)}...`);
+  });
+
+  it('applies the annual supply limit independently and consistently to each language', () => {
+    const values = buildAnnualSupplyVolumeMultiLang(
+      '1',
+      (lang) => (lang === 'zh' ? '中'.repeat(600) : 'e'.repeat(600)),
+      ['en', 'zh'],
+    );
+
+    expect(values).toHaveLength(2);
+    expect(values.map((item) => item['#text'].length)).toEqual([
+      ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH,
+      ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH,
+    ]);
+    expect(values.every((item) => item['#text'].endsWith('...'))).toBe(true);
+  });
+
+  it('leaves a language within the limit unchanged when another language is truncated', () => {
+    expect(
+      buildAnnualSupplyVolumeMultiLang(
+        '1',
+        (lang) => (lang === 'zh' ? '短文本' : 'e'.repeat(600)),
+        ['en', 'zh'],
+      ),
+    ).toEqual([
+      {
+        '@xml:lang': 'en',
+        '#text': `${`1 ${'e'.repeat(600)}`.slice(0, 497)}...`,
+      },
+      { '@xml:lang': 'zh', '#text': '1 短文本' },
+    ]);
+  });
+
+  it('does not split a Unicode surrogate pair at the annual supply truncation boundary', () => {
+    const suffix = `${'中'.repeat(494)}😀tail`;
+    const truncatedText = formatAnnualSupplyVolumeText('1', suffix);
+
+    expect(truncatedText).toBe(`1 ${'中'.repeat(494)}...`);
+    expect(truncatedText.length).toBeLessThanOrEqual(ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH);
   });
 
   it('sanitizes editable numeric input while keeping real-number partial states', () => {

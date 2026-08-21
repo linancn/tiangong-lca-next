@@ -6,7 +6,9 @@ import {
 import type { ProcessExchangeData, ProcessRefUnitDisplay } from './data';
 
 export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'reference flow';
+export const ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH = 500;
 const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = REQUIRED_CONTENT_LANGUAGES;
+const ANNUAL_SUPPLY_VOLUME_TRUNCATION_MARKER = '...';
 
 export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\s+\S.*$/;
 export const ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN =
@@ -173,6 +175,26 @@ export const sanitizeAnnualSupplyVolumeNumericInput = (value: unknown) => {
   }, '');
 };
 
+const truncateAnnualSupplyVolumeText = (value: string) => {
+  if (value.length <= ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH) {
+    return value;
+  }
+
+  const contentLengthLimit =
+    ANNUAL_SUPPLY_VOLUME_TEXT_MAX_LENGTH - ANNUAL_SUPPLY_VOLUME_TRUNCATION_MARKER.length;
+  let truncatedText = '';
+
+  for (const character of value) {
+    if (truncatedText.length + character.length > contentLengthLimit) {
+      break;
+    }
+
+    truncatedText += character;
+  }
+
+  return `${truncatedText}${ANNUAL_SUPPLY_VOLUME_TRUNCATION_MARKER}`;
+};
+
 export const formatAnnualSupplyVolumeText = (
   numericText: unknown,
   suffix: unknown,
@@ -186,7 +208,9 @@ export const formatAnnualSupplyVolumeText = (
 
   const normalizedSuffix = normalizeAnnualSupplyVolumeSuffix(suffix, options);
 
-  return normalizedSuffix ? `${normalizedNumericText} ${normalizedSuffix}` : normalizedNumericText;
+  return truncateAnnualSupplyVolumeText(
+    normalizedSuffix ? `${normalizedNumericText} ${normalizedSuffix}` : normalizedNumericText,
+  );
 };
 
 export const normalizeAnnualSupplyVolumeText = (
