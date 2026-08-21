@@ -1570,7 +1570,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       </>
     ),
   };
-  const tabContent: { [key: string]: JSX.Element } =
+  const tabContent: { [key: string]: React.JSX.Element } =
     type === 'edit'
       ? {
           ...defaultTabContent,

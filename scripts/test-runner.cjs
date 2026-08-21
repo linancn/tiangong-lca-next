@@ -81,6 +81,12 @@ function stageSummary(stage, summary, exitCode, durationMs, logPath) {
   return `Summary ${stage}: ${status}; suites=${suites}; failedSuites=${failedSuites}; tests=${tests}; failedTests=${failedTests}; durationMs=${durationMs}; log=${logPath}`;
 }
 
+function unitWorkerArgs(platform = process.platform) {
+  return platform === 'darwin'
+    ? ['--maxWorkers=25%', '--workerIdleMemoryLimit=512MB']
+    : ['--maxWorkers=50%'];
+}
+
 function runJest(args, stage = 'jest') {
   if (!isAgentMode) {
     const result = spawnSync(process.execPath, [jestBin, ...args], {
@@ -159,11 +165,9 @@ function main(argv = process.argv.slice(2)) {
   }
 
   const ciArgs = isCI ? ['--ci'] : [];
-  const unitWorkerArgs =
-    process.platform === 'darwin' ? ['--maxWorkers=25%'] : ['--maxWorkers=50%'];
   const stages = [
     {
-      args: [...ciArgs, 'tests/unit', 'src', ...unitWorkerArgs, '--testTimeout=20000'],
+      args: [...ciArgs, 'tests/unit', 'src', ...unitWorkerArgs(), '--testTimeout=20000'],
       name: 'unit-src',
     },
     {
@@ -199,6 +203,7 @@ module.exports = {
   parseRunnerArgs,
   safeStageName,
   stageSummary,
+  unitWorkerArgs,
 };
 
 if (require.main === module) {

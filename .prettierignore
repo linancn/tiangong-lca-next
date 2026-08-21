@@ -4,7 +4,6 @@
 /dist
 .dockerignore
 .DS_Store
-.eslintignore
 *.png
 *.toml
 docker
@@ -13,7 +12,6 @@ Dockerfile*
 .gitignore
 .prettierignore
 LICENSE
-.eslintcache
 *.lock
 yarn-error.log
 .history

@@ -331,7 +331,7 @@ export const TabsDetail: FC<Props> = ({
       },
     },
   ];
-  const defaultTabContent: { [key: string]: JSX.Element } = {
+  const defaultTabContent: { [key: string]: React.JSX.Element } = {
     processInformation: (
       <>
         <Descriptions bordered size={'small'} column={1}>
@@ -1720,7 +1720,7 @@ export const TabsDetail: FC<Props> = ({
     return result;
   };
 
-  const tabContent: { [key: string]: JSX.Element } =
+  const tabContent: { [key: string]: React.JSX.Element } =
     type === 'edit'
       ? {
           ...defaultTabContent,

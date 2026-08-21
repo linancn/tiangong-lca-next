@@ -10,10 +10,10 @@ import {
   CANONICAL_SOURCE_APP_LOCALE,
   SUPPORTED_APP_LOCALES,
 } from '../../src/services/general/localeRegistry.ts';
+import ts from '../typescript-native-parser.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
-const ts = require('typescript');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
 const SCHEMA_VERSION = 'tiangong.i18n-manifest.v1';

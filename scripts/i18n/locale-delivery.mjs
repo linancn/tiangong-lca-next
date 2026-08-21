@@ -21,10 +21,10 @@ import {
   resolveLocaleArtifactSharedAuditMode,
   resolveLocaleArtifactTargets,
 } from './locale-artifact-targets.ts';
+import ts from '../typescript-native-parser.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
-const ts = require('typescript');
 const { packageLockRuntimeDigest } = require('./package-lock-runtime-fingerprint.cjs');
 
 const AUDIT_SCRIPT = 'scripts/i18n/audit-locales.mjs';

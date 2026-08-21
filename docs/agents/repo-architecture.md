@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedCommit: 51de71b774b44e895d8a157173074577d8dc23fc
 lastReviewedNote: 'Reviewed for Next Issue #910: the service layer now owns explicit TIDAS year and percentage scalar normalization plus fail-closed save validation.'
 related:
   - ../AGENTS.md

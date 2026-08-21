@@ -1,0 +1,171 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "off",
+    "nursery": "off",
+    "pedantic": "off",
+    "perf": "off",
+    "restriction": "off",
+    "style": "off",
+    "suspicious": "off"
+  },
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "jest": true,
+    "node": true
+  },
+  "globals": {
+    "page": "writable"
+  },
+  "jsPlugins": ["./scripts/oxlint-plugin-tiangong.mjs"],
+  "ignorePatterns": [
+    "/lambda/",
+    "/scripts/",
+    "/tests/data-workflows/workflows/",
+    "/config/",
+    ".history/",
+    "public/",
+    "dist/",
+    "dist-electron/",
+    "dist-package/",
+    ".umi/",
+    "mock/",
+    "docker/"
+  ],
+  "options": {
+    "respectEslintDisableDirectives": true,
+    "typeAware": true
+  },
+  "plugins": ["eslint", "react", "typescript", "jest"],
+  "settings": {
+    "jest": {
+      "version": "29.7.0"
+    },
+    "react": {
+      "version": "18.3.1"
+    }
+  },
+  "rules": {
+    "array-callback-return": "error",
+    "eqeqeq": "error",
+    "for-direction": "error",
+    "guard-for-in": "error",
+    "no-async-promise-executor": "error",
+    "no-case-declarations": "error",
+    "no-debugger": "error",
+    "no-delete-var": "error",
+    "no-dupe-class-members": "error",
+    "no-dupe-else-if": "error",
+    "no-duplicate-case": "error",
+    "no-eval": "error",
+    "no-ex-assign": "error",
+    "no-global-assign": "error",
+    "no-invalid-regexp": "error",
+    "no-loop-func": "error",
+    "no-param-reassign": "error",
+    "no-promise-executor-return": "error",
+    "no-redeclare": "error",
+    "no-self-assign": "error",
+    "no-self-compare": "error",
+    "no-shadow-restricted-names": "error",
+    "no-sparse-arrays": "error",
+    "no-unsafe-finally": "error",
+    "no-unused-expressions": "error",
+    "no-unused-labels": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "after-used",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": false,
+        "vars": "all"
+      }
+    ],
+    "no-use-before-define": "error",
+    "no-useless-catch": "error",
+    "no-useless-constructor": "error",
+    "no-useless-escape": "error",
+    "no-var": "error",
+    "no-with": "error",
+    "react/button-has-type": "error",
+    "react/jsx-key": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/jsx-no-undef": "error",
+    "react/no-children-prop": "error",
+    "react/no-danger-with-children": "error",
+    "react/no-direct-mutation-state": "error",
+    "react/no-find-dom-node": "error",
+    "react/no-is-mounted": "error",
+    "react/no-render-return-value": "error",
+    "react/no-string-refs": "error",
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "error",
+    "react/require-render-return": "error",
+    "react/rules-of-hooks": "error",
+    "require-yield": "error",
+    "typescript/ban-types": "error",
+    "typescript/no-confusing-non-null-assertion": "error",
+    "typescript/no-deprecated": "error",
+    "typescript/no-empty-interface": "error",
+    "typescript/no-misused-new": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-non-null-asserted-optional-chain": "error",
+    "typescript/no-this-alias": "error",
+    "typescript/triple-slash-reference": "error",
+    "tiangong/no-invalid-this": "error",
+    "use-isnan": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "tests/unit/components/ClosureTaskDetail.test.tsx",
+        "tests/unit/components/ImportTidasPackage.test.tsx",
+        "tests/unit/services/general/tidasPackage.api.test.ts"
+      ],
+      "rules": {
+        "typescript/no-deprecated": [
+          "error",
+          {
+            "allow": [{ "from": "lib", "name": "createElement" }]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/*.{jsx,tsx}"],
+      "rules": {
+        "no-unused-vars": [
+          "error",
+          {
+            "args": "after-used",
+            "caughtErrors": "none",
+            "ignoreRestSiblings": false,
+            "vars": "all",
+            "varsIgnorePattern": "^React$"
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/*.{test,spec,unit,e2e}.{ts,tsx,js,jsx}"],
+      "rules": {
+        "jest/no-conditional-expect": "error",
+        "jest/no-deprecated-functions": "error",
+        "jest/no-export": "error",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/no-interpolation-in-snapshots": "error",
+        "jest/no-jasmine-globals": "error",
+        "jest/no-mocks-import": "error",
+        "jest/no-standalone-expect": "error",
+        "jest/valid-describe-callback": "error",
+        "jest/valid-expect-in-promise": "error",
+        "jest/valid-expect": "error",
+        "jest/valid-title": "error"
+      }
+    }
+  ]
+}

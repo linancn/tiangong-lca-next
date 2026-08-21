@@ -19,15 +19,28 @@ checkPaths:
   - AGENTS.md
   - .docpact/config.yaml
   - package.json
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - playwright.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/release/**
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/test-runner.cjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
+  - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
@@ -103,6 +116,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | sync the self-hosted Edge mirror from one reviewed commit | `./docker/pull-edge-functions.sh --ref <40-character-commit-sha>` |
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
+| native TypeScript 7 web typecheck | `npm run tsc` |
+| native TypeScript 7 Electron typecheck | `npm run tsc:electron` |
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
 | scope-closure adapter unit proof | `npm run test:qualification:scope-closure:unit` |
@@ -150,6 +165,16 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
+
+The repository has one TypeScript track: the direct `typescript` dependency resolves to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
+
+`npm run lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
+
+The qualified production bundle remains Umi's current Webpack path followed by the repo-owned TypeScript checks. Do not enable the optional Umi/Mako `forkTSChecker` path until its dependencies are proved compatible with TypeScript 7; the TypeScript 7 package's CommonJS root intentionally does not expose the legacy JavaScript Compiler API that this optional path currently expects.
+
+`npm test` still discovers and executes the complete Jest inventory. The repository sequencer starts the three known process-heavy suites first, while preserving Jest's normal ordering within the remaining group. The pre-push receipt contract builds one reusable seed and gives every test its own copied repository and bare remote; never share mutable Git state between cases.
+
+On macOS, the unit stage keeps its 25% worker pool but applies Jest's `512MB` idle-memory recycle boundary. This contains the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash signature without turning the complete suite into a serial run.
 
 For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
 

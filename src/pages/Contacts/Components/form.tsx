@@ -103,7 +103,7 @@ export const ContactForm: FC<Props> = ({
       tab: renderTabLabel('administrativeInformation'),
     },
   ];
-  const tabContent: { [key: string]: JSX.Element } = {
+  const tabContent: { [key: string]: React.JSX.Element } = {
     contactInformation: (
       <>
         <Space direction='vertical' style={{ width: '100%' }}>

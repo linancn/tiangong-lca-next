@@ -385,12 +385,19 @@ function collectCheckpoint(
     'ls-files',
     '-s',
     '--',
+    '.gitignore',
+    '.oxlintrc.json',
     '.docpact/config.yaml',
     '.husky/pre-push',
+    '.prettierignore',
+    '.prettierrc.js',
+    'jsconfig.json',
     'jest.config.cjs',
     'package.json',
     'package-lock.json',
     'scripts',
+    'tsconfig.json',
+    'tsconfig.electron.json',
   ]).stdout;
 
   return {

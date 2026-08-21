@@ -4,7 +4,10 @@ import {
 } from '@/services/general/localeRegistry';
 import fs from 'fs';
 import path from 'path';
-import ts from 'typescript';
+import ts, {
+  type Expression,
+  type PropertyName,
+} from '../../../scripts/typescript-native-parser.mjs';
 
 export type IcuArgumentType = 'number' | 'plural' | 'select' | 'simple';
 
@@ -51,7 +54,7 @@ const assertLocaleMessages = (value: unknown, source: string): LocaleMessages =>
   return value as LocaleMessages;
 };
 
-const unwrapExpression = (expression: ts.Expression): ts.Expression => {
+const unwrapExpression = (expression: Expression): Expression => {
   if (
     ts.isAsExpression(expression) ||
     ts.isTypeAssertionExpression(expression) ||
@@ -65,7 +68,7 @@ const unwrapExpression = (expression: ts.Expression): ts.Expression => {
   return expression;
 };
 
-const objectPropertyName = (name: ts.PropertyName): string | undefined => {
+const objectPropertyName = (name: PropertyName): string | undefined => {
   if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
     return name.text;
   }

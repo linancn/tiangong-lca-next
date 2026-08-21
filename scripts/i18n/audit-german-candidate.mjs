@@ -14,12 +14,12 @@ import {
   readCatalogOfflineConfirmation,
 } from './german-offline-review.mjs';
 import { normalizeProducerActor, producerActorKey } from './review-producer.mjs';
+import ts from '../typescript-native-parser.mjs';
 
 export { validateContextAnnotation } from './german-context-proposal.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
-const ts = require('typescript');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
 const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v6';
