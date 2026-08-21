@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 1395ddb24b9ee75a269df363eba303cea7bac513
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedNote: 'Reviewed for Next Issue #910: the new scalar helper uses direct unit proof and the service save gates use explicit side-effect assertions under the existing patterns.'
 ---
 
 # Testing Patterns Reference
@@ -79,6 +79,7 @@ lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI ke
 Validation-specific rule:
 
 - page-specific SDK-code adapters under `src/pages/*/sdkValidation.ts` and shared helpers under `src/pages/Utils/validation/**` should default to direct unit tests
+- ordered-dataset scalar normalizers should directly prove empty, valid, legacy string, boundary, and invalid inputs; each create/update/create-version save gate should also prove that invalid non-empty values do not reach validation or persistence
 - wrapper components that mainly coordinate drawers, forms, or modal jumps should keep behavior coverage through focused component or integration tests instead of artificial branch forcing
 
 ## Integration Pattern

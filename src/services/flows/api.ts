@@ -28,10 +28,20 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
+import {
+  createTidasScalarValidationError,
+  validateFlowTidasScalarStorage,
+} from '../general/tidasScalarStorage';
 import { getILCDLocationByValues } from '../locations/api';
 import { getCachedLocationData } from '../locations/cache';
 import type { FlowTable } from './data';
 import { genFlowJsonOrdered, genFlowName } from './util';
+
+const getFlowTidasScalarValidationError = (payload: unknown) => {
+  const issues = validateFlowTidasScalarStorage(payload);
+  return issues.length > 0 ? createTidasScalarValidationError(issues) : undefined;
+};
+
 function normalizeLocationData(response: any): any[] {
   if (Array.isArray(response)) {
     return response;
@@ -191,6 +201,10 @@ export async function createFlows(
       options,
     );
   }
+  const scalarValidationError = getFlowTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'flow data set',
@@ -242,6 +256,10 @@ export async function createFlowsVersion(
       options,
     );
   }
+  const scalarValidationError = getFlowTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
+  }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
     'flow data set',
@@ -292,6 +310,10 @@ export async function updateFlows(
       langMetadata,
       options,
     );
+  }
+  const scalarValidationError = getFlowTidasScalarValidationError(newData);
+  if (scalarValidationError) {
+    return attachLangNormalizationMetadata(scalarValidationError, langMetadata, options);
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(

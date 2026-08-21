@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 1395ddb24b9ee75a269df363eba303cea7bac513
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedNote: 'Reviewed for Next Issue #910: the service layer now owns explicit TIDAS year and percentage scalar normalization plus fail-closed save validation.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -52,6 +52,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
+| `src/services/general/tidasScalarStorage.ts` | canonical TIDAS year/percentage scalar normalization and the Process/Flow save-boundary issue format |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
@@ -75,6 +76,7 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
+- Process and Flow ordered-dataset serializers normalize TIDAS year values to bounded integers and percentage values to canonical strings. Their create, update, and create-version service paths reject non-empty affected scalars that cannot be represented canonically before invoking persistence; unrelated invalid-draft behavior remains unchanged
 - the startup system-status service treats `APP_RUNTIME_CONFIG_ENABLED` as a build-time emergency bypass: loading remains enabled by default, and only an explicit case-insensitive `false` returns the normal status without starting the Supabase RPC or its timeout
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete

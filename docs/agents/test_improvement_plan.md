@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 1395ddb24b9ee75a269df363eba303cea7bac513
-lastReviewedNote: 'Reviewed for Next Issue #901: the retired review-submit UI keeps immutable locale history as reserved keys, removes obsolete dynamic-callsite governance, and preserves the existing validation and release contracts.'
+lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedNote: 'Reviewed for Next Issue #910: unit-heavy scalar normalization and save-boundary coverage follows the current maintenance strategy without reopening strategy work.'
 ---
 
 # Testing Strategy

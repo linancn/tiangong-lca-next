@@ -1,6 +1,7 @@
 import { FormFlow } from '@/services/flows/data';
 import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk/core';
 import type { Flow } from '@tiangong-lca/tidas-sdk/types';
+import { normalizeOptionalTidasPercentage } from '../general/tidasScalarStorage';
 import {
   classificationToJsonList,
   classificationToStringList,
@@ -48,7 +49,9 @@ export function genFlowJsonOrdered(id: string, data: any) {
       minimumValue: item?.['minimumValue'],
       maximumValue: item?.['maximumValue'],
       uncertaintyDistributionType: item?.['uncertaintyDistributionType'],
-      relativeStandardDeviation95In: item?.['relativeStandardDeviation95In'],
+      relativeStandardDeviation95In: normalizeOptionalTidasPercentage(
+        item?.['relativeStandardDeviation95In'],
+      ),
       dataDerivationTypeStatus: item?.['dataDerivationTypeStatus'],
       generalComment: getLangJson(
         item?.['common:generalComment'] ?? item?.generalComment ?? undefined,

@@ -851,7 +851,7 @@ describe('Process Utility Functions', () => {
       expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
     });
 
-    it('should drop invalid reference year strings instead of serializing NaN', () => {
+    it('should preserve invalid reference year strings for the save-boundary validation gate', () => {
       const dataWithInvalidReferenceYear = {
         ...mockProcessData,
         processInformation: {
@@ -865,7 +865,45 @@ describe('Process Utility Functions', () => {
 
       const result = genProcessJsonOrdered('test-id', dataWithInvalidReferenceYear);
 
-      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBeUndefined();
+      expect(result.processDataSet.processInformation.time['common:referenceYear']).toBe(
+        'not-a-number',
+      );
+    });
+
+    it('should normalize process year and percentage scalars to canonical TIDAS types', () => {
+      const result = genProcessJsonOrdered('test-id', {
+        ...mockProcessData,
+        processInformation: {
+          ...mockProcessData.processInformation,
+          time: {
+            ...mockProcessData.processInformation.time,
+            'common:dataSetValidUntil': '2030',
+          },
+          mathematicalRelations: {
+            variableParameter: { relativeStandardDeviation95In: 1.25 },
+          },
+        },
+        exchanges: {
+          exchange: [
+            {
+              ...mockProcessData.exchanges.exchange[0],
+              relativeStandardDeviation95In: 12.5,
+              allocations: { allocation: { '@allocatedFraction': 0 } },
+            },
+          ],
+        },
+      });
+
+      const time = result.processDataSet.processInformation.time;
+      const exchange = result.processDataSet.exchanges.exchange[0];
+      expect(time['common:referenceYear']).toBe(2024);
+      expect(time['common:dataSetValidUntil']).toBe(2030);
+      expect(exchange.relativeStandardDeviation95In).toBe('12.5');
+      expect(exchange.allocations.allocation['@allocatedFraction']).toBe('0');
+      expect(
+        result.processDataSet.processInformation.mathematicalRelations.variableParameter
+          .relativeStandardDeviation95In,
+      ).toBe('1.25');
     });
 
     it('should not stringify missing exchange amounts to undefined', () => {

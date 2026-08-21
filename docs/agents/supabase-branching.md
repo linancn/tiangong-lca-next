@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 1395ddb24b9ee75a269df363eba303cea7bac513
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedNote: 'Reviewed for Next Issue #910: canonical TIDAS scalar shaping and its pre-persistence validation remain an app-side service responsibility.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -73,6 +73,7 @@ Rules:
 - `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
+- canonical Process/Flow TIDAS scalar shaping also stays in that boundary: serializers convert valid year and percentage form values to their required JSON scalar types, while create/update/create-version reject affected non-empty values that cannot be represented canonically before calling dataset commands
 - TIDAS package task reconciliation in `src/services/tidasPackage/taskCenter.ts` may coalesce local aliases by backend `workerJobId` or package `jobId` and adopt backend timestamps, but `database-engine` remains authoritative for mutable-scope cache lifecycle, fresh Worker job creation, package contents, and authorization
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - ResultSet create/list/get, closure checks, closure artifacts, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`. Database owns ResultSet identity and ResultSet-to-closure/task joins; Next keeps `resultSetId` as URL/workbench context and derives lifecycle presentation from safe projections without adding a frontend status store. Closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes actor-bound curated closure, artifact-lifecycle, signed-download, and `task-summary.v2` projections rather than worker rows or private artifact locators. Signed artifact responses are navigation targets only: Next must not proxy, fetch, or buffer the artifact bytes.
