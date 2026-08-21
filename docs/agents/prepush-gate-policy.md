@@ -31,7 +31,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1
 lastReviewedNote: 'Reviewed for Next Issue #910: focused TIDAS scalar regression tests and regenerated locale digests fit the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 
