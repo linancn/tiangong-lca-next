@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: e8d8734970e7f56aed2fecca1b9ac886a1c0c047
+lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar failures remain deterministic focused-test or save-boundary findings; locale digest drift is recovered with the existing artifact writer and contract rerun.'
 ---
 

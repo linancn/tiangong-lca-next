@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-21"
-lastReviewedCommit: "e8d8734970e7f56aed2fecca1b9ac886a1c0c047"
+lastReviewedCommit: "58c21ab60247acc71ce7754414f78650749c508d"
 lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and the resulting locale artifact digest refresh remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

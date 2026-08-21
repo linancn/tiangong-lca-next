@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-21
-lastReviewedCommit: 76015eab474f291c204758805c42198aa06b6888
+lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
 lastReviewedNote: 'Reviewed for Next Issue #920: the pinned pnpm, isolated-linker compatibility, explicit build policy, and dependency-identity checks extend the maintained validation model without reopening broader strategy work.'
 ---
 
