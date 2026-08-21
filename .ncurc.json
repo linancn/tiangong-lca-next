@@ -7,7 +7,8 @@
     "@types/react-dom",
     "antd",
     "typescript",
-    "eslint",
+    "oxlint",
+    "oxlint-tsgolint",
     "jest",
     "jest-environment-jsdom",
     "@types/jest"

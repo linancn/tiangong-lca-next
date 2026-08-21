@@ -267,6 +267,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
             toolBarRender={() => [
               isDragged && (
                 <ToolBarButton
+                  key='save-ranks'
                   disabled={
                     systemUserRole !== 'admin' &&
                     systemUserRole !== 'owner' &&

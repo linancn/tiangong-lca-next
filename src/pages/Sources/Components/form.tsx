@@ -135,7 +135,7 @@ export const SourceForm: FC<Props> = ({
       tab: renderTabLabel('administrativeInformation'),
     },
   ];
-  const tabContent: { [key: string]: JSX.Element } = {
+  const tabContent: { [key: string]: React.JSX.Element } = {
     sourceInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         <Card

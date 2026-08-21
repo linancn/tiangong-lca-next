@@ -18,14 +18,27 @@ checkPaths:
   - docs/agents/test_improvement_plan.md
   - docs/agents/test_todo_list.md
   - docs/agents/repo-validation.md
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - tests/**
   - playwright.config.ts
   - scripts/e2e/**
   - scripts/release/**
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/test-runner.cjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
+  - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-21
 lastReviewedCommit: 5afcdf56b13b4cf3c156c8d8b502a4c976f4c6c1

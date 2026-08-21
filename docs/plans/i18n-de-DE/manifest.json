@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "5c53affba3fa029ef9630ba390b9cd625d719fdbeddcee628c8235fbad2827af",
+    "auditedInputDigest": "64735c64cd68bfcae606bd3a68c63bad05bc2dccba3219c1f55cc81f29295391",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -547,7 +547,7 @@
           "path": "src/global.tsx",
           "line": 66,
           "column": 15,
-          "symbol": "btn",
+          "symbol": "actions",
           "defaultMessage": "Refresh failed, please reload the page manually",
           "defaultMessageExpression": null
         }
@@ -644,7 +644,7 @@
           "path": "src/global.tsx",
           "line": 74,
           "column": 10,
-          "symbol": "btn",
+          "symbol": "actions",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
@@ -11492,7 +11492,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/AllTeams/index.tsx",
-          "line": 277,
+          "line": 278,
           "column": 21,
           "symbol": "TableList",
           "defaultMessage": "Save Ranks",
@@ -11507,7 +11507,7 @@
           "locations": [
             {
               "path": "src/components/AllTeams/index.tsx",
-              "line": 277,
+              "line": 278,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -11693,7 +11693,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/AllTeams/index.tsx",
-          "line": 310,
+          "line": 311,
           "column": 19,
           "symbol": "TableList",
           "defaultMessage": "Select Team",
@@ -11717,7 +11717,7 @@
           "locations": [
             {
               "path": "src/components/AllTeams/index.tsx",
-              "line": 310,
+              "line": 311,
               "column": 19,
               "kind": "FormattedMessage"
             },
@@ -11883,7 +11883,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/AllTeams/index.tsx",
-          "line": 329,
+          "line": 330,
           "column": 13,
           "symbol": "TableList",
           "defaultMessage": "All Teams",
@@ -11913,7 +11913,7 @@
             },
             {
               "path": "src/components/AllTeams/index.tsx",
-              "line": 329,
+              "line": 330,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -140379,7 +140379,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 234,
+          "line": 235,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -140448,7 +140448,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 239,
+          "line": 240,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -140517,7 +140517,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 67,
+          "line": 68,
           "column": 17,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -140586,7 +140586,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 66,
+          "line": 67,
           "column": 16,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -140655,7 +140655,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 287,
+          "line": 288,
           "column": 14,
           "symbol": "details",
           "defaultMessage": null,
@@ -140724,7 +140724,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 274,
+          "line": 275,
           "column": 14,
           "symbol": "details",
           "defaultMessage": null,
@@ -140793,7 +140793,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 259,
+          "line": 260,
           "column": 12,
           "symbol": "details",
           "defaultMessage": null,
@@ -140862,7 +140862,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 85,
+          "line": 86,
           "column": 17,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -140931,7 +140931,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 84,
+          "line": 85,
           "column": 16,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -141000,7 +141000,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 79,
+          "line": 80,
           "column": 17,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -141069,7 +141069,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 78,
+          "line": 79,
           "column": 16,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -141138,7 +141138,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 313,
+          "line": 314,
           "column": 16,
           "symbol": "LcaCalculationEvidenceNotice",
           "defaultMessage": null,
@@ -141207,7 +141207,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 73,
+          "line": 74,
           "column": 17,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -141276,7 +141276,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 72,
+          "line": 73,
           "column": 16,
           "symbol": "statusPresentation",
           "defaultMessage": null,
@@ -141345,7 +141345,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 177,
+          "line": 178,
           "column": 35,
           "symbol": "details",
           "defaultMessage": null,
@@ -141414,7 +141414,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 215,
+          "line": 216,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -141483,7 +141483,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 171,
+          "line": 172,
           "column": 35,
           "symbol": "details",
           "defaultMessage": null,
@@ -141492,7 +141492,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 205,
+          "line": 206,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -141561,7 +141561,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 297,
+          "line": 298,
           "column": 8,
           "symbol": "details",
           "defaultMessage": null,
@@ -141630,7 +141630,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 184,
+          "line": 185,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -141699,7 +141699,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 191,
+          "line": 192,
           "column": 21,
           "symbol": "details",
           "defaultMessage": null,
@@ -141768,7 +141768,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 174,
+          "line": 175,
           "column": 35,
           "symbol": "details",
           "defaultMessage": null,
@@ -141777,7 +141777,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 210,
+          "line": 211,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -142082,7 +142082,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 152,
+          "line": 153,
           "column": 25,
           "symbol": "reasonLabel",
           "defaultMessage": null,
@@ -142151,7 +142151,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 332,
+          "line": 333,
           "column": 24,
           "symbol": "LcaCalculationEvidenceNotice",
           "defaultMessage": null,
@@ -142220,7 +142220,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 228,
+          "line": 229,
           "column": 10,
           "symbol": "details",
           "defaultMessage": null,
@@ -142289,7 +142289,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 168,
+          "line": 169,
           "column": 35,
           "symbol": "details",
           "defaultMessage": null,
@@ -142830,7 +142830,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 200,
+          "line": 201,
           "column": 20,
           "symbol": "details",
           "defaultMessage": null,
@@ -267246,7 +267246,7 @@
       "count": 1,
       "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
       "expression": "`pages.process.lca.evidence.reason.${resolved.reason}`",
-      "locations": ["150:7"],
+      "locations": ["151:7"],
       "category": "active-dynamic",
       "family": "lcaEvidenceReason",
       "reviewStatus": "reviewed"
@@ -267256,7 +267256,7 @@
       "count": 1,
       "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
       "expression": "`pages.process.lca.evidence.source.${resolved.sourceKind}`",
-      "locations": ["145:23"],
+      "locations": ["146:23"],
       "category": "active-dynamic",
       "family": "lcaEvidenceSource",
       "reviewStatus": "reviewed"
@@ -267266,7 +267266,7 @@
       "count": 1,
       "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
       "expression": "`pages.process.lca.evidence.status.${resolved.status}`",
-      "locations": ["309:14"],
+      "locations": ["310:14"],
       "category": "active-dynamic",
       "family": "lcaEvidenceStatus",
       "reviewStatus": "reviewed"

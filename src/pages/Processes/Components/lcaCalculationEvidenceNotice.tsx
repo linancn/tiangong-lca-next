@@ -4,6 +4,7 @@ import type {
   LcaUncharacterizedEvidenceArtifactV1,
   LcaUncharacterizedEvidenceArtifactV2,
   LciaCalculationStatus,
+  LciaMethodCoverageRow,
   LciaMethodFactorCoverageMatrix,
 } from '@/services/lciaMethods/data';
 import {
@@ -178,7 +179,7 @@ export default function LcaCalculationEvidenceNotice({
           {matrix.counts.invalid + matrix.counts.unsupported_direction}
         </Descriptions.Item>
       </Descriptions>
-      <Table
+      <Table<LciaMethodCoverageRow>
         columns={[
           {
             title: intl.formatMessage({ id: 'pages.process.lca.evidence.method' }),

@@ -857,7 +857,7 @@ export const ProcessForm: FC<Props> = ({
       },
     },
   ];
-  const tabContent: { [key: string]: JSX.Element } = {
+  const tabContent: { [key: string]: React.JSX.Element } = {
     processInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'Data Set Information'}> */}

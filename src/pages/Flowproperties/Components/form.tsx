@@ -118,7 +118,7 @@ export const FlowpropertyForm: FC<Props> = ({
     },
   ];
 
-  const tabContent: { [key: string]: JSX.Element } = {
+  const tabContent: { [key: string]: React.JSX.Element } = {
     flowPropertiesInformation: (
       <Space direction='vertical' style={{ width: '100%' }}>
         <Card

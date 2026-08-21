@@ -18,16 +18,28 @@ checkPaths:
   - docs/agents/testing-patterns.md
   - docs/agents/repo-validation.md
   - docs/agents/testing-troubleshooting.md
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
   - scripts/i18n/**
   - scripts/test-runner.cjs
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
   - package.json
+  - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
@@ -58,6 +70,9 @@ lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct u
 - pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
+- schedule known process-heavy Jest suites first when that lowers cold-run tail latency, but preserve Jest discovery and the complete inventory. Keep Jest's own failure/duration/file-size order within each priority group and lock the selected paths with a sequencer contract test
+- for process-heavy Git/npm contract suites, build one immutable seed only when setup dominates runtime, then copy a separate repository and bare remote for every test case and rebind `origin` to that case. Never share mutable refs, receipts, gate logs, or transport state between tests
+- retain parallel unit execution on macOS, but recycle a worker after it crosses `512MB`; this bounds the documented Node 24/V8 stale-left-trimmed-pointer failure while allowing the slow-first suites to overlap ordinary work
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`npm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 
@@ -81,6 +96,12 @@ Validation-specific rule:
 - page-specific SDK-code adapters under `src/pages/*/sdkValidation.ts` and shared helpers under `src/pages/Utils/validation/**` should default to direct unit tests
 - ordered-dataset scalar normalizers should directly prove empty, valid, legacy string, boundary, and invalid inputs; each create/update/create-version save gate should also prove that invalid non-empty values do not reach validation or persistence
 - wrapper components that mainly coordinate drawers, forms, or modal jumps should keep behavior coverage through focused component or integration tests instead of artificial branch forcing
+
+Toolchain-specific rule:
+
+- keep TypeScript `7.0.2` as the only direct compiler/API implementation; command-contract tests must reject a TS6 alias, a `tsc6`/compat command, or a non-repository compiler entrypoint
+- keep every `typescript/unstable/*` import inside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`. Adapter proof must cover source replacement without stale AST state, traversal and parent/text ranges, TSX guards, syntactic diagnostics, JSON parsing, and clean process exit
+- use Oxlint for unused and deprecated API correctness and Prettier for formatting only. Keep the focused repo-local `tiangong/no-invalid-this` rule until Oxlint provides a native equivalent, and prove it rejects module-level `this`. Tests must reject reintroducing ESLint, the standalone deprecated scanner, or a Prettier organize-imports plugin
 
 ## Integration Pattern
 
@@ -178,6 +199,7 @@ Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
 - test no-update, deletion-only, `HEAD`-source, tag, and multi-ref push shapes explicitly: deletion/no-update must not spend the gate budget, an exact `HEAD` branch push may proceed, and every other ineligible checked update must fail before either gate
+- bind compiler, linter, formatter, Jest, sequencer, runner, and native-parser inputs into the gate checkpoint. A committed drift in any bound input must change the digest and invalidate an existing transport receipt
 - when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then qualify the smallest useful fixed worker pool with a documented per-worker idle-memory recycle boundary on the affected platform; lock the exact selection/exclusion and worker contract in the isolated suite, and let the single coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
@@ -188,6 +210,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | --- | --- |
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
+| TypeScript 7/Oxlint command and adapter contract | `npm run test:ci -- tests/unit/config/toolchainCommandContract.test.ts tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` |
+| slow-first and receipt-fixture contract | `npm run test:ci -- tests/unit/scripts/slowJestSequencer.test.ts tests/unit/scripts/prepushGateReceipt.test.ts --runInBand --no-coverage` |
 | focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
 | exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |

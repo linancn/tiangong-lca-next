@@ -19,6 +19,13 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - playwright.config.ts
   - scripts/e2e/**
   - docker/e2e/**
@@ -28,6 +35,9 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/release/**
   - scripts/test-runner.cjs
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-21

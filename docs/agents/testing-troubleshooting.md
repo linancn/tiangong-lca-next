@@ -18,13 +18,25 @@ checkPaths:
   - docs/agents/testing-troubleshooting.md
   - docs/agents/testing-patterns.md
   - docs/agents/repo-validation.md
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - scripts/test-runner.cjs
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - playwright.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
+  - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-21
@@ -58,6 +70,10 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | a visible action exists but the expected request never starts | the control is present but still disabled while prerequisite data loads | wait for the control to become enabled, then interact; do not replace the product guard with an arbitrary delay |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
+| TypeScript 7 source-analysis output is stale, traversal is incomplete, or a script hangs after parsing | a consumer bypassed the repository adapter, the adapter did not replace/dispose its virtual source, or a TypeScript upgrade changed the pinned unstable API | run `npm run test:ci -- tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` plus the affected i18n/source-analysis suite; keep `typescript/unstable/*` imports only in `scripts/typescript-native-parser.mjs` and its declaration, and never add TS6 as a fallback |
+| `npm run lint` reports an unused or deprecated API that Prettier did not remove | Oxlint now owns correctness while Prettier formats only and no longer organizes imports | run `npm run lint:js` to isolate the finding, remove or replace the unused/deprecated code explicitly, then run `npm run lint:prettier`; do not restore ESLint, the standalone deprecated scanner, or the organize-imports plugin |
+| `npm run lint:js` reports `Unexpected 'this'` from `tiangong/no-invalid-this` | native Oxlint still lacks the legacy TypeScript-aware rule, so the repo-local plugin preserves its strict-context contract | move the code into a class/object method, use an explicit receiver, or add a typed `this` parameter where appropriate; do not disable the plugin or restore ESLint |
+| web typecheck passes but Electron compilation fails after a module-resolution change | the Electron project has a separate NodeNext/rootDir contract | run `npm run tsc:electron`, inspect `tsconfig.electron.json`, and keep the build workflow on that repository command rather than an ambient `npx tsc` |
 | a mocked hook API method is missing only after a state-driven rerender | the hook mock returns a new placeholder object on every render before its child can attach the API | preserve the hook result with a ref, update methods on that stable object, and add a direct parent-rerender identity regression before rerunning the affected flow |
 | Task Center shows duplicate TIDAS exports or keeps an old completion timestamp after a new request | local submission/persisted aliases were treated as separate facts instead of reconciling the backend worker/package identity | run the focused `tests/unit/services/tidasPackage/taskCenter.test.ts` suite, compare `workerJobId` and `jobId`, and verify hydration, queue, polling, and Worker refresh all retain one canonical task with backend timestamps |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
@@ -99,7 +115,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | Agent/CI full-gate output shows only a stage or failure summary and more Jest detail is needed | compact mode intentionally keeps the console bounded while retaining complete logs | inspect `.local/test-logs/**` locally or download the seven-day `release-gate-jest-logs-*` artifact from the Release Gate run; do not disable compact mode just to expand the CI console |
 | locale artifact generation changes tracked summaries on a second identical run | the writer emitted non-canonical output, used the wrong dependency order, or retained ambient state | run `npm run i18n:locale:artifacts:write`, then `npm run i18n:locale:artifacts:idempotence`; fix the first non-idempotent writer or input instead of committing a second wave of generated hashes |
 | locale artifact idempotence fails only in CI with `invalid object name 'origin/main'` | the isolated clone did not reproduce the remote ref consumed by the semantic backend-target check; a detached checkout has no accidental local `main` branch to mask it | copy the exact source `refs/remotes/origin/main` commit into the isolated clone before generation; do not weaken the backend-target check or depend on a local branch |
-| Jest exits non-zero without an assertion failure and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash rather than a failed suite; a recycle boundary below the instrumented worker's normal footprint can amplify collection churn | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and verify the checked-in two-worker command retains the `512MB` recycle boundary, then run one bounded `--maxWorkers=1` diagnostic on the same Node/checkpoint only if the crash recurs; do not repeatedly rerun an unchanged crashing gate |
+| Jest exits non-zero without an assertion failure and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash rather than a failed suite; a long-lived worker crossed the qualified recycle boundary | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process, verify both the macOS unit pool and checked-in two-worker coverage command retain the `512MB` recycle boundary, then run one bounded `--maxWorkers=1` diagnostic on the same Node/checkpoint only if the crash recurs; do not repeatedly rerun an unchanged crashing gate |
+| the three known slow Jest suites still start after ordinary suites | the custom sequencer is missing, its exact path matching drifted, or another config replaced it | run `npm run test:ci -- tests/unit/scripts/slowJestSequencer.test.ts --runInBand --no-coverage`, verify `jest.config.cjs` selects `scripts/jest-sequencer.cjs`, and preserve the complete discovery inventory rather than filtering ordinary suites |
+| a pre-push receipt case passes alone but leaks branches, receipts, or remote state in the full file | a test mutated the reusable seed or reused another case's repository/remote | keep the seed immutable, copy both the repository and bare remote per case, rebind `origin`, and rerun `npm run test:ci -- tests/unit/scripts/prepushGateReceipt.test.ts --runInBand --no-coverage`; never trade isolation for setup speed |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | a manually assembled or historical feature/dev candidate passed Docpact but the deterministic dev Release PR reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while release qualification checks the complete `main` promotion range | use `release:to-dev`, which independently preflights the version candidate and cumulative `main`-to-candidate path sets and records only bounded review evidence; for an already immutable candidate, genuinely review every required document in a separate `dev` PR and publish a new patch version rather than mutating the old candidate |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |

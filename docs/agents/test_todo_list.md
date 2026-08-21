@@ -17,6 +17,13 @@ whenToUpdate:
 checkPaths:
   - docs/agents/test_todo_list.md
   - package.json
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - playwright.config.ts
   - scripts/e2e/**
   - scripts/release/**
@@ -25,6 +32,10 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - tests/**
   - scripts/test-runner.cjs
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - scripts/test-coverage-report.js
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
@@ -54,6 +65,9 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
+- Issue #914 implements one TypeScript `7.0.2` compiler/API track, the repository-owned native parser adapter, and Oxlint in place of ESLint plus the standalone deprecated-API scanner. A small repo-local Oxlint plugin retains the legacy `no-invalid-this` contract that native Oxlint does not yet support. No TypeScript 6 alias or `tsc6` path is part of the candidate; Prettier remains formatting-only and no longer organizes imports.
+- Issue #914 also adds deterministic slow-first Jest scheduling without changing discovery or the suite inventory. Its pre-push receipt fixture builds one seed, then copies a separate repository and bare remote for every test so receipt, branch, and transport mutations remain isolated.
+- the focused receipt-suite implementation measurement improved from `118.78s` real time for 38 tests to `105.77s` for 40 tests on the same local command path, with a later focused repeat at `111.87s` real time showing expected host variance. The final same-machine `npm test` candidate passed 411 unit suites / 5,723 tests plus 14 integration suites / 67 tests in `125.68s` real time, versus the exact `dev` baseline of 408 / 5,707 plus 14 / 67 in `157.78s`: `32.10s` and `20.3%` faster despite 3 additional suites and 16 additional unit tests.
 - Issue #799 adds focused TIDAS task-center coverage for duplicate queue aliases, persisted alias hydration, canonical backend timestamps, one active poller, and post-coalescing failure routing; it creates no open coverage queue
 - deterministic release-command coverage proves JSON purity, non-mutating dry-run, static preflight before transport, rejection of unexpected untracked files, exact version fields, restricted checked-push profiles, idempotent PR reuse, immutable promotion identity, independent version-candidate and cumulative `main`-to-candidate Docpact preflight, bounded automatic review, and the invariant that the local release-to-dev command never runs browsers or writes tracked proof
 - Issue #845 closes the release proof-reuse publication gap: every tag, draft, web, Electron, and final-verification job overrides only the intentional skipped-ancestor propagation with `!cancelled()` while requiring each direct prerequisite to succeed. The deterministic release fixtures also accept the normal tree-identical two-parent promotion after `dev` advances and reject any changed promotion tree; this creates no open coverage queue.

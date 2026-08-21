@@ -20,6 +20,13 @@ checkPaths:
   - README.md
   - README_CN.md
   - .docpact/**/*.yaml
+  - .oxlintrc.json
+  - .prettierignore
+  - .prettierrc.js
+  - .ncurc.json
+  - jsconfig.json
+  - tsconfig*.json
+  - jest.config.cjs
   - docs/agents/**
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
@@ -28,6 +35,11 @@ checkPaths:
   - scripts/e2e/**
   - scripts/release/**
   - scripts/qualification/**
+  - scripts/jest-sequencer.cjs
+  - scripts/oxlint-plugin-tiangong.mjs
+  - scripts/test-runner.cjs
+  - scripts/prepush-gate-receipt.cjs
+  - scripts/typescript-native-parser.*
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .nvmrc
@@ -111,6 +123,11 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
+- the compiler/tooling track is TypeScript `7.0.2` only: `npm run tsc` checks the web project and `npm run tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
+- `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
+- Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
+- Jest uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
+- on macOS, the shared unit runner retains its existing 25% worker pool and recycles workers at `512MB` to bound the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` failure without serializing the suite
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while exact committed qualification uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the GitHub qualification is credential-free/read-only, hermetic, manually dispatched on an open business PR or chosen ref when change risk warrants browser evidence, and is not part of release proof
@@ -133,7 +150,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - Node baseline: `24` via `.nvmrc` and `nvm use 24`
 - shared dev environment: `npm start` (`npm run start:dev` is equivalent)
 - explicit main-environment run: `npm run start:main`
-- default lint gate: `npm run lint`
+- default lint gate: `npm run lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
+- Electron TypeScript 7 check: `npm run tsc:electron`
 - deterministic locale audit: `npm run i18n:audit`
 - language registry/Manifest contract audit: `npm run i18n:platform:audit`
 - business-language hardcoding audit: `npm run i18n:hardcoding:audit`
@@ -143,7 +161,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - production-readiness gate (expected to fail while owned blockers remain): `npm run i18n:locale:all:production:check`
 - existing-translation correction proof: `npm run i18n:corrections:check`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
-- default CI-style test entry: `npm test`
+- default CI-style test entry: `npm test`; slow-first scheduling changes start order only and preserves the complete suite inventory
 - direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - exact-candidate scope-closure proof: `npm run test:qualification:scope-closure:browser -- --output <result.json> --run-id <uuid>` with the documented non-production confirmation and loopback backend environment
@@ -215,6 +233,8 @@ Use the role table in this file as the update map.
 ## Hard Boundaries
 
 - do not author schema or migration truth here
+- do not add a TypeScript 6 compatibility package or import `typescript/unstable/*` outside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`
+- do not enable Umi/Mako `forkTSChecker` until that path is proved compatible with the TypeScript 7 package, whose CommonJS root no longer exposes the legacy Compiler API; the qualified production build remains the current Webpack path plus repo-owned `npm run tsc`
 - do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial
