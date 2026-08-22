@@ -86,11 +86,17 @@ jest.mock('@ant-design/icons', () => ({
 }));
 
 jest.mock('antd', () => {
-  const Descriptions = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children, label }: any) => (
+  const DescriptionsItem = ({ children, label }: any) => (
     <div>
       <span>{label}</span>
       {children}
+    </div>
+  );
+  const Descriptions = ({ items = [], styles }: any) => (
+    <div>
+      {items.map((item, index) => (
+        <DescriptionsItem key={item.key ?? index} {...item} styles={item.styles ?? styles} />
+      ))}
     </div>
   );
   const Typography = {
@@ -98,9 +104,9 @@ jest.mock('antd', () => {
   };
   return {
     __esModule: true,
-    Alert: ({ message, description }: any) => (
+    Alert: ({ title, description }: any) => (
       <div>
-        {message}
+        {title}
         {description}
       </div>
     ),
@@ -131,11 +137,13 @@ jest.mock('antd', () => {
         ))}
         {dataSource.map((row: any) => (
           <div key={rowKey(row)}>
-            {columns.map((column: any) =>
-              column.render
-                ? column.render(column.key === 'invalid' ? undefined : row[column.dataIndex], row)
-                : null,
-            )}
+            {columns.map((column: any, columnIndex: number) => (
+              <div key={String(column.key ?? column.dataIndex ?? columnIndex)}>
+                {column.render
+                  ? column.render(column.key === 'invalid' ? undefined : row[column.dataIndex], row)
+                  : null}
+              </div>
+            ))}
           </div>
         ))}
       </div>

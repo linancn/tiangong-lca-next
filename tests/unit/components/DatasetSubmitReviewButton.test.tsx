@@ -15,25 +15,30 @@ jest.mock('umi', () => ({
   }),
 }));
 
-jest.mock('antd', () => ({
-  Button: ({
-    children,
-    disabled,
-    onClick,
-  }: {
-    children: import('react').ReactNode;
-    disabled?: boolean;
-    onClick?: () => void;
-  }) => (
-    <button type='button' disabled={disabled} onClick={onClick}>
-      {children}
-    </button>
-  ),
-  message: {
+jest.mock('antd', () => {
+  const message = {
     error: (...args: unknown[]) => mockMessageError(...args),
     success: (...args: unknown[]) => mockMessageSuccess(...args),
-  },
-}));
+  };
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message });
+  return {
+    App,
+    Button: ({
+      children,
+      disabled,
+      onClick,
+    }: {
+      children: import('react').ReactNode;
+      disabled?: boolean;
+      onClick?: () => void;
+    }) => (
+      <button type='button' disabled={disabled} onClick={onClick}>
+        {children}
+      </button>
+    ),
+    message,
+  };
+});
 
 const submitDatasetReviewApiMock = jest.mocked(submitDatasetReviewApi);
 

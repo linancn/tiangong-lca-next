@@ -3,6 +3,12 @@ import ProcessesPage, { getProcesstypeOfDataSetOptions } from '@/pages/Processes
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -294,10 +300,11 @@ jest.mock('antd', () => {
       dataset-filter
     </button>
   );
-  Select.Option = ({ children }: any) => <>{children}</>;
   const message = {
     success: jest.fn(),
     error: jest.fn(),
+    warning: jest.fn(),
+    info: jest.fn(),
   };
   const theme = {
     useToken: () => ({
@@ -307,24 +314,34 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Card,
-    Button,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Grid: {
-      useBreakpoint: () => mockBreakpointScreens,
-    },
-    Input,
-    Select,
-    Row,
-    Space,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Card,
+      Button,
+      Checkbox,
+      Col,
+      ConfigProvider,
+      Grid: {
+        useBreakpoint: () => mockBreakpointScreens,
+      },
+      Input,
+      Select,
+      Row,
+      Space,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -824,7 +841,7 @@ describe('ProcessesPage', () => {
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
-    expect(screen.getByTestId('process-view')).toHaveTextContent('"id":"proc-1"');
+    expect(await screen.findByTestId('process-view')).toHaveTextContent('"id":"proc-1"');
     expect(screen.getByTestId('process-view')).toHaveTextContent('"version":"1.0.0"');
     expect(screen.getByTestId('process-delete')).toHaveTextContent('proc-1:1.0.0');
     expect(screen.getByTestId('review-detail')).toHaveTextContent('proc-1:1.0.0');
@@ -852,7 +869,7 @@ describe('ProcessesPage', () => {
       }),
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /contribute-action/i }));
     await waitFor(() => expect(mockContributeProcess).toHaveBeenCalledWith('proc-1', '1.0.0'));
     expect(message.success).toHaveBeenCalledWith('Data contributed to the team successfully.');
   });
@@ -864,7 +881,7 @@ describe('ProcessesPage', () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /contribute-action/i }));
 
     await waitFor(() => expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'failed' }));
     expect(message.success).not.toHaveBeenCalled();
@@ -896,7 +913,7 @@ describe('ProcessesPage', () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /contribute-action/i }));
 
     await waitFor(() =>
       expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-2', '2.0.0'),
@@ -930,8 +947,8 @@ describe('ProcessesPage', () => {
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
+    expect(await screen.findByTestId('lifecycle-view')).toHaveTextContent('"id":"model-2"');
     expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByTestId('lifecycle-view')).toHaveTextContent('"id":"model-2"');
     expect(screen.getByTestId('lifecycle-edit')).toHaveTextContent('model-2:2.0.0');
     expect(screen.queryByTestId('process-edit')).not.toBeInTheDocument();
     expect(screen.getByTestId('lifecycle-create')).toHaveTextContent('"actionType":"copy"');
@@ -970,7 +987,7 @@ describe('ProcessesPage', () => {
     expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
     expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
-    expect(screen.getByTestId('review-detail')).toHaveTextContent('proc-3:3.0.0');
+    expect(await screen.findByTestId('review-detail')).toHaveTextContent('proc-3:3.0.0');
     expect(screen.getByText('reload-option')).toBeInTheDocument();
     expect(screen.queryByTestId('lca-solve-toolbar')).not.toBeInTheDocument();
 
@@ -1084,7 +1101,7 @@ describe('ProcessesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith(
+      expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -1104,7 +1121,7 @@ describe('ProcessesPage', () => {
       ),
     );
     expect((await screen.findAllByText('Referenced process')).length).toBeGreaterThan(0);
-    expect(message.error).toHaveBeenCalledWith(
+    expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 

@@ -99,6 +99,12 @@ jest.mock('antd', () => {
   const Row = ({ children }: any) => <div>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
+  const Alert = ({ description, title, type }: any) => (
+    <div data-type={type} role='alert'>
+      <span>{title}</span>
+      {description ? <span>{description}</span> : null}
+    </div>
+  );
   const Space = ({ children }: any) => <div>{children}</div>;
   const theme = {
     useToken: () => ({
@@ -111,6 +117,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Alert,
     Button,
     Card,
     Form,
@@ -397,7 +404,7 @@ describe('UnitgroupsSelectForm', () => {
     );
     await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('unitgroup-1', '1.0.0'));
 
-    expect(screen.getByText('err-ref')).toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /update reference/i })).toBeInTheDocument();
     expect(screen.getByText('view unitgroup-1:1.0.0')).toBeInTheDocument();
     expect(screen.queryByText('edit unitgroup-1:1.0.0')).not.toBeInTheDocument();

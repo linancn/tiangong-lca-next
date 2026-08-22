@@ -3,6 +3,12 @@ import UnitgroupsPage from '@/pages/Unitgroups';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -287,6 +293,8 @@ jest.mock('antd', () => {
   const message = {
     success: jest.fn(),
     error: jest.fn(),
+    warning: jest.fn(),
+    info: jest.fn(),
   };
 
   const theme = {
@@ -299,22 +307,32 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Grid: {
-      useBreakpoint: () => mockBreakpointScreens,
-    },
-    Input,
-    Row,
-    Space,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Card,
+      Checkbox,
+      Col,
+      ConfigProvider,
+      Grid: {
+        useBreakpoint: () => mockBreakpointScreens,
+      },
+      Input,
+      Row,
+      Space,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -546,16 +564,20 @@ describe('UnitgroupsPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
 
-    expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-1'),
     );
     expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"id":"ug-1"');
     expect(screen.getByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
-    expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
+    await waitFor(() =>
+      expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false'),
+    );
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"importCount":0');
-    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled(),
+    );
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
     expect(mockAllVersionsOperationWidths).toContain(144);
@@ -714,7 +736,7 @@ describe('UnitgroupsPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith(
+      expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -733,7 +755,7 @@ describe('UnitgroupsPage', () => {
       ),
     );
     expect(await screen.findByText('Referenced unit group')).toBeInTheDocument();
-    expect(message.error).toHaveBeenCalledWith(
+    expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 
@@ -765,7 +787,9 @@ describe('UnitgroupsPage', () => {
 
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled(),
+    );
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
     expect(await screen.findByTestId('unitgroup-edit')).toHaveTextContent('"disabled":false');
     await waitFor(() => expect(mockAllVersionsOperationWidths).toContain(88));
@@ -837,7 +861,9 @@ describe('UnitgroupsPage', () => {
       expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument(),
     );
 
-    expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled(),
+    );
     expect(screen.getByTestId('unitgroup-create')).toHaveTextContent('"disabled":false');
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
@@ -892,9 +918,9 @@ describe('UnitgroupsPage', () => {
     expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
     expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
     expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('unitgroup-view')).toHaveTextContent('view:ug-2');
     expect(screen.getByText('-')).toBeInTheDocument();
     expect(screen.getByText(/export:ug-2:2.0.0/i)).toBeInTheDocument();
-    expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('view:ug-2');
     expect(
       screen
         .getAllByTestId('unitgroup-create')

@@ -111,21 +111,31 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Button,
-    Tooltip,
-    Drawer,
-    Space,
-    Card,
-    Input,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
-    theme,
-    ConfigProvider,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Tooltip,
+      Drawer,
+      Space,
+      Card,
+      Input,
+      message: {
+        success: jest.fn(),
+        error: jest.fn(),
+      },
+      theme,
+      ConfigProvider,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {

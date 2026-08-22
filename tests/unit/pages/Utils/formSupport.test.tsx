@@ -1,7 +1,7 @@
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { renderHook } from '@testing-library/react';
-import type { MutableRefObject } from 'react';
+import type { RefObject } from 'react';
 import { act } from 'react';
 
 import {
@@ -34,7 +34,7 @@ const createFormRef = (initialErrors?: Record<string, string[]>) => {
 
   return {
     errorMap,
-    formRef: { current: formInstance } as MutableRefObject<ProFormInstance | undefined>,
+    formRef: { current: formInstance } as RefObject<ProFormInstance | undefined>,
     scrollToField,
     setFields,
   };
@@ -108,7 +108,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
       current: {
         validateFields,
       },
-    } as unknown as MutableRefObject<ProFormInstance | undefined>;
+    } as unknown as RefObject<ProFormInstance | undefined>;
     const animationFrameCallbacks: FrameRequestCallback[] = [];
 
     globalThis.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
@@ -156,7 +156,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
       current: {
         validateFields: jest.fn().mockRejectedValue(new Error('invalid')),
       },
-    } as unknown as MutableRefObject<ProFormInstance | undefined>;
+    } as unknown as RefObject<ProFormInstance | undefined>;
 
     await validateVisibleFormFields(formRef, {
       onSettled,
@@ -176,7 +176,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
       current: {
         validateFields,
       },
-    } as unknown as MutableRefObject<ProFormInstance | undefined>;
+    } as unknown as RefObject<ProFormInstance | undefined>;
 
     jest.useFakeTimers();
     // @ts-expect-error intentionally testing the fallback branch
@@ -184,36 +184,41 @@ describe('useDatasetSdkValidationFormSupport', () => {
     // @ts-expect-error intentionally testing the fallback branch
     globalThis.requestAnimationFrame = undefined;
 
-    const validationPromise = validateVisibleFormFields(formRef, {
-      onSettled,
-    });
+    try {
+      const validationPromise = validateVisibleFormFields(formRef, {
+        onSettled,
+      });
 
-    await act(async () => {
+      // Let the production fallback choose Promise + setTimeout before restoring
+      // React's own queueMicrotask dependency for the surrounding act calls.
       await Promise.resolve();
-    });
-
-    expect(validateFields).not.toHaveBeenCalled();
-
-    await act(async () => {
-      jest.runOnlyPendingTimers();
       await Promise.resolve();
-    });
+      globalThis.queueMicrotask = originalQueueMicrotask;
+      globalThis.requestAnimationFrame = originalRequestAnimationFrame;
 
-    expect(validateFields).toHaveBeenCalledTimes(1);
+      expect(validateFields).not.toHaveBeenCalled();
 
-    await act(async () => {
-      jest.runOnlyPendingTimers();
-      await Promise.resolve();
-    });
+      await act(async () => {
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+      });
 
-    await validationPromise;
+      expect(validateFields).toHaveBeenCalledTimes(1);
 
-    expect(validateFields).toHaveBeenCalledTimes(2);
-    expect(onSettled).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        jest.runOnlyPendingTimers();
+        await Promise.resolve();
+      });
 
-    globalThis.queueMicrotask = originalQueueMicrotask;
-    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
-    jest.useRealTimers();
+      await validationPromise;
+
+      expect(validateFields).toHaveBeenCalledTimes(2);
+      expect(onSettled).toHaveBeenCalledTimes(1);
+    } finally {
+      globalThis.queueMicrotask = originalQueueMicrotask;
+      globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+      jest.useRealTimers();
+    }
   });
 
   it('counts section details by tab while skipping highlight-only markers', () => {
@@ -531,7 +536,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
       current: {
         setFields: jest.fn(),
       },
-    } as unknown as MutableRefObject<ProFormInstance | undefined>;
+    } as unknown as RefObject<ProFormInstance | undefined>;
 
     const { result } = renderHook(() =>
       useDatasetSdkValidationFormSupport({

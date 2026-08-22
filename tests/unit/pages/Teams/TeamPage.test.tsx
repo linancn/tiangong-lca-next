@@ -363,8 +363,8 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Tabs = ({ items = [], activeKey, onChange, tabPosition }: any) => (
-    <div data-testid='tabs' data-tab-position={tabPosition}>
+  const Tabs = ({ items = [], activeKey, onChange, tabPlacement }: any) => (
+    <div data-testid='tabs' data-tab-position={tabPlacement}>
       {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
@@ -402,18 +402,21 @@ jest.mock('antd', () => {
   };
 
   const ConfigProvider = ({ children }: any) => <>{children}</>;
+  const Modal = {
+    confirm: (config: any) => mockModalConfirm(config),
+  };
+  const App = require('../../../mocks/antdApp').createAntdAppMock({ message, modal: Modal });
 
   return {
     __esModule: true,
+    App,
     Button,
     ConfigProvider,
     Flex,
     Form,
     Grid,
     Input,
-    Modal: {
-      confirm: (config: any) => mockModalConfirm(config),
-    },
+    Modal,
     Spin,
     Switch,
     Tabs,

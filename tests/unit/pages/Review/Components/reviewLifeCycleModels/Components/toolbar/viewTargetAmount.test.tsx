@@ -81,12 +81,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -204,7 +207,7 @@ describe('ReviewLifeCycleModelViewTargetAmount', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('flow-1')).toBeInTheDocument();
+    expect(await screen.findByText('flow-1')).toBeInTheDocument();
     expect(screen.getByText('flow data set')).toBeInTheDocument();
     expect(screen.getByText('../flows/flow-1.xml')).toBeInTheDocument();
     expect(screen.getByText('2.0.0')).toBeInTheDocument();

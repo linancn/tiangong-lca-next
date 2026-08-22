@@ -21,8 +21,8 @@ jest.mock('umi', () => ({
 }));
 
 jest.mock('antd', () => ({
-  Form: {
-    Item: ({ children }: { children: ReactNode }) => <div data-testid='form-item'>{children}</div>,
+  theme: {
+    useToken: () => ({ token: { colorError: '#d32029' } }),
   },
 }));
 
@@ -39,11 +39,11 @@ describe('RequiredMark Component', () => {
     return render(<RequiredMark {...defaultProps} {...props} />);
   };
 
-  it('renders the provided label inside a required form item', () => {
+  it('renders the provided label with a required marker', () => {
     renderComponent();
 
-    expect(screen.getByTestId('form-item')).toBeInTheDocument();
     expect(screen.getByText('Dataset Name')).toBeInTheDocument();
+    expect(screen.getByText('*')).toHaveStyle({ color: '#d32029' });
     expect(screen.queryByText(defaultErrorMessage)).not.toBeInTheDocument();
   });
 

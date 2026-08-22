@@ -19,12 +19,14 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-
-  Descriptions.Item = ({ label, children }: any) => (
+  const Descriptions = ({ items = [] }: any) => (
     <div>
-      <span>{label}</span>
-      <span>{children}</span>
+      {items.map((item: any) => (
+        <div key={item.key}>
+          <span>{item.label}</span>
+          <span>{item.children}</span>
+        </div>
+      ))}
     </div>
   );
 
@@ -69,7 +71,7 @@ describe('ReferenceDataDescription', () => {
     expect(screen.getByTestId('lang-text-item')).toBeInTheDocument();
     expect(LangTextItemDescriptionMock).toHaveBeenCalledWith(
       { data: data['common:shortDescription'] },
-      {},
+      undefined,
     );
   });
 
@@ -79,6 +81,6 @@ describe('ReferenceDataDescription', () => {
     const placeholders = screen.getAllByText('-');
     // Type, Reference object ID, URI, and Version each render a fallback dash.
     expect(placeholders).toHaveLength(4);
-    expect(LangTextItemDescriptionMock).toHaveBeenCalledWith({ data: undefined }, {});
+    expect(LangTextItemDescriptionMock).toHaveBeenCalledWith({ data: undefined }, undefined);
   });
 });

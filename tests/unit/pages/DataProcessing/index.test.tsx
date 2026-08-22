@@ -462,6 +462,10 @@ describe('DataProcessing page', () => {
     );
   }
 
+  async function waitForTestResultSetLoaded() {
+    return screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`);
+  }
+
   it('derives the next recoverable ResultSet step from authoritative task projections', () => {
     expect(deriveResultSetWorkflowSummary(TEST_RESULT_SET_ID, [], [])).toEqual({
       closureStatus: 'not_checked',
@@ -773,6 +777,10 @@ describe('DataProcessing page', () => {
 
     render(<DataProcessing />);
 
+    const resultSetRow = await waitForTestResultSetLoaded();
+    await waitFor(() =>
+      expect(within(resultSetRow).getByRole('button', { name: 'Preview result' })).toBeEnabled(),
+    );
     fireEvent.change(await screen.findByLabelText('Current result set'), {
       target: { value: TEST_RESULT_SET_ID },
     });
@@ -2592,6 +2600,7 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitForTestResultSetLoaded();
     await waitFor(() => expect(mockFetch).toHaveBeenCalledWith('/lciamethods/list.json'));
     expect(screen.getByLabelText('Default impact category')).not.toHaveTextContent(
       'Climate change',
@@ -2907,6 +2916,7 @@ describe('DataProcessing page', () => {
       render(<DataProcessing />);
 
       expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+      await waitForTestResultSetLoaded();
       fireEvent.change(screen.getByLabelText('Result set name'), {
         target: { value: 'Closure summary check' },
       });
@@ -2944,6 +2954,7 @@ describe('DataProcessing page', () => {
       render(<DataProcessing />);
 
       expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+      await waitForTestResultSetLoaded();
       fireEvent.change(screen.getByLabelText('Result set name'), {
         target: { value: 'Fallback token check' },
       });
@@ -2994,20 +3005,25 @@ describe('DataProcessing page', () => {
   });
 
   it('renders ready and pending primary roles independently with semantic metadata', async () => {
-    render(<DataProcessing />);
-    await waitForValidCertificate();
+    const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-07-29T00:00:00Z'));
+    try {
+      render(<DataProcessing />);
+      await waitForValidCertificate();
 
-    const report = screen.getByTestId('closure-artifact-closure_report_xlsx');
-    const manifest = screen.getByTestId('closure-artifact-closure_issue_manifest');
-    expect(within(report).getByText(/Available until: 2026-08-05 00:00/)).toBeInTheDocument();
-    expect(within(report).getByText('closure-issues.xlsx')).toBeInTheDocument();
-    expect(within(report).getByText(/xlsx.*1\.0 KB/)).toBeInTheDocument();
-    expect(within(report).getByText('a'.repeat(64))).toBeInTheDocument();
-    expect(within(manifest).getByText('Machine result manifest')).toBeInTheDocument();
-    expect(within(manifest).getByText('Preparing this artifact.')).toBeInTheDocument();
-    expect(
-      within(manifest).queryByRole('button', { name: 'Download machine result manifest' }),
-    ).toBeNull();
+      const report = screen.getByTestId('closure-artifact-closure_report_xlsx');
+      const manifest = screen.getByTestId('closure-artifact-closure_issue_manifest');
+      expect(within(report).getByText(/Available until: 2026-08-05 00:00/)).toBeInTheDocument();
+      expect(within(report).getByText('closure-issues.xlsx')).toBeInTheDocument();
+      expect(within(report).getByText(/xlsx.*1\.0 KB/)).toBeInTheDocument();
+      expect(within(report).getByText('a'.repeat(64))).toBeInTheDocument();
+      expect(within(manifest).getByText('Machine result manifest')).toBeInTheDocument();
+      expect(within(manifest).getByText('Preparing this artifact.')).toBeInTheDocument();
+      expect(
+        within(manifest).queryByRole('button', { name: 'Download machine result manifest' }),
+      ).toBeNull();
+    } finally {
+      dateNowSpy.mockRestore();
+    }
   });
 
   it('polls an exact pending projection until both primary downloads are ready, then stops', async () => {
@@ -3693,6 +3709,7 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('数据处理');
+    await waitForTestResultSetLoaded();
     expect(screen.getByTestId('tab-builds')).toHaveTextContent('结果生成');
     expect(screen.getByTestId('tab-preview')).toHaveTextContent('结果预览');
     expect(screen.getByTestId('tab-publication')).toHaveTextContent('发布');

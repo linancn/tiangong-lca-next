@@ -34,13 +34,8 @@ jest.mock('umi', () => {
 });
 
 jest.mock('antd', () => {
-  const React = jest.requireActual('react');
-
-  const Select = ({ children, defaultValue, onChange, disabled, ...rest }: any) => {
-    const options = React.Children.toArray(children) as React.ReactElement[];
-    const valueMap = new Map(
-      options.map((child) => [String(child.props.value), child.props.value]),
-    );
+  const Select = ({ defaultValue, onChange, disabled, options = [], ...rest }: any) => {
+    const valueMap = new Map(options.map((option: any) => [String(option.value), option.value]));
 
     return (
       <select
@@ -56,20 +51,14 @@ jest.mock('antd', () => {
         }}
         {...rest}
       >
-        {options.map((child) =>
-          React.cloneElement(child, {
-            value: String(child.props.value),
-          }),
-        )}
+        {options.map((option: any) => (
+          <option key={String(option.value)} title={option.title} value={String(option.value)}>
+            {option.label}
+          </option>
+        ))}
       </select>
     );
   };
-
-  Select.Option = ({ value, children, ...optionRest }: any) => (
-    <option value={String(value)} {...optionRest}>
-      {children}
-    </option>
-  );
 
   return {
     Select,

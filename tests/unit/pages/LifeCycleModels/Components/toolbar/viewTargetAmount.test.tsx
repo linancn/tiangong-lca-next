@@ -84,12 +84,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -197,7 +200,7 @@ describe('ViewTargetAmount', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('flow-1')).toBeInTheDocument();
+    expect(await screen.findByText('flow-1')).toBeInTheDocument();
     expect(screen.getByText('flow data set')).toBeInTheDocument();
     expect(screen.getByText('../flows/flow-1.xml')).toBeInTheDocument();
     expect(screen.getByText('2.0.0')).toBeInTheDocument();
@@ -286,7 +289,7 @@ describe('ViewTargetAmount', () => {
     );
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
-    expect(screen.getByText('flow-array')).toBeInTheDocument();
+    expect(await screen.findByText('flow-array')).toBeInTheDocument();
     expect(screen.getByText('flow-view:flow-array:')).toBeInTheDocument();
     expect(screen.getByTestId('unit-group-mini')).toHaveTextContent('flow:flow-array:');
   });

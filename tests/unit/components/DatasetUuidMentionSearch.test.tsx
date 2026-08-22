@@ -8,9 +8,9 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('antd', () => {
   return {
-    Alert: ({ message, type }: any) => (
+    Alert: ({ title, type }: any) => (
       <div data-type={type} role='alert'>
-        {message}
+        {title}
       </div>
     ),
     Button: ({ children, icon, loading, onClick }: any) => (

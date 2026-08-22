@@ -20,11 +20,17 @@ jest.mock('umi', () => ({
 jest.mock('antd', () => {
   const React = require('react');
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
-  const Descriptions = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ label, children }: any) => (
+  const DescriptionsItem = ({ label, children }: any) => (
     <div>
       <strong>{toText(label)}</strong>
       <span>{children}</span>
+    </div>
+  );
+  const Descriptions = ({ items = [], styles }: any) => (
+    <div>
+      {items.map((item, index) => (
+        <DescriptionsItem key={item.key ?? index} {...item} styles={item.styles ?? styles} />
+      ))}
     </div>
   );
   return {

@@ -41,7 +41,12 @@ jest.mock('@/components/RightContent', () => ({
     </button>
   ),
   SelectLang: ({ style }: any) => (
-    <span data-testid='select-lang-trigger' style={style} onClick={mockSelectLangTrigger}>
+    <span
+      className='tg-global-language-selector'
+      data-testid='select-lang-trigger'
+      style={style}
+      onClick={mockSelectLangTrigger}
+    >
       select-lang-trigger
     </span>
   ),

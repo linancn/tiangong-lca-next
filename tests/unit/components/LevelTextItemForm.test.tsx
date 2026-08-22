@@ -41,9 +41,9 @@ jest.mock('antd', () => {
       return [node, ...children];
     });
 
-  const TreeSelect = ({ treeData = [], onChange, filterTreeNode }: any) => {
+  const TreeSelect = ({ treeData = [], onChange, showSearch }: any) => {
     const options = flattenSelectable(treeData);
-    latestTreeSelectProps = { treeData, onChange, filterTreeNode };
+    latestTreeSelectProps = { treeData, onChange, showSearch };
     return (
       <div>
         {options.map((option: any) => (
@@ -80,12 +80,16 @@ jest.mock('antd', () => {
   );
 
   const Input = () => <input data-testid='hidden-input' type='hidden' aria-hidden='true' />;
+  const theme = {
+    useToken: () => ({ token: { colorError: '#ff4d4f' } }),
+  };
 
   return {
     Cascader,
     Form,
     Input,
     TreeSelect,
+    theme,
   };
 });
 
@@ -343,8 +347,11 @@ describe('LevelTextItemForm', () => {
       );
     });
 
-    expect(latestTreeSelectProps.filterTreeNode('root', { title: 'Root/' })).toBe(true);
-    expect(latestTreeSelectProps.filterTreeNode('zzz', { title: undefined })).toBeUndefined();
+    expect(latestTreeSelectProps.showSearch.treeNodeFilterProp).toBe('title');
+    expect(latestTreeSelectProps.showSearch.filterTreeNode('root', { title: 'Root/' })).toBe(true);
+    expect(
+      latestTreeSelectProps.showSearch.filterTreeNode('zzz', { title: undefined }),
+    ).toBeUndefined();
 
     fireEvent.click(await screen.findByRole('button', { name: 'Root/' }));
 

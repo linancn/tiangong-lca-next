@@ -16,6 +16,12 @@ type ToolBarButtonProps = {
 };
 
 jest.mock('antd', () => {
+  const Button = ({ children, disabled, icon, onClick, style }: any) => (
+    <button disabled={disabled} style={style} type='button' onClick={onClick}>
+      {icon}
+      {children}
+    </button>
+  );
   const Tooltip = ({ title, children }: { title: ReactNode; children: ReactNode }) => (
     <span>
       <span data-testid='tooltip-title'>{title}</span>
@@ -24,6 +30,7 @@ jest.mock('antd', () => {
   );
 
   return {
+    Button,
     Tooltip,
   };
 });
@@ -60,7 +67,7 @@ describe('ToolBarButton Component', () => {
   it('calls onClick when the button is activated', () => {
     const { onClick } = renderComponent();
 
-    fireEvent.click(screen.getByLabelText('Calculate'));
+    fireEvent.click(screen.getByRole('button'));
 
     expect(onClick).toHaveBeenCalledTimes(1);
   });
@@ -68,13 +75,12 @@ describe('ToolBarButton Component', () => {
   it('disables interactions and updates styles when disabled', () => {
     const onClick = jest.fn();
     renderComponent({ disabled: true, onClick });
-    const icon = screen.getByLabelText('Calculate');
-    const wrapper = icon.closest('.ant-pro-table-list-toolbar-setting-item') as HTMLElement;
+    const wrapper = screen.getByRole('button');
 
     expect(wrapper).toHaveStyle({ cursor: 'not-allowed' });
-    expect(wrapper).toHaveClass('ant-btn-disabled');
+    expect(wrapper).toBeDisabled();
 
-    fireEvent.click(icon);
+    fireEvent.click(wrapper);
 
     expect(onClick).not.toHaveBeenCalled();
   });
@@ -82,10 +88,9 @@ describe('ToolBarButton Component', () => {
   it('uses pointer cursor styling when enabled', () => {
     renderComponent();
 
-    const icon = screen.getByLabelText('Calculate');
-    const wrapper = icon.closest('.ant-pro-table-list-toolbar-setting-item') as HTMLElement;
+    const wrapper = screen.getByRole('button');
 
     expect(wrapper).toHaveStyle({ cursor: 'pointer' });
-    expect(wrapper).not.toHaveClass('ant-btn-disabled');
+    expect(wrapper).toBeEnabled();
   });
 });

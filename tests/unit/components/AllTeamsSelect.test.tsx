@@ -84,8 +84,10 @@ jest.mock('antd', () => {
       </section>
     );
   };
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message: messageMock });
   return {
     ...actual,
+    App,
     message: messageMock,
     Drawer,
   };

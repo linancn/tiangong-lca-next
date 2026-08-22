@@ -185,7 +185,7 @@ describe('LifeCycleModelView', () => {
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
     expect(latestDrawerProps).toMatchObject({
       rootStyle: { maxWidth: '100vw', overflow: 'hidden' },
-      width: '100vw',
+      size: '100vw',
       styles: {
         body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
         content: { minWidth: 0, overflow: 'hidden', width: '100%' },

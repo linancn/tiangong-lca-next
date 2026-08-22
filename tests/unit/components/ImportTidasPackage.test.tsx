@@ -131,10 +131,16 @@ jest.mock('antd', () => {
   const Upload = {
     Dragger,
   };
+  const Modal = Object.assign(ModalComponent, modalApi);
+  const App = require('../../mocks/antdApp').createAntdAppMock({
+    message: mockMessage,
+    modal: Modal,
+  });
 
   return {
     ...actual,
-    Modal: Object.assign(ModalComponent, modalApi),
+    App,
+    Modal,
     Tooltip,
     Upload,
     message: mockMessage,

@@ -66,13 +66,23 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  return {
-    __esModule: true,
-    Button,
-    Tooltip,
-    Modal,
-    message,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Tooltip,
+      Modal,
+      message,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 const { message: mockAntdMessage } = jest.requireMock('antd');

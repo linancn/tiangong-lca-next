@@ -84,7 +84,7 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Alert = ({ message: alertMessage }: any) => <div role='alert'>{alertMessage}</div>;
+  const Alert = ({ title }: any) => <div role='alert'>{title}</div>;
 
   const Badge = ({ count, children }: any) => (
     <div>
@@ -202,9 +202,15 @@ jest.mock('antd', () => {
       },
     }),
   };
+  const message = {
+    success: jest.fn(),
+    error: jest.fn(),
+  };
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message });
 
   return {
     __esModule: true,
+    App,
     Alert,
     Badge,
     Button,
@@ -218,10 +224,7 @@ jest.mock('antd', () => {
     Tabs,
     Tooltip,
     Typography,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
+    message,
     theme,
   };
 });

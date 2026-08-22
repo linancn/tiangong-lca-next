@@ -93,9 +93,11 @@ jest.mock('antd', () => {
     error: jest.fn(),
   };
 
-  const Modal = {
+  const modal = {
     confirm: jest.fn(),
   };
+
+  const App = { useApp: () => ({ message, modal }) };
 
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
@@ -103,12 +105,13 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    App,
     Button,
     Drawer,
     Flex,
-    Modal,
     Tooltip,
     message,
+    modal,
     theme,
   };
 });
@@ -171,7 +174,7 @@ jest.mock('@/services/roles/api', () => ({
   delRoleApi: (...args: any[]) => mockDelRoleApi(...args),
 }));
 
-const { Modal, message } = require('antd');
+const { message, modal } = require('antd');
 
 describe('ReviewMember', () => {
   beforeEach(() => {
@@ -218,10 +221,10 @@ describe('ReviewMember', () => {
     expect(message.success).toHaveBeenCalledWith('Operation successful');
 
     await userEvent.click(screen.getByRole('button', { name: 'delete' }));
-    expect(Modal.confirm).toHaveBeenCalled();
+    expect(modal.confirm).toHaveBeenCalled();
 
     await act(async () => {
-      await Modal.confirm.mock.calls[0][0].onOk();
+      await modal.confirm.mock.calls[0][0].onOk();
     });
 
     await waitFor(() =>
@@ -320,10 +323,10 @@ describe('ReviewMember', () => {
     await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
 
     await userEvent.click(screen.getByRole('button', { name: 'delete' }));
-    expect(Modal.confirm).toHaveBeenCalled();
+    expect(modal.confirm).toHaveBeenCalled();
 
     await act(async () => {
-      await Modal.confirm.mock.calls[0][0].onOk();
+      await modal.confirm.mock.calls[0][0].onOk();
     });
 
     await waitFor(() =>
@@ -358,7 +361,7 @@ describe('ReviewMember', () => {
 
       await userEvent.click(screen.getByRole('button', { name: 'delete' }));
       await act(async () => {
-        await Modal.confirm.mock.calls[0][0].onOk();
+        await modal.confirm.mock.calls[0][0].onOk();
       });
 
       await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledTimes(2));

@@ -77,6 +77,8 @@ jest.mock('antd', () => {
     error: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message }) };
+
   const FormContext = React.createContext<any>(null);
 
   const Form = React.forwardRef(({ children }: any, ref: any) => {
@@ -167,12 +169,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Empty = ({ description }: any) => <div>{toText(description)}</div>;
@@ -197,6 +202,7 @@ jest.mock('antd', () => {
     Input,
     Modal,
     Spin,
+    App,
     message,
     theme,
   };

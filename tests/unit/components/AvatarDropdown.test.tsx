@@ -21,7 +21,7 @@ const mockUseIntl: jest.Mock<
 }));
 
 const mockModalConfirm = jest.fn();
-const mockModalDestroyAll = jest.fn();
+const mockModalDestroy = jest.fn();
 
 const setupModuleMocks = () => {
   jest.doMock(
@@ -112,13 +112,13 @@ const setupModuleMocks = () => {
 
     ModalComponent.confirm = (config: any) => {
       mockModalConfirm(config);
-      return { destroy: jest.fn() };
+      return { destroy: mockModalDestroy };
     };
-
-    ModalComponent.destroyAll = (...args: any[]) => mockModalDestroyAll(...args);
+    const App = require('../../mocks/antdApp').createAntdAppMock({ modal: ModalComponent });
 
     return {
       __esModule: true,
+      App,
       Button,
       Modal: ModalComponent,
       Spin,
@@ -236,7 +236,7 @@ describe('AvatarDropdown', () => {
     mockUseModel.mockReset();
     mockUseIntl.mockClear();
     mockModalConfirm.mockReset();
-    mockModalDestroyAll.mockReset();
+    mockModalDestroy.mockReset();
     mockLocation = { pathname: '/', search: '' };
 
     mockedLogout.mockResolvedValue(undefined);
@@ -440,7 +440,7 @@ describe('AvatarDropdown', () => {
     }
 
     await waitFor(() => {
-      expect(mockModalDestroyAll).toHaveBeenCalled();
+      expect(mockModalDestroy).toHaveBeenCalled();
     });
 
     await waitFor(() => {
@@ -475,7 +475,7 @@ describe('AvatarDropdown', () => {
       unmount();
     }
 
-    expect(mockModalDestroyAll).toHaveBeenCalled();
+    expect(mockModalDestroy).toHaveBeenCalled();
     expect(mockHistoryPush).toHaveBeenCalledWith('/team?action=create');
   });
 

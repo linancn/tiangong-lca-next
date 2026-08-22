@@ -7,7 +7,7 @@ import {
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ConfigProvider, message } from 'antd';
+import { App, ConfigProvider, message } from 'antd';
 
 jest.mock('@/services/roles/api', () => ({
   acceptTeamInvitationApi: jest.fn(),
@@ -45,6 +45,7 @@ const mockRejectTeamInvitationApi = rejectTeamInvitationApi as jest.MockedFuncti
 
 jest.spyOn(message, 'success').mockImplementation(() => ({ key: 'success' }) as any);
 jest.spyOn(message, 'error').mockImplementation(() => ({ key: 'error' }) as any);
+jest.spyOn(App, 'useApp').mockReturnValue({ message, modal: {} as any, notification: {} as any });
 
 describe('TeamNotification Component', () => {
   const onDataLoadedMock = jest.fn();

@@ -108,6 +108,9 @@ describe('ReviewQualityDiagnostic', () => {
     expect(screen.getByText('Numerical stability')).toBeInTheDocument();
     expect(screen.getByText('processes: 4')).toBeInTheDocument();
     expect(screen.getByText('process-1 @ 01.00.000')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Data completeness/i }));
+    expect(await screen.findByRole('list')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
   });
 
   it('starts only after the Review Admin clicks the manual action', async () => {

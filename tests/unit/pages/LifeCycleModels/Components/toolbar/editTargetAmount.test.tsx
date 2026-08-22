@@ -92,12 +92,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -354,15 +357,14 @@ describe('TargetAmount', () => {
       />,
     );
 
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
-
-    expect(proFormApi).not.toBeNull();
-    expect(proFormApi.getFieldsValue()).toEqual({
-      targetAmount: 10,
-      originalAmount: 10,
-      scalingFactor: 1,
-    });
-    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
+    await waitFor(() =>
+      expect(proFormApi?.getFieldsValue()).toEqual({
+        targetAmount: 10,
+        originalAmount: 10,
+        scalingFactor: 1,
+      }),
+    );
+    expect(await screen.findByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-1:1.0:flow');
   });
 
@@ -455,7 +457,7 @@ describe('TargetAmount', () => {
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
 
-    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-array:');
+    expect(await screen.findByTestId('flows-view')).toHaveTextContent('flow-array:');
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-array::flow');
     expect(screen.getAllByTestId('lang-text')[0]).toHaveTextContent('array short');
   });

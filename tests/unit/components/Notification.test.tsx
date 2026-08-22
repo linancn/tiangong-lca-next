@@ -23,6 +23,7 @@ import { getNotificationsCount } from '@/services/notifications/api';
 import { getLatestReviewOfMine, getNotifyReviewsCount } from '@/services/reviews/api';
 import { getLatestRolesOfMine, getTeamInvitationCountApi } from '@/services/roles/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -307,6 +308,7 @@ describe('Notification Component', () => {
   });
 
   it('should change time filter when select value changes', async () => {
+    const user = userEvent.setup();
     render(
       <ConfigProvider>
         <Notification />
@@ -317,15 +319,19 @@ describe('Notification Component', () => {
     fireEvent.click(icon);
 
     const timeFilter = screen.getByRole('combobox');
-    fireEvent.mouseDown(timeFilter);
+    await user.click(timeFilter);
 
     const option = screen.getByText('Last 7 Days');
-    fireEvent.click(option);
+    await user.click(option);
 
-    fireEvent.mouseDown(timeFilter);
+    await user.click(timeFilter);
 
-    const selectedOption = screen.getByRole('option', { name: 'Last 7 Days' });
-    expect(selectedOption).toHaveAttribute('aria-selected', 'true');
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Last 7 Days' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      ),
+    );
   });
 
   it('should call service functions on mount', async () => {

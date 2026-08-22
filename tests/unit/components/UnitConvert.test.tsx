@@ -23,7 +23,6 @@ type UnitConvertProps = {
 
 jest.mock('antd', () => {
   const actual = jest.requireActual('antd');
-  const React = jest.requireActual('react');
 
   const Modal = ({ open, children, onOk, onCancel, title }: any) => {
     if (!open) {
@@ -44,16 +43,14 @@ jest.mock('antd', () => {
     );
   };
 
-  const Select = ({ value, onChange, children, ...rest }: any) => (
+  const Select = ({ value, onChange, options = [], ...rest }: any) => (
     <select value={value ?? ''} onChange={(event) => onChange?.(event.target.value)} {...rest}>
-      {React.Children.map(children, (child: any) => child)}
+      {options.map((option: any) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
     </select>
-  );
-
-  Select.Option = ({ value, children, ...optionRest }: any) => (
-    <option value={value} {...optionRest}>
-      {children}
-    </option>
   );
 
   return {

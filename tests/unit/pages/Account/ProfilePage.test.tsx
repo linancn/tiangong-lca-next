@@ -318,9 +318,11 @@ jest.mock('antd', () => {
       },
     }),
   };
+  const App = require('../../../mocks/antdApp').createAntdAppMock({ message });
 
   return {
     __esModule: true,
+    App,
     ConfigProvider,
     Flex,
     Form,

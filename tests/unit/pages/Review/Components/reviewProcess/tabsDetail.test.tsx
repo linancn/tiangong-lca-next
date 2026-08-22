@@ -86,8 +86,16 @@ jest.mock('antd', () => {
       ))}
     </div>
   );
-  const Descriptions = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children }: any) => <div>{children}</div>;
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
+  );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ children }: any) => <>{children}</>;

@@ -29,13 +29,19 @@ jest.mock('antd', () => {
     open: jest.fn(),
   };
   const modalConfirmMock = jest.fn(({ onOk }: any) => (onOk ? onOk() : undefined));
+  const Modal = {
+    ...actual.Modal,
+    confirm: modalConfirmMock,
+  };
+  const App = require('../../mocks/antdApp').createAntdAppMock({
+    message: messageMock,
+    modal: Modal,
+  });
   return {
     ...actual,
+    App,
     message: messageMock,
-    Modal: {
-      ...actual.Modal,
-      confirm: modalConfirmMock,
-    },
+    Modal,
   };
 });
 

@@ -6,13 +6,15 @@ import {
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
 } from '@/pages/Utils/referenceLookup';
-import { message } from 'antd';
 
-jest.mock('antd', () => ({
-  message: {
-    error: jest.fn(),
-    warning: jest.fn(),
-  },
+const mockMessage = {
+  error: jest.fn(),
+  info: jest.fn(),
+  warning: jest.fn(),
+};
+
+jest.mock('@/contexts/AntdAppContext', () => ({
+  dispatchAntdAppAction: (action: any) => action({ message: mockMessage }),
 }));
 
 describe('reference lookup page helpers', () => {
@@ -63,31 +65,11 @@ describe('reference lookup page helpers', () => {
     showInvalidReferenceLookupUuidMessage(intl as any);
     showReferenceLookupLimitMessage(intl as any);
 
-    expect(message.warning).toHaveBeenCalledWith(
+    expect(mockMessage.warning).toHaveBeenCalledWith(
       'Enter a complete dataset UUID before running Reference Lookup.',
     );
-    expect(message.warning).toHaveBeenCalledWith(
+    expect(mockMessage.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
-  });
-
-  it('falls back to error messages when warning is unavailable', () => {
-    const intl = {
-      formatMessage: jest.fn(({ defaultMessage }) => defaultMessage),
-    };
-    const originalWarning = message.warning;
-    (message as any).warning = undefined;
-
-    showInvalidReferenceLookupUuidMessage(intl as any);
-    showReferenceLookupLimitMessage(intl as any);
-
-    expect(message.error).toHaveBeenCalledWith(
-      'Enter a complete dataset UUID before running Reference Lookup.',
-    );
-    expect(message.error).toHaveBeenCalledWith(
-      'Showing up to the first 50 reference lookup results.',
-    );
-
-    (message as any).warning = originalWarning;
   });
 });

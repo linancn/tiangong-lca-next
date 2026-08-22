@@ -23,16 +23,16 @@ describe('HeaderDropdown', () => {
     mockDropdown.mockClear();
   });
 
-  it('passes overlayClassName and placement to Dropdown', () => {
+  it('passes semantic root class name and placement to Dropdown', () => {
     render(
-      <HeaderDropdown overlayClassName='custom-class' placement='bottomRight'>
+      <HeaderDropdown classNames={{ root: 'custom-class' }} placement='bottomRight'>
         <span>Trigger</span>
       </HeaderDropdown>,
     );
 
     expect(mockDropdown).toHaveBeenCalledTimes(1);
     const props = mockDropdown.mock.calls[0][0];
-    expect(props.overlayClassName).toBe('custom-class');
+    expect(props.classNames).toEqual({ root: 'custom-class' });
     expect(props.placement).toBe('bottomRight');
   });
 
@@ -40,7 +40,7 @@ describe('HeaderDropdown', () => {
     const menu = { items: [] };
 
     render(
-      <HeaderDropdown overlayClassName='custom-class' trigger={['click']} menu={menu}>
+      <HeaderDropdown classNames={{ root: 'custom-class' }} trigger={['click']} menu={menu}>
         <span>Trigger</span>
       </HeaderDropdown>,
     );
@@ -50,7 +50,7 @@ describe('HeaderDropdown', () => {
     expect(props.trigger).toEqual(['click']);
   });
 
-  it('works without overlayClassName', () => {
+  it('works without a semantic root class name', () => {
     render(
       <HeaderDropdown placement='bottomLeft'>
         <span>Trigger</span>
@@ -58,7 +58,7 @@ describe('HeaderDropdown', () => {
     );
 
     const props = mockDropdown.mock.calls[0][0];
-    expect(props.overlayClassName).toBeUndefined();
+    expect(props.classNames).toBeUndefined();
     expect(props.placement).toBe('bottomLeft');
   });
 
@@ -77,9 +77,11 @@ describe('HeaderDropdown', () => {
     );
 
     const props = mockDropdown.mock.calls[0][0];
-    expect(props.overlayStyle).toEqual({
-      minWidth: 168,
-      maxWidth: 'calc(100vw - 24px)',
+    expect(props.styles).toEqual({
+      root: {
+        minWidth: 168,
+        maxWidth: 'calc(100vw - 24px)',
+      },
     });
 
     Object.defineProperty(window, 'innerWidth', {

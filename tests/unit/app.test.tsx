@@ -122,6 +122,28 @@ jest.mock('@/requestErrorConfig', () => ({
   },
 }));
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  AntdAppApiRegistrar: ({ children }: any) => <div data-testid='antd-app-provider'>{children}</div>,
+}));
+
+jest.mock('@/contexts/AntdThemeSync', () => ({
+  __esModule: true,
+  AntdThemeSync: ({ colorPrimary, isDarkMode }: any) => (
+    <div
+      data-testid='antd-theme-sync'
+      data-color-primary={colorPrimary ?? ''}
+      data-algorithm={isDarkMode ? 'dark-algorithm' : 'default-algorithm'}
+    />
+  ),
+  createAntdThemeConfig: (isDarkMode: boolean, colorPrimary?: string) => ({
+    cssVar: { key: 'tiangong-lca' },
+    components: { Divider: { orientationMargin: 0 } },
+    token: { colorPrimary },
+    algorithm: isDarkMode ? 'dark-algorithm' : 'default-algorithm',
+  }),
+}));
+
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   Link: ({ to, children }: any) => <a href={to}>{children}</a>,
@@ -189,6 +211,30 @@ describe('app runtime config', () => {
     expect(mockResolveBrowserRuntimeLocale).toHaveBeenCalledTimes(1);
   });
 
+  it('builds the native global theme without dropping existing component tokens', () => {
+    const { antd } = require('@/app');
+
+    const result = antd({
+      appConfig: {},
+      theme: {
+        components: {
+          Button: { primaryShadow: 'none' },
+          Divider: { colorSplit: '#abcdef' },
+        },
+        token: { borderRadius: 12 },
+      },
+    });
+
+    expect(result.theme).toMatchObject({
+      cssVar: { key: 'tiangong-lca' },
+      components: {
+        Button: { primaryShadow: 'none' },
+        Divider: { colorSplit: '#abcdef', orientationMargin: 0 },
+      },
+      token: { borderRadius: 12, colorPrimary: '#5C246A' },
+    });
+  });
+
   it('wraps every Umi route in the global boot and render-failure boundary', () => {
     const { rootContainer } = require('@/app');
 
@@ -199,6 +245,16 @@ describe('app runtime config', () => {
     );
     expect(screen.getByTestId('app-boot-marker')).toContainElement(
       screen.getByTestId('root-route'),
+    );
+  });
+
+  it('registers the global Ant Design App API through Umi innerProvider', () => {
+    const { innerProvider } = require('@/app');
+
+    render(innerProvider(<div data-testid='inner-route'>route</div>));
+
+    expect(screen.getByTestId('antd-app-provider')).toContainElement(
+      screen.getByTestId('inner-route'),
     );
   });
 
@@ -631,9 +687,8 @@ describe('app runtime config', () => {
 
     const children = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
     render(children);
-    expect(screen.getByTestId('config-provider')).toHaveAttribute('data-css-var', 'true');
-    expect(screen.getByTestId('config-provider')).toHaveAttribute('data-color-primary', '#0C246A');
-    expect(screen.getByTestId('config-provider')).toHaveAttribute(
+    expect(screen.getByTestId('antd-theme-sync')).toHaveAttribute('data-color-primary', '#0C246A');
+    expect(screen.getByTestId('antd-theme-sync')).toHaveAttribute(
       'data-algorithm',
       'default-algorithm',
     );
@@ -713,7 +768,7 @@ describe('app runtime config', () => {
 
     render(runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>));
 
-    expect(screen.getByTestId('config-provider')).toHaveAttribute(
+    expect(screen.getByTestId('antd-theme-sync')).toHaveAttribute(
       'data-algorithm',
       'dark-algorithm',
     );

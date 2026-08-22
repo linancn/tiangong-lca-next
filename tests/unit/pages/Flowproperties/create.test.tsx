@@ -106,16 +106,26 @@ jest.mock('antd', () => {
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
 
-  return {
-    __esModule: true,
-    Button,
-    Drawer,
-    Space,
-    Tooltip,
-    Spin,
-    message,
-    ConfigProvider,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Drawer,
+      Space,
+      Tooltip,
+      Spin,
+      message,
+      ConfigProvider,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {

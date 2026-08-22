@@ -64,9 +64,24 @@ describe('ResponsiveDataList helpers', () => {
       wide: ['xl'],
     });
     expect(responsiveDataListTableProps).toEqual({
+      cardProps: {
+        classNames: {
+          body: 'responsive-data-list-card-body',
+          root: 'responsive-data-list-card',
+        },
+      },
       className: 'responsive-data-list-table',
+      classNames: {
+        body: { cell: 'responsive-data-list-body-cell' },
+        header: { cell: 'responsive-data-list-header-cell' },
+        root: 'responsive-data-list-table-root',
+      },
       scroll: { x: 'max-content' },
       tableLayout: 'fixed',
+      toolbar: {
+        className: 'responsive-data-list-toolbar',
+        prefixCls: 'responsive-data-list-toolbar-slot',
+      },
     });
     expect(responsiveSearchCardClassName).toBe('responsive-data-list-search-card');
     expect(responsiveSearchRowProps).toEqual({ align: 'middle' });
@@ -191,9 +206,9 @@ describe('ResponsiveDataList helpers', () => {
       </ResponsiveDataListToolbarMore>,
     );
 
-    expect(container.querySelector('.ant-pro-table-list-toolbar-setting-item')).toHaveClass(
-      'responsive-data-list-toolbar-more-action',
-    );
+    expect(
+      container.querySelector('.responsive-data-list-toolbar-more-action'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('table-dropdown')).toHaveClass('responsive-data-list-more-action');
     expect(screen.getByText('Import')).toBeInTheDocument();
     expect(screen.getByText('Calculate')).toBeInTheDocument();

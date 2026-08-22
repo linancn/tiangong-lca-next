@@ -53,8 +53,11 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Space = ({ children, direction, size }: any) => (
-    <div data-testid={size === 'middle' ? 'space-root' : 'space-nested'} data-direction={direction}>
+  const Space = ({ children, orientation, size }: any) => (
+    <div
+      data-testid={size === 'middle' ? 'space-root' : 'space-nested'}
+      data-orientation={orientation}
+    >
       {children}
     </div>
   );
@@ -102,7 +105,7 @@ describe('ReviewLifeCycleModelToolbarControl', () => {
       />,
     );
 
-    expect(screen.getByTestId('space-root')).toHaveAttribute('data-direction', 'vertical');
+    expect(screen.getByTestId('space-root')).toHaveAttribute('data-orientation', 'vertical');
     expect(screen.getAllByRole('button', { name: '100%' })[0]).toBeInTheDocument();
 
     act(() => {

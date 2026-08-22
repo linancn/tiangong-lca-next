@@ -74,12 +74,18 @@ jest.mock('antd', () => {
         </button>
       </section>
     ) : null;
-  Modal.useModal = () => [
-    { confirm: (options: { onOk?: () => void }) => mockConfirm(options) },
-    <span key='modal-context' data-testid='modal-context' />,
-  ];
+  const message = {
+    success: (...args: unknown[]) => mockSuccess(...args),
+    warning: (...args: unknown[]) => mockWarning(...args),
+    error: (...args: unknown[]) => mockError(...args),
+  };
+  const modal = {
+    confirm: (options: { onOk?: () => void }) => mockConfirm(options),
+  };
+  const App = { useApp: () => ({ message, modal }) };
 
   return {
+    App,
     Button: ({
       children,
       disabled,
@@ -120,11 +126,7 @@ jest.mock('antd', () => {
     ),
     Form,
     Input: { TextArea: () => <textarea aria-label='review-reason' /> },
-    message: {
-      success: (...args: unknown[]) => mockSuccess(...args),
-      warning: (...args: unknown[]) => mockWarning(...args),
-      error: (...args: unknown[]) => mockError(...args),
-    },
+    message,
     Modal,
     Space: ({ children, size }: { children: import('react').ReactNode; size?: number }) => (
       <div data-space-size={size}>{children}</div>
@@ -192,7 +194,6 @@ describe('BatchReviewActions', () => {
     expect(mockSuccess).toHaveBeenCalledWith('2 reviews processed successfully.');
     expect(mockResetFields).toHaveBeenCalled();
     expect(onFinished).toHaveBeenCalled();
-    expect(screen.getByTestId('modal-context')).toBeInTheDocument();
   });
 
   it('submits a reviewer rejection as an advisory opinion and reports partial results', async () => {

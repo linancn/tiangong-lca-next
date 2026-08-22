@@ -239,8 +239,10 @@ jest.mock('antd', () => {
 
   Form.Item = FormItem;
   Form.List = FormList;
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message });
 
   return {
+    App,
     Form,
     Button,
     Select,

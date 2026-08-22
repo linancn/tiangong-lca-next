@@ -87,12 +87,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{typeof label === 'string' ? label : (label?.props?.children ?? '')}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [] }: any) => (
+    <dl>
+      {items.map((item: any) => (
+        <div key={item.key}>
+          <dt>{extractText(item.label)}</dt>
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Image = ({ src, alt }: any) => <img src={src} alt={alt} />;

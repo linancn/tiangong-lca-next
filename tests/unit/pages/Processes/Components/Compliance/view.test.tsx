@@ -46,12 +46,18 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
+  const DescriptionsItem = ({ label, children }: any) => (
     <div>
       <dt>{toText(label)}</dt>
       <dd>{children}</dd>
     </div>
+  );
+  const Descriptions = ({ items = [], styles }: any) => (
+    <dl>
+      {items.map((item, index) => (
+        <DescriptionsItem key={item.key ?? index} {...item} styles={item.styles ?? styles} />
+      ))}
+    </dl>
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;

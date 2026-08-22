@@ -3,6 +3,12 @@ import FlowsPage from '@/pages/Flows';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -33,6 +39,8 @@ const mockGetTeamById = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
 const mockMessageSuccess = jest.fn();
 const mockMessageError = jest.fn();
+const mockMessageWarning = jest.fn();
+const mockMessageInfo = jest.fn();
 
 const flowRows = [
   {
@@ -265,6 +273,8 @@ jest.mock('antd', () => {
   const message = {
     success: (...args: any[]) => mockMessageSuccess(...args),
     error: (...args: any[]) => mockMessageError(...args),
+    warning: (...args: any[]) => mockMessageWarning(...args),
+    info: (...args: any[]) => mockMessageInfo(...args),
   };
   const theme = {
     useToken: () => ({
@@ -274,22 +284,32 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Grid: {
-      useBreakpoint: () => mockBreakpointScreens,
-    },
-    Input,
-    Row,
-    Space,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Card,
+      Checkbox,
+      Col,
+      ConfigProvider,
+      Grid: {
+        useBreakpoint: () => mockBreakpointScreens,
+      },
+      Input,
+      Row,
+      Space,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -700,7 +720,7 @@ describe('FlowsPage', () => {
 
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
 
-    const contributeButtons = screen.getAllByRole('button', { name: /contribute-action/i });
+    const contributeButtons = await screen.findAllByRole('button', { name: /contribute-action/i });
     expect(contributeButtons).toHaveLength(2);
     expect(contributeButtons[1]).toBeDisabled();
     expect(screen.getAllByRole('button', { name: 'flow-view' })).toHaveLength(2);
@@ -877,7 +897,7 @@ describe('FlowsPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(mockMessageError).toHaveBeenCalledWith(
+      expect(mockMessageWarning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -896,7 +916,7 @@ describe('FlowsPage', () => {
       ),
     );
     expect(await screen.findByText('Referenced flow')).toBeInTheDocument();
-    expect(mockMessageError).toHaveBeenCalledWith(
+    expect(mockMessageInfo).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 
