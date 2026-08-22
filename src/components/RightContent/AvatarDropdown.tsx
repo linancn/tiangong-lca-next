@@ -287,7 +287,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   return (
     <>
       <HeaderDropdown
-        trigger={['click']}
+        trigger={['hover', 'click']}
         styles={{
           root: {
             width: 'max-content',

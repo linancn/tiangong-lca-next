@@ -302,5 +302,17 @@ test('Every registry locale keeps the team layout operable across responsive the
     await expect(navigationDialog).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(navigationDialog).toBeHidden();
+
+    await avatarButton.hover();
+    const avatarMenu = page.getByRole('menu').filter({ visible: true });
+    await expect(avatarMenu).toHaveCount(1);
+    await expect.poll(() => avatarMenu.getByRole('menuitem').count()).toBeGreaterThan(0);
+    await page.mouse.move(0, 0);
+    await expect(avatarMenu).toBeHidden();
+
+    await avatarButton.press('Enter');
+    await expect(avatarMenu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(avatarMenu).toBeHidden();
   });
 });

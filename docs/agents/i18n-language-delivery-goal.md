@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 1c51c6cf
+lastReviewedCommit: a5279243f4c1d22ee00c50ed92787614d585800c
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 baselineObservedAt: 2026-07-18
 related:

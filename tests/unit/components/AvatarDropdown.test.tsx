@@ -307,7 +307,7 @@ describe('AvatarDropdown', () => {
 
     expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
     expect(screen.getByText('avatar')).toBeInTheDocument();
-    expect(screen.getByTestId('header-trigger')).toHaveAttribute('data-trigger', 'click');
+    expect(screen.getByTestId('header-trigger')).toHaveAttribute('data-trigger', 'hover,click');
 
     await user.click(screen.getByRole('button', { name: 'Account Profile' }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/account');
