@@ -6,6 +6,11 @@ import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { FlowpropertyDetailData, FlowpropertyDetailResponse } from '@/services/flowproperties/data';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 import { getRefData } from '@/services/general/api';
+import {
+  RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE,
+  RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE,
+  RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS,
+} from '@/style/responsiveForm';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import type { Rule } from 'antd/es/form';
@@ -217,7 +222,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         )
       }
     >
-      <Space orientation='horizontal'>
+      <Space {...RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS}>
         <Form.Item
           label={
             <FormattedMessage
@@ -226,6 +231,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
             />
           }
           name={[...name, '@refObjectId']}
+          style={RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE}
           rules={[
             ...notRequiredRules,
             ...(isRequired
@@ -240,7 +246,10 @@ const FlowpropertiesSelectForm: FC<Props> = ({
         >
           <Input
             disabled={true}
-            style={{ width: '350px', maxWidth: '100%', color: token.colorTextDescription }}
+            style={{
+              ...RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE,
+              color: token.colorTextDescription,
+            }}
           />
         </Form.Item>
         <Space orientation='horizontal' style={{ marginTop: '6px' }}>

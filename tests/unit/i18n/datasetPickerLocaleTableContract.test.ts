@@ -156,8 +156,8 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
       picker.tableCount,
     );
     expect(countOccurrences(source, "scroll={{ x: 'max-content' }}")).toBe(picker.tableCount);
-    expect(compactFormSource).toContain(
-      "<Input disabled={true} style={{ width: '350px', maxWidth: '100%', color: token.colorTextDescription }} />",
-    );
+    expect(compactFormSource).toContain('<Space {...RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS}>');
+    expect(compactFormSource).toContain('style={RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE}');
+    expect(compactFormSource).toContain('...RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE');
   });
 });
