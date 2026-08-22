@@ -81,9 +81,9 @@ describe('ResponsiveDataList helpers', () => {
       tableLayout: 'fixed',
       toolbar: {
         className: 'responsive-data-list-toolbar',
-        prefixCls: 'responsive-data-list-toolbar-slot',
       },
     });
+    expect(responsiveDataListTableProps.toolbar).not.toHaveProperty('prefixCls');
     expect(responsiveSearchCardClassName).toBe('responsive-data-list-search-card');
     expect(responsiveSearchRowProps).toEqual({ align: 'middle' });
     expect(responsiveSearchPrimaryColProps).toEqual({

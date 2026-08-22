@@ -32,7 +32,6 @@ export const responsiveDataListTableProps = {
   tableLayout: 'fixed' as const,
   toolbar: {
     className: 'responsive-data-list-toolbar',
-    prefixCls: 'responsive-data-list-toolbar-slot',
   },
 };
 
