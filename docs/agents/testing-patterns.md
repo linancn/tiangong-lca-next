@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
-lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct unit proof, save gates use explicit side-effect assertions, and generated locale digests use the existing idempotence contract.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: 6df6bf6d1d522a586fd12091a18dd25aa591d6da
+lastReviewedNote: 'Reviewed for Next Issue #924: Ant Design mocks now expose stable App.useApp APIs, representative Form.List paths use the real v6 store, and browser-like shims retain no native handles.'
 ---
 
 # Testing Patterns Reference
@@ -66,6 +66,9 @@ lastReviewedNote: 'Reviewed for Next Issue #910: the scalar helper uses direct u
 - keep test setup close to the behavior being proved
 - prefer existing helpers over one-off fixtures
 - do not add snapshots when explicit assertions are clearer
+- component tests that mock Ant Design feedback must expose the v6 `App.useApp()` contract; do not let test setup fall back to static `message`, `Modal`, or `notification` APIs. Shared mocks consume `Descriptions.items` and `Select.options` only, so removed member-style APIs cannot remain hidden in tests
+- use a real antd 6 Form store for representative `Form.List` submission contracts. The shared browser-like `MessageChannel` and `ResizeObserver` test shims must have no persistent native handle, fixed sleep, or production fallback
+- browser assertions for Ant Design surfaces use accessibility roles or project-owned classes passed through public semantic `classNames`; do not assert `.ant-drawer-content`, `.ant-modal-content`, or another private DOM class
 - make mocks for stateful hooks preserve the identity of returned API objects across parent rerenders; update methods on the stable object instead of returning a fresh placeholder on each render
 - pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - when mount and user actions can call the same async loader, guard the in-flight request outside render-state closures and prove that an action fired before the first response does not start a second request or let a later empty response overwrite valid data
@@ -150,6 +153,7 @@ Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `pnpm e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `pnpm start:main` and must still reject a non-loopback Playwright base URL
+- a dirty credential-free qualification diagnostic must compile `REACT_APP_ENV=qualification`, serve that candidate on loopback, and run Playwright with `E2E_EXTERNAL_SERVER=true`; do not combine qualification simulator flags with the `start:main` bundle because its real backend target must be rejected by readiness
 - use `pnpm e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
 - normal release orchestration keeps browser qualification earlier and separate: run the manual hermetic workflow on the open business PR when change risk warrants it, then `release:to-dev --apply` uses a restricted structural/static push and the exact generated Release PR into `dev` runs one non-browser Release Gate before merge
 - local proof uses `e2e:qualification:key`, `e2e:qualify -- --proof <ignored-path>`, and `release:proof:verify -- --proof <path>`; qualification builds with its fixed `.invalid` backend profile, root version-only and deployment `.env` changes preserve the key, while source, qualification config, shared helpers, Git mode/type, or browser-environment changes invalidate it

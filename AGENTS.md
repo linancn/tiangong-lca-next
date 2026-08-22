@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and its generated locale digest refresh stay in the existing frontend/service ownership boundary and do not change repo workflow or branch policy.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: 6df6bf6d1d522a586fd12091a18dd25aa591d6da
+lastReviewedNote: 'Reviewed for Next Issue #924: the exact React 19 / Ant Design 6 runtime, App feedback boundary, semantic UI slots, and regenerated locale evidence stay within existing repository ownership and branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -124,6 +124,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - the compiler/tooling track is TypeScript `7.0.2` only: `pnpm tsc` checks the web project and `pnpm tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
+- the UI runtime is one exact React `19.2.8`, React DOM `19.2.8`, Ant Design `6.6.1`, icons `6.3.2`, and ProComponents `3.1.14-6` generation. Umi's global ConfigProvider and App own theme plus feedback context for every route; there is no Ant Design 5 patch, split ProComponents package, legacy component-member API, or static feedback fallback. ProComponents v3 remains exact-pinned while upstream publishes it as a prerelease, and the existing `skipLibCheck: true` is the bounded declaration-quality exception rather than an application-typecheck bypass
 - `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
 - Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
 - Jest uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
@@ -148,6 +149,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 
 - package manager: repository-pinned `pnpm` `11.22.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: `24` via `.nvmrc` and `nvm use 24`
+- UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
 - shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)
 - explicit main-environment run: `pnpm start:main`
 - default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
@@ -234,6 +236,7 @@ Use the role table in this file as the update map.
 
 - do not author schema or migration truth here
 - do not add a TypeScript 6 compatibility package or import `typescript/unstable/*` outside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`
+- do not add an Ant Design 5 compatibility patch, an antd 4/5 dependency override, split `@ant-design/pro-*` imports, legacy `Descriptions.Item`/`Select.Option`-style APIs, or context-free static feedback calls
 - do not enable Umi/Mako `forkTSChecker` until that path is proved compatible with the TypeScript 7 package, whose CommonJS root no longer exposes the legacy Compiler API; the qualified production build remains the current Webpack path plus repo-owned `pnpm tsc`
 - do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
