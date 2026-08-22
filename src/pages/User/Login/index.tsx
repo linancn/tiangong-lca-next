@@ -27,6 +27,7 @@ import {
   getLocalizedLoginSubtitle,
 } from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
+import { responsiveLoginFormProps } from './responsive';
 
 const LoginMessage: React.FC<{
   content: string;
@@ -229,6 +230,7 @@ const Login: React.FC = () => {
             }}
           >
             <LoginForm
+              {...responsiveLoginFormProps}
               formRef={formRefLogin}
               logo={brandTheme.logo}
               title={appTitle}

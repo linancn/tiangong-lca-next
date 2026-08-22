@@ -17,6 +17,7 @@ import {
   getLocalizedLoginSubtitle,
 } from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
+import { responsiveLoginFormProps } from './responsive';
 
 const PasswordSet: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -149,6 +150,7 @@ const PasswordSet: FC = () => {
                 </div>
               ) : (
                 <LoginForm
+                  {...responsiveLoginFormProps}
                   layout='vertical'
                   logo={brandTheme.logo}
                   title={appTitle}

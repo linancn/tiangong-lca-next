@@ -6,7 +6,7 @@
  * - API key generation workflow (success and failure branches).
  */
 
-import Profile from '@/pages/Account';
+import Profile, { ACCOUNT_FORM_CONTAINER_STYLE, getAccountTabPlacement } from '@/pages/Account';
 import {
   changeEmail,
   changePassword,
@@ -457,6 +457,16 @@ const mockCognitoSignUp = cognitoSignUp as jest.MockedFunction<any>;
 const mockLogin = login as jest.MockedFunction<any>;
 
 describe('Account profile page (unit)', () => {
+  it('uses shrinkable form containers and moves account tabs above compact content', () => {
+    expect(ACCOUNT_FORM_CONTAINER_STYLE).toEqual({
+      width: '100%',
+      maxWidth: 600,
+      minWidth: 0,
+    });
+    expect(getAccountTabPlacement(false)).toBe('start');
+    expect(getAccountTabPlacement(true)).toBe('top');
+  });
+
   beforeAll(() => {
     if (typeof global.btoa === 'undefined') {
       global.btoa = (input: string) => Buffer.from(input, 'binary').toString('base64');

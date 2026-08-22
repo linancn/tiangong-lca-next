@@ -12,9 +12,17 @@ import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
-import { Flex, Form, Input, Spin, Tabs, theme } from 'antd';
-import { useEffect, useRef, useState, type FC } from 'react';
+import { Flex, Form, Grid, Input, Spin, Tabs, theme } from 'antd';
+import { useEffect, useRef, useState, type CSSProperties, type FC } from 'react';
 import { formatAccountRole } from './roleMessage';
+
+export const ACCOUNT_FORM_CONTAINER_STYLE: CSSProperties = {
+  width: '100%',
+  maxWidth: 600,
+  minWidth: 0,
+};
+
+export const getAccountTabPlacement = (isMobile: boolean) => (isMobile ? 'top' : 'start');
 
 const Profile: FC = () => {
   const { message } = useAntdAppApi();
@@ -27,6 +35,9 @@ const Profile: FC = () => {
   const intl = useIntl();
   const { token } = theme.useToken();
   const { setInitialState } = useModel('@@initialState');
+  const useBreakpoint = Grid?.useBreakpoint ?? (() => ({}));
+  const screens = useBreakpoint();
+  const isMobile = screens.md === false;
 
   const onTabChange = (key: string) => {
     if (activeTabKey === 'generateAPIKey' && key !== 'generateAPIKey' && apiKey) {
@@ -37,7 +48,7 @@ const Profile: FC = () => {
   };
 
   const renderBaseForm = () => (
-    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
+    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
@@ -108,7 +119,7 @@ const Profile: FC = () => {
   );
 
   const renderChangePasswordForm = () => (
-    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
@@ -357,7 +368,7 @@ const Profile: FC = () => {
   );
 
   const renderChangeEmailForm = () => (
-    <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
       <ProForm
         formRef={formRefEdit}
         submitter={{
@@ -490,7 +501,7 @@ const Profile: FC = () => {
 
   const renderGenerateAPIKey = () => {
     return (
-      <Flex gap='middle' vertical style={{ maxWidth: '50%', minWidth: '300px' }}>
+      <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
         <ProForm
           formRef={formRefEdit}
           submitter={{
@@ -729,7 +740,7 @@ const Profile: FC = () => {
         <Tabs
           activeKey={activeTabKey}
           onChange={onTabChange}
-          tabPlacement='start'
+          tabPlacement={getAccountTabPlacement(isMobile)}
           items={[
             {
               key: 'baseInfo',

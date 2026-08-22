@@ -17,6 +17,7 @@ import {
   getLocalizedLoginSubtitle,
 } from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
+import { responsiveLoginFormProps } from './responsive';
 
 const PasswordForgot: React.FC = () => {
   const { notification } = useAntdAppApi();
@@ -130,6 +131,7 @@ const PasswordForgot: React.FC = () => {
           <div style={{ marginTop: '80px' }}>
             <Spin spinning={spinning}>
               <LoginForm
+                {...responsiveLoginFormProps}
                 layout='vertical'
                 logo={brandTheme.logo}
                 title={appTitle}
