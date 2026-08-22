@@ -107,17 +107,18 @@ export function ResponsiveDataListActions({
 
   if (isMobile) {
     return (
-      <TableDropdown
-        className='responsive-data-list-more-action'
-        style={dropdownStyle}
-        menus={[
-          ...actions.map((name, index) => ({
-            key: `action-${index}`,
-            name,
-          })),
-          ...moreMenus,
-        ]}
-      />
+      <span className='responsive-data-list-more-action'>
+        <TableDropdown
+          style={dropdownStyle}
+          menus={[
+            ...actions.map((name, index) => ({
+              key: `action-${index}`,
+              name,
+            })),
+            ...moreMenus,
+          ]}
+        />
+      </span>
     );
   }
 

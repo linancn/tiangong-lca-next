@@ -184,7 +184,9 @@ describe('ResponsiveDataList helpers', () => {
     );
 
     expect(screen.queryByTestId('action-space')).not.toBeInTheDocument();
-    expect(screen.getByTestId('table-dropdown')).toHaveClass('responsive-data-list-more-action');
+    expect(screen.getByTestId('table-dropdown').parentElement).toHaveClass(
+      'responsive-data-list-more-action',
+    );
     expect(screen.getByText('Edit')).toBeInTheDocument();
     expect(screen.getByText('View')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
