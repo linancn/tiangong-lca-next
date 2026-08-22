@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 9319742112a8e9dd980762789895b4f4c074e531
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: ae01a014
 lastReviewedNote: 'Reviewed for Next Issue #910: canonical TIDAS scalar shaping and its pre-persistence validation remain an app-side service responsibility.'
 ---
 

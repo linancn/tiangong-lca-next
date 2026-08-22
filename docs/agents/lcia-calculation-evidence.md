@@ -27,8 +27,8 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-08-17
-lastReviewedCommit: d338df0622f177805905da29f65862175c7adb5f
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: ae01a014
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 ---
 
