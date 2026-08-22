@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "6e85ecaf8dd4c1fcb4a0fe1c2008dc6bc509bd1ac13a637bacdefaa385c1e86a",
+    "auditedInputDigest": "67ac950aeb73d156d8df4e058fbc6dcb00b432e17c2251158fe0ffb991df0beb",
     "validatedMessageCount": 3208,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
     "catalogDigest": "24238218499ffff02768ab879d2c55877b656be79221b03b56b8d951d0f0068b",
-    "dossierDigest": "c30c9ec83a098a7846fbd4cdfc68fe0a408af55a7d4daad687f6847874654fb2",
+    "dossierDigest": "7550f685a0be32cbbae674fb15543800a2f597f1c5d96f35af106f22a97327fb",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "30b6019754215802581aac891787b204c90dc88a0f60bbec1f452c66debaa541",
+    "routeEvidenceDigest": "7f161ce71e06927b0f4d806b9dbfe1dc1cc134be8135d30537f448a5e3ccb723",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "17a6482556654636b754f8bfe3765ec88f012e72fe24aa2e864b322942d7483d",
         "highRiskMessageCount": 1439,
         "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
-        "dossierDigest": "c30c9ec83a098a7846fbd4cdfc68fe0a408af55a7d4daad687f6847874654fb2",
+        "dossierDigest": "7550f685a0be32cbbae674fb15543800a2f597f1c5d96f35af106f22a97327fb",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "67fbe450e145a128e88a5c511a76cce5174ed63b6cc49334943b1f8e98c71011"
+  "validationDigest": "c421629dc4f6ddf608695bd40af4e0a2a8df7b2809a66fdd868061e1ca4592a0"
 }

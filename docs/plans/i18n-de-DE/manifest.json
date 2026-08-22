@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "6e85ecaf8dd4c1fcb4a0fe1c2008dc6bc509bd1ac13a637bacdefaa385c1e86a",
+    "auditedInputDigest": "67ac950aeb73d156d8df4e058fbc6dcb00b432e17c2251158fe0ffb991df0beb",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -71,11 +71,11 @@
     "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
     "localeUniqueKeyCounts": { "en-US": 3208, "zh-CN": 3208, "de-DE": 3208, "fr-FR": 3208 },
     "canonicalCandidateKeyCount": 3208,
-    "activeStaticKeyCount": 2135,
+    "activeStaticKeyCount": 2140,
     "activeDynamicKeyCount": 306,
-    "reservedKeyCount": 767,
-    "productionSourceFileCount": 443,
-    "literalReferenceCount": 4142,
+    "reservedKeyCount": 762,
+    "productionSourceFileCount": 447,
+    "literalReferenceCount": 4150,
     "dynamicCallsiteCount": 32,
     "dynamicCallsiteSummaryCount": 32,
     "registeredDynamicCallsiteCount": 32,
@@ -1243,7 +1243,7 @@
     },
     {
       "id": "app.setting.navigationmode",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["settingDrawer"],
@@ -1297,8 +1297,37 @@
           }
         }
       },
-      "references": [],
-      "defaultMessages": []
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 245,
+          "column": 25,
+          "symbol": "layout",
+          "defaultMessage": "Navigation Mode",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 447,
+          "column": 9,
+          "symbol": "layout",
+          "defaultMessage": "Navigation Mode",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Navigation Mode",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            { "path": "src/app.tsx", "line": 245, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 447, "column": 9, "kind": "formatMessage" }
+          ]
+        }
+      ]
     },
     {
       "id": "app.setting.othersettings",
@@ -1361,7 +1390,7 @@
     },
     {
       "id": "app.setting.pagestyle",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["settingDrawer"],
@@ -1415,8 +1444,37 @@
           }
         }
       },
-      "references": [],
-      "defaultMessages": []
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 387,
+          "column": 102,
+          "symbol": "layout",
+          "defaultMessage": "Page style setting",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 390,
+          "column": 99,
+          "symbol": "layout",
+          "defaultMessage": "Page style setting",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Page style setting",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            { "path": "src/app.tsx", "line": 387, "column": 102, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 390, "column": 99, "kind": "formatMessage" }
+          ]
+        }
+      ]
     },
     {
       "id": "app.setting.pagestyle.dark",
@@ -3780,7 +3838,7 @@
     },
     {
       "id": "app.settings.close",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["settings"],
@@ -3834,8 +3892,27 @@
           }
         }
       },
-      "references": [],
-      "defaultMessages": []
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 387,
+          "column": 30,
+          "symbol": "layout",
+          "defaultMessage": "Close",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Close",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            { "path": "src/app.tsx", "line": 387, "column": 30, "kind": "formatMessage" }
+          ]
+        }
+      ]
     },
     {
       "id": "app.settings.menuMap.basic",
@@ -4429,7 +4506,7 @@
     },
     {
       "id": "app.settings.open",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["settings"],
@@ -4483,8 +4560,27 @@
           }
         }
       },
-      "references": [],
-      "defaultMessages": []
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 390,
+          "column": 29,
+          "symbol": "layout",
+          "defaultMessage": "Open",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Open",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            { "path": "src/app.tsx", "line": 390, "column": 29, "kind": "formatMessage" }
+          ]
+        }
+      ]
     },
     {
       "id": "app.settings.security.bind",
@@ -11892,7 +11988,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 311,
+          "line": 312,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -11919,7 +12015,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 311,
+              "line": 312,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -13281,7 +13377,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 69,
+          "line": 100,
           "column": 21,
           "symbol": "helpLabel",
           "defaultMessage": null,
@@ -13418,7 +13514,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 69,
+          "line": 100,
           "column": 21,
           "symbol": "helpLabel",
           "defaultMessage": null,
@@ -13732,7 +13828,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 317,
+          "line": 350,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13745,7 +13841,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 317, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 350, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -24182,7 +24278,7 @@
     },
     {
       "id": "menu.account.center",
-      "category": "reserved",
+      "category": "active-static",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["menu"],
@@ -24236,8 +24332,27 @@
           }
         }
       },
-      "references": [],
-      "defaultMessages": []
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/app.tsx",
+          "line": 319,
+          "column": 33,
+          "symbol": "layout",
+          "defaultMessage": "Account Center",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Account Center",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            { "path": "src/app.tsx", "line": 319, "column": 33, "kind": "formatMessage" }
+          ]
+        }
+      ]
     },
     {
       "id": "menu.account.logout",
@@ -24509,7 +24624,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 726,
+          "line": 737,
           "column": 14,
           "symbol": "Profile",
           "defaultMessage": "Account Profile",
@@ -24530,7 +24645,7 @@
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 726,
+              "line": 737,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -25644,7 +25759,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 246,
+          "line": 273,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25653,7 +25768,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 253,
+          "line": 280,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25666,8 +25781,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 246, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 253, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 273, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 280, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25791,7 +25906,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 266,
+          "line": 293,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25800,7 +25915,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 273,
+          "line": 300,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25813,8 +25928,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 266, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 273, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 293, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 300, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -27600,7 +27715,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 218,
+          "line": 219,
           "column": 16,
           "symbol": "Login",
           "defaultMessage": "Login",
@@ -27615,7 +27730,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 218,
+              "line": 219,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -28572,7 +28687,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 122,
+          "line": 123,
           "column": 16,
           "symbol": "PasswordForgot",
           "defaultMessage": "Forgot Password",
@@ -28587,7 +28702,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 122,
+              "line": 123,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -35629,7 +35744,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 307,
+          "line": 319,
           "column": 9,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Short description",
@@ -35644,7 +35759,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 307,
+              "line": 319,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -35712,7 +35827,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 286,
+          "line": 298,
           "column": 16,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Type",
@@ -35727,7 +35842,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 286,
+              "line": 298,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -35795,7 +35910,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 293,
+          "line": 305,
           "column": 16,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "URI",
@@ -35810,7 +35925,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 293,
+              "line": 305,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -36044,7 +36159,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 666,
+          "line": 677,
           "column": 22,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "API Key",
@@ -36059,7 +36174,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 666,
+              "line": 677,
               "column": 22,
               "kind": "FormattedMessage"
             }
@@ -36127,7 +36242,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 636,
+          "line": 647,
           "column": 26,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Current Password",
@@ -36142,7 +36257,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 636,
+              "line": 647,
               "column": 26,
               "kind": "formatMessage"
             }
@@ -36210,7 +36325,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 581,
+          "line": 592,
           "column": 15,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Please enter your current account password to verify your identity and generate the API Key.",
@@ -36225,7 +36340,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 581,
+              "line": 592,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -36293,7 +36408,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 498,
+          "line": 509,
           "column": 27,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Generate Key",
@@ -36308,7 +36423,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 498,
+              "line": 509,
               "column": 27,
               "kind": "formatMessage"
             }
@@ -36376,7 +36491,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 558,
+          "line": 569,
           "column": 17,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "A system error occurred while generating the API key. Please try again later.",
@@ -36391,7 +36506,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 558,
+              "line": 569,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -36459,7 +36574,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 547,
+          "line": 558,
           "column": 34,
           "symbol": "successMsg",
           "defaultMessage": "API Key generated successfully!",
@@ -36474,7 +36589,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 547,
+              "line": 558,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -36542,7 +36657,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 671,
+          "line": 682,
           "column": 19,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Make sure to copy it to a secure location. This key will not be shown again.",
@@ -36557,7 +36672,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 671,
+              "line": 682,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -36625,7 +36740,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 736,
+          "line": 747,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Basic Information",
@@ -36640,7 +36755,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 736,
+              "line": 747,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -36708,7 +36823,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 752,
+          "line": 763,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Change Email",
@@ -36723,7 +36838,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 752,
+              "line": 763,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -36791,7 +36906,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 744,
+          "line": 755,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Change Password",
@@ -36806,7 +36921,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 744,
+              "line": 755,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -36874,7 +36989,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 481,
+          "line": 492,
           "column": 26,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Confirm New Email",
@@ -36889,7 +37004,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 481,
+              "line": 492,
               "column": 26,
               "kind": "formatMessage"
             }
@@ -36957,7 +37072,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 455,
+          "line": 466,
           "column": 17,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Please input the new email again!",
@@ -36972,7 +37087,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 455,
+              "line": 466,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -37040,7 +37155,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 349,
+          "line": 360,
           "column": 26,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Confirm New Password",
@@ -37055,7 +37170,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 349,
+              "line": 360,
               "column": 26,
               "kind": "formatMessage"
             }
@@ -37123,7 +37238,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 323,
+          "line": 334,
           "column": 17,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Please input the new password again!",
@@ -37138,7 +37253,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 323,
+              "line": 334,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -37206,7 +37321,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 146,
+          "line": 157,
           "column": 19,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Invalid password",
@@ -37221,7 +37336,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 146,
+              "line": 157,
               "column": 19,
               "kind": "formatMessage"
             }
@@ -37289,7 +37404,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 201,
+          "line": 212,
           "column": 26,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Current Password",
@@ -37304,7 +37419,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 201,
+              "line": 212,
               "column": 26,
               "kind": "formatMessage"
             }
@@ -37372,7 +37487,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 190,
+          "line": 201,
           "column": 17,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Please input the current password!",
@@ -37381,7 +37496,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 644,
+          "line": 655,
           "column": 19,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Please input the current password!",
@@ -37396,13 +37511,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 190,
+              "line": 201,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 644,
+              "line": 655,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -37553,7 +37668,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 55,
+          "line": 66,
           "column": 17,
           "symbol": "renderBaseForm",
           "defaultMessage": "Profile updated successfully.",
@@ -37568,7 +37683,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 55,
+              "line": 66,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -37636,7 +37751,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 380,
+          "line": 391,
           "column": 17,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Verification email sent successfully! Please update your email via the email link.",
@@ -37651,7 +37766,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 380,
+              "line": 391,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -37719,7 +37834,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 446,
+          "line": 457,
           "column": 13,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Confirm New Email",
@@ -37734,7 +37849,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 446,
+              "line": 457,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -37802,7 +37917,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 399,
+          "line": 410,
           "column": 13,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Current Email",
@@ -37817,7 +37932,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 399,
+              "line": 410,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -37885,7 +38000,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 468,
+          "line": 479,
           "column": 21,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "The two emails that you entered do not match!",
@@ -37900,7 +38015,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 468,
+              "line": 479,
               "column": 21,
               "kind": "formatMessage"
             }
@@ -37968,7 +38083,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 760,
+          "line": 771,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Generate API Key",
@@ -37983,7 +38098,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 760,
+              "line": 771,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -38134,7 +38249,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 522,
+          "line": 533,
           "column": 19,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Invalid credentials. Please check your password.",
@@ -38149,7 +38264,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 522,
+              "line": 533,
               "column": 19,
               "kind": "formatMessage"
             }
@@ -38217,7 +38332,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 704,
+          "line": 715,
           "column": 13,
           "symbol": "loadCurrentUser",
           "defaultMessage": "An error occurred while loading the account profile.",
@@ -38232,7 +38347,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 704,
+              "line": 715,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -38300,7 +38415,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 411,
+          "line": 422,
           "column": 18,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "New Email",
@@ -38315,7 +38430,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 411,
+              "line": 422,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -38383,7 +38498,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 416,
+          "line": 427,
           "column": 24,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "New Email",
@@ -38398,7 +38513,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 416,
+              "line": 427,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -38466,7 +38581,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 433,
+          "line": 444,
           "column": 17,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "Please input the new email!",
@@ -38481,7 +38596,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 433,
+              "line": 444,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -38549,7 +38664,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 424,
+          "line": 435,
           "column": 17,
           "symbol": "renderChangeEmailForm",
           "defaultMessage": "The email format is incorrect!",
@@ -38564,7 +38679,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 424,
+              "line": 435,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -38632,7 +38747,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 266,
+          "line": 277,
           "column": 24,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "New Password",
@@ -38647,7 +38762,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 266,
+              "line": 277,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -38715,7 +38830,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 274,
+          "line": 285,
           "column": 17,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Please input the new password!",
@@ -38730,7 +38845,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 274,
+              "line": 285,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -38798,7 +38913,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 296,
+          "line": 307,
           "column": 23,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "New password should be different from the current password.",
@@ -38813,7 +38928,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 296,
+              "line": 307,
               "column": 23,
               "kind": "formatMessage"
             }
@@ -38881,7 +38996,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 239,
+          "line": 250,
           "column": 21,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Strength: Medium",
@@ -38890,7 +39005,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 609,
+          "line": 620,
           "column": 23,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Strength: Medium",
@@ -38905,13 +39020,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 239,
+              "line": 250,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 609,
+              "line": 620,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -38979,7 +39094,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 249,
+          "line": 260,
           "column": 21,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Strength: Strong",
@@ -38988,7 +39103,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 619,
+          "line": 630,
           "column": 23,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Strength: Strong",
@@ -39003,13 +39118,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 249,
+              "line": 260,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 619,
+              "line": 630,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -39077,7 +39192,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 220,
+          "line": 231,
           "column": 15,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -39086,7 +39201,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 590,
+          "line": 601,
           "column": 17,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -39101,13 +39216,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 220,
+              "line": 231,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 590,
+              "line": 601,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -39175,7 +39290,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 258,
+          "line": 269,
           "column": 19,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Strength: Weak",
@@ -39184,7 +39299,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 628,
+          "line": 639,
           "column": 21,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Strength: Weak",
@@ -39199,13 +39314,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 258,
+              "line": 269,
               "column": 19,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 628,
+              "line": 639,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -39273,7 +39388,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 284,
+          "line": 295,
           "column": 17,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Password is invalid!",
@@ -39282,7 +39397,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 654,
+          "line": 665,
           "column": 19,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Password is invalid!",
@@ -39297,13 +39412,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 284,
+              "line": 295,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 654,
+              "line": 665,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -39430,7 +39545,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 157,
+          "line": 168,
           "column": 15,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "A system error occurred while changing the password. Please try again later.",
@@ -39445,7 +39560,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 157,
+              "line": 168,
               "column": 15,
               "kind": "formatMessage"
             }
@@ -39513,7 +39628,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 131,
+          "line": 142,
           "column": 17,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Password changed successfully!",
@@ -39528,7 +39643,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 131,
+              "line": 142,
               "column": 17,
               "kind": "formatMessage"
             }
@@ -39596,7 +39711,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 314,
+          "line": 325,
           "column": 13,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Confirm New Password",
@@ -39611,7 +39726,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 314,
+              "line": 325,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -39679,7 +39794,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 175,
+          "line": 186,
           "column": 13,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Current Password",
@@ -39688,7 +39803,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 575,
+          "line": 586,
           "column": 15,
           "symbol": "renderGenerateAPIKey",
           "defaultMessage": "Current Password",
@@ -39703,13 +39818,13 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 175,
+              "line": 186,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 575,
+              "line": 586,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -39777,7 +39892,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 181,
+          "line": 192,
           "column": 13,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "Please enter your current account password to verify your identity.",
@@ -39792,7 +39907,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 181,
+              "line": 192,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -39860,7 +39975,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 211,
+          "line": 222,
           "column": 13,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "New Password",
@@ -39875,7 +39990,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 211,
+              "line": 222,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -40002,7 +40117,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 336,
+          "line": 347,
           "column": 21,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "The two passwords that you entered do not match!",
@@ -40017,7 +40132,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 336,
+              "line": 347,
               "column": 21,
               "kind": "formatMessage"
             }
@@ -40085,7 +40200,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 83,
+          "line": 94,
           "column": 18,
           "symbol": "renderBaseForm",
           "defaultMessage": "Email",
@@ -40109,7 +40224,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 83,
+              "line": 94,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -40183,7 +40298,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 95,
+          "line": 106,
           "column": 18,
           "symbol": "renderBaseForm",
           "defaultMessage": "Nickname",
@@ -40207,7 +40322,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 95,
+              "line": 106,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -40281,7 +40396,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 98,
+          "line": 109,
           "column": 13,
           "symbol": "renderBaseForm",
           "defaultMessage": "The name you prefer to be called",
@@ -40296,7 +40411,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 98,
+              "line": 109,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -40364,7 +40479,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 89,
+          "line": 100,
           "column": 18,
           "symbol": "renderBaseForm",
           "defaultMessage": "Role",
@@ -40379,7 +40494,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 89,
+              "line": 100,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -40849,7 +40964,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 72,
+          "line": 83,
           "column": 15,
           "symbol": "renderBaseForm",
           "defaultMessage": "An error occurred while updating the profile.",
@@ -40864,7 +40979,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 72,
+              "line": 83,
               "column": 15,
               "kind": "formatMessage"
             }
@@ -40932,7 +41047,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 139,
+          "line": 150,
           "column": 19,
           "symbol": "renderChangePasswordForm",
           "defaultMessage": "User not found",
@@ -40947,7 +41062,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 139,
+              "line": 150,
               "column": 19,
               "kind": "formatMessage"
             }
@@ -41663,7 +41778,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 563,
+          "line": 571,
           "column": 15,
           "symbol": "ContactSelectDrawer",
           "defaultMessage": "Cancel",
@@ -41690,7 +41805,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 613,
+          "line": 621,
           "column": 15,
           "symbol": "FlowpropertiesSelectDrawer",
           "defaultMessage": "Cancel",
@@ -41735,7 +41850,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 666,
+          "line": 674,
           "column": 15,
           "symbol": "FlowsSelectDrawer",
           "defaultMessage": "Cancel",
@@ -41771,7 +41886,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 102,
+          "line": 103,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Cancel",
@@ -41888,7 +42003,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 556,
+          "line": 564,
           "column": 15,
           "symbol": "SourceSelectDrawer",
           "defaultMessage": "Cancel",
@@ -41915,7 +42030,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 552,
+          "line": 560,
           "column": 15,
           "symbol": "UnitgroupsSelectDrawer",
           "defaultMessage": "Cancel",
@@ -41972,7 +42087,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/drawer.tsx",
-              "line": 563,
+              "line": 571,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -41990,7 +42105,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-              "line": 613,
+              "line": 621,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42020,7 +42135,7 @@
             },
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 666,
+              "line": 674,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42044,7 +42159,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 102,
+              "line": 103,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42122,7 +42237,7 @@
             },
             {
               "path": "src/pages/Sources/Components/select/drawer.tsx",
-              "line": 556,
+              "line": 564,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42140,7 +42255,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-              "line": 552,
+              "line": 560,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -42822,7 +42937,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 274,
+          "line": 286,
           "column": 15,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Clear",
@@ -42831,7 +42946,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 290,
+          "line": 302,
           "column": 15,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Clear",
@@ -42840,7 +42955,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 255,
+          "line": 267,
           "column": 15,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Clear",
@@ -42849,7 +42964,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 319,
+          "line": 331,
           "column": 15,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Clear",
@@ -42858,7 +42973,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 279,
+          "line": 291,
           "column": 15,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Clear",
@@ -42873,31 +42988,31 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 274,
+              "line": 286,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 290,
+              "line": 302,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 255,
+              "line": 267,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 319,
+              "line": 331,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 279,
+              "line": 291,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -47743,7 +47858,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1935,
+          "line": 1937,
           "column": 13,
           "symbol": "ProcessView",
           "defaultMessage": "Process information",
@@ -47764,7 +47879,7 @@
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1935,
+              "line": 1937,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -48064,7 +48179,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1953,
+          "line": 1955,
           "column": 18,
           "symbol": "ProcessView",
           "defaultMessage": "Model Results",
@@ -48103,7 +48218,7 @@
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1953,
+              "line": 1955,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -49112,7 +49227,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 234,
+          "line": 246,
           "column": 27,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Reselect",
@@ -49121,7 +49236,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 254,
+          "line": 266,
           "column": 27,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Reselect",
@@ -49130,7 +49245,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 219,
+          "line": 231,
           "column": 27,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Reselect",
@@ -49139,7 +49254,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 279,
+          "line": 291,
           "column": 27,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Reselect",
@@ -49148,7 +49263,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 243,
+          "line": 255,
           "column": 27,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Reselect",
@@ -49163,31 +49278,31 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 234,
+              "line": 246,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 254,
+              "line": 266,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 219,
+              "line": 231,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 279,
+              "line": 291,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 243,
+              "line": 255,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -49517,7 +49632,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 110,
+          "line": 111,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Save",
@@ -49712,7 +49827,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 110,
+              "line": 111,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50007,7 +50122,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 529,
+          "line": 537,
           "column": 27,
           "symbol": "ContactSelectDrawer",
           "defaultMessage": "Select",
@@ -50016,7 +50131,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 536,
+          "line": 544,
           "column": 26,
           "symbol": "ContactSelectDrawer",
           "defaultMessage": "Select",
@@ -50025,7 +50140,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 580,
+          "line": 588,
           "column": 25,
           "symbol": "FlowpropertiesSelectDrawer",
           "defaultMessage": "Select",
@@ -50034,7 +50149,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 585,
+          "line": 593,
           "column": 26,
           "symbol": "FlowpropertiesSelectDrawer",
           "defaultMessage": "Select",
@@ -50043,7 +50158,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 635,
+          "line": 643,
           "column": 27,
           "symbol": "FlowsSelectDrawer",
           "defaultMessage": "Select",
@@ -50052,7 +50167,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 642,
+          "line": 650,
           "column": 26,
           "symbol": "FlowsSelectDrawer",
           "defaultMessage": "Select",
@@ -50061,7 +50176,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 525,
+          "line": 533,
           "column": 27,
           "symbol": "SourceSelectDrawer",
           "defaultMessage": "Select",
@@ -50070,7 +50185,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 532,
+          "line": 540,
           "column": 26,
           "symbol": "SourceSelectDrawer",
           "defaultMessage": "Select",
@@ -50079,7 +50194,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 517,
+          "line": 525,
           "column": 27,
           "symbol": "UnitgroupsSelectDrawer",
           "defaultMessage": "Select",
@@ -50088,7 +50203,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 524,
+          "line": 532,
           "column": 26,
           "symbol": "UnitgroupsSelectDrawer",
           "defaultMessage": "Select",
@@ -50103,61 +50218,61 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/drawer.tsx",
-              "line": 529,
+              "line": 537,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Contacts/Components/select/drawer.tsx",
-              "line": 536,
+              "line": 544,
               "column": 26,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-              "line": 580,
+              "line": 588,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-              "line": 585,
+              "line": 593,
               "column": 26,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 635,
+              "line": 643,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 642,
+              "line": 650,
               "column": 26,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/drawer.tsx",
+              "line": 533,
+              "column": 27,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/Sources/Components/select/drawer.tsx",
+              "line": 540,
+              "column": 26,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
               "line": 525,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
-              "path": "src/pages/Sources/Components/select/drawer.tsx",
+              "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
               "line": 532,
-              "column": 26,
-              "kind": "FormattedMessage"
-            },
-            {
-              "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-              "line": 517,
-              "column": 27,
-              "kind": "FormattedMessage"
-            },
-            {
-              "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-              "line": 524,
               "column": 26,
               "kind": "FormattedMessage"
             }
@@ -50234,7 +50349,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 575,
+          "line": 583,
           "column": 15,
           "symbol": "ContactSelectDrawer",
           "defaultMessage": "Submit",
@@ -50243,7 +50358,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 625,
+          "line": 633,
           "column": 15,
           "symbol": "FlowpropertiesSelectDrawer",
           "defaultMessage": "Submit",
@@ -50252,7 +50367,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 678,
+          "line": 686,
           "column": 15,
           "symbol": "FlowsSelectDrawer",
           "defaultMessage": "Submit",
@@ -50315,7 +50430,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 568,
+          "line": 576,
           "column": 15,
           "symbol": "SourceSelectDrawer",
           "defaultMessage": "Submit",
@@ -50324,7 +50439,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 564,
+          "line": 572,
           "column": 15,
           "symbol": "UnitgroupsSelectDrawer",
           "defaultMessage": "Submit",
@@ -50345,19 +50460,19 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/drawer.tsx",
-              "line": 575,
+              "line": 583,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-              "line": 625,
+              "line": 633,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 678,
+              "line": 686,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50399,13 +50514,13 @@
             },
             {
               "path": "src/pages/Sources/Components/select/drawer.tsx",
-              "line": 568,
+              "line": 576,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-              "line": 564,
+              "line": 572,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -50672,7 +50787,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 245,
+          "line": 257,
           "column": 15,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Update Reference",
@@ -50690,7 +50805,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 265,
+          "line": 277,
           "column": 15,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Update Reference",
@@ -50708,7 +50823,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 231,
+          "line": 243,
           "column": 15,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Update Reference",
@@ -50753,7 +50868,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 290,
+          "line": 302,
           "column": 15,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Update Reference",
@@ -50771,7 +50886,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 254,
+          "line": 266,
           "column": 15,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Update Reference",
@@ -50792,7 +50907,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 245,
+              "line": 257,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50804,7 +50919,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 265,
+              "line": 277,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50816,7 +50931,7 @@
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 231,
+              "line": 243,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50846,7 +50961,7 @@
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 290,
+              "line": 302,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -50858,7 +50973,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 254,
+              "line": 266,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -51117,7 +51232,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1966,
+          "line": 1968,
           "column": 25,
           "symbol": "ProcessView",
           "defaultMessage": "View",
@@ -51126,7 +51241,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1978,
+          "line": 1980,
           "column": 30,
           "symbol": "ProcessView",
           "defaultMessage": "View",
@@ -51135,7 +51250,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1982,
+          "line": 1984,
           "column": 30,
           "symbol": "ProcessView",
           "defaultMessage": "View",
@@ -51144,7 +51259,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1987,
+          "line": 1989,
           "column": 11,
           "symbol": "ProcessView",
           "defaultMessage": "View",
@@ -51303,25 +51418,25 @@
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1966,
+              "line": 1968,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1978,
+              "line": 1980,
               "column": 30,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1982,
+              "line": 1984,
               "column": 30,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1987,
+              "line": 1989,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -53643,7 +53758,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 543,
+          "line": 551,
           "column": 11,
           "symbol": "ContactSelectDrawer",
           "defaultMessage": "Select Contact",
@@ -53658,7 +53773,7 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/drawer.tsx",
-              "line": 543,
+              "line": 551,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -54598,7 +54713,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 200,
+          "line": 205,
           "column": 13,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Reference contact data set identifier",
@@ -54619,7 +54734,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 200,
+              "line": 205,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -55230,7 +55345,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 300,
+          "line": 312,
           "column": 9,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Short description",
@@ -55248,7 +55363,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 345,
+          "line": 357,
           "column": 9,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Short description",
@@ -55269,7 +55384,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 300,
+              "line": 312,
               "column": 9,
               "kind": "FormattedMessage"
             },
@@ -55281,7 +55396,7 @@
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 345,
+              "line": 357,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -56118,7 +56233,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 281,
+          "line": 293,
           "column": 16,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Type",
@@ -56127,7 +56242,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 326,
+          "line": 338,
           "column": 16,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Type",
@@ -56142,13 +56257,13 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 281,
+              "line": 293,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 326,
+              "line": 338,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -56216,7 +56331,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 288,
+          "line": 300,
           "column": 16,
           "symbol": "ContactSelectForm",
           "defaultMessage": "URI",
@@ -56225,7 +56340,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 333,
+          "line": 345,
           "column": 16,
           "symbol": "SourceSelectForm",
           "defaultMessage": "URI",
@@ -56240,13 +56355,13 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 288,
+              "line": 300,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 333,
+              "line": 345,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -56934,7 +57049,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 294,
+          "line": 306,
           "column": 16,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Version",
@@ -56952,7 +57067,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 339,
+          "line": 351,
           "column": 16,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Version",
@@ -56961,7 +57076,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 300,
+          "line": 312,
           "column": 16,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Version",
@@ -56982,7 +57097,7 @@
             },
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 294,
+              "line": 306,
               "column": 16,
               "kind": "FormattedMessage"
             },
@@ -56994,13 +57109,13 @@
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 339,
+              "line": 351,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 300,
+              "line": 312,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -77424,7 +77539,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 648,
+          "line": 656,
           "column": 11,
           "symbol": "FlowsSelectDrawer",
           "defaultMessage": "Select Flow",
@@ -77448,7 +77563,7 @@
           "locations": [
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 648,
+              "line": 656,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -78251,7 +78366,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 84,
+          "line": 85,
           "column": 11,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "View exchange relation",
@@ -78260,7 +78375,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 73,
+          "line": 74,
           "column": 11,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "View exchange relation",
@@ -78275,13 +78390,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 84,
+              "line": 85,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 73,
+              "line": 74,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -78800,7 +78915,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 180,
+          "line": 181,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow",
@@ -78809,7 +78924,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 148,
+          "line": 149,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow",
@@ -78818,7 +78933,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 140,
+          "line": 141,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow",
@@ -78833,19 +78948,19 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 180,
+              "line": 181,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 148,
+              "line": 149,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 140,
+              "line": 141,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -78996,7 +79111,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 101,
+          "line": 102,
           "column": 17,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Source process output flow",
@@ -79014,7 +79129,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 90,
+          "line": 91,
           "column": 17,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Source process output flow",
@@ -79029,7 +79144,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 101,
+              "line": 102,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -79041,7 +79156,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 90,
+              "line": 91,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -79109,7 +79224,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 249,
+          "line": 250,
           "column": 17,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Target input flow name",
@@ -79127,7 +79242,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 238,
+          "line": 239,
           "column": 17,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Target input flow name",
@@ -79142,7 +79257,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 249,
+              "line": 250,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -79154,7 +79269,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 238,
+              "line": 239,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -84933,7 +85048,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 223,
+          "line": 228,
           "column": 13,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Reference to flow property data set identifier",
@@ -84954,7 +85069,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 223,
+              "line": 228,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -85340,7 +85455,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 318,
+          "line": 330,
           "column": 9,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Short description",
@@ -85361,7 +85476,7 @@
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 318,
+              "line": 330,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -85429,7 +85544,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 297,
+          "line": 309,
           "column": 16,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Type",
@@ -85444,7 +85559,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 297,
+              "line": 309,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -86025,7 +86140,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 304,
+          "line": 316,
           "column": 16,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "URI",
@@ -86040,7 +86155,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 304,
+              "line": 316,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -86108,7 +86223,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 311,
+          "line": 323,
           "column": 11,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Version",
@@ -86123,7 +86238,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 311,
+              "line": 323,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -88626,7 +88741,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 592,
+          "line": 600,
           "column": 11,
           "symbol": "FlowpropertiesSelectDrawer",
           "defaultMessage": "Select Flow property",
@@ -88641,7 +88756,7 @@
           "locations": [
             {
               "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-              "line": 592,
+              "line": 600,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -107483,6 +107598,15 @@
         },
         {
           "kind": "formatMessage",
+          "path": "src/components/RightContent/index.tsx",
+          "line": 66,
+          "column": 17,
+          "symbol": "label",
+          "defaultMessage": "Select a language",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
           "path": "src/pages/User/Login/Components/LoginTopActions.tsx",
           "line": 118,
           "column": 23,
@@ -107502,6 +107626,12 @@
               "line": 227,
               "column": 29,
               "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/components/RightContent/index.tsx",
+              "line": 66,
+              "column": 17,
+              "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/Components/LoginTopActions.tsx",
@@ -107573,7 +107703,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/select/form.tsx",
-          "line": 323,
+          "line": 335,
           "column": 38,
           "symbol": "ContactSelectForm",
           "defaultMessage": "Text",
@@ -107582,7 +107712,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/select/form.tsx",
-          "line": 348,
+          "line": 360,
           "column": 38,
           "symbol": "FlowpropertiesSelectForm",
           "defaultMessage": "Text",
@@ -107591,7 +107721,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 309,
+          "line": 321,
           "column": 38,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Text",
@@ -107600,7 +107730,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 368,
+          "line": 380,
           "column": 38,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Text",
@@ -107609,7 +107739,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 333,
+          "line": 345,
           "column": 38,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Text",
@@ -107618,7 +107748,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 385,
+          "line": 397,
           "column": 40,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Text",
@@ -107651,37 +107781,37 @@
           "locations": [
             {
               "path": "src/pages/Contacts/Components/select/form.tsx",
-              "line": 323,
+              "line": 335,
               "column": 38,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flowproperties/Components/select/form.tsx",
-              "line": 348,
+              "line": 360,
               "column": 38,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 309,
+              "line": 321,
               "column": 38,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 368,
+              "line": 380,
               "column": 38,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 333,
+              "line": 345,
               "column": 38,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 385,
+              "line": 397,
               "column": 40,
               "kind": "formatMessage"
             },
@@ -111343,7 +111473,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 289,
+          "line": 295,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "General comment",
@@ -111361,7 +111491,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 257,
+          "line": 263,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "General comment",
@@ -111379,7 +111509,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 251,
+          "line": 257,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "General comment",
@@ -111406,7 +111536,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 289,
+              "line": 295,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -111418,7 +111548,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 257,
+              "line": 263,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -111430,7 +111560,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 251,
+              "line": 257,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -111976,7 +112106,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 282,
+          "line": 288,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Name",
@@ -111994,7 +112124,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 250,
+          "line": 256,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Name",
@@ -112021,7 +112151,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 244,
+          "line": 250,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Name",
@@ -112048,7 +112178,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 282,
+              "line": 288,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -112060,7 +112190,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 250,
+              "line": 256,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -112078,7 +112208,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 244,
+              "line": 250,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -119966,7 +120096,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 157,
+          "line": 158,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Original amount",
@@ -119975,7 +120105,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 115,
+          "line": 117,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Original amount",
@@ -119984,7 +120114,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 107,
+          "line": 109,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Original amount",
@@ -119999,19 +120129,19 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 157,
+              "line": 158,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 115,
+              "line": 117,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 107,
+              "line": 109,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -120079,7 +120209,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 279,
+          "line": 285,
           "column": 20,
           "symbol": "TargetAmount",
           "defaultMessage": "Ref node",
@@ -120088,7 +120218,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 247,
+          "line": 253,
           "column": 18,
           "symbol": "TargetAmount",
           "defaultMessage": "Ref node",
@@ -120097,7 +120227,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 241,
+          "line": 247,
           "column": 18,
           "symbol": "TargetAmount",
           "defaultMessage": "Ref node",
@@ -120112,19 +120242,19 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 279,
+              "line": 285,
               "column": 20,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 247,
+              "line": 253,
               "column": 18,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 241,
+              "line": 247,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -120192,7 +120322,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 168,
+          "line": 169,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Scaling factor",
@@ -120201,7 +120331,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 134,
+          "line": 136,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Scaling factor",
@@ -120210,7 +120340,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 126,
+          "line": 128,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Scaling factor",
@@ -120225,19 +120355,19 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 168,
+              "line": 169,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 134,
+              "line": 136,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 126,
+              "line": 128,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -120305,7 +120435,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 78,
+          "line": 79,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120314,7 +120444,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 94,
+          "line": 95,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120323,7 +120453,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 146,
+          "line": 147,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120332,7 +120462,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 62,
+          "line": 63,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120341,7 +120471,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 78,
+          "line": 79,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120350,7 +120480,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 96,
+          "line": 98,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120359,7 +120489,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 54,
+          "line": 55,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120368,7 +120498,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 70,
+          "line": 71,
           "column": 11,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120377,7 +120507,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 88,
+          "line": 90,
           "column": 17,
           "symbol": "TargetAmount",
           "defaultMessage": "Target amount",
@@ -120392,55 +120522,55 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 78,
+              "line": 79,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 94,
+              "line": 95,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 146,
+              "line": 147,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 62,
+              "line": 63,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 78,
+              "line": 79,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 96,
+              "line": 98,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 54,
+              "line": 55,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 70,
+              "line": 71,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 88,
+              "line": 90,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -129324,7 +129454,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 287,
+          "line": 289,
           "column": 34,
           "symbol": "PasswordSet",
           "defaultMessage": "Confirm New Password",
@@ -129339,7 +129469,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 287,
+              "line": 289,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -129407,7 +129537,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 489,
+          "line": 491,
           "column": 34,
           "symbol": "Login",
           "defaultMessage": "Confirm Password",
@@ -129422,7 +129552,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 489,
+              "line": 491,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -129490,7 +129620,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 497,
+          "line": 499,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Please confirm your password!",
@@ -129499,7 +129629,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 295,
+          "line": 297,
           "column": 27,
           "symbol": "PasswordSet",
           "defaultMessage": "Please confirm your password!",
@@ -129514,13 +129644,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 497,
+              "line": 499,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 295,
+              "line": 297,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -129647,7 +129777,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 299,
+          "line": 301,
           "column": 34,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -129656,7 +129786,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 377,
+          "line": 379,
           "column": 34,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -129665,7 +129795,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 175,
+          "line": 177,
           "column": 32,
           "symbol": "PasswordForgot",
           "defaultMessage": "Email",
@@ -129674,7 +129804,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 194,
+          "line": 196,
           "column": 34,
           "symbol": "PasswordSet",
           "defaultMessage": "Email",
@@ -129689,25 +129819,25 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 299,
+              "line": 301,
               "column": 34,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 377,
+              "line": 379,
               "column": 34,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 175,
+              "line": 177,
               "column": 32,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 194,
+              "line": 196,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -129775,7 +129905,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 316,
+          "line": 318,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -129784,7 +129914,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 394,
+          "line": 396,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -129793,7 +129923,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 192,
+          "line": 194,
           "column": 25,
           "symbol": "PasswordForgot",
           "defaultMessage": "Please input your email!",
@@ -129808,19 +129938,19 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 316,
+              "line": 318,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 394,
+              "line": 396,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 192,
+              "line": 194,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -129947,7 +130077,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 150,
+          "line": 152,
           "column": 33,
           "symbol": "PasswordForgot",
           "defaultMessage": "Send Verify Email",
@@ -129962,7 +130092,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 150,
+              "line": 152,
               "column": 33,
               "kind": "formatMessage"
             }
@@ -130030,7 +130160,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 307,
+          "line": 309,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -130039,7 +130169,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 385,
+          "line": 387,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -130048,7 +130178,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 183,
+          "line": 185,
           "column": 25,
           "symbol": "PasswordForgot",
           "defaultMessage": "The email format is incorrect!",
@@ -130063,19 +130193,19 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 307,
+              "line": 309,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 385,
+              "line": 387,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 183,
+              "line": 185,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -130143,7 +130273,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 128,
+          "line": 129,
           "column": 42,
           "symbol": "defaultLoginFailureMessage",
           "defaultMessage": "Login failed, please try again!",
@@ -130158,7 +130288,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 128,
+              "line": 129,
               "column": 42,
               "kind": "formatMessage"
             }
@@ -130226,7 +130356,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 361,
+          "line": 363,
           "column": 23,
           "symbol": "Login",
           "defaultMessage": "Forgot password?",
@@ -130241,7 +130371,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 361,
+              "line": 363,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -130309,7 +130439,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 260,
+          "line": 262,
           "column": 28,
           "symbol": "Login",
           "defaultMessage": "Login",
@@ -130324,7 +130454,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 260,
+              "line": 262,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -130451,7 +130581,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 252,
+          "line": 254,
           "column": 34,
           "symbol": "PasswordSet",
           "defaultMessage": "New Password",
@@ -130466,7 +130596,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 252,
+              "line": 254,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -130534,7 +130664,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 206,
+          "line": 208,
           "column": 24,
           "symbol": "PasswordForgot",
           "defaultMessage": "Back to Login",
@@ -130549,7 +130679,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 206,
+              "line": 208,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -130617,7 +130747,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 510,
+          "line": 512,
           "column": 31,
           "symbol": "validator",
           "defaultMessage": "The two passwords do not match!",
@@ -130626,7 +130756,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 308,
+          "line": 310,
           "column": 31,
           "symbol": "validator",
           "defaultMessage": "The two passwords do not match!",
@@ -130641,13 +130771,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 510,
+              "line": 512,
               "column": 31,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 308,
+              "line": 310,
               "column": 31,
               "kind": "formatMessage"
             }
@@ -130715,7 +130845,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 63,
+          "line": 64,
           "column": 18,
           "symbol": "handleSubmit",
           "defaultMessage": "The email was not sent successfully, please try again!",
@@ -130724,7 +130854,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 73,
+          "line": 74,
           "column": 16,
           "symbol": "handleSubmit",
           "defaultMessage": "The email was not sent successfully, please try again!",
@@ -130739,13 +130869,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 63,
+              "line": 64,
               "column": 18,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 73,
+              "line": 74,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -130813,7 +130943,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 54,
+          "line": 55,
           "column": 18,
           "symbol": "handleSubmit",
           "defaultMessage": "Validation email was sent successfully! Please follow the email link to reset your password.",
@@ -130828,7 +130958,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 54,
+              "line": 55,
               "column": 18,
               "kind": "formatMessage"
             }
@@ -130896,7 +131026,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 331,
+          "line": 333,
           "column": 34,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -130905,7 +131035,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 454,
+          "line": 456,
           "column": 34,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -130920,13 +131050,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 331,
+              "line": 333,
               "column": 34,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 454,
+              "line": 456,
               "column": 34,
               "kind": "formatMessage"
             }
@@ -130994,7 +131124,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 339,
+          "line": 341,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -131003,7 +131133,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 462,
+          "line": 464,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -131012,7 +131142,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 260,
+          "line": 262,
           "column": 27,
           "symbol": "PasswordSet",
           "defaultMessage": "Please input your password!",
@@ -131027,19 +131157,19 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 339,
+              "line": 341,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 462,
+              "line": 464,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 260,
+              "line": 262,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -131107,7 +131237,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 67,
+          "line": 68,
           "column": 42,
           "symbol": "defaultResetFailureMessage",
           "defaultMessage": "Password reset failed, please try again.",
@@ -131122,7 +131252,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 67,
+              "line": 68,
               "column": 42,
               "kind": "formatMessage"
             }
@@ -131190,7 +131320,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 53,
+          "line": 54,
           "column": 44,
           "symbol": "defaultResetSuccessMessage",
           "defaultMessage": "Password reset successfully!",
@@ -131205,7 +131335,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 53,
+              "line": 54,
               "column": 44,
               "kind": "formatMessage"
             }
@@ -131273,7 +131403,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 427,
+          "line": 429,
           "column": 31,
           "symbol": "Login",
           "defaultMessage": "Strength: Medium",
@@ -131282,7 +131412,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 225,
+          "line": 227,
           "column": 31,
           "symbol": "PasswordSet",
           "defaultMessage": "Strength: Medium",
@@ -131297,13 +131427,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 427,
+              "line": 429,
               "column": 31,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 225,
+              "line": 227,
               "column": 31,
               "kind": "FormattedMessage"
             }
@@ -131371,7 +131501,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 437,
+          "line": 439,
           "column": 31,
           "symbol": "Login",
           "defaultMessage": "Strength: Strong",
@@ -131380,7 +131510,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 235,
+          "line": 237,
           "column": 31,
           "symbol": "PasswordSet",
           "defaultMessage": "Strength: Strong",
@@ -131395,13 +131525,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 437,
+              "line": 439,
               "column": 31,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 235,
+              "line": 237,
               "column": 31,
               "kind": "FormattedMessage"
             }
@@ -131469,7 +131599,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 408,
+          "line": 410,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -131478,7 +131608,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 206,
+          "line": 208,
           "column": 25,
           "symbol": "PasswordSet",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -131493,13 +131623,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 408,
+              "line": 410,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 206,
+              "line": 208,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -131567,7 +131697,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 446,
+          "line": 448,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Strength: Weak",
@@ -131576,7 +131706,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 244,
+          "line": 246,
           "column": 29,
           "symbol": "PasswordSet",
           "defaultMessage": "Strength: Weak",
@@ -131591,13 +131721,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 446,
+              "line": 448,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 244,
+              "line": 246,
               "column": 29,
               "kind": "FormattedMessage"
             }
@@ -131665,7 +131795,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 472,
+          "line": 474,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Password is invalid!",
@@ -131674,7 +131804,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 270,
+          "line": 272,
           "column": 27,
           "symbol": "PasswordSet",
           "defaultMessage": "Password is invalid!",
@@ -131689,13 +131819,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 472,
+              "line": 474,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 270,
+              "line": 272,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -131763,7 +131893,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 162,
+          "line": 164,
           "column": 30,
           "symbol": "PasswordForgot",
           "defaultMessage": "Account",
@@ -131778,7 +131908,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_forgot.tsx",
-              "line": 162,
+              "line": 164,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -131846,7 +131976,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 276,
+          "line": 278,
           "column": 28,
           "symbol": "Login",
           "defaultMessage": "Incorrect username/password",
@@ -131861,7 +131991,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 276,
+              "line": 278,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -131929,7 +132059,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 144,
+          "line": 145,
           "column": 22,
           "symbol": "PasswordSet",
           "defaultMessage": "Request a new reset link",
@@ -131944,7 +132074,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 144,
+              "line": 145,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -132012,7 +132142,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 137,
+          "line": 138,
           "column": 22,
           "symbol": "PasswordSet",
           "defaultMessage": "This password reset link is invalid or has expired. Request a new link.",
@@ -132027,7 +132157,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 137,
+              "line": 138,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -132095,7 +132225,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 169,
+          "line": 171,
           "column": 35,
           "symbol": "PasswordSet",
           "defaultMessage": "Submit",
@@ -132110,7 +132240,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 169,
+              "line": 171,
               "column": 35,
               "kind": "formatMessage"
             }
@@ -132178,7 +132308,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 181,
+          "line": 183,
           "column": 32,
           "symbol": "PasswordSet",
           "defaultMessage": "Reset Password",
@@ -132193,7 +132323,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 181,
+              "line": 183,
               "column": 32,
               "kind": "formatMessage"
             }
@@ -132261,7 +132391,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 124,
+          "line": 125,
           "column": 16,
           "symbol": "PasswordSet",
           "defaultMessage": "Reset Password",
@@ -132276,7 +132406,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/password_reset.tsx",
-              "line": 124,
+              "line": 125,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -132698,7 +132828,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 176,
+          "line": 177,
           "column": 30,
           "symbol": "privacyPolicyLabel",
           "defaultMessage": null,
@@ -132767,7 +132897,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 176,
+          "line": 177,
           "column": 30,
           "symbol": "privacyPolicyLabel",
           "defaultMessage": null,
@@ -132836,7 +132966,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 552,
+          "line": 554,
           "column": 23,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -132851,7 +132981,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 552,
+              "line": 554,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -132919,7 +133049,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 267,
+          "line": 269,
           "column": 28,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -132934,7 +133064,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 267,
+              "line": 269,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -133061,7 +133191,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 353,
+          "line": 355,
           "column": 23,
           "symbol": "Login",
           "defaultMessage": "Remember me",
@@ -133076,7 +133206,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 353,
+              "line": 355,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -133144,7 +133274,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 284,
+          "line": 286,
           "column": 28,
           "symbol": "Login",
           "defaultMessage": "Validation email failed to send.",
@@ -133159,7 +133289,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 284,
+              "line": 286,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -133227,7 +133357,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 95,
+          "line": 96,
           "column": 47,
           "symbol": "defaultSignUpExistedMessage",
           "defaultMessage": "This email is already registered. Try Login, or Forgot Password?",
@@ -133242,7 +133372,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 95,
+              "line": 96,
               "column": 47,
               "kind": "formatMessage"
             }
@@ -133310,7 +133440,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 81,
+          "line": 82,
           "column": 47,
           "symbol": "defaultSignUpSuccessMessage",
           "defaultMessage": "Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.",
@@ -133325,7 +133455,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 81,
+              "line": 82,
               "column": 47,
               "kind": "formatMessage"
             }
@@ -133393,7 +133523,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 166,
+          "line": 167,
           "column": 5,
           "symbol": "loginSubtitle",
           "defaultMessage": null,
@@ -133402,7 +133532,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 37,
+          "line": 38,
           "column": 5,
           "symbol": "loginSubtitle",
           "defaultMessage": null,
@@ -133411,7 +133541,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 38,
+          "line": 39,
           "column": 5,
           "symbol": "loginSubtitle",
           "defaultMessage": null,
@@ -133480,7 +133610,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 114,
+          "line": 115,
           "column": 46,
           "symbol": "defaultLoginSuccessMessage",
           "defaultMessage": "Login successful!",
@@ -133495,7 +133625,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 114,
+              "line": 115,
               "column": 46,
               "kind": "formatMessage"
             }
@@ -133575,7 +133705,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 527,
+          "line": 529,
           "column": 21,
           "symbol": "Login",
           "defaultMessage": "By signing up, you agree to our {termsOfService} and {privacyPolicy}",
@@ -133593,7 +133723,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 527,
+              "line": 529,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -133661,7 +133791,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 170,
+          "line": 171,
           "column": 31,
           "symbol": "termsOfServiceLabel",
           "defaultMessage": null,
@@ -133730,7 +133860,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 170,
+          "line": 171,
           "column": 31,
           "symbol": "termsOfServiceLabel",
           "defaultMessage": null,
@@ -134039,7 +134169,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 192,
+          "line": 193,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -134048,7 +134178,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 163,
+          "line": 164,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -134057,7 +134187,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_forgot.tsx",
-          "line": 34,
+          "line": 35,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -134066,7 +134196,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/password_reset.tsx",
-          "line": 35,
+          "line": 36,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -134947,7 +135077,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1995,
+          "line": 1997,
           "column": 11,
           "symbol": "ProcessView",
           "defaultMessage": "View process",
@@ -134962,7 +135092,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1995,
+              "line": 1997,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -135734,7 +135864,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/Components/view.tsx",
-          "line": 1783,
+          "line": 1784,
           "column": 17,
           "symbol": "contentList",
           "defaultMessage": "Output",
@@ -135776,7 +135906,7 @@
             },
             {
               "path": "src/pages/Processes/Components/view.tsx",
-              "line": 1783,
+              "line": 1784,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -182467,7 +182597,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 276,
+          "line": 288,
           "column": 11,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Version",
@@ -182482,7 +182612,7 @@
           "locations": [
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 276,
+              "line": 288,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -187193,7 +187323,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 185,
+          "line": 187,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Data derivation type / status",
@@ -187202,7 +187332,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 333,
+          "line": 335,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Data derivation type / status",
@@ -187247,7 +187377,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 174,
+          "line": 176,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Data derivation type / status",
@@ -187256,7 +187386,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 322,
+          "line": 324,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Data derivation type / status",
@@ -187271,13 +187401,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 185,
+              "line": 187,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 333,
+              "line": 335,
               "column": 25,
               "kind": "FormattedMessage"
             },
@@ -187307,13 +187437,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 174,
+              "line": 176,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 322,
+              "line": 324,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -187509,7 +187639,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 117,
+          "line": 119,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Exchange direction",
@@ -187518,7 +187648,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 265,
+          "line": 267,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Exchange direction",
@@ -187563,7 +187693,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 106,
+          "line": 108,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Exchange direction",
@@ -187572,7 +187702,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 254,
+          "line": 256,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Exchange direction",
@@ -187587,13 +187717,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 117,
+              "line": 119,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 265,
+              "line": 267,
               "column": 25,
               "kind": "FormattedMessage"
             },
@@ -187623,13 +187753,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 106,
+              "line": 108,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 254,
+              "line": 256,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -187825,7 +187955,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 236,
+          "line": 237,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Functional unit, Production period, or Other parameter",
@@ -187834,7 +187964,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 384,
+          "line": 385,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Functional unit, Production period, or Other parameter",
@@ -187897,7 +188027,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 225,
+          "line": 226,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Functional unit, Production period, or Other parameter",
@@ -187906,7 +188036,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 373,
+          "line": 374,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Functional unit, Production period, or Other parameter",
@@ -187921,13 +188051,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 236,
+              "line": 237,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 384,
+              "line": 385,
               "column": 21,
               "kind": "FormattedMessage"
             },
@@ -187969,13 +188099,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 225,
+              "line": 226,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 373,
+              "line": 374,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -188043,7 +188173,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 197,
+          "line": 198,
           "column": 19,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Comment",
@@ -188052,7 +188182,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 345,
+          "line": 346,
           "column": 19,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Comment",
@@ -188115,7 +188245,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 186,
+          "line": 187,
           "column": 19,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Comment",
@@ -188124,7 +188254,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 334,
+          "line": 335,
           "column": 19,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Comment",
@@ -188139,13 +188269,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 197,
+              "line": 198,
               "column": 19,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 345,
+              "line": 346,
               "column": 19,
               "kind": "FormattedMessage"
             },
@@ -188187,13 +188317,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 186,
+              "line": 187,
               "column": 19,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 334,
+              "line": 335,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -188517,7 +188647,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 147,
+          "line": 149,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Mean amount",
@@ -188526,7 +188656,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 295,
+          "line": 297,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Mean amount",
@@ -188553,7 +188683,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 136,
+          "line": 138,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Mean amount",
@@ -188562,7 +188692,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 284,
+          "line": 286,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Mean amount",
@@ -188577,13 +188707,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 147,
+              "line": 149,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 295,
+              "line": 297,
               "column": 25,
               "kind": "FormattedMessage"
             },
@@ -188601,13 +188731,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 136,
+              "line": 138,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 284,
+              "line": 286,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -188702,7 +188832,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 207,
+          "line": 208,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Quantitative reference",
@@ -188711,7 +188841,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 355,
+          "line": 356,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Quantitative reference",
@@ -188756,7 +188886,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 196,
+          "line": 197,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Quantitative reference",
@@ -188765,7 +188895,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 344,
+          "line": 345,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Quantitative reference",
@@ -188798,13 +188928,13 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 207,
+              "line": 208,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 355,
+              "line": 356,
               "column": 21,
               "kind": "FormattedMessage"
             },
@@ -188834,13 +188964,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 196,
+              "line": 197,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 344,
+              "line": 345,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -188917,7 +189047,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 180,
+          "line": 185,
           "column": 13,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Reference flow dataset identifier",
@@ -188926,7 +189056,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 196,
+          "line": 203,
           "column": 23,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow dataset identifier",
@@ -188935,7 +189065,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 164,
+          "line": 171,
           "column": 21,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow dataset identifier",
@@ -188944,7 +189074,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 156,
+          "line": 163,
           "column": 21,
           "symbol": "TargetAmount",
           "defaultMessage": "Reference flow dataset identifier",
@@ -188965,25 +189095,25 @@
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 180,
+              "line": 185,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 196,
+              "line": 203,
               "column": 23,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 164,
+              "line": 171,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 156,
+              "line": 163,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -189254,7 +189384,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 130,
+          "line": 131,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Flow",
@@ -189263,7 +189393,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 278,
+          "line": 279,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Flow",
@@ -189308,7 +189438,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 119,
+          "line": 120,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Flow",
@@ -189317,7 +189447,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 267,
+          "line": 268,
           "column": 21,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Flow",
@@ -189332,13 +189462,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 130,
+              "line": 131,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 278,
+              "line": 279,
               "column": 21,
               "kind": "FormattedMessage"
             },
@@ -189368,13 +189498,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 119,
+              "line": 120,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 267,
+              "line": 268,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -189442,7 +189572,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 221,
+          "line": 223,
           "column": 27,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Reference flow(s)",
@@ -189451,7 +189581,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 369,
+          "line": 371,
           "column": 27,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Reference flow(s)",
@@ -189496,7 +189626,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 210,
+          "line": 212,
           "column": 27,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Reference flow(s)",
@@ -189505,7 +189635,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 358,
+          "line": 360,
           "column": 27,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Reference flow(s)",
@@ -189520,13 +189650,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 221,
+              "line": 223,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 369,
+              "line": 371,
               "column": 27,
               "kind": "FormattedMessage"
             },
@@ -189556,13 +189686,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 210,
+              "line": 212,
               "column": 27,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 358,
+              "line": 360,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -189758,7 +189888,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 166,
+          "line": 168,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Resulting amount",
@@ -189767,7 +189897,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 314,
+          "line": 316,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Resulting amount",
@@ -189794,7 +189924,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 155,
+          "line": 157,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Resulting amount",
@@ -189803,7 +189933,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-          "line": 303,
+          "line": 305,
           "column": 25,
           "symbol": "EdgeExchangeView",
           "defaultMessage": "Resulting amount",
@@ -189818,13 +189948,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 166,
+              "line": 168,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 314,
+              "line": 316,
               "column": 25,
               "kind": "FormattedMessage"
             },
@@ -189842,13 +189972,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 155,
+              "line": 157,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/view.tsx",
-              "line": 303,
+              "line": 305,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -190008,7 +190138,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 283,
+          "line": 295,
           "column": 9,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Short description",
@@ -190017,7 +190147,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 263,
+          "line": 269,
           "column": 15,
           "symbol": "TargetAmount",
           "defaultMessage": "Short description",
@@ -190026,7 +190156,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 231,
+          "line": 237,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Short description",
@@ -190035,7 +190165,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 223,
+          "line": 229,
           "column": 13,
           "symbol": "TargetAmount",
           "defaultMessage": "Short description",
@@ -190056,25 +190186,25 @@
             },
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 283,
+              "line": 295,
               "column": 9,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 263,
+              "line": 269,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 231,
+              "line": 237,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 223,
+              "line": 229,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -190142,7 +190272,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 262,
+          "line": 274,
           "column": 16,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "Type",
@@ -190151,7 +190281,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 225,
+          "line": 232,
           "column": 21,
           "symbol": "TargetAmount",
           "defaultMessage": "Type",
@@ -190160,7 +190290,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 193,
+          "line": 200,
           "column": 19,
           "symbol": "TargetAmount",
           "defaultMessage": "Type",
@@ -190169,7 +190299,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 185,
+          "line": 192,
           "column": 19,
           "symbol": "TargetAmount",
           "defaultMessage": "Type",
@@ -190184,25 +190314,25 @@
           "locations": [
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 262,
+              "line": 274,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 225,
+              "line": 232,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 193,
+              "line": 200,
               "column": 19,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 185,
+              "line": 192,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -190270,7 +190400,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/form.tsx",
-          "line": 269,
+          "line": 281,
           "column": 16,
           "symbol": "FlowsSelectForm",
           "defaultMessage": "URI",
@@ -190279,7 +190409,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 241,
+          "line": 248,
           "column": 21,
           "symbol": "TargetAmount",
           "defaultMessage": "URI",
@@ -190288,7 +190418,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 209,
+          "line": 216,
           "column": 19,
           "symbol": "TargetAmount",
           "defaultMessage": "URI",
@@ -190297,7 +190427,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 201,
+          "line": 208,
           "column": 19,
           "symbol": "TargetAmount",
           "defaultMessage": "URI",
@@ -190312,25 +190442,25 @@
           "locations": [
             {
               "path": "src/pages/Flows/Components/select/form.tsx",
-              "line": 269,
+              "line": 281,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 241,
+              "line": 248,
               "column": 21,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 209,
+              "line": 216,
               "column": 19,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 201,
+              "line": 208,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -224751,7 +224881,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 353,
+          "line": 355,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224760,7 +224890,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 404,
+          "line": 408,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224769,7 +224899,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Contacts/Components/select/drawer.tsx",
-          "line": 458,
+          "line": 464,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224796,7 +224926,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 351,
+          "line": 353,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224805,7 +224935,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 424,
+          "line": 428,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224814,7 +224944,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
-          "line": 497,
+          "line": 503,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224841,7 +224971,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 401,
+          "line": 403,
           "column": 23,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224850,7 +224980,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 485,
+          "line": 489,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224859,7 +224989,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 553,
+          "line": 559,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224967,7 +225097,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 352,
+          "line": 354,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224976,7 +225106,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 403,
+          "line": 407,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -224985,7 +225115,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 454,
+          "line": 460,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -225012,7 +225142,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 340,
+          "line": 342,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -225021,7 +225151,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 397,
+          "line": 401,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -225030,7 +225160,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 454,
+          "line": 460,
           "column": 26,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -225135,7 +225265,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 415,
+          "line": 417,
           "column": 17,
           "symbol": "databaseList",
           "defaultMessage": "AI Recommendation",
@@ -225258,7 +225388,7 @@
             },
             {
               "path": "src/pages/Flows/Components/select/drawer.tsx",
-              "line": 415,
+              "line": 417,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -225413,7 +225543,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Flows/Components/select/drawer.tsx",
-          "line": 400,
+          "line": 402,
           "column": 23,
           "symbol": "databaseList",
           "defaultMessage": null,
@@ -230265,7 +230395,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/drawer.tsx",
-          "line": 539,
+          "line": 547,
           "column": 11,
           "symbol": "SourceSelectDrawer",
           "defaultMessage": "Select Source",
@@ -230280,7 +230410,7 @@
           "locations": [
             {
               "path": "src/pages/Sources/Components/select/drawer.tsx",
-              "line": 539,
+              "line": 547,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -232121,7 +232251,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Sources/Components/select/form.tsx",
-          "line": 238,
+          "line": 243,
           "column": 13,
           "symbol": "SourceSelectForm",
           "defaultMessage": "Reference source data set identifier",
@@ -232148,7 +232278,7 @@
             },
             {
               "path": "src/pages/Sources/Components/select/form.tsx",
-              "line": 238,
+              "line": 243,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -241199,7 +241329,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 102,
+          "line": 133,
           "column": 23,
           "symbol": "toggleLabel",
           "defaultMessage": "Toggle dark mode",
@@ -241214,7 +241344,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/index.tsx",
-              "line": 102,
+              "line": 133,
               "column": 23,
               "kind": "formatMessage"
             }
@@ -242977,7 +243107,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-          "line": 531,
+          "line": 539,
           "column": 11,
           "symbol": "UnitgroupsSelectDrawer",
           "defaultMessage": "Select Unit groups",
@@ -242992,7 +243122,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/drawer.tsx",
-              "line": 531,
+              "line": 539,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -243700,7 +243830,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 366,
+          "line": 378,
           "column": 11,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Comment",
@@ -243751,7 +243881,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 366,
+              "line": 378,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -244175,7 +244305,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 360,
+          "line": 372,
           "column": 18,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Name of unit",
@@ -244208,7 +244338,7 @@
           "locations": [
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 360,
+              "line": 372,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -245442,7 +245572,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 208,
+          "line": 213,
           "column": 13,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Reference unit group data set identifier",
@@ -245463,7 +245593,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 208,
+              "line": 213,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -246628,7 +246758,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Unitgroups/Components/select/form.tsx",
-          "line": 353,
+          "line": 365,
           "column": 11,
           "symbol": "UnitgroupsSelectFrom",
           "defaultMessage": "Quantitative reference",
@@ -246694,7 +246824,7 @@
             },
             {
               "path": "src/pages/Unitgroups/Components/select/form.tsx",
-              "line": 353,
+              "line": 365,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -253291,7 +253421,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-          "line": 256,
+          "line": 263,
           "column": 26,
           "symbol": "TargetAmount",
           "defaultMessage": "Version",
@@ -253300,7 +253430,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 224,
+          "line": 231,
           "column": 24,
           "symbol": "TargetAmount",
           "defaultMessage": "Version",
@@ -253309,7 +253439,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-          "line": 216,
+          "line": 223,
           "column": 24,
           "symbol": "TargetAmount",
           "defaultMessage": "Version",
@@ -253324,19 +253454,19 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editTargetAmount.tsx",
-              "line": 256,
+              "line": 263,
               "column": 26,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 224,
+              "line": 231,
               "column": 24,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewTargetAmount.tsx",
-              "line": 216,
+              "line": 223,
               "column": 24,
               "kind": "FormattedMessage"
             }
