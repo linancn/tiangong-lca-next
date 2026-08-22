@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 7223f49378615e2bac46e86ac1d449db652a60b2
+lastReviewedCommit: 31b466640094d737e0bc2f62a456fb6ab790a1c4
 lastReviewedNote: 'Reviewed for Next Issue #924: the validation matrix now covers the exact React 19 / Ant Design 6 stack, App/theme contracts, real Form.List submission, semantic browser proof, and single-generation dependency scans.'
 related:
   - ../AGENTS.md

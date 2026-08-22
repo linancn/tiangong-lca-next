@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "9b395328b6d5cf1d91b43d400d35aa81755c30bfa9388d724e104eab715edcf1",
+    "auditedInputDigest": "6e85ecaf8dd4c1fcb4a0fe1c2008dc6bc509bd1ac13a637bacdefaa385c1e86a",
     "validatedMessageCount": 3208,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
     "catalogDigest": "a7934690a8abe6e2d5866a0542d6a0df3a9219136af620e7324431f1caf87cff",
-    "dossierDigest": "aabf8098ce5a7a7eedc5a46f8b12ab8986ea82e429ff102d8b08744290a54122",
+    "dossierDigest": "53a9bd78976b4c8f46ce8978f23d4f07c373621398a28045775d4a0ba0db335c",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "5bee4528e05c53d024ae2379da8fa3b92548d74939041176e0b91861f3fba972",
+    "routeEvidenceDigest": "30b6019754215802581aac891787b204c90dc88a0f60bbec1f452c66debaa541",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "17a6482556654636b754f8bfe3765ec88f012e72fe24aa2e864b322942d7483d",
         "highRiskMessageCount": 1439,
         "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
-        "dossierDigest": "aabf8098ce5a7a7eedc5a46f8b12ab8986ea82e429ff102d8b08744290a54122",
+        "dossierDigest": "53a9bd78976b4c8f46ce8978f23d4f07c373621398a28045775d4a0ba0db335c",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "59f633cfb57554f3805358ae277f527b36d44152ce948b53ed799c664ddb394d"
+  "validationDigest": "c224daaf6e4b10b90d977686b2c0f1a01aa2efc1447deb0b2927a3539483a4f4"
 }

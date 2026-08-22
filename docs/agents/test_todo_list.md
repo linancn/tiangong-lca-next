@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 7223f49378615e2bac46e86ac1d449db652a60b2
+lastReviewedCommit: 31b466640094d737e0bc2f62a456fb6ab790a1c4
 lastReviewedNote: 'Reviewed for Next Issue #924: native Ant Design 6 App, Form.List, fixture, dependency, and semantic-browser proof preserve full-closure maintenance mode and create no compatibility queue.'
 ---
 
