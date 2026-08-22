@@ -30,9 +30,43 @@ describe('pnpm package-manager contract', () => {
     expect(workspace).toMatch(/core-js:\s+false/u);
     expect(workspace).toMatch(/core-js-pure:\s+false/u);
     expect(workspace).toMatch(/es5-ext:\s+false/u);
+    expect(workspace).toContain("'@umijs/max>antd': 6.6.1");
+    expect(workspace).toContain("'@umijs/plugins>@ant-design/pro-components': 3.1.14-6");
+    expect(workspace).toContain("'@umijs/preset-umi>react': 19.2.8");
+    expect(workspace).toContain("'@umijs/preset-umi>react-dom': 19.2.8");
+    expect(workspace).toContain("'@umijs/server>react': 19.2.8");
+    expect(workspace).toContain("'@umijs/server>react-dom': 19.2.8");
     expect(workspace).not.toMatch(
       /set this to true or false|shamefullyHoist|dangerouslyAllowAllBuilds/u,
     );
+  });
+
+  it('pins one native React 19 and Ant Design 6 application stack', () => {
+    const packageJson = JSON.parse(read('package.json'));
+    const config = read('config/config.ts');
+    const lockfile = read('pnpm-lock.yaml');
+
+    expect(packageJson.dependencies).toMatchObject({
+      '@ant-design/icons': '6.3.2',
+      '@ant-design/pro-components': '3.1.14-6',
+      antd: '6.6.1',
+      react: '19.2.8',
+      'react-dom': '19.2.8',
+    });
+    expect(packageJson.devDependencies).toMatchObject({
+      '@types/react': '19.2.18',
+      '@types/react-dom': '19.2.4',
+      '@umijs/max': '4.7.7',
+      '@umijs/max-plugin-openapi': '2.0.3',
+      '@umijs/request-record': '1.1.4',
+    });
+    expect(packageJson.devDependencies).not.toHaveProperty('umi-presets-pro');
+    expect(config).toContain("plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record']");
+    expect(config).not.toContain('root-entry-name');
+    expect(config).not.toContain('umi-presets-pro');
+    expect(lockfile).not.toMatch(/(?:^|\W)antd@(?:4|5)\./mu);
+    expect(lockfile).not.toMatch(/@ant-design\/pro-components@2\./u);
+    expect(lockfile).not.toMatch(/(?:^|\W)react(?:-dom)?@18\./mu);
   });
 
   it('contains no npm, npx, or yarn executable in active package-manager entrypoints', () => {

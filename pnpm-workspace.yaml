@@ -1,12 +1,23 @@
 packages:
   - .
 
-# Keep pnpm's isolated linker. These narrowly expose only the legacy Umi/Ant Design
-# plugin dependencies that their current toolchain still resolves from the project root.
+# Keep pnpm's isolated linker. These narrowly expose only the Umi and Babel
+# plugin dependencies that their current toolchain resolves from the project root.
 publicHoistPattern:
   - '@ant-design/*'
   - '@babel/*'
   - umi
+
+# Umi 4.7.7's published dependency metadata still points at its fallback antd 4
+# and ProComponents 2 packages even though its runtime plugins support antd 6.
+# Pin the reviewed native stack so pnpm installs one application UI generation.
+overrides:
+  '@umijs/max>antd': 6.6.1
+  '@umijs/plugins>@ant-design/pro-components': 3.1.14-6
+  '@umijs/preset-umi>react': 19.2.8
+  '@umijs/preset-umi>react-dom': 19.2.8
+  '@umijs/server>react': 19.2.8
+  '@umijs/server>react-dom': 19.2.8
 
 # pnpm 11 requires every dependency lifecycle script to be decided explicitly.
 allowBuilds:
