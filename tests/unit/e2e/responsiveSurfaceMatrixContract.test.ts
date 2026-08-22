@@ -97,10 +97,7 @@ describe('responsive surface evidence contract', () => {
     expect(helperStart).toBeGreaterThan(-1);
     expect(helperEnd).toBeGreaterThan(helperStart);
     const helperSource = source.slice(helperStart, helperEnd);
-    const spinnerWait =
-      /await waitForLocatorCount\(\s*page,\s*page\s*[.]locator\('[.]ant-spin-fullscreen'\)/u.exec(
-        helperSource,
-      );
+    const spinnerWait = helperSource.indexOf(`page.locator('.tg-fullscreen-spin')`);
     const storedLocaleEarlyReturn = helperSource.indexOf(
       'if ((await readStoredAppLocale(page)) === locale)',
     );
@@ -121,8 +118,8 @@ describe('responsive surface evidence contract', () => {
       "await page.keyboard.press('Escape')",
       firstEscape + 1,
     );
-    expect(spinnerWait?.index).toBeGreaterThan(-1);
-    expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait!.index);
+    expect(spinnerWait).toBeGreaterThan(-1);
+    expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait);
     expect(programmaticTriggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
     expect(triggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
     expect(activeMenuScope).toBeGreaterThan(triggerClick);
@@ -147,14 +144,13 @@ describe('responsive surface evidence contract', () => {
     );
   });
 
-  it('scopes persisted authoring rows to an exact Ant Card class token', () => {
+  it('scopes persisted authoring rows to the project-owned synonyms card marker', () => {
     const source = readFileSync(
       path.resolve(process.cwd(), 'tests/e2e/i18n/process-persisted-authoring.spec.ts'),
       'utf8',
     );
-    expect(source).toContain(".locator('.ant-card-head-title')");
-    expect(source).toContain('.getByText(getLocaleMessage(locale,');
-    expect(source).toContain('contains(concat(" ", normalize-space(@class), " "), " ant-card ")');
-    expect(source).not.toContain('contains(@class, "ant-card")');
+    expect(source).toContain("drawer.getByTestId('process-synonyms-card')");
+    expect(source).toContain('card.getByText(');
+    expect(source).not.toContain('ant-card');
   });
 });

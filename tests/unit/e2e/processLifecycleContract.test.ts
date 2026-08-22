@@ -34,10 +34,11 @@ describe('process lifecycle semantic locator contract', () => {
     expect(helper).toContain('expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl)');
     expect(helper).toContain("page.locator('.tg-global-header-avatar-trigger')");
     expect(helper).toContain("page.locator('.tg-global-language-selector')");
-    expect(helper).toContain("page.locator('.ant-result-403')");
+    expect(helper).toContain("page.getByTestId('access-denied')");
     expect(helper).toContain("page.getByTestId('process-deep-link-state')");
     expect(helper).toContain("toHaveAttribute('data-route-mode', 'view', { timeout: 45_000 })");
-    expect(helper).toContain("page.locator('.ant-drawer-content:visible').filter({ has: state })");
+    expect(helper).toContain("page.locator('.tg-process-drawer:visible').filter({ has: state })");
+    expect(helper).toContain("toHaveAttribute('data-detail-ready', 'true'");
     expect(helper.match(/page[.]goto[(]/gu)).toHaveLength(1);
     expect(source).toContain('test.setTimeout(6 * 60_000);');
     expect(readyCall).toBeGreaterThan(helperEnd);
@@ -46,7 +47,7 @@ describe('process lifecycle semantic locator contract', () => {
 
   it('scopes localized content to the mounted View process drawer', () => {
     expect(source).toContain(
-      "const viewDrawer = page.locator('.ant-drawer-content:visible').filter({",
+      "const viewDrawer = page.locator('.tg-process-drawer:visible').filter({",
     );
     expect(source).toContain(
       "has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {",
@@ -62,7 +63,8 @@ describe('process lifecycle semantic locator contract', () => {
   it('proves reference labels in the drawer description row rather than the page table', () => {
     expect(source).toContain('const value = drawer.getByText(expectedValue, { exact: true });');
     expect(source).toContain("value.locator('xpath=ancestor::tr[1]')");
-    expect(source).toContain("row.locator('.ant-descriptions-item-content')");
+    expect(source).toContain('row.getByText(expectedValue, { exact: true })');
+    expect(source).not.toContain('ant-descriptions-item');
     expect(source).toContain('await expectDrawerDescriptionValue(\n      viewDrawer,');
   });
 });

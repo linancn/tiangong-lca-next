@@ -1015,6 +1015,7 @@ export const ProcessForm: FC<Props> = ({
           <Input />
         </Form.Item>
         <Card
+          data-testid='process-synonyms-card'
           size='small'
           title={
             <FormattedMessage

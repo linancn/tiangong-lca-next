@@ -67,6 +67,13 @@ const LocationTextItemForm: FC<Props> = ({
         rules={rules}
       >
         <Select
+          classNames={{
+            root: 'tg-location-reference-select',
+            popup: {
+              root: 'tg-location-reference-popup',
+              listItem: 'tg-location-reference-option',
+            },
+          }}
           showSearch={{
             filterOption: (input: string, option: any) =>
               (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),

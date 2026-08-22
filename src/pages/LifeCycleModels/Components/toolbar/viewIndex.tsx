@@ -722,7 +722,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       <Control
         items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
       />
-      <Spin spinning={spinning} fullscreen />
+      <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}
         node={ioPortSelectorNode as LifeCycleModelGraphNode}

@@ -119,6 +119,11 @@ const LifeCycleModelView: FC<Props> = ({
         </Button>
       ) : null}
       <Drawer
+        classNames={{
+          body: 'tg-lifecycle-model-drawer-body',
+          section: 'tg-lifecycle-model-drawer-section',
+          wrapper: 'tg-lifecycle-model-drawer-wrapper',
+        }}
         destroyOnHidden
         getContainer={() => document.body}
         title={
@@ -133,7 +138,7 @@ const LifeCycleModelView: FC<Props> = ({
         rootStyle={{ maxWidth: '100vw', overflow: 'hidden' }}
         styles={{
           body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
-          content: { minWidth: 0, overflow: 'hidden', width: '100%' },
+          section: { minWidth: 0, overflow: 'hidden', width: '100%' },
           wrapper: { maxWidth: '100vw', overflow: 'hidden', width: '100vw' },
         }}
       >

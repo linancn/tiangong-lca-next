@@ -73,8 +73,10 @@ describe('ResponsiveDataList helpers', () => {
       className: 'responsive-data-list-table',
       classNames: {
         body: { cell: 'responsive-data-list-body-cell' },
+        content: 'responsive-data-list-table-scroll',
         header: { cell: 'responsive-data-list-header-cell' },
         root: 'responsive-data-list-table-root',
+        section: 'responsive-data-list-table-section',
       },
       scroll: { x: 'max-content' },
       tableLayout: 'fixed',

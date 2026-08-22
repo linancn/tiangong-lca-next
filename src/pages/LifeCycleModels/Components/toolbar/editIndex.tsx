@@ -1939,7 +1939,7 @@ const ToolbarEdit: FC<Props> = ({
         }}
         canDuplicate={hasSelectedCells}
       />
-      <Spin spinning={spinning} fullscreen />
+      <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
       <IoPortSelect
         lang={lang}
         node={ioPortSelectorNode as LifeCycleModelGraphNode}

@@ -646,7 +646,7 @@ const ToolbarView: FC<Props> = ({
       <Control
         items={['zoomOut', 'zoomTo', 'zoomIn', 'zoomToFit', 'zoomToOrigin', 'autoLayoutLR']}
       />
-      <Spin spinning={spinning} fullscreen />
+      <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
       <IoPortView
         lang={lang}
         node={ioPortSelectorNode}

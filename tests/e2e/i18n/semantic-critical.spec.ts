@@ -14,7 +14,9 @@ const loginAssertion = findRouteAssertion('/user/login');
 async function openLanguageMenu(page: Page) {
   const languageControl = await waitForRenderedLoginControl(page);
   await languageControl.click();
-  await expect(page.locator('.ant-dropdown-menu')).toBeVisible();
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  return menu;
 }
 
 test('login locale selector is registry-complete in every browser', async ({ page }, testInfo) => {
@@ -22,15 +24,13 @@ test('login locale selector is registry-complete in every browser', async ({ pag
   await page.goto('/#/user/login?codex-e2e=locale-selector', { waitUntil: 'domcontentloaded' });
 
   for (const localeDefinition of LOCALE_REGISTRY) {
-    await openLanguageMenu(page);
+    const menu = await openLanguageMenu(page);
     for (const optionDefinition of LOCALE_REGISTRY) {
       await expect(
-        page.locator('.ant-dropdown-menu-item').filter({ hasText: optionDefinition.nativeLabel }),
+        menu.getByRole('menuitem').filter({ hasText: optionDefinition.nativeLabel }),
       ).toBeVisible();
     }
-    const target = page
-      .locator('.ant-dropdown-menu-item')
-      .filter({ hasText: localeDefinition.nativeLabel });
+    const target = menu.getByRole('menuitem').filter({ hasText: localeDefinition.nativeLabel });
     await target.click();
     await expect.poll(() => readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
     expect(new URL(page.url()).hash).toContain('codex-e2e=locale-selector');

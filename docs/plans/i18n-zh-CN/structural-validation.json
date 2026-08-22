@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "bdfaf311a91dce0aede5d33df1a1e442f01e2143cc250af16c5bf883081a1874",
+    "auditedInputDigest": "98d1a3afabdac15cc14beaff44b509f8d678ece8fb7dacf0c540c23df9030027",
     "validatedMessageCount": 3208,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
     "catalogDigest": "a7934690a8abe6e2d5866a0542d6a0df3a9219136af620e7324431f1caf87cff",
-    "dossierDigest": "1223f604fd097549424df49a3ea3f94e1726aed545a1d4128a2b7a23571b946e",
+    "dossierDigest": "c82ce14dce051cfb70b3bb62b28b5ba9e859f90b0f35d3c1c22a70b9a27c0e37",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "6b46760d1e0f2e027e5dfe4449c495c7300634d27b22294f7b92c86d7aeaf8f7",
+    "routeEvidenceDigest": "79fb59de29a716c60559ab280dc7b0c7192ec7dd20766131001d2495f1f92fed",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "17a6482556654636b754f8bfe3765ec88f012e72fe24aa2e864b322942d7483d",
         "highRiskMessageCount": 1439,
         "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981",
-        "dossierDigest": "1223f604fd097549424df49a3ea3f94e1726aed545a1d4128a2b7a23571b946e",
+        "dossierDigest": "c82ce14dce051cfb70b3bb62b28b5ba9e859f90b0f35d3c1c22a70b9a27c0e37",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "33d6eec23c66df6c40d120960597eaa8afba6ec5264303e98aa602853a059e13"
+  "validationDigest": "81aa3fe8629fcf0bc17026c2721b99ab036427bc6d3cedd3d9c263ed678f85b6"
 }

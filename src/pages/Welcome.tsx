@@ -72,6 +72,7 @@ type GuidePreparationKey =
 const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
 const WELCOME_MODAL_CLASS_NAMES = {
   body: 'tg-welcome-modal-body',
+  close: 'tg-welcome-modal-close',
   container: 'tg-welcome-modal-container',
 };
 
@@ -899,6 +900,10 @@ const Welcome: React.FC = () => {
                       }}
                     >
                       <Meta
+                        classNames={{
+                          description: 'tg-welcome-team-description',
+                          title: 'tg-welcome-team-title',
+                        }}
                         styles={{
                           title: {
                             minWidth: 0,

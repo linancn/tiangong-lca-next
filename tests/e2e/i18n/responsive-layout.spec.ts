@@ -249,7 +249,9 @@ test('Every registry locale keeps the team layout operable across responsive the
     const tableRoot = page.locator('.responsive-data-list-table').filter({ visible: true }).first();
     const table = tableRoot.getByRole('table').filter({ visible: true }).first();
     await expect(table).toBeVisible();
-    const horizontalScroller = tableRoot.locator('.ant-table-content').filter({ visible: true });
+    const horizontalScroller = tableRoot
+      .locator('.responsive-data-list-table-scroll')
+      .filter({ visible: true });
     await expect(horizontalScroller).toHaveCount(1);
     await expect
       .poll(() =>

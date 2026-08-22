@@ -455,15 +455,13 @@ async function surfaceColor(locator: Locator): Promise<string> {
   return locator.evaluate((element) => getComputedStyle(element).backgroundColor);
 }
 
-async function closeVisiblePortal(page: Page, portalClassName: string): Promise<void> {
-  const portal = page.locator(portalClassName).filter({ visible: true });
-  await portal
-    .locator('.ant-modal-close, .ant-drawer-close')
-    .first()
-    .evaluate((button) => {
-      (button as HTMLButtonElement).click();
-    });
-  await expect(portal).toHaveCount(0);
+async function closeVisibleWelcomeModal(page: Page): Promise<void> {
+  const dialog = page
+    .getByRole('dialog')
+    .filter({ has: page.locator('.tg-welcome-modal-container') })
+    .filter({ visible: true });
+  await dialog.locator('.tg-welcome-modal-close').click();
+  await expect(dialog).toHaveCount(0);
 }
 
 async function installProcessTableFixture(page: Page): Promise<() => number> {
@@ -655,7 +653,9 @@ test('process table keeps registry-derived long labels accessible through its in
             });
             expect(clippingPolicy).toEqual({ overflow: 'hidden', textOverflow: 'ellipsis' });
 
-            const scroller = tableRoot.locator('.ant-table-content').filter({ visible: true });
+            const scroller = tableRoot
+              .locator('.responsive-data-list-table-scroll')
+              .filter({ visible: true });
             await expect(scroller).toHaveCount(1);
             if (viewport.id === 'narrow') {
               await expect
@@ -674,7 +674,7 @@ test('process table keeps registry-derived long labels accessible through its in
                 .toBeGreaterThan(0);
             }
             await expectNoPageLevelHorizontalOverflow(page);
-            return surfaceColor(tableRoot.locator('.ant-table').first());
+            return surfaceColor(tableRoot.locator('.responsive-data-list-table-section').first());
           });
         if (theme.dark) {
           expect(color).not.toBe(lightColor);
@@ -723,17 +723,17 @@ test('welcome modal wraps every registry locale across responsive themes', async
 
             const dialog = page.getByRole('dialog').filter({ visible: true });
             await expect(dialog).toHaveCount(1);
-            const modalContent = dialog.locator('.ant-modal-content');
+            const modalContent = dialog.locator('.tg-welcome-modal-container');
             await expect(modalContent).toHaveCount(1);
             await expectContainerInsideViewport(modalContent, page);
             const expectedLongText = longTextForLocale(locale);
             const longTitle = dialog.getByText(expectedLongText, { exact: true }).first();
             const titleContainer = longTitle.locator(
-              'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " ant-card-meta-title ")][1]',
+              'xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " tg-welcome-team-title ")][1]',
             );
             await expect(titleContainer).toHaveCount(1);
             await expectWrappedTextInside(longTitle, titleContainer);
-            const modalBody = dialog.locator('.ant-modal-body');
+            const modalBody = dialog.locator('.tg-welcome-modal-body');
             await expect(modalBody).toBeVisible();
             const scrollState = await modalBody.evaluate((element) => {
               const style = getComputedStyle(element);
@@ -761,7 +761,7 @@ test('welcome modal wraps every registry locale across responsive themes', async
             await expectNoPageLevelHorizontalOverflow(page);
 
             const renderedColor = await surfaceColor(modalContent);
-            await closeVisiblePortal(page, '.ant-modal');
+            await closeVisibleWelcomeModal(page);
             return renderedColor;
           });
         if (theme.dark) {
@@ -820,10 +820,12 @@ test('life-cycle model drawer exposes accessible long graph labels and operable 
             ).toBeVisible();
 
             const drawerWrapper = page
-              .locator('.ant-drawer-content-wrapper')
+              .locator('.tg-lifecycle-model-drawer-wrapper')
               .filter({ visible: true });
-            const drawerContent = page.locator('.ant-drawer-content').filter({ visible: true });
-            const drawerBody = drawer.locator('.ant-drawer-body');
+            const drawerContent = page
+              .locator('.tg-lifecycle-model-drawer-section')
+              .filter({ visible: true });
+            const drawerBody = drawer.locator('.tg-lifecycle-model-drawer-body');
             await expect(drawerWrapper).toHaveCount(1);
             await expect(drawerContent).toHaveCount(1);
             await expect(drawerBody).toBeVisible();
@@ -863,9 +865,10 @@ test('life-cycle model drawer exposes accessible long graph labels and operable 
 
             const graphTransformViewport = graph.locator('.x6-graph-svg-viewport');
             await expect(graphTransformViewport).toBeVisible();
-            await expect(
-              page.locator('.ant-spin-fullscreen').filter({ visible: true }),
-            ).toHaveCount(0, { timeout: 15_000 });
+            await expect(page.locator('.tg-fullscreen-spin').filter({ visible: true })).toHaveCount(
+              0,
+              { timeout: 15_000 },
+            );
             await expect(graph).toHaveClass(/\bx6-graph-pannable\b/u);
             const zoomPoint = await findBlankGraphPoint(graph);
             expect(zoomPoint.x).toBeGreaterThan(zoomPoint.visibleGraphRect.left);

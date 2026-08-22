@@ -1171,6 +1171,7 @@ const ProcessEdit: FC<Props> = ({
         closable={false}
         extra={
           <Button
+            data-testid='process-edit-close'
             icon={<CloseOutlined />}
             style={{ border: 0 }}
             onClick={() => setDrawerVisible(false)}

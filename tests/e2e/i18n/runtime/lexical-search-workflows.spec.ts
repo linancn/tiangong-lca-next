@@ -200,18 +200,19 @@ async function runSearchScenario(
   await searchInput.press('Enter');
   await expect.poll(requestCount, { timeout: 30_000 }).toBeGreaterThan(0);
 
-  const resultRow = page
-    .locator('.ant-table-tbody > tr')
-    .filter({ hasText: scenario.label })
-    .first();
+  const resultTable = page
+    .locator('.responsive-data-list-table')
+    .filter({ visible: true })
+    .getByRole('table');
+  const resultRow = resultTable.getByRole('row').filter({ hasText: scenario.label }).first();
   await expect(resultRow).toBeVisible();
   await expect(resultRow).toContainText(scenario.label);
 
-  const actionButtons = resultRow.locator('td').last().locator('button');
+  const actionButtons = resultRow.getByRole('button');
   await expect(actionButtons.first()).toBeVisible();
   await actionButtons.first().click();
 
-  const drawer = page.locator('.ant-drawer-content:visible').last();
+  const drawer = page.getByRole('dialog').filter({ hasText: scenario.drawerTitle }).last();
   await expect(drawer).toBeVisible();
   await expect(drawer).toContainText(scenario.drawerTitle);
 }

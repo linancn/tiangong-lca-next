@@ -222,6 +222,13 @@ const LevelTextItemForm: FC<Props> = ({
         }
       >
         <TreeSelect
+          classNames={{
+            root: 'tg-classification-reference-select',
+            popup: {
+              root: 'tg-classification-reference-popup',
+              itemTitle: 'tg-classification-reference-node-title',
+            },
+          }}
           treeDefaultExpandedKeys={
             formRef.current?.getFieldValue([...name, 'showValue'])
               ? [formRef.current?.getFieldValue([...name, 'showValue'])]
