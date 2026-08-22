@@ -22,7 +22,7 @@ describe('pnpm package-manager contract', () => {
   it('uses only the reviewed isolated-linker compatibility and build policy', () => {
     const workspace = read('pnpm-workspace.yaml');
 
-    expect(workspace).toContain("  - '@ant-design/*'");
+    expect(workspace).not.toContain("  - '@ant-design/*'");
     expect(workspace).toContain("  - '@babel/*'");
     expect(workspace).toContain('  - umi');
     expect(workspace).toMatch(/electron-winstaller:\s+true/u);

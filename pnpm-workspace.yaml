@@ -1,10 +1,9 @@
 packages:
   - .
 
-# Keep pnpm's isolated linker. These narrowly expose only the Umi and Babel
-# plugin dependencies that their current toolchain resolves from the project root.
+# Keep pnpm's isolated linker. These narrowly expose only Umi and Babel plugin
+# dependencies that their current toolchain resolves from the project root.
 publicHoistPattern:
-  - '@ant-design/*'
   - '@babel/*'
   - umi
 
