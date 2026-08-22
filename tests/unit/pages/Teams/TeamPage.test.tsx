@@ -132,6 +132,7 @@ jest.mock('@/pages/Teams/Components/AddMemberModal', () => ({
 
 const mockModalConfirm = jest.fn();
 let mockUploadFileName = 'logo.png';
+let mockOmitTeamInitialValues = false;
 
 jest.mock('antd', () => {
   const React = require('react');
@@ -313,11 +314,28 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Upload = ({ beforeUpload, onRemove, fileList = [], disabled, isImageUrl }: any) => {
+  const Upload = ({
+    beforeUpload,
+    onChange,
+    onRemove,
+    fileList = [],
+    disabled,
+    isImageUrl,
+  }: any) => {
     const imageFlags = fileList.map((file: any) => isImageUrl?.(file));
 
     return (
       <div data-testid='upload'>
+        <button
+          type='button'
+          aria-label='notify populated upload list'
+          onClick={() => onChange?.({ fileList: [{ uid: 'mock-file' }] })}
+        />
+        <button
+          type='button'
+          aria-label='notify empty upload list'
+          onClick={() => onChange?.({ fileList: [] })}
+        />
         <button
           type='button'
           disabled={disabled}
@@ -470,7 +488,7 @@ jest.mock('@ant-design/pro-components', () => {
     const submitNodes = Array.isArray(renderedSubmitter) ? renderedSubmitter : [renderedSubmitter];
 
     return (
-      <Form ref={internalFormRef} initialValues={initialValues}>
+      <Form ref={internalFormRef} initialValues={mockOmitTeamInitialValues ? {} : initialValues}>
         <fieldset disabled={disabled}>{children}</fieldset>
         <div data-testid='pro-form-submitter'>
           {submitNodes.map((node, index) => (
@@ -630,6 +648,7 @@ describe('Team page validations', () => {
     mockScreens = { lg: true };
     resetMessages();
     mockUploadFileName = 'logo.png';
+    mockOmitTeamInitialValues = false;
     mockGetTeamMembersApi.mockResolvedValue({
       data: [],
       success: true,
@@ -706,6 +725,7 @@ describe('Team page validations', () => {
 
   it('creates a team successfully and redirects back into edit mode', async () => {
     setWindowLocation('?action=create');
+    mockOmitTeamInitialValues = true;
     const originalLocation = window.location;
     const reloadSpy = jest.fn();
     Object.defineProperty(window, 'location', {
@@ -1154,6 +1174,32 @@ describe('Team page validations', () => {
     renderWithProviders(<Team />);
 
     const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(2);
+    });
+
+    screen
+      .getAllByRole('button', { name: 'notify populated upload list' })
+      .forEach((button) => fireEvent.click(button));
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'notify empty upload list' })[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(1);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'notify empty upload list' })[1]);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
+    });
 
     await act(async () => {
       fireEvent.click(uploadButtons[0]);

@@ -90,4 +90,38 @@ describe('HeaderDropdown', () => {
       writable: true,
     });
   });
+
+  it('merges viewport constraints into styles returned by a resolver', () => {
+    const styleResolver = jest
+      .fn()
+      .mockReturnValueOnce({
+        root: { color: 'red' },
+        item: { fontWeight: 600 },
+      })
+      .mockReturnValueOnce(undefined);
+
+    render(
+      <HeaderDropdown styles={styleResolver}>
+        <span>Trigger</span>
+      </HeaderDropdown>,
+    );
+
+    const styles = mockDropdown.mock.calls[0][0].styles;
+    const styleInfo = { open: true };
+    expect(styles(styleInfo)).toEqual({
+      root: {
+        minWidth: 168,
+        maxWidth: 'calc(100vw - 24px)',
+        color: 'red',
+      },
+      item: { fontWeight: 600 },
+    });
+    expect(styleResolver).toHaveBeenCalledWith(styleInfo);
+    expect(styles({ open: false })).toEqual({
+      root: {
+        minWidth: 168,
+        maxWidth: 'calc(100vw - 24px)',
+      },
+    });
+  });
 });
