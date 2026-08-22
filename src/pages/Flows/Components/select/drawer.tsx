@@ -329,6 +329,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           </Row>
         </Card>
         <ProTable<FlowTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={tgActionRefSelect}
           params={contentLanguageAwareTableParams}
           // loading={tableLoading}
@@ -418,6 +420,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           </Row>
         </Card>
         <ProTable<FlowTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={coActionRefSelect}
           params={contentLanguageAwareTableParams}
           // loading={tableLoading}
@@ -490,6 +494,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           />
         </Card>
         <ProTable<FlowTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={teActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -558,6 +564,8 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
           />
         </Card>
         <ProTable<FlowTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={myActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}

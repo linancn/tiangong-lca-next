@@ -6,6 +6,7 @@ const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const DATASET_PICKERS = [
   {
     file: 'src/pages/Contacts/Components/select/drawer.tsx',
+    formFile: 'src/pages/Contacts/Components/select/form.tsx',
     rowType: 'ContactTable',
     tableCount: 4,
     serviceCallCounts: {
@@ -15,6 +16,7 @@ const DATASET_PICKERS = [
   },
   {
     file: 'src/pages/Flowproperties/Components/select/drawer.tsx',
+    formFile: 'src/pages/Flowproperties/Components/select/form.tsx',
     rowType: 'FlowpropertyTable',
     tableCount: 4,
     serviceCallCounts: {
@@ -24,6 +26,7 @@ const DATASET_PICKERS = [
   },
   {
     file: 'src/pages/Flows/Components/select/drawer.tsx',
+    formFile: 'src/pages/Flows/Components/select/form.tsx',
     rowType: 'FlowTable',
     tableCount: 4,
     serviceCallCounts: {
@@ -34,6 +37,7 @@ const DATASET_PICKERS = [
   },
   {
     file: 'src/pages/Sources/Components/select/drawer.tsx',
+    formFile: 'src/pages/Sources/Components/select/form.tsx',
     rowType: 'SourceTable',
     tableCount: 4,
     serviceCallCounts: {
@@ -43,6 +47,7 @@ const DATASET_PICKERS = [
   },
   {
     file: 'src/pages/Unitgroups/Components/select/drawer.tsx',
+    formFile: 'src/pages/Unitgroups/Components/select/form.tsx',
     rowType: 'UnitGroupTable',
     tableCount: 4,
     serviceCallCounts: {
@@ -102,6 +107,9 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
   const source = withoutLineComments(
     fs.readFileSync(path.join(REPOSITORY_ROOT, picker.file), 'utf8'),
   );
+  const formSource = withoutLineComments(
+    fs.readFileSync(path.join(REPOSITORY_ROOT, picker.formFile), 'utf8'),
+  );
 
   it('uses the registry-resolved content language as an external parameter for every table', () => {
     expect(source).toContain(
@@ -139,5 +147,17 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
         expect(call).toContain('params.contentLanguage');
       });
     });
+  });
+
+  it('keeps every selector table and reference input contained on narrow drawers', () => {
+    const compactFormSource = formSource.replace(/\s+/g, ' ');
+
+    expect(countOccurrences(source, "className='tg-dataset-selector-table'")).toBe(
+      picker.tableCount,
+    );
+    expect(countOccurrences(source, "scroll={{ x: 'max-content' }}")).toBe(picker.tableCount);
+    expect(compactFormSource).toContain(
+      "<Input disabled={true} style={{ width: '350px', maxWidth: '100%', color: token.colorTextDescription }} />",
+    );
   });
 });

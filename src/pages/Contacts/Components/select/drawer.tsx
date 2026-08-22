@@ -307,6 +307,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
           />
         </Card>
         <ProTable<ContactTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={tgActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -358,6 +360,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
           />
         </Card>
         <ProTable<ContactTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={coActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -409,6 +413,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
           />
         </Card>
         <ProTable<ContactTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={myActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -463,6 +469,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
           />
         </Card>
         <ProTable<ContactTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={teamActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}

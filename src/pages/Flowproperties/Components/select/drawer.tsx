@@ -283,6 +283,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={tgActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -356,6 +358,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={coActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -429,6 +433,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={teActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -502,6 +508,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={myActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}

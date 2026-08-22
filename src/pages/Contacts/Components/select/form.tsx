@@ -222,7 +222,10 @@ const ContactSelectForm: FC<Props> = ({
               : []),
           ]}
         >
-          <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
+          <Input
+            disabled={true}
+            style={{ width: '350px', maxWidth: '100%', color: token.colorTextDescription }}
+          />
         </Form.Item>
         <Space orientation='horizontal' style={{ marginTop: '6px' }}>
           {!id && !disabled && (
