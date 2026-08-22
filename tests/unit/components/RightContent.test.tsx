@@ -270,9 +270,15 @@ describe('RightContent Components', () => {
     render(<SelectLangAction />);
 
     const action = screen.getByRole('button', { name: 'Select a language' });
+    const selector = screen.getByTestId('select-lang');
+    const innerClick = jest.fn();
+    selector.addEventListener('click', innerClick);
     expect(action).toHaveClass('tg-global-language-action');
     expect(action).toHaveAttribute('aria-haspopup', 'menu');
-    expect(screen.getByTestId('select-lang')).toBeInTheDocument();
+    expect(selector).toBeInTheDocument();
+
+    fireEvent.click(action);
+    expect(innerClick).toHaveBeenCalledTimes(1);
   });
 
   it('synthesizes a supported locale entry when Umi omits one', () => {

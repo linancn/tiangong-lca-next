@@ -220,7 +220,9 @@ describe('app runtime config', () => {
   it('replaces the ProLayout collapse div with one semantic button', () => {
     const { renderAccessibleCollapsedButton } = require('@/components/AccessibleCollapsedButton');
     const onClick = jest.fn();
-    render(
+    expect(renderAccessibleCollapsedButton('Missing collapse', null)).toBeNull();
+
+    const upstreamView = render(
       renderAccessibleCollapsedButton(
         'Navigation Mode',
         <div className='upstream-collapse' onClick={onClick}>
@@ -233,6 +235,12 @@ describe('app runtime config', () => {
     expect(trigger).toHaveClass('upstream-collapse', 'tg-pro-layout-collapse-trigger');
     fireEvent.click(trigger);
     expect(onClick).toHaveBeenCalledTimes(1);
+
+    upstreamView.unmount();
+    render(renderAccessibleCollapsedButton('Navigation Mode without class', <div>menu</div>));
+    expect(screen.getByRole('button', { name: 'Navigation Mode without class' })).toHaveClass(
+      'tg-pro-layout-collapse-trigger',
+    );
   });
 
   beforeEach(() => {
@@ -773,11 +781,42 @@ describe('app runtime config', () => {
       onCollapse,
     });
     const menuAction = actions[0];
+    const nativeTriggerClick = jest.fn();
 
     expect(menuAction.type).toBe('button');
     expect(menuAction.props['aria-label']).toBe('Navigation Mode');
-    fireEvent.click(render(menuAction).getByRole('button', { name: 'Navigation Mode' }));
+
+    const nativeTriggerView = render(
+      <div data-testid='pro-layout-global-header'>
+        <button
+          aria-label='Upstream navigation'
+          className='ant-pro-global-header-collapsed-button'
+          type='button'
+          onClick={nativeTriggerClick}
+        />
+        {menuAction}
+      </div>,
+    );
+    fireEvent.click(nativeTriggerView.getByRole('button', { name: 'Navigation Mode' }));
+    expect(nativeTriggerClick).toHaveBeenCalledTimes(1);
+    expect(onCollapse).not.toHaveBeenCalled();
+    nativeTriggerView.unmount();
+
+    const fallbackView = render(menuAction);
+    fireEvent.click(fallbackView.getByRole('button', { name: 'Navigation Mode' }));
     expect(onCollapse).toHaveBeenCalledWith(true);
+    fallbackView.unmount();
+
+    render(
+      runtimeLayout.collapsedButtonRender?.(
+        false,
+        <div className='runtime-collapse'>runtime menu</div>,
+      ),
+    );
+    expect(screen.getByRole('button', { name: 'Navigation Mode' })).toHaveClass(
+      'runtime-collapse',
+      'tg-pro-layout-collapse-trigger',
+    );
   });
 
   it('adds a national carbon dashboard shortcut for admin users', () => {

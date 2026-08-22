@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 72ca3e446e3a35a4940c6b1aabbe802c957eaf3d
+lastReviewedCommit: 4427be4dd2dd7b3644fdf09ce91a2a0e98059be7
 lastReviewedNote: 'Reviewed for Next Issue #924: Pro Components proof now closes 121 runtime instances and exercises responsive option strips, nested selectors, forms, layouts, and overlays.'
 related:
   - ../AGENTS.md
