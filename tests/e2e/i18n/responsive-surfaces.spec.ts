@@ -303,6 +303,73 @@ async function expectLocatorInsideContainer(locator: Locator, container: Locator
   expect(box!.y + box!.height).toBeLessThanOrEqual(containerBox!.y + containerBox!.height + 1);
 }
 
+async function expectHorizontalProTableOptionStrip(
+  page: Page,
+  tableRoot: Locator,
+  exerciseInteraction: boolean,
+): Promise<void> {
+  const customOptions = tableRoot
+    .locator('.tg-pro-toolbar-button--option')
+    .filter({ visible: true });
+  await expect(customOptions).toHaveCount(2);
+
+  // Tooltip clones its child, so each project-owned option is a direct child of the native
+  // setting-item wrapper. Anchor on our class and walk only to the shared settings strip; this
+  // avoids binding browser proof to an Ant/Pro private class name.
+  const settingStrip = customOptions.first().locator('xpath=../..');
+  await expect(settingStrip).toBeVisible();
+  const layout = await settingStrip.evaluate((element) => {
+    const children = Array.from(element.children)
+      .map((child) => child.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .map((rect) => ({
+        centerY: rect.top + rect.height / 2,
+        left: rect.left,
+        right: rect.right,
+      }));
+    const style = getComputedStyle(element);
+    return {
+      children,
+      clientWidth: element.clientWidth,
+      flexDirection: style.flexDirection,
+      scrollWidth: element.scrollWidth,
+    };
+  });
+
+  expect(layout.children.length).toBeGreaterThanOrEqual(6);
+  expect(layout.flexDirection).toBe('row');
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth + 1);
+  const centerYs = layout.children.map(({ centerY }) => centerY);
+  expect(Math.max(...centerYs) - Math.min(...centerYs)).toBeLessThanOrEqual(1);
+  for (let index = 1; index < layout.children.length; index += 1) {
+    expect(layout.children[index].left).toBeGreaterThanOrEqual(
+      layout.children[index - 1].right - 1,
+    );
+  }
+
+  if (exerciseInteraction) {
+    const option = customOptions.first();
+    await option.hover();
+    await expect(page.getByRole('tooltip').filter({ visible: true })).toContainText(/\S/u);
+    await page.mouse.move(0, 0);
+
+    await option.focus();
+    await expect(option).toBeFocused();
+    const focusState = await option.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        focusVisible: element.matches(':focus-visible'),
+        outlineStyle: style.outlineStyle,
+        outlineWidth: style.outlineWidth,
+      };
+    });
+    expect(focusState.focusVisible).toBe(true);
+    expect(focusState.outlineStyle).not.toBe('none');
+    expect(focusState.outlineWidth).not.toBe('0px');
+    await option.evaluate((element) => (element as HTMLElement).blur());
+  }
+}
+
 async function waitForDrawerWrapperToSettle(locator: Locator, page: Page): Promise<void> {
   await expect(locator).toBeVisible();
   await expect
@@ -649,6 +716,13 @@ test('process table keeps registry-derived long labels accessible through its in
             const expectedLongText = longTextForLocale(locale);
             const tableRoot = page.locator('.responsive-data-list-table').filter({ visible: true });
             await expect(tableRoot).toHaveCount(1);
+            if (viewport.id === 'desktop') {
+              await expectHorizontalProTableOptionStrip(
+                page,
+                tableRoot,
+                locale === RESPONSIVE_SURFACE_LOCALES[0] && !theme.dark,
+              );
+            }
             const longCell = tableRoot
               .locator('.responsive-data-list-cell-text')
               .filter({ hasText: expectedLongText });
@@ -680,6 +754,22 @@ test('process table keeps registry-derived long labels accessible through its in
               await expect
                 .poll(() => scroller.evaluate((element) => element.scrollLeft))
                 .toBeGreaterThan(0);
+
+              const mobileMoreActions = tableRoot
+                .locator('.responsive-data-list-more-action')
+                .filter({ visible: true });
+              await expect.poll(() => mobileMoreActions.count()).toBeGreaterThan(0);
+              if (locale === RESPONSIVE_SURFACE_LOCALES[0] && !theme.dark) {
+                await mobileMoreActions.first().hover();
+                await mobileMoreActions.first().click();
+                const actionMenu = page.getByRole('menu').filter({ visible: true });
+                await expect(actionMenu).toHaveCount(1);
+                await expect
+                  .poll(() => actionMenu.getByRole('menuitem').count())
+                  .toBeGreaterThan(0);
+                await page.keyboard.press('Escape');
+                await expect(actionMenu).toBeHidden();
+              }
             }
             await expectNoPageLevelHorizontalOverflow(page);
             return surfaceColor(tableRoot.locator('.responsive-data-list-header-cell').first());

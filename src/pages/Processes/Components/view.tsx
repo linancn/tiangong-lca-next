@@ -1703,6 +1703,7 @@ const ProcessView: FC<Props> = ({
               label: <FormattedMessage id='pages.process.exchange.input' defaultMessage='Input' />,
               children: (
                 <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
+                  className='tg-process-view-input-table'
                   params={exchangeTableParams}
                   search={false}
                   scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
@@ -1784,6 +1785,7 @@ const ProcessView: FC<Props> = ({
               ),
               children: (
                 <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
+                  className='tg-process-view-output-table'
                   params={exchangeTableParams}
                   search={false}
                   scroll={PROCESS_EXCHANGE_TABLE_SCROLL}

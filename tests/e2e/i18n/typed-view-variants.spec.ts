@@ -423,6 +423,184 @@ async function expectProcessDrawer(
   ).toBeVisible();
 }
 
+async function expectNativeOptionsRemainHorizontal(page: Page, tableRoot: Locator): Promise<void> {
+  await expect(tableRoot).toHaveCount(1);
+  const table = tableRoot.locator('table').filter({ visible: true }).first();
+  await expect(table).toBeVisible();
+  const [rootBox, tableBox] = await Promise.all([tableRoot.boundingBox(), table.boundingBox()]);
+  expect(rootBox).not.toBeNull();
+  expect(tableBox).not.toBeNull();
+
+  // Native ProTable options are currently non-focusable spans in the upstream beta. Scope the
+  // visual check through the project-owned table root, then select only visible SVG controls
+  // positioned above the table. Keyboard focus-visible remains covered by ToolBarButton on the
+  // main table and is not over-claimed for these upstream native spans.
+  const visibleIcons = tableRoot.locator('svg').filter({ visible: true });
+  const optionIcons: Locator[] = [];
+  for (let index = 0; index < (await visibleIcons.count()); index += 1) {
+    const icon = visibleIcons.nth(index);
+    const box = await icon.boundingBox();
+    if (box && box.y + box.height / 2 < tableBox!.y) {
+      optionIcons.push(icon);
+    }
+  }
+
+  expect(optionIcons).toHaveLength(3);
+  const optionBoxes = await Promise.all(optionIcons.map((icon) => icon.boundingBox()));
+  expect(optionBoxes.every(Boolean)).toBe(true);
+  const centers = optionBoxes.map((box) => box!.y + box!.height / 2);
+  expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(1);
+  for (let index = 0; index < optionBoxes.length; index += 1) {
+    const box = optionBoxes[index]!;
+    expect(box.x).toBeGreaterThanOrEqual(rootBox!.x - 1);
+    expect(box.x + box.width).toBeLessThanOrEqual(rootBox!.x + rootBox!.width + 1);
+    if (index > 0) {
+      expect(box.x).toBeGreaterThanOrEqual(
+        optionBoxes[index - 1]!.x + optionBoxes[index - 1]!.width - 1,
+      );
+    }
+  }
+
+  await optionIcons[0].hover();
+  await expect(page.getByRole('tooltip').filter({ visible: true })).toContainText(/\S/u);
+  await page.mouse.move(0, 0);
+}
+
+async function expectProcessViewNativeOptionsRemainHorizontal(
+  page: Page,
+  drawer: Locator,
+): Promise<void> {
+  for (const tableClassName of ['.tg-process-view-input-table', '.tg-process-view-output-table']) {
+    await expectNativeOptionsRemainHorizontal(
+      page,
+      drawer.locator(tableClassName).filter({ visible: true }),
+    );
+  }
+}
+
+async function expectNarrowFlowSelectorRemainsContained(
+  page: Page,
+  processDrawer: Locator,
+  locale: (typeof APP_LOCALES)[number],
+): Promise<void> {
+  const previousViewport = page.viewportSize();
+  await page.setViewportSize({ height: 844, width: 390 });
+
+  try {
+    await processDrawer
+      .getByRole('tab', {
+        name: getLocaleMessage(locale, 'pages.process.view.exchanges'),
+        exact: true,
+      })
+      .click();
+    const inputExchangeTable = processDrawer
+      .locator('.process-exchange-table')
+      .filter({ visible: true })
+      .first();
+    await inputExchangeTable
+      .getByRole('button', {
+        name: getLocaleMessage(locale, 'pages.button.create'),
+        exact: true,
+      })
+      .click();
+
+    const exchangeDrawer = page.getByRole('dialog', {
+      name: getLocaleMessage(locale, 'pages.process.exchange.drawer.title.create'),
+      exact: true,
+    });
+    await expect(exchangeDrawer).toBeVisible();
+    const flowInput = exchangeDrawer.getByRole('textbox', {
+      name: getLocaleMessage(locale, 'pages.process.view.exchange.refObjectId'),
+      exact: true,
+    });
+    await expect(flowInput).toBeVisible();
+    await expect(flowInput).toBeDisabled();
+    await expect
+      .poll(async () => {
+        const [drawerBox, inputBox] = await Promise.all([
+          exchangeDrawer.boundingBox(),
+          flowInput.boundingBox(),
+        ]);
+        return Boolean(
+          drawerBox &&
+          inputBox &&
+          drawerBox.x >= -1 &&
+          drawerBox.x + drawerBox.width <= 391 &&
+          inputBox.x >= drawerBox.x - 1 &&
+          inputBox.x + inputBox.width <= drawerBox.x + drawerBox.width + 1 &&
+          inputBox.x + inputBox.width <= 391,
+        );
+      })
+      .toBe(true);
+
+    await exchangeDrawer
+      .getByRole('button', {
+        name: getLocaleMessage(locale, 'pages.button.select'),
+        exact: true,
+      })
+      .first()
+      .click();
+    const flowDrawer = page.getByRole('dialog', {
+      name: getLocaleMessage(locale, 'pages.flow.drawer.title.select'),
+      exact: true,
+    });
+    await expect(flowDrawer).toBeVisible();
+    const selectorTable = flowDrawer
+      .locator('.tg-dataset-selector-table')
+      .filter({ visible: true });
+    await expectNativeOptionsRemainHorizontal(page, selectorTable);
+
+    const containment = await selectorTable.evaluate((element) => {
+      const rootBounds = element.getBoundingClientRect();
+      const internalScroller = Array.from(element.querySelectorAll<HTMLElement>('*')).find(
+        (candidate) => {
+          const style = getComputedStyle(candidate);
+          return (
+            candidate.clientWidth > 0 &&
+            candidate.scrollWidth > candidate.clientWidth + 1 &&
+            (style.overflowX === 'auto' || style.overflowX === 'scroll')
+          );
+        },
+      );
+      if (internalScroller) internalScroller.scrollLeft = internalScroller.scrollWidth;
+      return {
+        documentClientWidth: document.documentElement.clientWidth,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        rootLeft: rootBounds.left,
+        rootRight: rootBounds.right,
+        scrollerClientWidth: internalScroller?.clientWidth ?? 0,
+        scrollerLeft: internalScroller?.scrollLeft ?? 0,
+        scrollerScrollWidth: internalScroller?.scrollWidth ?? 0,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(containment.documentScrollWidth).toBeLessThanOrEqual(
+      containment.documentClientWidth + 1,
+    );
+    expect(containment.rootLeft).toBeGreaterThanOrEqual(-1);
+    expect(containment.rootRight).toBeLessThanOrEqual(containment.viewportWidth + 1);
+    expect(containment.scrollerScrollWidth).toBeGreaterThan(containment.scrollerClientWidth);
+    expect(containment.scrollerLeft).toBeGreaterThan(0);
+
+    await flowDrawer
+      .getByRole('button', {
+        name: getLocaleMessage(locale, 'pages.button.cancel'),
+        exact: true,
+      })
+      .click();
+    await expect(flowDrawer).toBeHidden();
+    await exchangeDrawer
+      .getByRole('button', {
+        name: getLocaleMessage(locale, 'pages.button.cancel'),
+        exact: true,
+      })
+      .click();
+    await expect(exchangeDrawer).toBeHidden();
+  } finally {
+    if (previousViewport) await page.setViewportSize(previousViewport);
+  }
+}
+
 async function expectProcessDeepLinkMountSettled(input: {
   expectedLocation: SpaLocationTarget;
   page: Page;
@@ -495,6 +673,26 @@ test('Process edit and view deep links survive locale switches and reloads', asy
         await expectSpaLocation(page, location);
         await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
         await expectProcessDrawer(page, locale, mode, mode === 'edit' ? 'optional' : undefined);
+
+        if (mode === 'edit' && locale === 'en-US') {
+          await test.step('narrow Flow selector stays inside its nested Drawer', async () => {
+            const drawer = await expectProcessDrawerMounted(page, 'edit', 'optional');
+            await expectNarrowFlowSelectorRemainsContained(page, drawer, locale);
+          });
+        }
+
+        if (mode === 'view' && locale === APP_LOCALES[0]) {
+          await test.step('native Input/Output options remain horizontal', async () => {
+            const drawer = await expectProcessDrawerMounted(page, 'view', undefined);
+            await drawer
+              .getByRole('tab', {
+                name: getLocaleMessage(locale, 'pages.process.view.exchanges'),
+                exact: true,
+              })
+              .click();
+            await expectProcessViewNativeOptionsRemainHorizontal(page, drawer);
+          });
+        }
 
         await page.reload({ waitUntil: 'domcontentloaded' });
         await expectSpaLocation(page, location);
