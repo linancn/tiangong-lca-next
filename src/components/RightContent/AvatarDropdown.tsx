@@ -287,7 +287,18 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   return (
     <>
       <HeaderDropdown
-        classNames={{ root: 'tg-global-header-avatar-dropdown' }}
+        styles={{
+          root: {
+            width: 'max-content',
+            maxWidth: 'min(220px, calc(100vw - 24px))',
+          },
+          itemContent: {
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          },
+        }}
         menu={{
           selectedKeys: [],
           onClick: onMenuClick,

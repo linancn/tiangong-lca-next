@@ -111,9 +111,8 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                       />
                     </Card>
                     <Divider
-                      className='required-divider'
                       titlePlacement='start'
-                      styles={{ content: { margin: 0 } }}
+                      styles={{ content: { flexShrink: 0, margin: 0 } }}
                       plain
                     >
                       <RequiredMark

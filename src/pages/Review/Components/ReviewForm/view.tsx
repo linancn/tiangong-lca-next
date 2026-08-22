@@ -80,8 +80,7 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                 />
               </Card>
               <Divider
-                className='required-divider'
-                styles={{ content: { margin: 0 } }}
+                styles={{ content: { flexShrink: 0, margin: 0 } }}
                 titlePlacement='start'
                 plain
               >

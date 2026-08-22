@@ -70,6 +70,10 @@ type GuidePreparationKey =
   'collectRawData' | 'mapUnitProcesses' | 'checkFlowsAndUnits' | 'submitForReview';
 
 const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
+const WELCOME_MODAL_CLASS_NAMES = {
+  body: 'tg-welcome-modal-body',
+  container: 'tg-welcome-modal-container',
+};
 
 const guideTeachingStepKeys: GuideStepKey[] = [
   'openHome',
@@ -455,7 +459,7 @@ const Welcome: React.FC = () => {
   const modalStyles = useMemo(
     () => ({
       body: { minHeight: 0, overflowY: 'auto' as const },
-      content: {
+      container: {
         borderRadius: WELCOME_RADIUS,
         display: 'flex',
         flexDirection: 'column' as const,
@@ -811,13 +815,14 @@ const Welcome: React.FC = () => {
   );
 
   return (
-    <PageContainer title={false} className={styles.welcome_page}>
+    <PageContainer title={false} childrenContentStyle={{ padding: '16px 24px 24px' }}>
       <Space orientation='vertical' size={24} className={styles.welcome_content}>
         {activeWelcomeView === 'carbonFootprintGuide'
           ? renderCarbonFootprintGuide()
           : renderOverview()}
       </Space>
       <Modal
+        classNames={WELCOME_MODAL_CLASS_NAMES}
         open={isDataModalOpen}
         onCancel={() => setIsDataModalOpen(false)}
         footer={null}
@@ -894,6 +899,20 @@ const Welcome: React.FC = () => {
                       }}
                     >
                       <Meta
+                        styles={{
+                          title: {
+                            minWidth: 0,
+                            overflow: 'visible',
+                            overflowWrap: 'anywhere',
+                            whiteSpace: 'normal',
+                          },
+                          description: {
+                            minWidth: 0,
+                            overflow: 'visible',
+                            overflowWrap: 'anywhere',
+                            whiteSpace: 'normal',
+                          },
+                        }}
                         title={
                           <Typography.Text strong>
                             {getLangText(team.json?.title, lang)}
@@ -916,6 +935,7 @@ const Welcome: React.FC = () => {
         </Space>
       </Modal>
       <Modal
+        classNames={WELCOME_MODAL_CLASS_NAMES}
         open={isTidasModalOpen}
         onCancel={() => setIsTidasModalOpen(false)}
         footer={null}

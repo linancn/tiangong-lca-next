@@ -1295,12 +1295,7 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider
-            className='required-divider'
-            titlePlacement='start'
-            styles={{ content: { margin: 0 } }}
-            plain
-          >
+          <Divider titlePlacement='start' styles={{ content: { flexShrink: 0, margin: 0 } }} plain>
             <RequiredMark
               label={
                 <FormattedMessage
@@ -1675,12 +1670,7 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider
-            className='required-divider'
-            titlePlacement='start'
-            styles={{ content: { margin: 0 } }}
-            plain
-          >
+          <Divider titlePlacement='start' styles={{ content: { flexShrink: 0, margin: 0 } }} plain>
             <RequiredMark
               label={
                 <FormattedMessage
@@ -1928,12 +1918,7 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <Divider
-            className='required-divider'
-            titlePlacement='start'
-            styles={{ content: { margin: 0 } }}
-            plain
-          >
+          <Divider titlePlacement='start' styles={{ content: { flexShrink: 0, margin: 0 } }} plain>
             <RequiredMark
               label={
                 <FormattedMessage

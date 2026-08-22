@@ -31,12 +31,12 @@
   flex-shrink: 0;
   margin-top: auto;
 
-  :global(.ant-pro-global-footer-list-link) {
+  a {
     transition: color 0.2s ease;
   }
 
-  :global(.ant-pro-global-footer-list-link:hover),
-  :global(.ant-pro-global-footer-list-link:focus-visible) {
+  a:hover,
+  a:focus-visible {
     color: var(--ant-color-primary);
   }
 }
@@ -108,12 +108,6 @@
   transform: translateY(-4px);
 }
 
-.welcome_page {
-  :global(.ant-pro-page-container-children-content) {
-    padding: 16px 24px 24px;
-  }
-}
-
 .welcome_content {
   display: flex;
   flex-direction: column;
@@ -173,14 +167,6 @@
 
 .welcome_team_card {
   cursor: pointer;
-
-  :global(.ant-card-meta-title),
-  :global(.ant-card-meta-description) {
-    min-width: 0;
-    overflow: visible;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
 }
 
 @media (max-width: 991px) {
