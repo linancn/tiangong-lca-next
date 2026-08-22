@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: cc106684
+lastReviewedCommit: 1c51c6cf
 lastReviewedNote: 'Reviewed for Next Issue #924: the UI runtime now uses one React 19 / Ant Design 6 / ProComponents 3 generation with Umi-global App, theme, and non-component feedback registration.'
 related:
   - ../AGENTS.md

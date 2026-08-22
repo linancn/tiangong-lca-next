@@ -759,6 +759,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       )}
 
       <Drawer
+        classNames={{ section: 'tg-dataset-view-drawer' }}
         getContainer={() => document.body}
         title={<FormattedMessage id='pages.flow.drawer.title.view' defaultMessage='View Flow' />}
         size='90%'

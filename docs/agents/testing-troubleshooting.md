@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: cc106684
+lastReviewedCommit: 1c51c6cf
 lastReviewedNote: 'Reviewed for Next Issue #924: React 19 timing, App.useApp fixtures, Image/Drawer semantic API drift, MessageChannel handles, and locale artifact refresh now have explicit recovery guidance.'
 ---
 

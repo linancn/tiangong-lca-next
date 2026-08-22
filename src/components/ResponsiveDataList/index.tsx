@@ -27,7 +27,6 @@ export const responsiveDataListTableProps = {
     content: 'responsive-data-list-table-scroll',
     header: { cell: 'responsive-data-list-header-cell' },
     root: 'responsive-data-list-table-root',
-    section: 'responsive-data-list-table-section',
   },
   scroll: { x: 'max-content' },
   tableLayout: 'fixed' as const,

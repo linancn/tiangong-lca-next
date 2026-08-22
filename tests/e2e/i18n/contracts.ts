@@ -440,7 +440,7 @@ export async function selectAppLocaleThroughUi(
   await trigger.waitFor({ state: 'visible' });
   await waitForLocatorCount(
     page,
-    page.locator('.tg-fullscreen-spin').filter({ visible: true }),
+    page.locator('.tg-fullscreen-spin[aria-busy="true"]').filter({ visible: true }),
     0,
     `Expected the fullscreen loading overlay to clear before selecting ${localeDefinition.nativeLabel}.`,
   );

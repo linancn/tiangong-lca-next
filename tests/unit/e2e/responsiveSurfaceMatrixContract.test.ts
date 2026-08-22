@@ -97,7 +97,9 @@ describe('responsive surface evidence contract', () => {
     expect(helperStart).toBeGreaterThan(-1);
     expect(helperEnd).toBeGreaterThan(helperStart);
     const helperSource = source.slice(helperStart, helperEnd);
-    const spinnerWait = helperSource.indexOf(`page.locator('.tg-fullscreen-spin')`);
+    const spinnerWait = helperSource.indexOf(
+      `page.locator('.tg-fullscreen-spin[aria-busy="true"]')`,
+    );
     const storedLocaleEarlyReturn = helperSource.indexOf(
       'if ((await readStoredAppLocale(page)) === locale)',
     );

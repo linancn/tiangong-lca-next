@@ -406,6 +406,7 @@ const FlowpropertyView: FC<Props> = ({
         ))}
 
       <Drawer
+        classNames={{ section: 'tg-dataset-view-drawer' }}
         getContainer={() => document.body}
         title={
           <FormattedMessage

@@ -1989,7 +1989,7 @@ const ProcessView: FC<Props> = ({
       ) : null}
 
       <Drawer
-        classNames={{ section: 'tg-process-drawer' }}
+        classNames={{ section: 'tg-dataset-view-drawer tg-process-drawer' }}
         getContainer={() => document.body}
         title={
           <FormattedMessage id='pages.process.drawer.title.view' defaultMessage='View process' />

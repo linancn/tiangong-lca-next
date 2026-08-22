@@ -472,15 +472,23 @@ async function installProcessTableFixture(page: Page): Promise<() => number> {
       data_source: 'my',
       page_current: 1,
       page_size: 10,
-      sort_by: 'modified_at',
+      sort_by: 'json->processDataSet->processInformation->dataSetInformation->name',
       sort_direction: 'desc',
       state_code_filter: null,
       team_id_filter: null,
       type_of_data_set_filter: 'all',
     });
     if (!expectedBody) {
-      await route.fallback();
-      return;
+      const observedBody = JSON.parse(route.request().postData() ?? '{}') as Record<
+        string,
+        unknown
+      >;
+      throw new Error(
+        `Process table fixture received an unexpected list body: ${JSON.stringify({
+          ...observedBody,
+          this_user_id: '<redacted>',
+        })}`,
+      );
     }
     const contract = readContract(expectedTarget, {
       jsonBody: expectedBody,
@@ -674,7 +682,7 @@ test('process table keeps registry-derived long labels accessible through its in
                 .toBeGreaterThan(0);
             }
             await expectNoPageLevelHorizontalOverflow(page);
-            return surfaceColor(tableRoot.locator('.responsive-data-list-table-section').first());
+            return surfaceColor(tableRoot.locator('.responsive-data-list-header-cell').first());
           });
         if (theme.dark) {
           expect(color).not.toBe(lightColor);
@@ -865,10 +873,9 @@ test('life-cycle model drawer exposes accessible long graph labels and operable 
 
             const graphTransformViewport = graph.locator('.x6-graph-svg-viewport');
             await expect(graphTransformViewport).toBeVisible();
-            await expect(page.locator('.tg-fullscreen-spin').filter({ visible: true })).toHaveCount(
-              0,
-              { timeout: 15_000 },
-            );
+            await expect(
+              page.locator('.tg-fullscreen-spin[aria-busy="true"]').filter({ visible: true }),
+            ).toHaveCount(0, { timeout: 15_000 });
             await expect(graph).toHaveClass(/\bx6-graph-pannable\b/u);
             const zoomPoint = await findBlankGraphPoint(graph);
             expect(zoomPoint.x).toBeGreaterThan(zoomPoint.visibleGraphRect.left);

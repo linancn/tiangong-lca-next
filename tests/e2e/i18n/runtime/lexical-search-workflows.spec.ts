@@ -208,11 +208,14 @@ async function runSearchScenario(
   await expect(resultRow).toBeVisible();
   await expect(resultRow).toContainText(scenario.label);
 
-  const actionButtons = resultRow.getByRole('button');
+  const actionButtons = resultRow.getByRole('cell').last().getByRole('button');
   await expect(actionButtons.first()).toBeVisible();
   await actionButtons.first().click();
 
-  const drawer = page.getByRole('dialog').filter({ hasText: scenario.drawerTitle }).last();
+  const drawer = page
+    .locator('.tg-dataset-view-drawer:visible')
+    .filter({ hasText: scenario.drawerTitle })
+    .last();
   await expect(drawer).toBeVisible();
   await expect(drawer).toContainText(scenario.drawerTitle);
 }
