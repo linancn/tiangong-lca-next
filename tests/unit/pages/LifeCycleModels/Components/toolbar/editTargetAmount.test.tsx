@@ -83,7 +83,18 @@ jest.mock('antd', () => {
     );
   };
 
-  const Space = ({ children, className }: any) => <div className={className ?? ''}>{children}</div>;
+  const Space = ({ children, className, orientation, style, styles, wrap }: any) => (
+    <div
+      className={className ?? ''}
+      data-item-max-width={styles?.item?.maxWidth}
+      data-item-min-width={styles?.item?.minWidth}
+      data-orientation={orientation}
+      data-wrap={String(Boolean(wrap))}
+      style={style}
+    >
+      {children}
+    </div>
+  );
 
   const Card = ({ children, title }: any) => (
     <section>
@@ -92,11 +103,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ items = [] }: any) => (
-    <dl>
+  const Descriptions = ({ items = [], style, styles }: any) => (
+    <dl
+      data-label-max-width={styles?.label?.maxWidth}
+      data-label-overflow-wrap={styles?.label?.overflowWrap}
+      style={style}
+    >
       {items.map((item: any, index: number) => (
         <div key={item.key ?? index}>
-          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          {item.label === undefined ? null : <dt style={styles?.label}>{toText(item.label)}</dt>}
           <dd>{item.children}</dd>
         </div>
       ))}
@@ -366,6 +381,31 @@ describe('TargetAmount', () => {
     );
     expect(await screen.findByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-1:1.0:flow');
+  });
+
+  it('keeps the reference-flow description inside a 450px drawer viewport', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
+    mockGenProcessFromData.mockReturnValue(buildProcessDataset());
+
+    render(
+      <TargetAmount
+        refNode={{ data: { id: 'proc-1', version: '1.0' } }}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    const referenceLabel = await screen.findByText('Reference flow dataset identifier');
+    const description = referenceLabel.closest('dl');
+    expect(description).toHaveStyle({ width: '100%', maxWidth: '450px' });
+    expect(description).toHaveAttribute('data-label-max-width', 'min(42vw, 22rem)');
+    expect(description).toHaveAttribute('data-label-overflow-wrap', 'anywhere');
+    expect(description?.parentElement).toHaveAttribute('data-wrap', 'true');
+    expect(description?.parentElement).toHaveAttribute('data-item-min-width', '0');
+    expect(description?.parentElement).toHaveAttribute('data-item-max-width', '100%');
+    expect(description?.parentElement).toHaveStyle({ width: '100%' });
   });
 
   it('prefers target, original amount, and scaling factor from the graph node when provided', async () => {

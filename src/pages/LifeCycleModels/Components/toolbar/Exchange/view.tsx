@@ -4,6 +4,7 @@ import FlowsSelectDescription from '@/pages/Flows/Components/select/description'
 import { getProcessDetail } from '@/services/processes/api';
 import type { ProcessExchangeData } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Descriptions, Divider, Drawer, Row, Spin } from 'antd';
 import type { FC } from 'react';
@@ -94,8 +95,8 @@ const EdgeExchangeView: FC<Props> = ({
         open={drawerVisible}
         onClose={onDrawerClose}
       >
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} xl={12}>
             <Card
               title={
                 <FormattedMessage
@@ -110,6 +111,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -119,7 +121,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Exchange direction'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataSource?.exchangeDirection ?? '-',
                     },
                   ]}
@@ -140,6 +141,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -149,7 +151,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Mean amount'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataSource?.meanAmount ?? '-',
                     },
                   ]}
@@ -159,6 +160,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -168,7 +170,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Resulting amount'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataSource?.resultingAmount ?? '-',
                     },
                   ]}
@@ -178,6 +179,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -187,7 +189,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Data derivation type / status'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataSource?.dataDerivationTypeStatus ?? '-',
                     },
                   ]}
@@ -214,6 +215,7 @@ const EdgeExchangeView: FC<Props> = ({
                     bordered
                     size={'small'}
                     column={1}
+                    styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                     items={[
                       {
                         key: 0,
@@ -223,7 +225,6 @@ const EdgeExchangeView: FC<Props> = ({
                             defaultMessage='Reference flow(s)'
                           />
                         ),
-                        styles: { label: { width: '220px' } },
                         children: (
                           <QuantitativeReferenceIcon
                             value={!!exchangeDataSource?.quantitativeReference}
@@ -243,7 +244,7 @@ const EdgeExchangeView: FC<Props> = ({
               </Spin>
             </Card>
           </Col>
-          <Col span={12}>
+          <Col xs={24} xl={12}>
             <Card
               title={
                 <FormattedMessage
@@ -258,6 +259,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -267,7 +269,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Exchange direction'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataTarget?.exchangeDirection ?? '-',
                     },
                   ]}
@@ -288,6 +289,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -297,7 +299,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Mean amount'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataTarget?.meanAmount ?? '-',
                     },
                   ]}
@@ -307,6 +308,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -316,7 +318,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Resulting amount'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataTarget?.resultingAmount ?? '-',
                     },
                   ]}
@@ -326,6 +327,7 @@ const EdgeExchangeView: FC<Props> = ({
                   bordered
                   size={'small'}
                   column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   items={[
                     {
                       key: 0,
@@ -335,7 +337,6 @@ const EdgeExchangeView: FC<Props> = ({
                           defaultMessage='Data derivation type / status'
                         />
                       ),
-                      styles: { label: { width: '220px' } },
                       children: exchangeDataTarget?.dataDerivationTypeStatus ?? '-',
                     },
                   ]}
@@ -362,6 +363,7 @@ const EdgeExchangeView: FC<Props> = ({
                     bordered
                     size={'small'}
                     column={1}
+                    styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                     items={[
                       {
                         key: 0,
@@ -371,7 +373,6 @@ const EdgeExchangeView: FC<Props> = ({
                             defaultMessage='Reference flow(s)'
                           />
                         ),
-                        styles: { label: { width: '220px' } },
                         children: (
                           <QuantitativeReferenceIcon
                             value={!!exchangeDataTarget?.quantitativeReference}

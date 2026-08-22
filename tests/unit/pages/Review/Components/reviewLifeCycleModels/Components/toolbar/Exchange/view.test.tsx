@@ -77,15 +77,26 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Row = ({ children }: any) => <div>{children}</div>;
-  const Col = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children, gutter }: any) => (
+    <div
+      data-testid='exchange-grid'
+      data-gutter={Array.isArray(gutter) ? gutter.join(',') : gutter}
+    >
+      {children}
+    </div>
+  );
+  const Col = ({ children, xs, xl }: any) => (
+    <div data-testid='exchange-column' data-xs={xs} data-xl={xl}>
+      {children}
+    </div>
+  );
   const Spin = ({ children }: any) => <div>{children}</div>;
 
-  const Descriptions = ({ items = [] }: any) => (
+  const Descriptions = ({ items = [], styles }: any) => (
     <dl>
       {items.map((item: any, index: number) => (
         <div key={item.key ?? index}>
-          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          {item.label === undefined ? null : <dt style={styles?.label}>{toText(item.label)}</dt>}
           <dd>{item.children}</dd>
         </div>
       ))}
@@ -201,6 +212,20 @@ describe('ReviewLifeCycleModelEdgeExchangeView', () => {
     expect(screen.getAllByTestId('flow-description')[1]).toHaveTextContent('en:flow-input:Flow');
     expect(screen.getByText('quantitative-yes')).toBeInTheDocument();
     expect(screen.getByText('quantitative-no')).toBeInTheDocument();
+
+    expect(screen.getByTestId('exchange-grid')).toHaveAttribute('data-gutter', '16,16');
+    for (const column of screen.getAllByTestId('exchange-column')) {
+      expect(column).toHaveAttribute('data-xs', '24');
+      expect(column).toHaveAttribute('data-xl', '12');
+    }
+    for (const label of screen.getAllByText('Exchange direction')) {
+      expect(label.closest('dt')).toHaveStyle({
+        width: 'auto',
+        maxWidth: 'min(42vw, 22rem)',
+        whiteSpace: 'normal',
+        overflowWrap: 'anywhere',
+      });
+    }
 
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
     expect(onDrawerClose).toHaveBeenCalledTimes(1);

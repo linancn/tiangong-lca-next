@@ -9,6 +9,7 @@ import type {
 import { getProcessDetail } from '@/services/processes/api';
 import type { ProcessExchangeData, ProcessFormState } from '@/services/processes/data';
 import { genProcessFromData } from '@/services/processes/util';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import styles from '@/style/custom.less';
 import { CloseOutlined, StarOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -183,12 +184,18 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               />
             }
           >
-            <Space orientation='horizontal'>
+            <Space
+              orientation='horizontal'
+              wrap
+              style={{ width: '100%' }}
+              styles={{ item: { minWidth: 0, maxWidth: '100%' } }}
+            >
               <Descriptions
                 bordered
                 size={'small'}
                 column={1}
-                style={{ width: '450px' }}
+                style={{ width: '100%', maxWidth: '450px' }}
+                styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                 items={[
                   {
                     key: 0,
@@ -198,7 +205,6 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                         defaultMessage='Reference flow dataset identifier'
                       />
                     ),
-                    styles: { label: { width: '140px' } },
                     children: refFlow?.['@refObjectId'] ?? '-',
                   },
                 ]}
@@ -218,13 +224,13 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               bordered
               size={'small'}
               column={1}
+              styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
               items={[
                 {
                   key: 0,
                   label: (
                     <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
                   ),
-                  styles: { label: { width: '140px' } },
                   children: refFlow?.['@type'] ?? '-',
                 },
               ]}
@@ -234,13 +240,13 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               bordered
               size={'small'}
               column={1}
+              styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
               items={[
                 {
                   key: 0,
                   label: (
                     <FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />
                   ),
-                  styles: { label: { width: '140px' } },
                   children: refFlow?.['@uri'] ?? '-',
                 },
               ]}
@@ -250,11 +256,11 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               bordered
               size={'small'}
               column={1}
+              styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
               items={[
                 {
                   key: 0,
                   label: <FormattedMessage id='pages.version' defaultMessage='Version' />,
-                  styles: { label: { width: '120px' } },
                   children: refFlow?.['@version'] ?? '-',
                 },
               ]}

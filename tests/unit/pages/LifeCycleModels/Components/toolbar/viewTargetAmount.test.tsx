@@ -75,7 +75,17 @@ jest.mock('antd', () => {
     ) : null;
   };
 
-  const Space = ({ children }: any) => <div>{children}</div>;
+  const Space = ({ children, orientation, style, styles, wrap }: any) => (
+    <div
+      data-item-max-width={styles?.item?.maxWidth}
+      data-item-min-width={styles?.item?.minWidth}
+      data-orientation={orientation}
+      data-wrap={String(Boolean(wrap))}
+      style={style}
+    >
+      {children}
+    </div>
+  );
 
   const Card = ({ children, title }: any) => (
     <section>
@@ -84,11 +94,15 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ items = [] }: any) => (
-    <dl>
+  const Descriptions = ({ items = [], style, styles }: any) => (
+    <dl
+      data-label-max-width={styles?.label?.maxWidth}
+      data-label-overflow-wrap={styles?.label?.overflowWrap}
+      style={style}
+    >
       {items.map((item: any, index: number) => (
         <div key={item.key ?? index}>
-          {item.label === undefined ? null : <dt>{toText(item.label)}</dt>}
+          {item.label === undefined ? null : <dt style={styles?.label}>{toText(item.label)}</dt>}
           <dd>{item.children}</dd>
         </div>
       ))}
@@ -210,6 +224,28 @@ describe('ViewTargetAmount', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
 
     expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps the reference-flow description inside a 450px drawer viewport', async () => {
+    render(
+      <TargetAmount
+        refNode={refNode as any}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    const referenceLabel = await screen.findByText('Reference flow dataset identifier');
+    const description = referenceLabel.closest('dl');
+    expect(description).toHaveStyle({ width: '100%', maxWidth: '450px' });
+    expect(description).toHaveAttribute('data-label-max-width', 'min(42vw, 22rem)');
+    expect(description).toHaveAttribute('data-label-overflow-wrap', 'anywhere');
+    expect(description?.parentElement).toHaveAttribute('data-wrap', 'true');
+    expect(description?.parentElement).toHaveAttribute('data-item-min-width', '0');
+    expect(description?.parentElement).toHaveAttribute('data-item-max-width', '100%');
+    expect(description?.parentElement).toHaveStyle({ width: '100%' });
   });
 
   it('disables the trigger without a ref node and falls back to placeholder values when process detail is sparse', async () => {
