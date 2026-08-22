@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 31b466640094d737e0bc2f62a456fb6ab790a1c4
+lastReviewedCommit: 06570b4ecfa3e96592026699774d4518ae3cec32
 lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 focused and browser evidence remains additive to the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 

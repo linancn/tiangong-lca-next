@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 31b466640094d737e0bc2f62a456fb6ab790a1c4
-lastReviewedNote: 'Reviewed for Next Issue #924: Ant Design mocks now expose stable App.useApp APIs, representative Form.List paths use the real v6 store, and browser-like shims retain no native handles.'
+lastReviewedCommit: 06570b4ecfa3e96592026699774d4518ae3cec32
+lastReviewedNote: 'Reviewed for Next Issue #924: every shipped Pro Components JSX instance now maps to one explicit surface family with live static or browser evidence.'
 ---
 
 # Testing Patterns Reference
@@ -69,6 +69,7 @@ lastReviewedNote: 'Reviewed for Next Issue #924: Ant Design mocks now expose sta
 - component tests that mock Ant Design feedback must expose the v6 `App.useApp()` contract; do not let test setup fall back to static `message`, `Modal`, or `notification` APIs. Shared mocks consume `Descriptions.items` and `Select.options` only, so removed member-style APIs cannot remain hidden in tests
 - use a real antd 6 Form store for representative `Form.List` submission contracts. The shared browser-like `MessageChannel` and `ResizeObserver` test shims must have no persistent native handle, fixed sleep, or production fallback
 - browser assertions for Ant Design surfaces use accessibility roles or project-owned classes passed through public semantic `classNames`; do not assert `.ant-drawer-content`, `.ant-modal-content`, or another private DOM class
+- keep `tests/e2e/i18n/pro-components-surface-registry.ts` as the one-to-one inventory for shipped Pro Components JSX instances. Every instance belongs to exactly one family with live evidence paths; generated `.umi*` trees are excluded, and representative toolbar, nested-table, selector, form, layout, and overlay states extend existing Playwright declarations so the qualification case count does not drift
 - make mocks for stateful hooks preserve the identity of returned API objects across parent rerenders; update methods on the stable object instead of returning a fresh placeholder on each render
 - pair shared hook mocks with a direct rerender regression that proves both object identity and the callable API the consumer relies on
 - when mount and user actions can call the same async loader, guard the in-flight request outside render-state closures and prove that an action fired before the first response does not start a second request or let a later empty response overwrite valid data
