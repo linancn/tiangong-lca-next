@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
-lastReviewedNote: 'Reviewed for Next Issue #910: the TIDAS scalar fix and locale artifact refresh use the existing focused-test, artifact-writer, lint, build, Docpact, and managed-push loop without changing bootstrap commands.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: 621f6c7e1e321690e661e34b6d97b2cceaf2cb91
+lastReviewedNote: 'Reviewed for Next Issue #924: the React 19 / Ant Design 6 migration, semantic browser proof, and no-argument E2E resume parser fix use the existing install, Docpact, build, gate, and managed-push workflow.'
 ---
 
 # Development Bootstrap

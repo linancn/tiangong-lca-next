@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 6df6bf6d1d522a586fd12091a18dd25aa591d6da
+lastReviewedCommit: 621f6c7e1e321690e661e34b6d97b2cceaf2cb91
 lastReviewedNote: 'Reviewed for Next Issue #924: the exact React 19 / Ant Design 6 runtime, App feedback boundary, semantic UI slots, and regenerated locale evidence stay within existing repository ownership and branch policy.'
 related:
   - .docpact/config.yaml

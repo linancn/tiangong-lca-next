@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-22
-lastReviewedCommit: 6df6bf6d1d522a586fd12091a18dd25aa591d6da
+lastReviewedCommit: 621f6c7e1e321690e661e34b6d97b2cceaf2cb91
 lastReviewedNote: 'Reviewed for Next Issue #924: Ant Design mocks now expose stable App.useApp APIs, representative Form.List paths use the real v6 store, and browser-like shims retain no native handles.'
 ---
 
