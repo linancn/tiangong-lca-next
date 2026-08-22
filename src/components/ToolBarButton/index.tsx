@@ -1,36 +1,41 @@
 import { Button, Tooltip } from 'antd';
+
+import './index.less';
+
+export type ToolBarButtonPlacement = 'action' | 'option';
+
 type Props = {
   icon: React.ReactNode;
   tooltip: React.ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  placement?: ToolBarButtonPlacement;
 };
-const ToolBarButton = ({ icon, tooltip, onClick, disabled = false }: Props) => {
+
+const ToolBarButton = ({
+  icon,
+  tooltip,
+  onClick,
+  disabled = false,
+  placement = 'action',
+}: Props) => {
   return (
     <Tooltip title={tooltip}>
       <Button
+        aria-disabled={disabled}
+        className={`tg-pro-toolbar-button tg-pro-toolbar-button--${placement}`}
         disabled={disabled}
-        icon={icon}
-        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+        icon={
+          <>
+            <span aria-hidden='true' className='tg-pro-toolbar-button__icon'>
+              {icon}
+            </span>
+            <span className='tg-pro-toolbar-button__accessible-label'>{tooltip}</span>
+          </>
+        }
         type='text'
         onClick={onClick}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            width: 1,
-            height: 1,
-            padding: 0,
-            margin: -1,
-            overflow: 'hidden',
-            clipPath: 'inset(50%)',
-            whiteSpace: 'nowrap',
-            border: 0,
-          }}
-        >
-          {tooltip}
-        </span>
-      </Button>
+      />
     </Tooltip>
   );
 };

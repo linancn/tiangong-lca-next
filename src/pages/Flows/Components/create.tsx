@@ -248,18 +248,8 @@ const FlowsCreate: FC<CreateProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={
-          actionType === 'copy' ? (
-            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
-          ) : actionType === 'createVersion' ? (
-            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
-          ) : (
-            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
-          )
-        }
-      >
-        {actionType === 'copy' ? (
+      {actionType === 'copy' ? (
+        <Tooltip title={<FormattedMessage id='pages.button.copy' defaultMessage='Copy' />}>
           <Button
             shape='circle'
             icon={<CopyOutlined />}
@@ -268,16 +258,22 @@ const FlowsCreate: FC<CreateProps> = ({
               setDrawerVisible(true);
             }}
           ></Button>
-        ) : (
-          <ToolBarButton
-            icon={<PlusOutlined />}
-            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
-            onClick={() => {
-              setDrawerVisible(true);
-            }}
-          />
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <ToolBarButton
+          icon={<PlusOutlined />}
+          tooltip={
+            actionType === 'createVersion' ? (
+              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+            ) : (
+              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+            )
+          }
+          onClick={() => {
+            setDrawerVisible(true);
+          }}
+        />
+      )}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}

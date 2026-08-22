@@ -13,27 +13,8 @@ type ToolBarButtonProps = {
   tooltip: ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  placement?: 'action' | 'option';
 };
-
-jest.mock('antd', () => {
-  const Button = ({ children, disabled, icon, onClick, style }: any) => (
-    <button disabled={disabled} style={style} type='button' onClick={onClick}>
-      {icon}
-      {children}
-    </button>
-  );
-  const Tooltip = ({ title, children }: { title: ReactNode; children: ReactNode }) => (
-    <span>
-      <span data-testid='tooltip-title'>{title}</span>
-      {children}
-    </span>
-  );
-
-  return {
-    Button,
-    Tooltip,
-  };
-});
 
 const renderComponent = (overrideProps: Partial<ToolBarButtonProps> = {}) => {
   const onClick = overrideProps.onClick ?? jest.fn();
@@ -57,11 +38,17 @@ describe('ToolBarButton Component', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the provided icon along with tooltip content', () => {
-    renderComponent();
+  it('renders a real icon-only Ant button with one accessible name and tooltip', async () => {
+    const { container } = renderComponent();
+    const button = screen.getByRole('button', { name: 'Run calculation' });
 
-    expect(screen.getByLabelText('Calculate')).toBeInTheDocument();
-    expect(screen.getByTestId('tooltip-title')).toHaveTextContent('Run calculation');
+    expect(button).toHaveClass('ant-btn-icon-only');
+    expect(button).toHaveClass('tg-pro-toolbar-button--action');
+    expect(container.querySelector('.tg-pro-toolbar-button__icon')).toHaveTextContent('Icon');
+
+    fireEvent.mouseEnter(button);
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Run calculation');
   });
 
   it('calls onClick when the button is activated', () => {
@@ -77,7 +64,7 @@ describe('ToolBarButton Component', () => {
     renderComponent({ disabled: true, onClick });
     const wrapper = screen.getByRole('button');
 
-    expect(wrapper).toHaveStyle({ cursor: 'not-allowed' });
+    expect(wrapper).toHaveAttribute('aria-disabled', 'true');
     expect(wrapper).toBeDisabled();
 
     fireEvent.click(wrapper);
@@ -85,12 +72,19 @@ describe('ToolBarButton Component', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('uses pointer cursor styling when enabled', () => {
+  it('uses the standalone toolbar action placement by default', () => {
     renderComponent();
 
     const wrapper = screen.getByRole('button');
 
-    expect(wrapper).toHaveStyle({ cursor: 'pointer' });
+    expect(wrapper).toHaveClass('tg-pro-toolbar-button--action');
+    expect(wrapper).toHaveAttribute('aria-disabled', 'false');
     expect(wrapper).toBeEnabled();
+  });
+
+  it('supports the compact placement used inside native ProTable options', () => {
+    renderComponent({ placement: 'option' });
+
+    expect(screen.getByRole('button')).toHaveClass('tg-pro-toolbar-button--option');
   });
 });

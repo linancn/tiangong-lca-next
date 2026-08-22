@@ -611,11 +611,12 @@ const TableList: FC = () => {
                 if (dataSource !== 'my') {
                   return settings;
                 }
-                const calcOption = <LcaSolveToolbar key='lca-calc-option' />;
+                const calcOption = <LcaSolveToolbar key='lca-calc-option' placement='option' />;
                 const analysisPageOption = (
                   <ToolBarButton
                     key='lca-analysis-page-option'
                     icon={<BarChartOutlined />}
+                    placement='option'
                     tooltip={intl.formatMessage({
                       id: 'pages.process.lca.page.title',
                       defaultMessage: 'LCA Analysis',

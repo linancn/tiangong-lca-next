@@ -147,8 +147,8 @@ jest.mock('@/components/DatasetUuidMentionSearch', () => ({
 
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
-  default: ({ tooltip, onClick }: any) => (
-    <button type='button' onClick={onClick}>
+  default: ({ tooltip, onClick, placement = 'action' }: any) => (
+    <button data-placement={placement} type='button' onClick={onClick}>
       {toText(tooltip)}
     </button>
   ),
@@ -216,7 +216,9 @@ jest.mock('@/pages/Processes/Components/view', () => ({
 
 jest.mock('@/pages/Processes/Components/lcaSolveToolbar', () => ({
   __esModule: true,
-  default: () => <div data-testid='lca-solve-toolbar' />,
+  default: ({ placement = 'action' }: any) => (
+    <div data-placement={placement} data-testid='lca-solve-toolbar' />
+  ),
 }));
 
 jest.mock('@/pages/Processes/Components/ReviewDetail', () => ({
@@ -527,7 +529,15 @@ describe('ProcessesPage', () => {
     expect(screen.getByText('Materials')).toBeInTheDocument();
     expect(screen.getByText('2024')).toBeInTheDocument();
     expect(screen.getByText('CN')).toBeInTheDocument();
-    expect(screen.getAllByTestId('lca-solve-toolbar')).toHaveLength(3);
+    const desktopCalcActions = screen.getAllByTestId('lca-solve-toolbar');
+    const desktopAnalysisActions = screen.getAllByRole('button', { name: 'LCA Analysis' });
+    expect(desktopCalcActions).toHaveLength(3);
+    desktopCalcActions.forEach((action) =>
+      expect(action).toHaveAttribute('data-placement', 'option'),
+    );
+    desktopAnalysisActions.forEach((action) =>
+      expect(action).toHaveAttribute('data-placement', 'option'),
+    );
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
@@ -552,6 +562,11 @@ describe('ProcessesPage', () => {
     expect(screen.getByRole('button', { name: /dataset-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
+    expect(screen.getByTestId('lca-solve-toolbar')).toHaveAttribute('data-placement', 'action');
+    expect(screen.getByRole('button', { name: 'LCA Analysis' })).toHaveAttribute(
+      'data-placement',
+      'action',
+    );
 
     await userEvent.click(screen.getByRole('button', { name: 'LCA Analysis' }));
     expect(history.push).toHaveBeenCalledWith('/mydata/processes/analysis');

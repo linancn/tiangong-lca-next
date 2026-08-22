@@ -1,0 +1,68 @@
+.tg-pro-toolbar-button.tg-pro-toolbar-button {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  min-width: 24px;
+  height: 32px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  border: 0;
+  border-radius: var(--ant-border-radius-sm, 4px);
+  color: var(--ant-color-icon-hover, rgba(0, 0, 0, 0.88));
+  font-size: var(--ant-font-size-lg, 16px);
+  background: transparent;
+  box-shadow: none;
+  transition: none;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):active {
+    // AntD's variant-state selector is intentionally more specific than a consumer class.
+    color: var(--ant-color-primary, #5c246a) !important;
+    background: transparent !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    color: var(--ant-color-text-disabled, rgba(0, 0, 0, 0.25)) !important;
+    background: transparent !important;
+    cursor: not-allowed;
+  }
+}
+
+.tg-pro-toolbar-button.tg-pro-toolbar-button--option {
+  width: 16px;
+  min-width: 16px;
+  flex-basis: 16px;
+  color: inherit !important;
+
+  &:not(:disabled):hover,
+  &:not(:disabled):active {
+    color: inherit !important;
+  }
+}
+
+.tg-pro-toolbar-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.tg-pro-toolbar-button__accessible-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

@@ -336,7 +336,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
@@ -364,7 +364,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
@@ -385,7 +385,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       version: undefined,
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
     fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
@@ -406,7 +406,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGenFlowFromData).toHaveBeenCalledWith({});
