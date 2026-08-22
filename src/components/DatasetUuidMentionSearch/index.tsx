@@ -140,20 +140,20 @@ export default function DatasetUuidMentionSearch({
   };
 
   return (
-    <Space direction='vertical' size='small' style={{ marginTop: 12, width: '100%' }}>
+    <Space orientation='vertical' size='small' style={{ marginTop: 12, width: '100%' }}>
       <Button icon={<SearchOutlined />} loading={loading} onClick={handleSearch}>
         <FormattedMessage id='pages.datasetUuidMention.searchButton' />
       </Button>
       {error && (
         <Alert
-          message={intl.formatMessage({ id: 'pages.datasetUuidMention.error' })}
+          title={intl.formatMessage({ id: 'pages.datasetUuidMention.error' })}
           showIcon
           type='error'
         />
       )}
       {hasSearched && !error && rows.length === 0 && (
         <Alert
-          message={intl.formatMessage({ id: 'pages.datasetUuidMention.empty' })}
+          title={intl.formatMessage({ id: 'pages.datasetUuidMention.empty' })}
           showIcon
           type='info'
         />

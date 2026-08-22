@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 4ce0e0a2cc99928a9eb8466518e30d05889841ab
-lastReviewedNote: 'Reviewed for Next Issue #910: the service layer now owns explicit TIDAS year and percentage scalar normalization plus fail-closed save validation.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: a5279243f4c1d22ee00c50ed92787614d585800c
+lastReviewedNote: 'Reviewed for Next Issue #924: the UI runtime now uses one React 19 / Ant Design 6 / ProComponents 3 generation with Umi-global App, theme, and non-component feedback registration.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -36,7 +36,7 @@ related:
 
 ## Repo Shape
 
-This repo is a Umi-based React SPA with service-first data access, cache-backed static resources, and strict validation gates.
+This repo is a Umi-based React 19 SPA on one native Ant Design 6 / ProComponents 3 generation, with service-first data access, cache-backed static resources, and strict validation gates.
 
 ## Stable Path Map
 
@@ -46,8 +46,8 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `config/config.ts` | Umi runtime config |
 | `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
 | `config/supabaseEnv.ts` | frontend env selection; explicit build values override file defaults, and qualification selects a fixed non-production profile |
-| `src/app.tsx` | runtime layout, auth redirect, cache monitors, theme behavior |
-| `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, and shared runtime state |
+| `src/app.tsx` | runtime layout, auth redirect, cache monitors, and Umi-global antd 6 ConfigProvider/App theme synchronization |
+| `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, shared runtime state, and the global App feedback registrar used by non-component callers |
 | `src/pages/**` | route-level product pages |
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
@@ -95,7 +95,7 @@ Rules:
 - language options, labels, resolver priorities, service-query adapters, static resource files, and cache revisions are derived from their owning registry or manifest. `pnpm i18n:platform:audit` verifies exact registry joins and `pnpm i18n:hardcoding:audit` fails closed on unowned language literals outside a narrow, issue-owned adapter allowlist
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
-- semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `pnpm start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Its direct Supabase client remains a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
+- authenticated semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `pnpm start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Credential-free qualification instead compiles the fixed `.invalid` profile and installs the semantic backend simulator for both candidate readiness and test contexts, so it never contacts tracked-main or production. The test-only Supabase boundary remains under `tests/e2e/**`, uses a supplied user session only for authenticated mode, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
 
 ### TIDAS Package Export Task Identity
 

@@ -11,7 +11,7 @@ import { getTeamInvitationCountApi } from '@/services/roles/api';
 import { InfoCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { Badge, Modal, Select, Space, Tabs, theme } from 'antd';
 import type { ReactNode } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
 import DataNotification from './DataNotification';
 import IssueNotification from './IssueNotification';
@@ -54,7 +54,7 @@ const NotificationTabContent: React.FC<{ message: ReactNode; children: ReactNode
   const { token } = theme.useToken();
 
   return (
-    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
       <div
         style={{
           display: 'flex',
@@ -89,8 +89,8 @@ const Notification: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [timeFilter, setTimeFilter] = useState<number>(3);
   const [activeTabKey, setActiveTabKey] = useState<NotificationTabKey>('team');
-  // Track which tabs have had their notification time updated (to avoid duplicate updates)
-  const [tabsViewed, setTabsViewed] = useState<{ team: boolean; data: boolean; issue: boolean }>({
+  // A ref closes the gap between starting an async update and React committing the next render.
+  const tabsViewedRef = useRef<{ team: boolean; data: boolean; issue: boolean }>({
     team: false,
     data: false,
     issue: false,
@@ -132,8 +132,7 @@ const Notification: React.FC = () => {
   const handleIconClick = () => {
     setModalVisible(true);
     setActiveTabKey('team');
-    // Reset viewed state when opening modal
-    setTabsViewed({ team: false, data: false, issue: false });
+    tabsViewedRef.current = { team: false, data: false, issue: false };
   };
 
   const handleModalClose = () => {
@@ -142,9 +141,14 @@ const Notification: React.FC = () => {
 
   // Callback when team notification data is loaded
   const handleTeamDataLoaded = async () => {
-    if (!tabsViewed.team) {
-      await updateTeamNotificationTime();
-      setTabsViewed((prev) => ({ ...prev, team: true }));
+    if (!tabsViewedRef.current.team) {
+      tabsViewedRef.current.team = true;
+      try {
+        await updateTeamNotificationTime();
+      } catch (error) {
+        tabsViewedRef.current.team = false;
+        throw error;
+      }
       setUnreadCounts((prev) => ({
         ...prev,
         team: 0,
@@ -155,9 +159,14 @@ const Notification: React.FC = () => {
 
   // Callback when data notification data is loaded
   const handleDataDataLoaded = async () => {
-    if (!tabsViewed.data) {
-      await updateDataNotificationTime();
-      setTabsViewed((prev) => ({ ...prev, data: true }));
+    if (!tabsViewedRef.current.data) {
+      tabsViewedRef.current.data = true;
+      try {
+        await updateDataNotificationTime();
+      } catch (error) {
+        tabsViewedRef.current.data = false;
+        throw error;
+      }
       setUnreadCounts((prev) => ({
         ...prev,
         data: 0,
@@ -167,9 +176,14 @@ const Notification: React.FC = () => {
   };
 
   const handleIssueDataLoaded = async () => {
-    if (!tabsViewed.issue) {
-      await updateIssueNotificationTime();
-      setTabsViewed((prev) => ({ ...prev, issue: true }));
+    if (!tabsViewedRef.current.issue) {
+      tabsViewedRef.current.issue = true;
+      try {
+        await updateIssueNotificationTime();
+      } catch (error) {
+        tabsViewedRef.current.issue = false;
+        throw error;
+      }
       setUnreadCounts((prev) => ({
         ...prev,
         issue: 0,
@@ -281,6 +295,10 @@ const Notification: React.FC = () => {
   return (
     <>
       <HeaderActionIcon
+        aria-label={intl.formatMessage({
+          id: 'notification.title',
+          defaultMessage: 'Notification Center',
+        })}
         title={intl.formatMessage({
           id: 'notification.title',
           defaultMessage: 'Notification Center',

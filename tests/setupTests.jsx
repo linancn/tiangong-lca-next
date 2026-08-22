@@ -29,6 +29,75 @@ if (typeof global.TransformStream === 'undefined') {
   global.TransformStream = TransformStream;
 }
 
+class MessagePortMock {
+  constructor() {
+    this.onmessage = null;
+    this.peer = null;
+    this.closed = false;
+    this.listeners = new Set();
+  }
+
+  postMessage(data) {
+    const peer = this.peer;
+    if (this.closed || !peer || peer.closed) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (peer.closed) {
+        return;
+      }
+      const event = { data };
+      peer.onmessage?.(event);
+      peer.listeners.forEach((listener) => listener(event));
+    });
+  }
+
+  start() {}
+
+  close() {
+    this.closed = true;
+    this.onmessage = null;
+    this.listeners.clear();
+  }
+
+  addEventListener(type, listener) {
+    if (type === 'message') {
+      this.listeners.add(listener);
+    }
+  }
+
+  removeEventListener(type, listener) {
+    if (type === 'message') {
+      this.listeners.delete(listener);
+    }
+  }
+}
+
+class MessageChannelMock {
+  constructor() {
+    this.port1 = new MessagePortMock();
+    this.port2 = new MessagePortMock();
+    this.port1.peer = this.port2;
+    this.port2.peer = this.port1;
+  }
+}
+
+if (typeof globalThis.MessageChannel === 'undefined') {
+  globalThis.MessageChannel = MessageChannelMock;
+}
+
+class ResizeObserverMock {
+  observe() {}
+
+  unobserve() {}
+
+  disconnect() {}
+}
+
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = ResizeObserverMock;
+}
+
 // uuid@14 expects a standards-compliant global crypto implementation.
 const cryptoImpl = typeof globalThis.crypto !== 'undefined' ? globalThis.crypto : webcrypto;
 

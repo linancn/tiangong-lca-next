@@ -333,11 +333,11 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Upload = ({ beforeUpload, onRemove, disabled }: any) => {
+  const Upload = ({ beforeUpload, fileList = [], onRemove, disabled }: any) => {
     const idRef = React.useRef(`upload-${Math.random().toString(36).slice(2, 8)}`);
 
     return (
-      <div data-testid={idRef.current}>
+      <div data-testid={idRef.current} data-file-count={fileList.length}>
         <button
           type='button'
           onClick={() => {
@@ -390,8 +390,8 @@ jest.mock('antd', () => {
     });
   };
 
-  const Tabs = ({ items = [], activeKey, onChange, tabPosition }: any) => (
-    <div data-testid='tabs' data-tab-position={tabPosition ?? 'top'}>
+  const Tabs = ({ items = [], activeKey, onChange, tabPlacement }: any) => (
+    <div data-testid='tabs' data-tab-position={tabPlacement ?? 'top'}>
       {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
@@ -435,16 +435,19 @@ jest.mock('antd', () => {
   };
 
   const ConfigProvider = ({ children }: any) => <>{children}</>;
+  const Modal = Object.assign(ModalComponent, { confirm: modalConfirm });
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message, modal: Modal });
 
   return {
     __esModule: true,
+    App,
     Button,
     ConfigProvider,
     Flex,
     Form,
     Grid,
     Input,
-    Modal: Object.assign(ModalComponent, { confirm: modalConfirm }),
+    Modal,
     Spin,
     Switch,
     Tabs,
@@ -752,6 +755,7 @@ describe('Teams management workflows', () => {
 
       await waitFor(() => {
         expect(mockGetBase64).toHaveBeenCalledTimes(2);
+        expect(document.querySelectorAll('[data-file-count="1"]')).toHaveLength(2);
       });
 
       fireEvent.click(screen.getByTestId('pro-form-submit'));
@@ -834,7 +838,7 @@ describe('Teams management workflows', () => {
     await waitFor(() => {
       expect(mockGetUserRoles).toHaveBeenCalledTimes(1);
     });
-    expect(screen.getByTestId('pro-form-submit')).not.toBeDisabled();
+    await waitFor(() => expect(screen.getByTestId('pro-form-submit')).not.toBeDisabled());
 
     fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
 

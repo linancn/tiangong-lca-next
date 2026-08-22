@@ -27,7 +27,7 @@ jest.mock('@ant-design/pro-components', () => ({
 
 jest.mock('antd', () => ({
   __esModule: true,
-  Alert: ({ message }: any) => <div>{message}</div>,
+  Alert: ({ title }: any) => <div>{title}</div>,
   Card: ({ children }: any) => <div>{children}</div>,
   Typography: {
     Title: ({ children }: any) => <h2>{children}</h2>,

@@ -40,7 +40,7 @@
   }
 
   .responsive-data-list-search-extra {
-    .ant-checkbox-wrapper {
+    > label {
       white-space: nowrap;
     }
   }
@@ -73,53 +73,15 @@
     max-width: 100%;
     overflow: hidden;
 
-    .ant-pro-card,
-    .ant-pro-card-body,
-    .ant-table-wrapper {
+    .responsive-data-list-card,
+    .responsive-data-list-card-body,
+    .responsive-data-list-table-root {
       max-width: 100%;
       min-width: 0;
     }
 
-    .ant-pro-table-list-toolbar-container {
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .ant-pro-table-list-toolbar-left {
-      min-width: 0;
-      width: 100%;
-      flex: 0 0 auto;
-      margin-block-end: 0;
-    }
-
-    .ant-pro-table-list-toolbar-title {
-      white-space: normal;
-    }
-
-    .ant-pro-table-list-toolbar-setting-items {
-      min-width: 0;
-      flex-wrap: nowrap;
-      gap: 8px;
-    }
-
-    .ant-pro-table-list-toolbar-right {
-      min-width: 0;
-      width: 100%;
-      flex: 0 0 auto;
-      flex-wrap: nowrap;
-      justify-content: flex-end;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding-bottom: 2px;
-
-      > * {
-        flex: 0 0 auto;
-      }
-    }
-
-    .ant-table-thead > tr > th,
-    .ant-table-tbody > tr > td {
+    .responsive-data-list-header-cell,
+    .responsive-data-list-body-cell {
       white-space: normal;
     }
 
@@ -127,7 +89,8 @@
       white-space: nowrap;
     }
 
-    .ant-table-cell {
+    .responsive-data-list-header-cell,
+    .responsive-data-list-body-cell {
       padding: 10px 8px;
     }
   }

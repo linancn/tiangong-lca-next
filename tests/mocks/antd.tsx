@@ -197,7 +197,6 @@ export const createAntdMock = () => {
     defaultValue,
     onChange,
     options = [],
-    children,
     placeholder,
     mode,
     showSearch,
@@ -206,8 +205,9 @@ export const createAntdMock = () => {
     maxTagCount,
     ...rest
   }: any) => {
-    void showSearch;
-    void optionFilterProp;
+    const resolvedOptionFilterProp =
+      showSearch && typeof showSearch === 'object' ? showSearch.optionFilterProp : optionFilterProp;
+    void resolvedOptionFilterProp;
     void allowClear;
     void maxTagCount;
     return (
@@ -237,16 +237,9 @@ export const createAntdMock = () => {
             {option.label ?? option.value}
           </option>
         ))}
-        {children}
       </select>
     );
   };
-  (Select as any).Option = ({ value: optionValue, children: optionChildren, ...rest }: any) => (
-    <option value={optionValue} {...rest}>
-      {toText(optionChildren)}
-    </option>
-  );
-
   const Checkbox = ({ checked, onChange, children, ...rest }: any) => (
     <label>
       <input
@@ -360,26 +353,40 @@ export const createAntdMock = () => {
     ),
   };
 
-  const Alert = ({ message: alertMessage }: any) => <div role='alert'>{alertMessage}</div>;
+  const Alert = ({ title, description, action }: any) => (
+    <div role='alert'>
+      {title}
+      {description}
+      {action}
+    </div>
+  );
 
-  const Descriptions = ({ children, ...restProps }: any) => {
+  const DescriptionsItem = ({ label, children, ...rest }: any) => (
+    <div data-testid='descriptions-item' {...rest}>
+      <strong>{toText(label)}</strong>
+      <span>{children}</span>
+    </div>
+  );
+
+  const Descriptions = ({ items = [], styles, ...restProps }: any) => {
     const rest = { ...restProps };
     delete rest.bordered;
     delete rest.size;
     delete rest.column;
 
     return (
-      <div data-testid='descriptions' {...rest}>
-        {children}
+      <div
+        data-testid='descriptions'
+        data-styles-label-width={styles?.label?.width}
+        data-styles-label-max-width={styles?.label?.maxWidth}
+        {...rest}
+      >
+        {items.map((item: any, index: number) => (
+          <DescriptionsItem key={item.key ?? index} {...item} />
+        ))}
       </div>
     );
   };
-  (Descriptions as any).Item = ({ label, children, ...rest }: any) => (
-    <div data-testid='descriptions-item' {...rest}>
-      <strong>{toText(label)}</strong>
-      <span>{children}</span>
-    </div>
-  );
 
   const CardMeta = ({ title, description }: any) => (
     <div data-testid='card-meta'>
@@ -603,13 +610,11 @@ export const createAntdMock = () => {
       const changeFieldValue = React.useCallback(
         (name: string, value: any) => {
           if (!name) return;
-          setValues((previous) => {
-            const nextValues = { ...previous, [name]: value };
-            onValuesChange?.({ [name]: value }, nextValues);
-            return nextValues;
-          });
+          const nextValues = { ...values, [name]: value };
+          setValues(nextValues);
+          onValuesChange?.({ [name]: value }, nextValues);
         },
-        [onValuesChange],
+        [onValuesChange, values],
       );
 
       const resetFields = React.useCallback(() => {

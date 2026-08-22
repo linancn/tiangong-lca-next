@@ -84,14 +84,17 @@ jest.mock('antd', () => {
         </button>
       </section>
     ) : null;
-  Modal.useModal = () => [
-    {
-      confirm: (options: { onOk?: () => void }) => mockConfirm(options),
-    },
-    <span key='approval-modal-context' data-testid='approval-modal-context' />,
-  ];
+  const message = {
+    error: (...args: unknown[]) => mockMessageError(...args),
+    success: (...args: unknown[]) => mockMessageSuccess(...args),
+  };
+  const modal = {
+    confirm: (options: { onOk?: () => void }) => mockConfirm(options),
+  };
+  const App = { useApp: () => ({ message, modal }) };
 
   return {
+    App,
     Button: ({
       icon,
       onClick,
@@ -123,10 +126,7 @@ jest.mock('antd', () => {
     Input: {
       TextArea: () => <textarea aria-label='review-reason' />,
     },
-    message: {
-      error: (...args: unknown[]) => mockMessageError(...args),
-      success: (...args: unknown[]) => mockMessageSuccess(...args),
-    },
+    message,
     Modal,
     Space: ({ children }: { children: import('react').ReactNode }) => <div>{children}</div>,
     Tooltip: ({
@@ -168,7 +168,6 @@ describe('SimpleReviewActions', () => {
     expect(approveButton).toHaveAttribute('data-button-type', 'default');
     fireEvent.click(approveButton!);
 
-    expect(screen.getByTestId('approval-modal-context')).toBeInTheDocument();
     expect(mockConfirm).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Confirm approval?',

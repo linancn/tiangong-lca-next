@@ -333,10 +333,10 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   if (issue) {
     const legacy = issue.code === 'calculation_bundle_not_available';
     return (
-      <Space direction='vertical' className={styles.previewDetails}>
+      <Space orientation='vertical' className={styles.previewDetails}>
         <Alert
           type={legacy ? 'info' : 'error'}
-          message={
+          title={
             legacy
               ? t(
                   'pages.dataProcessing.bundle.legacy',
@@ -353,16 +353,16 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   }
   if (!bundleData || !manifest) return null;
 
-  const resultNotice = recordsIssue ? <Alert type='warning' message={recordsIssue} /> : null;
+  const resultNotice = recordsIssue ? <Alert type='warning' title={recordsIssue} /> : null;
   const processControl = (
     <Space className={styles.bundleToolbar} wrap>
       <span>{t('pages.dataProcessing.bundle.process', 'Process')}</span>
       <Select
         aria-label={t('pages.dataProcessing.bundle.process', 'Process')}
+        className={styles.bundleProcessSelect}
         value={selectedProcessIndex === undefined ? undefined : String(selectedProcessIndex)}
         options={processOptions}
-        showSearch
-        optionFilterProp='label'
+        showSearch={{ optionFilterProp: 'label' }}
         onChange={(value) => setSelectedProcessIndex(Number(value))}
       />
     </Space>
@@ -424,29 +424,47 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         </Button>
       }
     >
-      <Space direction='vertical' size='middle' className={styles.previewDetails}>
-        <Descriptions bordered size='small' column={2}>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.schema', 'Contract')}>
-            {manifest.schemaVersion}
-          </Descriptions.Item>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.coverage', 'Coverage')}>
-            {coverageComplete === true
-              ? t('pages.dataProcessing.bundle.complete', 'Complete')
-              : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked')}
-          </Descriptions.Item>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.processCount', 'Processes')}>
-            {manifest.scope.processCount}
-          </Descriptions.Item>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.impactCount', 'LCIA methods')}>
-            {manifest.snapshot.impactCount}
-          </Descriptions.Item>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.snapshot', 'Snapshot')}>
-            <code>{manifest.snapshot.id}</code>
-          </Descriptions.Item>
-          <Descriptions.Item label={t('pages.dataProcessing.bundle.contentHash', 'Bundle hash')}>
-            <code>{manifest.bundleContentHash}</code>
-          </Descriptions.Item>
-        </Descriptions>
+      <Space orientation='vertical' size='middle' className={styles.previewDetails}>
+        <Descriptions
+          bordered
+          size='small'
+          column={2}
+          items={[
+            {
+              key: 'contract',
+              label: t('pages.dataProcessing.bundle.schema', 'Contract'),
+              children: manifest.schemaVersion,
+            },
+            {
+              key: 'coverage',
+              label: t('pages.dataProcessing.bundle.coverage', 'Coverage'),
+              children:
+                coverageComplete === true
+                  ? t('pages.dataProcessing.bundle.complete', 'Complete')
+                  : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked'),
+            },
+            {
+              key: 'process-count',
+              label: t('pages.dataProcessing.bundle.processCount', 'Processes'),
+              children: manifest.scope.processCount,
+            },
+            {
+              key: 'impact-count',
+              label: t('pages.dataProcessing.bundle.impactCount', 'LCIA methods'),
+              children: manifest.snapshot.impactCount,
+            },
+            {
+              key: 'snapshot',
+              label: t('pages.dataProcessing.bundle.snapshot', 'Snapshot'),
+              children: <code>{manifest.snapshot.id}</code>,
+            },
+            {
+              key: 'content-hash',
+              label: t('pages.dataProcessing.bundle.contentHash', 'Bundle hash'),
+              children: <code>{manifest.bundleContentHash}</code>,
+            },
+          ]}
+        />
         {processControl}
         <Spin spinning={recordsLoading}>
           <Tabs
@@ -457,7 +475,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                 key: 'lci',
                 label: 'LCI',
                 children: (
-                  <Space direction='vertical' size='middle' className={styles.previewDetails}>
+                  <Space orientation='vertical' size='middle' className={styles.previewDetails}>
                     {resultNotice}
                     {rawActions}
                     <Table
@@ -476,7 +494,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                 key: 'lcia',
                 label: 'LCIA',
                 children: (
-                  <Space direction='vertical' size='middle' className={styles.previewDetails}>
+                  <Space orientation='vertical' size='middle' className={styles.previewDetails}>
                     {resultNotice}
                     <Button
                       size='small'
@@ -502,44 +520,54 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                 key: 'evidence',
                 label: t('pages.dataProcessing.bundle.evidence', 'Evidence'),
                 children: (
-                  <Descriptions bordered size='small' column={1}>
-                    <Descriptions.Item
-                      label={t('pages.dataProcessing.bundle.selectionHash', 'Selection hash')}
-                    >
-                      <code>{manifest.scope.selectionManifestHash}</code>
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      label={t('pages.dataProcessing.bundle.snapshotHash', 'Snapshot hash')}
-                    >
-                      <code>{manifest.snapshot.sha256}</code>
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      label={t('pages.dataProcessing.bundle.methodSetHash', 'Method identity hash')}
-                    >
-                      <code>{hashValue(manifest.methodSet.methodIdentityManifestSha256)}</code>
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      label={t('pages.dataProcessing.bundle.factorHash', 'Factor hash')}
-                    >
-                      <code>{hashValue(manifest.methodSet.factorManifestSha256)}</code>
-                    </Descriptions.Item>
-                    <Descriptions.Item
-                      label={t('pages.dataProcessing.bundle.artifactCount', 'Verified artifacts')}
-                    >
-                      {bundleData.artifactCount}
-                    </Descriptions.Item>
-                  </Descriptions>
+                  <Descriptions
+                    bordered
+                    size='small'
+                    column={1}
+                    items={[
+                      {
+                        key: 'selection-hash',
+                        label: t('pages.dataProcessing.bundle.selectionHash', 'Selection hash'),
+                        children: <code>{manifest.scope.selectionManifestHash}</code>,
+                      },
+                      {
+                        key: 'snapshot-hash',
+                        label: t('pages.dataProcessing.bundle.snapshotHash', 'Snapshot hash'),
+                        children: <code>{manifest.snapshot.sha256}</code>,
+                      },
+                      {
+                        key: 'method-set-hash',
+                        label: t(
+                          'pages.dataProcessing.bundle.methodSetHash',
+                          'Method identity hash',
+                        ),
+                        children: (
+                          <code>{hashValue(manifest.methodSet.methodIdentityManifestSha256)}</code>
+                        ),
+                      },
+                      {
+                        key: 'factor-hash',
+                        label: t('pages.dataProcessing.bundle.factorHash', 'Factor hash'),
+                        children: <code>{hashValue(manifest.methodSet.factorManifestSha256)}</code>,
+                      },
+                      {
+                        key: 'artifact-count',
+                        label: t('pages.dataProcessing.bundle.artifactCount', 'Verified artifacts'),
+                        children: bundleData.artifactCount,
+                      },
+                    ]}
+                  />
                 ),
               },
               {
                 key: 'downloads',
                 label: t('pages.dataProcessing.bundle.downloads', 'Downloads'),
                 children: (
-                  <Space direction='vertical' size='middle' className={styles.previewDetails}>
+                  <Space orientation='vertical' size='middle' className={styles.previewDetails}>
                     {downloadIssue ? (
                       <Alert
                         type='error'
-                        message={downloadIssue}
+                        title={downloadIssue}
                         action={
                           <Button size='small' onClick={() => setReloadToken((value) => value + 1)}>
                             {t('pages.dataProcessing.bundle.refresh', 'Refresh secure links')}

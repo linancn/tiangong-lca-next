@@ -24,7 +24,7 @@ type Props = {
   lang: string;
   activeTabKey: string;
   drawerVisible: boolean;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
   formType?: string;
@@ -120,7 +120,7 @@ export const FlowpropertyForm: FC<Props> = ({
 
   const tabContent: { [key: string]: React.JSX.Element } = {
     flowPropertiesInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -260,7 +260,7 @@ export const FlowpropertyForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <SourceSelectForm
           name={[
             'modellingAndValidation',
@@ -343,7 +343,7 @@ export const FlowpropertyForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={

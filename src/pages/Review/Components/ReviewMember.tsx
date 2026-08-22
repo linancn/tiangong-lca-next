@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Flex, message, Modal, theme, Tooltip } from 'antd';
+import { App, Button, Drawer, Flex, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './AddMemberModal';
 import AssignmentReview from './AssignmentReview';
@@ -19,9 +19,10 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
   const [adminLoading, setAdminLoading] = useState<string | null>(null);
   const [memberLoading, setMemberLoading] = useState<string | null>(null);
   const [membersLoading, setMembersLoading] = useState(false);
-  const actionRef = useRef<any>();
+  const actionRef = useRef<any>(undefined);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
+  const { message, modal } = App.useApp();
   const { token } = theme.useToken();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerTabType, setDrawerTabType] = useState<'pending' | 'reviewed'>('pending');
@@ -155,7 +156,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
                 size='small'
                 icon={<DeleteOutlined />}
                 onClick={() => {
-                  Modal.confirm({
+                  modal.confirm({
                     okButtonProps: {
                       type: 'primary',
                       style: { backgroundColor: token.colorPrimary },
@@ -320,7 +321,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
             defaultMessage='Reviewed'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -329,7 +330,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

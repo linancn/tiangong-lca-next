@@ -239,15 +239,18 @@ jest.mock('antd', () => {
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
+  const Modal = Object.assign(ModalComponent, { confirm: modalConfirm });
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message, modal: Modal });
 
   return {
     __esModule: true,
+    App,
     Button,
     ConfigProvider,
     Flex,
     Form,
     Input,
-    Modal: Object.assign(ModalComponent, { confirm: modalConfirm }),
+    Modal,
     Result,
     Spin,
     Tabs,

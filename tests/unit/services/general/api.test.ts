@@ -11,6 +11,10 @@ const mockGetLocale = jest.fn(() => 'en-US');
 const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorizationAll = jest.fn();
 const mockGetILCDLocationByValues = jest.fn();
+const mockAntdMessage = {
+  error: jest.fn(),
+  success: jest.fn(),
+};
 const mockGenClassificationZH = jest.fn(() => ['classification-zh']);
 const mockClassificationToString = jest.fn(() => 'classification-string');
 const mockJsonToList = jest.fn<string[], any[]>(() => []);
@@ -41,12 +45,9 @@ jest.mock('@/services/supabase', () => ({
   },
 }));
 
-jest.mock('antd', () => ({
+jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
-  message: {
-    error: jest.fn(),
-    success: jest.fn(),
-  },
+  dispatchAntdAppAction: (action: any) => action({ message: mockAntdMessage }),
 }));
 
 jest.mock('umi', () => ({
@@ -81,13 +82,11 @@ jest.mock('@/services/general/util', () => {
 
 import * as generalApi from '@/services/general/api';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { message as antdMessage } from 'antd';
 
 const deTeamMessages = require('@/locales/de-DE/pages_teams').default as Record<string, string>;
 const frTeamMessages = require('@/locales/fr-FR/pages_teams').default as Record<string, string>;
 
-type MessageMock = { error: jest.Mock; success: jest.Mock };
-const messageMock = antdMessage as unknown as MessageMock;
+const messageMock = mockAntdMessage;
 
 const createQueryBuilder = <T>(resolvedValue: T) => {
   const builder: any = {

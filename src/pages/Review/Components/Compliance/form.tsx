@@ -19,7 +19,7 @@ import { FormattedMessage } from 'umi';
 type Props = {
   name: any;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
 };
 
@@ -31,7 +31,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
               <Row key={subField.key}>
-                <Space direction='vertical' style={{ width: '100%' }}>
+                <Space orientation='vertical' style={{ width: '100%' }}>
                   <Card
                     size='small'
                     title={

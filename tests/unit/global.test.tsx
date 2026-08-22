@@ -72,7 +72,13 @@ describe('global runtime side effects', () => {
 
     jest.doMock('@umijs/max', () => ({
       __esModule: true,
-      useIntl: () => mockUseIntl(),
+      getIntl: () => mockUseIntl(),
+    }));
+
+    jest.doMock('@/contexts/AntdAppContext', () => ({
+      __esModule: true,
+      dispatchAntdAppAction: (action: any) =>
+        action({ message: mockMessage, notification: mockNotification }),
     }));
 
     jest.doMock('antd', () => ({
@@ -82,8 +88,6 @@ describe('global runtime side effects', () => {
           {children}
         </button>
       ),
-      message: mockMessage,
-      notification: mockNotification,
     }));
 
     const cacheValue = hasCaches
@@ -168,7 +172,7 @@ describe('global runtime side effects', () => {
 
     expect(mockNotification.open).toHaveBeenCalledTimes(1);
     const openPayload = mockNotification.open.mock.calls[0][0];
-    expect(openPayload.message).toBe('app.pwa.serviceworker.updated');
+    expect(openPayload.title).toBe('app.pwa.serviceworker.updated');
     expect(openPayload.description).toBe('app.pwa.serviceworker.updated.hint');
 
     openPayload.actions.props.onClick();

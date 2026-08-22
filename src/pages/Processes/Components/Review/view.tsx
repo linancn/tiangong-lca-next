@@ -37,20 +37,28 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
             }
             style={{ marginBottom: '16px' }}
           >
-            <Space direction='vertical' style={{ width: '100%' }}>
-              <Descriptions bordered size='small' column={1}>
-                <Descriptions.Item
-                  styles={{ label: { width: '120px' } }}
-                  label={
-                    <FormattedMessage
-                      id='pages.process.validation.modellingAndValidation.review.type'
-                      defaultMessage='Type of review'
-                    />
-                  }
-                >
-                  {reviewType ? reviewType.label : item['@type'] || '-'}
-                </Descriptions.Item>
-              </Descriptions>
+            <Space orientation='vertical' style={{ width: '100%' }}>
+              <Descriptions
+                bordered
+                size='small'
+                column={1}
+                items={[
+                  {
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.validation.modellingAndValidation.review.type'
+                        defaultMessage='Type of review'
+                      />
+                    ),
+                    children: reviewType ? reviewType.label : item['@type'] || '-',
+                  },
+                ]}
+              />
               <br />
               <Card
                 size='small'
@@ -79,14 +87,18 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                   )}
                 />
               </Card>
-              <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+              <Divider
+                titlePlacement='start'
+                styles={{ content: { flexShrink: 0, margin: 0 } }}
+                plain
+              >
                 <FormattedMessage
                   id='pages.process.view.modellingAndValidation.validation.reviewDetails'
                   defaultMessage='Review details'
                 />
               </Divider>
               <LangTextItemDescription data={item?.['common:reviewDetails']} />
-              <Divider orientationMargin='0' orientation='left' plain>
+              <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                 <FormattedMessage
                   id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
                   defaultMessage='Other review details'

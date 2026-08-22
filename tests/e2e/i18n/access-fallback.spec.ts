@@ -107,12 +107,9 @@ async function expectLocalizedLogin(
 async function selectLoginLocale(page: Page, localeDefinition: LocaleRegistryEntry): Promise<void> {
   const languageControl = await waitForRenderedLoginControl(page);
   await languageControl.click();
-  const menu = page.locator('.ant-dropdown-menu');
+  const menu = page.getByRole('menu');
   await expect(menu).toBeVisible();
-  await menu
-    .locator('.ant-dropdown-menu-item')
-    .filter({ hasText: localeDefinition.nativeLabel })
-    .click();
+  await menu.getByRole('menuitem').filter({ hasText: localeDefinition.nativeLabel }).click();
   await expectLocalizedLogin(page, localeDefinition);
 }
 
@@ -166,7 +163,7 @@ test('anonymous protected routes fail closed to the canonical localized login', 
           await expect.poll(() => currentHashPath(page)).toBe(LOGIN_PATH);
           await expectLocalizedLogin(page, localeDefinition);
           await expect(page.locator('.tg-global-header-avatar-trigger')).toHaveCount(0);
-          await expect(page.locator('.ant-result-403')).toHaveCount(0);
+          await expect(page.getByTestId('access-denied')).toHaveCount(0);
 
           for (const messageId of assertionMessageIds(assertion)) {
             await expect(

@@ -1,5 +1,6 @@
 /* istanbul ignore file -- modal rendering is covered by behavioral tests; branch coverage is mostly UI-only formatting */
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
+import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getLocaleDefinition } from '@/services/general/localeRegistry';
@@ -11,7 +12,7 @@ import {
 } from '@/services/general/runtimeLocale';
 import { formatLocaleList, getLocaleListSeparator } from '@/utils/localeFormatting';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
+import { Button, ConfigProvider, Modal, Space, Table, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -847,11 +848,13 @@ const ValidationIssueModalContent = ({
     const issueKey = getValidationIssueGroupKey(groupedIssue);
 
     if (!groupedIssue.ownerUserId) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.validationIssues.notifyDataOwner.ownerMissing',
-          defaultMessage: 'Unable to identify the data owner.',
-        }),
+      dispatchAntdAppAction(({ message }) =>
+        message.error(
+          intl.formatMessage({
+            id: 'pages.validationIssues.notifyDataOwner.ownerMissing',
+            defaultMessage: 'Unable to identify the data owner.',
+          }),
+        ),
       );
       return;
     }
@@ -880,18 +883,22 @@ const ValidationIssueModalContent = ({
         ...prev,
         [issueKey]: true,
       }));
-      message.success(
-        intl.formatMessage({
-          id: 'pages.validationIssues.notifyDataOwner.success',
-          defaultMessage: 'Notification sent to the data owner.',
-        }),
+      dispatchAntdAppAction(({ message }) =>
+        message.success(
+          intl.formatMessage({
+            id: 'pages.validationIssues.notifyDataOwner.success',
+            defaultMessage: 'Notification sent to the data owner.',
+          }),
+        ),
       );
     } catch (error) {
-      message.error(
-        intl.formatMessage({
-          id: 'pages.validationIssues.notifyDataOwner.error',
-          defaultMessage: 'Failed to notify the data owner.',
-        }),
+      dispatchAntdAppAction(({ message }) =>
+        message.error(
+          intl.formatMessage({
+            id: 'pages.validationIssues.notifyDataOwner.error',
+            defaultMessage: 'Failed to notify the data owner.',
+          }),
+        ),
       );
     } finally {
       setLoadingIssueKey(null);

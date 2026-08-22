@@ -3,9 +3,9 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
 import {
+  App,
   Button,
   Drawer,
-  message,
   // Input,
   Space,
   Spin,
@@ -174,6 +174,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
     },
     ref,
   ) => {
+    const { message } = App.useApp();
     const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
     const [refsLoading, setRefsLoading] = useState(false);
     const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
@@ -181,7 +182,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
 
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
-    const formRefEdit = useRef<ProFormInstance>();
+    const formRefEdit = useRef<ProFormInstance>(undefined);
     const [fromData, setFromData] = useState<LifeCycleModelFormState>({});
     const [spinning, setSpinning] = useState(false);
     const [showRules, setShowRules] = useState<boolean>(false);
@@ -779,7 +780,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
               defaultMessage='Model base information'
             ></FormattedMessage>
           }
-          width='90%'
+          size='90%'
           closable={false}
           extra={
             <Button
@@ -790,7 +791,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
               }}
             ></Button>
           }
-          maskClosable={false}
+          mask={{ closable: false }}
           open={drawerVisible}
           onClose={() => {
             setDrawerVisible(false);

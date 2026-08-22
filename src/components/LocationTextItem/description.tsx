@@ -55,11 +55,12 @@ const LocationTextItemDescription: FC<Props> = ({ lang, data, label, styles }) =
       data-reference-pending={spinning ? 'true' : 'false'}
     >
       <Spin spinning={spinning}>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item key={0} label={label} styles={styles}>
-            {dataDes}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={[{ key: 0, label, styles, children: dataDes }]}
+        />
       </Spin>
     </div>
   );

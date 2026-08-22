@@ -20,7 +20,7 @@ type Props = {
 };
 const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<FlowPropertyData>({});
   // const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
@@ -63,7 +63,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
             defaultMessage='Create Flow property'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -72,7 +72,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -103,7 +103,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <FlowpropertiesSelectForm
               label={
                 <FormattedMessage

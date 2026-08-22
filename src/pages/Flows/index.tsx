@@ -4,7 +4,7 @@ import {
   getFlowTablePgroongaSearch,
   getFlowTableUuidMentionSearch,
 } from '@/services/flows/api';
-import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, App } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -53,7 +53,7 @@ import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 import type { FC, ReactNode } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
@@ -78,6 +78,7 @@ type ClassificationFilter = {
 };
 
 const TableList: FC = () => {
+  const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
@@ -136,7 +137,7 @@ const TableList: FC = () => {
     return result;
   };
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const attachReviewState = async (result: {
     data?: FlowTable[];
     page?: number;

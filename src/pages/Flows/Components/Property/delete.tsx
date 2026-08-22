@@ -1,7 +1,7 @@
 import { FlowPropertyData } from '@/services/flows/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Button, message, Modal, Tooltip } from 'antd';
+import { Button, Modal, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -10,7 +10,7 @@ type Props = {
   id: string;
   data: FlowPropertyData[];
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: FlowPropertyData[]) => void;
 };
@@ -23,6 +23,7 @@ const PropertyDelete: FC<Props> = ({
   setViewDrawerVisible,
   onData,
 }) => {
+  const { message } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 

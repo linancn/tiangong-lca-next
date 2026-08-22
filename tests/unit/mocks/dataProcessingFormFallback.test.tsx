@@ -104,7 +104,7 @@ describe('DataProcessing form compatibility fallback', () => {
 
     function useFormWithoutCurrentValues() {
       const [form] = originalUseForm();
-      const proxyRef = useRef<object>();
+      const proxyRef = useRef<object | undefined>(undefined);
       if (!proxyRef.current) {
         proxyRef.current = new Proxy(form, {
           get(target, property, receiver) {

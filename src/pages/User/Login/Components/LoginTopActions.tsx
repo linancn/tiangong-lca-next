@@ -43,7 +43,7 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
 
   const openLanguageMenu = () => {
     const trigger = langActionRef.current?.querySelector<HTMLElement>(
-      '.ant-dropdown-trigger, button, [role="button"], a, span',
+      '.tg-global-language-selector',
     );
     trigger?.click();
   };

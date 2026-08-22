@@ -162,13 +162,16 @@ describe('Welcome page', () => {
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveStyle({ margin: '0 auto', paddingBottom: '0', top: '16px' });
-    expect(dialog.querySelector('.ant-modal-content')).toHaveStyle({
+    expect(dialog.querySelector('.tg-welcome-modal-close')).toBe(
+      screen.getByRole('button', { name: /close/i }),
+    );
+    expect(dialog.querySelector('.tg-welcome-modal-container')).toHaveStyle({
       display: 'flex',
       flexDirection: 'column',
       maxHeight: 'calc(100dvh - 32px)',
       overflow: 'hidden',
     });
-    expect(dialog.querySelector('.ant-modal-body')).toHaveStyle({
+    expect(dialog.querySelector('.tg-welcome-modal-body')).toHaveStyle({
       minHeight: '0',
       overflowY: 'auto',
     });

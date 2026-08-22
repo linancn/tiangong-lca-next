@@ -229,10 +229,10 @@ jest.mock('antd', () => {
 
   const Image = ({ preview }: any) => (
     <div>
-      <button type='button' onClick={() => preview?.onVisibleChange?.(true)}>
+      <button type='button' onClick={() => preview?.onOpenChange?.(true, false)}>
         open-preview
       </button>
-      <button type='button' onClick={() => preview?.onVisibleChange?.(false)}>
+      <button type='button' onClick={() => preview?.onOpenChange?.(false, true)}>
         close-preview
       </button>
       <button type='button' onClick={() => preview?.afterOpenChange?.(true)}>
@@ -572,7 +572,7 @@ describe('SourceForm component', () => {
       expect(mockGetBase64).toHaveBeenCalled();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'open-preview' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'open-preview' }));
     fireEvent.click(screen.getByRole('button', { name: 'close-preview' }));
     fireEvent.click(screen.getByRole('button', { name: 'after-open-true' }));
     fireEvent.click(screen.getByRole('button', { name: 'after-open-false' }));

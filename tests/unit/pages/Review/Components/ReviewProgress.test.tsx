@@ -82,15 +82,7 @@ jest.mock('antd', () => {
     return { destroy: jest.fn() };
   });
 
-  const Modal = {
-    confirm,
-    useModal: jest.fn(() => [
-      {
-        confirm,
-      },
-      null,
-    ]),
-  };
+  const modal = { confirm };
 
   const message = {
     success: jest.fn(),
@@ -100,20 +92,23 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message, modal }) };
+
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
 
   return {
     __esModule: true,
+    App,
     Button,
     Drawer,
-    Modal,
     Space,
     Spin,
     Tag,
     Tooltip,
     message,
+    modal,
     theme,
   };
 });
@@ -218,7 +213,7 @@ jest.mock('@/services/users/api', () => ({
   getUsersByIds: (...args: any[]) => mockGetUsersByIds(...args),
 }));
 
-const { message, Modal } = require('antd');
+const { message, modal } = require('antd');
 
 describe('ReviewProgress component', () => {
   beforeEach(() => {
@@ -246,7 +241,7 @@ describe('ReviewProgress component', () => {
     });
     message.success.mockReset();
     message.error.mockReset();
-    Modal.confirm.mockClear();
+    modal.confirm.mockClear();
     mockRejectReview.mockClear();
   });
 
@@ -314,7 +309,7 @@ describe('ReviewProgress component', () => {
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
 
-    expect(Modal.confirm).toHaveBeenCalledWith(
+    expect(modal.confirm).toHaveBeenCalledWith(
       expect.objectContaining({
         okButtonProps: { type: 'primary' },
         cancelButtonProps: {

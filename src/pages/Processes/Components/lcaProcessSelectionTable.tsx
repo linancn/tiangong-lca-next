@@ -156,7 +156,7 @@ const LcaProcessSelectionTable = ({
   const showPaginationFooter = !!pagination && selectionViewMode !== 'selected';
 
   return (
-    <Space direction='vertical' size='small' style={{ width: '100%' }}>
+    <Space orientation='vertical' size='small' style={{ width: '100%' }}>
       <Typography.Text strong>
         <FormattedMessage id={messages.title.id} defaultMessage={messages.title.defaultMessage} />
       </Typography.Text>

@@ -1,10 +1,11 @@
 import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
-import { Button, message, Space, Table, Tag, theme } from 'antd';
+import { Button, Space, Table, Tag, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
@@ -46,6 +47,7 @@ const resolveTeamTitle = (teamTitle: unknown, locale: string, unknownTeam: strin
 };
 
 const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataLoaded }) => {
+  const { message } = useAntdAppApi();
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [data, setData] = useState<TeamNotificationItem[]>([]);

@@ -70,6 +70,11 @@ type GuidePreparationKey =
   'collectRawData' | 'mapUnitProcesses' | 'checkFlowsAndUnits' | 'submitForReview';
 
 const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
+const WELCOME_MODAL_CLASS_NAMES = {
+  body: 'tg-welcome-modal-body',
+  close: 'tg-welcome-modal-close',
+  container: 'tg-welcome-modal-container',
+};
 
 const guideTeachingStepKeys: GuideStepKey[] = [
   'openHome',
@@ -455,7 +460,7 @@ const Welcome: React.FC = () => {
   const modalStyles = useMemo(
     () => ({
       body: { minHeight: 0, overflowY: 'auto' as const },
-      content: {
+      container: {
         borderRadius: WELCOME_RADIUS,
         display: 'flex',
         flexDirection: 'column' as const,
@@ -517,7 +522,7 @@ const Welcome: React.FC = () => {
             style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
           >
             <Space
-              direction='vertical'
+              orientation='vertical'
               size={20}
               style={{
                 width: '100%',
@@ -530,7 +535,7 @@ const Welcome: React.FC = () => {
                 {currentGuideContent.preparationItems.map((item) => (
                   <Col xs={24} md={12} key={item.key}>
                     <div style={guidePanelStyle}>
-                      <Space direction='vertical' size={8}>
+                      <Space orientation='vertical' size={8}>
                         <Typography.Text strong>{item.title}</Typography.Text>
                         <Typography.Paragraph
                           type='secondary'
@@ -569,10 +574,10 @@ const Welcome: React.FC = () => {
             className={styles.welcome_card}
             style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
           >
-            <Space direction='vertical' size={20} style={{ width: '100%' }}>
+            <Space orientation='vertical' size={20} style={{ width: '100%' }}>
               {carbonFootprintGuideVideoStatus === 'error' ? (
                 <div role='alert' style={guideVideoFallbackStyle}>
-                  <Space direction='vertical' size={10} align='center'>
+                  <Space orientation='vertical' size={10} align='center'>
                     <Typography.Text strong>
                       {currentGuideContent.videoLoadErrorTitle}
                     </Typography.Text>
@@ -605,7 +610,7 @@ const Welcome: React.FC = () => {
                 </video>
               ) : (
                 <div style={guideVideoFallbackStyle}>
-                  <Space direction='vertical' size={10} align='center'>
+                  <Space orientation='vertical' size={10} align='center'>
                     <Spin />
                     <Typography.Text type='secondary'>
                       {currentGuideContent.videoLoading}
@@ -636,7 +641,7 @@ const Welcome: React.FC = () => {
               <div style={{ ...guidePanelStyle, width: '100%' }}>
                 <Space align='start' size='middle' style={{ width: '100%' }}>
                   <Avatar style={guideAvatarStyle}>{index + 1}</Avatar>
-                  <Space direction='vertical' size={4} style={{ minWidth: 0, width: '100%' }}>
+                  <Space orientation='vertical' size={4} style={{ minWidth: 0, width: '100%' }}>
                     <Typography.Text strong style={{ whiteSpace: 'normal' }}>
                       {item.title}
                     </Typography.Text>
@@ -669,7 +674,7 @@ const Welcome: React.FC = () => {
               <div style={guidePanelStyle}>
                 <Space align='start' size='middle'>
                   <Avatar icon={schemaIconMap[item.key]} style={guideAvatarStyle} />
-                  <Space direction='vertical' size={4}>
+                  <Space orientation='vertical' size={4}>
                     <Typography.Text strong>{item.title}</Typography.Text>
                     <Typography.Text type='secondary'>{item.description}</Typography.Text>
                   </Space>
@@ -730,11 +735,13 @@ const Welcome: React.FC = () => {
                 <Statistic
                   value={metric.value}
                   formatter={formatter}
-                  valueStyle={{
-                    fontSize: '1.25rem',
-                    color: token.colorText,
-                    lineHeight: 1.1,
-                    fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                  styles={{
+                    content: {
+                      fontSize: '1.25rem',
+                      color: token.colorText,
+                      lineHeight: 1.1,
+                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                    },
                   }}
                   style={{ width: '100%', textAlign: 'center' }}
                 />
@@ -749,7 +756,7 @@ const Welcome: React.FC = () => {
         styles={{ body: { padding: 24 } }}
         style={cardBorderRadiusStyle}
       >
-        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+        <Space orientation='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph
             style={{
               margin: 0,
@@ -780,7 +787,7 @@ const Welcome: React.FC = () => {
               styles={{ body: { padding: 24 } }}
               style={cardBorderRadiusStyle}
             >
-              <Space direction='vertical' size={12}>
+              <Space orientation='vertical' size={12}>
                 <div className={styles.welcome_section_header}>
                   <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
                     {sectionIconMap[section.key]}
@@ -809,13 +816,14 @@ const Welcome: React.FC = () => {
   );
 
   return (
-    <PageContainer title={false} className={styles.welcome_page}>
-      <Space direction='vertical' size={24} className={styles.welcome_content}>
+    <PageContainer title={false} childrenContentStyle={{ padding: '16px 24px 24px' }}>
+      <Space orientation='vertical' size={24} className={styles.welcome_content}>
         {activeWelcomeView === 'carbonFootprintGuide'
           ? renderCarbonFootprintGuide()
           : renderOverview()}
       </Space>
       <Modal
+        classNames={WELCOME_MODAL_CLASS_NAMES}
         open={isDataModalOpen}
         onCancel={() => setIsDataModalOpen(false)}
         footer={null}
@@ -827,7 +835,7 @@ const Welcome: React.FC = () => {
           <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem (A-Z Order)' />
         }
       >
-        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+        <Space orientation='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
             {modalSubtitle}
           </Typography.Paragraph>
@@ -836,7 +844,7 @@ const Welcome: React.FC = () => {
               <Spin />
             </Row>
           ) : teamsLoadError ? (
-            <Space direction='vertical' align='center' style={{ width: '100%', padding: 24 }}>
+            <Space orientation='vertical' align='center' style={{ width: '100%', padding: 24 }}>
               <Typography.Text type='danger' role='alert'>
                 {formatMessage({
                   id: 'pages.welcome.overview.dataEcosystem.error',
@@ -892,6 +900,24 @@ const Welcome: React.FC = () => {
                       }}
                     >
                       <Meta
+                        classNames={{
+                          description: 'tg-welcome-team-description',
+                          title: 'tg-welcome-team-title',
+                        }}
+                        styles={{
+                          title: {
+                            minWidth: 0,
+                            overflow: 'visible',
+                            overflowWrap: 'anywhere',
+                            whiteSpace: 'normal',
+                          },
+                          description: {
+                            minWidth: 0,
+                            overflow: 'visible',
+                            overflowWrap: 'anywhere',
+                            whiteSpace: 'normal',
+                          },
+                        }}
                         title={
                           <Typography.Text strong>
                             {getLangText(team.json?.title, lang)}
@@ -914,6 +940,7 @@ const Welcome: React.FC = () => {
         </Space>
       </Modal>
       <Modal
+        classNames={WELCOME_MODAL_CLASS_NAMES}
         open={isTidasModalOpen}
         onCancel={() => setIsTidasModalOpen(false)}
         footer={null}
@@ -923,7 +950,7 @@ const Welcome: React.FC = () => {
         styles={modalStyles}
         title={tidasTitle}
       >
-        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+        <Space orientation='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
             {tidasDescription}{' '}
             <Typography.Link

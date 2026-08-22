@@ -101,6 +101,8 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message }) };
+
   const theme = {
     useToken: () => ({ token: { fontSize: 12 } }),
   };
@@ -113,6 +115,7 @@ jest.mock('antd', () => {
     Space,
     Spin,
     Tooltip,
+    App,
     message,
     theme,
   };

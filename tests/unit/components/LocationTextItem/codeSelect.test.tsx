@@ -18,48 +18,51 @@ jest.mock('antd', () => ({
   __esModule: true,
   Select: ({
     allowClear,
-    filterOption,
     loading,
     onChange,
     options = [],
     placeholder,
     value,
+    showSearch,
     'data-testid': dataTestId,
-  }: any) => (
-    <div>
-      <select
-        data-testid={dataTestId}
-        aria-label={placeholder}
-        data-loading={String(loading)}
-        value={value ?? ''}
-        onChange={(event) => onChange?.(event.target.value || undefined)}
-      >
-        <option value=''>empty</option>
-        {options.map((option: any) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {allowClear ? (
-        <button type='button' data-testid={`${dataTestId}-clear`} onClick={() => onChange?.()}>
-          clear
-        </button>
-      ) : null}
-      <span data-testid={`${dataTestId}-filter-search`}>
-        {String(filterOption?.('china', { searchText: 'CN China' }))}
-      </span>
-      <span data-testid={`${dataTestId}-filter-label`}>
-        {String(filterOption?.('global', { label: 'GLO (Global)' }))}
-      </span>
-      <span data-testid={`${dataTestId}-filter-value`}>
-        {String(filterOption?.('rer', { value: 'RER' }))}
-      </span>
-      <span data-testid={`${dataTestId}-filter-empty`}>
-        {String(filterOption?.('missing', undefined))}
-      </span>
-    </div>
-  ),
+  }: any) => {
+    const filterOption = typeof showSearch === 'object' ? showSearch.filterOption : undefined;
+    return (
+      <div>
+        <select
+          data-testid={dataTestId}
+          aria-label={placeholder}
+          data-loading={String(loading)}
+          value={value ?? ''}
+          onChange={(event) => onChange?.(event.target.value || undefined)}
+        >
+          <option value=''>empty</option>
+          {options.map((option: any) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {allowClear ? (
+          <button type='button' data-testid={`${dataTestId}-clear`} onClick={() => onChange?.()}>
+            clear
+          </button>
+        ) : null}
+        <span data-testid={`${dataTestId}-filter-search`}>
+          {String(filterOption?.('china', { searchText: 'CN China' }))}
+        </span>
+        <span data-testid={`${dataTestId}-filter-label`}>
+          {String(filterOption?.('global', { label: 'GLO (Global)' }))}
+        </span>
+        <span data-testid={`${dataTestId}-filter-value`}>
+          {String(filterOption?.('rer', { value: 'RER' }))}
+        </span>
+        <span data-testid={`${dataTestId}-filter-empty`}>
+          {String(filterOption?.('missing', undefined))}
+        </span>
+      </div>
+    );
+  },
 }));
 
 describe('LocationCodeSelect', () => {

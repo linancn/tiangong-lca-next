@@ -14,13 +14,15 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock antd Modal.confirm
-jest.mock('antd', () => ({
-  ...jest.requireActual('antd'),
-  Modal: {
-    ...jest.requireActual('antd').Modal,
+jest.mock('antd', () => {
+  const actual = jest.requireActual('antd');
+  const Modal = {
+    ...actual.Modal,
     confirm: jest.fn(),
-  },
-}));
+  };
+  const App = require('../../mocks/antdApp').createAntdAppMock({ modal: Modal });
+  return { ...actual, App, Modal };
+});
 
 jest.mock('umi', () => ({
   FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (

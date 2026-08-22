@@ -71,14 +71,24 @@ jest.mock('antd', () => {
     );
   };
 
-  return {
-    __esModule: true,
-    Button,
-    Tooltip,
-    Modal,
-    message,
-    ConfigProvider,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Tooltip,
+      Modal,
+      message,
+      ConfigProvider,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 const mockDeleteFlowproperties = jest.fn(async () => ({ status: 204 }));

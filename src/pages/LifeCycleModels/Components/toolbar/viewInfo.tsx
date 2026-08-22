@@ -93,17 +93,21 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const tabContent: Record<string, React.ReactNode> = {
     lifeCycleModelInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
+              ),
+              styles: { label: { width: '100px' } },
+              children: data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
         <br />
         <Card
           size='small'
@@ -111,7 +115,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             <FormattedMessage id='pages.lifeCycleModel.information.name' defaultMessage='Name' />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.baseName'
               defaultMessage='Base name'
@@ -121,7 +125,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             data={data.lifeCycleModelInformation?.dataSetInformation?.name?.baseName ?? '-'}
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.treatmentStandardsRoutes'
               defaultMessage='Treatment, standards, routes'
@@ -134,7 +138,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.mixAndLocationTypes'
               defaultMessage='Mix and location types'
@@ -146,7 +150,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.functionalUnitFlowProperties'
               defaultMessage='Quantitative product or process properties'
@@ -168,7 +172,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
           categoryType={'LifeCycleModel'}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.information.generalComment'
             defaultMessage='General comment'
@@ -209,7 +213,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
     ),
     modellingAndValidation: (
       <>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
             defaultMessage='Use advice for data set'
@@ -247,7 +251,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.project'
               defaultMessage='Project'
@@ -259,7 +263,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.intendedApplications'
               defaultMessage='Intended applications'
@@ -298,20 +302,24 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: { label: { width: '200px' } },
+                children: data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             data={data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']}
@@ -349,42 +357,53 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              <Space>
-                {data.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: (
+                  <Space>
+                    {data.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
 
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {data.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children:
+                  data.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             title={
@@ -401,23 +420,27 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.copyright'
-                  defaultMessage='Copyright?'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getCopyrightOptions(
-                data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                  '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getCopyrightOptions(
+                  data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
+                    '-',
+                ),
+              },
+            ]}
+          />
           <br />
 
           <br />
@@ -436,25 +459,29 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.licenseType'
-                  defaultMessage='License type'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getLicenseTypeOptions(
-                data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
-                  '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getLicenseTypeOptions(
+                  data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
+                    '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.accessRestrictions'
               defaultMessage='Access and use restrictions'
@@ -501,7 +528,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             defaultMessage='Model base information'
           ></FormattedMessage>
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -512,7 +539,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
             }}
           ></Button>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);

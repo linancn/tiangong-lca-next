@@ -5,7 +5,7 @@ import {
   getSourceTableUuidMentionSearch,
   source_hybrid_search,
 } from '@/services/sources/api';
-import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, App } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getPublicationTypeLabel } from './Components/optiondata';
@@ -49,7 +49,7 @@ import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, MutableRefObject } from 'react';
+import type { FC, RefObject } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
@@ -68,6 +68,7 @@ import SourceView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
+  const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
@@ -94,7 +95,7 @@ const TableList: FC = () => {
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const stateCodeRef = useRef<string | number>('all');
   const keyWordRef = useRef<string>('');
   const referenceLookupLimitNoticeRef = useRef<string>('');
@@ -126,7 +127,7 @@ const TableList: FC = () => {
 
   const renderSourceActions = (
     row: SourceTable,
-    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+    listActionRef: RefObject<ActionType | undefined> = actionRef,
   ) => {
     const actionDisabled = isDataUnderReview(row.stateCode);
     if (dataSource === 'my') {

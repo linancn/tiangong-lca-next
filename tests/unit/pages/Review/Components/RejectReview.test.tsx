@@ -93,6 +93,8 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message }) };
+
   return {
     __esModule: true,
     Button,
@@ -101,6 +103,7 @@ jest.mock('antd', () => {
     Input,
     Modal,
     Tooltip,
+    App,
     message,
   };
 });

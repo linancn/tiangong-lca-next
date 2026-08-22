@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
-lastReviewedNote: 'Reviewed for Next Issue #910: focused TIDAS scalar regression tests and regenerated locale digests fit the existing hook-owned full gate; no trigger or quality-bar change is required.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: a5279243f4c1d22ee00c50ed92787614d585800c
+lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 focused and browser evidence remains additive to the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 
 # Pre-Push Gate Policy

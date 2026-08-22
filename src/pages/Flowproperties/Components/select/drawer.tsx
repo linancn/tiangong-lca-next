@@ -39,10 +39,10 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
-  const tgActionRefSelect = useRef<ActionType>();
-  const coActionRefSelect = useRef<ActionType>();
-  const myActionRefSelect = useRef<ActionType>();
-  const teActionRefSelect = useRef<ActionType>();
+  const tgActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const coActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const myActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const teActionRefSelect = useRef<ActionType | undefined>(undefined);
 
   const intl = useIntl();
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
@@ -283,6 +283,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={tgActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -356,6 +358,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={coActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -429,6 +433,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={teActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -502,6 +508,8 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
           />
         </Card>
         <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
+          className='tg-dataset-selector-table'
+          scroll={{ x: 'max-content' }}
           actionRef={myActionRefSelect}
           params={contentLanguageAwareTableParams}
           search={false}
@@ -594,7 +602,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             defaultMessage='Select Flow property'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -603,7 +611,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

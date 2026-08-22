@@ -54,7 +54,7 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
-import { Button, message, Space, Spin, theme, Tooltip } from 'antd';
+import { App, Button, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
@@ -162,6 +162,7 @@ const ToolbarEdit: FC<Props> = ({
   newVersion,
   onSubmitReviewSuccess = () => {},
 }) => {
+  const { message } = App.useApp();
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
@@ -1772,7 +1773,7 @@ const ToolbarEdit: FC<Props> = ({
 
   return (
     <Space
-      direction='vertical'
+      orientation='vertical'
       size={'middle'}
       style={{ height: '70vh', overflowY: 'auto', paddingRight: 10, paddingLeft: 10 }}
     >
@@ -1938,7 +1939,7 @@ const ToolbarEdit: FC<Props> = ({
         }}
         canDuplicate={hasSelectedCells}
       />
-      <Spin spinning={spinning} fullscreen />
+      <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
       <IoPortSelect
         lang={lang}
         node={ioPortSelectorNode as LifeCycleModelGraphNode}

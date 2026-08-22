@@ -22,7 +22,8 @@ import {
 import { getNotificationsCount } from '@/services/notifications/api';
 import { getLatestReviewOfMine, getNotifyReviewsCount } from '@/services/reviews/api';
 import { getLatestRolesOfMine, getTeamInvitationCountApi } from '@/services/roles/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -60,7 +61,11 @@ jest.mock('umi', () => ({
 jest.mock('@/components/Notification/DataNotification', () => {
   return function DataNotification({ timeFilter, onDataLoaded }: any) {
     return (
-      <button type='button' data-testid='data-notification' onClick={() => onDataLoaded?.()}>
+      <button
+        type='button'
+        data-testid='data-notification'
+        onClick={() => void onDataLoaded?.().catch(() => undefined)}
+      >
         Data Notification {timeFilter}
       </button>
     );
@@ -70,7 +75,11 @@ jest.mock('@/components/Notification/DataNotification', () => {
 jest.mock('@/components/Notification/TeamNotification', () => {
   return function TeamNotification({ timeFilter, onDataLoaded }: any) {
     return (
-      <button type='button' data-testid='team-notification' onClick={() => onDataLoaded?.()}>
+      <button
+        type='button'
+        data-testid='team-notification'
+        onClick={() => void onDataLoaded?.().catch(() => undefined)}
+      >
         Team Notification {timeFilter}
       </button>
     );
@@ -80,7 +89,11 @@ jest.mock('@/components/Notification/TeamNotification', () => {
 jest.mock('@/components/Notification/IssueNotification', () => {
   return function IssueNotification({ timeFilter, onDataLoaded }: any) {
     return (
-      <button type='button' data-testid='issue-notification' onClick={() => onDataLoaded?.()}>
+      <button
+        type='button'
+        data-testid='issue-notification'
+        onClick={() => void onDataLoaded?.().catch(() => undefined)}
+      >
         Issue Notification {timeFilter}
       </button>
     );
@@ -307,6 +320,7 @@ describe('Notification Component', () => {
   });
 
   it('should change time filter when select value changes', async () => {
+    const user = userEvent.setup();
     render(
       <ConfigProvider>
         <Notification />
@@ -317,15 +331,19 @@ describe('Notification Component', () => {
     fireEvent.click(icon);
 
     const timeFilter = screen.getByRole('combobox');
-    fireEvent.mouseDown(timeFilter);
+    await user.click(timeFilter);
 
     const option = screen.getByText('Last 7 Days');
-    fireEvent.click(option);
+    await user.click(option);
 
-    fireEvent.mouseDown(timeFilter);
+    await user.click(timeFilter);
 
-    const selectedOption = screen.getByRole('option', { name: 'Last 7 Days' });
-    expect(selectedOption).toHaveAttribute('aria-selected', 'true');
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Last 7 Days' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      ),
+    );
   });
 
   it('should call service functions on mount', async () => {
@@ -552,6 +570,38 @@ describe('Notification Component', () => {
 
     await waitFor(() => expect(mockUpdateIssueNotificationTime).toHaveBeenCalledTimes(2));
   });
+
+  it.each([
+    ['team', undefined, 'team-notification', mockUpdateTeamNotificationTime],
+    ['data', 'Data Notifications', 'data-notification', mockUpdateDataNotificationTime],
+    ['issue', 'Issue Notifications', 'issue-notification', mockUpdateIssueNotificationTime],
+  ])(
+    'allows the %s notification timestamp update to retry after a rejected request',
+    async (_kind, tabLabel, notificationTestId, updateTimestamp) => {
+      updateTimestamp.mockRejectedValueOnce(new Error('timestamp update failed'));
+
+      render(
+        <ConfigProvider>
+          <Notification />
+        </ConfigProvider>,
+      );
+
+      fireEvent.click(await screen.findByRole('img', { hidden: true }));
+      if (tabLabel) {
+        fireEvent.click(screen.getByText(tabLabel));
+      }
+
+      const notification = await screen.findByTestId(notificationTestId);
+      fireEvent.click(notification);
+      await waitFor(() => expect(updateTimestamp).toHaveBeenCalledTimes(1));
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(notification);
+      await waitFor(() => expect(updateTimestamp).toHaveBeenCalledTimes(2));
+    },
+  );
 
   it('applies the all-time filter value to both tabs after reopening', async () => {
     render(

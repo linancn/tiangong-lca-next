@@ -104,6 +104,7 @@ jest.mock('antd', () => {
     error: jest.fn(),
   };
   const App = ({ children }: any) => <div>{children}</div>;
+  App.useApp = () => ({ message: {}, modal: {}, notification: mockNotification });
   const Button = ({ children, onClick }: any) => (
     <button type='button' onClick={onClick}>
       {toText(children)}
@@ -162,6 +163,11 @@ jest.mock('@/services/auth', () => {
 jest.mock('@/components', () => ({
   __esModule: true,
   Footer: () => <div data-testid='footer' />,
+}));
+
+jest.mock('@/contexts/AntdThemeSync', () => ({
+  __esModule: true,
+  AntdThemeSync: () => null,
 }));
 
 jest.mock('../../../../../config/defaultSettings', () => {
@@ -246,7 +252,7 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
 
     await waitFor(() => {
       expect(mockNotification.error).toHaveBeenCalledWith({
-        message: 'The email was not sent successfully, please try again!',
+        title: 'The email was not sent successfully, please try again!',
         description: 'nope',
         placement: 'top',
       });
@@ -271,7 +277,7 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
     await waitFor(
       () => {
         expect(mockNotification.error).toHaveBeenCalledWith({
-          message: 'The email was not sent successfully, please try again!',
+          title: 'The email was not sent successfully, please try again!',
           description: 'Error: boom',
           placement: 'top',
         });

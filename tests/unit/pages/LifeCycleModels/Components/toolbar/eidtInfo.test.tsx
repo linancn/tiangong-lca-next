@@ -168,6 +168,8 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message }) };
+
   return {
     __esModule: true,
     Button,
@@ -175,6 +177,7 @@ jest.mock('antd', () => {
     Drawer,
     Space,
     Spin,
+    App,
     message,
   };
 });

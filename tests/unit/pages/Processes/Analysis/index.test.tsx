@@ -321,6 +321,14 @@ const appendSelectOption = (select: HTMLSelectElement, value: string, label = va
   select.appendChild(option);
 };
 
+const waitForAnalysisInitialization = async () => {
+  const loadProfileButton = await screen.findByRole('button', {
+    name: 'Load LCIA profile',
+  });
+  await waitFor(() => expect(loadProfileButton).toBeEnabled());
+  return loadProfileButton;
+};
+
 const contributionPathArtifact = {
   version: 1,
   format: 'contribution-path:v1',
@@ -609,7 +617,7 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByRole('button', { name: 'Back to processes' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'Refresh options' })).toHaveLength(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -654,9 +662,7 @@ describe('LcaAnalysisPage', () => {
     });
     render(<LcaAnalysisPage />);
 
-    const loadProfileButton = await screen.findByRole('button', { name: 'Load LCIA profile' });
-    await waitFor(() => expect(loadProfileButton).toBeEnabled());
-    fireEvent.click(loadProfileButton);
+    fireEvent.click(await waitForAnalysisInitialization());
 
     expect(await screen.findByText('snapshot-with-evidence')).toBeInTheDocument();
     expect(await screen.findByTestId('calculation-evidence-notice')).toHaveTextContent(
@@ -676,7 +682,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     await waitFor(() =>
       expect(screen.getAllByTestId('bar-chart')[0]).toHaveAttribute('data-border-color', '#abc123'),
@@ -1406,7 +1412,7 @@ describe('LcaAnalysisPage', () => {
       ),
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
@@ -1483,7 +1489,7 @@ describe('LcaAnalysisPage', () => {
       target: { value: 'process-1:01.00.000' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(await screen.findByText('published profile unavailable')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -1538,7 +1544,7 @@ describe('LcaAnalysisPage', () => {
       target: { value: 'process-1:01.00.000' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -1636,7 +1642,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
     expect(await screen.findByText('snapshot-profile-empty')).toBeInTheDocument();
@@ -1682,7 +1688,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     expect(await screen.findByText('snapshot-profile-sparse')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toHaveAttribute('data-count', '1');
@@ -1709,7 +1715,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
     expect(await screen.findByText('snapshot-profile-non-array')).toBeInTheDocument();
@@ -1725,7 +1731,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(await screen.findByText('snapshot-profile')).toBeInTheDocument();
 
     const searchInput = within(screen.getByTestId('search-input'));
@@ -1792,7 +1798,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     queryLcaResults.mockRejectedValueOnce({ code: 'no_ready_snapshot' });
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(
       await screen.findByText('No snapshot is ready for the selected data scope.'),
     ).toBeInTheDocument();
@@ -1845,7 +1851,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     queryLcaResults.mockRejectedValueOnce(staleError);
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(
       await screen.findByText(
         'The snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
@@ -1869,6 +1875,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-compare'));
     fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
     expect(await screen.findByText('snapshot-compare')).toBeInTheDocument();
@@ -1912,6 +1919,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-grouped'));
     queryLcaResults.mockRejectedValueOnce({ code: 'snapshot_stale_rebuild_required' });
     fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
@@ -2770,6 +2778,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('2 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-grouped'));
     const groupedPanel = screen.getByTestId('tab-panel-grouped');
     fireEvent.change(within(groupedPanel).getByLabelText('Group by'), {
@@ -2828,6 +2837,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('2 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-grouped'));
     const groupedPanel = screen.getByTestId('tab-panel-grouped');
     fireEvent.change(within(groupedPanel).getByLabelText('Group by'), {
@@ -2876,6 +2886,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('2 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-grouped'));
     const groupedPanel = screen.getByTestId('tab-panel-grouped');
     fireEvent.change(within(groupedPanel).getByLabelText('Group by'), {
@@ -2909,6 +2920,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('1 process row is currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-grouped'));
     const groupedPanel = screen.getByTestId('tab-panel-grouped');
     fireEvent.change(within(groupedPanel).getByLabelText('Group by'), {
@@ -2926,6 +2938,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    await waitForAnalysisInitialization();
     const profilePanel = screen.getByTestId('tab-panel-profile');
     const profileSelect = within(profilePanel).getByLabelText('Process') as HTMLSelectElement;
     appendSelectOption(profileSelect, 'process-missing', 'Missing process');
@@ -2946,7 +2959,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
+    fireEvent.click(await waitForAnalysisInitialization());
     expect(await screen.findByText('snapshot-profile')).toBeInTheDocument();
 
     const profilePanel = screen.getByTestId('tab-panel-profile');

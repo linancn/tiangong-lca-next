@@ -14,7 +14,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Button, Collapse, Empty, List, Modal, Space, Tag, Typography, theme } from 'antd';
+import { Alert, Button, Collapse, Empty, Listy, Modal, Space, Tag, Typography, theme } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const { Paragraph, Text } = Typography;
@@ -356,51 +356,57 @@ const ReviewQualityDiagnostic = ({ open, onClose }: ReviewQualityDiagnosticProps
         ),
         children:
           section.findings?.length > 0 ? (
-            <List
-              size='small'
-              dataSource={section.findings}
-              renderItem={(finding, index) => {
-                const details = formatDetails(finding.details);
-                return (
-                  <List.Item key={`${finding.code}-${index}`}>
-                    <Space direction='vertical' size={4} style={{ width: '100%' }}>
-                      <Space wrap>
-                        <Tag
-                          color={findingColor(finding.level)}
-                          style={finding.level === 'info' ? primaryTagStyle : undefined}
-                        >
-                          {formatDiagnosticFindingLevel(intl, finding.level)}
-                        </Tag>
-                        <Text code>{finding.code}</Text>
+            <div role='list'>
+              <Listy
+                items={section.findings.map((finding, index) => ({
+                  finding,
+                  key: `${finding.code}-${index}`,
+                }))}
+                rowKey='key'
+                styles={{ item: { paddingBlock: token.paddingXS, paddingInline: 0 } }}
+                itemRender={({ finding }) => {
+                  const details = formatDetails(finding.details);
+                  return (
+                    <div role='listitem'>
+                      <Space orientation='vertical' size={4} style={{ width: '100%' }}>
+                        <Space wrap>
+                          <Tag
+                            color={findingColor(finding.level)}
+                            style={finding.level === 'info' ? primaryTagStyle : undefined}
+                          >
+                            {formatDiagnosticFindingLevel(intl, finding.level)}
+                          </Tag>
+                          <Text code>{finding.code}</Text>
+                        </Space>
+                        <Text>{finding.message}</Text>
+                        {details && (
+                          <pre
+                            aria-label={intl.formatMessage({
+                              id: 'pages.review.qualityDiagnostic.findingDetails',
+                              defaultMessage: 'Finding details',
+                            })}
+                            style={{
+                              maxHeight: 220,
+                              margin: 0,
+                              padding: '8px 10px',
+                              overflow: 'auto',
+                              borderRadius: token.borderRadius,
+                              background: token.colorFillAlter,
+                              color: token.colorTextSecondary,
+                              fontSize: 12,
+                              whiteSpace: 'pre-wrap',
+                              overflowWrap: 'anywhere',
+                            }}
+                          >
+                            {details}
+                          </pre>
+                        )}
                       </Space>
-                      <Text>{finding.message}</Text>
-                      {details && (
-                        <pre
-                          aria-label={intl.formatMessage({
-                            id: 'pages.review.qualityDiagnostic.findingDetails',
-                            defaultMessage: 'Finding details',
-                          })}
-                          style={{
-                            maxHeight: 220,
-                            margin: 0,
-                            padding: '8px 10px',
-                            overflow: 'auto',
-                            borderRadius: token.borderRadius,
-                            background: token.colorFillAlter,
-                            color: token.colorTextSecondary,
-                            fontSize: 12,
-                            whiteSpace: 'pre-wrap',
-                            overflowWrap: 'anywhere',
-                          }}
-                        >
-                          {details}
-                        </pre>
-                      )}
-                    </Space>
-                  </List.Item>
-                );
-              }}
-            />
+                    </div>
+                  );
+                }}
+              />
+            </div>
           ) : (
             <Text type='secondary'>
               {intl.formatMessage({
@@ -482,7 +488,7 @@ const ReviewQualityDiagnostic = ({ open, onClose }: ReviewQualityDiagnosticProps
         </Space>
       }
     >
-      <Space direction='vertical' size='middle' style={{ width: '100%' }} aria-live='polite'>
+      <Space orientation='vertical' size='middle' style={{ width: '100%' }} aria-live='polite'>
         <Space size='small' align='start'>
           <InfoCircleOutlined style={{ color: token.colorTextTertiary, marginTop: 3 }} />
           <Text type='secondary'>
@@ -504,7 +510,7 @@ const ReviewQualityDiagnostic = ({ open, onClose }: ReviewQualityDiagnosticProps
           <Alert
             showIcon
             type='error'
-            message={intl.formatMessage({
+            title={intl.formatMessage({
               id: 'pages.review.qualityDiagnostic.requestFailed',
               defaultMessage: 'Quality diagnostic request failed',
             })}
@@ -566,7 +572,7 @@ const ReviewQualityDiagnostic = ({ open, onClose }: ReviewQualityDiagnosticProps
               <Alert
                 showIcon
                 type='error'
-                message={intl.formatMessage({
+                title={intl.formatMessage({
                   id: 'pages.review.qualityDiagnostic.runtimeFailed',
                   defaultMessage: 'The diagnostic did not produce a report.',
                 })}

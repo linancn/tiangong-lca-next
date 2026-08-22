@@ -5,7 +5,7 @@ import {
 } from '@/services/reviews/api';
 import { FileExcelOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Button, Form, Input, message, Modal, Space, Tooltip } from 'antd';
+import { App, Button, Form, Input, Modal, Space, Tooltip } from 'antd';
 import { useState } from 'react';
 import RejectReview from './RejectReview';
 
@@ -24,7 +24,7 @@ const SimpleReviewActions = ({
 }: SimpleReviewActionsProps) => {
   const intl = useIntl();
   const [form] = Form.useForm<{ reason: string }>();
-  const [modal, modalContextHolder] = Modal.useModal();
+  const { message, modal } = App.useApp();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -86,7 +86,6 @@ const SimpleReviewActions = ({
 
   return (
     <>
-      {modalContextHolder}
       <Space>
         <Tooltip
           title={intl.formatMessage({

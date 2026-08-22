@@ -21,7 +21,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
 };
 
 const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
@@ -63,22 +63,30 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
   const contactList: Record<ContactDataSetObjectKeys, React.ReactNode> = {
     contactInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.contact.id' defaultMessage='ID' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: <FormattedMessage id='pages.contact.id' defaultMessage='ID' />,
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.contactInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.contact.name' defaultMessage='Name of contact' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:name']}
         />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.contact.shortName' defaultMessage='Short name for contact' />
         </Divider>
         <LangTextItemDescription
@@ -91,54 +99,88 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           categoryType={'Contact'}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.contact.contactAddress' defaultMessage='Contact address' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['contactAddress']}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.contactInformation?.dataSetInformation?.telephone ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: <FormattedMessage id='pages.contact.telephone' defaultMessage='Telephone' />,
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.contactInformation?.dataSetInformation?.telephone ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.contact.telefax' defaultMessage='Telefax' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.contactInformation?.dataSetInformation?.telefax ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: <FormattedMessage id='pages.contact.telefax' defaultMessage='Telefax' />,
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.contactInformation?.dataSetInformation?.telefax ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.contactInformation?.dataSetInformation?.email ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: <FormattedMessage id='pages.contact.email' defaultMessage='E-mail' />,
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.contactInformation?.dataSetInformation?.email ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.contact.WWWAddress' defaultMessage='WWW-Address' />}
-            styles={{ label: { width: '140px' } }}
-          >
-            {initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.contact.WWWAddress' defaultMessage='WWW-Address' />
+              ),
+              styles: {
+                label: {
+                  width: '140px',
+                },
+              },
+              children: initData.contactInformation?.dataSetInformation?.WWWAddress ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.contact.centralContactPoint'
             defaultMessage='Central contact point'
@@ -148,7 +190,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           data={initData.contactInformation?.dataSetInformation?.['centralContactPoint']}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.contact.contactDescriptionOrComment'
             defaultMessage='Contact description or comment'
@@ -185,20 +227,29 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           size='small'
           title={<FormattedMessage id='pages.contact.dataEntryBy' defaultMessage='Data entry by' />}
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.contact.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.contact.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '200px',
+                  },
+                },
+                children:
+                  initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             title={
@@ -223,24 +274,34 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.contact.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '160px' } }}
-            >
-              <Space>
-                {initData.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.contact.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '160px',
+                  },
+                },
+                children: (
+                  <Space>
+                    {initData.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
           <br />
           <ContractDescription
             data={
@@ -272,22 +333,31 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
             }
           ></ContractDescription>
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.contact.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.contact.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '220px',
+                  },
+                },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
         </Card>
       </>
     ),
@@ -319,7 +389,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         title={
           <FormattedMessage id='pages.contact.drawer.title.view' defaultMessage='View Contact' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -333,7 +403,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         //     {footerButtons}
         //   </Space>
         // }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

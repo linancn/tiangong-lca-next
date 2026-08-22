@@ -6,16 +6,18 @@
  * 布局组件
  */
 import ExportTidasPackage from './ExportTidasPackage';
+import AccessibleSettingDrawer from './AccessibleSettingDrawer';
 import Footer from './Footer';
 import HeaderActionIcon from './HeaderActionIcon';
 import ImportTidasPackage from './ImportTidasPackage';
 import LcaTaskCenter from './LcaTaskCenter';
 import Notification from './Notification';
 import QuantitativeReferenceIcon from './QuantitativeReferenceIcon';
-import { DarkMode, Question, SelectLang } from './RightContent';
+import { DarkMode, Question, SelectLang, SelectLangAction } from './RightContent';
 import { AvatarDropdown, AvatarName } from './RightContent/AvatarDropdown';
 
 export {
+  AccessibleSettingDrawer,
   AvatarDropdown,
   AvatarName,
   DarkMode,
@@ -28,4 +30,5 @@ export {
   QuantitativeReferenceIcon,
   Question,
   SelectLang,
+  SelectLangAction,
 };

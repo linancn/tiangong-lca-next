@@ -72,15 +72,25 @@ jest.mock('antd', () => {
   const Tooltip = ({ children }: any) => <>{children}</>;
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
-  return {
-    __esModule: true,
-    Button,
-    Drawer,
-    Space,
-    Tooltip,
-    Spin,
-    message: mockMessage,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Drawer,
+      Space,
+      Tooltip,
+      Spin,
+      message: mockMessage,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -326,7 +336,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
@@ -354,7 +364,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0');
@@ -375,7 +385,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       version: undefined,
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
     fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
@@ -396,7 +406,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       newVersion: '2.0',
     });
 
-    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Create Version'));
 
     await waitFor(() => {
       expect(mockGenFlowFromData).toHaveBeenCalledWith({});

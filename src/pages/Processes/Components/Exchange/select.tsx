@@ -80,8 +80,8 @@ const ExchangeSelect: FC<Props> = ({
   const [loadingTarget, setLoadingTarget] = useState(false);
   const [loadedSourceProcess, setLoadedSourceProcess] = useState<ProcessIdentity | null>(null);
   const [loadedTargetProcess, setLoadedTargetProcess] = useState<ProcessIdentity | null>(null);
-  const actionRefSelectSource = useRef<ActionType>();
-  const actionRefSelectTarget = useRef<ActionType>();
+  const actionRefSelectSource = useRef<ActionType | undefined>(undefined);
+  const actionRefSelectTarget = useRef<ActionType | undefined>(undefined);
   const detailRequestEpochRef = useRef(0);
   const selectedSource = useMemo(
     () =>
@@ -294,7 +294,7 @@ const ExchangeSelect: FC<Props> = ({
             />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -303,7 +303,7 @@ const ExchangeSelect: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

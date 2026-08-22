@@ -20,7 +20,7 @@ type Props = {
   id: string;
   data: UnitItem[];
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: UnitItem[]) => void;
   sdkHighlights?: ValidationIssueSdkDetail[];
@@ -58,7 +58,7 @@ const UnitEdit: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [fromData, setFromData] = useState<UnitDraft>({});
   const [initData, setInitData] = useState<UnitDraft>({});
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const autoOpenConsumedRef = useRef(false);
   const sdkFieldMessagesRef = useRef<
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
@@ -275,7 +275,7 @@ const UnitEdit: FC<Props> = ({
             defaultMessage='Edit Unit'
           ></FormattedMessage>
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -286,7 +286,7 @@ const UnitEdit: FC<Props> = ({
             }}
           ></Button>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);
@@ -329,7 +329,7 @@ const UnitEdit: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>

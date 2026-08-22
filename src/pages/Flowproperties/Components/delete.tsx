@@ -2,7 +2,7 @@ import { deleteFlowproperties } from '@/services/flowproperties/api';
 import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Button, message, Modal, Tooltip } from 'antd';
+import { Button, Modal, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -11,7 +11,7 @@ type Props = {
   id: string;
   version: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -23,6 +23,7 @@ const FlowpropertiesDelete: FC<Props> = ({
   disabled = false,
   setViewDrawerVisible,
 }) => {
+  const { message } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 

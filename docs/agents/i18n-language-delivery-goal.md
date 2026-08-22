@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-19
-lastReviewedCommit: e991feacf23090647455cd28e9f7f45a01ee74a6
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: a5279243f4c1d22ee00c50ed92787614d585800c
 lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
 baselineObservedAt: 2026-07-18
 related:

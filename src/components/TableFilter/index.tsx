@@ -27,17 +27,16 @@ const TableFilter = ({
 
   return (
     <div>
-      <Select disabled={disabled} defaultValue={'all'} style={{ width }} onChange={onChange}>
-        {TABLE_FILTER_OPTIONS.map((option) => {
+      <Select
+        disabled={disabled}
+        defaultValue='all'
+        style={{ width }}
+        onChange={onChange}
+        options={TABLE_FILTER_OPTIONS.map((option) => {
           const label = intl.formatMessage({ id: option.messageId });
-
-          return (
-            <Select.Option key={option.messageId} value={option.value} title={label}>
-              {label}
-            </Select.Option>
-          );
+          return { label, title: label, value: option.value };
         })}
-      </Select>
+      />
     </div>
   );
 };

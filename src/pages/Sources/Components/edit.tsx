@@ -38,7 +38,7 @@ import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, Space, Spin, Tooltip, message } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, App } from 'antd';
 import type { RcFile, UploadFile } from 'antd/es/upload';
 import path from 'path';
 import type { FC } from 'react';
@@ -53,7 +53,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: 'icon' | 'text';
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   updateErrRef?: (data: RefCheckType | null) => void;
@@ -78,6 +78,7 @@ const SourceEdit: FC<Props> = ({
   autoOpen = false,
   autoCheckRequired = false,
 }) => {
+  const { message } = App.useApp();
   const [refsDrawerVisible, setRefsDrawerVisible] = useState(false);
   const [refsLoading, setRefsLoading] = useState(false);
   const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
@@ -85,7 +86,7 @@ const SourceEdit: FC<Props> = ({
 
   const intl = useIntl();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
   const [fromData, setFromData] = useState<FormSource>();
   const [initData, setInitData] = useState<FormSource>();
@@ -585,10 +586,10 @@ const SourceEdit: FC<Props> = ({
         title={
           <FormattedMessage id='pages.source.drawer.title.edit' defaultMessage='Edit Source' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={

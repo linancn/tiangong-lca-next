@@ -14,7 +14,7 @@ type Props = {
 };
 const UnitCreate: FC<Props> = ({ onData }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<UnitDraft>({});
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             defaultMessage='Create Unit'
           ></FormattedMessage>
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -66,7 +66,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             }}
           ></Button>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);
@@ -108,7 +108,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>

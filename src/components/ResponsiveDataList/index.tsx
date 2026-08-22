@@ -15,9 +15,24 @@ export const DATA_LIST_COLUMN_RESPONSIVE = {
 };
 
 export const responsiveDataListTableProps = {
+  cardProps: {
+    classNames: {
+      body: 'responsive-data-list-card-body',
+      root: 'responsive-data-list-card',
+    },
+  },
   className: 'responsive-data-list-table',
+  classNames: {
+    body: { cell: 'responsive-data-list-body-cell' },
+    content: 'responsive-data-list-table-scroll',
+    header: { cell: 'responsive-data-list-header-cell' },
+    root: 'responsive-data-list-table-root',
+  },
   scroll: { x: 'max-content' },
   tableLayout: 'fixed' as const,
+  toolbar: {
+    className: 'responsive-data-list-toolbar',
+  },
 };
 
 export const responsiveSearchCardClassName = 'responsive-data-list-search-card';
@@ -92,17 +107,18 @@ export function ResponsiveDataListActions({
 
   if (isMobile) {
     return (
-      <TableDropdown
-        className='responsive-data-list-more-action'
-        style={dropdownStyle}
-        menus={[
-          ...actions.map((name, index) => ({
-            key: `action-${index}`,
-            name,
-          })),
-          ...moreMenus,
-        ]}
-      />
+      <span className='responsive-data-list-more-action'>
+        <TableDropdown
+          style={dropdownStyle}
+          menus={[
+            ...actions.map((name, index) => ({
+              key: `action-${index}`,
+              name,
+            })),
+            ...moreMenus,
+          ]}
+        />
+      </span>
     );
   }
 
@@ -124,7 +140,7 @@ export function ResponsiveDataListToolbarMore({ children }: { children: ReactNod
   }
 
   return (
-    <span className='ant-pro-table-list-toolbar-setting-item responsive-data-list-toolbar-more-action'>
+    <span className='responsive-data-list-toolbar-more-action'>
       <TableDropdown
         className='responsive-data-list-more-action'
         style={dropdownStyle}

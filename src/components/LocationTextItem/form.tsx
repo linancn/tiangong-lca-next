@@ -59,7 +59,7 @@ const LocationTextItemForm: FC<Props> = ({
   }, [lang]);
 
   return (
-    <Space direction='vertical' style={{ width: '100%' }}>
+    <Space orientation='vertical' style={{ width: '100%' }}>
       <Form.Item
         required={false}
         label={showRequiredLable ? <RequiredMark label={label} showError={false} /> : label}
@@ -67,13 +67,20 @@ const LocationTextItemForm: FC<Props> = ({
         rules={rules}
       >
         <Select
-          showSearch
+          classNames={{
+            root: 'tg-location-reference-select',
+            popup: {
+              root: 'tg-location-reference-popup',
+              listItem: 'tg-location-reference-option',
+            },
+          }}
+          showSearch={{
+            filterOption: (input: string, option: any) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+          }}
           // defaultValue={null} defaultValue报错
           onChange={handleLChange}
           options={locationData}
-          filterOption={(input: any, option: any) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
         />
       </Form.Item>
     </Space>

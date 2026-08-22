@@ -43,6 +43,8 @@ jest.mock('antd', () => {
     error: jest.fn(),
     success: jest.fn(),
   };
+
+  const App = { useApp: () => ({ message }) };
   const theme = {
     useToken: () => ({
       token: {
@@ -60,6 +62,7 @@ jest.mock('antd', () => {
     __esModule: true,
     Space,
     Spin,
+    App,
     message,
     theme,
   };

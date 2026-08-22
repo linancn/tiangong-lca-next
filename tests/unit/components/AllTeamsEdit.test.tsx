@@ -101,9 +101,11 @@ jest.mock('antd', () => {
   const Spin = ({ spinning, children }: any) => (
     <div data-testid={spinning ? 'spinner-active' : 'spinner-idle'}>{children}</div>
   );
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message: messageMock });
 
   return {
     __esModule: true,
+    App,
     Button,
     Drawer,
     Space,
@@ -147,7 +149,7 @@ jest.mock('@ant-design/pro-components', () => {
 
     React.useEffect(() => {
       if (formRef) {
-        (formRef as React.MutableRefObject<ProFormHandle>).current = {
+        (formRef as React.RefObject<ProFormHandle>).current = {
           submit,
           resetFields,
           setFieldsValue,

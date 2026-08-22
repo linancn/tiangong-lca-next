@@ -12,11 +12,11 @@ import {
   Button,
   // DatePicker,
   Drawer,
-  message,
   // Select,
   Space,
   Spin,
   Tooltip,
+  App,
 } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -40,7 +40,7 @@ import { v4 } from 'uuid';
 import { FlowpropertyForm } from './form';
 
 type Props = {
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   lang: string;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
@@ -75,8 +75,9 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   onClose = () => {},
   disabled = false,
 }) => {
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
     'flowPropertiesInformation',
   );
@@ -184,18 +185,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={
-          actionType === 'copy' ? (
-            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
-          ) : actionType === 'createVersion' ? (
-            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
-          ) : (
-            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
-          )
-        }
-      >
-        {actionType === 'copy' ? (
+      {actionType === 'copy' ? (
+        <Tooltip title={<FormattedMessage id='pages.button.copy' defaultMessage='Copy' />}>
           <Button
             disabled={disabled}
             shape='circle'
@@ -205,17 +196,23 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               setDrawerVisible(true);
             }}
           ></Button>
-        ) : (
-          <ToolBarButton
-            disabled={disabled}
-            icon={<PlusOutlined />}
-            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
-            onClick={() => {
-              setDrawerVisible(true);
-            }}
-          />
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <ToolBarButton
+          disabled={disabled}
+          icon={<PlusOutlined />}
+          tooltip={
+            actionType === 'createVersion' ? (
+              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+            ) : (
+              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+            )
+          }
+          onClick={() => {
+            setDrawerVisible(true);
+          }}
+        />
+      )}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
@@ -237,7 +234,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -246,7 +243,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

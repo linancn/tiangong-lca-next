@@ -1,8 +1,9 @@
 import { TidasPackageRootTable } from '@/services/general/api';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { submitTidasPackageExportTask } from '@/services/tidasPackage/taskCenter';
 import { DownloadOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, message, Spin, Tooltip } from 'antd';
+import { Button, Spin, Tooltip } from 'antd';
 import { FC, useState } from 'react';
 
 interface ExportDataProps {
@@ -12,6 +13,7 @@ interface ExportDataProps {
 }
 
 const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
+  const { message } = useAntdAppApi();
   const [loading, setLoading] = useState<boolean>(false);
   const intl = useIntl();
 

@@ -6,7 +6,7 @@ import {
 } from '@/services/reviews/api';
 import { FileExcelOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Button, Form, Input, message, Modal, Space, theme, Tooltip } from 'antd';
+import { App, Button, Form, Input, Modal, Space, theme, Tooltip } from 'antd';
 import { useState } from 'react';
 
 type BatchReviewActionsProps = {
@@ -27,7 +27,7 @@ const BatchReviewActions = ({
   const intl = useIntl();
   const { token } = theme.useToken();
   const [form] = Form.useForm<{ reason: string }>();
-  const [modal, modalContextHolder] = Modal.useModal();
+  const { message, modal } = App.useApp();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -104,7 +104,6 @@ const BatchReviewActions = ({
 
   return (
     <>
-      {modalContextHolder}
       <Space size={token.marginXS}>
         {allowApprove && (
           <Tooltip

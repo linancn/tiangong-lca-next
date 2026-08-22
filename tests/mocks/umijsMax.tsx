@@ -7,7 +7,9 @@ export const umijsMaxMocks = {
 
 export const createUmijsMaxMock = () => ({
   ...createUmiMock(),
-  SelectLang: (props: any) => <div data-testid='select-lang' {...props} />,
+  SelectLang: ({ globalIconClassName, style }: any) => (
+    <button className={globalIconClassName} data-testid='select-lang' style={style} type='button' />
+  ),
   Helmet: ({ children }: any) => <>{children}</>,
   __mockHistoryPush: umiMocks.historyPush,
   __mockHistoryReplace: umiMocks.historyReplace,

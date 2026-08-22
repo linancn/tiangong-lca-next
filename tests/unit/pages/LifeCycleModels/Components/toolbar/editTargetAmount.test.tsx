@@ -83,7 +83,18 @@ jest.mock('antd', () => {
     );
   };
 
-  const Space = ({ children, className }: any) => <div className={className ?? ''}>{children}</div>;
+  const Space = ({ children, className, orientation, style, styles, wrap }: any) => (
+    <div
+      className={className ?? ''}
+      data-item-max-width={styles?.item?.maxWidth}
+      data-item-min-width={styles?.item?.minWidth}
+      data-orientation={orientation}
+      data-wrap={String(Boolean(wrap))}
+      style={style}
+    >
+      {children}
+    </div>
+  );
 
   const Card = ({ children, title }: any) => (
     <section>
@@ -92,12 +103,19 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [], style, styles }: any) => (
+    <dl
+      data-label-max-width={styles?.label?.maxWidth}
+      data-label-overflow-wrap={styles?.label?.overflowWrap}
+      style={style}
+    >
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt style={styles?.label}>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -354,16 +372,40 @@ describe('TargetAmount', () => {
       />,
     );
 
-    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
-
-    expect(proFormApi).not.toBeNull();
-    expect(proFormApi.getFieldsValue()).toEqual({
-      targetAmount: 10,
-      originalAmount: 10,
-      scalingFactor: 1,
-    });
-    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
+    await waitFor(() =>
+      expect(proFormApi?.getFieldsValue()).toEqual({
+        targetAmount: 10,
+        originalAmount: 10,
+        scalingFactor: 1,
+      }),
+    );
+    expect(await screen.findByTestId('flows-view')).toHaveTextContent('flow-1:1.0');
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-1:1.0:flow');
+  });
+
+  it('keeps the reference-flow description inside a 450px drawer viewport', async () => {
+    mockGetProcessDetail.mockResolvedValue({ data: { json: { processDataSet: {} } } });
+    mockGenProcessFromData.mockReturnValue(buildProcessDataset());
+
+    render(
+      <TargetAmount
+        refNode={{ data: { id: 'proc-1', version: '1.0' } }}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    const referenceLabel = await screen.findByText('Reference flow dataset identifier');
+    const description = referenceLabel.closest('dl');
+    expect(description).toHaveStyle({ width: '100%', maxWidth: '450px' });
+    expect(description).toHaveAttribute('data-label-max-width', 'min(42vw, 22rem)');
+    expect(description).toHaveAttribute('data-label-overflow-wrap', 'anywhere');
+    expect(description?.parentElement).toHaveAttribute('data-wrap', 'true');
+    expect(description?.parentElement).toHaveAttribute('data-item-min-width', '0');
+    expect(description?.parentElement).toHaveAttribute('data-item-max-width', '100%');
+    expect(description?.parentElement).toHaveStyle({ width: '100%' });
   });
 
   it('prefers target, original amount, and scaling factor from the graph node when provided', async () => {
@@ -455,7 +497,7 @@ describe('TargetAmount', () => {
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(1));
 
-    expect(screen.getByTestId('flows-view')).toHaveTextContent('flow-array:');
+    expect(await screen.findByTestId('flows-view')).toHaveTextContent('flow-array:');
     expect(screen.getByTestId('unitgroup-mini')).toHaveTextContent('flow-array::flow');
     expect(screen.getAllByTestId('lang-text')[0]).toHaveTextContent('array short');
   });

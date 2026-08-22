@@ -53,13 +53,19 @@ jest.mock('antd', () => {
     </section>
   );
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children, styles }: any) => (
+  const DescriptionsItem = ({ children, styles }: any) => (
     <div
       data-styles-label-width={styles?.label?.width}
       data-styles-label-max-width={styles?.label?.maxWidth}
     >
       {children}
+    </div>
+  );
+  const Descriptions: any = ({ items = [], styles }: any) => (
+    <div>
+      {items.map((item, index) => (
+        <DescriptionsItem key={item.key ?? index} {...item} styles={item.styles ?? styles} />
+      ))}
     </div>
   );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -112,7 +118,7 @@ describe('UnitGroupSelectDescription', () => {
 
     await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('ug-1', '1.0'));
     expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('ug-1:1.0');
-    expect(screen.getByText('sup:kg')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('sup:kg')).toBeInTheDocument());
     expect(screen.getByText('Short desc')).toBeInTheDocument();
     expect(screen.getByText('Reference comment')).toBeInTheDocument();
   });

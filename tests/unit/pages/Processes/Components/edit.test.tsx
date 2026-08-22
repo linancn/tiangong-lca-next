@@ -279,8 +279,10 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
+  const App = require('../../../../mocks/antdApp').createAntdAppMock({ message });
   return {
     __esModule: true,
+    App,
     Button,
     Alert,
     Tooltip,
@@ -312,7 +314,7 @@ jest.mock('@ant-design/pro-components', () => {
   }: any) => {
     const valuesRef = React.useRef({ ...initialValues });
 
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
       const api = {
         submit: async () => onFinish?.(),
         resetFields: () => {

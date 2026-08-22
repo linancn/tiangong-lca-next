@@ -1,7 +1,9 @@
 import { forgotPasswordSendEmail, getCurrentUser } from '@/services/auth';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
+import { AntdThemeSync } from '@/contexts/AntdThemeSync';
 import { MailOutlined } from '@ant-design/icons';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
-import { App, Button, ConfigProvider, Spin, Tabs, notification, theme } from 'antd';
+import { Button, Spin, Tabs } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Helmet, Link, useIntl } from 'umi';
 
@@ -15,8 +17,10 @@ import {
   getLocalizedLoginSubtitle,
 } from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
+import { responsiveLoginFormProps } from './responsive';
 
 const PasswordForgot: React.FC = () => {
+  const { notification } = useAntdAppApi();
   const [initData, setInitData] = useState<Auth.CurrentUser>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [sendComplete, setSendComplete] = useState(false);
@@ -48,7 +52,7 @@ const PasswordForgot: React.FC = () => {
       if (msg.status === 'ok') {
         setSendComplete(true);
         notification.success({
-          message: intl.formatMessage({
+          title: intl.formatMessage({
             id: 'pages.login.password.forgot.success',
             defaultMessage:
               'Validation email was sent successfully! Please follow the email link to reset your password.',
@@ -57,7 +61,7 @@ const PasswordForgot: React.FC = () => {
         });
       } else {
         notification.error({
-          message: intl.formatMessage({
+          title: intl.formatMessage({
             id: 'pages.login.password.forgot.failure',
             defaultMessage: 'The email was not sent successfully, please try again!',
           }),
@@ -67,7 +71,7 @@ const PasswordForgot: React.FC = () => {
       }
     } catch (error) {
       notification.error({
-        message: intl.formatMessage({
+        title: intl.formatMessage({
           id: 'pages.login.password.forgot.failure',
           defaultMessage: 'The email was not sent successfully, please try again!',
         }),
@@ -104,125 +108,117 @@ const PasswordForgot: React.FC = () => {
   }, []);
 
   return (
-    <App>
-      <ConfigProvider
-        theme={{
-          cssVar: true,
-          token: {
-            colorPrimary: brandTheme.colorPrimary,
-          },
-          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        }}
-      >
-        <ProConfigProvider hashed={false}>
-          <ProLayout
-            menuRender={false}
-            menuHeaderRender={false}
-            headerRender={false}
-            fixedHeader={false}
-            fixSiderbar={false}
-          >
-            <Helmet>
-              <title>
-                {intl.formatMessage({
-                  id: 'menu.password_forgot',
-                  defaultMessage: 'Forgot Password',
-                })}
-                - {appTitle}
-              </title>
-            </Helmet>
-            <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
-            <div style={{ marginTop: '80px' }}>
-              <Spin spinning={spinning}>
-                <LoginForm
-                  layout='vertical'
-                  logo={brandTheme.logo}
-                  title={appTitle}
-                  subTitle={loginSubtitle}
-                  initialValues={initData}
-                  onFinish={async (values) => {
-                    await handleSubmit(values as Auth.LoginParams);
-                  }}
-                  submitter={{
-                    resetButtonProps: {
-                      style: { display: 'none' },
-                    },
-                    submitButtonProps: {
-                      loading: loading,
-                      disabled: sendComplete,
-                    },
-                    searchConfig: {
-                      submitText: intl.formatMessage({
-                        id: 'pages.login.email.verify',
-                        defaultMessage: 'Send Verify Email',
+    <>
+      <AntdThemeSync colorPrimary={brandTheme.colorPrimary} isDarkMode={isDarkMode} />
+      <ProConfigProvider hashed={false}>
+        <ProLayout
+          menuRender={false}
+          menuHeaderRender={false}
+          headerRender={false}
+          fixedHeader={false}
+          fixSiderbar={false}
+        >
+          <Helmet>
+            <title>
+              {intl.formatMessage({
+                id: 'menu.password_forgot',
+                defaultMessage: 'Forgot Password',
+              })}
+              - {appTitle}
+            </title>
+          </Helmet>
+          <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
+          <div style={{ marginTop: '80px' }}>
+            <Spin spinning={spinning}>
+              <LoginForm
+                {...responsiveLoginFormProps}
+                layout='vertical'
+                logo={brandTheme.logo}
+                title={appTitle}
+                subTitle={loginSubtitle}
+                initialValues={initData}
+                onFinish={async (values) => {
+                  await handleSubmit(values as Auth.LoginParams);
+                }}
+                submitter={{
+                  resetButtonProps: {
+                    style: { display: 'none' },
+                  },
+                  submitButtonProps: {
+                    loading: loading,
+                    disabled: sendComplete,
+                  },
+                  searchConfig: {
+                    submitText: intl.formatMessage({
+                      id: 'pages.login.email.verify',
+                      defaultMessage: 'Send Verify Email',
+                    }),
+                  },
+                }}
+              >
+                <Tabs
+                  centered
+                  items={[
+                    {
+                      key: 'email',
+                      label: intl.formatMessage({
+                        id: 'pages.login.passwordForgot.tab',
+                        defaultMessage: 'Account',
                       }),
                     },
+                  ]}
+                />
+                <ProFormText
+                  name='email'
+                  fieldProps={{
+                    size: 'middle',
+                    prefix: <MailOutlined />,
                   }}
-                >
-                  <Tabs
-                    centered
-                    items={[
-                      {
-                        key: 'email',
-                        label: intl.formatMessage({
-                          id: 'pages.login.passwordForgot.tab',
-                          defaultMessage: 'Account',
-                        }),
-                      },
-                    ]}
-                  />
-                  <ProFormText
-                    name='email'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <MailOutlined />,
-                    }}
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.email.placeholder',
-                      defaultMessage: 'Email',
-                    })}
-                    rules={[
-                      {
-                        type: 'email',
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.wrong-format'
-                            defaultMessage='The email format is incorrect!'
-                          />
-                        ),
-                      },
-                      {
-                        required: true,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.required'
-                            defaultMessage='Please input your email!'
-                          />
-                        ),
-                      },
-                    ]}
-                    disabled={sendComplete}
-                  />
-                </LoginForm>
-                {sendComplete && (
-                  <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
-                    <Link to='/'>
-                      <Button type='primary' size='large'>
-                        {intl.formatMessage({
-                          id: 'pages.login.password.back',
-                          defaultMessage: 'Back to Login',
-                        })}
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </Spin>
-            </div>
-            <Footer />
-          </ProLayout>
-        </ProConfigProvider>
-      </ConfigProvider>
-    </App>
+                  placeholder={intl.formatMessage({
+                    id: 'pages.login.email.placeholder',
+                    defaultMessage: 'Email',
+                  })}
+                  rules={[
+                    {
+                      type: 'email',
+                      message: (
+                        <FormattedMessage
+                          id='pages.login.email.wrong-format'
+                          defaultMessage='The email format is incorrect!'
+                        />
+                      ),
+                    },
+                    {
+                      required: true,
+                      message: (
+                        <FormattedMessage
+                          id='pages.login.email.required'
+                          defaultMessage='Please input your email!'
+                        />
+                      ),
+                    },
+                  ]}
+                  disabled={sendComplete}
+                />
+              </LoginForm>
+              {sendComplete && (
+                <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
+                  <Link to='/'>
+                    <Button type='primary' size='large'>
+                      {intl.formatMessage({
+                        id: 'pages.login.password.back',
+                        defaultMessage: 'Back to Login',
+                      })}
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </Spin>
+          </div>
+          <Footer />
+        </ProLayout>
+      </ProConfigProvider>
+    </>
   );
 };
 

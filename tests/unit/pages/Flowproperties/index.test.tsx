@@ -3,6 +3,12 @@ import FlowpropertiesPage from '@/pages/Flowproperties';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -41,6 +47,8 @@ const mockIsDataUnderReview = jest.fn((stateCode: number | undefined) => stateCo
 const mockMessage = {
   success: jest.fn(),
   error: jest.fn(),
+  warning: jest.fn(),
+  info: jest.fn(),
 };
 
 jest.mock('umi', () => ({
@@ -287,25 +295,37 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Grid: {
-      useBreakpoint: () => mockBreakpointScreens,
-    },
-    Input,
-    Row,
-    Space,
-    Tooltip,
-    message: {
-      success: (...args: any[]) => mockMessage.success(...args),
-      error: (...args: any[]) => mockMessage.error(...args),
-    },
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Card,
+      Checkbox,
+      Col,
+      ConfigProvider,
+      Grid: {
+        useBreakpoint: () => mockBreakpointScreens,
+      },
+      Input,
+      Row,
+      Space,
+      Tooltip,
+      message: {
+        success: (...args: any[]) => mockMessage.success(...args),
+        error: (...args: any[]) => mockMessage.error(...args),
+        warning: (...args: any[]) => mockMessage.warning(...args),
+        info: (...args: any[]) => mockMessage.info(...args),
+      },
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -816,7 +836,7 @@ describe('FlowpropertiesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(mockMessage.error).toHaveBeenCalledWith(
+      expect(mockMessage.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -835,7 +855,7 @@ describe('FlowpropertiesPage', () => {
       ),
     );
     expect(await screen.findByText('Referenced flow property')).toBeInTheDocument();
-    expect(mockMessage.error).toHaveBeenCalledWith(
+    expect(mockMessage.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 

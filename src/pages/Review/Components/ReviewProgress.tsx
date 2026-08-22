@@ -10,7 +10,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, DeleteOutlined, FileSyncOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Modal, Space, Spin, Tag, Tooltip, message, theme } from 'antd';
+import { App, Button, Drawer, Space, Spin, Tag, Tooltip, theme } from 'antd';
 import { useRef, useState } from 'react';
 import RejectReview from './RejectReview';
 import SelectReviewer from './SelectReviewer';
@@ -47,7 +47,7 @@ export default function ReviewProgress({
   const tableRef = useRef<any>(null);
   const intl = useIntl();
   const { token } = theme.useToken();
-  const [modal, contextHolder] = Modal.useModal();
+  const { message, modal } = App.useApp();
   const fetchTableData = async () => {
     setTableLoading(true);
     try {
@@ -303,7 +303,6 @@ export default function ReviewProgress({
 
   return (
     <>
-      {contextHolder}
       <Tooltip
         title={
           <FormattedMessage
@@ -327,7 +326,7 @@ export default function ReviewProgress({
             defaultMessage='Review Progress'
           />
         }
-        width='80%'
+        size='80%'
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         closable={false}

@@ -74,12 +74,15 @@ jest.mock('antd', () => {
     error: jest.fn(),
   };
 
+  const App = { useApp: () => ({ message }) };
+
   return {
     __esModule: true,
     Button,
     ConfigProvider,
     Modal,
     Tooltip,
+    App,
     message,
   };
 });

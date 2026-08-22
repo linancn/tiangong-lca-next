@@ -1,5 +1,5 @@
+import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { normalizeDatasetUuidSearchQuery } from '@/services/datasetUuidMentionSearch/api';
-import { message } from 'antd';
 
 export type DatasetSearchMode = 'normal' | 'smart' | 'reference';
 
@@ -43,7 +43,7 @@ export function showInvalidReferenceLookupUuidMessage(intl: IntlLike) {
     defaultMessage: 'Enter a complete dataset UUID before running Reference Lookup.',
     id: 'pages.datasetUuidMention.invalidUuid',
   });
-  (message.warning ?? message.error)?.(text);
+  dispatchAntdAppAction(({ message }) => message.warning(text));
 }
 
 export function showReferenceLookupLimitMessage(intl: IntlLike) {
@@ -51,5 +51,5 @@ export function showReferenceLookupLimitMessage(intl: IntlLike) {
     defaultMessage: 'Showing up to the first 50 reference lookup results.',
     id: 'pages.datasetUuidMention.maxResults',
   });
-  (message.info ?? message.warning ?? message.error)?.(text);
+  dispatchAntdAppAction(({ message }) => message.info(text));
 }

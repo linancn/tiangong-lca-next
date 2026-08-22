@@ -1,8 +1,9 @@
 import HeaderActionIcon from '@/components/HeaderActionIcon';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { ImportTidasPackageResponse, importTidasPackageApi } from '@/services/general/api';
 import { getDocumentationUrl } from '@/services/general/runtimeLocale';
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
-import { Alert, Button, Flex, Modal, Typography, Upload, message, theme } from 'antd';
+import { Alert, Button, Flex, Modal, Typography, Upload, theme } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -142,6 +143,7 @@ const formatValidationIssues = (
 };
 
 const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
+  const { message, modal } = useAntdAppApi();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
@@ -179,7 +181,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
         );
 
         if (payload.summary.filtered_open_data_count > 0) {
-          Modal.info({
+          modal.info({
             title: intl.formatMessage({
               id: 'component.tidasPackage.import.filtered.title',
               defaultMessage: 'Some open datasets were skipped',
@@ -200,7 +202,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
       }
 
       if (payload.code === 'VALIDATION_FAILED') {
-        Modal.error({
+        modal.error({
           title: intl.formatMessage({
             id: 'component.tidasPackage.import.validation.title',
             defaultMessage: 'Import blocked by validation issues',
@@ -210,7 +212,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
         return;
       }
 
-      Modal.error({
+      modal.error({
         title: intl.formatMessage({
           id: 'component.tidasPackage.import.conflict.title',
           defaultMessage: 'Import rejected because of conflicts',
@@ -256,6 +258,10 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
   return (
     <>
       <HeaderActionIcon
+        aria-label={intl.formatMessage({
+          id: 'component.tidasPackage.import.tooltip',
+          defaultMessage: 'Import TIDAS ZIP Package',
+        })}
         title={
           <FormattedMessage
             id='component.tidasPackage.import.tooltip'
@@ -289,17 +295,17 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
         })}
       >
         <Flex vertical gap={token.marginMD}>
-          <Upload.Dragger {...uploadProps}>
-            <p className='ant-upload-drag-icon'>
+          <Upload.Dragger {...uploadProps} prefixCls='tg-tidas-import-upload'>
+            <p className='tg-tidas-import-upload-drag-icon'>
               <InboxOutlined />
             </p>
-            <p className='ant-upload-text'>
+            <p className='tg-tidas-import-upload-text'>
               <FormattedMessage
                 id='component.tidasPackage.import.uploadText'
                 defaultMessage='Click or drag a ZIP package to this area to upload'
               />
             </p>
-            <p className='ant-upload-hint'>
+            <p className='tg-tidas-import-upload-hint'>
               <FormattedMessage
                 id='component.tidasPackage.import.uploadHint'
                 defaultMessage='The package will be validated before any data is imported'
@@ -323,7 +329,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
                 </Typography.Link>
               </Flex>
             }
-            message={
+            title={
               <FormattedMessage
                 id='component.tidasPackage.import.apiGuide.title'
                 defaultMessage='API import'

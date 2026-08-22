@@ -1,14 +1,16 @@
 import HeaderActionIcon from '@/components/HeaderActionIcon';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { TidasPackageScope } from '@/services/general/api';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { submitTidasPackageExportTask } from '@/services/tidasPackage/taskCenter';
 import { CloudDownloadOutlined } from '@ant-design/icons';
-import { message, Modal, Radio, Spin } from 'antd';
+import { Modal, Radio, Spin } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const ExportTidasPackage: FC = () => {
+  const { message } = useAntdAppApi();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<TidasPackageScope>('current_user');
@@ -70,6 +72,10 @@ const ExportTidasPackage: FC = () => {
   return (
     <>
       <HeaderActionIcon
+        aria-label={intl.formatMessage({
+          id: 'component.tidasPackage.export.tooltip',
+          defaultMessage: 'Export TIDAS ZIP Package',
+        })}
         title={
           <FormattedMessage
             id='component.tidasPackage.export.tooltip'

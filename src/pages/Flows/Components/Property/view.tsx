@@ -43,7 +43,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
             defaultMessage='View Exchange'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -53,7 +53,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
           />
         }
         footer={null}
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
@@ -68,35 +68,53 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
           }
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.flow.view.flowProperties.meanValue'
-                defaultMessage='Mean value (of flow property)'
-              />
-            }
-            styles={{ label: { width: '230px' } }}
-          >
-            {viewData?.['meanValue'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.flow.view.flowProperties.meanValue'
+                  defaultMessage='Mean value (of flow property)'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '230px',
+                },
+              },
+              children: viewData?.['meanValue'] ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.quantitativeReference'
-                defaultMessage='Quantitative reference'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.quantitativeReference'
+                  defaultMessage='Quantitative reference'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '220px',
+                },
+              },
+              children: (
+                <QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />
+              ),
+            },
+          ]}
+        />
       </Drawer>
     </>
   );

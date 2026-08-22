@@ -13,7 +13,7 @@ import styles from '@/style/custom.less';
 import { CloseOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, DatePicker, Drawer, message, Space, Spin, theme, Tooltip } from 'antd';
+import { App, Button, DatePicker, Drawer, Space, Spin, theme, Tooltip } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 
@@ -31,13 +31,14 @@ export default function SelectReviewer({
   disabled = false,
 }: SelectReviewerProps) {
   const intl = useIntl();
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const defaultSelectedRowKeys = useRef<React.Key[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [reviewDeadline, setReviewDeadline] = useState<Dayjs | null>(dayjs().add(15, 'day'));
   const { token } = theme.useToken();
-  const tableRef = useRef<ActionType>();
+  const tableRef = useRef<ActionType>(undefined);
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -208,7 +209,7 @@ export default function SelectReviewer({
         title={
           <FormattedMessage id='pages.review.drawer.title' defaultMessage='Assign for review' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -217,7 +218,7 @@ export default function SelectReviewer({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

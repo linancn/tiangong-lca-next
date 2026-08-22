@@ -3,6 +3,12 @@ import ContactsPage from '@/pages/Contacts';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -269,6 +275,8 @@ jest.mock('antd', () => {
   const message = {
     success: jest.fn(),
     error: jest.fn(),
+    warning: jest.fn(),
+    info: jest.fn(),
   };
 
   const theme = {
@@ -279,22 +287,32 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Card,
-    Checkbox,
-    Col,
-    ConfigProvider,
-    Grid: {
-      useBreakpoint: () => mockBreakpointScreens,
-    },
-    Input,
-    Row,
-    Space,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Card,
+      Checkbox,
+      Col,
+      ConfigProvider,
+      Grid: {
+        useBreakpoint: () => mockBreakpointScreens,
+      },
+      Input,
+      Row,
+      Space,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -690,7 +708,7 @@ describe('ContactsPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith(
+      expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -709,7 +727,7 @@ describe('ContactsPage', () => {
       ),
     );
     expect(await screen.findByText('Referenced contact')).toBeInTheDocument();
-    expect(message.error).toHaveBeenCalledWith(
+    expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 

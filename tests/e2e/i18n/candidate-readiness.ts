@@ -20,8 +20,25 @@ type CandidateReadinessDependencies = {
 };
 
 const DEFAULT_DEPENDENCIES: CandidateReadinessDependencies = {
-  assertNoBlockedRequests: assertNoBlockedProductionRequests,
-  installReadOnlyGuard: installVerifiedProductionReadOnlyGuard,
+  assertNoBlockedRequests: (guard) => {
+    if ('externalRequests' in guard && 'productionWrites' in guard) {
+      if (guard.externalRequests !== 0 || guard.productionWrites !== 0) {
+        throw new Error(
+          `Semantic readiness backend did not close safely: external=${String(
+            guard.externalRequests,
+          )}; writes=${String(guard.productionWrites)}.`,
+        );
+      }
+    }
+    assertNoBlockedProductionRequests(guard);
+  },
+  installReadOnlyGuard: async (context) => {
+    if (process.env.E2E_QUALIFICATION === 'true') {
+      const { installSemanticBackendSimulator } = await import('./semantic-backend-simulator');
+      return { guard: await installSemanticBackendSimulator(context, 'anonymous') };
+    }
+    return installVerifiedProductionReadOnlyGuard(context);
+  },
   launchBrowser: async (browserName) => {
     const { chromium, firefox, webkit } = await import('@playwright/test');
     const browserTypes: Record<CandidateReadinessBrowserName, BrowserType> = {

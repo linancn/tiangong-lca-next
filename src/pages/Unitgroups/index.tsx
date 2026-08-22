@@ -42,7 +42,7 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, MutableRefObject } from 'react';
+import type { FC, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
@@ -91,7 +91,7 @@ const TableList: FC = () => {
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
   const shouldShowUnitGroupTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
@@ -123,7 +123,7 @@ const TableList: FC = () => {
 
   const renderUnitGroupActions = (
     row: UnitGroupTable,
-    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+    listActionRef: RefObject<ActionType | undefined> = actionRef,
   ) => {
     if (dataSource === 'my') {
       return [

@@ -63,19 +63,15 @@ jest.mock('antd', () => {
     });
   };
 
-  const DescriptionsContext = React.createContext(null);
-
-  const Descriptions = ({ children }: any) => (
+  const Descriptions = ({ items = [] }: any) => (
     <dl data-testid='descriptions'>
-      <DescriptionsContext.Provider value={null}>{children}</DescriptionsContext.Provider>
+      {items.map((item: any) => (
+        <React.Fragment key={item.key}>
+          <dt>{toText(item.label)}</dt>
+          <dd>{item.children}</dd>
+        </React.Fragment>
+      ))}
     </dl>
-  );
-
-  Descriptions.Item = ({ label, children }: any) => (
-    <>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </>
   );
 
   const Card = ({ title, children }: any) => (
