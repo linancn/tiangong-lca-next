@@ -1,7 +1,7 @@
 import { createLegacyMutationRemovedError, invokeDatasetCommand } from '@/services/general/api';
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 
 type ReviewCommentCommandFunctionName =
   'app_review_save_comment_draft' | 'app_review_submit_comment';

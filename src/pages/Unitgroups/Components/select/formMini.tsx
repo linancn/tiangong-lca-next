@@ -18,7 +18,7 @@ type Props = {
   version: string | undefined;
   idType: string;
   name: FormPath;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
 };
 
@@ -90,7 +90,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
           />
         }
       >
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
         </Divider>
         <Form.Item>
@@ -144,7 +144,7 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
           >
             <Input disabled={true} style={{ color: token.colorTextDescription }} />
           </Form.Item>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
           </Divider>
           <Form.Item>

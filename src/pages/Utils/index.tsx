@@ -52,7 +52,7 @@ export function getRules(rules: any[]) {
 }
 
 export const validateRefObjectId = (
-  formRef: React.MutableRefObject<ProFormInstance | undefined>,
+  formRef: React.RefObject<ProFormInstance | undefined>,
   name: Array<string | number>,
   parentName?: Array<string | number>,
 ) => {

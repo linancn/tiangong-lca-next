@@ -66,7 +66,7 @@ import ReveiwItemForm from './Review/form';
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onExchangeData: (data: ProcessExchangeData[]) => void;
   onExchangeDataCreate: (data: ProcessExchangeData) => void;
@@ -294,8 +294,8 @@ export const ProcessForm: FC<Props> = ({
   const intlRef = useRef(intl);
   intlRef.current = intl;
   const refCheckContext = useRefCheckContext();
-  const actionRefExchangeTableInput = useRef<ActionType>();
-  const actionRefExchangeTableOutput = useRef<ActionType>();
+  const actionRefExchangeTableInput = useRef<ActionType | undefined>(undefined);
+  const actionRefExchangeTableOutput = useRef<ActionType | undefined>(undefined);
   const inputExchangeRequestEpochRef = useRef(0);
   const outputExchangeRequestEpochRef = useRef(0);
   const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
@@ -859,7 +859,7 @@ export const ProcessForm: FC<Props> = ({
   ];
   const tabContent: { [key: string]: React.JSX.Element } = {
     processInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'Data Set Information'}> */}
         <Card
           size='small'
@@ -1161,7 +1161,7 @@ export const ProcessForm: FC<Props> = ({
           >
             <InputNumber min={1000} max={9999} precision={0} step={1} style={{ width: '100%' }} />
           </Form.Item>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.processInformation.timeRepresentativenessDescription'
               defaultMessage='Time representativeness description'
@@ -1217,7 +1217,7 @@ export const ProcessForm: FC<Props> = ({
                 : []
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.processInformation.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -1264,7 +1264,7 @@ export const ProcessForm: FC<Props> = ({
             lang={lang}
             onData={onData}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.processInformation.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -1295,7 +1295,12 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+          <Divider
+            className='required-divider'
+            titlePlacement='start'
+            styles={{ content: { margin: 0 } }}
+            plain
+          >
             <RequiredMark
               label={
                 <FormattedMessage
@@ -1325,7 +1330,7 @@ export const ProcessForm: FC<Props> = ({
             }
             setRuleErrorState={setTechnologyDescriptionAndIncludedProcessesError}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.processInformation.technologicalApplicability'
               defaultMessage='Technical purpose of product or process'
@@ -1519,7 +1524,7 @@ export const ProcessForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -1560,7 +1565,7 @@ export const ProcessForm: FC<Props> = ({
           >
             <Select options={LCIMethodPrincipleOptions} />
           </Form.Item>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple'
               defaultMessage='Deviation from LCI method principle / explanations'
@@ -1590,7 +1595,7 @@ export const ProcessForm: FC<Props> = ({
           >
             <Select options={LCIMethodApproachOptions} />
           </Form.Item>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches'
               defaultMessage='Deviations from LCI method approaches / explanations'
@@ -1609,7 +1614,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.modellingConstants'
               defaultMessage='Modelling constants'
@@ -1625,7 +1630,7 @@ export const ProcessForm: FC<Props> = ({
             }
           />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
               defaultMessage='Deviation from modelling constants / explanations'
@@ -1670,7 +1675,12 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+          <Divider
+            className='required-divider'
+            titlePlacement='start'
+            styles={{ content: { margin: 0 } }}
+            plain
+          >
             <RequiredMark
               label={
                 <FormattedMessage
@@ -1704,7 +1714,7 @@ export const ProcessForm: FC<Props> = ({
             }
             setRuleErrorState={setDataCutOffAndCompletenessPrinciplesError}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
               defaultMessage='Deviation from data cut-off and completeness principles / explanations'
@@ -1723,7 +1733,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples'
               defaultMessage='Data selection and combination principles'
@@ -1742,7 +1752,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
               defaultMessage='Deviation from data selection and combination principles / explanations'
@@ -1761,7 +1771,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
               defaultMessage='Data treatment and extrapolations principles'
@@ -1780,7 +1790,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
               defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
@@ -1838,7 +1848,7 @@ export const ProcessForm: FC<Props> = ({
             }
           >
             {(fields, { add, remove }) => (
-              <Space direction='vertical' style={{ width: '100%' }}>
+              <Space orientation='vertical' style={{ width: '100%' }}>
                 {fields.map((field) => (
                   <div key={field.key} style={{ position: 'relative', marginBottom: 16 }}>
                     <SourceSelectForm
@@ -1918,7 +1928,12 @@ export const ProcessForm: FC<Props> = ({
           >
             <Input />
           </Form.Item>
-          <Divider className='required-divider' orientationMargin='0' orientation='left' plain>
+          <Divider
+            className='required-divider'
+            titlePlacement='start'
+            styles={{ content: { margin: 0 } }}
+            plain
+          >
             <RequiredMark
               label={
                 <FormattedMessage
@@ -1957,7 +1972,7 @@ export const ProcessForm: FC<Props> = ({
             }
           />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.samplingProcedure'
               defaultMessage='Sampling procedure'
@@ -1977,7 +1992,7 @@ export const ProcessForm: FC<Props> = ({
             }
           />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
               defaultMessage='Data collection period'
@@ -1996,7 +2011,7 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.uncertaintyAdjustments'
               defaultMessage='Uncertainty adjustments'
@@ -2016,7 +2031,7 @@ export const ProcessForm: FC<Props> = ({
             }
           />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
@@ -2098,7 +2113,7 @@ export const ProcessForm: FC<Props> = ({
               <Select options={completenessElementaryFlowsValueOptions} />
             </Form.Item>
           </Card>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
               defaultMessage='Completeness other problem field(s)'
@@ -2115,7 +2130,7 @@ export const ProcessForm: FC<Props> = ({
           />
         </Card>
 
-        {/* <Divider orientationMargin='0' orientation='left' plain>
+        {/* <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.process.view.modellingAndValidation.completeness'
             defaultMessage='Completeness'
@@ -2133,7 +2148,7 @@ export const ProcessForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <ContactSelectForm
           name={[
             'administrativeInformation',

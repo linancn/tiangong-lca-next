@@ -17,7 +17,7 @@ import ScopeItemForm from './Scope/form';
 type Props = {
   name: any;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   disabled?: boolean;
 };
@@ -31,7 +31,7 @@ const ReviewItemForm: FC<Props> = ({ name, lang, formRef, onData, disabled }) =>
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
               <Row key={subField.key}>
-                <Space direction='vertical' style={{ width: '100%' }}>
+                <Space orientation='vertical' style={{ width: '100%' }}>
                   <Card
                     size='small'
                     title={
@@ -106,8 +106,8 @@ const ReviewItemForm: FC<Props> = ({ name, lang, formRef, onData, disabled }) =>
                     </Card>
                     <Divider
                       className='required-divider'
-                      orientationMargin='0'
-                      orientation='left'
+                      styles={{ content: { margin: 0 } }}
+                      titlePlacement='start'
                       plain
                     >
                       <RequiredMark
@@ -136,7 +136,7 @@ const ReviewItemForm: FC<Props> = ({ name, lang, formRef, onData, disabled }) =>
                         ]['rules'],
                       )}
                     />
-                    <Divider orientationMargin='0' orientation='left' plain>
+                    <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
                       <FormattedMessage
                         id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
                         defaultMessage='Other review details'

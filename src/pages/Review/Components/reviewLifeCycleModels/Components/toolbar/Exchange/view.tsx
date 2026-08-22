@@ -75,11 +75,11 @@ const EdgeExchangeView: FC<Props> = ({
             defaultMessage='View exchange relation'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         footer={false}
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={onDrawerClose}
       >
@@ -95,20 +95,24 @@ const EdgeExchangeView: FC<Props> = ({
               variant='borderless'
             >
               <Spin spinning={spinningSource}>
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.exchangeDirection'
-                        defaultMessage='Exchange direction'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataSource?.exchangeDirection ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.exchangeDirection'
+                          defaultMessage='Exchange direction'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataSource?.exchangeDirection ?? '-',
+                    },
+                  ]}
+                />
                 <br />
                 <FlowsSelectDescription
                   title={
@@ -121,52 +125,64 @@ const EdgeExchangeView: FC<Props> = ({
                   lang={lang}
                 />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.meanAmount'
-                        defaultMessage='Mean amount'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataSource?.meanAmount ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.meanAmount'
+                          defaultMessage='Mean amount'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataSource?.meanAmount ?? '-',
+                    },
+                  ]}
+                />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.resultingAmount'
-                        defaultMessage='Resulting amount'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataSource?.resultingAmount ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.resultingAmount'
+                          defaultMessage='Resulting amount'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataSource?.resultingAmount ?? '-',
+                    },
+                  ]}
+                />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.dataDerivationTypeStatus'
-                        defaultMessage='Data derivation type / status'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataSource?.dataDerivationTypeStatus ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.dataDerivationTypeStatus'
+                          defaultMessage='Data derivation type / status'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataSource?.dataDerivationTypeStatus ?? '-',
+                    },
+                  ]}
+                />
 
-                <Divider orientationMargin='0' orientation='left' plain>
+                <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
                   <FormattedMessage
                     id='pages.process.view.exchange.generalComment'
                     defaultMessage='Comment'
@@ -183,25 +199,29 @@ const EdgeExchangeView: FC<Props> = ({
                     />
                   }
                 >
-                  <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item
-                      key={0}
-                      label={
-                        <FormattedMessage
-                          id='pages.process.view.exchange.referenceToReferenceFlow'
-                          defaultMessage='Reference flow(s)'
-                        />
-                      }
-                      styles={{ label: { width: '220px' } }}
-                    >
+                  <Descriptions
+                    bordered
+                    size={'small'}
+                    column={1}
+                    items={[
                       {
-                        <QuantitativeReferenceIcon
-                          value={exchangeDataSource?.quantitativeReference}
-                        />
-                      }
-                    </Descriptions.Item>
-                  </Descriptions>
-                  <Divider orientationMargin='0' orientation='left' plain>
+                        key: 0,
+                        label: (
+                          <FormattedMessage
+                            id='pages.process.view.exchange.referenceToReferenceFlow'
+                            defaultMessage='Reference flow(s)'
+                          />
+                        ),
+                        styles: { label: { width: '220px' } },
+                        children: (
+                          <QuantitativeReferenceIcon
+                            value={exchangeDataSource?.quantitativeReference}
+                          />
+                        ),
+                      },
+                    ]}
+                  />
+                  <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
                     <FormattedMessage
                       id='pages.process.view.exchange.functionalUnitOrOther'
                       defaultMessage='Functional unit, Production period, or Other parameter'
@@ -223,20 +243,24 @@ const EdgeExchangeView: FC<Props> = ({
               variant='borderless'
             >
               <Spin spinning={spinningTarget}>
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.exchangeDirection'
-                        defaultMessage='Exchange direction'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataTarget?.exchangeDirection ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.exchangeDirection'
+                          defaultMessage='Exchange direction'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataTarget?.exchangeDirection ?? '-',
+                    },
+                  ]}
+                />
                 <br />
                 <FlowsSelectDescription
                   title={
@@ -249,52 +273,64 @@ const EdgeExchangeView: FC<Props> = ({
                   lang={lang}
                 />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.meanAmount'
-                        defaultMessage='Mean amount'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataTarget?.meanAmount ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.meanAmount'
+                          defaultMessage='Mean amount'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataTarget?.meanAmount ?? '-',
+                    },
+                  ]}
+                />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.resultingAmount'
-                        defaultMessage='Resulting amount'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataTarget?.resultingAmount ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.resultingAmount'
+                          defaultMessage='Resulting amount'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataTarget?.resultingAmount ?? '-',
+                    },
+                  ]}
+                />
                 <br />
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.process.view.exchange.dataDerivationTypeStatus'
-                        defaultMessage='Data derivation type / status'
-                      />
-                    }
-                    styles={{ label: { width: '220px' } }}
-                  >
-                    {exchangeDataTarget?.dataDerivationTypeStatus ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.exchange.dataDerivationTypeStatus'
+                          defaultMessage='Data derivation type / status'
+                        />
+                      ),
+                      styles: { label: { width: '220px' } },
+                      children: exchangeDataTarget?.dataDerivationTypeStatus ?? '-',
+                    },
+                  ]}
+                />
 
-                <Divider orientationMargin='0' orientation='left' plain>
+                <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
                   <FormattedMessage
                     id='pages.process.view.exchange.generalComment'
                     defaultMessage='Comment'
@@ -311,25 +347,29 @@ const EdgeExchangeView: FC<Props> = ({
                     />
                   }
                 >
-                  <Descriptions bordered size={'small'} column={1}>
-                    <Descriptions.Item
-                      key={0}
-                      label={
-                        <FormattedMessage
-                          id='pages.process.view.exchange.referenceToReferenceFlow'
-                          defaultMessage='Reference flow(s)'
-                        />
-                      }
-                      styles={{ label: { width: '220px' } }}
-                    >
+                  <Descriptions
+                    bordered
+                    size={'small'}
+                    column={1}
+                    items={[
                       {
-                        <QuantitativeReferenceIcon
-                          value={exchangeDataTarget?.quantitativeReference}
-                        />
-                      }
-                    </Descriptions.Item>
-                  </Descriptions>
-                  <Divider orientationMargin='0' orientation='left' plain>
+                        key: 0,
+                        label: (
+                          <FormattedMessage
+                            id='pages.process.view.exchange.referenceToReferenceFlow'
+                            defaultMessage='Reference flow(s)'
+                          />
+                        ),
+                        styles: { label: { width: '220px' } },
+                        children: (
+                          <QuantitativeReferenceIcon
+                            value={exchangeDataTarget?.quantitativeReference}
+                          />
+                        ),
+                      },
+                    ]}
+                  />
+                  <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
                     <FormattedMessage
                       id='pages.process.view.exchange.functionalUnitOrOther'
                       defaultMessage='Functional unit, Production period, or Other parameter'

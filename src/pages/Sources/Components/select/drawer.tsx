@@ -41,10 +41,10 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>(
     type === 'reviewReport' ? 'my' : 'tg',
   );
-  const tgActionRefSelect = useRef<ActionType>();
-  const coActionRefSelect = useRef<ActionType>();
-  const myActionRefSelect = useRef<ActionType>();
-  const teActionRefSelect = useRef<ActionType>();
+  const tgActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const coActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const myActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const teActionRefSelect = useRef<ActionType | undefined>(undefined);
 
   const intl = useIntl();
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
@@ -538,7 +538,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
         title={
           <FormattedMessage id='pages.source.drawer.title.select' defaultMessage='Select Source' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -547,7 +547,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

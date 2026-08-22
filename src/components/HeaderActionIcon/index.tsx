@@ -19,6 +19,7 @@ export const getHeaderBadgeStyle = (backgroundColor: string): React.CSSPropertie
 });
 
 type HeaderActionIconProps = {
+  'aria-label'?: string;
   title: React.ReactNode;
   icon: React.ReactElement<any>;
   onClick?: () => void;
@@ -28,6 +29,7 @@ type HeaderActionIconProps = {
 };
 
 const HeaderActionIcon: React.FC<HeaderActionIconProps> = ({
+  'aria-label': ariaLabel,
   title,
   icon,
   onClick,
@@ -54,6 +56,7 @@ const HeaderActionIcon: React.FC<HeaderActionIconProps> = ({
   return (
     <Tooltip title={title}>
       <span
+        aria-label={ariaLabel ?? (typeof title === 'string' ? title : undefined)}
         role='button'
         tabIndex={0}
         onClick={onClick}

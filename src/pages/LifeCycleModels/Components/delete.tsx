@@ -1,7 +1,7 @@
 import { deleteLifeCycleModel } from '@/services/lifeCycleModels/api';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
-import { Button, message, Modal, Tooltip } from 'antd';
+import { App, Button, Modal, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -10,7 +10,7 @@ type Props = {
   id: string;
   version: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -24,6 +24,7 @@ const LifeCycleModelDelete: FC<Props> = ({
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
+  const { message } = App.useApp();
 
   const showModal = useCallback(() => {
     setIsModalVisible(true);
@@ -45,7 +46,7 @@ const LifeCycleModelDelete: FC<Props> = ({
         message.error(result.message ?? 'Error');
       }
     });
-  }, [actionRef, id, intl, setViewDrawerVisible, version]);
+  }, [actionRef, id, intl, message, setViewDrawerVisible, version]);
 
   const handleCancel = useCallback(() => {
     setIsModalVisible(false);

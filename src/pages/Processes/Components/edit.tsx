@@ -54,7 +54,7 @@ import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
+import { Button, Drawer, Form, Input, Space, Spin, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -152,7 +152,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: 'icon' | 'text' | 'tool' | 'toolIcon' | 'toolResultIcon';
-  actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
+  actionRef: React.RefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   disabled?: boolean;
   hideReviewButton?: boolean;
@@ -175,13 +175,14 @@ const ProcessEdit: FC<Props> = ({
   autoCheckRequired = false,
   actionFrom,
 }) => {
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
   const [fromData, setFromData] = useState<FormProcessWithDatas>();
   const [initData, setInitData] = useState<FormProcessWithDatas>();
   const [originJson, setOriginJson] = useState<ProcessDetailData['json']>({});
-  const aiSuggestionDataRef = useRef<ProcessDetailData['json']>();
+  const aiSuggestionDataRef = useRef<ProcessDetailData['json'] | undefined>(undefined);
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
@@ -1165,7 +1166,7 @@ const ProcessEdit: FC<Props> = ({
             defaultMessage={'Edit process'}
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -1174,7 +1175,7 @@ const ProcessEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

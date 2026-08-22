@@ -11,7 +11,7 @@ import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 import { getCachedFlowCategorizationAll } from '../classifications/cache';
 import {
   mapDatasetUuidMentionRowsToListRows,

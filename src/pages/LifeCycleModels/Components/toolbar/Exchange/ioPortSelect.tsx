@@ -53,7 +53,7 @@ const IoPortSelect: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
 
   const [dataLoading, setDataLoading] = useState(false);
-  const actionRefSelect = useRef<ActionType>();
+  const actionRefSelect = useRef<ActionType>(undefined);
   const detailRequestEpochRef = useRef(0);
   const detailRequestSnapshotRef = useRef<{
     processId: string;
@@ -295,10 +295,10 @@ const IoPortSelect: FC<Props> = ({
             defaultMessage='Select flow port'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={onDrawerClose}
         footer={

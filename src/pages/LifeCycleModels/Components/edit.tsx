@@ -15,7 +15,7 @@ type Props = {
   version: string | undefined;
   buttonType: 'icon' | 'text' | 'toolIcon';
   lang: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   disabled?: boolean;
   hideReviewButton?: boolean;
   updateNodeCb?: (ref: refDataType) => Promise<void>;
@@ -132,10 +132,10 @@ const LifeCycleModelEdit: FC<Props> = ({
             defaultMessage={'Edit Model'}
           />
         }
-        width='100%'
+        size='100%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
       >

@@ -9,7 +9,7 @@ type Props = {
   lang: string;
   dataType: string;
   flowType?: string;
-  formRef: React.MutableRefObject<any | undefined>;
+  formRef: React.RefObject<any | undefined>;
   hidden?: boolean;
   onData: () => void;
   rules?: any[];
@@ -231,11 +231,12 @@ const LevelTextItemForm: FC<Props> = ({
           fieldNames={{ label: 'label', value: 'id', children: 'children' }}
           style={{ width: '100%' }}
           treeData={selectOptions}
-          showSearch
-          filterTreeNode={(inputValue, treeNode) => {
-            return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
+          showSearch={{
+            filterTreeNode: (inputValue, treeNode) => {
+              return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
+            },
+            treeNodeFilterProp: 'title',
           }}
-          treeNodeFilterProp='title'
           treeExpandAction='click'
           // labelInValue={true}
           treeNodeLabelProp='title'

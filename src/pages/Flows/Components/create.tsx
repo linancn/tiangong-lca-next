@@ -19,7 +19,7 @@ import {
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -28,7 +28,7 @@ import { FlowForm } from './form';
 
 type Props = {
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
@@ -61,8 +61,9 @@ const FlowsCreate: FC<CreateProps> = ({
   importData,
   onClose = () => {},
 }) => {
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<FlowDataSetObjectKeys>('flowInformation');
   const [initData, setInitData] = useState<FormFlowWithId>();
   const [fromData, setFromData] = useState<FormFlowWithId>();
@@ -292,7 +293,7 @@ const FlowsCreate: FC<CreateProps> = ({
             <FormattedMessage id='pages.flow.drawer.title.create' defaultMessage='Create Flow' />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -301,7 +302,7 @@ const FlowsCreate: FC<CreateProps> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

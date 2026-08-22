@@ -1,6 +1,6 @@
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 import { getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
 import { findTeamInvitableUserByEmail, getUserEmailByUserIds } from '../users/api';
 

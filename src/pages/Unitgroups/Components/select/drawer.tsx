@@ -38,10 +38,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
-  const tgActionRefSelect = useRef<ActionType>();
-  const coActionRefSelect = useRef<ActionType>();
-  const myActionRefSelect = useRef<ActionType>();
-  const teActionRefSelect = useRef<ActionType>();
+  const tgActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const coActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const myActionRefSelect = useRef<ActionType | undefined>(undefined);
+  const teActionRefSelect = useRef<ActionType | undefined>(undefined);
   const intl = useIntl();
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
@@ -533,7 +533,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             defaultMessage='Select Unit groups'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -542,7 +542,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

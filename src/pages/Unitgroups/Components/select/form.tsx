@@ -14,7 +14,7 @@ import {
 import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
-import type { Rule } from 'antd/lib/form';
+import type { Rule } from 'antd/es/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl, useModel } from 'umi';
 import UnitgroupsEdit from '../edit';
@@ -29,7 +29,7 @@ type Props = {
   name: FormPath;
   label: ReactNode | string;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: Rule[];
   showRequiredLabel?: boolean;
@@ -202,7 +202,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
         )
       }
     >
-      <Space direction='horizontal'>
+      <Space orientation='horizontal'>
         <Form.Item
           label={
             <FormattedMessage
@@ -232,7 +232,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
-        <Space direction='horizontal' style={{ marginTop: '6px' }}>
+        <Space orientation='horizontal' style={{ marginTop: '6px' }}>
           {!id && (
             <UnitgroupsSelectDrawer buttonType='text' lang={lang} onData={handletUnitgroupsData} />
           )}
@@ -303,7 +303,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
 
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage
           id='pages.FlowProperties.view.shortDescription'
           defaultMessage='Short description'
@@ -362,7 +362,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
         >
           <Input disabled={true} style={{ color: token.colorTextDescription }} />
         </Form.Item>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.unitgroup.edit.generalComment' defaultMessage='Comment' />
         </Divider>
         <Form.Item>

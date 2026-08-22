@@ -31,7 +31,7 @@ import {
 } from '@/services/processes/api';
 import type { ProcessDetailByVersionItem } from '@/services/processes/data';
 import { ActionType } from '@ant-design/pro-components';
-import { message, Space, Spin, theme } from 'antd';
+import { App, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
@@ -55,7 +55,7 @@ type Props = {
   version: string;
   lang: string;
   drawerVisible: boolean;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
@@ -75,6 +75,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
+  const { message } = App.useApp();
   const edgeLabelText = {
     balanced: intl.formatMessage({
       id: 'pages.button.model.edgeStatus.balanced',
@@ -682,7 +683,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
   const quantitativeReferenceNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
 
   return (
-    <Space direction='vertical' size={'middle'}>
+    <Space orientation='vertical' size={'middle'}>
       <ToolbarViewInfo
         lang={lang}
         data={infoData as FormLifeCycleModel & { id?: string; version?: string }}

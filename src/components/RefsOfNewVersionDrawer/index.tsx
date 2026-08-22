@@ -33,7 +33,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   onKeep,
   onUpdate,
 }) => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRows, setSelectedRows] = useState<RefVersionItem[]>([]);
   const intl = useIntl();
@@ -45,7 +45,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
     <Drawer
       getContainer={() => document.body}
       destroyOnHidden
-      width={800}
+      size={800}
       open={open}
       closable={false}
       extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onCancel} />}

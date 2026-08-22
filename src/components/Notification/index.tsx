@@ -54,7 +54,7 @@ const NotificationTabContent: React.FC<{ message: ReactNode; children: ReactNode
   const { token } = theme.useToken();
 
   return (
-    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
       <div
         style={{
           display: 'flex',
@@ -281,6 +281,10 @@ const Notification: React.FC = () => {
   return (
     <>
       <HeaderActionIcon
+        aria-label={intl.formatMessage({
+          id: 'notification.title',
+          defaultMessage: 'Notification Center',
+        })}
         title={intl.formatMessage({
           id: 'notification.title',
           defaultMessage: 'Notification Center',

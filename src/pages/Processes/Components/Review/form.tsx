@@ -17,7 +17,7 @@ import ScopeItemForm from './Scope/form';
 type Props = {
   name: Array<string | number>;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   showRules?: boolean;
   type?: 'reviewReport';
@@ -32,7 +32,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
             {subFields.map((subField) => (
               <Row key={subField.key}>
-                <Space direction='vertical' style={{ width: '100%' }}>
+                <Space orientation='vertical' style={{ width: '100%' }}>
                   <Card
                     size='small'
                     title={
@@ -112,8 +112,8 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                     </Card>
                     <Divider
                       className='required-divider'
-                      orientationMargin='0'
-                      orientation='left'
+                      titlePlacement='start'
+                      styles={{ content: { margin: 0 } }}
                       plain
                     >
                       <RequiredMark
@@ -146,7 +146,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                       //     : []
                       // }
                     />
-                    <Divider orientationMargin='0' orientation='left' plain>
+                    <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                       <FormattedMessage
                         id='pages.process.view.modellingAndValidation.validation.otherReviewDetails'
                         defaultMessage='Other review details'

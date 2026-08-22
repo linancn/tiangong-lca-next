@@ -20,7 +20,7 @@ import { getUserDetail } from '@/services/users/api';
 import styles from '@/style/custom.less';
 import { CloseOutlined, InfoOutlined } from '@ant-design/icons';
 import { ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip, message } from 'antd';
+import { App, Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -89,11 +89,12 @@ const getCopyrightOptions = (value: string) => {
 
 const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actionRef }) => {
   const intl = useIntl();
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
   const [spinning, setSpinning] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
-  const formRef = useRef<ProFormInstance>();
+  const formRef = useRef<ProFormInstance>(undefined);
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -169,17 +170,21 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
   const defaultTabContent: Record<string, React.ReactNode> = {
     lifeCycleModelInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
+              ),
+              styles: { label: { width: '100px' } },
+              children: data.lifeCycleModelInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
         <br />
         <Card
           size='small'
@@ -187,7 +192,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             <FormattedMessage id='pages.lifeCycleModel.information.name' defaultMessage='Name' />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.baseName'
               defaultMessage='Base name'
@@ -197,7 +202,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             data={data.lifeCycleModelInformation?.dataSetInformation?.name?.baseName ?? '-'}
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.treatmentStandardsRoutes'
               defaultMessage='Treatment, standards, routes'
@@ -210,7 +215,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.mixAndLocationTypes'
               defaultMessage='Mix and location types'
@@ -222,7 +227,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.functionalUnitFlowProperties'
               defaultMessage='Quantitative product or process properties'
@@ -236,21 +241,26 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           />
         </Card>
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.information.identifierOfSubDataSet'
-                defaultMessage='Identifier of sub-data set'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            {data.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.lifeCycleModel.information.identifierOfSubDataSet'
+                  defaultMessage='Identifier of sub-data set'
+                />
+              ),
+              styles: { label: { width: '140px' } },
+              children:
+                data.lifeCycleModelInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-',
+            },
+          ]}
+        />
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.information.synonyms'
             defaultMessage='Synonyms'
@@ -270,7 +280,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           categoryType={'LifeCycleModel'}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.information.generalComment'
             defaultMessage='General comment'
@@ -316,36 +326,44 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.referenceYear'
-                  defaultMessage='Reference year'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {data.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.referenceYear'
+                    defaultMessage='Reference year'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: data.lifeCycleModelInformation?.time?.['common:referenceYear'] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.dataSetValidUntil'
-                  defaultMessage='Data set valid until:'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {data.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.dataSetValidUntil'
+                    defaultMessage='Data set valid until:'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: data.lifeCycleModelInformation?.time?.['common:dataSetValidUntil'] ?? '-',
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.timeRepresentativenessDescription'
               defaultMessage='Time representativeness description'
@@ -382,7 +400,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
             styles={{ label: { width: '100px' } }}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -420,7 +438,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
             styles={{ label: { width: '100px' } }}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -443,7 +461,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.technologyDescriptionAndIncludedProcesses'
               defaultMessage='Technology description including background system'
@@ -454,7 +472,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               data.lifeCycleModelInformation?.technology?.technologyDescriptionAndIncludedProcesses
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.technologicalApplicability'
               defaultMessage='Technical purpose of product or process'
@@ -491,7 +509,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             lang={lang}
           />
         </Card>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.information.modelDescription'
             defaultMessage='Model description'
@@ -510,122 +528,156 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.name'
-                  defaultMessage='Name of variable'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
-                '@name'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.name'
+                    defaultMessage='Name of variable'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.[
+                    '@name'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.formula'
-                  defaultMessage='Formula'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter?.formula ??
-                '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.formula'
+                    defaultMessage='Formula'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.formula ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.meanValue'
-                  defaultMessage='Mean value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                ?.meanValue ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.meanValue'
+                    defaultMessage='Mean value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.meanValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.minimumValue'
-                  defaultMessage='Minimum value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                ?.minimumValue ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.minimumValue'
+                    defaultMessage='Minimum value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.minimumValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.maximumValue'
-                  defaultMessage='Maximum value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                ?.maximumValue ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.maximumValue'
+                    defaultMessage='Maximum value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.maximumValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.uncertaintyDistributionType'
-                  defaultMessage='Uncertainty distribution type'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getComplianceLabel(
-                data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                  ?.uncertaintyDistributionType ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.uncertaintyDistributionType'
+                    defaultMessage='Uncertainty distribution type'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getComplianceLabel(
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.uncertaintyDistributionType ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In'
-                  defaultMessage='Relative standard deviation (95%) in %'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
-                ?.relativeStandardDeviation95In ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In'
+                    defaultMessage='Relative standard deviation (95%) in %'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children:
+                  data.lifeCycleModelInformation?.mathematicalRelations?.variableParameter
+                    ?.relativeStandardDeviation95In ?? '-',
+              },
+            ]}
+          />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             {
               <FormattedMessage
                 id='pages.lifeCycleModel.information.variableParameter.comment'
@@ -641,7 +693,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
     ),
     modellingAndValidation: (
       <>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
             defaultMessage='Use advice for data set'
@@ -660,40 +712,48 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.modellingAndValidation.typeOfDataSet'
-                  defaultMessage='Type of data set'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getProcesstypeOfDataSetOptions(
-                data.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.typeOfDataSet'
+                    defaultMessage='Type of data set'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getProcesstypeOfDataSetOptions(
+                  data.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple'
-                  defaultMessage='LCI method principle'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getLCIMethodPrincipleOptions(
-                data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.lCIMethodPrinciple'
+                    defaultMessage='LCI method principle'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getLCIMethodPrincipleOptions(
+                  data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
+                ),
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodPrinciple'
               defaultMessage='Deviation from LCI method principle / explanations'
@@ -705,24 +765,28 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.modellingAndValidation.lCIMethodApproaches'
-                  defaultMessage='LCI method approaches'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getLCIMethodApproachOptions(
-                data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.lCIMethodApproaches'
+                    defaultMessage='LCI method approaches'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getLCIMethodApproachOptions(
+                  data.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
+                ),
+              },
+            ]}
+          />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromLCIMethodApproaches'
               defaultMessage='Deviations from LCI method approaches / explanations'
@@ -733,7 +797,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               data.modellingAndValidation?.LCIMethodAndAllocation?.deviationsFromLCIMethodApproaches
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.modellingConstants'
               defaultMessage='Modelling constants'
@@ -742,7 +806,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           <LangTextItemDescription
             data={data.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromModellingConstants'
               defaultMessage='Deviation from modelling constants / explanations'
@@ -777,7 +841,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
               defaultMessage='Data cut-off and completeness principles'
@@ -789,7 +853,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.dataCutOffAndCompletenessPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
               defaultMessage='Deviation from data cut-off and completeness principles / explanations'
@@ -801,7 +865,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.deviationsFromCutOffAndCompletenessPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.dataSelectionAndCombinationPrinciples'
               defaultMessage='Data selection and combination principles'
@@ -813,7 +877,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.dataSelectionAndCombinationPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
               defaultMessage='Deviation from data selection and combination principles / explanations'
@@ -825,7 +889,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.deviationsFromSelectionAndCombinationPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
               defaultMessage='Data treatment and extrapolations principles'
@@ -837,7 +901,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.dataTreatmentAndExtrapolationsPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
               defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
@@ -878,22 +942,27 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             lang={lang}
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.modellingAndValidation.percentageSupplyOrProductionCovered'
-                  defaultMessage='Percentage supply or production covered'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.percentageSupplyOrProductionCovered ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.percentageSupplyOrProductionCovered'
+                    defaultMessage='Percentage supply or production covered'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children:
+                  data.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                    ?.percentageSupplyOrProductionCovered ?? '-',
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.annualSupplyOrProductionVolume'
               defaultMessage='Annual supply or production volume'
@@ -905,7 +974,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.annualSupplyOrProductionVolume
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.samplingProcedure'
               defaultMessage='Sampling procedure'
@@ -917,7 +986,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.samplingProcedure
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.dataCollectionPeriod'
               defaultMessage='Data collection period'
@@ -929,7 +998,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.dataCollectionPeriod
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.uncertaintyAdjustments'
               defaultMessage='Uncertainty adjustments'
@@ -941,7 +1010,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                 ?.uncertaintyAdjustments
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
@@ -964,22 +1033,26 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessProductModel'
-                  defaultMessage='Completeness product model'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {getCompletenessProductModelOptions(
-                data.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessProductModel'
+                    defaultMessage='Completeness product model'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: getCompletenessProductModelOptions(
+                  data.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
           <Card
             size='small'
@@ -990,45 +1063,53 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               />
             }
           >
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.type'
-                    defaultMessage='completeness type'
-                  />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {getCompletenessElementaryFlowsTypeOptions(
-                  data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                    '@type'
-                  ] ?? '-',
-                )}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                      defaultMessage='completeness type'
+                    />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: getCompletenessElementaryFlowsTypeOptions(
+                    data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                      '@type'
+                    ] ?? '-',
+                  ),
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.value'
-                    defaultMessage='value'
-                  />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {getCompletenessElementaryFlowsValueOptions(
-                  data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                    '@value'
-                  ] ?? '-',
-                )}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                      defaultMessage='value'
+                    />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: getCompletenessElementaryFlowsValueOptions(
+                    data.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                      '@value'
+                    ] ?? '-',
+                  ),
+                },
+              ]}
+            />
           </Card>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.modellingAndValidation.completeness.completenessOtherProblemField'
               defaultMessage='Completeness other problem field(s)'
@@ -1083,119 +1164,6 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           lang={lang}
         />
         <br /> */}
-        {/* <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.approvalOfOverallCompliance'
-                defaultMessage='Approval of Overall Compliance'
-              />
-            }
-            styles={{ label: { width: '240px' } }}
-          >
-            {getapprovalOfOverallComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:approvalOfOverallCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.nomenclatureCompliance'
-                defaultMessage='Nomenclature Compliance'
-              />
-            }
-            styles={{ label: { width: '200px' } }}
-          >
-            {getnomenclatureComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:nomenclatureCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.methodologicalCompliance'
-                defaultMessage='Methodological Compliance'
-              />
-            }
-            styles={{ label: { width: '210px' } }}
-          >
-            {getmethodologicalComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:methodologicalCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.reviewCompliance'
-                defaultMessage='Review Compliance'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {getreviewComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:reviewCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.documentationCompliance'
-                defaultMessage='Documentation Compliance'
-              />
-            }
-            styles={{ label: { width: '210px' } }}
-          >
-            {getdocumentationComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:documentationCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-        <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.lifeCycleModel.modellingAndValidation.qualityCompliance'
-                defaultMessage='Quality Compliance'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {getqualityComplianceOptions(
-              data.modellingAndValidation?.complianceDeclarations?.compliance?.[
-                'common:qualityCompliance'
-              ] ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions> */}
       </>
     ),
     administrativeInformation: (
@@ -1224,7 +1192,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.project'
               defaultMessage='Project'
@@ -1236,7 +1204,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.intendedApplications'
               defaultMessage='Intended applications'
@@ -1275,20 +1243,24 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: { label: { width: '200px' } },
+                children: data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             data={data?.administrativeInformation?.dataEntryBy?.['common:referenceToDataSetFormat']}
@@ -1355,42 +1327,53 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.dateOfLastRevision'
-                  defaultMessage='Date of last revision'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {data.administrativeInformation?.publicationAndOwnership?.[
-                'common:dateOfLastRevision'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.dateOfLastRevision'
+                    defaultMessage='Date of last revision'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children:
+                  data.administrativeInformation?.publicationAndOwnership?.[
+                    'common:dateOfLastRevision'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              <Space>
-                {data.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
-          {/* <Divider orientationMargin="0" orientation="left" plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: (
+                  <Space>
+                    {data.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
+          {/* <Divider styles={{ content: { margin: 0 } }} titlePlacement="start" plain>
             <FormattedMessage
               id="pages.flow.view.administrativeInformation.dataSetVersion"
               defaultMessage="Data set version"
@@ -1402,41 +1385,50 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           /> */}
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {data.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children:
+                  data.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.workflowAndPublicationStatus'
-                  defaultMessage='Workflow and publication status'
-                />
-              }
-              styles={{ label: { width: '240px' } }}
-            >
-              {getWorkflowAndPublicationStatusOptions(
-                data.administrativeInformation?.publicationAndOwnership?.[
-                  'common:workflowAndPublicationStatus'
-                ] ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.workflowAndPublicationStatus'
+                    defaultMessage='Workflow and publication status'
+                  />
+                ),
+                styles: { label: { width: '240px' } },
+                children: getWorkflowAndPublicationStatusOptions(
+                  data.administrativeInformation?.publicationAndOwnership?.[
+                    'common:workflowAndPublicationStatus'
+                  ] ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             title={
@@ -1468,22 +1460,27 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.registrationNumber'
-                  defaultMessage='Registration number'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {data.administrativeInformation?.publicationAndOwnership?.[
-                'common:registrationNumber'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.registrationNumber'
+                    defaultMessage='Registration number'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children:
+                  data.administrativeInformation?.publicationAndOwnership?.[
+                    'common:registrationNumber'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             title={
@@ -1500,23 +1497,27 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.copyright'
-                  defaultMessage='Copyright?'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getCopyrightOptions(
-                data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                  '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getCopyrightOptions(
+                  data.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
+                    '-',
+                ),
+              },
+            ]}
+          />
           <br />
 
           <br />
@@ -1535,25 +1536,29 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.lifeCycleModel.administrativeInformation.licenseType'
-                  defaultMessage='License type'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getLicenseTypeOptions(
-                data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
-                  '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.lifeCycleModel.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getLicenseTypeOptions(
+                  data.administrativeInformation?.publicationAndOwnership?.['common:licenseType'] ??
+                    '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.accessRestrictions'
               defaultMessage='Access and use restrictions'
@@ -1710,7 +1715,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             defaultMessage='Model base information'
           ></FormattedMessage>
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -1721,7 +1726,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }}
           ></Button>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);

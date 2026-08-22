@@ -31,7 +31,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -239,15 +239,25 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const contentList: Record<FlowDataSetObjectKeys, React.ReactNode> = {
     flowInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.flow.view.flowInformation.id' defaultMessage='ID' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData?.flowInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.flow.view.flowInformation.id' defaultMessage='ID' />
+              ),
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData?.flowInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
         <br />
         <Card
           size='small'
@@ -255,7 +265,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             <FormattedMessage id='pages.flow.view.flowInformation.name' defaultMessage='Name' />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.baseName'
               defaultMessage='Base name'
@@ -265,7 +275,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={initData?.flowInformation?.dataSetInformation?.['name']?.['baseName']}
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.treatmentStandardsRoutes'
               defaultMessage='Treatment, standards, routes'
@@ -277,7 +287,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.mixAndLocationTypes'
               defaultMessage='Mix and location types'
@@ -287,7 +297,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={initData?.flowInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'}
           />
           <br />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.flowProperties'
               defaultMessage='Quantitative flow properties'
@@ -297,7 +307,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             data={initData?.flowInformation?.dataSetInformation?.name?.flowProperties ?? '-'}
           />
         </Card>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.flow.view.flowInformation.synonyms'
             defaultMessage='Synonyms'
@@ -316,24 +326,33 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.modellingAndValidation.typeOfDataSet'
-                  defaultMessage='Type of flow'
-                />
-              }
-              styles={{ label: { width: '160px' } }}
-            >
-              {flowTypeOptions.find(
-                (i) => i.value === initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
-              )?.label ??
-                initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ??
-                '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.modellingAndValidation.typeOfDataSet'
+                    defaultMessage='Type of flow'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '160px',
+                  },
+                },
+                children:
+                  flowTypeOptions.find(
+                    (i) => i.value === initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet,
+                  )?.label ??
+                  initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ??
+                  '-',
+              },
+            ]}
+          />
           <br />
           <LevelTextItemDescription
             data={
@@ -351,37 +370,53 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           />
         </Card>
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.CASNumber'
-                defaultMessage='CAS Number'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            {initData?.flowInformation?.dataSetInformation?.['CASNumber'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.flow.view.flowInformation.CASNumber'
+                  defaultMessage='CAS Number'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '140px',
+                },
+              },
+              children: initData?.flowInformation?.dataSetInformation?.['CASNumber'] ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.sumFormula'
-                defaultMessage='Sum formula'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            {initData?.flowInformation?.dataSetInformation?.['sumFormula'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.flow.view.flowInformation.sumFormula'
+                  defaultMessage='Sum formula'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '140px',
+                },
+              },
+              children: initData?.flowInformation?.dataSetInformation?.['sumFormula'] ?? '-',
+            },
+          ]}
+        />
 
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.flow.view.flowInformation.generalComment'
             defaultMessage='General comment on data set'
@@ -391,29 +426,30 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           data={initData?.flowInformation?.dataSetInformation?.['common:generalComment']}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.flow.view.flowInformation.ECNumber'
-                defaultMessage='EC Number'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            {ecNumber ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.flow.view.flowInformation.ECNumber'
+                  defaultMessage='EC Number'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '140px',
+                },
+              },
+              children: ecNumber ?? '-',
+            },
+          ]}
+        />
         <br />
 
-        {/* <Card size="small" title={'Quantitative Reference'}>
-                    <Descriptions bordered size={'small'} column={1}>
-                        <Descriptions.Item key={0} label="Reference To Reference Flow Property" styles={{ label: { width: '200px' } }}>
-                            {initData?.flowInformation?.quantitativeReference?.referenceToReferenceFlowProperty ?? '-'}
-                        </Descriptions.Item>
-                    </Descriptions>
-                </Card> */}
         <Card
           size='small'
           title={
@@ -445,7 +481,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.technologicalApplicability'
               defaultMessage='Technical purpose of product or waste'
@@ -473,21 +509,6 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
     ),
     modellingAndValidation: (
       <>
-        {/* <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id="pages.flow.view.modellingAndValidation.lCIMethod:TypeOfDataSet"
-                defaultMessage="LCI Method: Type Of Data Set"
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <br /> */}
         {/* <Card
           size="small"
           title={
@@ -511,22 +532,30 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           lang={lang}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance'
-                defaultMessage='Approval of overall compliance'
-              />
-            }
-            styles={{ label: { width: '260px' } }}
-          >
-            {getComplianceLabel(
-              (compliance?.['common:approvalOfOverallCompliance'] as string) ?? '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.flow.view.modellingAndValidation.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '260px',
+                },
+              },
+              children: getComplianceLabel(
+                (compliance?.['common:approvalOfOverallCompliance'] as string) ?? '-',
+              ),
+            },
+          ]}
+        />
         {/* <br />
         </Card> */}
       </>
@@ -542,20 +571,29 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '200px',
+                  },
+                },
+                children:
+                  initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             data={
@@ -595,24 +633,34 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '160px' } }}
-            >
-              <Space>
-                {initData?.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '160px',
+                  },
+                },
+                children: (
+                  <Space>
+                    {initData?.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
           <br />
           <FlowsSelectDescription
             title={
@@ -629,22 +677,31 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             lang={lang}
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.flow.view.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.flow.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '220px',
+                  },
+                },
+                children:
+                  initData?.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             data={
@@ -704,7 +761,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       <Drawer
         getContainer={() => document.body}
         title={<FormattedMessage id='pages.flow.drawer.title.view' defaultMessage='View Flow' />}
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -713,7 +770,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

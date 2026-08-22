@@ -1,16 +1,17 @@
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import ToolBarButton from '@/components/ToolBarButton';
 import { getLang, getLangText } from '@/services/general/util';
 import { getUnrankedTeams, updateSort } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Drawer, message, Space, Tooltip } from 'antd';
+import { Button, Drawer, Space, Tooltip } from 'antd';
 import { FC, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 interface SelectTeamsProps {
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   buttonType?: 'default' | 'icon';
   disabled?: boolean;
 }
@@ -20,12 +21,13 @@ const SelectTeams: FC<SelectTeamsProps> = ({
   buttonType = 'default',
   disabled = false,
 }) => {
+  const { message } = useAntdAppApi();
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const [visible, setVisible] = useState<boolean>(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -171,7 +173,7 @@ const SelectTeams: FC<SelectTeamsProps> = ({
         title={
           <FormattedMessage id='component.allTeams.select.title' defaultMessage='Select Team' />
         }
-        width={1000}
+        size={1000}
         onClose={onClose}
         open={visible}
         footer={

@@ -3,8 +3,9 @@ import {
   getLanguageDisplayName,
   REQUIRED_CONTENT_LANGUAGES,
 } from '@/services/general/contentLanguageRegistry';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, message, Row, Select } from 'antd';
+import { Button, Col, Form, Input, Row, Select } from 'antd';
 import { FC, ReactNode, useEffect } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
@@ -46,6 +47,7 @@ const LangTextItemForm: FC<Props> = ({
   formRef,
   listName,
 }) => {
+  const { message } = useAntdAppApi();
   const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
 
@@ -181,6 +183,7 @@ const LangTextItemForm: FC<Props> = ({
 
                 return (
                   <Row
+                    className='lang-text-item-row'
                     key={subField.key}
                     gutter={[10, 0]}
                     align='top'
@@ -226,8 +229,10 @@ const LangTextItemForm: FC<Props> = ({
                               defaultMessage='Select a language'
                             />
                           }
-                          optionFilterProp='label'
+                          showSearch={{ optionFilterProp: 'label' }}
                           options={optionsWithDisabled}
+                          // The four registry options stay mounted for deterministic
+                          // Form.List validation, keyboard navigation, and browser proof.
                           virtual={false}
                         />
                       </Form.Item>

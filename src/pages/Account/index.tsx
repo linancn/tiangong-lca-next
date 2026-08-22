@@ -8,17 +8,19 @@ import {
   login,
   setProfile,
 } from '@/services/auth';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
-import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
+import { Flex, Form, Input, Spin, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
 import { formatAccountRole } from './roleMessage';
 
 const Profile: FC = () => {
+  const { message } = useAntdAppApi();
   const [activeTabKey, setActiveTabKey] = useState('baseInfo');
   const [spinning, setSpinning] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [initData, setInitData] = useState<Auth.CurrentUser | null>(null);
   const [roleValue, setRoleValue] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
@@ -727,7 +729,7 @@ const Profile: FC = () => {
         <Tabs
           activeKey={activeTabKey}
           onChange={onTabChange}
-          tabPosition='left'
+          tabPlacement='start'
           items={[
             {
               key: 'baseInfo',

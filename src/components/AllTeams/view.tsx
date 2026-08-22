@@ -27,19 +27,19 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
         size='small'
         title={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
       >
-        <Descriptions bordered size={'small'} column={1}>
-          {initData?.json?.title?.map(
-            (item: { '#text': string; '@xml:lang': string }, index: number) => (
-              <Descriptions.Item
-                key={index}
-                label={getLanguageDisplayName(item['@xml:lang'], intl.locale)}
-                styles={{ label: { width: '120px' } }}
-              >
-                {item['#text'] || '-'}
-              </Descriptions.Item>
-            ),
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={initData?.json?.title?.map(
+            (item: { '#text': string; '@xml:lang': string }, index: number) => ({
+              key: index,
+              label: getLanguageDisplayName(item['@xml:lang'], intl.locale),
+              styles: { label: { width: '120px' } },
+              children: item['#text'] || '-',
+            }),
           )}
-        </Descriptions>
+        />
       </Card>
       <br />
       <Card
@@ -48,19 +48,19 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
           <FormattedMessage id='pages.team.info.description' defaultMessage='Team Description' />
         }
       >
-        <Descriptions bordered size={'small'} column={1}>
-          {initData?.json?.description?.map(
-            (item: { '#text': string; '@xml:lang': string }, index: number) => (
-              <Descriptions.Item
-                key={index}
-                label={getLanguageDisplayName(item['@xml:lang'], intl.locale)}
-                styles={{ label: { width: '120px' } }}
-              >
-                {item['#text'] || '-'}
-              </Descriptions.Item>
-            ),
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={initData?.json?.description?.map(
+            (item: { '#text': string; '@xml:lang': string }, index: number) => ({
+              key: index,
+              label: getLanguageDisplayName(item['@xml:lang'], intl.locale),
+              styles: { label: { width: '120px' } },
+              children: item['#text'] || '-',
+            }),
           )}
-        </Descriptions>
+        />
       </Card>
       <br />
       <Card
@@ -69,79 +69,97 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
           <FormattedMessage id='pages.team.info.public' defaultMessage='Public team information' />
         }
       >
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            label={
-              <FormattedMessage
-                id='pages.team.info.public'
-                defaultMessage='Public team information'
-              />
-            }
-            styles={{ label: { width: '120px' } }}
-          >
-            {initData?.is_public === true ? (
-              <FormattedMessage
-                id='component.allTeams.drawer.public'
-                defaultMessage='Public Display'
-              />
-            ) : initData?.is_public === false ? (
-              <FormattedMessage
-                id='component.allTeams.drawer.notPublic'
-                defaultMessage='Not Public Display'
-              />
-            ) : (
-              '-'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={[
+            {
+              key: 'public',
+              label: (
+                <FormattedMessage
+                  id='pages.team.info.public'
+                  defaultMessage='Public team information'
+                />
+              ),
+              styles: { label: { width: '120px' } },
+              children:
+                initData?.is_public === true ? (
+                  <FormattedMessage
+                    id='component.allTeams.drawer.public'
+                    defaultMessage='Public Display'
+                  />
+                ) : initData?.is_public === false ? (
+                  <FormattedMessage
+                    id='component.allTeams.drawer.notPublic'
+                    defaultMessage='Not Public Display'
+                  />
+                ) : (
+                  '-'
+                ),
+            },
+          ]}
+        />
       </Card>
       <br />
       <Card
         size='small'
         title={<FormattedMessage id='component.allTeams.logo.title' defaultMessage='Team Logo' />}
       >
-        <Space direction='vertical' size='middle'>
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              label={
-                <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData?.json?.lightLogoPreviewUrl ? (
-                <Image
-                  width={100}
-                  src={initData?.json?.lightLogoPreviewUrl}
-                  alt={intl.formatMessage({
-                    id: 'pages.team.info.lightLogo',
-                    defaultMessage: 'Light Logo',
-                  })}
-                />
-              ) : (
-                '-'
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData?.json?.darkLogoPreviewUrl ? (
-                <Image
-                  style={darkLogoPreviewStyle}
-                  width={100}
-                  src={initData?.json?.darkLogoPreviewUrl}
-                  alt={intl.formatMessage({
-                    id: 'pages.team.info.darkLogo',
-                    defaultMessage: 'Dark Logo',
-                  })}
-                />
-              ) : (
-                '-'
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+        <Space orientation='vertical' size='middle'>
+          <Descriptions
+            bordered
+            size='small'
+            column={1}
+            items={[
+              {
+                key: 'light-logo',
+                label: (
+                  <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
+                ),
+                styles: { label: { width: '120px' } },
+                children: initData?.json?.lightLogoPreviewUrl ? (
+                  <Image
+                    width={100}
+                    src={initData?.json?.lightLogoPreviewUrl}
+                    alt={intl.formatMessage({
+                      id: 'pages.team.info.lightLogo',
+                      defaultMessage: 'Light Logo',
+                    })}
+                  />
+                ) : (
+                  '-'
+                ),
+              },
+            ]}
+          />
+          <Descriptions
+            bordered
+            size='small'
+            column={1}
+            items={[
+              {
+                key: 'dark-logo',
+                label: (
+                  <FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />
+                ),
+                styles: { label: { width: '120px' } },
+                children: initData?.json?.darkLogoPreviewUrl ? (
+                  <Image
+                    style={darkLogoPreviewStyle}
+                    width={100}
+                    src={initData?.json?.darkLogoPreviewUrl}
+                    alt={intl.formatMessage({
+                      id: 'pages.team.info.darkLogo',
+                      defaultMessage: 'Dark Logo',
+                    })}
+                  />
+                ) : (
+                  '-'
+                ),
+              },
+            ]}
+          />
         </Space>
       </Card>
     </>
@@ -204,7 +222,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
         title={
           <FormattedMessage id='component.allTeams.drawer.title.view' defaultMessage='View Team' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -213,7 +231,6 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

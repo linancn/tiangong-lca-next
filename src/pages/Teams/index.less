@@ -1,13 +1,11 @@
-.team-page-tabs {
-  .ant-tabs-tabpane {
-    padding-left: 24px;
-  }
+.team-page-tabs-body {
+  padding-left: 24px;
+}
 
-  .ant-tabs-tab {
-    padding: 12px 24px 12px 0;
-  }
+.team-page-tabs-item {
+  padding: 12px 24px 12px 0;
 
-  .ant-tabs-tab + .ant-tabs-tab {
+  & + & {
     margin-top: 16px;
   }
 }
@@ -65,11 +63,11 @@
     border-top: 1px solid var(--ant-color-border-secondary);
   }
 
-  .ant-row {
+  .lang-text-item-row {
     max-width: 620px;
   }
 
-  .ant-form-item {
+  .team-form-item {
     margin-bottom: 0;
   }
 }
@@ -90,23 +88,23 @@
     border-left: 1px solid var(--ant-color-border-secondary);
   }
 
-  .ant-form-item-row {
+  .team-form-item-row {
     display: grid;
     grid-template-columns: minmax(0, max-content) auto;
     gap: 16px;
     align-items: center;
   }
 
-  .ant-form-item-label {
+  .team-form-item-label {
     padding-bottom: 0;
     text-align: left;
   }
 
-  .ant-form-item-control {
+  .team-form-item-control {
     width: max-content;
   }
 
-  .ant-form-item-label > label {
+  .team-form-item-label > label {
     color: var(--ant-color-text);
   }
 }
@@ -132,19 +130,19 @@
     border-left: 1px solid var(--ant-color-border-secondary);
   }
 
-  .ant-form-item-label {
+  .team-form-item-label {
     padding-bottom: 8px;
   }
 
-  .ant-form-item-label > label {
+  .team-form-item-label > label {
     color: var(--ant-color-text);
     font-weight: 500;
   }
 
-  .ant-upload-wrapper,
-  .ant-upload-list,
-  .ant-upload-list-item-container,
-  .ant-upload-select {
+  .team-logo-upload-root,
+  .team-logo-upload-list,
+  .team-logo-upload-item,
+  .team-logo-upload-trigger {
     width: 168px !important;
     height: 168px !important;
   }
@@ -153,7 +151,7 @@
 .team-logo-upload {
   width: 168px;
 
-  .ant-upload-select {
+  .team-logo-upload-trigger {
     background: var(--ant-color-fill-alter) !important;
     border-color: var(--ant-color-primary-border) !important;
     border-style: dashed !important;
@@ -165,7 +163,7 @@
     font-size: 30px;
   }
 
-  .ant-upload-list-item {
+  .team-logo-upload-item {
     padding: 0 !important;
     overflow: hidden;
     border-color: var(--ant-color-border) !important;
@@ -176,54 +174,54 @@
     }
   }
 
-  .ant-upload-list-item-thumbnail,
-  .ant-upload-list-item-thumbnail img {
+  .team-logo-upload-slot-list-item-thumbnail,
+  .team-logo-upload-slot-list-item-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
 
-  .ant-upload-list-item-name {
+  .team-logo-upload-slot-list-item-name {
     display: none;
   }
 
-  .ant-upload-list-item-actions {
+  .team-logo-upload-slot-list-item-actions {
     inset-inline-start: 0 !important;
     width: 100%;
     background: transparent !important;
 
-    .ant-upload-list-item-action {
+    .team-logo-upload-slot-list-item-action {
       background: transparent !important;
     }
 
-    .anticon {
+    .team-logo-action-icon {
       margin: 0 12px;
       font-size: 20px;
       filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.6));
     }
 
-    .anticon-eye {
+    .team-logo-preview-icon {
       color: rgba(0, 0, 0, 0.75) !important;
     }
 
-    .anticon-delete {
+    .team-logo-delete-icon {
       color: #ff4d4f !important;
     }
   }
 }
 
 .team-logo-upload-dark.team-logo-upload-has-file {
-  .ant-upload-list-item,
-  .ant-upload-list-item-thumbnail {
+  .team-logo-upload-item,
+  .team-logo-upload-slot-list-item-thumbnail {
     background: #141414;
   }
 
-  .ant-upload-list-item-actions {
-    .anticon {
+  .team-logo-upload-slot-list-item-actions {
+    .team-logo-action-icon {
       filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
     }
 
-    .anticon-eye {
+    .team-logo-preview-icon {
       color: #fff !important;
     }
   }
@@ -247,14 +245,14 @@
   justify-content: flex-end;
   margin-top: 24px;
 
-  .ant-btn-primary {
+  button {
     min-width: 120px;
   }
 }
 
 @media (max-width: 960px) {
   .team-page-tabs {
-    .ant-tabs-tabpane {
+    .team-page-tabs-body {
       padding-left: 0;
     }
   }

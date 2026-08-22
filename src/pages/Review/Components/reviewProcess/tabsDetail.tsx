@@ -40,7 +40,7 @@ import {
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onExchangeData: (data: any) => void;
   onTabChange: (key: string) => void;
@@ -104,8 +104,8 @@ export const TabsDetail: FC<Props> = ({
   type,
   rejectedComments,
 }) => {
-  const actionRefExchangeTableInput = useRef<ActionType>();
-  const actionRefExchangeTableOutput = useRef<ActionType>();
+  const actionRefExchangeTableInput = useRef<ActionType>(undefined);
+  const actionRefExchangeTableOutput = useRef<ActionType>(undefined);
   const inputExchangeRequestEpochRef = useRef(0);
   const outputExchangeRequestEpochRef = useRef(0);
   const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
@@ -334,17 +334,24 @@ export const TabsDetail: FC<Props> = ({
   const defaultTabContent: { [key: string]: React.JSX.Element } = {
     processInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.process.view.processInformation.id' defaultMessage='ID' />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.processInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.processInformation.id'
+                  defaultMessage='ID'
+                />
+              ),
+              styles: { label: { width: '100px' } },
+              children: initData.processInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
 
         <br />
         <Card
@@ -356,7 +363,7 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             {
               <FormattedMessage
                 id='pages.process.view.processInformation.baseName'
@@ -367,7 +374,7 @@ export const TabsDetail: FC<Props> = ({
           <LangTextItemDescription
             data={initData.processInformation?.dataSetInformation?.name?.baseName}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.treatmentStandardsRoutes'
               defaultMessage='Treatment, standards, routes'
@@ -379,7 +386,7 @@ export const TabsDetail: FC<Props> = ({
               '-'
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.mixAndLocationTypes'
               defaultMessage='Mix and location types'
@@ -390,7 +397,7 @@ export const TabsDetail: FC<Props> = ({
               initData?.processInformation?.dataSetInformation?.name?.mixAndLocationTypes ?? '-'
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.functionalUnitFlowProperties'
               defaultMessage='Quantitative product or process properties'
@@ -404,21 +411,26 @@ export const TabsDetail: FC<Props> = ({
           />
         </Card>
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.identifierOfSubDataSet'
-                defaultMessage='Identifier of sub-data set'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            {initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.processInformation.identifierOfSubDataSet'
+                  defaultMessage='Identifier of sub-data set'
+                />
+              ),
+              styles: { label: { width: '140px' } },
+              children:
+                initData.processInformation?.dataSetInformation?.identifierOfSubDataSet ?? '-',
+            },
+          ]}
+        />
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.processInformation.synonyms'
             defaultMessage='Synonyms'
@@ -427,7 +439,7 @@ export const TabsDetail: FC<Props> = ({
         <LangTextItemDescription
           data={initData?.processInformation?.dataSetInformation?.['common:synonyms']}
         />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.processInformation.generalComment'
             defaultMessage='General comment on data set'
@@ -471,36 +483,44 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.referenceYear'
-                  defaultMessage='Reference year'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {initData.processInformation?.time?.['common:referenceYear'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.referenceYear'
+                    defaultMessage='Reference year'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: initData.processInformation?.time?.['common:referenceYear'] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.dataSetValidUntil'
-                  defaultMessage='Data set valid until:'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {initData.processInformation?.time?.dataSetValidUntil ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.dataSetValidUntil'
+                    defaultMessage='Data set valid until:'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: initData.processInformation?.time?.dataSetValidUntil ?? '-',
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.timeRepresentativenessDescription'
               defaultMessage='Time representativeness description'
@@ -535,7 +555,7 @@ export const TabsDetail: FC<Props> = ({
             }
             styles={{ label: { width: '100px' } }}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -573,7 +593,7 @@ export const TabsDetail: FC<Props> = ({
             }
             styles={{ label: { width: '100px' } }}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.descriptionOfRestrictions'
               defaultMessage='Geographical representativeness description'
@@ -596,7 +616,7 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.technologyDescriptionAndIncludedProcesses'
               defaultMessage='Technology description including background system'
@@ -607,7 +627,7 @@ export const TabsDetail: FC<Props> = ({
               initData.processInformation?.technology?.technologyDescriptionAndIncludedProcesses
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.technologicalApplicability'
               defaultMessage='Technical purpose of product or process'
@@ -642,7 +662,7 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
           />
         </Card>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.processInformation.modelDescription'
             defaultMessage='Model description'
@@ -661,121 +681,156 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.name'
-                  defaultMessage='Name of variable'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter?.['@name'] ??
-                '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.name'
+                    defaultMessage='Name of variable'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter?.[
+                    '@name'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.formula'
-                  defaultMessage='Formula'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter?.formula ??
-                '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.formula'
+                    defaultMessage='Formula'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter?.formula ??
+                  '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.meanValue'
-                  defaultMessage='Mean value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter?.meanValue ??
-                '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.meanValue'
+                    defaultMessage='Mean value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter
+                    ?.meanValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.minimumValue'
-                  defaultMessage='Minimum value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter
-                ?.minimumValue ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.minimumValue'
+                    defaultMessage='Minimum value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter
+                    ?.minimumValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.maximumValue'
-                  defaultMessage='Maximum value'
-                />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter
-                ?.maximumValue ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.maximumValue'
+                    defaultMessage='Maximum value'
+                  />
+                ),
+                styles: { label: { width: '120px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter
+                    ?.maximumValue ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
-                  defaultMessage='Uncertainty distribution type'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getComplianceLabel(
-                initData.processInformation?.mathematicalRelations?.variableParameter
-                  ?.uncertaintyDistributionType ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                    defaultMessage='Uncertainty distribution type'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getComplianceLabel(
+                  initData.processInformation?.mathematicalRelations?.variableParameter
+                    ?.uncertaintyDistributionType ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                  defaultMessage='Relative standard deviation (95%) in %'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {initData.processInformation?.mathematicalRelations?.variableParameter
-                ?.relativeStandardDeviation95In ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                    defaultMessage='Relative standard deviation (95%) in %'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children:
+                  initData.processInformation?.mathematicalRelations?.variableParameter
+                    ?.relativeStandardDeviation95In ?? '-',
+              },
+            ]}
+          />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             {
               <FormattedMessage
                 id='pages.process.view.processInformation.variableParameter.comment'
@@ -800,40 +855,49 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                  defaultMessage='Dataset type'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getProcesstypeOfDataSetOptions(
-                initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.typeOfDataSet'
+                    defaultMessage='Dataset type'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getProcesstypeOfDataSetOptions(
+                  initData.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.lCIMethodPrinciple'
-                  defaultMessage='LCI method principle'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getLCIMethodPrincipleOptions(
-                initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.lCIMethodPrinciple'
+                    defaultMessage='LCI method principle'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getLCIMethodPrincipleOptions(
+                  initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodPrinciple ??
+                    '-',
+                ),
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodPrinciple'
               defaultMessage='Deviation from LCI method principle / explanations'
@@ -846,24 +910,29 @@ export const TabsDetail: FC<Props> = ({
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.lCIMethodApproaches'
-                  defaultMessage='LCI method approaches'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {getLCIMethodApproachOptions(
-                initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.lCIMethodApproaches'
+                    defaultMessage='LCI method approaches'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: getLCIMethodApproachOptions(
+                  initData.modellingAndValidation?.LCIMethodAndAllocation?.LCIMethodApproaches ??
+                    '-',
+                ),
+              },
+            ]}
+          />
 
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromLCIMethodApproaches'
               defaultMessage='Deviations from LCI method approaches / explanations'
@@ -875,7 +944,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.deviationsFromLCIMethodApproaches
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.modellingConstants'
               defaultMessage='Modelling constants'
@@ -884,7 +953,7 @@ export const TabsDetail: FC<Props> = ({
           <LangTextItemDescription
             data={initData.modellingAndValidation?.LCIMethodAndAllocation?.modellingConstants}
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromModellingConstants'
               defaultMessage='Deviation from modelling constants / explanations'
@@ -921,7 +990,7 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataCutOffAndCompletenessPrinciples'
               defaultMessage='Data cut-off and completeness principles'
@@ -933,7 +1002,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.dataCutOffAndCompletenessPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromCutOffAndCompletenessPrinciples'
               defaultMessage='Deviation from data cut-off and completeness principles / explanations'
@@ -945,7 +1014,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.deviationsFromCutOffAndCompletenessPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataSelectionAndCombinationPrinciples'
               defaultMessage='Data selection and combination principles'
@@ -957,7 +1026,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.dataSelectionAndCombinationPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromSelectionAndCombinationPrinciples'
               defaultMessage='Deviation from data selection and combination principles / explanations'
@@ -969,7 +1038,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.deviationsFromSelectionAndCombinationPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataTreatmentAndExtrapolationsPrinciples'
               defaultMessage='Data treatment and extrapolations principles'
@@ -981,7 +1050,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.dataTreatmentAndExtrapolationsPrinciples
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.deviationsFromTreatmentAndExtrapolationPrinciples'
               defaultMessage='Deviation from data treatment and extrapolations principles / explanations'
@@ -1022,22 +1091,27 @@ export const TabsDetail: FC<Props> = ({
             lang={lang}
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered'
-                  defaultMessage='Percentage supply or production covered'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
-                ?.percentageSupplyOrProductionCovered ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.percentageSupplyOrProductionCovered'
+                    defaultMessage='Percentage supply or production covered'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children:
+                  initData.modellingAndValidation?.dataSourcesTreatmentAndRepresentativeness
+                    ?.percentageSupplyOrProductionCovered ?? '-',
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.annualSupplyOrProductionVolume'
               defaultMessage='Annual supply or production volume'
@@ -1049,7 +1123,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.annualSupplyOrProductionVolume
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.samplingProcedure'
               defaultMessage='Sampling procedure'
@@ -1061,7 +1135,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.samplingProcedure
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.dataCollectionPeriod'
               defaultMessage='Data collection period'
@@ -1073,7 +1147,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.dataCollectionPeriod
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.uncertaintyAdjustments'
               defaultMessage='Uncertainty adjustments'
@@ -1085,7 +1159,7 @@ export const TabsDetail: FC<Props> = ({
                 ?.uncertaintyAdjustments
             }
           />
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.useAdviceForDataSet'
               defaultMessage='Use advice for data set'
@@ -1099,7 +1173,7 @@ export const TabsDetail: FC<Props> = ({
           />
         </Card>
         <br />
-        {/* <Divider orientationMargin='0' orientation='left' plain>
+        {/* <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.modellingAndValidation.completenessOtherProblemField'
             defaultMessage='Completeness other problem field(s)'
@@ -1117,22 +1191,26 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.completeness.completenessProductModel'
-                  defaultMessage='Completeness product model'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {getCompletenessProductModelOptions(
-                initData.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.completeness.completenessProductModel'
+                    defaultMessage='Completeness product model'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children: getCompletenessProductModelOptions(
+                  initData.modellingAndValidation?.completeness?.completenessProductModel ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
           <Card
             size='small'
@@ -1143,45 +1221,53 @@ export const TabsDetail: FC<Props> = ({
               />
             }
           >
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
-                    defaultMessage='completeness type'
-                  />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {getCompletenessElementaryFlowsTypeOptions(
-                  initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                    '@type'
-                  ] ?? '-',
-                )}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                      defaultMessage='completeness type'
+                    />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: getCompletenessElementaryFlowsTypeOptions(
+                    initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                      '@type'
+                    ] ?? '-',
+                  ),
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
-                    defaultMessage='value'
-                  />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {getCompletenessElementaryFlowsValueOptions(
-                  initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                    '@value'
-                  ] ?? '-',
-                )}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                      defaultMessage='value'
+                    />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: getCompletenessElementaryFlowsValueOptions(
+                    initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
+                      '@value'
+                    ] ?? '-',
+                  ),
+                },
+              ]}
+            />
           </Card>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
               defaultMessage='Completeness other problem field(s)'
@@ -1209,7 +1295,7 @@ export const TabsDetail: FC<Props> = ({
             ]
           }
         />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.administrativeInformation.project'
             defaultMessage='Project'
@@ -1219,7 +1305,7 @@ export const TabsDetail: FC<Props> = ({
           data={initData.administrativeInformation?.commissionerAndGoal?.['common:project']}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.administrativeInformation.intendedApplications'
             defaultMessage='Intended applications'
@@ -1257,20 +1343,25 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: { label: { width: '200px' } },
+                children:
+                  initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             data={
@@ -1341,75 +1432,96 @@ export const TabsDetail: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.dateOfLastRevision'
-                  defaultMessage='Date of last revision'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dateOfLastRevision'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.dateOfLastRevision'
+                    defaultMessage='Date of last revision'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:dateOfLastRevision'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              <Space>
-                {initData.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: (
+                  <Space>
+                    {initData.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
-                  defaultMessage='Workflow and publication status'
-                />
-              }
-              styles={{ label: { width: '240px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:workflowAndPublicationStatus'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
+                    defaultMessage='Workflow and publication status'
+                  />
+                ),
+                styles: { label: { width: '240px' } },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:workflowAndPublicationStatus'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             title={
@@ -1441,22 +1553,27 @@ export const TabsDetail: FC<Props> = ({
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.registrationNumber'
-                  defaultMessage='Registration number'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:registrationNumber'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.registrationNumber'
+                    defaultMessage='Registration number'
+                  />
+                ),
+                styles: { label: { width: '140px' } },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:registrationNumber'
+                  ] ?? '-',
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             title={
@@ -1473,23 +1590,28 @@ export const TabsDetail: FC<Props> = ({
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.copyright'
-                  defaultMessage='Copyright?'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getCopyrightOptions(
-                initData.administrativeInformation?.publicationAndOwnership?.['common:copyright'] ??
-                  '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.copyright'
+                    defaultMessage='Copyright?'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getCopyrightOptions(
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:copyright'
+                  ] ?? '-',
+                ),
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             title={
@@ -1506,25 +1628,29 @@ export const TabsDetail: FC<Props> = ({
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.administrativeInformation.licenseType'
-                  defaultMessage='License type'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {getLicenseTypeOptions(
-                initData.administrativeInformation?.publicationAndOwnership?.[
-                  'common:licenseType'
-                ] ?? '-',
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.administrativeInformation.licenseType'
+                    defaultMessage='License type'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: getLicenseTypeOptions(
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:licenseType'
+                  ] ?? '-',
+                ),
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.administrativeInformation.accessRestrictions'
               defaultMessage='Access and use restrictions'

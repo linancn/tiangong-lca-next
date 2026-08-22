@@ -67,33 +67,40 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
       data-reference-pending={spinning ? 'true' : 'false'}
     >
       <Spin spinning={spinning}>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.contact.classification' defaultMessage='Classification' />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {loadFailed ? (
-              <>
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
                 <FormattedMessage
-                  id='pages.classification.loadFailed'
-                  defaultMessage='Failed to load classification.'
+                  id='pages.contact.classification'
+                  defaultMessage='Classification'
                 />
-                <Button
-                  type='link'
-                  size='small'
-                  onClick={() => setRequestVersion((value) => value + 1)}
-                >
-                  <FormattedMessage id='pages.classification.retry' defaultMessage='Retry' />
-                </Button>
-              </>
-            ) : (
-              (calssStr ?? '-')
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+              ),
+              styles: { label: { width: '100px' } },
+              children: loadFailed ? (
+                <>
+                  <FormattedMessage
+                    id='pages.classification.loadFailed'
+                    defaultMessage='Failed to load classification.'
+                  />
+                  <Button
+                    type='link'
+                    size='small'
+                    onClick={() => setRequestVersion((value) => value + 1)}
+                  >
+                    <FormattedMessage id='pages.classification.retry' defaultMessage='Retry' />
+                  </Button>
+                </>
+              ) : (
+                (calssStr ?? '-')
+              ),
+            },
+          ]}
+        />
       </Spin>
     </div>
   );

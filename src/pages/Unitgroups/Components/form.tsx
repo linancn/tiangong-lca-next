@@ -31,7 +31,7 @@ const UNIT_GROUP_SCHEMA_PATH_PREFIX = ['unitGroupDataSet'];
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onUnitData: (data: UnitItem[]) => void;
   onUnitDataCreate: (data: UnitDraft) => void;
@@ -74,7 +74,7 @@ export const UnitGroupForm: FC<Props> = ({
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
-  const actionRefUnitTable = useRef<ActionType>();
+  const actionRefUnitTable = useRef<ActionType | undefined>(undefined);
   const [showNameError, setShowNameError] = useState(false);
   const sdkRootValidationDetails = useMemo(
     () => sdkValidationDetails.filter((detail) => !getUnitInternalId(detail)),
@@ -349,7 +349,7 @@ export const UnitGroupForm: FC<Props> = ({
   ];
   const tabContent: { [key: string]: React.JSX.Element } = {
     unitGroupInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -437,7 +437,7 @@ export const UnitGroupForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <SourceSelectForm
           defaultSourceName={
             formType === 'create' ? 'ILCD Data Network - compliance (non-Process)' : undefined
@@ -503,7 +503,7 @@ export const UnitGroupForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Form.Item
           required={false}
           label={

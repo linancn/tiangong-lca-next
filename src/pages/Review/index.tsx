@@ -14,12 +14,12 @@ const Review = () => {
   const [authResolved, setAuthResolved] = useState(false);
   const [qualityDiagnosticOpen, setQualityDiagnosticOpen] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
-  const actionRef = useRef<any>();
-  const unassignedTableRef = useRef<any>();
-  const assignedTableRef = useRef<any>();
-  const reviewedTableRef = useRef<any>();
-  const pendingTableRef = useRef<any>();
-  const rejectedTableRef = useRef<any>();
+  const actionRef = useRef<any>(undefined);
+  const unassignedTableRef = useRef<any>(undefined);
+  const assignedTableRef = useRef<any>(undefined);
+  const reviewedTableRef = useRef<any>(undefined);
+  const pendingTableRef = useRef<any>(undefined);
+  const rejectedTableRef = useRef<any>(undefined);
 
   const checkUserAuth = async () => {
     setLoading(true);
@@ -163,7 +163,12 @@ const Review = () => {
                 onClose={() => setQualityDiagnosticOpen(false)}
               />
             )}
-            <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+            <Tabs
+              activeKey={activeTabKey}
+              onChange={onTabChange}
+              tabPlacement='start'
+              items={tabs}
+            />
           </>
         )}
       </Spin>

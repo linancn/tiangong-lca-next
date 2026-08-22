@@ -607,7 +607,7 @@ const ToolbarView: FC<Props> = ({
   );
 
   return (
-    <Space direction='vertical' size={'middle'}>
+    <Space orientation='vertical' size={'middle'}>
       <ToolbarViewInfo
         actionRef={actionRef}
         type={type}

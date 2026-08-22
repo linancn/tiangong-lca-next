@@ -11,7 +11,10 @@ type LocationCodeOption = {
   value: string;
 };
 
-type LocationCodeSelectProps = Omit<SelectProps<string>, 'children' | 'onChange' | 'options'> & {
+type LocationCodeSelectProps = Omit<
+  SelectProps<string>,
+  'children' | 'filterOption' | 'onChange' | 'optionFilterProp' | 'options' | 'showSearch'
+> & {
   lang: string;
   onChange?: (value?: string) => void;
   onData?: () => void;
@@ -100,9 +103,7 @@ const LocationCodeSelect: FC<LocationCodeSelectProps> = ({
   return (
     <Select
       allowClear
-      showSearch
       loading={loading}
-      optionFilterProp='label'
       optionLabelProp='label'
       {...selectProps}
       value={normalizedValue}
@@ -111,9 +112,12 @@ const LocationCodeSelect: FC<LocationCodeSelectProps> = ({
         onChange?.(normalizeExchangeLocationCode(nextValue));
         onData?.();
       }}
-      filterOption={(input, option) => {
-        const searchText = String(option?.searchText ?? option?.label ?? option?.value ?? '');
-        return searchText.toLowerCase().includes(input.toLowerCase());
+      showSearch={{
+        optionFilterProp: 'label',
+        filterOption: (input, option) => {
+          const searchText = String(option?.searchText ?? option?.label ?? option?.value ?? '');
+          return searchText.toLowerCase().includes(input.toLowerCase());
+        },
       }}
     />
   );

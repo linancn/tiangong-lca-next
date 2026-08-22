@@ -7,6 +7,7 @@ import { getUserInfoByEmail, updateUserContact } from '@/services/users/api';
 import { SearchOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import {
+  App,
   Button,
   Card,
   Descriptions,
@@ -14,7 +15,6 @@ import {
   Form,
   FormInstance,
   Input,
-  message,
   Modal,
   Spin,
   theme,
@@ -50,6 +50,7 @@ interface ContactInfo {
 }
 
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSuccess }) => {
+  const { message } = App.useApp();
   const formRef = useRef<FormInstance>(null);
   const [loading, setLoading] = useState(false);
   const [queryLoading, setQueryLoading] = useState(false);
@@ -242,28 +243,31 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
           }
           style={{ marginTop: 16 }}
         >
-          <Descriptions column={1} size='small'>
-            <Descriptions.Item
-              label={<FormattedMessage id='pages.review.members.userId' defaultMessage='User ID' />}
-            >
-              {userInfo.id}
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={<FormattedMessage id='pages.review.members.email' defaultMessage='Email' />}
-            >
-              {userInfo.raw_user_meta_data.email}
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={
-                <FormattedMessage
-                  id='pages.review.members.displayName'
-                  defaultMessage='Display Name'
-                />
-              }
-            >
-              {userInfo.raw_user_meta_data.display_name || '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            column={1}
+            size='small'
+            items={[
+              {
+                label: (
+                  <FormattedMessage id='pages.review.members.userId' defaultMessage='User ID' />
+                ),
+                children: userInfo.id,
+              },
+              {
+                label: <FormattedMessage id='pages.review.members.email' defaultMessage='Email' />,
+                children: userInfo.raw_user_meta_data.email,
+              },
+              {
+                label: (
+                  <FormattedMessage
+                    id='pages.review.members.displayName'
+                    defaultMessage='Display Name'
+                  />
+                ),
+                children: userInfo.raw_user_meta_data.display_name || '-',
+              },
+            ]}
+          />
         </Card>
       )}
 
@@ -287,38 +291,39 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
           style={{ marginTop: 16 }}
         >
           <Spin spinning={contactLoading}>
-            <Descriptions column={1} size='small'>
-              <Descriptions.Item
-                label={
-                  <FormattedMessage
-                    id='pages.review.members.contactId'
-                    defaultMessage='Contact ID'
-                  />
-                }
-              >
-                {contactInfo['@refObjectId']}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <FormattedMessage
-                    id='pages.review.members.contactVersion'
-                    defaultMessage='Contact Version'
-                  />
-                }
-              >
-                {contactInfo['@version']}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={
-                  <FormattedMessage
-                    id='pages.review.members.contactName'
-                    defaultMessage='Contact Name'
-                  />
-                }
-              >
-                {getLangText(contactInfo['common:shortDescription'], lang)}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              column={1}
+              size='small'
+              items={[
+                {
+                  label: (
+                    <FormattedMessage
+                      id='pages.review.members.contactId'
+                      defaultMessage='Contact ID'
+                    />
+                  ),
+                  children: contactInfo['@refObjectId'],
+                },
+                {
+                  label: (
+                    <FormattedMessage
+                      id='pages.review.members.contactVersion'
+                      defaultMessage='Contact Version'
+                    />
+                  ),
+                  children: contactInfo['@version'],
+                },
+                {
+                  label: (
+                    <FormattedMessage
+                      id='pages.review.members.contactName'
+                      defaultMessage='Contact Name'
+                    />
+                  ),
+                  children: getLangText(contactInfo['common:shortDescription'], lang),
+                },
+              ]}
+            />
           </Spin>
         </Card>
       )}

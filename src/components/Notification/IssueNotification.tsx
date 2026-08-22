@@ -222,7 +222,7 @@ const IssueNotification: React.FC<IssueNotificationProps> = ({ timeFilter, onDat
         const issueTexts = getNotificationIssueTexts(intl, record);
 
         return issueTexts.length > 0 ? (
-          <Space direction='vertical' size={0}>
+          <Space orientation='vertical' size={0}>
             {issueTexts.map((issueText, index) => (
               <span key={`${record.id}-${issueText}-${index}`}>{issueText}</span>
             ))}

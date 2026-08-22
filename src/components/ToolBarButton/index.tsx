@@ -1,4 +1,4 @@
-import { Tooltip } from 'antd';
+import { Button, Tooltip } from 'antd';
 type Props = {
   icon: React.ReactNode;
   tooltip: React.ReactNode;
@@ -7,15 +7,31 @@ type Props = {
 };
 const ToolBarButton = ({ icon, tooltip, onClick, disabled = false }: Props) => {
   return (
-    <div
-      key='calculate'
-      style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-      className={`ant-pro-table-list-toolbar-setting-item ${disabled ? 'ant-btn-disabled' : ''}`}
-    >
-      <span onClick={disabled ? undefined : onClick}>
-        <Tooltip title={tooltip}>{icon}</Tooltip>
-      </span>
-    </div>
+    <Tooltip title={tooltip}>
+      <Button
+        disabled={disabled}
+        icon={icon}
+        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+        type='text'
+        onClick={onClick}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: 'hidden',
+            clipPath: 'inset(50%)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
+        >
+          {tooltip}
+        </span>
+      </Button>
+    </Tooltip>
   );
 };
 

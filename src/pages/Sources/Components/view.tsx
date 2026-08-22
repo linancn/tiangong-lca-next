@@ -21,7 +21,7 @@ type Props = {
   version: string;
   // dataSource: string;
   buttonType: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   lang: string;
 };
 
@@ -65,19 +65,27 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const contentList: Record<SourceDataSetObjectKeys, React.ReactNode> = {
     sourceInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.sourceInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.source.view.sourceInformation.id' defaultMessage='ID' />
+              ),
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.sourceInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
 
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.source.view.sourceInformation.shortName'
             defaultMessage='Short name of source'
@@ -89,54 +97,72 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <br />
         <LevelTextItemDescription data={classificationValues} lang={lang} categoryType={'Source'} />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.source.view.sourceInformation.sourceCitation'
-                defaultMessage='Source citation'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {isValidURL(initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '') ? (
-              <Tooltip
-                placement='topLeft'
-                title={initData.sourceInformation?.dataSetInformation?.sourceCitation}
-              >
-                <Button
-                  type='link'
-                  target='blank'
-                  href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.source.view.sourceInformation.sourceCitation'
+                  defaultMessage='Source citation'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '180px',
+                },
+              },
+              children: isValidURL(
+                initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '',
+              ) ? (
+                <Tooltip
+                  placement='topLeft'
+                  title={initData.sourceInformation?.dataSetInformation?.sourceCitation}
                 >
-                  <LinkOutlined />
-                </Button>
-              </Tooltip>
-            ) : (
-              (initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-')
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+                  <Button
+                    type='link'
+                    target='blank'
+                    href={initData.sourceInformation?.dataSetInformation?.sourceCitation}
+                  >
+                    <LinkOutlined />
+                  </Button>
+                </Tooltip>
+              ) : (
+                (initData.sourceInformation?.dataSetInformation?.sourceCitation ?? '-')
+              ),
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.source.view.sourceInformation.publicationType'
-                defaultMessage='Publication type'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {getPublicationTypeLabel(
-              initData.sourceInformation?.dataSetInformation?.publicationType ?? '',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.source.view.sourceInformation.publicationType'
+                  defaultMessage='Publication type'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '180px',
+                },
+              },
+              children: getPublicationTypeLabel(
+                initData.sourceInformation?.dataSetInformation?.publicationType ?? '',
+              ),
+            },
+          ]}
+        />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.source.view.sourceInformation.sourceDescriptionOrComment'
             defaultMessage='Source description or comment'
@@ -194,20 +220,29 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.source.view.administrativeInformation.TimeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.source.view.administrativeInformation.TimeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '200px',
+                  },
+                },
+                children:
+                  initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourceSelectDescription
             title={
@@ -232,24 +267,34 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.source.view.administrativeInformation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '160px' } }}
-            >
-              <Space>
-                {initData.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.source.view.administrativeInformation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '160px',
+                  },
+                },
+                children: (
+                  <Space>
+                    {initData.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
           <br />
           <ContactSelectDescription
             data={
@@ -281,22 +326,31 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
           />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.source.view.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '210px' } }}
-            >
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.source.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '210px',
+                  },
+                },
+                children:
+                  initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
         </Card>
       </>
     ),
@@ -346,7 +400,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         title={
           <FormattedMessage id='pages.source.drawer.title.view' defaultMessage='View Source' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -360,7 +414,7 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang }) => {
         //     {footerButtons}
         //   </Space>
         // }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

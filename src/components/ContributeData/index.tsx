@@ -1,4 +1,5 @@
-import { Button, Modal, Tooltip, theme } from 'antd';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
+import { Button, Tooltip, theme } from 'antd';
 import { FormattedMessage, useIntl } from 'umi';
 
 import type { FC } from 'react';
@@ -11,6 +12,7 @@ interface ContributeDataProps {
 }
 
 const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
+  const { modal } = useAntdAppApi();
   const intl = useIntl();
   const { token } = theme.useToken();
   return (
@@ -23,7 +25,7 @@ const ContributeData: FC<ContributeDataProps> = ({ onOk, disabled }) => {
         icon={<CloudUploadOutlined />}
         size='small'
         onClick={() => {
-          Modal.confirm({
+          modal.confirm({
             okButtonProps: {
               type: 'primary',
               style: { backgroundColor: token.colorPrimary },

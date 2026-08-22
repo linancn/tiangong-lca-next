@@ -839,14 +839,14 @@ const DataProcessing = () => {
   const [resultSetContextError, setResultSetContextError] = useState<string | null>(null);
   const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
   const closureCheckRef = useRef<ClosureCheckSummaryV1 | null>(null);
-  const activeClosureCheckIdRef = useRef<string>();
+  const activeClosureCheckIdRef = useRef<string | undefined>(undefined);
   const closureRequestGenerationRef = useRef(0);
   const closureRefreshFlightRef = useRef<{
     closureCheckId: string;
     promise: ReturnType<typeof getClosureCheck>;
   } | null>(null);
   const mountedRef = useRef(true);
-  const previousClosureTaskStatusRef = useRef<TaskSummaryV2['workerStatus']>();
+  const previousClosureTaskStatusRef = useRef<TaskSummaryV2['workerStatus'] | undefined>(undefined);
   const closurePollAttemptRef = useRef<{ closureCheckId?: string; count: number }>({ count: 0 });
   const recoveryInFlightRef = useRef(false);
   const [recoveryLoading, setRecoveryLoading] = useState(false);
@@ -1781,7 +1781,7 @@ const DataProcessing = () => {
   const renderCommandStatus = () =>
     commandStatus ? (
       <Alert
-        message={commandStatus.message}
+        title={commandStatus.message}
         type={commandStatus.kind === 'success' ? 'success' : 'error'}
       />
     ) : null;
@@ -1805,14 +1805,14 @@ const DataProcessing = () => {
       }
     >
       <Spin spinning={buildJobsLoading}>
-        <Space direction='vertical' size='small' className={styles.jobList}>
+        <Space orientation='vertical' size='small' className={styles.jobList}>
           <div className={styles.jobHint}>
             {t(
               'pages.dataProcessing.jobs.hint',
               'Result set generation runs asynchronously. Refresh tasks to update progress, then preview or publish the result set after completion.',
             )}
           </div>
-          {buildJobsError ? <Alert message={buildJobsError} type='error' /> : null}
+          {buildJobsError ? <Alert title={buildJobsError} type='error' /> : null}
           {visibleBuildJobs.length === 0 ? (
             <div className={styles.emptyJobs} data-testid='data-product-jobs-empty'>
               {t('pages.dataProcessing.jobs.empty', 'No result generation tasks')}
@@ -1899,8 +1899,7 @@ const DataProcessing = () => {
     <Select
       aria-label={ariaLabel}
       allowClear
-      showSearch
-      optionFilterProp='label'
+      showSearch={{ optionFilterProp: 'label' }}
       options={impactCategoryOptions}
       placeholder={t(
         'pages.dataProcessing.form.defaultImpactCategory.placeholder',
@@ -1913,8 +1912,7 @@ const DataProcessing = () => {
     <Select
       aria-label={ariaLabel}
       disabled={packageOptions.length === 0}
-      showSearch
-      optionFilterProp='label'
+      showSearch={{ optionFilterProp: 'label' }}
       options={packageOptions}
       placeholder={t(
         'pages.dataProcessing.form.packageSelect.placeholder',
@@ -1941,7 +1939,7 @@ const DataProcessing = () => {
         </Button>
       }
     >
-      <Space direction='vertical' size='middle' className={styles.resultSetWorkspaceContent}>
+      <Space orientation='vertical' size='middle' className={styles.resultSetWorkspaceContent}>
         <Typography.Text type='secondary'>
           {t(
             'pages.dataProcessing.resultSets.description',
@@ -1951,6 +1949,7 @@ const DataProcessing = () => {
         <div className={styles.resultSetToolbar}>
           <Form form={resultSetForm} layout='inline' className={styles.resultSetCreateForm}>
             <Form.Item
+              className={styles.resultSetCreateFormItem}
               name='name'
               rules={[
                 {
@@ -1964,6 +1963,7 @@ const DataProcessing = () => {
             >
               <Input
                 aria-label={t('pages.dataProcessing.resultSets.newName', 'New result set name')}
+                className={styles.resultSetCreateInput}
                 maxLength={200}
                 placeholder={t(
                   'pages.dataProcessing.resultSets.namePlaceholder',
@@ -1985,8 +1985,7 @@ const DataProcessing = () => {
             className={styles.resultSetSelector}
             value={deepLink.resultSetId}
             allowClear
-            showSearch
-            optionFilterProp='label'
+            showSearch={{ optionFilterProp: 'label' }}
             options={resultSetOptions}
             placeholder={t(
               'pages.dataProcessing.resultSets.selectPlaceholder',
@@ -2002,11 +2001,11 @@ const DataProcessing = () => {
             }}
           />
         </div>
-        {resultSetsError ? <Alert type='error' message={resultSetsError} /> : null}
+        {resultSetsError ? <Alert type='error' title={resultSetsError} /> : null}
         {resultSetContextError ? (
           <Alert
             type='error'
-            message={resultSetContextError}
+            title={resultSetContextError}
             action={
               <Button size='small' onClick={clearResultSetContext}>
                 {t('pages.dataProcessing.resultSets.backToList', 'Back to result sets')}
@@ -2089,7 +2088,7 @@ const DataProcessing = () => {
       content
     ) : (
       <Card className={styles.workflowEmpty}>
-        <Space direction='vertical' size='small'>
+        <Space orientation='vertical' size='small'>
           <Typography.Text strong>
             {t(
               'pages.dataProcessing.resultSets.selectToContinue',
@@ -2107,7 +2106,7 @@ const DataProcessing = () => {
     );
 
   const renderBuildRequests = () => (
-    <Space direction='vertical' size='middle' className={styles.workbenchPanel}>
+    <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
       <Card>
         <Form
           form={buildForm}
@@ -2158,7 +2157,7 @@ const DataProcessing = () => {
             title={t('pages.dataProcessing.closure.title', 'Data completeness preflight')}
             className={styles.closureCard}
           >
-            <Space direction='vertical' size='small'>
+            <Space orientation='vertical' size='small'>
               {deepLink.resultSetId && closureTaskOptions.length > 0 ? (
                 <Space wrap className={styles.closureHistoryToolbar}>
                   <Typography.Text>
@@ -2176,37 +2175,44 @@ const DataProcessing = () => {
               {!closureCheck ? (
                 <Alert
                   type='info'
-                  message={t(
+                  title={t(
                     'pages.dataProcessing.closure.notChecked',
                     'Check data completeness before generation.',
                   )}
                 />
               ) : (
-                <Descriptions size='small' column={1} bordered>
-                  <Descriptions.Item
-                    label={t('pages.dataProcessing.closure.status', 'Check status')}
-                  >
-                    {closureCheck.runStatus}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={t('pages.dataProcessing.closure.certificate', 'Certificate')}
-                  >
-                    {closureCheck.certificateValidity}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={t('pages.dataProcessing.closure.completeness', 'Scan completeness')}
-                  >
-                    {closureCheck.scanCompleteness}
-                  </Descriptions.Item>
-                  <Descriptions.Item label={t('pages.dataProcessing.closure.issues', 'Issues')}>
-                    {`${closureCheck.blockerCodes?.length ?? 0} blockers`}
-                  </Descriptions.Item>
-                </Descriptions>
+                <Descriptions
+                  size='small'
+                  column={1}
+                  bordered
+                  items={[
+                    {
+                      key: 'status',
+                      label: t('pages.dataProcessing.closure.status', 'Check status'),
+                      children: closureCheck.runStatus,
+                    },
+                    {
+                      key: 'certificate',
+                      label: t('pages.dataProcessing.closure.certificate', 'Certificate'),
+                      children: closureCheck.certificateValidity,
+                    },
+                    {
+                      key: 'completeness',
+                      label: t('pages.dataProcessing.closure.completeness', 'Scan completeness'),
+                      children: closureCheck.scanCompleteness,
+                    },
+                    {
+                      key: 'issues',
+                      label: t('pages.dataProcessing.closure.issues', 'Issues'),
+                      children: `${closureCheck.blockerCodes?.length ?? 0} blockers`,
+                    },
+                  ]}
+                />
               )}
               {closureCheck && closureSelectionKey !== currentSelectionKey ? (
                 <Alert
                   type='warning'
-                  message={t(
+                  title={t(
                     'pages.dataProcessing.closure.scopeMismatch',
                     'The current selection differs from this check. Run a new check before generating.',
                   )}
@@ -2215,8 +2221,8 @@ const DataProcessing = () => {
               {closureCheck?.runStatus === 'failed' ? (
                 <Alert
                   type='error'
-                  message={
-                    <Space direction='vertical' size={2}>
+                  title={
+                    <Space orientation='vertical' size={2}>
                       <strong>
                         {t(
                           'pages.dataProcessing.closure.executionFailed',
@@ -2252,7 +2258,7 @@ const DataProcessing = () => {
               ) : closureCheck?.runStatus === 'cancelled' ? (
                 <Alert
                   type='warning'
-                  message={t(
+                  title={t(
                     'pages.dataProcessing.closure.executionCancelled',
                     'Data completeness check was cancelled. Run a new check to continue.',
                   )}
@@ -2260,7 +2266,7 @@ const DataProcessing = () => {
               ) : closureCheck && ['queued', 'running'].includes(closureCheck.runStatus) ? (
                 <Alert
                   type='info'
-                  message={t(
+                  title={t(
                     'pages.dataProcessing.closure.executionPending',
                     'The check is still running. Closure issues will be available after it completes.',
                   )}
@@ -2269,7 +2275,7 @@ const DataProcessing = () => {
               {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
                 <div className={styles.closureIssues} data-testid='closure-issues'>
                   <strong>{t('pages.dataProcessing.closure.issueList', 'Closure issues')}</strong>
-                  {closureIssuesError ? <Alert type='error' message={closureIssuesError} /> : null}
+                  {closureIssuesError ? <Alert type='error' title={closureIssuesError} /> : null}
                   {!closureIssuesLoading && !closureIssuesError && closureIssues.length === 0 ? (
                     <div>
                       {t('pages.dataProcessing.closure.issuesEmpty', 'No closure issues found.')}
@@ -2641,7 +2647,7 @@ const DataProcessing = () => {
   );
 
   const renderPackagePreview = () => (
-    <Space direction='vertical' size='middle' className={styles.workbenchPanel}>
+    <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
       <Card>
         <Form form={previewForm}>
           <Form.Item
@@ -2682,58 +2688,68 @@ const DataProcessing = () => {
         </Form>
       </Card>
       {previewData ? (
-        <Space direction='vertical' size='middle' className={styles.previewDetails}>
+        <Space orientation='vertical' size='middle' className={styles.previewDetails}>
           <Card title={t('pages.dataProcessing.preview.summaryTitle', 'Result set overview')}>
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.packageId', 'Result set ID')}
-              >
-                {stringifyCommandData(previewSummary.packageId)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.packageVersion', 'Result set version')}
-              >
-                {stringifyCommandData(previewSummary.packageVersion)}
-              </Descriptions.Item>
-              <Descriptions.Item label={t('pages.dataProcessing.preview.status', 'Status')}>
-                {stringifyCommandData(previewSummary.status)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.coverageMode', 'Coverage mode')}
-              >
-                {stringifyCommandData(previewSummary.coverageMode)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t(
-                  'pages.dataProcessing.preview.defaultImpactCategory',
-                  'Default impact category',
-                )}
-              >
-                {stringifyCommandData(previewSummary.defaultImpactCategory)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.inputManifestHash', 'Input manifest hash')}
-              >
-                {stringifyCommandData(previewSummary.inputManifestHash)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.includedInputs', 'Included inputs')}
-              >
-                {stringifyCommandData(previewSummary.includedInputCount)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.eligibleInputs', 'Eligible inputs')}
-              >
-                {stringifyCommandData(previewSummary.eligibleInputCount)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.impactCategories', 'Impact category count')}
-              >
-                {Array.isArray(previewSummary.availableImpactCategories)
-                  ? previewSummary.availableImpactCategories.length
-                  : '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  key: 'package-id',
+                  label: t('pages.dataProcessing.preview.packageId', 'Result set ID'),
+                  children: stringifyCommandData(previewSummary.packageId),
+                },
+                {
+                  key: 'package-version',
+                  label: t('pages.dataProcessing.preview.packageVersion', 'Result set version'),
+                  children: stringifyCommandData(previewSummary.packageVersion),
+                },
+                {
+                  key: 'status',
+                  label: t('pages.dataProcessing.preview.status', 'Status'),
+                  children: stringifyCommandData(previewSummary.status),
+                },
+                {
+                  key: 'coverage-mode',
+                  label: t('pages.dataProcessing.preview.coverageMode', 'Coverage mode'),
+                  children: stringifyCommandData(previewSummary.coverageMode),
+                },
+                {
+                  key: 'default-impact-category',
+                  label: t(
+                    'pages.dataProcessing.preview.defaultImpactCategory',
+                    'Default impact category',
+                  ),
+                  children: stringifyCommandData(previewSummary.defaultImpactCategory),
+                },
+                {
+                  key: 'input-manifest-hash',
+                  label: t('pages.dataProcessing.preview.inputManifestHash', 'Input manifest hash'),
+                  children: stringifyCommandData(previewSummary.inputManifestHash),
+                },
+                {
+                  key: 'included-inputs',
+                  label: t('pages.dataProcessing.preview.includedInputs', 'Included inputs'),
+                  children: stringifyCommandData(previewSummary.includedInputCount),
+                },
+                {
+                  key: 'eligible-inputs',
+                  label: t('pages.dataProcessing.preview.eligibleInputs', 'Eligible inputs'),
+                  children: stringifyCommandData(previewSummary.eligibleInputCount),
+                },
+                {
+                  key: 'impact-categories',
+                  label: t(
+                    'pages.dataProcessing.preview.impactCategories',
+                    'Impact category count',
+                  ),
+                  children: Array.isArray(previewSummary.availableImpactCategories)
+                    ? previewSummary.availableImpactCategories.length
+                    : '-',
+                },
+              ]}
+            />
           </Card>
           <CalculationBundlePanel
             packageId={selectedPreviewPackageId as string}
@@ -2741,32 +2757,39 @@ const DataProcessing = () => {
             initialProcessVersion={deepLink.processVersion}
           />
           <Card title={t('pages.dataProcessing.preview.inputScopeTitle', 'Input scope')}>
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.processCount', 'Process count')}
-              >
-                {previewProcessCount}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.selectionMode', 'Selection mode')}
-              >
-                {stringifyCommandData(previewSelectionMode)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.predicateVersion', 'Predicate version')}
-              >
-                {stringifyCommandData(previewPredicateVersion)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.stateCodes', 'State codes')}
-              >
-                <div className={styles.previewTags}>
-                  {previewStateCodeCounts.map((item) => (
-                    <span key={item.stateCode}>{`${item.stateCode}: ${item.count}`}</span>
-                  ))}
-                </div>
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  key: 'process-count',
+                  label: t('pages.dataProcessing.preview.processCount', 'Process count'),
+                  children: previewProcessCount,
+                },
+                {
+                  key: 'selection-mode',
+                  label: t('pages.dataProcessing.preview.selectionMode', 'Selection mode'),
+                  children: stringifyCommandData(previewSelectionMode),
+                },
+                {
+                  key: 'predicate-version',
+                  label: t('pages.dataProcessing.preview.predicateVersion', 'Predicate version'),
+                  children: stringifyCommandData(previewPredicateVersion),
+                },
+                {
+                  key: 'state-codes',
+                  label: t('pages.dataProcessing.preview.stateCodes', 'State codes'),
+                  children: (
+                    <div className={styles.previewTags}>
+                      {previewStateCodeCounts.map((item) => (
+                        <span key={item.stateCode}>{`${item.stateCode}: ${item.count}`}</span>
+                      ))}
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </Card>
           <Card
             title={t('pages.dataProcessing.preview.resultDetailsTitle', 'Result details')}
@@ -2790,15 +2813,15 @@ const DataProcessing = () => {
               </Space>
             }
           >
-            <Space direction='vertical' size='middle' className={styles.previewTableStack}>
+            <Space orientation='vertical' size='middle' className={styles.previewTableStack}>
               <Space className={styles.previewResultToolbar} size='small'>
                 <span>{t('pages.dataProcessing.preview.lciaMethod', 'LCIA method')}</span>
                 <Select
                   aria-label={t('pages.dataProcessing.preview.lciaMethod', 'LCIA method')}
+                  className={styles.previewResultSelect}
                   value={previewImpactCategoryId}
                   disabled={previewImpactOptions.length === 0}
-                  showSearch
-                  optionFilterProp='label'
+                  showSearch={{ optionFilterProp: 'label' }}
                   options={previewImpactOptions}
                   onChange={handlePreviewImpactChange}
                 />
@@ -2806,7 +2829,7 @@ const DataProcessing = () => {
               {previewWarnings.length > 0 ? (
                 <Alert
                   type='warning'
-                  message={t(
+                  title={t(
                     'pages.dataProcessing.preview.warningTitle',
                     'Some preview data could not be loaded',
                   )}
@@ -2815,7 +2838,7 @@ const DataProcessing = () => {
               {!previewResultReady ? (
                 <Alert
                   type='warning'
-                  message={
+                  title={
                     previewResultUnavailableReason ??
                     t(
                       'pages.dataProcessing.preview.resultUnavailable',
@@ -2847,46 +2870,61 @@ const DataProcessing = () => {
               'Artifact verification',
             )}
           >
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                label={t(
-                  'pages.dataProcessing.preview.artifactManifestVersion',
-                  'Manifest version',
-                )}
-              >
-                {stringifyCommandData(previewArtifactManifest.artifactManifestVersion)}
-              </Descriptions.Item>
-              <Descriptions.Item label={t('pages.dataProcessing.preview.storage', 'Storage')}>
-                {previewArtifactStorage || '-'}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID')}
-              >
-                {stringifyCommandData(previewSnapshotBuilder.resolved_snapshot_id)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.snapshotMatrix', 'Snapshot matrix')}
-              >
-                {stringifyCommandData(previewMatrixSummary)}
-              </Descriptions.Item>
-              <Descriptions.Item
-                label={t('pages.dataProcessing.preview.snapshotCoverage', 'Snapshot coverage')}
-              >
-                {stringifyCommandData(previewCoverageSummary)}
-              </Descriptions.Item>
-              <Descriptions.Item label={t('pages.dataProcessing.preview.artifacts', 'Artifacts')}>
-                <Space direction='vertical' size='small' className={styles.previewArtifactList}>
-                  {renderArtifactSummary(
-                    t('pages.dataProcessing.preview.queryArtifact', 'Query artifact'),
-                    previewQueryArtifact,
-                  )}
-                  {renderArtifactSummary(
-                    t('pages.dataProcessing.preview.resultArtifact', 'Result artifact'),
-                    previewResultArtifact,
-                  )}
-                </Space>
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  key: 'manifest-version',
+                  label: t(
+                    'pages.dataProcessing.preview.artifactManifestVersion',
+                    'Manifest version',
+                  ),
+                  children: stringifyCommandData(previewArtifactManifest.artifactManifestVersion),
+                },
+                {
+                  key: 'storage',
+                  label: t('pages.dataProcessing.preview.storage', 'Storage'),
+                  children: previewArtifactStorage || '-',
+                },
+                {
+                  key: 'snapshot-id',
+                  label: t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID'),
+                  children: stringifyCommandData(previewSnapshotBuilder.resolved_snapshot_id),
+                },
+                {
+                  key: 'snapshot-matrix',
+                  label: t('pages.dataProcessing.preview.snapshotMatrix', 'Snapshot matrix'),
+                  children: stringifyCommandData(previewMatrixSummary),
+                },
+                {
+                  key: 'snapshot-coverage',
+                  label: t('pages.dataProcessing.preview.snapshotCoverage', 'Snapshot coverage'),
+                  children: stringifyCommandData(previewCoverageSummary),
+                },
+                {
+                  key: 'artifacts',
+                  label: t('pages.dataProcessing.preview.artifacts', 'Artifacts'),
+                  children: (
+                    <Space
+                      orientation='vertical'
+                      size='small'
+                      className={styles.previewArtifactList}
+                    >
+                      {renderArtifactSummary(
+                        t('pages.dataProcessing.preview.queryArtifact', 'Query artifact'),
+                        previewQueryArtifact,
+                      )}
+                      {renderArtifactSummary(
+                        t('pages.dataProcessing.preview.resultArtifact', 'Result artifact'),
+                        previewResultArtifact,
+                      )}
+                    </Space>
+                  ),
+                },
+              ]}
+            />
           </Card>
         </Space>
       ) : null}
@@ -2894,7 +2932,7 @@ const DataProcessing = () => {
   );
 
   const renderPublication = () => (
-    <Space direction='vertical' size='middle' className={styles.workbenchPanel}>
+    <Space orientation='vertical' size='middle' className={styles.workbenchPanel}>
       <LcaReleaseReadPanel
         processId={deepLink.processId}
         processVersion={deepLink.processVersion}
@@ -2974,8 +3012,8 @@ const DataProcessing = () => {
         }
       >
         <Spin spinning={publicationsLoading}>
-          <Space direction='vertical' size='small' className={styles.publicationList}>
-            {publicationsError ? <Alert message={publicationsError} type='error' /> : null}
+          <Space orientation='vertical' size='small' className={styles.publicationList}>
+            {publicationsError ? <Alert title={publicationsError} type='error' /> : null}
             {visiblePublications.length === 0 ? (
               <div className={styles.emptyJobs} data-testid='data-product-publications-empty'>
                 {t('pages.dataProcessing.publications.empty', 'No publications yet')}
@@ -3099,7 +3137,7 @@ const DataProcessing = () => {
         {!authResolved ? null : !isAuthorized ? (
           <AccessDenied />
         ) : (
-          <Space direction='vertical' size='large' className={styles.pageStack}>
+          <Space orientation='vertical' size='large' className={styles.pageStack}>
             {renderResultSetWorkspace()}
             {renderCommandStatus()}
             <Tabs

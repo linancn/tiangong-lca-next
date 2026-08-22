@@ -8,7 +8,7 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { getRefData } from '@/services/general/api';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
-import type { Rule } from 'antd/lib/form';
+import type { Rule } from 'antd/es/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl, useModel } from 'umi';
 import FlowsEdit from '../edit';
@@ -20,7 +20,7 @@ type Props = {
   name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   drawerVisible: boolean;
   asInput?: boolean;
   onData: () => void;
@@ -174,7 +174,7 @@ const FlowsSelectForm: FC<Props> = ({
         )
       }
     >
-      <Space direction='horizontal'>
+      <Space orientation='horizontal'>
         <Form.Item
           label={
             <FormattedMessage
@@ -204,7 +204,7 @@ const FlowsSelectForm: FC<Props> = ({
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
-        <Space direction='horizontal' style={{ marginTop: '6px' }}>
+        <Space orientation='horizontal' style={{ marginTop: '6px' }}>
           {!id && (
             <FlowsSelectDrawer
               buttonType='text'
@@ -279,7 +279,7 @@ const FlowsSelectForm: FC<Props> = ({
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage
           id='pages.process.view.exchange.shortDescription'
           defaultMessage='Short description'

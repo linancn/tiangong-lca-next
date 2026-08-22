@@ -1,5 +1,6 @@
 import { submitDatasetReviewApi, type ReviewSubmitDatasetTable } from '@/services/reviews/api';
-import { Button, message } from 'antd';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
+import { Button } from 'antd';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useIntl } from 'umi';
@@ -21,6 +22,7 @@ const DatasetSubmitReviewButton: FC<Props> = ({
   beforeSubmit,
   onSuccess,
 }) => {
+  const { message } = useAntdAppApi();
   const [submitting, setSubmitting] = useState(false);
   const intl = useIntl();
 

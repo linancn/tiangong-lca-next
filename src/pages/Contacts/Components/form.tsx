@@ -18,7 +18,7 @@ const CONTACT_SCHEMA_PATH_PREFIX = ['contactDataSet'];
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
   formType?: string;
@@ -106,7 +106,7 @@ export const ContactForm: FC<Props> = ({
   const tabContent: { [key: string]: React.JSX.Element } = {
     contactInformation: (
       <>
-        <Space direction='vertical' style={{ width: '100%' }}>
+        <Space orientation='vertical' style={{ width: '100%' }}>
           <Card
             size='small'
             title={
@@ -371,7 +371,7 @@ export const ContactForm: FC<Props> = ({
     ),
     administrativeInformation: (
       <>
-        <Space direction='vertical' style={{ width: '100%' }}>
+        <Space orientation='vertical' style={{ width: '100%' }}>
           <Card
             size='small'
             title={

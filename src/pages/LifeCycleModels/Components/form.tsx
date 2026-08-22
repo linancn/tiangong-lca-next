@@ -38,7 +38,7 @@ const isSameFormName = (left?: Array<string | number>, right?: readonly (string 
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
   formType?: string;
@@ -177,7 +177,7 @@ export const LifeCycleModelForm: FC<Props> = ({
 
   const tabContent: { [key: string]: React.JSX.Element } = {
     lifeCycleModelInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -464,7 +464,7 @@ export const LifeCycleModelForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -487,7 +487,7 @@ export const LifeCycleModelForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={

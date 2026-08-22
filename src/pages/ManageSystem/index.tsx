@@ -1,4 +1,5 @@
 import AccessDenied from '@/components/AccessDenied';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import AllTeams from '@/components/AllTeams';
 import { ListPagination } from '@/services/general/data';
 import {
@@ -11,17 +12,18 @@ import { TeamMemberTable } from '@/services/teams/data';
 import { CrownOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Flex, message, Modal, Spin, Tabs, theme, Tooltip } from 'antd';
+import { Button, Flex, Spin, Tabs, theme, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import AddMemberModal from './Components/AddMemberModal';
 
 const ManageSystem = () => {
+  const { message, modal } = useAntdAppApi();
   const [activeTabKey, setActiveTabKey] = useState('teams');
   const [loading, setLoading] = useState(false);
   const [authResolved, setAuthResolved] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
   const [userData, setUserData] = useState<{ user_id: string; role: string } | null>(null);
-  const actionRef = useRef<any>();
+  const actionRef = useRef<any>(undefined);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
   const { token } = theme.useToken();
@@ -137,7 +139,7 @@ const ManageSystem = () => {
                   size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
-                    Modal.confirm({
+                    modal.confirm({
                       okButtonProps: {
                         type: 'primary',
                         style: { backgroundColor: token.colorPrimary },
@@ -311,7 +313,7 @@ const ManageSystem = () => {
       ) : !isAuthorized ? (
         <AccessDenied />
       ) : (
-        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+        <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPlacement='start' items={tabs} />
       )}
     </PageContainer>
   );

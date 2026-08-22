@@ -61,7 +61,7 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
           />
         }
       >
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.FlowProperties.view.flowPropertiesInformation.shortDescription'
             defaultMessage='Short description' //有问题
@@ -78,18 +78,26 @@ const UnitGroupDescriptionMini: FC<Props> = ({ id, version, idType }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage id='pages.unitgroup.unitName' defaultMessage='Name of unit' />
-              }
-              styles={{ label: { width: '120px' } }}
-            >
-              {refUnit?.refUnitName ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage id='pages.unitgroup.unitName' defaultMessage='Name of unit' />
+                ),
+                styles: {
+                  label: {
+                    width: '120px',
+                  },
+                },
+                children: refUnit?.refUnitName ?? '-',
+              },
+            ]}
+          />
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.unitgroup.generalComment'
               defaultMessage='General comment'

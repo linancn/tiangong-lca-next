@@ -9,7 +9,7 @@ import {
 import { supabase } from '@/services/supabase';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
   mapDatasetUuidMentionRowsToListRows,

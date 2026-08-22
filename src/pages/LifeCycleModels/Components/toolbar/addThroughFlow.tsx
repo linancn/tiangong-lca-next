@@ -40,8 +40,8 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const [activeTabKey, setActiveTabKey] = useState<'tg' | 'my'>('tg');
   const [openAI, setOpenAI] = useState<boolean>(false);
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
-  const tgActionRefSelect = useRef<ActionType>();
-  const myActionRefSelect = useRef<ActionType>();
+  const tgActionRefSelect = useRef<ActionType>(undefined);
+  const myActionRefSelect = useRef<ActionType>(undefined);
 
   const intl = useIntl();
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
@@ -398,7 +398,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
         title={
           <FormattedMessage id='pages.flow.drawer.title.select' defaultMessage='Select Flow' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -407,7 +407,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

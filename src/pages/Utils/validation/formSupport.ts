@@ -22,7 +22,7 @@ type SdkFieldMessageEntry = {
   validationCode?: string;
 };
 
-type ValidationFormRef = React.MutableRefObject<ProFormInstance | undefined>;
+type ValidationFormRef = React.RefObject<ProFormInstance | undefined>;
 
 type UseDatasetSdkValidationFormSupportOptions = {
   activeTabKey: string;

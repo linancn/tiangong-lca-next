@@ -310,48 +310,49 @@ function buildLcaBarChartTheme(token: AntdThemeToken) {
 function QueryMetaCard({ meta }: { meta: QueryMeta }) {
   return (
     <Card size='small'>
-      <Descriptions bordered size='small' column={1}>
-        <Descriptions.Item
-          label={
-            <FormattedMessage
-              id='pages.process.lca.taskCenter.detail.snapshotId'
-              defaultMessage='Snapshot ID'
-            />
-          }
-        >
-          {meta.snapshotId}
-        </Descriptions.Item>
-        <Descriptions.Item
-          label={
-            <FormattedMessage
-              id='pages.process.lca.taskCenter.detail.resultId'
-              defaultMessage='Result ID'
-            />
-          }
-        >
-          {meta.resultId}
-        </Descriptions.Item>
-        <Descriptions.Item
-          label={
-            <FormattedMessage
-              id='pages.process.lca.analysis.meta.source'
-              defaultMessage='Result source'
-            />
-          }
-        >
-          {formatSourceLabel(meta.source)}
-        </Descriptions.Item>
-        <Descriptions.Item
-          label={
-            <FormattedMessage
-              id='pages.process.lca.analysis.meta.computedAt'
-              defaultMessage='Computed at'
-            />
-          }
-        >
-          {meta.computedAt}
-        </Descriptions.Item>
-      </Descriptions>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            label: (
+              <FormattedMessage
+                id='pages.process.lca.taskCenter.detail.snapshotId'
+                defaultMessage='Snapshot ID'
+              />
+            ),
+            children: meta.snapshotId,
+          },
+          {
+            label: (
+              <FormattedMessage
+                id='pages.process.lca.taskCenter.detail.resultId'
+                defaultMessage='Result ID'
+              />
+            ),
+            children: meta.resultId,
+          },
+          {
+            label: (
+              <FormattedMessage
+                id='pages.process.lca.analysis.meta.source'
+                defaultMessage='Result source'
+              />
+            ),
+            children: formatSourceLabel(meta.source),
+          },
+          {
+            label: (
+              <FormattedMessage
+                id='pages.process.lca.analysis.meta.computedAt'
+                defaultMessage='Computed at'
+              />
+            ),
+            children: meta.computedAt,
+          },
+        ]}
+      />
       {meta.calculationEvidence !== undefined ? (
         <LcaCalculationEvidenceNotice calculationEvidence={meta.calculationEvidence} />
       ) : null}
@@ -1574,7 +1575,7 @@ const LcaAnalysisPage = () => {
       ),
       key: 'group',
       render: (_, item) => (
-        <Space direction='vertical' size={0}>
+        <Space orientation='vertical' size={0}>
           <Typography.Text strong>{item.groupLabel}</Typography.Text>
           <Typography.Text type='secondary'>
             {intl.formatMessage(
@@ -1660,7 +1661,7 @@ const LcaAnalysisPage = () => {
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       key: 'label',
       render: (_, item) => (
-        <Space direction='vertical' size={0}>
+        <Space orientation='vertical' size={0}>
           <Space size='small'>
             {renderPathProcessTrigger(item.processId, item.label)}
             {item.isRoot ? (
@@ -1729,7 +1730,7 @@ const LcaAnalysisPage = () => {
         <Space
           size='small'
           wrap={true}
-          split={<Typography.Text type='secondary'>{'>'}</Typography.Text>}
+          separator={<Typography.Text type='secondary'>{'>'}</Typography.Text>}
         >
           {item.pathProcessIds.length > 0
             ? item.pathProcessIds.map((processId, index) => (
@@ -1780,7 +1781,7 @@ const LcaAnalysisPage = () => {
         <Space
           size='small'
           wrap={true}
-          split={<Typography.Text type='secondary'>→</Typography.Text>}
+          separator={<Typography.Text type='secondary'>→</Typography.Text>}
         >
           {renderPathProcessTrigger(item.sourceProcessId, item.sourceLabel)}
           {renderPathProcessTrigger(item.targetProcessId, item.targetLabel)}
@@ -1872,9 +1873,9 @@ const LcaAnalysisPage = () => {
       }}
       extra={summaryCardExtra}
     >
-      <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+      <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
         <Card size='small'>
-          <Space direction='vertical' size='small' style={{ width: '100%' }}>
+          <Space orientation='vertical' size='small' style={{ width: '100%' }}>
             <Typography.Text strong>
               <FormattedMessage
                 id='pages.process.lca.page.processes.title'
@@ -1954,8 +1955,8 @@ const LcaAnalysisPage = () => {
                 />
               </Typography.Text>
             </Space>
-            {processOptionsError ? <Alert message={processOptionsError} type='error' /> : null}
-            {impactOptionsError ? <Alert message={impactOptionsError} type='error' /> : null}
+            {processOptionsError ? <Alert title={processOptionsError} type='error' /> : null}
+            {impactOptionsError ? <Alert title={impactOptionsError} type='error' /> : null}
           </Space>
         </Card>
 
@@ -1972,7 +1973,7 @@ const LcaAnalysisPage = () => {
                 />
               ),
               children: (
-                <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                   <Card size='small'>
                     <Form layout='vertical'>
                       <Form.Item
@@ -1984,7 +1985,7 @@ const LcaAnalysisPage = () => {
                         }
                       >
                         <Select
-                          showSearch={true}
+                          showSearch={{ optionFilterProp: 'label' }}
                           aria-label={intl.formatMessage({
                             id: 'pages.process.lca.page.profile.field.process',
                             defaultMessage: 'Process',
@@ -1995,7 +1996,6 @@ const LcaAnalysisPage = () => {
                             value: getProcessOptionSelectionKey(item),
                           }))}
                           disabled={processOptionsLoading || profileProcessOptions.length === 0}
-                          optionFilterProp='label'
                           onChange={(value) => {
                             setSelectedProfileProcessId(String(value));
                             setProfileResult(null);
@@ -2062,14 +2062,14 @@ const LcaAnalysisPage = () => {
                   </Card>
 
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Typography.Text strong>
                         <FormattedMessage
                           id='pages.process.lca.analysis.section.results'
                           defaultMessage='Results'
                         />
                       </Typography.Text>
-                      {profileError ? <Alert message={profileError} type='error' /> : null}
+                      {profileError ? <Alert title={profileError} type='error' /> : null}
                       {!profileResult && !profileError ? (
                         <Typography.Paragraph type='secondary'>
                           <FormattedMessage
@@ -2080,7 +2080,7 @@ const LcaAnalysisPage = () => {
                       ) : null}
                       <Spin spinning={profileLoading}>
                         {profileResult && profileModel ? (
-                          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                          <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                             <QueryMetaCard
                               meta={{
                                 snapshotId: profileResult.snapshotId,
@@ -2125,7 +2125,7 @@ const LcaAnalysisPage = () => {
                                 />
                               }
                             >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                              <Space orientation='vertical' size='small' style={{ width: '100%' }}>
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.view.lciaresults.profile.subtitle'
@@ -2182,9 +2182,9 @@ const LcaAnalysisPage = () => {
                 />
               ),
               children: (
-                <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Form layout='vertical'>
                         <Form.Item
                           label={
@@ -2195,7 +2195,7 @@ const LcaAnalysisPage = () => {
                           }
                         >
                           <Select
-                            showSearch={true}
+                            showSearch={{ optionFilterProp: 'label' }}
                             aria-label={intl.formatMessage({
                               id: 'pages.process.lca.analysis.field.impact',
                               defaultMessage: 'Impact category',
@@ -2206,7 +2206,6 @@ const LcaAnalysisPage = () => {
                               label: `${item.label} (${item.unit})`,
                             }))}
                             disabled={impactOptionsLoading || impactOptions.length === 0}
-                            optionFilterProp='label'
                             onChange={(value) => {
                               setSelectedCompareImpactId(String(value));
                               setCompareResult(null);
@@ -2262,14 +2261,14 @@ const LcaAnalysisPage = () => {
                   </Card>
 
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Typography.Text strong>
                         <FormattedMessage
                           id='pages.process.lca.analysis.section.results'
                           defaultMessage='Results'
                         />
                       </Typography.Text>
-                      {compareError ? <Alert message={compareError} type='error' /> : null}
+                      {compareError ? <Alert title={compareError} type='error' /> : null}
                       {!compareResult && !compareError ? (
                         <Typography.Paragraph type='secondary'>
                           <FormattedMessage
@@ -2280,7 +2279,7 @@ const LcaAnalysisPage = () => {
                       ) : null}
                       <Spin spinning={compareLoading}>
                         {compareResult ? (
-                          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                          <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                             <QueryMetaCard
                               meta={{
                                 snapshotId: compareResult.snapshotId,
@@ -2344,7 +2343,7 @@ const LcaAnalysisPage = () => {
                                 />
                               }
                             >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                              <Space orientation='vertical' size='small' style={{ width: '100%' }}>
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.lca.analysis.shareNote'
@@ -2398,9 +2397,9 @@ const LcaAnalysisPage = () => {
                 />
               ),
               children: (
-                <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Form layout='vertical'>
                         <Row gutter={[16, 16]}>
                           <Col xs={24} md={12}>
@@ -2413,7 +2412,7 @@ const LcaAnalysisPage = () => {
                               }
                             >
                               <Select
-                                showSearch={true}
+                                showSearch={{ optionFilterProp: 'label' }}
                                 aria-label={intl.formatMessage({
                                   id: 'pages.process.lca.analysis.field.impact',
                                   defaultMessage: 'Impact category',
@@ -2424,7 +2423,6 @@ const LcaAnalysisPage = () => {
                                   label: `${item.label} (${item.unit})`,
                                 }))}
                                 disabled={impactOptionsLoading || impactOptions.length === 0}
-                                optionFilterProp='label'
                                 onChange={(value) => {
                                   setSelectedGroupedImpactId(String(value));
                                   setGroupedResult(null);
@@ -2508,14 +2506,14 @@ const LcaAnalysisPage = () => {
                   </Card>
 
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Typography.Text strong>
                         <FormattedMessage
                           id='pages.process.lca.analysis.section.results'
                           defaultMessage='Results'
                         />
                       </Typography.Text>
-                      {groupedError ? <Alert message={groupedError} type='error' /> : null}
+                      {groupedError ? <Alert title={groupedError} type='error' /> : null}
                       {!groupedResult && !groupedError ? (
                         <Typography.Paragraph type='secondary'>
                           <FormattedMessage
@@ -2526,7 +2524,7 @@ const LcaAnalysisPage = () => {
                       ) : null}
                       <Spin spinning={groupedLoading}>
                         {groupedResult ? (
-                          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                          <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                             <QueryMetaCard
                               meta={{
                                 snapshotId: groupedResult.snapshotId,
@@ -2601,7 +2599,7 @@ const LcaAnalysisPage = () => {
                                 />
                               }
                             >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                              <Space orientation='vertical' size='small' style={{ width: '100%' }}>
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.lca.page.grouped.shareNote'
@@ -2655,9 +2653,9 @@ const LcaAnalysisPage = () => {
                 />
               ),
               children: (
-                <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Form layout='vertical'>
                         <Row gutter={[16, 16]}>
                           <Col xs={24} md={12}>
@@ -2670,7 +2668,7 @@ const LcaAnalysisPage = () => {
                               }
                             >
                               <Select
-                                showSearch={true}
+                                showSearch={{ optionFilterProp: 'label' }}
                                 aria-label={intl.formatMessage({
                                   id: 'pages.process.lca.analysis.field.impact',
                                   defaultMessage: 'Impact category',
@@ -2681,7 +2679,6 @@ const LcaAnalysisPage = () => {
                                   label: `${item.label} (${item.unit})`,
                                 }))}
                                 disabled={impactOptionsLoading || impactOptions.length === 0}
-                                optionFilterProp='label'
                                 onChange={(value) => {
                                   setSelectedPathImpactId(String(value));
                                   setPathResult(null);
@@ -2847,14 +2844,14 @@ const LcaAnalysisPage = () => {
                   </Card>
 
                   <Card size='small'>
-                    <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                    <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                       <Typography.Text strong>
                         <FormattedMessage
                           id='pages.process.lca.analysis.section.results'
                           defaultMessage='Results'
                         />
                       </Typography.Text>
-                      {pathError ? <Alert message={pathError} type='error' /> : null}
+                      {pathError ? <Alert title={pathError} type='error' /> : null}
                       {!pathResult && !pathError ? (
                         <Typography.Paragraph type='secondary'>
                           <FormattedMessage
@@ -2865,7 +2862,7 @@ const LcaAnalysisPage = () => {
                       ) : null}
                       <Spin spinning={pathLoading}>
                         {pathResult && resolvedPathModel ? (
-                          <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+                          <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
                             <QueryMetaCard
                               meta={{
                                 snapshotId: pathResult.snapshotId,
@@ -2929,81 +2926,79 @@ const LcaAnalysisPage = () => {
                             </Row>
 
                             <Card size='small'>
-                              <Descriptions bordered size='small' column={1}>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.process'
-                                      defaultMessage='Root process'
-                                    />
-                                  }
-                                >
-                                  {renderPathProcessTrigger(
-                                    resolvedPathModel.root.processId,
-                                    resolvedPathModel.root.label,
-                                  )}
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.analysis.field.impact'
-                                      defaultMessage='Impact category'
-                                    />
-                                  }
-                                >
-                                  {pathResult.impactLabel}
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.amount'
-                                      defaultMessage='Demand amount'
-                                    />
-                                  }
-                                >
-                                  <AlignedNumber value={pathResult.amount} />
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.maxDepth'
-                                      defaultMessage='Max depth'
-                                    />
-                                  }
-                                >
-                                  {resolvedPathModel.options.maxDepth}
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.topKChildren'
-                                      defaultMessage='Top-K children'
-                                    />
-                                  }
-                                >
-                                  {resolvedPathModel.options.topKChildren}
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.cutoffShare'
-                                      defaultMessage='Cutoff share'
-                                    />
-                                  }
-                                >
-                                  {formatPercent(resolvedPathModel.options.cutoffShare)}
-                                </Descriptions.Item>
-                                <Descriptions.Item
-                                  label={
-                                    <FormattedMessage
-                                      id='pages.process.lca.page.path.field.maxNodes'
-                                      defaultMessage='Max nodes'
-                                    />
-                                  }
-                                >
-                                  {resolvedPathModel.options.maxNodes}
-                                </Descriptions.Item>
-                              </Descriptions>
+                              <Descriptions
+                                bordered
+                                size='small'
+                                column={1}
+                                items={[
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.process'
+                                        defaultMessage='Root process'
+                                      />
+                                    ),
+                                    children: renderPathProcessTrigger(
+                                      resolvedPathModel.root.processId,
+                                      resolvedPathModel.root.label,
+                                    ),
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.analysis.field.impact'
+                                        defaultMessage='Impact category'
+                                      />
+                                    ),
+                                    children: pathResult.impactLabel,
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.amount'
+                                        defaultMessage='Demand amount'
+                                      />
+                                    ),
+                                    children: <AlignedNumber value={pathResult.amount} />,
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.maxDepth'
+                                        defaultMessage='Max depth'
+                                      />
+                                    ),
+                                    children: resolvedPathModel.options.maxDepth,
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.topKChildren'
+                                        defaultMessage='Top-K children'
+                                      />
+                                    ),
+                                    children: resolvedPathModel.options.topKChildren,
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.cutoffShare'
+                                        defaultMessage='Cutoff share'
+                                      />
+                                    ),
+                                    children: formatPercent(resolvedPathModel.options.cutoffShare),
+                                  },
+                                  {
+                                    label: (
+                                      <FormattedMessage
+                                        id='pages.process.lca.page.path.field.maxNodes'
+                                        defaultMessage='Max nodes'
+                                      />
+                                    ),
+                                    children: resolvedPathModel.options.maxNodes,
+                                  },
+                                ]}
+                              />
                             </Card>
 
                             <Card
@@ -3015,7 +3010,7 @@ const LcaAnalysisPage = () => {
                                 />
                               }
                             >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                              <Space orientation='vertical' size='small' style={{ width: '100%' }}>
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.lca.page.path.chart.note'
@@ -3063,7 +3058,7 @@ const LcaAnalysisPage = () => {
                                 />
                               }
                             >
-                              <Space direction='vertical' size='small' style={{ width: '100%' }}>
+                              <Space orientation='vertical' size='small' style={{ width: '100%' }}>
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.lca.page.path.sankey.note'
@@ -3074,7 +3069,7 @@ const LcaAnalysisPage = () => {
                                   <Alert
                                     type='info'
                                     showIcon={true}
-                                    message={intl.formatMessage(
+                                    title={intl.formatMessage(
                                       {
                                         id: 'pages.process.lca.page.path.sankey.info.layered',
                                         defaultMessage:

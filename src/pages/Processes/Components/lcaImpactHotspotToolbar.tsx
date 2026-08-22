@@ -619,7 +619,7 @@ const LcaImpactHotspotToolbar: FC<{
         onClick={onOpen}
       />
       <Drawer
-        width={760}
+        size={760}
         open={open}
         onClose={onClose}
         title={intl.formatMessage({
@@ -645,9 +645,9 @@ const LcaImpactHotspotToolbar: FC<{
           </Space>
         }
       >
-        <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+        <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
           <Card size='small'>
-            <Space direction='vertical' size='small' style={{ width: '100%' }}>
+            <Space orientation='vertical' size='small' style={{ width: '100%' }}>
               <Typography.Text strong>
                 <FormattedMessage
                   id='pages.process.lca.analysis.section.controls'
@@ -711,19 +711,19 @@ const LcaImpactHotspotToolbar: FC<{
                 }}
               />
 
-              {impactOptionsError ? <Alert message={impactOptionsError} type='error' /> : null}
+              {impactOptionsError ? <Alert title={impactOptionsError} type='error' /> : null}
             </Space>
           </Card>
 
           <Card size='small'>
-            <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+            <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
               <Typography.Text strong>
                 <FormattedMessage
                   id='pages.process.lca.analysis.section.results'
                   defaultMessage='Results'
                 />
               </Typography.Text>
-              {analysisError ? <Alert message={analysisError} type='error' /> : null}
+              {analysisError ? <Alert title={analysisError} type='error' /> : null}
               {!analysisResult && !analysisError ? (
                 <Typography.Paragraph type='secondary'>
                   <FormattedMessage
@@ -734,69 +734,68 @@ const LcaImpactHotspotToolbar: FC<{
               ) : null}
               <Spin spinning={analysisLoading}>
                 {analysisResult ? (
-                  <Space direction='vertical' size='middle' style={{ width: '100%' }}>
-                    <Descriptions bordered size='small' column={1}>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.lca.analysis.field.impact'
-                            defaultMessage='Impact category'
-                          />
-                        }
-                      >
-                        {analysisResult.impactLabel}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.view.lciaresults.unit'
-                            defaultMessage='Unit'
-                          />
-                        }
-                      >
-                        {analysisResult.unit}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.lca.taskCenter.detail.snapshotId'
-                            defaultMessage='Snapshot ID'
-                          />
-                        }
-                      >
-                        {analysisResult.snapshotId}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.lca.taskCenter.detail.resultId'
-                            defaultMessage='Result ID'
-                          />
-                        }
-                      >
-                        {analysisResult.resultId}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.lca.analysis.meta.source'
-                            defaultMessage='Result source'
-                          />
-                        }
-                      >
-                        {formatSourceLabel(analysisResult.source)}
-                      </Descriptions.Item>
-                      <Descriptions.Item
-                        label={
-                          <FormattedMessage
-                            id='pages.process.lca.analysis.meta.computedAt'
-                            defaultMessage='Computed at'
-                          />
-                        }
-                      >
-                        {analysisResult.computedAt}
-                      </Descriptions.Item>
-                    </Descriptions>
+                  <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
+                    <Descriptions
+                      bordered
+                      size='small'
+                      column={1}
+                      items={[
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.lca.analysis.field.impact'
+                              defaultMessage='Impact category'
+                            />
+                          ),
+                          children: analysisResult.impactLabel,
+                        },
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.view.lciaresults.unit'
+                              defaultMessage='Unit'
+                            />
+                          ),
+                          children: analysisResult.unit,
+                        },
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.lca.taskCenter.detail.snapshotId'
+                              defaultMessage='Snapshot ID'
+                            />
+                          ),
+                          children: analysisResult.snapshotId,
+                        },
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.lca.taskCenter.detail.resultId'
+                              defaultMessage='Result ID'
+                            />
+                          ),
+                          children: analysisResult.resultId,
+                        },
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.lca.analysis.meta.source'
+                              defaultMessage='Result source'
+                            />
+                          ),
+                          children: formatSourceLabel(analysisResult.source),
+                        },
+                        {
+                          label: (
+                            <FormattedMessage
+                              id='pages.process.lca.analysis.meta.computedAt'
+                              defaultMessage='Computed at'
+                            />
+                          ),
+                          children: analysisResult.computedAt,
+                        },
+                      ]}
+                    />
 
                     <Row gutter={[16, 16]}>
                       <Col xs={24} md={12}>

@@ -18,53 +18,31 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const refVersion = refData?.['@version'] ?? '';
   return (
     <Card size='small' title={title}>
-      <Space direction='horizontal'>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.refObjectId'
-                defaultMessage='Reference flow dataset identifier'
-              />
-            }
-            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
-          >
-            {refObjectId || '-'}
-          </Descriptions.Item>
-        </Descriptions>
+      <Space orientation='horizontal'>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.refObjectId'
+                  defaultMessage='Reference flow dataset identifier'
+                />
+              ),
+              children: refObjectId || '-',
+            },
+          ]}
+        />
         {refObjectId && (
           <FlowsView id={refObjectId} version={refVersion} lang={lang} buttonType='text' />
         )}
       </Space>
       <br />
-      {/* <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label={<FormattedMessage id="pages.process.view.exchange.type" defaultMessage="Type" />}
-          styles={{ label: { width: '140px' } }}
-        >
-          {data?.['@type'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
-      <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label={<FormattedMessage id="pages.process.view.exchange.uri" defaultMessage="URI" />}
-          styles={{ label: { width: '140px' } }}
-        >
-          {data?.['@uri'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
-      <br /> */}
-      {/* <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label="Version" styles={{ label: { width: '120px' } }}>
-          {data?.['@version'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions> */}
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage
           id='pages.process.view.exchange.shortDescription'
           defaultMessage='Short description'

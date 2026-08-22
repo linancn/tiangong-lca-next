@@ -8,7 +8,7 @@ import {
 } from '@/services/processes/api';
 import { BarChartOutlined } from '@ant-design/icons';
 
-import { Card, Checkbox, Col, Input, message, Row, Select, Space } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Select, Space, App } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
@@ -89,6 +89,7 @@ export const getProcesstypeOfDataSetOptions = (value: string) => {
 };
 
 const TableList: FC = () => {
+  const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState('');
   const [, setStateCode] = useState<string | number>('all');
   const [, setTypeOfDataSet] = useState<string>('all');
@@ -120,7 +121,7 @@ const TableList: FC = () => {
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const attachReviewState = async (result: {
     data?: ProcessTable[];
     page?: number;
@@ -147,16 +148,18 @@ const TableList: FC = () => {
       actionRef.current?.reloadAndRest?.();
     };
     return (
-      <Select defaultValue={'all'} style={{ width }} onChange={onChange}>
-        <Select.Option value={'all'}>
-          <FormattedMessage id='pages.table.filter.all.datasetType' />
-        </Select.Option>
-        {processtypeOfDataSetOptions.map((option) => (
-          <Select.Option key={option.value} value={option.value}>
-            {option.label}
-          </Select.Option>
-        ))}
-      </Select>
+      <Select
+        defaultValue={'all'}
+        style={{ width }}
+        onChange={onChange}
+        options={[
+          {
+            value: 'all',
+            label: <FormattedMessage id='pages.table.filter.all.datasetType' />,
+          },
+          ...processtypeOfDataSetOptions,
+        ]}
+      />
     );
   };
   const processColumns: ProColumns<ProcessTable>[] = [

@@ -31,11 +31,12 @@ import {
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 import styles from '@/style/custom.less';
+import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
+import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
 import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
-import type { RunTimeLayoutConfig } from '@umijs/max';
-import { ConfigProvider, theme as antdTheme } from 'antd';
+import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
 import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
@@ -51,6 +52,29 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['owner', 'admin'],
   ['data_product_manager', 'data_product_manager'],
 ]);
+
+export const antd: RuntimeAntdConfig = (memo) => {
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
+  return {
+    ...memo,
+    theme: {
+      ...memo.theme,
+      ...createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary),
+      token: {
+        ...memo.theme?.token,
+        colorPrimary: brandTheme.colorPrimary,
+      },
+      components: {
+        ...memo.theme?.components,
+        Divider: {
+          ...memo.theme?.components?.Divider,
+          orientationMargin: 0,
+        },
+      },
+    },
+  };
+};
 
 /**
  * Umi asks this runtime hook for the locale before mounting its providers, so
@@ -70,6 +94,14 @@ export function rootContainer(container: ReactNode) {
       <AppBootMarker>{container}</AppBootMarker>
     </StaticFallbackErrorBoundary>
   );
+}
+
+/**
+ * Umi applies the Ant Design plugin's inner provider after this hook, placing
+ * the registrar inside the one global `<App>` for every route shape.
+ */
+export function innerProvider(container: ReactNode) {
+  return <AntdAppApiRegistrar>{container}</AntdAppApiRegistrar>;
 }
 
 async function getSystemAccess(): Promise<Auth.CurrentUser['access'] | undefined> {
@@ -211,6 +243,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           5,
           0,
           <HeaderActionIcon
+            aria-label={formatMessage({
+              id: 'menu.dashboard.nationalCarbon',
+              defaultMessage: 'Data Dashboard',
+            })}
             key='NationalCarbonDashboard'
             icon={<DashboardOutlined />}
             onClick={() => history.push(dashboardPath)}
@@ -227,6 +263,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           5,
           0,
           <HeaderActionIcon
+            aria-label={formatMessage({
+              id: 'menu.dataProcessing',
+              defaultMessage: 'Data Processing',
+            })}
             key='DataProcessing'
             icon={<DatabaseOutlined />}
             onClick={() => history.push(dataProcessingPath)}
@@ -306,17 +346,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       }
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <ConfigProvider
-          theme={{
-            cssVar: true,
-            token: {
-              colorPrimary: initialState?.settings?.colorPrimary,
-            },
-            algorithm: initialState?.isDarkMode
-              ? antdTheme.darkAlgorithm
-              : antdTheme.defaultAlgorithm,
-          }}
-        >
+        <>
+          <AntdThemeSync
+            colorPrimary={initialState?.settings?.colorPrimary}
+            isDarkMode={Boolean(initialState?.isDarkMode)}
+          />
           {renderedChildren}
           {isDev && !maintenanceActive && (
             <SettingDrawer
@@ -331,7 +365,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               }}
             />
           )}
-        </ConfigProvider>
+        </>
       );
     },
     menuDataRender: (menuDataProps) => {

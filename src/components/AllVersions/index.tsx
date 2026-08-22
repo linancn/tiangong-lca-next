@@ -18,7 +18,7 @@ import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
-import type { FC, Key, MutableRefObject, ReactElement, ReactNode } from 'react';
+import type { FC, Key, ReactElement, ReactNode, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
 interface AllVersionsListProps {
@@ -33,7 +33,7 @@ interface AllVersionsListProps {
   addVersionComponent?: ({ newVersion }: { newVersion: string }) => ReactElement;
   operationRender?: (
     row: any,
-    context: { actionRef: MutableRefObject<ActionType | undefined> },
+    context: { actionRef: RefObject<ActionType | undefined> },
   ) => ReactNode;
   operationColumnWidth?: number;
   onSelectVersion?: (row: any) => void;
@@ -60,7 +60,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   operationColumnWidth,
   onSelectVersion,
 }) => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const [selectedVersionRowKeys, setSelectedVersionRowKeys] = useState<Key[]>([]);
   const [selectedVersionRow, setSelectedVersionRow] = useState<VersionedDataRow | null>(null);
@@ -183,7 +183,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       <Drawer
         getContainer={() => document.body}
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All Versions' />}
-        width={'90%'}
+        size='90%'
         open={showAllVersionsModal}
         onClose={closeAllVersionsModal}
         footer={
@@ -202,7 +202,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         extra={
           <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeAllVersionsModal} />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
       >
         <Card>
           <ProTable<any, ContentLanguageAwareTableParams>

@@ -41,7 +41,7 @@ type Props = {
   data: FlowPropertyData[];
   lang: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: FlowPropertyData[]) => void;
   showRules?: boolean;
@@ -84,7 +84,7 @@ const PropertyEdit: FC<Props> = ({
   const intlRef = useRef(intl);
   intlRef.current = intl;
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<FlowPropertyData>({});
   const [initData, setInitData] = useState<FlowPropertyData>({});
   const autoOpenConsumedRef = useRef(false);
@@ -355,7 +355,7 @@ const PropertyEdit: FC<Props> = ({
             defaultMessage='Edit Flow property'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -364,7 +364,7 @@ const PropertyEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -404,7 +404,7 @@ const PropertyEdit: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>

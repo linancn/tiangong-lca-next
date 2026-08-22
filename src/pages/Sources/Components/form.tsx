@@ -24,7 +24,7 @@ const SOURCE_SCHEMA_PATH_PREFIX = ['sourceDataSet'];
 type Props = {
   lang: string;
   activeTabKey: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   onTabChange: (key: string) => void;
   loadFiles: RcFile[];
@@ -137,7 +137,7 @@ export const SourceForm: FC<Props> = ({
   ];
   const tabContent: { [key: string]: React.JSX.Element } = {
     sourceInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={
@@ -274,7 +274,8 @@ export const SourceForm: FC<Props> = ({
           </Upload>
           {previewImage && (
             <Image
-              wrapperStyle={{ display: 'none' }}
+              alt=''
+              styles={{ root: { display: 'none' } }}
               preview={{
                 visible: previewOpen,
                 onVisibleChange: (visible) => setPreviewOpen(visible),
@@ -324,7 +325,7 @@ export const SourceForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={

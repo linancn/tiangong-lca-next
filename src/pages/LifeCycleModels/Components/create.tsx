@@ -14,7 +14,7 @@ import ToolbarEdit from './toolbar/editIndex';
 type Props = {
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
@@ -141,7 +141,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
             />
           )
         }
-        width='100%'
+        size='100%'
         closable={false}
         extra={
           <Button
@@ -153,7 +153,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
             }}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           if (isSave) reload();

@@ -9,6 +9,7 @@ import { history, useIntl, useLocation, useModel } from '@umijs/max';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { logout } from '@/services/auth';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { getReviewUserRoleApi, getSystemUserRoleApi, getUserRoles } from '@/services/roles/api';
 import { Button, Modal, Spin, theme } from 'antd';
 import type { MenuProps } from 'antd';
@@ -43,6 +44,7 @@ export const AvatarName = () => {
 };
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) => {
+  const { modal } = useAntdAppApi();
   const intl = useIntl();
   const location = useLocation();
   const { token } = theme.useToken();
@@ -128,7 +130,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
         if (isUserInTeam) {
           history.push(`/team?action=edit`);
         } else {
-          Modal.confirm({
+          const confirmModal = modal.confirm({
             okButtonProps: {
               type: 'primary',
               style: { backgroundColor: token.colorPrimary },
@@ -151,7 +153,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                   style={{ borderColor: token.colorPrimary, color: token.colorPrimary }}
                   onClick={() => {
                     setShowAllTeamsModal(true);
-                    Modal.destroyAll();
+                    confirmModal.destroy();
                   }}
                 >
                   {intl.formatMessage({
@@ -164,7 +166,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                   type='primary'
                   style={{ backgroundColor: token.colorPrimary }}
                   onClick={() => {
-                    Modal.destroyAll();
+                    confirmModal.destroy();
                     if (location.pathname === '/team') {
                       const searchParams = new URLSearchParams(location.search);
                       searchParams.set('action', 'create');
@@ -192,7 +194,15 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       }
       history.push(`/account`);
     },
-    [intl, location.pathname, location.search, loginOut, setInitialState, token.colorPrimary],
+    [
+      intl,
+      location.pathname,
+      location.search,
+      loginOut,
+      modal,
+      setInitialState,
+      token.colorPrimary,
+    ],
   );
 
   const loadingContainerStyle = useMemo(
@@ -277,7 +287,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   return (
     <>
       <HeaderDropdown
-        overlayClassName='tg-global-header-avatar-dropdown'
+        classNames={{ root: 'tg-global-header-avatar-dropdown' }}
         menu={{
           selectedKeys: [],
           onClick: onMenuClick,

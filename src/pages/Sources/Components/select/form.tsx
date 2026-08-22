@@ -8,7 +8,7 @@ import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
-import type { Rule } from 'antd/lib/form';
+import type { Rule } from 'antd/es/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import SourceEdit from '../edit';
 import SourceView from '../view';
@@ -20,7 +20,7 @@ type Props = {
   name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: Rule[];
   defaultSourceName?: string;
@@ -232,7 +232,7 @@ const SourceSelectForm: FC<Props> = ({
         )
       }
     >
-      <Space direction='horizontal'>
+      <Space orientation='horizontal'>
         <Form.Item
           label={
             <FormattedMessage
@@ -263,7 +263,7 @@ const SourceSelectForm: FC<Props> = ({
         >
           <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
         </Form.Item>
-        <Space direction='horizontal' style={{ marginTop: '6px' }}>
+        <Space orientation='horizontal' style={{ marginTop: '6px' }}>
           {!id && (
             <SourceSelectDrawer
               type={type}
@@ -341,7 +341,7 @@ const SourceSelectForm: FC<Props> = ({
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage id='pages.contact.shortDescription' defaultMessage='Short description' />
       </Divider>
       <Form.Item>

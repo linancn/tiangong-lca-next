@@ -26,7 +26,7 @@ type Props = {
 };
 const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisible, onData }) => {
   // const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>(undefined);
   const [initData, setInitData] = useState<Partial<ProcessFormState>>({});
   const [refExchange, setRefExchange] = useState<ProcessExchangeData | undefined>();
   const refFlow = Array.isArray(refExchange?.referenceToFlowDataSet)
@@ -93,7 +93,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
         title={
           <FormattedMessage id='pages.lifeCycleModel.targetAmount' defaultMessage='Target amount' />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={onDrawerClose} />}
         footer={
@@ -111,7 +111,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             </Button>
           </Space>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={onDrawerClose}
       >
@@ -183,21 +183,26 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
               />
             }
           >
-            <Space direction='horizontal'>
-              <Descriptions bordered size={'small'} column={1} style={{ width: '450px' }}>
-                <Descriptions.Item
-                  key={0}
-                  label={
-                    <FormattedMessage
-                      id='pages.process.view.exchange.refObjectId'
-                      defaultMessage='Reference flow dataset identifier'
-                    />
-                  }
-                  styles={{ label: { width: '140px' } }}
-                >
-                  {refFlow?.['@refObjectId'] ?? '-'}
-                </Descriptions.Item>
-              </Descriptions>
+            <Space orientation='horizontal'>
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                style={{ width: '450px' }}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.exchange.refObjectId'
+                        defaultMessage='Reference flow dataset identifier'
+                      />
+                    ),
+                    styles: { label: { width: '140px' } },
+                    children: refFlow?.['@refObjectId'] ?? '-',
+                  },
+                ]}
+              />
               {refFlow?.['@refObjectId'] && (
                 <FlowsView
                   id={refFlow['@refObjectId']}
@@ -209,40 +214,52 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             </Space>
             <br />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {refFlow?.['@type'] ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage id='pages.process.view.exchange.type' defaultMessage='Type' />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: refFlow?.['@type'] ?? '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />
-                }
-                styles={{ label: { width: '140px' } }}
-              >
-                {refFlow?.['@uri'] ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage id='pages.process.view.exchange.uri' defaultMessage='URI' />
+                  ),
+                  styles: { label: { width: '140px' } },
+                  children: refFlow?.['@uri'] ?? '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={<FormattedMessage id='pages.version' defaultMessage='Version' />}
-                styles={{ label: { width: '120px' } }}
-              >
-                {refFlow?.['@version'] ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
-            <Divider orientationMargin='0' orientation='left' plain>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: <FormattedMessage id='pages.version' defaultMessage='Version' />,
+                  styles: { label: { width: '120px' } },
+                  children: refFlow?.['@version'] ?? '-',
+                },
+              ]}
+            />
+            <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
               <FormattedMessage
                 id='pages.process.view.exchange.shortDescription'
                 defaultMessage='Short description'
@@ -261,14 +278,14 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
             size='small'
             title={<FormattedMessage id='pages.lifeCycleModel.refNode' defaultMessage='Ref node' />}
           >
-            <Divider orientationMargin='0' orientation='left' plain>
+            <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
               <FormattedMessage id='pages.lifeCycleModel.information.name' defaultMessage='Name' />
             </Divider>
             <LangTextItemDescription
               data={initData.processInformation?.dataSetInformation?.name?.baseName}
             />
             <br />
-            <Divider orientationMargin='0' orientation='left' plain>
+            <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
               <FormattedMessage
                 id='pages.lifeCycleModel.information.generalComment'
                 defaultMessage='General comment'
