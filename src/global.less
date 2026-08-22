@@ -185,6 +185,7 @@ ol {
 
 .tg-global-header-help-action {
   display: inline-flex;
+  padding: 6px;
   align-items: center;
   justify-content: center;
   color: inherit;
@@ -193,10 +194,105 @@ ol {
   appearance: none;
   background: transparent;
   border: 0;
+  border-radius: var(--ant-border-radius, 6px);
   cursor: pointer;
+
+  &:hover {
+    background: var(--ant-color-bg-text-hover, rgba(0, 0, 0, 0.06));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+    outline-offset: 1px;
+  }
+}
+
+.tg-global-language-action {
+  display: inline-flex;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--ant-border-radius, 6px);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ant-color-bg-text-hover, rgba(0, 0, 0, 0.06));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+    outline-offset: 1px;
+  }
+}
+
+.tg-pro-layout-collapse-trigger {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: transparent;
+  border: 0;
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+    outline-offset: 2px;
+  }
+}
+
+.tg-pro-layout-mobile-menu-action {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ant-pro-global-header-collapsed-button {
+    visibility: hidden;
+  }
+
+  .ant-pro-global-header-header-actions-item:has(> .tg-pro-layout-mobile-menu-action) {
+    width: 0;
+    padding: 0;
+  }
+
+  .tg-pro-layout-mobile-menu-action {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    font: inherit;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    border-radius: var(--ant-border-radius, 6px);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--ant-color-bg-text-hover, rgba(0, 0, 0, 0.06));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+      outline-offset: 1px;
+    }
+  }
 }
 
 .tg-global-header-avatar-trigger {
+  color: inherit;
+  font: inherit;
+  background: transparent;
+  border: 0;
   display: flex;
   align-items: center;
   height: 48px;
@@ -206,6 +302,15 @@ ol {
   overflow: hidden;
   white-space: nowrap;
   cursor: pointer;
+
+  &:hover {
+    background: var(--ant-color-bg-text-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border);
+    outline-offset: -2px;
+  }
 }
 
 .tg-global-header-avatar-name {

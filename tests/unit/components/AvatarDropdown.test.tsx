@@ -152,12 +152,14 @@ const setupModuleMocks = () => {
     '@/components/HeaderDropdown',
     () => ({
       __esModule: true,
-      default: function HeaderDropdown({ menu, children }: any) {
+      default: function HeaderDropdown({ menu, children, trigger }: any) {
         const items =
           menu.items?.filter((item: any) => !item.hidden && item.type !== 'divider') ?? [];
         return (
           <div>
-            <div data-testid='header-trigger'>{children}</div>
+            <div data-testid='header-trigger' data-trigger={trigger?.join(',')}>
+              {children}
+            </div>
             <nav aria-label='User menu'>
               {items.map((item: any) => (
                 <button
@@ -305,6 +307,7 @@ describe('AvatarDropdown', () => {
 
     expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
     expect(screen.getByText('avatar')).toBeInTheDocument();
+    expect(screen.getByTestId('header-trigger')).toHaveAttribute('data-trigger', 'click');
 
     await user.click(screen.getByRole('button', { name: 'Account Profile' }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/account');

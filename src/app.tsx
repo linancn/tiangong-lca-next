@@ -9,9 +9,11 @@ import {
   LcaTaskCenter,
   Notification,
   Question,
-  SelectLang,
+  SelectLangAction,
 } from '@/components';
 import AccessDenied from '@/components/AccessDenied';
+import { renderAccessibleCollapsedButton } from '@/components/AccessibleCollapsedButton';
+import AccessibleSettingDrawer from '@/components/AccessibleSettingDrawer';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import SystemMaintenance from '@/components/SystemMaintenance';
 import {
@@ -33,9 +35,8 @@ import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCen
 import styles from '@/style/custom.less';
 import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
-import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
+import { DashboardOutlined, DatabaseOutlined, LinkOutlined, MenuOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
 import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
@@ -210,7 +211,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
-    actionsRender: () => {
+    actionsRender: (headerProps = {}) => {
       if (maintenanceActive) {
         return [];
       }
@@ -220,7 +221,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           handleClick={handleClickFunction}
           isDarkMode={initialState?.isDarkMode}
         />,
-        <SelectLang key='SelectLang' />,
+        <SelectLangAction key='SelectLang' />,
         <Question key='doc' />,
       ];
       if (!initialState?.currentUser) {
@@ -237,6 +238,32 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         <Notification key='Notification' />,
         ...publicActions,
       ];
+
+      if (headerProps.isMobile) {
+        actions.unshift(
+          <button
+            aria-label={formatMessage({
+              id: 'app.setting.navigationmode',
+              defaultMessage: 'Navigation Mode',
+            })}
+            className='tg-pro-layout-mobile-menu-action'
+            key='mobile-navigation'
+            type='button'
+            onClick={(event) => {
+              const nativeTrigger = event.currentTarget
+                .closest('[data-testid="pro-layout-global-header"]')
+                ?.querySelector<HTMLElement>('.ant-pro-global-header-collapsed-button');
+              if (nativeTrigger) {
+                nativeTrigger.click();
+                return;
+              }
+              headerProps.onCollapse?.(!headerProps.collapsed);
+            }}
+          >
+            <MenuOutlined aria-hidden />
+          </button>,
+        );
+      }
 
       if (canViewDashboard) {
         actions.splice(
@@ -287,12 +314,18 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             render: () => {
               return (
                 <AvatarDropdown>
-                  <div
+                  <button
+                    aria-haspopup='menu'
+                    aria-label={formatMessage({
+                      id: 'menu.account.center',
+                      defaultMessage: 'Account Center',
+                    })}
                     className='tg-global-header-avatar-trigger'
                     data-testid='docs-capture-authenticated'
+                    type='button'
                   >
                     <AvatarName />
-                  </div>
+                  </button>
                 </AvatarDropdown>
               );
             },
@@ -350,9 +383,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           />
           {renderedChildren}
           {isDev && !maintenanceActive && (
-            <SettingDrawer
+            <AccessibleSettingDrawer
+              closeLabel={`${formatMessage({ id: 'app.settings.close', defaultMessage: 'Close' })} ${formatMessage({ id: 'app.setting.pagestyle', defaultMessage: 'Page style setting' })}`}
               disableUrlParams
               enableDarkTheme
+              openLabel={`${formatMessage({ id: 'app.settings.open', defaultMessage: 'Open' })} ${formatMessage({ id: 'app.setting.pagestyle', defaultMessage: 'Page style setting' })}`}
               settings={initialState?.settings}
               onSettingChange={(settings) => {
                 setInitialState((preInitialState: any) => ({
@@ -407,6 +442,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     ...initialState?.settings,
+    collapsedButtonRender: (_, defaultDom) =>
+      renderAccessibleCollapsedButton(
+        formatMessage({
+          id: 'app.setting.navigationmode',
+          defaultMessage: 'Navigation Mode',
+        }),
+        defaultDom,
+      ),
     title: appTitle,
   };
 };

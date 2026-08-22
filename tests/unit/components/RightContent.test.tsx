@@ -3,7 +3,7 @@
  * Path: src/components/RightContent/index.tsx
  */
 
-import { DarkMode, Question, SelectLang } from '@/components/RightContent';
+import { DarkMode, Question, SelectLang, SelectLangAction } from '@/components/RightContent';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
@@ -54,14 +54,9 @@ jest.mock('@umijs/max', () => ({
     selectLangTrigger = trigger;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
-      <button
-        className={globalIconClassName}
-        data-testid='select-lang'
-        type='button'
-        style={style ?? {}}
-      >
+      <span className={globalIconClassName} data-testid='select-lang' style={style ?? {}}>
         language selector
-      </button>
+      </span>
     );
   },
   useIntl: () => ({
@@ -269,6 +264,15 @@ describe('RightContent Components', () => {
     const { container } = render(<SelectLang />);
 
     expect(container.firstElementChild).toBe(screen.getByTestId('select-lang'));
+  });
+
+  it('wraps the global language selector in one named keyboard button', () => {
+    render(<SelectLangAction />);
+
+    const action = screen.getByRole('button', { name: 'Select a language' });
+    expect(action).toHaveClass('tg-global-language-action');
+    expect(action).toHaveAttribute('aria-haspopup', 'menu');
+    expect(screen.getByTestId('select-lang')).toBeInTheDocument();
   });
 
   it('synthesizes a supported locale entry when Umi omits one', () => {

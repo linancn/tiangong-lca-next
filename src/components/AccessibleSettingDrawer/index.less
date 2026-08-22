@@ -1,0 +1,38 @@
+.tg-pro-setting-drawer-handle {
+  display: none !important;
+}
+
+.tg-setting-drawer-trigger {
+  position: fixed;
+  inset-block-start: 240px;
+  inset-inline-end: 0;
+  z-index: 1001;
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  background: var(--ant-color-primary, #5c246a);
+  border: 0;
+  border-start-start-radius: var(--ant-border-radius-lg, 8px);
+  border-end-start-radius: var(--ant-border-radius-lg, 8px);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--ant-color-primary-hover, #75447f);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary-border, #ad7db8);
+    outline-offset: 2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tg-setting-drawer-trigger {
+    display: none;
+  }
+}

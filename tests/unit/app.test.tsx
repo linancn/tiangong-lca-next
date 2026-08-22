@@ -36,6 +36,7 @@ jest.mock('@/components', () => ({
   Notification: 'notification-center',
   Question: 'question-link',
   SelectLang: 'select-lang',
+  SelectLangAction: 'select-lang',
 }));
 
 jest.mock('@/components/LCIACacheMonitor', () => ({
@@ -59,6 +60,26 @@ jest.mock('@/components/SystemMaintenance/AppBootBoundary', () => ({
 jest.mock('@/components/AccessDenied', () => ({
   __esModule: true,
   default: () => <div data-testid='access-denied'>Localized access denied</div>,
+}));
+
+jest.mock('@/components/AccessibleSettingDrawer', () => ({
+  __esModule: true,
+  default: ({ openLabel, onSettingChange, settings }: any) => {
+    const { SettingDrawer } = require('@ant-design/pro-components');
+    return (
+      <>
+        <button aria-label={openLabel} type='button'>
+          open settings
+        </button>
+        <SettingDrawer
+          collapse={false}
+          prefixCls='tg-pro'
+          settings={settings}
+          onSettingChange={onSettingChange}
+        />
+      </>
+    );
+  },
 }));
 
 jest.mock('@/components/ClassificationCacheMonitor', () => ({
@@ -156,6 +177,7 @@ jest.mock('@ant-design/icons', () => ({
   DashboardOutlined: () => <span data-testid='dashboard-icon'>dashboard-icon</span>,
   DatabaseOutlined: () => <span data-testid='database-icon'>database-icon</span>,
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
+  MenuOutlined: () => <span data-testid='menu-icon'>menu-icon</span>,
 }));
 
 jest.mock('antd', () => ({
@@ -178,11 +200,16 @@ jest.mock('antd', () => ({
 
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
-  SettingDrawer: ({ settings, onSettingChange }: any) => (
+  SettingDrawer: ({ collapse, prefixCls, settings, onCollapseChange, onSettingChange }: any) => (
     <button
+      data-collapse={String(collapse)}
+      data-prefix-cls={prefixCls}
       type='button'
       data-testid='setting-drawer'
-      onClick={() => onSettingChange?.({ navTheme: 'dark' })}
+      onClick={() => {
+        onCollapseChange?.(false);
+        onSettingChange?.({ navTheme: 'dark' });
+      }}
     >
       {JSON.stringify(settings)}
     </button>
@@ -190,6 +217,24 @@ jest.mock('@ant-design/pro-components', () => ({
 }));
 
 describe('app runtime config', () => {
+  it('replaces the ProLayout collapse div with one semantic button', () => {
+    const { renderAccessibleCollapsedButton } = require('@/components/AccessibleCollapsedButton');
+    const onClick = jest.fn();
+    render(
+      renderAccessibleCollapsedButton(
+        'Navigation Mode',
+        <div className='upstream-collapse' onClick={onClick}>
+          menu
+        </div>,
+      ),
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Navigation Mode' });
+    expect(trigger).toHaveClass('upstream-collapse', 'tg-pro-layout-collapse-trigger');
+    fireEvent.click(trigger);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
@@ -679,7 +724,10 @@ describe('app runtime config', () => {
     expect(runtimeLayout.avatarProps?.title.type()).toEqual(
       <span data-testid='avatar-name'>Avatar Name</span>,
     );
-    expect(runtimeLayout.avatarProps?.render?.().props.children.type).toBe('div');
+    const avatarTrigger = runtimeLayout.avatarProps?.render?.().props.children;
+    expect(avatarTrigger.type).toBe('button');
+    expect(avatarTrigger.props.type).toBe('button');
+    expect(avatarTrigger.props['aria-haspopup']).toBe('menu');
     expect(runtimeLayout.footerRender?.().type()).toEqual(<div data-testid='footer'>Footer</div>);
     expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
     render(runtimeLayout.unAccessible);
@@ -705,6 +753,31 @@ describe('app runtime config', () => {
     });
     expect(guardedLayout.childrenRender?.(<div>child</div>)).toBeNull();
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+  });
+
+  it('exposes the mobile menu as one semantic action', () => {
+    const { layout } = require('@/app');
+    const onCollapse = jest.fn();
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState: jest.fn(),
+    });
+
+    const actions = runtimeLayout.actionsRender?.({
+      collapsed: false,
+      isMobile: true,
+      onCollapse,
+    });
+    const menuAction = actions[0];
+
+    expect(menuAction.type).toBe('button');
+    expect(menuAction.props['aria-label']).toBe('Navigation Mode');
+    fireEvent.click(render(menuAction).getByRole('button', { name: 'Navigation Mode' }));
+    expect(onCollapse).toHaveBeenCalledWith(true);
   });
 
   it('adds a national carbon dashboard shortcut for admin users', () => {
@@ -794,6 +867,9 @@ describe('app runtime config', () => {
 
     const rendered = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
     render(rendered);
+
+    expect(screen.getByRole('button', { name: 'Open Page style setting' })).toBeInTheDocument();
+    expect(screen.getByTestId('setting-drawer')).toHaveAttribute('data-prefix-cls', 'tg-pro');
 
     fireEvent.click(screen.getByTestId('setting-drawer'));
 
