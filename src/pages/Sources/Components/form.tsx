@@ -277,8 +277,8 @@ export const SourceForm: FC<Props> = ({
               alt=''
               styles={{ root: { display: 'none' } }}
               preview={{
-                visible: previewOpen,
-                onVisibleChange: (visible) => setPreviewOpen(visible),
+                open: previewOpen,
+                onOpenChange: (open) => setPreviewOpen(open),
                 afterOpenChange: (visible) => !visible && setPreviewImage(''),
               }}
               src={previewImage}

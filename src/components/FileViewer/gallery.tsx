@@ -72,8 +72,8 @@ const FileGallery: FC<Props> = ({ data }) => {
                     }}
                     src={fileUrl.thumbUrl}
                     preview={{
-                      onVisibleChange: (visible) => {
-                        if (visible) {
+                      onOpenChange: (open) => {
+                        if (open) {
                           getOriginalFileUrl(fileUrl.uid, fileUrl.name).then((res) => {
                             updateFileUrls(res.url, index);
                           });
