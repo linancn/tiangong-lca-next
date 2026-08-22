@@ -206,7 +206,7 @@ describe('typed Process required-state read-only trap contract', () => {
     expect(readiness).toContain("page.getByTestId('process-deep-link-state')");
     expect(readiness).toContain("toHaveAttribute('data-auto-check-required', required)");
     expect(readiness).toContain('.toBeGreaterThan(trappedValidationDraftsBeforeMount);');
-    expect(readiness).toContain("drawer.locator('.ant-spin-spinning')");
+    expect(readiness).toContain("toHaveAttribute('data-detail-ready', 'true')");
     expect(readiness).toContain(
       'expect(readTrappedValidationDrafts()).toBe(trappedValidationDraftsBeforeMount);',
     );
@@ -229,6 +229,7 @@ describe('typed Process required-state read-only trap contract', () => {
     expect(initialMount).toBeGreaterThan(navigation);
     expect(localeChange).toBeGreaterThan(initialMount);
     expect(localizedDrawer).toBeGreaterThan(localeChange);
-    expect(source).toContain("drawer.locator('.ant-spin-spinning')");
+    expect(source).toContain("toHaveAttribute('data-detail-ready', 'true')");
+    expect(source).not.toContain('ant-spin-spinning');
   });
 });
