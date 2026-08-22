@@ -84,6 +84,24 @@ describe('HeaderActionIcon', () => {
     expect(screen.getByTestId('badge')).toHaveAttribute('data-offset', '[0,0]');
   });
 
+  it('only derives an accessible label from string titles unless one is explicit', () => {
+    const { rerender } = render(
+      <HeaderActionIcon title={<span>Rich title</span>} icon={<span data-testid='icon' />} />,
+    );
+
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+
+    rerender(
+      <HeaderActionIcon
+        aria-label='Explicit action label'
+        title={<span>Rich title</span>}
+        icon={<span data-testid='icon' />}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Explicit action label' })).toBeInTheDocument();
+  });
+
   it('fires actions from the wrapper click and keyboard handlers', () => {
     const onClick = jest.fn();
 

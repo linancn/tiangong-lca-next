@@ -265,17 +265,17 @@ async function gotoCandidateDocument(
   await expectProcessDeepLink(page, ledger, state, mode);
   await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
   await expect(page.locator('.tg-global-language-selector')).toBeVisible({ timeout: 45_000 });
-  await expect(page.locator('.ant-result-403')).toHaveCount(0, { timeout: 45_000 });
+  await expect(page.getByTestId('access-denied')).toHaveCount(0, { timeout: 45_000 });
   const deepLinkState = page.getByTestId('process-deep-link-state');
   await expect(deepLinkState).toBeAttached({ timeout: 45_000 });
   await expect(deepLinkState).toHaveAttribute('data-route-mode', mode, { timeout: 45_000 });
-  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState });
+  const drawer = page.locator('.tg-process-drawer:visible').filter({ has: deepLinkState });
   await expect(drawer).toHaveCount(1, { timeout: 45_000 });
   if (mode === 'view') {
     await expect(deepLinkState).toHaveAttribute('data-detail-ready', 'true', { timeout: 45_000 });
   }
   if (waitForDrawerIdle) {
-    await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
+    await expect(deepLinkState).toHaveAttribute('data-detail-ready', 'true', { timeout: 45_000 });
   }
 }
 
@@ -289,7 +289,7 @@ async function selectLocaleThroughHeader(
 }
 
 function getLocalizedProcessViewDrawer(page: Page, locale: SupportedAppLocale) {
-  return page.locator('.ant-drawer-content:visible').filter({
+  return page.locator('.tg-process-drawer:visible').filter({
     has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {
       exact: true,
     }),
@@ -523,7 +523,7 @@ test('delayed old-locale classification and location responses never overwrite t
   for (const [fixtureIndex, fixture] of consumerFixtures.entries()) {
     for (const [localePairIndex, { currentDefinition, staleDefinition }] of localePairs.entries()) {
       await test.step(`${fixture.id}: ${staleDefinition.appLocale} cannot overwrite ${currentDefinition.appLocale}`, async () => {
-        const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+        const mountedProcessDrawer = page.locator('.tg-process-drawer:visible');
         const expectsMountedProcessDrawer = fixtureIndex > 0 || localePairIndex > 0;
         if (expectsMountedProcessDrawer) {
           await expect(mountedProcessDrawer).toHaveCount(1);
@@ -721,7 +721,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
   for (const [index, definition] of definitions.entries()) {
     await test.step(`${definition.appLocale} reload rejects both stale cache scopes`, async () => {
       const staleDefinition = definitions[(index + 1) % definitions.length]!;
-      const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+      const mountedProcessDrawer = page.locator('.tg-process-drawer:visible');
       const expectsMountedProcessDrawer = index > 0;
       if (expectsMountedProcessDrawer) {
         // Each completed iteration deliberately leaves its deep-linked Process drawer mounted.
@@ -835,7 +835,7 @@ test('process edit form consumes current classification and location assets in e
 
   for (const [index, definition] of getReadableLocaleDefinitions().entries()) {
     await test.step(`${definition.appLocale} process form reference controls`, async () => {
-      const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+      const mountedProcessDrawer = page.locator('.tg-process-drawer:visible');
       const expectsMountedProcessDrawer = index > 0;
       if (expectsMountedProcessDrawer) {
         await expect(mountedProcessDrawer).toHaveCount(1);
@@ -859,67 +859,63 @@ test('process edit form consumes current classification and location assets in e
         }),
       ).toBeVisible();
 
-      const drawer = page.locator('.ant-drawer:visible');
-      const locationFormItem = drawer
-        .locator('.ant-form-item')
-        .filter({
-          has: page.getByText(
-            getLocaleMessage(
-              definition.appLocale,
-              'pages.process.view.processInformation.location',
-            ),
-            { exact: true },
-          ),
-        })
-        .first();
-      const localizedLocation = `${referenceFixture.location.code} (${referenceFixture.location.labels[definition.languageCode]})`;
-      await expect(locationFormItem.locator('.ant-select-selection-item')).toHaveText(
-        localizedLocation,
+      const drawer = page.locator('.tg-process-drawer:visible');
+      const locationLabel = getLocaleMessage(
+        definition.appLocale,
+        'pages.process.view.processInformation.location',
       );
-      const locationCombobox = locationFormItem.getByRole('combobox');
-      await locationFormItem.locator('.ant-select-selector').click();
+      const locationCombobox = drawer.getByRole('combobox', {
+        name: locationLabel,
+        exact: true,
+      });
+      const localizedLocation = `${referenceFixture.location.code} (${referenceFixture.location.labels[definition.languageCode]})`;
+      await expect(locationCombobox).toHaveCount(1);
+      await expect(drawer.getByText(localizedLocation, { exact: true })).toBeVisible();
+      await locationCombobox.click();
       const listboxId = await locationCombobox.getAttribute('aria-controls');
       if (!listboxId) {
         throw new Error('Location selector did not expose its active listbox identity.');
       }
-      const locationPopup = page.locator('.ant-select-dropdown:visible').filter({
-        has: page.locator(`[role="listbox"][id="${listboxId}"]`),
+      const locationListbox = page.locator(`[role="listbox"][id="${listboxId}"]`);
+      await expect(locationListbox).toBeAttached();
+      const locationPopup = page.locator('.tg-location-reference-popup:visible').filter({
+        has: locationListbox,
       });
       await expect(locationPopup).toHaveCount(1);
-      const visibleOptionContent = locationPopup
-        .locator('.ant-select-item-option-content')
+      const visibleLocationOption = locationPopup
+        .locator('.tg-location-reference-option')
         .filter({ hasText: localizedLocation });
-      await expect(visibleOptionContent).toHaveCount(1);
-      await expect(visibleOptionContent).toHaveText(localizedLocation);
-      await expect(visibleOptionContent).toBeVisible();
+      await expect(visibleLocationOption).toHaveCount(1);
+      await expect(visibleLocationOption).toHaveText(localizedLocation);
+      await expect(visibleLocationOption).toBeVisible();
       await page.keyboard.press('Escape');
 
-      const classificationFormItem = drawer
-        .locator('.ant-form-item')
-        .filter({
-          has: page.getByText(
-            getLocaleMessage(definition.appLocale, 'pages.contact.classification'),
-            { exact: true },
-          ),
-        })
-        .first();
+      const classificationLabel = getLocaleMessage(
+        definition.appLocale,
+        'pages.contact.classification',
+      );
+      const classificationCombobox = drawer.getByRole('combobox', {
+        name: classificationLabel,
+        exact: true,
+      });
       const classificationPath =
         referenceFixture.classification.labels[definition.languageCode].join('/');
-      await expect(classificationFormItem.locator('.ant-select-selection-item')).toHaveText(
-        classificationPath,
-      );
-      await classificationFormItem.locator('.ant-select-selector').click();
+      await expect(classificationCombobox).toHaveCount(1);
+      await expect(drawer.getByText(classificationPath, { exact: true })).toBeVisible();
+      await classificationCombobox.click();
       const classificationLeaf =
         referenceFixture.classification.labels[definition.languageCode][
           referenceFixture.classification.labels[definition.languageCode].length - 1
         ]!;
-      await classificationFormItem.locator('input[role="combobox"]').fill(classificationLeaf);
-      await expect(
-        page
-          .locator('.ant-select-tree:visible')
-          .getByText(classificationLeaf, { exact: true })
-          .first(),
-      ).toBeVisible();
+      await classificationCombobox.fill(classificationLeaf);
+      const classificationPopup = page.locator('.tg-classification-reference-popup:visible');
+      await expect(classificationPopup).toHaveCount(1);
+      const visibleClassificationLeaf = classificationPopup
+        .locator('.tg-classification-reference-node-title')
+        .filter({ hasText: classificationLeaf });
+      await expect(visibleClassificationLeaf).toHaveCount(1);
+      await expect(visibleClassificationLeaf).toHaveText(classificationLeaf);
+      await expect(visibleClassificationLeaf).toBeVisible();
       await page.keyboard.press('Escape');
     });
   }

@@ -52,7 +52,7 @@ jest.mock('@ant-design/pro-components', () => {
 
   const LocaleAwareProTableMock = (props: any) => {
     const latestPropsRef = React.useRef(props);
-    const lastSuccessfulResultRef = React.useRef();
+    const lastSuccessfulResultRef = React.useRef(undefined);
     const paramsKey = JSON.stringify(props.params ?? {});
     const previousParamsKeyRef = React.useRef(paramsKey);
     latestPropsRef.current = props;

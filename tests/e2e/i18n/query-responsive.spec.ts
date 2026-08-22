@@ -15,10 +15,7 @@ test('locale switching preserves hash query at a narrow viewport', async ({ page
   for (const localeDefinition of LOCALE_REGISTRY) {
     const languageControl = await waitForRenderedLoginControl(page);
     await languageControl.click();
-    await page
-      .locator('.ant-dropdown-menu-item')
-      .filter({ hasText: localeDefinition.nativeLabel })
-      .click();
+    await page.getByRole('menuitem').filter({ hasText: localeDefinition.nativeLabel }).click();
     await expect.poll(() => readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
     expect(new URL(page.url()).hash).toContain('codex-e2e=query-preserved');
     await waitForRenderedLoginControl(page);

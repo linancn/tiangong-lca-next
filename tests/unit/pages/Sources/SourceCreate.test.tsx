@@ -115,17 +115,27 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Button,
-    Drawer,
-    ConfigProvider,
-    Space,
-    Spin,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Drawer,
+      ConfigProvider,
+      Space,
+      Spin,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 const getMockAntdMessage = () => jest.requireMock('antd').message as Record<string, jest.Mock>;
@@ -457,7 +467,7 @@ describe('SourceCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Version' }));
 
     const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
     await waitFor(() => expect(mockGetSourceDetail).toHaveBeenCalledWith('source-1', '1.0.0'));
@@ -499,7 +509,7 @@ describe('SourceCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Version' }));
 
     const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));

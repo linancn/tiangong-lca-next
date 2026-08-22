@@ -44,7 +44,7 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             defaultMessage='View Unit'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -53,57 +53,83 @@ const UnitView: FC<Props> = ({ id, data, buttonType }) => {
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
         {/* <Spin spinning={spinning}> */}
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
-            }
-            styles={{ label: { width: '160px' } }}
-          >
-            {toSuperscript(viewData.name ?? '-')}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
+              ),
+              styles: {
+                label: {
+                  width: '160px',
+                },
+              },
+              children: toSuperscript(viewData.name ?? '-'),
+            },
+          ]}
+        />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.unitgroup.generalComment' defaultMessage='General comment' />
         </Divider>
         <LangTextItemDescription data={viewData.generalComment} />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.meanValue'
-                defaultMessage='Mean value (of unit)'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {viewData.meanValue ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.meanValue'
+                  defaultMessage='Mean value (of unit)'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '180px',
+                },
+              },
+              children: viewData.meanValue ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.quantitativeReference'
-                defaultMessage='Quantitative reference'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {<QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.quantitativeReference'
+                  defaultMessage='Quantitative reference'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '180px',
+                },
+              },
+              children: (
+                <QuantitativeReferenceIcon value={Boolean(viewData.quantitativeReference)} />
+              ),
+            },
+          ]}
+        />
         <br />
         {/* </Spin> */}
       </Drawer>

@@ -29,19 +29,19 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
-            >
-              <Descriptions.Item
-                styles={{ label: { width: '120px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.scope.name'
-                    defaultMessage='Scope name'
-                  />
-                }
-              >
-                {getScopeName(item['@name']) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+              items={[
+                {
+                  styles: { label: { width: '120px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.modellingAndValidation.validation.review.scope.name'
+                      defaultMessage='Scope name'
+                    />
+                  ),
+                  children: getScopeName(item['@name']) || '-',
+                },
+              ]}
+            />
           </Col>
           <Col flex='50' style={{ marginRight: '10px' }}>
             <Descriptions
@@ -50,19 +50,19 @@ const ScopeItemView: FC<Props> = ({ data }) => {
               size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
-            >
-              <Descriptions.Item
-                styles={{ label: { width: '120px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.scope.method.name'
-                    defaultMessage='Method name'
-                  />
-                }
-              >
-                {getMethodName(item['common:method']?.['@name']) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+              items={[
+                {
+                  styles: { label: { width: '120px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.modellingAndValidation.validation.review.scope.method.name'
+                      defaultMessage='Method name'
+                    />
+                  ),
+                  children: getMethodName(item['common:method']?.['@name']) || '-',
+                },
+              ]}
+            />
           </Col>
         </Row>
       ))}

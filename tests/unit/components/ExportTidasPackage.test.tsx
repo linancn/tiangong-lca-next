@@ -84,9 +84,11 @@ jest.mock('antd', () => {
     </div>
   );
   (Radio as any).Group = RadioGroup;
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message: mockMessage });
 
   return {
     ...actual,
+    App,
     message: mockMessage,
     Modal,
     Radio,

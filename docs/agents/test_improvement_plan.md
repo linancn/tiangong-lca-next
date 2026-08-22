@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-21
-lastReviewedCommit: 58c21ab60247acc71ce7754414f78650749c508d
-lastReviewedNote: 'Reviewed for Next Issue #920: the pinned pnpm, isolated-linker compatibility, explicit build policy, and dependency-identity checks extend the maintained validation model without reopening broader strategy work.'
+lastReviewedAt: 2026-08-22
+lastReviewedCommit: 0047e79e83db054a95843b8ed934da048ad741f7
+lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 fixture migration, handle-free browser shims, and focused semantic proof extend the maintained validation model without reopening broader strategy work.'
 ---
 
 # Testing Strategy
@@ -56,7 +56,7 @@ lastReviewedNote: 'Reviewed for Next Issue #920: the pinned pnpm, isolated-linke
 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
-- dependency installation is a governed proof input: the repository pins pnpm, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Ant Design/Babel compatibility patterns, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- dependency installation is a governed proof input: the repository pins pnpm, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes

@@ -1,6 +1,6 @@
 ﻿import type { RequestOptions } from '@@/plugin-request/request';
+import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { getIntl, type RequestConfig } from '@umijs/max';
-import { message, notification } from 'antd';
 
 // 错误处理方案： 错误类型
 enum ErrorShowType {
@@ -51,53 +51,61 @@ export const errorConfig: RequestConfig = {
               // do nothing
               break;
             case ErrorShowType.WARN_MESSAGE:
-              message.warning(errorMessage);
+              dispatchAntdAppAction(({ message }) => message.warning(errorMessage));
               break;
             case ErrorShowType.ERROR_MESSAGE:
-              message.error(errorMessage);
+              dispatchAntdAppAction(({ message }) => message.error(errorMessage));
               break;
             case ErrorShowType.NOTIFICATION:
-              notification.open({
-                description: errorMessage,
-                message: errorCode,
-              });
+              dispatchAntdAppAction(({ notification }) =>
+                notification.open({
+                  description: errorMessage,
+                  title: errorCode,
+                }),
+              );
               break;
             case ErrorShowType.REDIRECT:
               // TODO: redirect
               break;
             default:
-              message.error(errorMessage);
+              dispatchAntdAppAction(({ message }) => message.error(errorMessage));
           }
         }
       } else if (error.response) {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        message.error(
-          getIntl().formatMessage(
-            {
-              id: 'component.request.responseStatus',
-              defaultMessage: 'Response status: {status}',
-            },
-            { status: error.response.status },
+        dispatchAntdAppAction(({ message }) =>
+          message.error(
+            getIntl().formatMessage(
+              {
+                id: 'component.request.responseStatus',
+                defaultMessage: 'Response status: {status}',
+              },
+              { status: error.response.status },
+            ),
           ),
         );
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
         // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
         // 而在node.js中是 http.ClientRequest 的实例
-        message.error(
-          getIntl().formatMessage({
-            id: 'component.request.noResponse',
-            defaultMessage: 'No response. Please try again.',
-          }),
+        dispatchAntdAppAction(({ message }) =>
+          message.error(
+            getIntl().formatMessage({
+              id: 'component.request.noResponse',
+              defaultMessage: 'No response. Please try again.',
+            }),
+          ),
         );
       } else {
         // 发送请求时出了点问题
-        message.error(
-          getIntl().formatMessage({
-            id: 'component.request.failed',
-            defaultMessage: 'Request failed. Please try again.',
-          }),
+        dispatchAntdAppAction(({ message }) =>
+          message.error(
+            getIntl().formatMessage({
+              id: 'component.request.failed',
+              defaultMessage: 'Request failed. Please try again.',
+            }),
+          ),
         );
       }
     },
@@ -119,11 +127,13 @@ export const errorConfig: RequestConfig = {
       const { data } = response as unknown as ResponseStructure;
 
       if (data?.success === false) {
-        message.error(
-          getIntl().formatMessage({
-            id: 'component.request.failed',
-            defaultMessage: 'Request failed. Please try again.',
-          }),
+        dispatchAntdAppAction(({ message }) =>
+          message.error(
+            getIntl().formatMessage({
+              id: 'component.request.failed',
+              defaultMessage: 'Request failed. Please try again.',
+            }),
+          ),
         );
       }
       return response;

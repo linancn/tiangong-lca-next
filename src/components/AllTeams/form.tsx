@@ -48,7 +48,7 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
   };
 
   return (
-    <Space direction='vertical' style={{ width: '100%' }}>
+    <Space orientation='vertical' style={{ width: '100%' }}>
       <Card
         size='small'
         title={<FormattedMessage id='component.allTeams.form.title' defaultMessage='Team Name' />}
@@ -131,7 +131,7 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
         size='small'
         title={<FormattedMessage id='component.allTeams.logo.title' defaultMessage='Team Logo' />}
       >
-        <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+        <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
           <Form.Item
             label={
               <FormattedMessage
@@ -151,6 +151,12 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
                   });
 
                   return false;
+                }}
+                onChange={({ fileList }) => {
+                  if (fileList.length === 0) {
+                    setLightLogo([]);
+                    setLightLogoPreviewUrl('');
+                  }
                 }}
                 onRemove={() => removeLogo('lightLogo')}
                 maxCount={1}
@@ -188,6 +194,12 @@ const TeamForm: FC<Props> = ({ onLogoChange, lightLogoProps, darkLogoProps }) =>
                     setDarkLogo([file]);
                   });
                   return false;
+                }}
+                onChange={({ fileList }) => {
+                  if (fileList.length === 0) {
+                    setDarkLogo([]);
+                    setDarkLogoPreviewUrl('');
+                  }
                 }}
                 onRemove={() => removeLogo('darkLogo')}
                 maxCount={1}

@@ -170,6 +170,11 @@ jest.mock('@/components', () => ({
   Footer: () => <div data-testid='footer' />,
 }));
 
+jest.mock('@/contexts/AntdThemeSync', () => ({
+  __esModule: true,
+  AntdThemeSync: () => null,
+}));
+
 jest.mock('@/pages/User/Login/Components/LoginTopActions', () => ({
   __esModule: true,
   default: ({ isDarkMode, onDarkModeToggle }: any) => (
@@ -263,8 +268,9 @@ jest.mock('@ant-design/pro-components', () => {
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Alert = ({ message }: any) => <div role='alert'>{message}</div>;
+  const Alert = ({ title }: any) => <div role='alert'>{title}</div>;
   const App = ({ children }: any) => <div>{children}</div>;
+  App.useApp = () => ({ message: mockMessageApi, modal: {}, notification: {} });
   const Button = ({ children, onClick, disabled, loading }: any) => (
     <button
       type='button'

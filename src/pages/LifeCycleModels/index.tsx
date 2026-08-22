@@ -51,7 +51,7 @@ import type {
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
+import { App, Card, Checkbox, Col, Input, Row, Space } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -73,6 +73,7 @@ import LifeCycleModelView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
+  const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
@@ -103,7 +104,7 @@ const TableList: FC = () => {
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(undefined);
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');

@@ -34,9 +34,9 @@ jest.mock('antd', () => {
   const antd = require('../../mocks/antd').createAntdMock();
   return {
     ...antd,
-    Alert: ({ action, description, message, type }: any) => (
+    Alert: ({ action, description, title, type }: any) => (
       <div data-testid={`alert-${type}`} role='alert'>
-        <div>{message}</div>
+        <div>{title}</div>
         {description ? <div>{description}</div> : null}
         {action}
       </div>

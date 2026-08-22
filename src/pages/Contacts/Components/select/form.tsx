@@ -7,9 +7,14 @@ import { genContactFromData } from '@/services/contacts/util';
 import { getRefData } from '@/services/general/api';
 import { getLanguageDisplayName } from '@/services/general/contentLanguageRegistry';
 import { jsonToList } from '@/services/general/util';
+import {
+  RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE,
+  RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE,
+  RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS,
+} from '@/style/responsiveForm';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
-import type { Rule } from 'antd/lib/form';
+import type { Rule } from 'antd/es/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { FormattedMessage, useIntl, useModel } from 'umi';
 import ContactEdit from '../edit';
@@ -22,7 +27,7 @@ type Props = {
   name: Array<string | number>;
   label: ReactNode | string;
   lang: string;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   rules?: Rule[];
   showRequiredLabel?: boolean;
@@ -193,7 +198,7 @@ const ContactSelectForm: FC<Props> = ({
         )
       }
     >
-      <Space direction='horizontal'>
+      <Space {...RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS}>
         <Form.Item
           required={false}
           label={
@@ -203,6 +208,7 @@ const ContactSelectForm: FC<Props> = ({
             />
           }
           name={[...name, '@refObjectId']}
+          style={RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE}
           rules={[
             ...notRequiredRules,
             ...(isRequired
@@ -222,9 +228,15 @@ const ContactSelectForm: FC<Props> = ({
               : []),
           ]}
         >
-          <Input disabled={true} style={{ width: '350px', color: token.colorTextDescription }} />
+          <Input
+            disabled={true}
+            style={{
+              ...RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE,
+              color: token.colorTextDescription,
+            }}
+          />
         </Form.Item>
-        <Space direction='horizontal' style={{ marginTop: '6px' }}>
+        <Space orientation='horizontal' style={{ marginTop: '6px' }}>
           {!id && !disabled && (
             <ContactSelectDrawer buttonType='text' lang={lang} onData={handletContactData} />
           )}
@@ -296,7 +308,7 @@ const ContactSelectForm: FC<Props> = ({
       >
         <Input disabled={true} style={{ color: token.colorTextDescription }} />
       </Form.Item>
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage id='pages.contact.shortDescription' defaultMessage='Short description' />
       </Divider>
       <Form.Item>

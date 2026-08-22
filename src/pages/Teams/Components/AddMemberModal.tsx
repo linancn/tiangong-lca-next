@@ -1,6 +1,7 @@
 import { addTeamMemberApi } from '@/services/teams/api';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Form, FormInstance, Input, message, Modal } from 'antd';
+import { Form, FormInstance, Input, Modal } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
 interface AddMemberModalProps {
@@ -11,6 +12,7 @@ interface AddMemberModalProps {
 }
 
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, teamId, onSuccess }) => {
+  const { message } = useAntdAppApi();
   const formRef = useRef<FormInstance>(null);
   const [loading, setLoading] = useState(false);
   const intl = useIntl();

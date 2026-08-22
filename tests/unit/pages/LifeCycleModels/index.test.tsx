@@ -3,6 +3,12 @@ import LifeCycleModelsPage from '@/pages/LifeCycleModels';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  __esModule: true,
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action(jest.requireMock('antd').App.useApp()),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -270,7 +276,11 @@ jest.mock('antd', () => {
   const message = {
     success: (...args: any[]) => mockMessageSuccess(...args),
     error: jest.fn(),
+    warning: jest.fn(),
+    info: jest.fn(),
   };
+
+  const App = { useApp: () => ({ message }) };
 
   const theme = {
     useToken: () => ({
@@ -293,6 +303,7 @@ jest.mock('antd', () => {
     Row,
     Space,
     Tooltip,
+    App,
     message,
     theme,
   };
@@ -336,7 +347,8 @@ jest.mock('@ant-design/pro-components', () => {
       async (sort: Record<string, string> = {}, requestParams = pageInfoRef.current) => {
         const result = await requestRef.current?.({ ...requestParams, ...paramsRef.current }, sort);
         if (result?.success !== false) {
-          setRows(result?.data ?? []);
+          const { act: testingLibraryAct } = require('@testing-library/react');
+          testingLibraryAct(() => setRows(result?.data ?? []));
         }
         return result;
       },
@@ -517,7 +529,7 @@ describe('LifeCycleModelsPage', () => {
     renderWithProviders(<LifeCycleModelsPage />);
 
     await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
-    expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
+    expect(await screen.findByText('Lifecycle model 1')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
@@ -652,7 +664,7 @@ describe('LifeCycleModelsPage', () => {
 
     await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
 
-    const contributeButtons = screen.getAllByRole('button', { name: /contribute-action/i });
+    const contributeButtons = await screen.findAllByRole('button', { name: /contribute-action/i });
     expect(contributeButtons).toHaveLength(2);
     expect(contributeButtons[1]).toBeDisabled();
 
@@ -846,7 +858,7 @@ describe('LifeCycleModelsPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith(
+      expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
@@ -865,7 +877,7 @@ describe('LifeCycleModelsPage', () => {
       ),
     );
     expect(await screen.findByText('Referenced model')).toBeInTheDocument();
-    expect(message.error).toHaveBeenCalledWith(
+    expect(message.info).toHaveBeenCalledWith(
       'Showing up to the first 50 reference lookup results.',
     );
 

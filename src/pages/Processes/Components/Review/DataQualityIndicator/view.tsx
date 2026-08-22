@@ -33,19 +33,23 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
               size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
-            >
-              <Descriptions.Item
-                styles={{ label: { width: '160px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
-                    defaultMessage='Name of data quality indicator'
-                  />
-                }
-              >
-                {getIndicatorName(item['@name'])}
-              </Descriptions.Item>
-            </Descriptions>
+              items={[
+                {
+                  styles: {
+                    label: {
+                      width: '160px',
+                    },
+                  },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
+                      defaultMessage='Name of data quality indicator'
+                    />
+                  ),
+                  children: getIndicatorName(item['@name']),
+                },
+              ]}
+            />
           </Col>
           <Col flex='50' style={{ marginRight: '10px' }}>
             <Descriptions
@@ -54,19 +58,23 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
               size='small'
               column={1}
               style={{ marginBottom: index < data.length - 1 ? '16px' : 0 }}
-            >
-              <Descriptions.Item
-                styles={{ label: { width: '160px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'
-                    defaultMessage='Value of data quality indicator'
-                  />
-                }
-              >
-                {getIndicatorValue(item['@value'])}
-              </Descriptions.Item>
-            </Descriptions>
+              items={[
+                {
+                  styles: {
+                    label: {
+                      width: '160px',
+                    },
+                  },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'
+                      defaultMessage='Value of data quality indicator'
+                    />
+                  ),
+                  children: getIndicatorValue(item['@value']),
+                },
+              ]}
+            />
           </Col>
         </Row>
       ))}

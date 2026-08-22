@@ -1,6 +1,7 @@
 import ToolBarButton from '@/components/ToolBarButton';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { ImportOutlined, InboxOutlined } from '@ant-design/icons';
-import { Modal, Upload, message } from 'antd';
+import { Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ interface ImportDataProps {
 }
 
 const ImportData: FC<ImportDataProps> = ({ onJsonData, disabled = false }) => {
+  const { message } = useAntdAppApi();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
@@ -131,17 +133,17 @@ const ImportData: FC<ImportDataProps> = ({ onJsonData, disabled = false }) => {
           defaultMessage: 'Cancel',
         })}
       >
-        <Upload.Dragger {...uploadProps}>
-          <p className='ant-upload-drag-icon'>
+        <Upload.Dragger {...uploadProps} prefixCls='tg-import-upload'>
+          <p className='tg-import-upload-drag-icon'>
             <InboxOutlined />
           </p>
-          <p className='ant-upload-text'>
+          <p className='tg-import-upload-text'>
             <FormattedMessage
               id='component.importData.uploadText'
               defaultMessage='Click or drag file to this area to upload'
             />
           </p>
-          <p className='ant-upload-hint'>
+          <p className='tg-import-upload-hint'>
             <FormattedMessage
               id='component.importData.uploadHint'
               defaultMessage='Upload one JSON file at a time.'

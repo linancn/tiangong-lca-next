@@ -22,7 +22,7 @@ import {
   SyncOutlined,
 } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Modal, message } from 'antd';
+import { App } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   formatDashboardExchangeAmount,
@@ -961,6 +961,7 @@ function GraphLoadState({
 
 export default function ProcessFlowGraphPanel() {
   const intl = useIntl();
+  const { message, modal } = App.useApp();
   const [data, setData] = useState<ProcessFlowGraphData | undefined>();
   const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -991,8 +992,8 @@ export default function ProcessFlowGraphPanel() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [exitingInspector, setExitingInspector] = useState<InspectorSnapshot | undefined>();
   const [isLeftRailCollapsed, setIsLeftRailCollapsed] = useState(true);
-  const inspectorExitTimeoutRef = useRef<number | undefined>();
-  const graphCacheJobCompletionRefreshRef = useRef<string | undefined>();
+  const inspectorExitTimeoutRef = useRef<number | undefined>(undefined);
+  const graphCacheJobCompletionRefreshRef = useRef<string | undefined>(undefined);
   const canvasToolbarRef = useRef<HTMLDivElement | null>(null);
   const [canvasToolbarWidth, setCanvasToolbarWidth] = useState<number>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
@@ -1532,7 +1533,7 @@ export default function ProcessFlowGraphPanel() {
   }, []);
 
   const handleTriggerGraphCacheJob = useCallback(() => {
-    Modal.confirm({
+    modal.confirm({
       title: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.title' }),
       content: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.content' }),
       okText: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.run' }),
@@ -1585,7 +1586,7 @@ export default function ProcessFlowGraphPanel() {
         }
       },
     });
-  }, [intl]);
+  }, [intl, message, modal]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1690,7 +1691,7 @@ export default function ProcessFlowGraphPanel() {
         graphCacheJob.errorMessage || getGraphCacheJobStatusLabel(intl, graphCacheJob),
       );
     }
-  }, [graphCacheJob, intl, reloadProcessFlowGraphCacheView]);
+  }, [graphCacheJob, intl, message, reloadProcessFlowGraphCacheView]);
 
   const mapButtonLabel =
     isGeoMapMode && mapScope === 'world'

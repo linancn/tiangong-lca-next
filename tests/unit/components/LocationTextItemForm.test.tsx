@@ -32,8 +32,9 @@ jest.mock('antd', () => {
   const actual = jest.requireActual('antd');
   const React = require('react');
 
-  const Select = ({ options = [], onChange, filterOption }: any) => {
+  const Select = ({ options = [], onChange, showSearch }: any) => {
     const [keyword, setKeyword] = React.useState('');
+    const filterOption = typeof showSearch === 'object' ? showSearch.filterOption : undefined;
     latestSelectProps = { options, filterOption };
 
     const filteredOptions = options.filter((option: any) =>
@@ -163,7 +164,7 @@ describe('LocationTextItemForm', () => {
       expect(screen.queryByText('CN (China)')).not.toBeInTheDocument();
     });
 
-    expect(container.querySelector('.ant-form-item-required')).toHaveTextContent('Location');
+    expect(container).toHaveTextContent('*Location');
   });
 
   it('falls back to an empty option list when the service payload has no locations', async () => {

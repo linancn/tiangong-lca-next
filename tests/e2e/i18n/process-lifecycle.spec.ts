@@ -35,7 +35,7 @@ async function expectDrawerDescriptionValue(drawer: Locator, expectedValue: stri
 
   const row = value.locator('xpath=ancestor::tr[1]');
   await expect(row).toHaveCount(1);
-  await expect(row.locator('.ant-descriptions-item-content')).toHaveText(expectedValue);
+  await expect(row.getByText(expectedValue, { exact: true })).toHaveCount(1);
 }
 
 async function gotoProcessViewReady(
@@ -61,14 +61,14 @@ async function gotoProcessViewReady(
   await expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl);
   await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
   await expect(page.locator('.tg-global-language-selector')).toBeVisible({ timeout: 45_000 });
-  await expect(page.locator('.ant-result-403')).toHaveCount(0, { timeout: 45_000 });
+  await expect(page.getByTestId('access-denied')).toHaveCount(0, { timeout: 45_000 });
   const state = page.getByTestId('process-deep-link-state');
   await expect(state).toBeAttached({ timeout: 45_000 });
   await expect(state).toHaveAttribute('data-route-mode', 'view', { timeout: 45_000 });
-  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  const drawer = page.locator('.tg-process-drawer:visible').filter({ has: state });
   await expect(drawer).toHaveCount(1, { timeout: 45_000 });
   await expect(drawer).toBeVisible({ timeout: 45_000 });
-  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
+  await expect(state).toHaveAttribute('data-detail-ready', 'true', { timeout: 45_000 });
 }
 
 test('codex-e2e process renders every registry-backed content language', async ({
@@ -96,7 +96,7 @@ test('codex-e2e process renders every registry-backed content language', async (
     const scenario = resolveLocaleContentE2EScenario(getLocaleCapability(locale));
     await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
     await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
-    const viewDrawer = page.locator('.ant-drawer-content:visible').filter({
+    const viewDrawer = page.locator('.tg-process-drawer:visible').filter({
       has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {
         exact: true,
       }),
@@ -119,14 +119,9 @@ test('codex-e2e process renders every registry-backed content language', async (
 
             const languageRow = markerValue.locator('xpath=ancestor::tr[1]');
             await expect(languageRow).toHaveCount(1);
-            const labelCell = languageRow.locator('.ant-descriptions-item-label');
-            const valueCell = languageRow.locator('.ant-descriptions-item-content');
-            await expect(labelCell).toHaveCount(1);
-            await expect(labelCell).toHaveText(nativeLabel);
-            await expect(labelCell).not.toHaveText(/^\s*-\s*$/u);
-            await expect(valueCell).toHaveCount(1);
-            await expect(valueCell).toHaveText(marker);
-            await expect(valueCell).not.toHaveText(/^\s*-\s*$/u);
+            await expect(languageRow.getByText(nativeLabel, { exact: true })).toHaveCount(1);
+            await expect(languageRow.getByText(marker, { exact: true })).toHaveCount(1);
+            await expect(languageRow.getByText(/^\s*-\s*$/u)).toHaveCount(0);
           }
         }
         break;

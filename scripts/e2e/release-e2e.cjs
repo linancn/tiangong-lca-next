@@ -399,6 +399,7 @@ function parseOptions(command, argv) {
     install: new Set(['format', 'help', 'offline', 'output']),
     'qualification-key': new Set(['format', 'help', 'output']),
     qualify: new Set(['format', 'help', 'offline', 'output', 'proof']),
+    resume: new Set(),
     run: new Set([
       'allow-production-data',
       'authenticated',

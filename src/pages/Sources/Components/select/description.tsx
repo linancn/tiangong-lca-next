@@ -14,23 +14,27 @@ type Props = {
 const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
   const dataList: ReferenceItem[] = Array.isArray(data) ? data : data ? [data] : [];
   return (
-    <Space direction='vertical' style={{ width: '100%' }}>
+    <Space orientation='vertical' style={{ width: '100%' }}>
       {dataList.length === 0 ? (
         <Card size='small' title={title}>
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.source.refObjectId'
-                  defaultMessage='Reference source data set identifier'
-                />
-              }
-              styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
-            >
-              -
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.source.refObjectId'
+                    defaultMessage='Reference source data set identifier'
+                  />
+                ),
+                children: '-',
+              },
+            ]}
+          />
         </Card>
       ) : (
         dataList.map((item, index: number) => (
@@ -45,21 +49,25 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
             key={item?.['@refObjectId'] ?? index}
           >
             <div>
-              <Space direction='horizontal'>
-                <Descriptions bordered size={'small'} column={1}>
-                  <Descriptions.Item
-                    key={0}
-                    label={
-                      <FormattedMessage
-                        id='pages.source.refObjectId'
-                        defaultMessage='Reference source data set identifier'
-                      />
-                    }
-                    styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
-                  >
-                    {item?.['@refObjectId'] ?? '-'}
-                  </Descriptions.Item>
-                </Descriptions>
+              <Space orientation='horizontal'>
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.source.refObjectId'
+                          defaultMessage='Reference source data set identifier'
+                        />
+                      ),
+                      children: item?.['@refObjectId'] ?? '-',
+                    },
+                  ]}
+                />
                 {item?.['@refObjectId'] && (
                   <SourceView
                     id={item?.['@refObjectId']}
@@ -71,16 +79,24 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
               </Space>
               <br />
               <br />
-              <Descriptions bordered size={'small'} column={1}>
-                <Descriptions.Item
-                  key={0}
-                  label={<FormattedMessage id='pages.contact.version' defaultMessage='Version' />}
-                  styles={{ label: { width: '140px' } }}
-                >
-                  {item?.['@version'] ?? '-'}
-                </Descriptions.Item>
-              </Descriptions>
-              <Divider orientationMargin='0' orientation='left' plain>
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: <FormattedMessage id='pages.contact.version' defaultMessage='Version' />,
+                    styles: {
+                      label: {
+                        width: '140px',
+                      },
+                    },
+                    children: item?.['@version'] ?? '-',
+                  },
+                ]}
+              />
+              <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                 <FormattedMessage
                   id='pages.contact.shortDescription'
                   defaultMessage='Short description'

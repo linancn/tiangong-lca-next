@@ -122,6 +122,11 @@ jest.mock('antd', () => {
       </div>
     ) : null;
   ModalComponent.confirm = jest.fn();
+  const App = ({ children }: any) => <>{children}</>;
+  App.useApp = () => ({
+    message,
+    modal: { confirm: ModalComponent.confirm },
+  });
   const Drawer = ({ open, children, extra }: any) =>
     open ? (
       <div data-testid='drawer'>
@@ -183,21 +188,25 @@ jest.mock('antd', () => {
       </button>
     </div>
   );
-  const Select = ({ value, options = [], onChange, ...rest }: any) => (
-    <select value={value} onChange={(event) => onChange?.(event.target.value)} {...rest}>
-      {options.map((option: any) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
+  const Select = ({ value, options = [], onChange, labelRender, ...rest }: any) => {
+    void labelRender;
+    return (
+      <select value={value} onChange={(event) => onChange?.(event.target.value)} {...rest}>
+        {options.map((option: any) => (
+          <option key={option.value} value={option.value}>
+            {typeof option.label === 'string' ? option.label : option.value}
+          </option>
+        ))}
+      </select>
+    );
+  };
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
 
   return {
     __esModule: true,
+    App,
     Button,
     Card,
     Col,

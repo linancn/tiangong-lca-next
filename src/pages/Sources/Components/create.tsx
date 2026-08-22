@@ -19,7 +19,7 @@ import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/st
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, App } from 'antd';
 import type { RcFile, UploadFile } from 'antd/es/upload';
 import path from 'path';
 import type { FC } from 'react';
@@ -29,7 +29,7 @@ import { v4 } from 'uuid';
 import { SourceForm } from './form';
 
 type Props = {
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   lang: string;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
@@ -63,8 +63,9 @@ const SourceCreate: FC<CreateProps> = ({
   importData,
   onClose = () => {},
 }) => {
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<FormSource>();
   const [initData, setInitData] = useState<FormSource>();
   const [activeTabKey, setActiveTabKey] = useState<SourceDataSetObjectKeys>('sourceInformation');
@@ -278,18 +279,8 @@ const SourceCreate: FC<CreateProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={
-          actionType === 'copy' ? (
-            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
-          ) : actionType === 'createVersion' ? (
-            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
-          ) : (
-            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
-          )
-        }
-      >
-        {actionType === 'copy' ? (
+      {actionType === 'copy' ? (
+        <Tooltip title={<FormattedMessage id='pages.button.copy' defaultMessage='Copy' />}>
           <Button
             shape='circle'
             icon={<CopyOutlined />}
@@ -298,23 +289,29 @@ const SourceCreate: FC<CreateProps> = ({
               setDrawerVisible(true);
             }}
           />
-        ) : (
-          <ToolBarButton
-            icon={<PlusOutlined />}
-            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
-            onClick={() => {
-              setDrawerVisible(true);
-            }}
-          />
-        )}
-        {/* {buttonType === 'icon' ? (
+        </Tooltip>
+      ) : (
+        <ToolBarButton
+          icon={<PlusOutlined />}
+          tooltip={
+            actionType === 'createVersion' ? (
+              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+            ) : (
+              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+            )
+          }
+          onClick={() => {
+            setDrawerVisible(true);
+          }}
+        />
+      )}
+      {/* {buttonType === 'icon' ? (
                     <Button shape="circle" icon={<PlusOutlined />} size="small" onClick={() => setDrawerVisible(true)} />
                 ) : (
                     <Button onClick={() => setDrawerVisible(true)}>
                         <FormattedMessage id="options.create" defaultMessage="Edit" />
                     </Button>
                 )} */}
-      </Tooltip>
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
@@ -333,7 +330,7 @@ const SourceCreate: FC<CreateProps> = ({
             />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -342,7 +339,7 @@ const SourceCreate: FC<CreateProps> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

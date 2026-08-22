@@ -64,6 +64,7 @@ const FileGallery: FC<Props> = ({ data }) => {
                   key={index}
                 >
                   <Image
+                    alt={fileUrl.name}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -71,8 +72,8 @@ const FileGallery: FC<Props> = ({ data }) => {
                     }}
                     src={fileUrl.thumbUrl}
                     preview={{
-                      onVisibleChange: (visible) => {
-                        if (visible) {
+                      onOpenChange: (open) => {
+                        if (open) {
                           getOriginalFileUrl(fileUrl.uid, fileUrl.name).then((res) => {
                             updateFileUrls(res.url, index);
                           });
@@ -113,7 +114,7 @@ const FileGallery: FC<Props> = ({ data }) => {
               );
             }
           } else {
-            return <Image width={150} height={150} key={index} src={'error'} />;
+            return <Image alt='' width={150} height={150} key={index} src={'error'} />;
           }
         })}
       </Space>

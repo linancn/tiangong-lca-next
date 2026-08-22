@@ -38,102 +38,133 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
           }
           style={{ marginBottom: '16px' }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance'
-                    defaultMessage='Approval of overall compliance'
-                  />
-                }
-              >
-                {getOptionLabel(
-                  approvalOfOverallComplianceOptions,
-                  item['common:approvalOfOverallCompliance'],
-                ) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+          <Space orientation='vertical' style={{ width: '100%' }}>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.approvalOfOverallCompliance'
+                      defaultMessage='Approval of overall compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(
+                      approvalOfOverallComplianceOptions,
+                      item['common:approvalOfOverallCompliance'],
+                    ) || '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance'
-                    defaultMessage='Nomenclature compliance'
-                  />
-                }
-              >
-                {getOptionLabel(
-                  nomenclatureComplianceOptions,
-                  item['common:nomenclatureCompliance'],
-                ) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.nomenclatureCompliance'
+                      defaultMessage='Nomenclature compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(
+                      nomenclatureComplianceOptions,
+                      item['common:nomenclatureCompliance'],
+                    ) || '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance'
-                    defaultMessage='Methodological compliance'
-                  />
-                }
-              >
-                {getOptionLabel(
-                  methodologicalComplianceOptions,
-                  item['common:methodologicalCompliance'],
-                ) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.methodologicalCompliance'
+                      defaultMessage='Methodological compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(
+                      methodologicalComplianceOptions,
+                      item['common:methodologicalCompliance'],
+                    ) || '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.reviewCompliance'
-                    defaultMessage='Review compliance'
-                  />
-                }
-              >
-                {getOptionLabel(reviewComplianceOptions, item['common:reviewCompliance']) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.reviewCompliance'
+                      defaultMessage='Review compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(reviewComplianceOptions, item['common:reviewCompliance']) || '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.documentationCompliance'
-                    defaultMessage='Documentation compliance'
-                  />
-                }
-              >
-                {getOptionLabel(
-                  documentationComplianceOptions,
-                  item['common:documentationCompliance'],
-                ) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.documentationCompliance'
+                      defaultMessage='Documentation compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(
+                      documentationComplianceOptions,
+                      item['common:documentationCompliance'],
+                    ) || '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size='small' column={1}>
-              <Descriptions.Item
-                styles={{ label: { width: '180px' } }}
-                label={
-                  <FormattedMessage
-                    id='pages.process.validation.modellingAndValidation.compliance.qualityCompliance'
-                    defaultMessage='Quality compliance'
-                  />
-                }
-              >
-                {getOptionLabel(qualityComplianceOptions, item['common:qualityCompliance']) || '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size='small'
+              column={1}
+              items={[
+                {
+                  styles: { label: { width: '180px' } },
+                  label: (
+                    <FormattedMessage
+                      id='pages.process.validation.modellingAndValidation.compliance.qualityCompliance'
+                      defaultMessage='Quality compliance'
+                    />
+                  ),
+                  children:
+                    getOptionLabel(qualityComplianceOptions, item['common:qualityCompliance']) ||
+                    '-',
+                },
+              ]}
+            />
             <br />
             <SourceSelectDescription
               title={

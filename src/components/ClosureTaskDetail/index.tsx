@@ -6,8 +6,9 @@ import {
   type ClosureArtifactV1,
   type ClosureCheckSummaryV1,
 } from '@/services/dataProducts';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Alert, Button, Descriptions, Space, Spin, Tag, Typography, message, theme } from 'antd';
+import { Alert, Button, Descriptions, Space, Spin, Tag, Typography, theme } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useIntl } from 'umi';
 
@@ -193,6 +194,7 @@ export const ClosureArtifactList: React.FC<ClosureArtifactListProps> = ({
   rerunDisabled,
   rerunLoading,
 }) => {
+  const { message } = useAntdAppApi();
   const intl = useIntl();
   const { token } = theme.useToken();
   const [artifactClockNow, setArtifactClockNow] = useState(() => Date.now());
@@ -442,7 +444,7 @@ export const ClosureTaskDetail: React.FC<ClosureTaskDetailProps> = ({
     return (
       <Alert
         type='error'
-        message={error}
+        title={error}
         action={
           <Button
             icon={<ReloadOutlined />}
@@ -465,53 +467,80 @@ export const ClosureTaskDetail: React.FC<ClosureTaskDetailProps> = ({
   return (
     <Space
       data-testid={`closure-task-detail-${closureCheck.closureCheckId}`}
-      direction='vertical'
+      orientation='vertical'
       size={12}
       style={{ width: '100%' }}
     >
-      {error ? <Alert type='warning' message={error} /> : null}
-      <Descriptions bordered column={1} size='small'>
-        <Descriptions.Item label={messages.status}>{closureCheck.runStatus}</Descriptions.Item>
-        <Descriptions.Item label={messages.certificate}>
-          {closureCheck.certificateValidity}
-        </Descriptions.Item>
-        <Descriptions.Item label={messages.completeness}>
-          {closureCheck.scanCompleteness}
-        </Descriptions.Item>
-        <Descriptions.Item label={messages.issues}>
-          <Space size={4} wrap>
-            {(closureCheck.blockerCodes ?? []).length === 0
-              ? '0 blockers'
-              : closureCheck.blockerCodes?.map((code) => <Tag key={code}>{code}</Tag>)}
-          </Space>
-        </Descriptions.Item>
-        {closureCheck.workerJob?.phase ? (
-          <Descriptions.Item label={messages.phase}>
-            {closureCheck.workerJob.phase}
-            {progressPercent === undefined ? '' : ` · ${progressPercent}%`}
-          </Descriptions.Item>
-        ) : null}
-        <Descriptions.Item label={messages.closureCheckId}>
-          <Typography.Text>{closureCheck.closureCheckId}</Typography.Text>
-        </Descriptions.Item>
-        {closureCheck.workerJob?.jobId ? (
-          <Descriptions.Item label={messages.workerJobId}>
-            <Typography.Text>{closureCheck.workerJob.jobId}</Typography.Text>
-          </Descriptions.Item>
-        ) : null}
-      </Descriptions>
+      {error ? <Alert type='warning' title={error} /> : null}
+      <Descriptions
+        bordered
+        column={1}
+        size='small'
+        items={[
+          { key: 'status', label: messages.status, children: closureCheck.runStatus },
+          {
+            key: 'certificate',
+            label: messages.certificate,
+            children: closureCheck.certificateValidity,
+          },
+          {
+            key: 'completeness',
+            label: messages.completeness,
+            children: closureCheck.scanCompleteness,
+          },
+          {
+            key: 'issues',
+            label: messages.issues,
+            children: (
+              <Space size={4} wrap>
+                {(closureCheck.blockerCodes ?? []).length === 0
+                  ? '0 blockers'
+                  : closureCheck.blockerCodes?.map((code) => <Tag key={code}>{code}</Tag>)}
+              </Space>
+            ),
+          },
+          ...(closureCheck.workerJob?.phase
+            ? [
+                {
+                  key: 'phase',
+                  label: messages.phase,
+                  children: (
+                    <>
+                      {closureCheck.workerJob.phase}
+                      {progressPercent === undefined ? '' : ` · ${progressPercent}%`}
+                    </>
+                  ),
+                },
+              ]
+            : []),
+          {
+            key: 'closure-check-id',
+            label: messages.closureCheckId,
+            children: <Typography.Text>{closureCheck.closureCheckId}</Typography.Text>,
+          },
+          ...(closureCheck.workerJob?.jobId
+            ? [
+                {
+                  key: 'worker-job-id',
+                  label: messages.workerJobId,
+                  children: <Typography.Text>{closureCheck.workerJob.jobId}</Typography.Text>,
+                },
+              ]
+            : []),
+        ]}
+      />
       {closureCheck.runStatus === 'failed' ? (
         <Alert
           type='error'
-          message={messages.executionFailed}
+          title={messages.executionFailed}
           description={
             errorSummary ?? closureCheck.workerJob?.errorCode ?? messages.executionFailedFallback
           }
         />
       ) : closureCheck.runStatus === 'cancelled' ? (
-        <Alert type='warning' message={messages.executionCancelled} />
+        <Alert type='warning' title={messages.executionCancelled} />
       ) : ['queued', 'running'].includes(closureCheck.runStatus) ? (
-        <Alert type='info' message={messages.executionPending} />
+        <Alert type='info' title={messages.executionPending} />
       ) : null}
       <ClosureArtifactList canDownloadReport={canDownloadReport} closureCheck={closureCheck} />
     </Space>

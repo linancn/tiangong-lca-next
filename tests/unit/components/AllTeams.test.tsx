@@ -29,13 +29,19 @@ jest.mock('antd', () => {
     open: jest.fn(),
   };
   const modalConfirmMock = jest.fn(({ onOk }: any) => (onOk ? onOk() : undefined));
+  const Modal = {
+    ...actual.Modal,
+    confirm: modalConfirmMock,
+  };
+  const App = require('../../mocks/antdApp').createAntdAppMock({
+    message: messageMock,
+    modal: Modal,
+  });
   return {
     ...actual,
+    App,
     message: messageMock,
-    Modal: {
-      ...actual.Modal,
-      confirm: modalConfirmMock,
-    },
+    Modal,
   };
 });
 
@@ -404,9 +410,8 @@ describe('AllTeams component', () => {
     const rowsAfterDrag = screen.getAllByTestId(/row-/);
     expect(rowsAfterDrag[0]).toHaveTextContent('Beta Team');
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    const clickable = saveIcon.closest('span') ?? saveIcon;
-    fireEvent.click(clickable);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalled();
@@ -417,7 +422,7 @@ describe('AllTeams component', () => {
     expect(payload.map((item) => item.id).sort()).toEqual(['t1', 't2']);
     expect(getMessageMock().success).toHaveBeenCalledWith('Team order updated successfully.');
     await waitFor(() => {
-      expect(screen.queryByRole('img', { name: /save/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /save ranks/i })).not.toBeInTheDocument();
     });
   });
 
@@ -435,8 +440,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalled();
@@ -458,8 +463,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalledWith([
@@ -475,8 +480,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalledWith([
@@ -493,8 +498,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(getMessageMock().error).toHaveBeenCalledWith('Failed to update the team order.');
@@ -510,8 +515,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -529,7 +534,7 @@ describe('AllTeams component', () => {
     expect(getMessageMock().error).toHaveBeenCalledWith(
       'You do not have permission to change the team order.',
     );
-    expect(screen.queryByRole('img', { name: /save/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save ranks/i })).not.toBeInTheDocument();
   });
 
   it('disables destructive actions for members', async () => {
@@ -561,8 +566,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalled();
@@ -648,8 +653,8 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    const saveIcon = await screen.findByRole('img', { name: /save/i });
-    fireEvent.click(saveIcon.closest('span') ?? saveIcon);
+    const saveRanksButton = await screen.findByRole('button', { name: /save ranks/i });
+    fireEvent.click(saveRanksButton);
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalledWith([]);

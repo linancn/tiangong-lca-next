@@ -196,7 +196,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
                 return;
               }
 
-              await expect(assertionPage.locator('.ant-result-403')).toHaveCount(0);
+              await expect(assertionPage.getByTestId('access-denied')).toHaveCount(0);
               for (const messageId of [
                 ...new Set([...target.visible.messageIds, ...assertion.pageOwnedMessageIds]),
               ]) {
@@ -244,7 +244,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
                 .poll(() => readSpaLocation(assertionPage))
                 .toEqual(variant.target.expected);
               await expect.poll(() => readStoredAppLocale(assertionPage)).toBe(locale);
-              await expect(assertionPage.locator('.ant-result-403')).toHaveCount(0);
+              await expect(assertionPage.getByTestId('access-denied')).toHaveCount(0);
               for (const messageId of variant.target.visibleMessageIds) {
                 await expectExactVisibleText(assertionPage, getLocaleMessage(locale, messageId));
               }

@@ -12,7 +12,7 @@ type Props = {
   id: string;
   version: string;
   lang: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   reviewId: string;
   tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
 };
@@ -81,7 +81,7 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
             />
           )
         }
-        width='100%'
+        size='100%'
         closable={false}
         extra={
           <Button
@@ -92,7 +92,7 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
             }}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);

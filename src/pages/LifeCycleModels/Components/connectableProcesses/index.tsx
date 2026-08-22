@@ -411,7 +411,7 @@ const ConnectableProcesses: FC<Props> = ({
             defaultMessage='Connectable Processes'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -420,7 +420,7 @@ const ConnectableProcesses: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

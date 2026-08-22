@@ -111,6 +111,7 @@ jest.mock('antd', () => {
     error: jest.fn(),
   };
   const App = ({ children }: any) => <div>{children}</div>;
+  App.useApp = () => ({ message: mockMessageApi, modal: {}, notification: {} });
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
@@ -156,6 +157,11 @@ jest.mock('@/services/auth', () => {
 jest.mock('@/components', () => ({
   __esModule: true,
   Footer: () => <div data-testid='footer' />,
+}));
+
+jest.mock('@/contexts/AntdThemeSync', () => ({
+  __esModule: true,
+  AntdThemeSync: () => null,
 }));
 
 jest.mock('@/pages/User/Login/Components/LoginTopActions', () => ({

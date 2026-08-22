@@ -164,21 +164,37 @@ export default function LcaCalculationEvidenceNotice({
   }, [intl.locale]);
 
   const details = matrix ? (
-    <Space direction='vertical' size='small' style={{ width: '100%' }}>
-      <Descriptions column={{ xs: 1, sm: 2, md: 4 }} size='small'>
-        <Descriptions.Item label={intl.formatMessage({ id: 'pages.process.lca.evidence.source' })}>
-          {sourceLabel}
-        </Descriptions.Item>
-        <Descriptions.Item label={intl.formatMessage({ id: 'pages.process.lca.evidence.matched' })}>
-          {matrix.counts.matched}
-        </Descriptions.Item>
-        <Descriptions.Item label={intl.formatMessage({ id: 'pages.process.lca.evidence.missing' })}>
-          {matrix.counts.unmatched}
-        </Descriptions.Item>
-        <Descriptions.Item label={intl.formatMessage({ id: 'pages.process.lca.evidence.invalid' })}>
-          {matrix.counts.invalid + matrix.counts.unsupported_direction}
-        </Descriptions.Item>
-      </Descriptions>
+    <Space orientation='vertical' size='small' style={{ width: '100%' }}>
+      <Descriptions
+        column={{ xs: 1, sm: 2, md: 4 }}
+        size='small'
+        items={[
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.evidence.source',
+            }),
+            children: sourceLabel,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.evidence.matched',
+            }),
+            children: matrix.counts.matched,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.evidence.missing',
+            }),
+            children: matrix.counts.unmatched,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.evidence.invalid',
+            }),
+            children: matrix.counts.invalid + matrix.counts.unsupported_direction,
+          },
+        ]}
+      />
       <Table<LciaMethodCoverageRow>
         columns={[
           {
@@ -186,7 +202,7 @@ export default function LcaCalculationEvidenceNotice({
             dataIndex: 'method_id',
             ellipsis: true,
             render: (methodId: string, row) => (
-              <Space direction='vertical' size={0}>
+              <Space orientation='vertical' size={0}>
                 <Typography.Text>
                   {methodDescriptionById.get(row.artifact_locator_id) ||
                     intl.formatMessage({ id: 'pages.process.lca.evidence.method.unnamed' })}
@@ -230,20 +246,32 @@ export default function LcaCalculationEvidenceNotice({
         {matrix.source_snapshot_sha256}
       </Typography.Text>
       {matrix.uncharacterized_evidence ? (
-        <Descriptions column={1} size='small'>
-          <Descriptions.Item
-            label={intl.formatMessage({ id: 'pages.process.lca.evidence.artifact.count' })}
-          >
-            {matrix.uncharacterized_evidence.record_count}
-          </Descriptions.Item>
-          <Descriptions.Item
-            label={intl.formatMessage({ id: 'pages.process.lca.evidence.artifact.sha256' })}
-          >
-            <Typography.Text copyable={{ text: matrix.uncharacterized_evidence.artifact_sha256 }}>
-              {matrix.uncharacterized_evidence.artifact_sha256}
-            </Typography.Text>
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          column={1}
+          size='small'
+          items={[
+            {
+              label: intl.formatMessage({
+                id: 'pages.process.lca.evidence.artifact.count',
+              }),
+              children: matrix.uncharacterized_evidence.record_count,
+            },
+            {
+              label: intl.formatMessage({
+                id: 'pages.process.lca.evidence.artifact.sha256',
+              }),
+              children: (
+                <Typography.Text
+                  copyable={{
+                    text: matrix.uncharacterized_evidence.artifact_sha256,
+                  }}
+                >
+                  {matrix.uncharacterized_evidence.artifact_sha256}
+                </Typography.Text>
+              ),
+            },
+          ]}
+        />
       ) : null}
       <Space wrap>
         <Button
@@ -303,7 +331,7 @@ export default function LcaCalculationEvidenceNotice({
     <Alert
       type={presentation.type}
       showIcon={true}
-      message={
+      title={
         <Space wrap>
           <span>{presentation.title}</span>
           <Tag>
@@ -320,7 +348,7 @@ export default function LcaCalculationEvidenceNotice({
         </Space>
       }
       description={
-        <Space direction='vertical' size='small' style={{ width: '100%' }}>
+        <Space orientation='vertical' size='small' style={{ width: '100%' }}>
           <Typography.Text>
             {presentation.detail}
             {reasonLabel ? ` ${reasonLabel}` : ''}

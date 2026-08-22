@@ -67,9 +67,11 @@ jest.mock('antd', () => {
   );
 
   const Tooltip = ({ children }: { children?: ReactNode }) => <>{children}</>;
+  const App = require('../../mocks/antdApp').createAntdAppMock({ message: mockMessage });
 
   return {
     ...actual,
+    App,
     Button,
     Spin,
     Tooltip,

@@ -36,8 +36,7 @@ jest.mock('antd', () => {
     </section>
   );
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Descriptions: any = ({ children }: any) => <div>{children}</div>;
-  Descriptions.Item = ({ children, label, styles }: any) => (
+  const DescriptionsItem = ({ children, label, styles }: any) => (
     <div
       data-testid='desc-item'
       data-label-width={styles?.label?.width ?? ''}
@@ -45,6 +44,13 @@ jest.mock('antd', () => {
     >
       <span>{toText(label)}</span>
       <span>{children}</span>
+    </div>
+  );
+  const Descriptions: any = ({ items = [], styles }: any) => (
+    <div>
+      {items.map((item, index) => (
+        <DescriptionsItem key={item.key ?? index} {...item} styles={item.styles ?? styles} />
+      ))}
     </div>
   );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;

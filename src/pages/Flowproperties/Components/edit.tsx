@@ -49,7 +49,7 @@ import {
   Spin,
   // Spin,
   Tooltip,
-  message,
+  App,
 } from 'antd';
 import type { FC } from 'react';
 import {
@@ -68,7 +68,7 @@ type Props = {
   id: string;
   version: string;
   buttonType: 'icon' | 'text';
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   lang: string;
   disabled?: boolean;
   updateErrRef?: (data: RefCheckType | null) => void;
@@ -95,7 +95,8 @@ const FlowpropertiesEdit: FC<Props> = ({
   onDrawerClose,
   autoCheckRequired = false,
 }) => {
-  const formRefEdit = useRef<ProFormInstance>();
+  const { message } = App.useApp();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
     'flowPropertiesInformation',
@@ -556,10 +557,10 @@ const FlowpropertiesEdit: FC<Props> = ({
             defaultMessage='Edit Flow property'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={

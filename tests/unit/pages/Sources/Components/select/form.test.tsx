@@ -709,7 +709,7 @@ describe('SourceSelectForm', () => {
     expect(formState.review[0].reference['common:shortDescription']).toEqual([]);
   });
 
-  it('evaluates ref-check entries against resolved refData ids even when the version does not match', async () => {
+  it('matches ref-check entries against the resolved refData identity', async () => {
     setValueAtPath(['reference', '@refObjectId'], 'local-source');
     setValueAtPath(['reference', '@version'], '9.9.9');
     mockGetRefData.mockResolvedValue({
@@ -722,7 +722,14 @@ describe('SourceSelectForm', () => {
       },
     });
     mockRefCheckContextValue = {
-      refCheckData: [{ id: 'source-1', version: '2.0.0', ruleVerification: true }],
+      refCheckData: [
+        {
+          id: 'source-1',
+          version: '1.0.0',
+          ruleVerification: true,
+          nonExistent: true,
+        },
+      ],
     };
 
     const formRef = {
@@ -745,6 +752,6 @@ describe('SourceSelectForm', () => {
     await waitFor(() =>
       expect(mockGetRefData).toHaveBeenCalledWith('local-source', '9.9.9', 'sources', ''),
     );
-    expect(screen.queryByText('err-ref')).not.toBeInTheDocument();
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
   });
 });

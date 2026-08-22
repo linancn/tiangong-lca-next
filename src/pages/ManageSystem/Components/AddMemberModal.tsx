@@ -1,6 +1,7 @@
 import { addSystemMemberApi } from '@/services/roles/api';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Form, FormInstance, Input, message, Modal } from 'antd';
+import { Form, FormInstance, Input, Modal } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 interface AddMemberModalProps {
   open: boolean;
@@ -9,6 +10,7 @@ interface AddMemberModalProps {
 }
 
 const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSuccess }) => {
+  const { message } = useAntdAppApi();
   const formRef = useRef<FormInstance>(null);
   const [loading, setLoading] = useState(false);
   const intl = useIntl();

@@ -30,7 +30,7 @@ type Props = {
   version: string;
   lang: string;
   buttonType: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   autoOpen?: boolean;
   onDrawerClose?: () => void;
 };
@@ -210,16 +210,24 @@ const ContactView: FC<Props> = ({
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={<FormattedMessage id='pages.unitgroup.id' defaultMessage='ID' />}
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData.unitGroupInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: <FormattedMessage id='pages.unitgroup.id' defaultMessage='ID' />,
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children: initData.unitGroupInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
         </Divider>
         <LangTextItemDescription
@@ -231,7 +239,7 @@ const ContactView: FC<Props> = ({
           lang={lang}
           categoryType={'UnitGroup'}
         />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.unitgroup.unitGroupInformation.generalComment'
             defaultMessage='General comment'
@@ -258,41 +266,58 @@ const ContactView: FC<Props> = ({
           lang={lang}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.approvalOfOverallCompliance'
-                defaultMessage='Approval of overall compliance'
-              />
-            }
-            styles={{ label: { width: '240px' } }}
-          >
-            {getComplianceLabel(
-              (complianceRecord?.['common:approvalOfOverallCompliance'] as string | undefined) ??
-                '-',
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '240px',
+                },
+              },
+              children: getComplianceLabel(
+                (complianceRecord?.['common:approvalOfOverallCompliance'] as string | undefined) ??
+                  '-',
+              ),
+            },
+          ]}
+        />
       </>
     ),
     administrativeInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.timeStamp'
-                defaultMessage='Time stamp (last saved)'
-              />
-            }
-            styles={{ label: { width: '200px' } }}
-          >
-            {initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.timeStamp'
+                  defaultMessage='Time stamp (last saved)'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '200px',
+                },
+              },
+              children:
+                initData.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+            },
+          ]}
+        />
         <br />
         <SourceSelectDescription
           title={
@@ -308,24 +333,34 @@ const ContactView: FC<Props> = ({
           lang={lang}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.dataSetVersion'
-                defaultMessage='Data set version'
-              />
-            }
-            styles={{ label: { width: '140px' } }}
-          >
-            <Space>
-              {initData.administrativeInformation?.publicationAndOwnership?.[
-                'common:dataSetVersion'
-              ] ?? '-'}
-            </Space>
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.dataSetVersion'
+                  defaultMessage='Data set version'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '140px',
+                },
+              },
+              children: (
+                <Space>
+                  {initData.administrativeInformation?.publicationAndOwnership?.[
+                    'common:dataSetVersion'
+                  ] ?? '-'}
+                </Space>
+              ),
+            },
+          ]}
+        />
         <br />
         <ContactSelectDescription
           data={
@@ -357,22 +392,31 @@ const ContactView: FC<Props> = ({
           }
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.permanentDataSetURI'
-                defaultMessage='Permanent data set URI'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {initData.administrativeInformation?.publicationAndOwnership?.[
-              'common:permanentDataSetURI'
-            ] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.permanentDataSetURI'
+                  defaultMessage='Permanent data set URI'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '220px',
+                },
+              },
+              children:
+                initData.administrativeInformation?.publicationAndOwnership?.[
+                  'common:permanentDataSetURI'
+                ] ?? '-',
+            },
+          ]}
+        />
       </>
     ),
     units: (
@@ -462,7 +506,7 @@ const ContactView: FC<Props> = ({
             defaultMessage='View Unit group'
           ></FormattedMessage>
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={handleClose}></Button>
@@ -472,7 +516,7 @@ const ContactView: FC<Props> = ({
         //     {footerButtons}
         //   </Space>
         // }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={handleClose}
       >

@@ -37,8 +37,8 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
     [mainProductRequestEpochRef, subProductRequestEpochRef],
   );
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const subProcuctTableRef = useRef<ActionType>();
-  const mainProcuctTableRef = useRef<ActionType>();
+  const subProcuctTableRef = useRef<ActionType>(undefined);
+  const mainProcuctTableRef = useRef<ActionType>(undefined);
 
   const columns: ProColumns<ProcessTable>[] = [
     {
@@ -133,7 +133,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
       <Drawer
         getContainer={() => document.body}
         title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model Results' />}
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -142,7 +142,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

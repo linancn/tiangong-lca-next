@@ -23,7 +23,7 @@ import { genUnitGroupFromData } from '@/services/unitgroups/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, message, Space, Spin, Tooltip } from 'antd';
+import { Button, Drawer, Space, Spin, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -32,7 +32,7 @@ import { UnitGroupForm } from './form';
 
 type Props = {
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
@@ -67,8 +67,9 @@ const UnitGroupCreate: FC<CreateProps> = ({
   onClose = () => {},
   disabled = false,
 }) => {
+  const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [activeTabKey, setActiveTabKey] =
     useState<UnitGroupDataSetObjectKeys>('unitGroupInformation');
   const [fromData, setFromData] = useState<UnitGroupFormState>();
@@ -192,18 +193,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
 
   return (
     <>
-      <Tooltip
-        title={
-          actionType === 'copy' ? (
-            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
-          ) : actionType === 'createVersion' ? (
-            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
-          ) : (
-            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
-          )
-        }
-      >
-        {actionType === 'copy' ? (
+      {actionType === 'copy' ? (
+        <Tooltip title={<FormattedMessage id='pages.button.copy' defaultMessage='Copy' />}>
           <Button
             disabled={disabled}
             shape='circle'
@@ -213,17 +204,23 @@ const UnitGroupCreate: FC<CreateProps> = ({
               setDrawerVisible(true);
             }}
           ></Button>
-        ) : (
-          <ToolBarButton
-            disabled={disabled}
-            icon={<PlusOutlined />}
-            tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
-            onClick={() => {
-              setDrawerVisible(true);
-            }}
-          />
-        )}
-      </Tooltip>
+        </Tooltip>
+      ) : (
+        <ToolBarButton
+          disabled={disabled}
+          icon={<PlusOutlined />}
+          tooltip={
+            actionType === 'createVersion' ? (
+              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+            ) : (
+              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+            )
+          }
+          onClick={() => {
+            setDrawerVisible(true);
+          }}
+        />
+      )}
       <Drawer
         destroyOnHidden
         getContainer={() => document.body}
@@ -245,7 +242,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -256,7 +253,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
             }}
           ></Button>
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           setDrawerVisible(false);

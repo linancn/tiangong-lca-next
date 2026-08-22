@@ -110,6 +110,9 @@ describe('release E2E controller contracts', () => {
     expect(() => controller.parseOptions('resume', ['--format=json'])).toThrow(
       'Resume accepts no arguments',
     );
+    expect(controller.parseOptions('resume', [])).toEqual(
+      expect.objectContaining({ format: 'human', offline: false }),
+    );
     expect(() => controller.parseOptions('doctor', ['--authenticated'])).toThrow(
       'not valid for doctor',
     );

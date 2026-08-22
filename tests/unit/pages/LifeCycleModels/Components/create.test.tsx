@@ -252,7 +252,7 @@ describe('LifeCycleModelCreate', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^create version$/i }));
 
     expect(screen.getByRole('dialog', { name: /create version/i })).toBeInTheDocument();
     await waitFor(() =>

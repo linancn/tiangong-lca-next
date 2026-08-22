@@ -1,4 +1,5 @@
 import ToolBarButton from '@/components/ToolBarButton';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { ListPagination } from '@/services/general/data';
 import { getLang, getLangText } from '@/services/general/util';
 import {
@@ -10,7 +11,7 @@ import {
 import { TeamTable } from '@/services/teams/data';
 import { EyeInvisibleOutlined, SaveOutlined } from '@ant-design/icons';
 import { ActionType, DragSortTable, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Input, message, Modal, Space, theme, Tooltip } from 'antd';
+import { Button, Card, Input, Space, theme, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
@@ -27,9 +28,10 @@ type TableListProps = {
 };
 
 const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
+  const { message, modal } = useAntdAppApi();
   const intl = useIntl();
   const lang = getLang(intl.locale);
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const [keyWord, setKeyWord] = useState<any>('');
   const [tableData, setTableData] = useState<TeamTable[]>([]);
   const [isDragged, setIsDragged] = useState<boolean>(false);
@@ -37,7 +39,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
   const { token } = theme.useToken();
 
   const handleRemoveTeam = (record: TeamTable) => {
-    Modal.confirm({
+    modal.confirm({
       okButtonProps: {
         type: 'primary',
         style: { backgroundColor: token.colorPrimary },

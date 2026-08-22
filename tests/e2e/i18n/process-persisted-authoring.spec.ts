@@ -48,23 +48,21 @@ test('one ledger-controlled Process UI save persists every authoring language', 
     // Remount the auto-open drawer after the prior localized instance was closed. Every
     // pre-save pass remains read-only and targets the same exact ledger UUID.
     await page.reload({ waitUntil: 'domcontentloaded' });
-    const drawer = page.locator('.ant-drawer-content:visible').filter({
+    const drawer = page.locator('.tg-process-drawer:visible').filter({
       has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.edit'), {
         exact: true,
       }),
     });
     await expect(drawer).toHaveCount(1);
     await expect(drawer).toBeVisible();
-    const cardTitle = drawer
-      .locator('.ant-card-head-title')
-      .getByText(getLocaleMessage(locale, 'pages.process.view.processInformation.synonyms'), {
-        exact: true,
-      });
-    const card = cardTitle.locator(
-      'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " ant-card ")][1]',
-    );
+    const card = drawer.getByTestId('process-synonyms-card');
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
+    await expect(
+      card.getByText(getLocaleMessage(locale, 'pages.process.view.processInformation.synonyms'), {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(card.locator('[data-content-language]')).toHaveCount(
       AUTHORING_LANGUAGE_DEFINITIONS.length,
       { timeout: 45_000 },
@@ -78,14 +76,14 @@ test('one ledger-controlled Process UI save persists every authoring language', 
       const languageRow = card.locator(`[data-content-language="${languageCode}"]`);
       await expect(languageRow).toHaveCount(1);
       await expect(languageRow.getByRole('combobox')).toHaveCount(1);
-      await expect(languageRow.locator('.ant-select-selection-item')).toHaveText(nativeLabel);
+      await expect(languageRow.getByText(nativeLabel, { exact: true })).toBeVisible();
       const textArea = languageRow.locator('textarea');
       await expect(textArea).toHaveCount(1);
       await expect(textArea).toHaveValue(
         getCodexE2EProcessSynonym(ledger!, languageCode, 'before-ui-save'),
       );
     }
-    const closeButton = drawer.locator('.ant-drawer-header button').last();
+    const closeButton = drawer.getByTestId('process-edit-close');
     await expect(closeButton).toBeVisible();
     await closeButton.evaluate((button) => (button as HTMLButtonElement).click());
     await expect(drawer).toBeHidden();
@@ -100,7 +98,7 @@ test('one ledger-controlled Process UI save persists every authoring language', 
     const languageRow = synonymsCard.locator(`[data-content-language="${languageCode}"]`);
     await expect(languageRow).toHaveCount(1);
     await expect(languageRow.getByRole('combobox')).toHaveCount(1);
-    await expect(languageRow.locator('.ant-select-selection-item')).toHaveText(nativeLabel);
+    await expect(languageRow.getByText(nativeLabel, { exact: true })).toBeVisible();
     const textArea = languageRow.locator('textarea');
     await expect(textArea).toHaveCount(1);
     await expect(textArea).toHaveValue(
@@ -136,7 +134,7 @@ test('one ledger-controlled Process UI save persists every authoring language', 
   await selectAppLocaleThroughUi(page, 'fr-FR');
   const viewRoute = `/mydata/processes?id=${ledger!.id}&version=${ledger!.version}&mode=view`;
   await page.goto(routeToCandidateUrl(baseURL!, viewRoute), { waitUntil: 'domcontentloaded' });
-  const viewDrawer = page.locator('.ant-drawer-content:visible').filter({
+  const viewDrawer = page.locator('.tg-process-drawer:visible').filter({
     has: page.getByText(getLocaleMessage('fr-FR', 'pages.process.drawer.title.view'), {
       exact: true,
     }),
@@ -151,11 +149,9 @@ test('one ledger-controlled Process UI save persists every authoring language', 
     await expect(valueCell).toHaveCount(1);
     await expect(valueCell).toBeVisible();
     const languageRow = valueCell.locator('xpath=ancestor::tr[1]');
-    await expect(languageRow.locator('.ant-descriptions-item-label')).toHaveText(nativeLabel);
-    await expect(languageRow.locator('.ant-descriptions-item-content')).toHaveText(afterValue);
-    await expect(languageRow.locator('.ant-descriptions-item-content')).not.toHaveText(
-      /^\s*-\s*$/u,
-    );
+    await expect(languageRow.getByText(nativeLabel, { exact: true })).toHaveCount(1);
+    await expect(languageRow.getByText(afterValue, { exact: true })).toHaveCount(1);
+    await expect(languageRow.getByText(/^\s*-\s*$/u)).toHaveCount(0);
     await expect(viewDrawer.getByText(beforeValue, { exact: true })).toHaveCount(0);
   }
 });

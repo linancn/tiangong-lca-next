@@ -1,6 +1,6 @@
 import { ProcessExchangeData } from '@/services/processes/data';
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, message, Modal, Tooltip } from 'antd';
+import { Button, Modal, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -9,7 +9,7 @@ type Props = {
   id: string;
   data: ProcessExchangeData[];
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.RefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: ProcessExchangeData[]) => void;
   disabled?: boolean;
@@ -24,6 +24,7 @@ const ProcessExchangeDelete: FC<Props> = ({
   onData,
   disabled = false,
 }) => {
+  const { message } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 

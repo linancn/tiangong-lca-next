@@ -1,7 +1,7 @@
 import { rejectReviewApi, type ReviewSubmitDatasetTable } from '@/services/reviews/api';
 import { FileExcelOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Form, FormInstance, Input, message, Modal, Tooltip } from 'antd';
+import { App, Button, Form, FormInstance, Input, Modal, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 
 interface RejectReviewProps {
@@ -23,6 +23,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   buttonType = 'icon',
   onOk,
 }) => {
+  const { message } = App.useApp();
   const formRef = useRef<FormInstance>(null);
   const wasOpenRef = useRef(false);
   const [open, setOpen] = useState(false);

@@ -184,11 +184,16 @@ describe('LifeCycleModelView', () => {
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
     expect(latestDrawerProps).toMatchObject({
+      classNames: {
+        body: 'tg-lifecycle-model-drawer-body',
+        section: 'tg-lifecycle-model-drawer-section',
+        wrapper: 'tg-lifecycle-model-drawer-wrapper',
+      },
       rootStyle: { maxWidth: '100vw', overflow: 'hidden' },
-      width: '100vw',
+      size: '100vw',
       styles: {
         body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
-        content: { minWidth: 0, overflow: 'hidden', width: '100%' },
+        section: { minWidth: 0, overflow: 'hidden', width: '100%' },
         wrapper: { maxWidth: '100vw', overflow: 'hidden', width: '100vw' },
       },
     });

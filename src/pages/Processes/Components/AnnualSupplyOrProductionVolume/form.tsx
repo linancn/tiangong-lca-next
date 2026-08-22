@@ -19,7 +19,7 @@ import { useIntl } from 'umi';
 
 type Props = {
   exchangeDataSource: ProcessExchangeData[];
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   label: ReactNode | string;
   lang: string;
   name: Array<string | number>;

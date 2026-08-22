@@ -208,8 +208,15 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
 
     return (
       <Link
-        className='ant-btn ant-btn-link ant-btn-sm'
-        style={{ color: token.colorPrimary }}
+        style={{
+          alignItems: 'center',
+          borderRadius: token.borderRadiusSM,
+          color: token.colorPrimary,
+          display: 'inline-flex',
+          minHeight: token.controlHeightSM,
+          paddingInline: token.paddingXS,
+          textDecoration: 'none',
+        }}
         target='_blank'
         rel='noopener noreferrer'
         to={getNotificationDataRoute(record, 'view')}
@@ -317,7 +324,16 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
                 </Button>,
                 <Link
                   key='fix'
-                  className='ant-btn ant-btn-primary'
+                  style={{
+                    alignItems: 'center',
+                    background: token.colorPrimary,
+                    borderRadius: token.borderRadius,
+                    color: token.colorTextLightSolid,
+                    display: 'inline-flex',
+                    minHeight: token.controlHeight,
+                    paddingInline: token.paddingContentHorizontal,
+                    textDecoration: 'none',
+                  }}
                   target='_blank'
                   rel='noopener noreferrer'
                   to={getNotificationDataRoute(selectedRejectedRecord, 'edit', {

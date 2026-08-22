@@ -16,9 +16,11 @@ import AISuggestion from '@/components/AISuggestion';
 import { getAISuggestion } from '@/services/general/api';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ConfigProvider, message } from 'antd';
+import { App, ConfigProvider, message } from 'antd';
 
 let mockDiffResult: any = null;
+
+jest.spyOn(App, 'useApp').mockReturnValue({ message, modal: {} as any, notification: {} as any });
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({

@@ -13,12 +13,14 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 jest.mock('antd', () => {
-  const Descriptions: any = ({ children }: any) => <div data-testid='descriptions'>{children}</div>;
-
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      {typeof label === 'string' ? <span>{label}</span> : label}
-      <span>{children}</span>
+  const Descriptions = ({ items = [] }: any) => (
+    <div data-testid='descriptions'>
+      {items.map((item: any) => (
+        <div key={item.key}>
+          {typeof item.label === 'string' ? <span>{item.label}</span> : item.label}
+          <span>{item.children}</span>
+        </div>
+      ))}
     </div>
   );
 

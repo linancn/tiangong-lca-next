@@ -8,47 +8,64 @@ type Props = {
 };
 
 const SourceDescription: FC<Props> = ({ title, data }) => {
-  // if (!data) {
-  //   return (
-  //     <Card size="small" title={title}>
-  //       <Descriptions bordered size={'small'} column={1}>
-  //         <Descriptions.Item key={0} styles={{ label: { display: 'none' } }}>
-  //           -
-  //         </Descriptions.Item>
-  //       </Descriptions>
-  //     </Card>
-  //   );
-  // }
   return (
     <Card size='small' title={title}>
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Type' styles={{ label: { width: '120px' } }}>
-          {data?.['@type'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            key: 'type',
+            label: 'Type',
+            styles: { label: { width: '120px' } },
+            children: data?.['@type'] ?? '-',
+          },
+        ]}
+      />
       <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label='Reference object ID'
-          styles={{ label: { width: '120px' } }}
-        >
-          {data?.['@refObjectId'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            key: 'reference-object-id',
+            label: 'Reference object ID',
+            styles: { label: { width: '120px' } },
+            children: data?.['@refObjectId'] ?? '-',
+          },
+        ]}
+      />
       <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='URI' styles={{ label: { width: '120px' } }}>
-          {data?.['@uri'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            key: 'uri',
+            label: 'URI',
+            styles: { label: { width: '120px' } },
+            children: data?.['@uri'] ?? '-',
+          },
+        ]}
+      />
       <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Version' styles={{ label: { width: '120px' } }}>
-          {data?.['@version'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            key: 'version',
+            label: 'Version',
+            styles: { label: { width: '120px' } },
+            children: data?.['@version'] ?? '-',
+          },
+        ]}
+      />
+      <Divider plain titlePlacement='start'>
         Short Description
       </Divider>
       <LangTextItemDescription data={data?.['common:shortDescription']} />

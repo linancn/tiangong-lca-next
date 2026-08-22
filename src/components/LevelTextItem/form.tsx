@@ -9,7 +9,7 @@ type Props = {
   lang: string;
   dataType: string;
   flowType?: string;
-  formRef: React.MutableRefObject<any | undefined>;
+  formRef: React.RefObject<any | undefined>;
   hidden?: boolean;
   onData: () => void;
   rules?: any[];
@@ -222,6 +222,13 @@ const LevelTextItemForm: FC<Props> = ({
         }
       >
         <TreeSelect
+          classNames={{
+            root: 'tg-classification-reference-select',
+            popup: {
+              root: 'tg-classification-reference-popup',
+              itemTitle: 'tg-classification-reference-node-title',
+            },
+          }}
           treeDefaultExpandedKeys={
             formRef.current?.getFieldValue([...name, 'showValue'])
               ? [formRef.current?.getFieldValue([...name, 'showValue'])]
@@ -231,11 +238,12 @@ const LevelTextItemForm: FC<Props> = ({
           fieldNames={{ label: 'label', value: 'id', children: 'children' }}
           style={{ width: '100%' }}
           treeData={selectOptions}
-          showSearch
-          filterTreeNode={(inputValue, treeNode) => {
-            return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
+          showSearch={{
+            filterTreeNode: (inputValue, treeNode) => {
+              return (treeNode?.title as string)?.toLowerCase().includes(inputValue.toLowerCase());
+            },
+            treeNodeFilterProp: 'title',
           }}
-          treeNodeFilterProp='title'
           treeExpandAction='click'
           // labelInValue={true}
           treeNodeLabelProp='title'

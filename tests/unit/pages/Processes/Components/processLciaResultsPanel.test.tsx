@@ -228,6 +228,50 @@ describe('ProcessLciaResultsPanel', () => {
     expect(screen.getByText('kg CO2 eq')).toBeInTheDocument();
   });
 
+  it('deduplicates published package loads while the current request is pending', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    let resolvePublishedPackage: (value: any) => void = () => {};
+    mockGetPublishedLciaResultPackage.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePublishedPackage = resolve;
+        }),
+    );
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('lca-profile-summary')).toHaveAttribute('data-loading', 'true'),
+    );
+    expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolvePublishedPackage({
+        data: {
+          publication: null,
+          package: null,
+          rowCount: 0,
+          values: [],
+        },
+        error: null,
+      });
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('lca-profile-summary')).toHaveAttribute('data-loading', 'false'),
+    );
+    expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1);
+  });
+
   it('shows an empty published state without falling back to solver when package has no row values', async () => {
     mockGetDataSource.mockReturnValue('tg');
     mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });

@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 
 type MockUploadEntry = {
   beforeUpload?: (file: any) => unknown;
+  onChange?: (info: { fileList: any[] }) => void;
   onRemove?: () => void;
   fileList?: Array<{ uid?: string; url?: string; name?: string }>;
   labelText?: string;
@@ -101,11 +102,13 @@ jest.mock('antd', () => {
 
   const Upload = ({
     beforeUpload,
+    onChange,
     onRemove,
     fileList,
     children,
   }: {
     beforeUpload?: (file: any) => unknown;
+    onChange?: (info: { fileList: any[] }) => void;
     onRemove?: () => void;
     fileList?: Array<{ uid?: string; url?: string; name?: string }>;
     children?: React.ReactNode;
@@ -118,6 +121,7 @@ jest.mock('antd', () => {
     React.useEffect(() => {
       uploadRegistry[key] = {
         beforeUpload,
+        onChange,
         onRemove,
         fileList,
         labelText,
@@ -125,7 +129,7 @@ jest.mock('antd', () => {
       return () => {
         delete uploadRegistry[key];
       };
-    }, [beforeUpload, onRemove, fileList, key, labelText]);
+    }, [beforeUpload, onChange, onRemove, fileList, key, labelText]);
 
     const previewItems = fileList ?? [];
 
@@ -321,6 +325,50 @@ describe('TeamForm component', () => {
     expect(screen.getByRole('img', { name: /dark logo placeholder/i })).toBeInTheDocument();
     await waitFor(() => {
       expect(onLogoChange).toHaveBeenCalled();
+      const calls = onLogoChange.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[0]).toEqual({
+        lightLogo: [],
+        darkLogo: [],
+      });
+    });
+
+    await act(async () => {
+      await uploadRegistry.lightLogo?.beforeUpload?.(lightFile);
+      await uploadRegistry.darkLogo?.beforeUpload?.(darkFile);
+    });
+    await waitFor(() => {
+      const calls = onLogoChange.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[0]).toEqual({
+        lightLogo: [lightFile],
+        darkLogo: [darkFile],
+      });
+    });
+
+    await act(async () => {
+      uploadRegistry.lightLogo?.onChange?.({ fileList: [lightFile] });
+      uploadRegistry.darkLogo?.onChange?.({ fileList: [darkFile] });
+    });
+
+    onLogoChange.mockClear();
+    await act(async () => {
+      uploadRegistry.lightLogo?.onChange?.({ fileList: [] });
+    });
+    await waitFor(() => {
+      const calls = onLogoChange.mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[0]).toEqual({
+        lightLogo: [],
+        darkLogo: [darkFile],
+      });
+    });
+
+    onLogoChange.mockClear();
+    await act(async () => {
+      uploadRegistry.darkLogo?.onChange?.({ fileList: [] });
+    });
+    await waitFor(() => {
       const calls = onLogoChange.mock.calls;
       const lastCall = calls[calls.length - 1];
       expect(lastCall?.[0]).toEqual({

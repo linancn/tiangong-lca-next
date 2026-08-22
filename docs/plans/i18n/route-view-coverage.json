@@ -151,7 +151,7 @@
       "target": {
         "navigate": { "hashPath": "/team", "hashQuery": { "action": "create" } },
         "expected": { "hashPath": "/team", "hashQuery": { "action": "create" } },
-        "visibleMessageIds": ["pages.team.tabs.info", "pages.team.info.title"]
+        "visibleMessageIds": ["pages.team.tabs.info", "pages.team.info.section.basic"]
       }
     },
     {

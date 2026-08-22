@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { addTeam } from '@/services/teams/api';
 import { getUserId, getUserIdByEmail } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 
 const SYSTEM_TEAM_ID = '00000000-0000-0000-0000-000000000000';
 

@@ -19,6 +19,8 @@ import { antdMocks } from '../../mocks/antd';
 import { setUmiLocation, umiMocks } from '../../mocks/umi';
 import { umijsMaxMocks } from '../../mocks/umijsMax';
 
+const mockSetAntdConfig = jest.fn();
+
 jest.mock('@/services/auth', () => ({
   login: jest.fn(),
   signUp: jest.fn(),
@@ -36,7 +38,10 @@ jest.mock('@umijs/max', () => {
     }
     return {};
   });
-  return createUmijsMaxMock();
+  return {
+    ...createUmijsMaxMock(),
+    useAntdConfigSetter: () => mockSetAntdConfig,
+  };
 });
 
 jest.mock('@ant-design/icons', () =>
@@ -97,6 +102,7 @@ describe('Login workflow integration', () => {
     mockHistoryPush.mockClear();
     mockFetchUserInfo.mockReset();
     mockSetInitialState.mockReset();
+    mockSetAntdConfig.mockClear();
     (Object.values(mockMessageApi) as Array<{ mockClear?: () => void }>).forEach((fn) =>
       fn.mockClear?.(),
     );

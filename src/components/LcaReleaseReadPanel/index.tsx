@@ -142,10 +142,10 @@ const LcaReleaseReadPanel = ({ processId, processVersion, compact = false }: Pro
     const isEmpty =
       issue.code === 'publication_not_found' || issue.code === 'release_process_not_found';
     return (
-      <Space direction='vertical' className={styles.fullWidth}>
+      <Space orientation='vertical' className={styles.fullWidth}>
         <Alert
           type={isEmpty ? 'info' : 'error'}
-          message={
+          title={
             isEmpty
               ? t(
                   'pages.dataProcessing.release.empty',
@@ -172,7 +172,7 @@ const LcaReleaseReadPanel = ({ processId, processVersion, compact = false }: Pro
         </Button>
       }
     >
-      <Space direction='vertical' size='middle' className={styles.fullWidth}>
+      <Space orientation='vertical' size='middle' className={styles.fullWidth}>
         <div className={styles.releaseHero}>
           <div>
             <span>{t('pages.dataProcessing.release.version', 'Release version')}</span>
@@ -194,25 +194,32 @@ const LcaReleaseReadPanel = ({ processId, processVersion, compact = false }: Pro
         {release.blockers?.length ? (
           <Alert
             type='warning'
-            message={`${t('pages.dataProcessing.release.blockers', 'Blockers')}: ${release.blockers.join(', ')}`}
+            title={`${t('pages.dataProcessing.release.blockers', 'Blockers')}: ${release.blockers.join(', ')}`}
           />
         ) : null}
         {!compact ? (
-          <Descriptions bordered size='small' column={1}>
-            <Descriptions.Item label={t('pages.dataProcessing.release.runId', 'Release run ID')}>
-              <code>{release.releaseRunId}</code>
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={t('pages.dataProcessing.release.manifestHash', 'Release manifest hash')}
-            >
-              <code>{release.releaseManifestHash ?? '-'}</code>
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={t('pages.dataProcessing.release.artifactSetHash', 'Artifact set hash')}
-            >
-              <code>{release.artifactSetHash}</code>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size='small'
+            column={1}
+            items={[
+              {
+                key: 'release-run-id',
+                label: t('pages.dataProcessing.release.runId', 'Release run ID'),
+                children: <code>{release.releaseRunId}</code>,
+              },
+              {
+                key: 'release-manifest-hash',
+                label: t('pages.dataProcessing.release.manifestHash', 'Release manifest hash'),
+                children: <code>{release.releaseManifestHash ?? '-'}</code>,
+              },
+              {
+                key: 'artifact-set-hash',
+                label: t('pages.dataProcessing.release.artifactSetHash', 'Artifact set hash'),
+                children: <code>{release.artifactSetHash}</code>,
+              },
+            ]}
+          />
         ) : null}
         {processId ? (
           <div className={styles.identityGrid}>
@@ -251,7 +258,7 @@ const LcaReleaseReadPanel = ({ processId, processVersion, compact = false }: Pro
             </span>
           ))}
         </div>
-        {downloadError ? <Alert type='error' message={downloadError} /> : null}
+        {downloadError ? <Alert type='error' title={downloadError} /> : null}
         <div className={styles.artifactGrid}>
           {release.artifacts.map((artifact) => (
             <section key={artifact.artifactId} className={styles.artifactItem}>

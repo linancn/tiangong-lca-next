@@ -1,13 +1,14 @@
-import ToolBarButton from '@/components/ToolBarButton';
+import ToolBarButton, { type ToolBarButtonPlacement } from '@/components/ToolBarButton';
 import type { LcaSolveRequest } from '@/services/lca';
 import { DEFAULT_LCA_SCOPE } from '@/services/lca/scope';
 import { submitLcaTask } from '@/services/lca/taskCenter';
 import { CalculatorOutlined } from '@ant-design/icons';
-import { Modal, Typography, message, theme } from 'antd';
+import { Modal, Typography, theme, App } from 'antd';
 import { useState } from 'react';
 import { useIntl } from 'umi';
 
-const LcaSolveToolbar = () => {
+const LcaSolveToolbar = ({ placement = 'action' }: { placement?: ToolBarButtonPlacement }) => {
+  const { message } = App.useApp();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const intl = useIntl();
@@ -66,6 +67,7 @@ const LcaSolveToolbar = () => {
     <>
       <ToolBarButton
         icon={<CalculatorOutlined />}
+        placement={placement}
         tooltip={intl.formatMessage({
           id: 'pages.process.lca.toolbar.tooltip',
           defaultMessage: 'Run LCA',
@@ -90,7 +92,7 @@ const LcaSolveToolbar = () => {
         onCancel={onClose}
         onOk={onSubmit}
         confirmLoading={submitting}
-        maskClosable={!submitting}
+        mask={{ closable: !submitting }}
         keyboard={!submitting}
       >
         <div

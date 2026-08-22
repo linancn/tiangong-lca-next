@@ -46,7 +46,7 @@ type Props = {
   data: ProcessExchangeData[];
   lang: string;
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.RefObject<ActionType | undefined>;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   onData: (data: ProcessExchangeData[]) => void;
   showRules: boolean;
@@ -178,7 +178,7 @@ const ProcessExchangeEdit: FC<Props> = ({
   const intlRef = useRef(intl);
   intlRef.current = intl;
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<ProcessExchangeData>({});
   const [initData, setInitData] = useState<ProcessExchangeData>({});
   const [asInput, setAsInput] = useState(false);
@@ -446,7 +446,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             defaultMessage='Edit Exchange'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -455,7 +455,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -499,7 +499,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <Form.Item name={'@dataSetInternalID'} hidden>
               <Input />
             </Form.Item>
@@ -530,7 +530,6 @@ const ProcessExchangeEdit: FC<Props> = ({
                       defaultMessage='Select a direction'
                     />
                   }
-                  optionFilterProp='direction'
                   options={[
                     {
                       value: 'input',
@@ -899,7 +898,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                         initialValue={[{}]}
                       >
                         {(fields, { add, remove }) => (
-                          <Space direction='vertical' style={{ width: '100%' }}>
+                          <Space orientation='vertical' style={{ width: '100%' }}>
                             {fields.map((field, index) => (
                               <div key={field.key} style={{ position: 'relative' }}>
                                 <SourceSelectForm
@@ -959,7 +958,7 @@ const ProcessExchangeEdit: FC<Props> = ({
             {renderSdkHighlightedField(
               'generalComment',
               <>
-                <Divider orientationMargin='0' orientation='left' plain>
+                <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                   <FormattedMessage
                     id='pages.process.view.exchange.generalComment'
                     defaultMessage='Comment'
@@ -1004,7 +1003,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 renderSdkHighlightedField(
                   'functionalUnitOrOther',
                   <>
-                    <Divider orientationMargin='0' orientation='left' plain>
+                    <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                       <FormattedMessage
                         id='pages.process.view.exchange.functionalUnitOrOther'
                         defaultMessage='Functional unit, Production period, or Other parameter'

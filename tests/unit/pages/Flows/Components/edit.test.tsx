@@ -135,16 +135,26 @@ jest.mock('antd', () => {
     spinning ? <div data-testid='spinning'>{children}</div> : <div>{children}</div>;
   const Tooltip = ({ children }: any) => <>{children}</>;
 
-  return {
-    __esModule: true,
-    ConfigProvider,
-    Button,
-    Drawer,
-    Space,
-    Spin,
-    Tooltip,
-    message,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      ConfigProvider,
+      Button,
+      Drawer,
+      Space,
+      Spin,
+      Tooltip,
+      message,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 const mockAntdMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;

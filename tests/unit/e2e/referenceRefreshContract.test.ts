@@ -82,8 +82,9 @@ describe('reference refresh semantic E2E contract', () => {
       'await gotoCandidateUrl(page, browserName, cacheStagingUrl.toString());',
     );
     expect(source).toContain('await gotoCandidateUrl(page, browserName, targetUrl);');
-    expect(source).toContain("locator('.ant-select-dropdown:visible')");
-    expect(source).not.toContain("getByRole('option'");
+    expect(source).toContain("locator('.tg-location-reference-popup:visible')");
+    expect(source).toContain("locator('.tg-location-reference-option')");
+    expect(source).not.toContain('ant-select');
     expect(source.indexOf('await expectCurrentReferenceCacheBaseline')).toBeLessThan(
       source.indexOf('await injectPreviousRevisionEntries'),
     );
@@ -112,7 +113,7 @@ describe('reference refresh semantic E2E contract', () => {
     );
     const idleGuard = documentHelperSource.indexOf('if (waitForDrawerIdle)', detailReady);
     const nestedIdleWait = documentHelperSource.indexOf(
-      "drawer.locator('.ant-spin-spinning')",
+      "toHaveAttribute('data-detail-ready', 'true'",
       idleGuard,
     );
 
@@ -144,11 +145,11 @@ describe('reference refresh semantic E2E contract', () => {
     expect(nestedIdleWait).toBeGreaterThan(idleGuard);
     expect(documentHelperSource).toContain("page.locator('.tg-global-header-avatar-trigger')");
     expect(documentHelperSource).toContain("page.locator('.tg-global-language-selector')");
-    expect(documentHelperSource).toContain("page.locator('.ant-result-403')");
+    expect(documentHelperSource).toContain("page.getByTestId('access-denied')");
     expect(documentHelperSource).toContain("page.getByTestId('process-deep-link-state')");
     expect(documentHelperSource).toContain("toHaveAttribute('data-route-mode', mode");
     expect(documentHelperSource).toContain(
-      "page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState })",
+      "page.locator('.tg-process-drawer:visible').filter({ has: deepLinkState })",
     );
     expect(source).not.toContain('isAuthenticatedWelcomeBootRedirect');
     expect(urlHelperSource).toContain('for (let attempt = 0; attempt < maxNavigationAttempts;');
@@ -331,7 +332,7 @@ describe('reference refresh semantic E2E contract', () => {
     const cacheSource = source.slice(cacheStart, cacheEnd);
 
     expect(source).toContain('function getLocalizedProcessViewDrawer(');
-    expect(source).toContain("page.locator('.ant-drawer-content:visible').filter({");
+    expect(source).toContain("page.locator('.tg-process-drawer:visible').filter({");
     expect(source).toContain("getLocaleMessage(locale, 'pages.process.drawer.title.view')");
     expect(raceSource).toContain('await expect(localizedViewDrawer).toHaveCount(1);');
     expect(raceSource).toContain('localizedViewDrawer.getByText(currentText, { exact: true })');

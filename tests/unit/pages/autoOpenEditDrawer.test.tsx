@@ -54,10 +54,15 @@ jest.mock('antd', () => {
       {children}
     </select>
   );
-  Select.Option = ({ children, value }: any) => <option value={value}>{children}</option>;
-
+  const message = {
+    success: jest.fn(),
+    error: jest.fn(),
+  };
   return {
     __esModule: true,
+    App: {
+      useApp: () => ({ message }),
+    },
     Card,
     Checkbox,
     Col,
@@ -67,10 +72,7 @@ jest.mock('antd', () => {
     Select,
     Space,
     Tooltip,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
+    message,
     theme: {
       useToken: () => ({
         token: {
@@ -139,11 +141,6 @@ jest.mock('@ant-design/pro-components', () => {
     TableDropdown,
   };
 });
-
-jest.mock('@ant-design/pro-table', () => ({
-  __esModule: true,
-  TableDropdown: () => <div data-testid='table-dropdown' />,
-}));
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,

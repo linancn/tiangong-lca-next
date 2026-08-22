@@ -25,7 +25,7 @@ import FlowpropertiesSelectDescription from './select/description';
 type Props = {
   id: string;
   version: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   buttonType: string;
   lang: string;
   autoOpen?: boolean;
@@ -107,21 +107,30 @@ const FlowpropertyView: FC<Props> = ({
   const contentList: Partial<Record<FlowPropertyDataSetObjectKeys, React.ReactNode>> = {
     flowPropertiesInformation: (
       <>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.FlowProperties.view.flowPropertiesInformation.id'
-                defaultMessage='ID'
-              />
-            }
-            styles={{ label: { width: '100px' } }}
-          >
-            {initData?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.FlowProperties.view.flowPropertiesInformation.id'
+                  defaultMessage='ID'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '100px',
+                },
+              },
+              children:
+                initData?.flowPropertiesInformation?.dataSetInformation?.['common:UUID'] ?? '-',
+            },
+          ]}
+        />
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.FlowProperties.view.flowPropertiesInformation.name'
             defaultMessage='Name of flow property'
@@ -134,7 +143,7 @@ const FlowpropertyView: FC<Props> = ({
           data={initData?.flowPropertiesInformation?.dataSetInformation?.['common:synonyms']}
         />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage
             id='pages.FlowProperties.view.flowPropertiesInformation.generalComment'
             defaultMessage='General comment on data set'
@@ -193,20 +202,30 @@ const FlowpropertyView: FC<Props> = ({
           lang={lang}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
-                defaultMessage='Approval of overall compliance'
-              />
-            }
-            styles={{ label: { width: '240px' } }}
-          >
-            {getComplianceLabel(compliance?.['common:approvalOfOverallCompliance'] ?? '-')}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance'
+                  defaultMessage='Approval of overall compliance'
+                />
+              ),
+              styles: {
+                label: {
+                  width: '240px',
+                },
+              },
+              children: getComplianceLabel(
+                compliance?.['common:approvalOfOverallCompliance'] ?? '-',
+              ),
+            },
+          ]}
+        />
       </>
     ),
     administrativeInformation: (
@@ -220,20 +239,29 @@ const FlowpropertyView: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
-                  defaultMessage='Time stamp (last saved)'
-                />
-              }
-              styles={{ label: { width: '200px' } }}
-            >
-              {initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.modellingAndValidation.timeStamp'
+                    defaultMessage='Time stamp (last saved)'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '200px',
+                  },
+                },
+                children:
+                  initData?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? '-',
+              },
+            ]}
+          />
           <br />
           <SourcesDescription
             data={
@@ -258,24 +286,34 @@ const FlowpropertyView: FC<Props> = ({
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
-                  defaultMessage='Data set version'
-                />
-              }
-              styles={{ label: { width: '140px' } }}
-            >
-              <Space>
-                {initData?.administrativeInformation?.publicationAndOwnership?.[
-                  'common:dataSetVersion'
-                ] ?? '-'}
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.modellingAndValidation.dataSetVersion'
+                    defaultMessage='Data set version'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '140px',
+                  },
+                },
+                children: (
+                  <Space>
+                    {initData?.administrativeInformation?.publicationAndOwnership?.[
+                      'common:dataSetVersion'
+                    ] ?? '-'}
+                  </Space>
+                ),
+              },
+            ]}
+          />
           <br />
           <FlowpropertiesSelectDescription
             data={precedingDataSetVersionRef}
@@ -303,22 +341,31 @@ const FlowpropertyView: FC<Props> = ({
             }
           ></ContactSelectDescription>
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.FlowProperties.view.administrativeInformation.permanentDataSetURI'
-                  defaultMessage='Permanent data set URI'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {initData?.administrativeInformation?.publicationAndOwnership?.[
-                'common:permanentDataSetURI'
-              ] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.FlowProperties.view.administrativeInformation.permanentDataSetURI'
+                    defaultMessage='Permanent data set URI'
+                  />
+                ),
+                styles: {
+                  label: {
+                    width: '220px',
+                  },
+                },
+                children:
+                  initData?.administrativeInformation?.publicationAndOwnership?.[
+                    'common:permanentDataSetURI'
+                  ] ?? '-',
+              },
+            ]}
+          />
         </Card>
       </>
     ),
@@ -359,6 +406,7 @@ const FlowpropertyView: FC<Props> = ({
         ))}
 
       <Drawer
+        classNames={{ section: 'tg-dataset-view-drawer' }}
         getContainer={() => document.body}
         title={
           <FormattedMessage
@@ -366,10 +414,10 @@ const FlowpropertyView: FC<Props> = ({
             defaultMessage='View Flow property'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={handleClose} />}
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={handleClose}
       >

@@ -40,7 +40,7 @@ type Props = {
   lang: string;
   activeTabKey: FlowDataSetObjectKeys;
   drawerVisible: boolean;
-  formRef: React.MutableRefObject<ProFormInstance | undefined>;
+  formRef: React.RefObject<ProFormInstance | undefined>;
   onData: () => void;
   flowType: string | undefined;
   propertyDataSource: FlowPropertyData[];
@@ -91,7 +91,7 @@ export const FlowForm: FC<Props> = ({
 }) => {
   const refCheckContext = useRefCheckContext();
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
-  const actionRefPropertyTable = useRef<ActionType>();
+  const actionRefPropertyTable = useRef<ActionType | undefined>(undefined);
   const { token } = theme.useToken();
   const intl = useIntl();
   const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
@@ -440,7 +440,7 @@ export const FlowForm: FC<Props> = ({
 
   const tabContent: Record<FlowDataSetObjectKeys, React.ReactNode> = {
     flowInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'Data Set Information'}> */}
         <Card
           size='small'
@@ -861,7 +861,7 @@ export const FlowForm: FC<Props> = ({
             />
           }
         >
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.technologicalApplicability'
               defaultMessage='Technical purpose of product or waste'
@@ -892,7 +892,7 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
     modellingAndValidation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         {/* <Card size="small" title={'LCI Method'}>
           <Form.Item
             label={
@@ -980,7 +980,7 @@ export const FlowForm: FC<Props> = ({
       </Space>
     ),
     administrativeInformation: (
-      <Space direction='vertical' style={{ width: '100%' }}>
+      <Space orientation='vertical' style={{ width: '100%' }}>
         <Card
           size='small'
           title={

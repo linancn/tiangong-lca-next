@@ -1,4 +1,5 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
 import { resolveRouteViewState } from '@/services/general/routeViewState';
@@ -22,6 +23,7 @@ import { TeamMemberTable } from '@/services/teams/data';
 import {
   CrownOutlined,
   DeleteOutlined,
+  EyeOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   UserAddOutlined,
@@ -35,20 +37,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl, useLocation } from '@umijs/max';
-import {
-  Button,
-  Flex,
-  Form,
-  Grid,
-  message,
-  Modal,
-  Spin,
-  Switch,
-  Tabs,
-  theme,
-  Tooltip,
-  Upload,
-} from 'antd';
+import { Button, Flex, Form, Grid, Spin, Switch, Tabs, theme, Tooltip, Upload } from 'antd';
 import { Children, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
@@ -58,13 +47,14 @@ const DEFAULT_CREATE_TEAM_RANK = -1;
 const DEFAULT_CREATE_TEAM_IS_PUBLIC = false;
 
 const Team = () => {
+  const { message, modal } = useAntdAppApi();
   const { token } = theme.useToken();
   const screens = Grid.useBreakpoint();
   const [activeTabKey, setActiveTabKey] = useState('info');
   const [teamId, setTeamId] = useState('');
   const [userRole, setUserRole] = useState('');
 
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
 
   const [lightLogo, setLightLogo] = useState<FileType[]>([]);
   const [lightLogoPreviewUrl, setLightLogoPreviewUrl] = useState('');
@@ -411,6 +401,7 @@ const Team = () => {
       <Spin spinning={teamInfoSpinning}>
         <ProForm
           className='team-info-form'
+          prefixCls='team-form'
           disabled={
             (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
           }
@@ -610,6 +601,13 @@ const Team = () => {
               >
                 <div className='team-logo-upload team-logo-upload-light'>
                   <Upload
+                    prefixCls='team-logo-upload-slot'
+                    classNames={{
+                      root: 'team-logo-upload-root',
+                      list: 'team-logo-upload-list',
+                      item: 'team-logo-upload-item',
+                      trigger: 'team-logo-upload-trigger',
+                    }}
                     disabled={
                       (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
                       rank > 0
@@ -623,10 +621,24 @@ const Team = () => {
 
                       return false;
                     }}
+                    onChange={({ fileList }) => {
+                      if (fileList.length === 0) {
+                        setLightLogo([]);
+                        setLightLogoPreviewUrl('');
+                      }
+                    }}
                     onRemove={() => removeLogo('lightLogo')}
                     maxCount={1}
                     isImageUrl={() => true}
                     listType='picture-card'
+                    showUploadList={{
+                      previewIcon: (
+                        <EyeOutlined className='team-logo-action-icon team-logo-preview-icon' />
+                      ),
+                      removeIcon: (
+                        <DeleteOutlined className='team-logo-action-icon team-logo-delete-icon' />
+                      ),
+                    }}
                     fileList={
                       hasLightLogoPreview
                         ? [
@@ -683,6 +695,13 @@ const Team = () => {
                     .join(' ')}
                 >
                   <Upload
+                    prefixCls='team-logo-upload-slot'
+                    classNames={{
+                      root: 'team-logo-upload-root',
+                      list: 'team-logo-upload-list',
+                      item: 'team-logo-upload-item',
+                      trigger: 'team-logo-upload-trigger',
+                    }}
                     disabled={
                       (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
                       rank > 0
@@ -695,10 +714,24 @@ const Team = () => {
                       });
                       return false;
                     }}
+                    onChange={({ fileList }) => {
+                      if (fileList.length === 0) {
+                        setDarkLogo([]);
+                        setDarkLogoPreviewUrl('');
+                      }
+                    }}
                     onRemove={() => removeLogo('darkLogo')}
                     maxCount={1}
                     isImageUrl={() => true}
                     listType='picture-card'
+                    showUploadList={{
+                      previewIcon: (
+                        <EyeOutlined className='team-logo-action-icon team-logo-preview-icon' />
+                      ),
+                      removeIcon: (
+                        <DeleteOutlined className='team-logo-action-icon team-logo-delete-icon' />
+                      ),
+                    }}
                     fileList={
                       hasDarkLogoPreview
                         ? [
@@ -806,7 +839,7 @@ const Team = () => {
                   size='small'
                   icon={<DeleteOutlined />}
                   onClick={() => {
-                    Modal.confirm({
+                    modal.confirm({
                       okButtonProps: {
                         type: 'primary',
                         style: { backgroundColor: token.colorPrimary },
@@ -1017,8 +1050,9 @@ const Team = () => {
       <Tabs
         activeKey={activeTabKey}
         className='team-page-tabs'
+        classNames={{ body: 'team-page-tabs-body', item: 'team-page-tabs-item' }}
         onChange={onTabChange}
-        tabPosition={screens.lg === false ? 'top' : 'left'}
+        tabPlacement={screens.lg === false ? 'top' : 'start'}
         items={tabs}
       />
     </PageContainer>

@@ -20,14 +20,19 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
 
   const accountContent: React.ReactNode = (
     <>
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          label={<FormattedMessage id='pages.account.profile.userid' defaultMessage='User ID' />}
-          styles={{ label: { width: '120px' } }}
-        >
-          {initData?.id || '-'}
-        </Descriptions.Item>
-      </Descriptions>
+      <Descriptions
+        bordered
+        size='small'
+        column={1}
+        items={[
+          {
+            key: 'user-id',
+            label: <FormattedMessage id='pages.account.profile.userid' defaultMessage='User ID' />,
+            styles: { label: { width: '120px' } },
+            children: initData?.id || '-',
+          },
+        ]}
+      />
       <br />
       <Card
         size='small'
@@ -35,36 +40,37 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
           <FormattedMessage id='pages.account.info.title' defaultMessage='Account Information' />
         }
       >
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            label={<FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />}
-            styles={{ label: { width: '120px' } }}
-          >
-            <MailOutlined style={{ marginRight: 8 }} />
-            {initData?.email || '-'}
-          </Descriptions.Item>
-          {/* <Descriptions.Item
-            label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
-            styles={{ label: { width: '120px' } }}
-          >
-            <IdcardOutlined style={{ marginRight: 8 }} />
-            {initData?.role
-              ? intl.formatMessage({
-                  id: `pages.account.profile.role.${initData.role}`,
-                  defaultMessage: initData.role,
-                })
-              : '-'}
-          </Descriptions.Item> */}
-          <Descriptions.Item
-            label={
-              <FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />
-            }
-            styles={{ label: { width: '120px' } }}
-          >
-            <UserOutlined style={{ marginRight: 8 }} />
-            {initData?.display_name || '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={[
+            {
+              key: 'email',
+              label: <FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />,
+              styles: { label: { width: '120px' } },
+              children: (
+                <>
+                  <MailOutlined style={{ marginRight: 8 }} />
+                  {initData?.email || '-'}
+                </>
+              ),
+            },
+            {
+              key: 'nickname',
+              label: (
+                <FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />
+              ),
+              styles: { label: { width: '120px' } },
+              children: (
+                <>
+                  <UserOutlined style={{ marginRight: 8 }} />
+                  {initData?.display_name || '-'}
+                </>
+              ),
+            },
+          ]}
+        />
       </Card>
     </>
   );
@@ -109,7 +115,7 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
             defaultMessage='View Account Information'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -118,7 +124,6 @@ const AccountView: FC<Props> = ({ buttonType = 'icon', buttonTypeProp = 'default
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={true}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >

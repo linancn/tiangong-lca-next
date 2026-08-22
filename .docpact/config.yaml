@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-21"
-lastReviewedCommit: "58c21ab60247acc71ce7754414f78650749c508d"
-lastReviewedNote: 'Reviewed for Next Issue #910: TIDAS scalar normalization and the resulting locale artifact digest refresh remain covered by the existing frontend runtime, data-boundary, and testing contracts.'
+lastReviewedAt: "2026-08-22"
+lastReviewedCommit: "0047e79e83db054a95843b8ed934da048ad741f7"
+lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 dependency, runtime, fixture, semantic-browser, and generated locale paths remain covered by the existing routing and testing contracts.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

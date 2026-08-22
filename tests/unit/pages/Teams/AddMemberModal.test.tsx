@@ -157,9 +157,11 @@ jest.mock('antd', () => {
     ) : null;
 
   const ConfigProvider = ({ children }: any) => <>{children}</>;
+  const App = require('../../../mocks/antdApp').createAntdAppMock({ message });
 
   return {
     __esModule: true,
+    App,
     ConfigProvider,
     Form,
     Input,

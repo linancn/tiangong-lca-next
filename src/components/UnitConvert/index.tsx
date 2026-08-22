@@ -98,15 +98,10 @@ const UnitConvert: React.FC<UnitConvertProps> = ({
           name='unit'
           rules={[{ required: true }]}
         >
-          <Select onChange={handleUnitChange}>
-            {units &&
-              units?.length &&
-              units.map((unit) => (
-                <Select.Option key={unit.name} value={unit.name}>
-                  {unit.name}
-                </Select.Option>
-              ))}
-          </Select>
+          <Select
+            onChange={handleUnitChange}
+            options={units.map((unit) => ({ label: unit.name, value: unit.name }))}
+          />
         </Form.Item>
 
         <Form.Item

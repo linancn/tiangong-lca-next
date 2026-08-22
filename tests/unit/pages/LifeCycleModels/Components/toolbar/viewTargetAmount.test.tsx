@@ -75,7 +75,17 @@ jest.mock('antd', () => {
     ) : null;
   };
 
-  const Space = ({ children }: any) => <div>{children}</div>;
+  const Space = ({ children, orientation, style, styles, wrap }: any) => (
+    <div
+      data-item-max-width={styles?.item?.maxWidth}
+      data-item-min-width={styles?.item?.minWidth}
+      data-orientation={orientation}
+      data-wrap={String(Boolean(wrap))}
+      style={style}
+    >
+      {children}
+    </div>
+  );
 
   const Card = ({ children, title }: any) => (
     <section>
@@ -84,12 +94,19 @@ jest.mock('antd', () => {
     </section>
   );
 
-  const Descriptions = ({ children }: any) => <dl>{children}</dl>;
-  Descriptions.Item = ({ label, children }: any) => (
-    <div>
-      <dt>{toText(label)}</dt>
-      <dd>{children}</dd>
-    </div>
+  const Descriptions = ({ items = [], style, styles }: any) => (
+    <dl
+      data-label-max-width={styles?.label?.maxWidth}
+      data-label-overflow-wrap={styles?.label?.overflowWrap}
+      style={style}
+    >
+      {items.map((item: any, index: number) => (
+        <div key={item.key ?? index}>
+          {item.label === undefined ? null : <dt style={styles?.label}>{toText(item.label)}</dt>}
+          <dd>{item.children}</dd>
+        </div>
+      ))}
+    </dl>
   );
 
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
@@ -197,7 +214,7 @@ describe('ViewTargetAmount', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('flow-1')).toBeInTheDocument();
+    expect(await screen.findByText('flow-1')).toBeInTheDocument();
     expect(screen.getByText('flow data set')).toBeInTheDocument();
     expect(screen.getByText('../flows/flow-1.xml')).toBeInTheDocument();
     expect(screen.getByText('2.0.0')).toBeInTheDocument();
@@ -207,6 +224,28 @@ describe('ViewTargetAmount', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
 
     expect(setDrawerVisible).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps the reference-flow description inside a 450px drawer viewport', async () => {
+    render(
+      <TargetAmount
+        refNode={refNode as any}
+        drawerVisible
+        lang='en'
+        setDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+      />,
+    );
+
+    const referenceLabel = await screen.findByText('Reference flow dataset identifier');
+    const description = referenceLabel.closest('dl');
+    expect(description).toHaveStyle({ width: '100%', maxWidth: '450px' });
+    expect(description).toHaveAttribute('data-label-max-width', 'min(42vw, 22rem)');
+    expect(description).toHaveAttribute('data-label-overflow-wrap', 'anywhere');
+    expect(description?.parentElement).toHaveAttribute('data-wrap', 'true');
+    expect(description?.parentElement).toHaveAttribute('data-item-min-width', '0');
+    expect(description?.parentElement).toHaveAttribute('data-item-max-width', '100%');
+    expect(description?.parentElement).toHaveStyle({ width: '100%' });
   });
 
   it('disables the trigger without a ref node and falls back to placeholder values when process detail is sparse', async () => {
@@ -286,7 +325,7 @@ describe('ViewTargetAmount', () => {
     );
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-1', '1.0.0'));
-    expect(screen.getByText('flow-array')).toBeInTheDocument();
+    expect(await screen.findByText('flow-array')).toBeInTheDocument();
     expect(screen.getByText('flow-view:flow-array:')).toBeInTheDocument();
     expect(screen.getByTestId('unit-group-mini')).toHaveTextContent('flow:flow-array:');
   });

@@ -21,7 +21,7 @@ const mockUseIntl: jest.Mock<
 }));
 
 const mockModalConfirm = jest.fn();
-const mockModalDestroyAll = jest.fn();
+const mockModalDestroy = jest.fn();
 
 const setupModuleMocks = () => {
   jest.doMock(
@@ -112,13 +112,13 @@ const setupModuleMocks = () => {
 
     ModalComponent.confirm = (config: any) => {
       mockModalConfirm(config);
-      return { destroy: jest.fn() };
+      return { destroy: mockModalDestroy };
     };
-
-    ModalComponent.destroyAll = (...args: any[]) => mockModalDestroyAll(...args);
+    const App = require('../../mocks/antdApp').createAntdAppMock({ modal: ModalComponent });
 
     return {
       __esModule: true,
+      App,
       Button,
       Modal: ModalComponent,
       Spin,
@@ -152,12 +152,14 @@ const setupModuleMocks = () => {
     '@/components/HeaderDropdown',
     () => ({
       __esModule: true,
-      default: function HeaderDropdown({ menu, children }: any) {
+      default: function HeaderDropdown({ menu, children, trigger }: any) {
         const items =
           menu.items?.filter((item: any) => !item.hidden && item.type !== 'divider') ?? [];
         return (
           <div>
-            <div data-testid='header-trigger'>{children}</div>
+            <div data-testid='header-trigger' data-trigger={trigger?.join(',')}>
+              {children}
+            </div>
             <nav aria-label='User menu'>
               {items.map((item: any) => (
                 <button
@@ -236,7 +238,7 @@ describe('AvatarDropdown', () => {
     mockUseModel.mockReset();
     mockUseIntl.mockClear();
     mockModalConfirm.mockReset();
-    mockModalDestroyAll.mockReset();
+    mockModalDestroy.mockReset();
     mockLocation = { pathname: '/', search: '' };
 
     mockedLogout.mockResolvedValue(undefined);
@@ -305,6 +307,7 @@ describe('AvatarDropdown', () => {
 
     expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
     expect(screen.getByText('avatar')).toBeInTheDocument();
+    expect(screen.getByTestId('header-trigger')).toHaveAttribute('data-trigger', 'hover,click');
 
     await user.click(screen.getByRole('button', { name: 'Account Profile' }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/account');
@@ -440,7 +443,7 @@ describe('AvatarDropdown', () => {
     }
 
     await waitFor(() => {
-      expect(mockModalDestroyAll).toHaveBeenCalled();
+      expect(mockModalDestroy).toHaveBeenCalled();
     });
 
     await waitFor(() => {
@@ -475,7 +478,7 @@ describe('AvatarDropdown', () => {
       unmount();
     }
 
-    expect(mockModalDestroyAll).toHaveBeenCalled();
+    expect(mockModalDestroy).toHaveBeenCalled();
     expect(mockHistoryPush).toHaveBeenCalledWith('/team?action=create');
   });
 

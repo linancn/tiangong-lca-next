@@ -14,7 +14,7 @@ import ToolbarEdit from './toolbar/editIndex';
 type Props = {
   buttonType: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   actionType?: 'create' | 'copy' | 'createVersion';
   id?: string;
   version?: string;
@@ -98,27 +98,23 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
   return (
     <>
       {buttonType === 'icon' ? (
-        <Tooltip
-          title={
-            actionType === 'copy' ? (
-              <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
-            ) : actionType === 'createVersion' ? (
-              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
-            ) : (
-              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
-            )
-          }
-        >
-          {actionType === 'copy' ? (
+        actionType === 'copy' ? (
+          <Tooltip title={<FormattedMessage id='pages.button.copy' defaultMessage='Copy' />}>
             <Button shape='circle' icon={<CopyOutlined />} size='small' onClick={onCreate}></Button>
-          ) : (
-            <ToolBarButton
-              icon={<PlusOutlined />}
-              tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
-              onClick={onCreate}
-            />
-          )}
-        </Tooltip>
+          </Tooltip>
+        ) : (
+          <ToolBarButton
+            icon={<PlusOutlined />}
+            tooltip={
+              actionType === 'createVersion' ? (
+                <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+              ) : (
+                <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+              )
+            }
+            onClick={onCreate}
+          />
+        )
       ) : (
         <Button onClick={onCreate}>
           <FormattedMessage id='pages.button.create' defaultMessage='Create' />
@@ -141,7 +137,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
             />
           )
         }
-        width='100%'
+        size='100%'
         closable={false}
         extra={
           <Button
@@ -153,7 +149,7 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
             }}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => {
           if (isSave) reload();

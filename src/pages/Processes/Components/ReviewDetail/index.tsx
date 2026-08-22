@@ -72,7 +72,7 @@ export const formatReviewDetailAction = (intl: IntlShapeLike, action: string): s
 const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const intl = useIntl();
   const screens = Grid.useBreakpoint();
   const useCompactLogCards = screens.sm === false;
@@ -234,7 +234,7 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
           defaultMessage: 'Review Logs',
         })}
         placement='right'
-        width='min(600px, 100vw)'
+        size='min(600px, 100vw)'
         open={drawerVisible}
         onClose={handleDrawerClose}
         destroyOnHidden

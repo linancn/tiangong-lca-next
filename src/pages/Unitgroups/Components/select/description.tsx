@@ -29,21 +29,25 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
 
   return (
     <Card size='small' title={title}>
-      <Space direction='horizontal'>
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.unitgroup.refObjectId'
-                defaultMessage='Reference unit group data set identifier'
-              />
-            }
-            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
-          >
-            {refData?.['@refObjectId'] ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+      <Space orientation='horizontal'>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.unitgroup.refObjectId'
+                  defaultMessage='Reference unit group data set identifier'
+                />
+              ),
+              children: refData?.['@refObjectId'] ?? '-',
+            },
+          ]}
+        />
         {refData?.['@refObjectId'] && (
           <UnitGroupView
             id={refData['@refObjectId']}
@@ -54,43 +58,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
         )}
       </Space>
       <br />
-      {/* <br /> */}
-      {/* <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label={
-            <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.type"
-              defaultMessage="Type"
-            />
-          }
-          styles={{ label: { width: '140px' } }}
-        >
-          {data?.['@type'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
-      <br />
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item
-          key={0}
-          label={
-            <FormattedMessage
-              id="pages.FlowProperties.view.flowPropertiesInformation.uri"
-              defaultMessage="URI"
-            />
-          }
-          styles={{ label: { width: '140px' } }}
-        >
-          {data?.['@uri'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions>
-      <br /> */}
-      {/* <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label="Version" styles={{ label: { width: '120px' } }}>
-          {data?.['@version'] ?? '-'}
-        </Descriptions.Item>
-      </Descriptions> */}
-      <Divider orientationMargin='0' orientation='left' plain>
+      <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
         <FormattedMessage
           id='pages.FlowProperties.view.flowPropertiesInformation.shortDescription'
           defaultMessage='Short description'
@@ -107,19 +75,27 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           />
         }
       >
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
-            }
-            styles={{ label: { width: '160px' } }}
-          >
-            {toSuperscript(refUnit?.refUnitName ?? '-')}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='pages.unitgroup.name' defaultMessage='Name of unit group' />
+              ),
+              styles: {
+                label: {
+                  width: '160px',
+                },
+              },
+              children: toSuperscript(refUnit?.refUnitName ?? '-'),
+            },
+          ]}
+        />
         <br />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
           <FormattedMessage id='pages.unitgroup.generalComment' defaultMessage='General comment' />
         </Divider>
         <LangTextItemDescription data={refUnit?.refUnitGeneralComment} />

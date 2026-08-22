@@ -94,7 +94,7 @@ jest.mock('antd', () => {
   };
 
   Form.useForm = () => {
-    const formRef = React.useRef();
+    const formRef = React.useRef(undefined);
     if (!formRef.current) {
       formRef.current = buildMockFormApi();
     }
@@ -264,21 +264,31 @@ jest.mock('antd', () => {
     loading: jest.fn(),
   };
 
-  return {
-    __esModule: true,
-    Form,
-    InputNumber,
-    Modal,
-    Radio: {
-      Group: RadioGroup,
-      Button: RadioButton,
-    },
-    Select,
-    Space,
-    Typography,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Form,
+      InputNumber,
+      Modal,
+      Radio: {
+        Group: RadioGroup,
+        Button: RadioButton,
+      },
+      Select,
+      Space,
+      Typography,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 import { message } from 'antd';

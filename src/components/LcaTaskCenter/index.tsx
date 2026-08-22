@@ -1,4 +1,5 @@
 import ClosureTaskDetail from '@/components/ClosureTaskDetail';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
 import {
   listDataProductTasks,
@@ -58,7 +59,6 @@ import {
   Tag,
   Tooltip,
   Typography,
-  message,
   theme,
 } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
@@ -382,7 +382,7 @@ const HorizontalProcessSteps: React.FC<{ steps: ProcessStepItem[]; intl: IntlSha
           >
             <ProcessStepMarker index={index} state={step.state} />
           </span>
-          <Space direction='vertical' size={1} style={{ display: 'flex', marginTop: 6 }}>
+          <Space orientation='vertical' size={1} style={{ display: 'flex', marginTop: 6 }}>
             <Typography.Text strong style={{ fontSize: 12 }}>
               {step.title}
             </Typography.Text>
@@ -915,7 +915,7 @@ function DiagnosticRows({
   }
 
   return (
-    <Space direction='vertical' size={6} style={{ maxWidth: 440 }}>
+    <Space orientation='vertical' size={6} style={{ maxWidth: 440 }}>
       {visibleFields.map((field) => (
         <div key={field.label}>
           <Typography.Text type='secondary' style={{ display: 'block', fontSize: 12 }}>
@@ -1118,7 +1118,7 @@ const DetailSection: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
 }) => (
-  <Space direction='vertical' size={8} style={{ width: '100%' }}>
+  <Space orientation='vertical' size={8} style={{ width: '100%' }}>
     <Typography.Text strong>{title}</Typography.Text>
     {children}
   </Space>
@@ -1134,7 +1134,7 @@ const PackageProcessDetail: React.FC<{
 function lcaBusinessDetail(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
   const errorText = task.error?.trim();
   return (
-    <Space direction='vertical' size={14} style={{ width: '100%' }}>
+    <Space orientation='vertical' size={14} style={{ width: '100%' }}>
       <DetailGrid
         rows={[
           {
@@ -1192,7 +1192,7 @@ function packageBusinessDetail(
       : 'tidas-package.zip');
 
   return (
-    <Space direction='vertical' size={14} style={{ width: '100%' }}>
+    <Space orientation='vertical' size={14} style={{ width: '100%' }}>
       <DetailGrid
         rows={[
           {
@@ -1288,7 +1288,7 @@ const TaskDetailPopoverContent: React.FC<{
   intl: IntlShapeLike;
 }> = ({ item, intl }) => {
   return (
-    <Space direction='vertical' size={12} style={{ minWidth: 0, width: '100%' }}>
+    <Space orientation='vertical' size={12} style={{ minWidth: 0, width: '100%' }}>
       <DetailSection
         title={intl.formatMessage({
           id: 'pages.process.lca.taskCenter.detail.infoTitle',
@@ -1331,6 +1331,7 @@ const TaskDiagnosticsPopoverContent: React.FC<{
 };
 
 const LcaTaskCenter: React.FC = () => {
+  const { message } = useAntdAppApi();
   const intl = useIntl();
   const { token } = theme.useToken();
   const [open, setOpen] = useState(false);
@@ -1505,6 +1506,10 @@ const LcaTaskCenter: React.FC = () => {
   return (
     <>
       <HeaderActionIcon
+        aria-label={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.title',
+          defaultMessage: 'Task Center',
+        })}
         title={intl.formatMessage({
           id: 'pages.process.lca.taskCenter.title',
           defaultMessage: 'Task Center',
@@ -1526,7 +1531,7 @@ const LcaTaskCenter: React.FC = () => {
         footer={null}
         width={1120}
       >
-        <Space direction='vertical' size={24} style={{ width: '100%' }}>
+        <Space orientation='vertical' size={24} style={{ width: '100%' }}>
           <Tabs
             activeKey={activeFilter}
             animated={false}
@@ -1597,7 +1602,7 @@ const LcaTaskCenter: React.FC = () => {
                         padding: '12px 16px',
                       }}
                     >
-                      <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
+                      <Space orientation='vertical' size={3} style={{ minWidth: 0 }}>
                         <Space size={8} wrap>
                           <Typography.Text strong style={{ fontSize: 14 }}>
                             {task.title}
@@ -1636,7 +1641,7 @@ const LcaTaskCenter: React.FC = () => {
                       <Typography.Text style={{ fontSize: 13 }}>
                         {formatDateTime(task.updatedAt, intl)}
                       </Typography.Text>
-                      <Space direction='vertical' size={5} style={{ width: '100%' }}>
+                      <Space orientation='vertical' size={5} style={{ width: '100%' }}>
                         <Typography.Text style={{ fontSize: 13 }}>
                           {task.phase ?? 'Queued'}
                         </Typography.Text>
@@ -1646,7 +1651,7 @@ const LcaTaskCenter: React.FC = () => {
                             showInfo={false}
                             size='small'
                             style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
-                            trailColor={token.colorFillSecondary}
+                            railColor={token.colorFillSecondary}
                           />
                           <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
                             {progressPercent}%
@@ -1716,7 +1721,7 @@ const LcaTaskCenter: React.FC = () => {
                           ) : (
                             <Alert
                               type='error'
-                              message={intl.formatMessage({
+                              title={intl.formatMessage({
                                 id: 'pages.dataProcessing.closure.detailUnavailable',
                                 defaultMessage: 'Task details are currently unavailable.',
                               })}
@@ -1748,7 +1753,7 @@ const LcaTaskCenter: React.FC = () => {
                         padding: '12px 16px',
                       }}
                     >
-                      <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
+                      <Space orientation='vertical' size={3} style={{ minWidth: 0 }}>
                         <Space size={8} wrap>
                           <Typography.Text strong style={{ fontSize: 14 }}>
                             {taskTitle(item, intl)}
@@ -1758,7 +1763,7 @@ const LcaTaskCenter: React.FC = () => {
                             trigger='click'
                             placement='bottomLeft'
                             styles={{
-                              body: {
+                              content: {
                                 maxHeight: DIAGNOSTICS_POPOVER_MAX_HEIGHT,
                                 overflowX: 'hidden',
                                 overflowY: 'auto',
@@ -1809,7 +1814,7 @@ const LcaTaskCenter: React.FC = () => {
                         })}{' '}
                         {formatDuration(getTaskElapsedMs(item))}
                       </Typography.Text>
-                      <Space direction='vertical' size={5} style={{ width: '100%' }}>
+                      <Space orientation='vertical' size={5} style={{ width: '100%' }}>
                         <Space size={4} wrap>
                           <Typography.Text style={{ fontSize: 13 }}>
                             {intl.formatMessage({
@@ -1828,7 +1833,7 @@ const LcaTaskCenter: React.FC = () => {
                             size='small'
                             strokeColor={taskProgressStrokeColor(item, token)}
                             style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
-                            trailColor={token.colorFillSecondary}
+                            railColor={token.colorFillSecondary}
                           />
                           <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
                             {progressPercent}%

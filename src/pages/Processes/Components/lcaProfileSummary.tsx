@@ -180,7 +180,7 @@ const LcaProfileSummary: FC<Props> = ({
 
   return (
     <Card size='small'>
-      <Space direction='vertical' size='middle' style={{ width: '100%' }}>
+      <Space orientation='vertical' size='middle' style={{ width: '100%' }}>
         <div>
           <Space align='center' size={4}>
             <Typography.Text strong>
@@ -225,28 +225,31 @@ const LcaProfileSummary: FC<Props> = ({
           </Col>
         </Row>
 
-        <Descriptions bordered size='small' column={1}>
-          <Descriptions.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.lciaresults.profile.topPositive'
-                defaultMessage='Largest positive category'
-              />
-            }
-          >
-            {renderProfileValue(model.topPositiveItem ?? model.topAbsoluteItem)}
-          </Descriptions.Item>
-          <Descriptions.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.lciaresults.profile.topNegative'
-                defaultMessage='Largest negative category'
-              />
-            }
-          >
-            {renderProfileValue(model.topNegativeItem)}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size='small'
+          column={1}
+          items={[
+            {
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.lciaresults.profile.topPositive'
+                  defaultMessage='Largest positive category'
+                />
+              ),
+              children: renderProfileValue(model.topPositiveItem ?? model.topAbsoluteItem),
+            },
+            {
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.lciaresults.profile.topNegative'
+                  defaultMessage='Largest negative category'
+                />
+              ),
+              children: renderProfileValue(model.topNegativeItem),
+            },
+          ]}
+        />
 
         {model.topItems.length > 0 ? (
           <>

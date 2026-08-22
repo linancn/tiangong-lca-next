@@ -64,10 +64,26 @@ describe('ResponsiveDataList helpers', () => {
       wide: ['xl'],
     });
     expect(responsiveDataListTableProps).toEqual({
+      cardProps: {
+        classNames: {
+          body: 'responsive-data-list-card-body',
+          root: 'responsive-data-list-card',
+        },
+      },
       className: 'responsive-data-list-table',
+      classNames: {
+        body: { cell: 'responsive-data-list-body-cell' },
+        content: 'responsive-data-list-table-scroll',
+        header: { cell: 'responsive-data-list-header-cell' },
+        root: 'responsive-data-list-table-root',
+      },
       scroll: { x: 'max-content' },
       tableLayout: 'fixed',
+      toolbar: {
+        className: 'responsive-data-list-toolbar',
+      },
     });
+    expect(responsiveDataListTableProps.toolbar).not.toHaveProperty('prefixCls');
     expect(responsiveSearchCardClassName).toBe('responsive-data-list-search-card');
     expect(responsiveSearchRowProps).toEqual({ align: 'middle' });
     expect(responsiveSearchPrimaryColProps).toEqual({
@@ -168,7 +184,9 @@ describe('ResponsiveDataList helpers', () => {
     );
 
     expect(screen.queryByTestId('action-space')).not.toBeInTheDocument();
-    expect(screen.getByTestId('table-dropdown')).toHaveClass('responsive-data-list-more-action');
+    expect(screen.getByTestId('table-dropdown').parentElement).toHaveClass(
+      'responsive-data-list-more-action',
+    );
     expect(screen.getByText('Edit')).toBeInTheDocument();
     expect(screen.getByText('View')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
@@ -191,9 +209,9 @@ describe('ResponsiveDataList helpers', () => {
       </ResponsiveDataListToolbarMore>,
     );
 
-    expect(container.querySelector('.ant-pro-table-list-toolbar-setting-item')).toHaveClass(
-      'responsive-data-list-toolbar-more-action',
-    );
+    expect(
+      container.querySelector('.responsive-data-list-toolbar-more-action'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('table-dropdown')).toHaveClass('responsive-data-list-more-action');
     expect(screen.getByText('Import')).toBeInTheDocument();
     expect(screen.getByText('Calculate')).toBeInTheDocument();

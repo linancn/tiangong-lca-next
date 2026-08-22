@@ -13,6 +13,16 @@ jest.mock('@/services/notifications/api', () => ({
   upsertValidationIssueNotification: jest.fn(),
 }));
 
+jest.mock('@/contexts/AntdAppContext', () => ({
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action({
+      message: {
+        error: (...args: any[]) => mockMessageError(...args),
+        success: (...args: any[]) => mockMessageSuccess(...args),
+      },
+    }),
+}));
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => (
@@ -166,10 +176,6 @@ jest.mock('antd', () => {
     Modal,
     Space,
     Table,
-    message: {
-      success: (...args: any[]) => mockMessageSuccess(...args),
-      error: (...args: any[]) => mockMessageError(...args),
-    },
     theme: {
       useToken: () => ({
         token: {

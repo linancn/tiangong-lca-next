@@ -46,9 +46,7 @@ async function fulfillTeams(route: Route, body: unknown[], status = 200): Promis
 async function closeModal(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog').filter({ visible: true });
   await expect(dialog).toHaveCount(1);
-  await dialog.locator('.ant-modal-close').evaluate((button: HTMLButtonElement) => {
-    button.click();
-  });
+  await dialog.locator('.tg-welcome-modal-close').click();
   await expect(dialog).toHaveCount(0);
 }
 
@@ -104,8 +102,9 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
           })
           .click();
         await expect.poll(() => modalRequestCount).toBe(1);
-        await expect(page.locator('.ant-modal').filter({ visible: true })).toBeVisible();
-        await expect(page.locator('.ant-modal .ant-spin-spinning')).toBeVisible();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.locator('[aria-live="polite"][aria-busy="true"]')).toBeVisible();
         releaseModalResponse?.();
         await expect(
           page.getByRole('status').filter({

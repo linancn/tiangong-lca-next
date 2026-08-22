@@ -1,7 +1,8 @@
 import { getAISuggestion } from '@/services/general/api';
+import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { CheckOutlined, CloseOutlined, CopyOutlined, UndoOutlined } from '@ant-design/icons';
 import { createFlow, createProcess } from '@tiangong-lca/tidas-sdk/core';
-import { Button, message, Modal, Space, Spin, theme, Typography } from 'antd';
+import { Button, Modal, Space, Spin, theme, Typography } from 'antd';
 import * as jsondiffpatch from 'jsondiffpatch';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -48,6 +49,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   onLatestJsonChange,
   onClose = () => {},
 }) => {
+  const { message } = useAntdAppApi();
   const intl = useIntl();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -1391,7 +1393,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       >
         <Spin
           spinning={loading}
-          tip={intl.formatMessage({ id: 'component.aiSuggestion.modal.loading' })}
+          description={intl.formatMessage({ id: 'component.aiSuggestion.modal.loading' })}
         >
           {renderDiffContent()}
         </Spin>

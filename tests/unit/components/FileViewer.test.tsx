@@ -40,7 +40,7 @@ type CardProps = {
 };
 
 type ImagePreviewProps = {
-  onVisibleChange?: (visible: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
   src?: string;
 };
 
@@ -78,7 +78,7 @@ jest.mock('antd', () => {
         <button
           type='button'
           data-testid='file-gallery-preview-trigger'
-          onClick={() => preview.onVisibleChange?.(true)}
+          onClick={() => preview.onOpenChange?.(true)}
         >
           preview
         </button>

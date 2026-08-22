@@ -4,7 +4,14 @@
  */
 
 import { errorConfig } from '@/requestErrorConfig';
-import { message, notification } from 'antd';
+
+const mockMessage = {
+  warning: jest.fn(),
+  error: jest.fn(),
+};
+const mockNotification = {
+  open: jest.fn(),
+};
 
 const mockFormatMessage = jest.fn(
   ({ defaultMessage }: { defaultMessage: string }, values?: Record<string, string | number>) =>
@@ -16,15 +23,10 @@ jest.mock('@umijs/max', () => ({
   getIntl: () => ({ formatMessage: mockFormatMessage }),
 }));
 
-jest.mock('antd', () => ({
+jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
-  message: {
-    warning: jest.fn(),
-    error: jest.fn(),
-  },
-  notification: {
-    open: jest.fn(),
-  },
+  dispatchAntdAppAction: (action: (api: unknown) => void) =>
+    action({ message: mockMessage, modal: {}, notification: mockNotification }),
 }));
 
 type MessageMock = {
@@ -61,8 +63,8 @@ const callResponseInterceptor = (interceptor: any, arg: any) => {
   return Array.isArray(interceptor) ? interceptor[0](arg) : interceptor(arg);
 };
 
-const messageMock = message as unknown as MessageMock;
-const notificationMock = notification as unknown as NotificationMock;
+const messageMock = mockMessage as MessageMock;
+const notificationMock = mockNotification as NotificationMock;
 
 describe('requestErrorConfig (src/requestErrorConfig.ts)', () => {
   beforeEach(() => {
@@ -140,7 +142,7 @@ describe('requestErrorConfig (src/requestErrorConfig.ts)', () => {
 
     expect(notificationMock.open).toHaveBeenCalledWith({
       description: 'notify-path',
-      message: 503,
+      title: 503,
     });
     expect(messageMock.error).not.toHaveBeenCalled();
   });

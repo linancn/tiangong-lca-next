@@ -14,7 +14,7 @@ type Props = {
   version: string;
   buttonType: string;
   lang: string;
-  actionRef?: React.MutableRefObject<ActionType | undefined>;
+  actionRef?: React.RefObject<ActionType | undefined>;
   buttonTypeProp?: ButtonType;
   disabled?: boolean;
   autoOpen?: boolean;
@@ -119,21 +119,26 @@ const LifeCycleModelView: FC<Props> = ({
         </Button>
       ) : null}
       <Drawer
+        classNames={{
+          body: 'tg-lifecycle-model-drawer-body',
+          section: 'tg-lifecycle-model-drawer-section',
+          wrapper: 'tg-lifecycle-model-drawer-wrapper',
+        }}
         destroyOnHidden
         getContainer={() => document.body}
         title={
           <FormattedMessage id='pages.flow.model.drawer.title.view' defaultMessage='View Model' />
         }
-        width='100vw'
+        size='100vw'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={closeDrawer}
         rootStyle={{ maxWidth: '100vw', overflow: 'hidden' }}
         styles={{
           body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
-          content: { minWidth: 0, overflow: 'hidden', width: '100%' },
+          section: { minWidth: 0, overflow: 'hidden', width: '100%' },
           wrapper: { maxWidth: '100vw', overflow: 'hidden', width: '100vw' },
         }}
       >

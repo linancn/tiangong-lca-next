@@ -76,7 +76,9 @@ jest.mock('antd', () => {
     </button>
   );
   const Tooltip = ({ children }: any) => <>{children}</>;
-  const Space = ({ children, direction }: any) => <div data-direction={direction}>{children}</div>;
+  const Space = ({ children, orientation }: any) => (
+    <div data-orientation={orientation}>{children}</div>
+  );
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
   const message = {
@@ -86,6 +88,8 @@ jest.mock('antd', () => {
     warning: jest.fn(),
     loading: jest.fn(),
   };
+
+  const App = { useApp: () => ({ message }) };
   const theme = {
     useToken: () => ({
       token: {
@@ -105,6 +109,7 @@ jest.mock('antd', () => {
     Tooltip,
     Space,
     Spin,
+    App,
     message,
     theme,
   };

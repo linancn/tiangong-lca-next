@@ -95,15 +95,25 @@ jest.mock('antd', () => {
     }),
   };
 
-  return {
-    __esModule: true,
-    Button,
-    ConfigProvider,
-    Modal,
-    Tooltip,
-    message,
-    theme,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      ConfigProvider,
+      Modal,
+      Tooltip,
+      message,
+      theme,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 const getMockAntdMessage = () => jest.requireMock('antd').message as Record<string, jest.Mock>;

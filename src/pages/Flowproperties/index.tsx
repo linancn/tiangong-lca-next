@@ -27,7 +27,7 @@ import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, Tooltip, theme } from 'antd';
-import type { FC, MutableRefObject } from 'react';
+import type { FC, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -99,7 +99,7 @@ const TableList: FC = () => {
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
   const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | undefined>(undefined);
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
@@ -136,7 +136,7 @@ const TableList: FC = () => {
 
   const renderFlowpropertyActions = (
     row: FlowpropertyTable,
-    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+    listActionRef: RefObject<ActionType | undefined> = actionRef,
   ) => {
     if (dataSource === 'my') {
       return [

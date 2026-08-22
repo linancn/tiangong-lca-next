@@ -156,7 +156,7 @@ const Control = (props: ControlIProps) => {
 
   return (
     <Space
-      direction='vertical'
+      orientation='vertical'
       size={'middle'}
       style={{ position: 'absolute', right: 13, bottom: 5 }}
     >
@@ -166,7 +166,7 @@ const Control = (props: ControlIProps) => {
             <Tooltip
               key={tool}
               title={
-                <Space direction='vertical' size={'small'}>
+                <Space orientation='vertical' size={'small'}>
                   {dropDownItems.map((item) => {
                     return (
                       <Button

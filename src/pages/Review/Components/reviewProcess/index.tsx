@@ -19,7 +19,7 @@ import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { AuditOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, Form, Input, message, Space, Spin, Tooltip } from 'antd';
+import { App, Button, Drawer, Form, Input, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -31,7 +31,7 @@ type Props = {
   reviewId: string;
   version: string;
   lang: string;
-  actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
+  actionRef: React.RefObject<ActionType | undefined> | undefined;
   type: 'edit' | 'view';
   tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   hideButton?: boolean;
@@ -167,13 +167,14 @@ const ReviewProcessDetail: FC<Props> = ({
   hideButton = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefEdit = useRef<ProFormInstance>();
+  const formRefEdit = useRef<ProFormInstance>(undefined);
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [fromData, setFromData] = useState<any>({});
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
   const intl = useIntl();
+  const { message } = App.useApp();
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const [rejectedComments, setRejectedComments] = useState<any>([]);
 
@@ -456,7 +457,7 @@ const ReviewProcessDetail: FC<Props> = ({
             />
           )
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -465,7 +466,7 @@ const ReviewProcessDetail: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={

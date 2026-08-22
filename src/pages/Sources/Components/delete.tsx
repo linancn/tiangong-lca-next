@@ -7,7 +7,7 @@ import { getThumbFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import type { UploadFile } from 'antd';
-import { Button, Modal, Tooltip, message } from 'antd';
+import { Button, Modal, Tooltip, App } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -16,7 +16,7 @@ type Props = {
   id: string;
   version: string;
   buttonType: string;
-  actionRef: React.MutableRefObject<ActionType | undefined>;
+  actionRef: React.RefObject<ActionType | undefined>;
   disabled?: boolean;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -28,6 +28,7 @@ const SourceDelete: FC<Props> = ({
   disabled = false,
   setViewDrawerVisible,
 }) => {
+  const { message } = App.useApp();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const intl = useIntl();
 

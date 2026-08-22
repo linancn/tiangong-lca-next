@@ -1,11 +1,11 @@
+import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 import { FunctionRegion } from '@supabase/supabase-js';
-import { message } from 'antd';
-import { SortOrder } from 'antd/lib/table/interface';
+import type { SortOrder } from 'antd/es/table/interface';
 import { getILCDClassification, getILCDFlowCategorizationAll } from '../classifications/api';
 import { genFlowName } from '../flows/util';
 import {
@@ -1199,7 +1199,7 @@ export async function contributeSource(tableName: string, id: string, version: s
       teamId,
     });
   } else {
-    message.error(getNoTeamMessage());
+    dispatchAntdAppAction(({ message }) => message.error(getNoTeamMessage()));
   }
   return {
     error: true,

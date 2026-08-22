@@ -18,7 +18,7 @@ type Props = {
   lang: string;
   // dataSource: string;
   buttonType: string;
-  // actionRef: React.MutableRefObject<ActionType | undefined>;
+  // actionRef: React.RefObject<ActionType | undefined>;
 };
 
 const getDataDerivationTypeStatusOptions = (value: string) => {
@@ -65,7 +65,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             defaultMessage='View Exchange'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -80,25 +80,29 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           //   {footerButtons}
           // </Space>
         }
-        maskClosable={true}
+        mask={{ closable: true }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
         {/* <Spin spinning={spinning}> */}
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.exchangeDirection'
-                defaultMessage='Exchange direction'
-              />
-            }
-            styles={{ label: { width: '180px' } }}
-          >
-            {viewData.exchangeDirection ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.exchangeDirection'
+                  defaultMessage='Exchange direction'
+                />
+              ),
+              styles: { label: { width: '180px' } },
+              children: viewData.exchangeDirection ?? '-',
+            },
+          ]}
+        />
         <br />
         <FlowsSelectDescription
           title={
@@ -111,125 +115,157 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           lang={lang}
         />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.location'
-                defaultMessage='Location'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {viewData.location ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.location'
+                  defaultMessage='Location'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: viewData.location ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.functionType'
-                defaultMessage='Function type'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {getFunctionTypeOptions(viewData.functionType)}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.functionType'
+                  defaultMessage='Function type'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: getFunctionTypeOptions(viewData.functionType),
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.referenceToVariable'
-                defaultMessage='Variable'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {viewData.referenceToVariable ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.referenceToVariable'
+                  defaultMessage='Variable'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: viewData.referenceToVariable ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {viewData.meanAmount ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage id='processExchange.meanAmount' defaultMessage='Mean amount' />
+              ),
+              styles: { label: { width: '220px' } },
+              children: viewData.meanAmount ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='processExchange.resultingAmount'
-                defaultMessage='Resulting amount'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {viewData.resultingAmount ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='processExchange.resultingAmount'
+                  defaultMessage='Resulting amount'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: viewData.resultingAmount ?? '-',
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='processExchange.uncertaintyDistributionType'
-                defaultMessage='Uncertainty distribution type'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {viewData.uncertaintyDistributionType ?? '-'}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='processExchange.uncertaintyDistributionType'
+                  defaultMessage='Uncertainty distribution type'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: viewData.uncertaintyDistributionType ?? '-',
+            },
+          ]}
+        />
         {viewData.uncertaintyDistributionType === 'triangular' ||
         viewData.uncertaintyDistributionType === 'uniform' ? (
           <>
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='processExchange.minimumAmount'
-                    defaultMessage='Minimum amount'
-                  />
-                }
-                styles={{ label: { width: '220px' } }}
-              >
-                {viewData.minimumAmount ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='processExchange.minimumAmount'
+                      defaultMessage='Minimum amount'
+                    />
+                  ),
+                  styles: { label: { width: '220px' } },
+                  children: viewData.minimumAmount ?? '-',
+                },
+              ]}
+            />
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='processExchange.maximumAmount'
-                    defaultMessage='Maximum amount'
-                  />
-                }
-                styles={{ label: { width: '220px' } }}
-              >
-                {viewData.maximumAmount ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='processExchange.maximumAmount'
+                      defaultMessage='Maximum amount'
+                    />
+                  ),
+                  styles: { label: { width: '220px' } },
+                  children: viewData.maximumAmount ?? '-',
+                },
+              ]}
+            />
           </>
         ) : (
           <></>
@@ -238,20 +274,24 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         viewData.uncertaintyDistributionType === 'log-normal' ? (
           <>
             <br />
-            <Descriptions bordered size={'small'} column={1}>
-              <Descriptions.Item
-                key={0}
-                label={
-                  <FormattedMessage
-                    id='processExchange.relativeStandardDeviation95In'
-                    defaultMessage='Relative StdDev in %'
-                  />
-                }
-                styles={{ label: { width: '220px' } }}
-              >
-                {viewData.relativeStandardDeviation95In ?? '-'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              bordered
+              size={'small'}
+              column={1}
+              items={[
+                {
+                  key: 0,
+                  label: (
+                    <FormattedMessage
+                      id='processExchange.relativeStandardDeviation95In'
+                      defaultMessage='Relative StdDev in %'
+                    />
+                  ),
+                  styles: { label: { width: '220px' } },
+                  children: viewData.relativeStandardDeviation95In ?? '-',
+                },
+              ]}
+            />
           </>
         ) : (
           <></>
@@ -266,66 +306,82 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.internalReferenceToCoProduct'
-                  defaultMessage='Internal reference to co-product'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {viewData?.allocations?.allocation['@internalReferenceToCoProduct'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.exchange.internalReferenceToCoProduct'
+                    defaultMessage='Internal reference to co-product'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: viewData?.allocations?.allocation['@internalReferenceToCoProduct'] ?? '-',
+              },
+            ]}
+          />
           <br />
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.allocatedFraction'
-                  defaultMessage='Allocated fraction'
-                />
-              }
-              styles={{ label: { width: '180px' } }}
-            >
-              {viewData?.allocations?.allocation['@allocatedFraction'] ?? '-'}
-            </Descriptions.Item>
-          </Descriptions>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.exchange.allocatedFraction'
+                    defaultMessage='Allocated fraction'
+                  />
+                ),
+                styles: { label: { width: '180px' } },
+                children: viewData?.allocations?.allocation['@allocatedFraction'] ?? '-',
+              },
+            ]}
+          />
         </Card>
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.dataSourceType'
-                defaultMessage='Data source type'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {getDataSourceTypeOptions(viewData.dataSourceType)}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.dataSourceType'
+                  defaultMessage='Data source type'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: getDataSourceTypeOptions(viewData.dataSourceType),
+            },
+          ]}
+        />
         <br />
-        <Descriptions bordered size={'small'} column={1}>
-          <Descriptions.Item
-            key={0}
-            label={
-              <FormattedMessage
-                id='pages.process.view.exchange.dataDerivationTypeStatus'
-                defaultMessage='Data derivation type / status'
-              />
-            }
-            styles={{ label: { width: '220px' } }}
-          >
-            {getDataDerivationTypeStatusOptions(viewData.dataDerivationTypeStatus)}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          size={'small'}
+          column={1}
+          items={[
+            {
+              key: 0,
+              label: (
+                <FormattedMessage
+                  id='pages.process.view.exchange.dataDerivationTypeStatus'
+                  defaultMessage='Data derivation type / status'
+                />
+              ),
+              styles: { label: { width: '220px' } },
+              children: getDataDerivationTypeStatusOptions(viewData.dataDerivationTypeStatus),
+            },
+          ]}
+        />
         <br />
         <SourceSelectDescription
           title={
@@ -337,7 +393,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
           lang={lang}
           data={viewData.referencesToDataSource?.referenceToDataSource}
         />
-        <Divider orientationMargin='0' orientation='left' plain>
+        <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
           <FormattedMessage
             id='pages.process.view.exchange.generalComment'
             defaultMessage='Comment'
@@ -354,21 +410,25 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
             />
           }
         >
-          <Descriptions bordered size={'small'} column={1}>
-            <Descriptions.Item
-              key={0}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.exchange.referenceToReferenceFlow'
-                  defaultMessage='Reference flow(s)'
-                />
-              }
-              styles={{ label: { width: '220px' } }}
-            >
-              {<QuantitativeReferenceIcon value={viewData.quantitativeReference} />}
-            </Descriptions.Item>
-          </Descriptions>
-          <Divider orientationMargin='0' orientation='left' plain>
+          <Descriptions
+            bordered
+            size={'small'}
+            column={1}
+            items={[
+              {
+                key: 0,
+                label: (
+                  <FormattedMessage
+                    id='pages.process.view.exchange.referenceToReferenceFlow'
+                    defaultMessage='Reference flow(s)'
+                  />
+                ),
+                styles: { label: { width: '220px' } },
+                children: <QuantitativeReferenceIcon value={viewData.quantitativeReference} />,
+              },
+            ]}
+          />
+          <Divider styles={{ content: { margin: 0 } }} titlePlacement='start' plain>
             <FormattedMessage
               id='pages.process.view.exchange.functionalUnitOrOther'
               defaultMessage='Functional unit, Production period, or Other parameter'

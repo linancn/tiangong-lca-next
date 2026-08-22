@@ -152,7 +152,7 @@ jest.mock('@ant-design/pro-components', () => {
       }),
     );
     const scrollToFieldMockRef = React.useRef(jest.fn());
-    const formApiRef = React.useRef<any>();
+    const formApiRef = React.useRef<any>(undefined);
 
     if (!formApiRef.current) {
       formApiRef.current = {

@@ -9,9 +9,11 @@ import {
   LcaTaskCenter,
   Notification,
   Question,
-  SelectLang,
+  SelectLangAction,
 } from '@/components';
 import AccessDenied from '@/components/AccessDenied';
+import { renderAccessibleCollapsedButton } from '@/components/AccessibleCollapsedButton';
+import AccessibleSettingDrawer from '@/components/AccessibleSettingDrawer';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import SystemMaintenance from '@/components/SystemMaintenance';
 import {
@@ -31,11 +33,11 @@ import {
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 import styles from '@/style/custom.less';
-import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
+import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
+import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
+import { DashboardOutlined, DatabaseOutlined, LinkOutlined, MenuOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
-import type { RunTimeLayoutConfig } from '@umijs/max';
-import { ConfigProvider, theme as antdTheme } from 'antd';
+import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
 import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
@@ -51,6 +53,29 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['owner', 'admin'],
   ['data_product_manager', 'data_product_manager'],
 ]);
+
+export const antd: RuntimeAntdConfig = (memo) => {
+  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const brandTheme = getBrandTheme(isDarkMode);
+  return {
+    ...memo,
+    theme: {
+      ...memo.theme,
+      ...createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary),
+      token: {
+        ...memo.theme?.token,
+        colorPrimary: brandTheme.colorPrimary,
+      },
+      components: {
+        ...memo.theme?.components,
+        Divider: {
+          ...memo.theme?.components?.Divider,
+          orientationMargin: 0,
+        },
+      },
+    },
+  };
+};
 
 /**
  * Umi asks this runtime hook for the locale before mounting its providers, so
@@ -70,6 +95,14 @@ export function rootContainer(container: ReactNode) {
       <AppBootMarker>{container}</AppBootMarker>
     </StaticFallbackErrorBoundary>
   );
+}
+
+/**
+ * Umi applies the Ant Design plugin's inner provider after this hook, placing
+ * the registrar inside the one global `<App>` for every route shape.
+ */
+export function innerProvider(container: ReactNode) {
+  return <AntdAppApiRegistrar>{container}</AntdAppApiRegistrar>;
 }
 
 async function getSystemAccess(): Promise<Auth.CurrentUser['access'] | undefined> {
@@ -178,7 +211,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
-    actionsRender: () => {
+    actionsRender: (headerProps = {}) => {
       if (maintenanceActive) {
         return [];
       }
@@ -188,7 +221,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           handleClick={handleClickFunction}
           isDarkMode={initialState?.isDarkMode}
         />,
-        <SelectLang key='SelectLang' />,
+        <SelectLangAction key='SelectLang' />,
         <Question key='doc' />,
       ];
       if (!initialState?.currentUser) {
@@ -206,11 +239,41 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ...publicActions,
       ];
 
+      if (headerProps.isMobile) {
+        actions.unshift(
+          <button
+            aria-label={formatMessage({
+              id: 'app.setting.navigationmode',
+              defaultMessage: 'Navigation Mode',
+            })}
+            className='tg-pro-layout-mobile-menu-action'
+            key='mobile-navigation'
+            type='button'
+            onClick={(event) => {
+              const nativeTrigger = event.currentTarget
+                .closest('[data-testid="pro-layout-global-header"]')
+                ?.querySelector<HTMLElement>('.ant-pro-global-header-collapsed-button');
+              if (nativeTrigger) {
+                nativeTrigger.click();
+                return;
+              }
+              headerProps.onCollapse?.(!headerProps.collapsed);
+            }}
+          >
+            <MenuOutlined aria-hidden />
+          </button>,
+        );
+      }
+
       if (canViewDashboard) {
         actions.splice(
           5,
           0,
           <HeaderActionIcon
+            aria-label={formatMessage({
+              id: 'menu.dashboard.nationalCarbon',
+              defaultMessage: 'Data Dashboard',
+            })}
             key='NationalCarbonDashboard'
             icon={<DashboardOutlined />}
             onClick={() => history.push(dashboardPath)}
@@ -227,6 +290,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           5,
           0,
           <HeaderActionIcon
+            aria-label={formatMessage({
+              id: 'menu.dataProcessing',
+              defaultMessage: 'Data Processing',
+            })}
             key='DataProcessing'
             icon={<DatabaseOutlined />}
             onClick={() => history.push(dataProcessingPath)}
@@ -247,20 +314,23 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             render: () => {
               return (
                 <AvatarDropdown>
-                  <div
+                  <button
+                    aria-haspopup='menu'
+                    aria-label={formatMessage({
+                      id: 'menu.account.center',
+                      defaultMessage: 'Account Center',
+                    })}
                     className='tg-global-header-avatar-trigger'
                     data-testid='docs-capture-authenticated'
+                    type='button'
                   >
                     <AvatarName />
-                  </div>
+                  </button>
                 </AvatarDropdown>
               );
             },
           }
         : undefined,
-    waterMarkProps: {
-      // content: initialState?.currentUser?.name,
-    },
     footerRender: maintenanceActive ? undefined : () => <Footer />,
     onPageChange: () => {
       if (maintenanceActive) {
@@ -306,22 +376,18 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       }
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <ConfigProvider
-          theme={{
-            cssVar: true,
-            token: {
-              colorPrimary: initialState?.settings?.colorPrimary,
-            },
-            algorithm: initialState?.isDarkMode
-              ? antdTheme.darkAlgorithm
-              : antdTheme.defaultAlgorithm,
-          }}
-        >
+        <>
+          <AntdThemeSync
+            colorPrimary={initialState?.settings?.colorPrimary}
+            isDarkMode={Boolean(initialState?.isDarkMode)}
+          />
           {renderedChildren}
           {isDev && !maintenanceActive && (
-            <SettingDrawer
+            <AccessibleSettingDrawer
+              closeLabel={`${formatMessage({ id: 'app.settings.close', defaultMessage: 'Close' })} ${formatMessage({ id: 'app.setting.pagestyle', defaultMessage: 'Page style setting' })}`}
               disableUrlParams
               enableDarkTheme
+              openLabel={`${formatMessage({ id: 'app.settings.open', defaultMessage: 'Open' })} ${formatMessage({ id: 'app.setting.pagestyle', defaultMessage: 'Page style setting' })}`}
               settings={initialState?.settings}
               onSettingChange={(settings) => {
                 setInitialState((preInitialState: any) => ({
@@ -331,7 +397,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
               }}
             />
           )}
-        </ConfigProvider>
+        </>
       );
     },
     menuDataRender: (menuDataProps) => {
@@ -376,6 +442,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     ...initialState?.settings,
+    collapsedButtonRender: (_, defaultDom) =>
+      renderAccessibleCollapsedButton(
+        formatMessage({
+          id: 'app.setting.navigationmode',
+          defaultMessage: 'Navigation Mode',
+        }),
+        defaultDom,
+      ),
     title: appTitle,
   };
 };

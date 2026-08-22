@@ -14,7 +14,7 @@ import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import type { DropdownProps } from 'antd';
 import { ConfigProvider, theme, Tooltip } from 'antd';
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -57,6 +57,37 @@ export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
         });
       }}
     />
+  );
+};
+
+export const SelectLangAction = () => {
+  const intl = useIntl();
+  const actionRef = useRef<HTMLButtonElement>(null);
+  const label = intl.formatMessage({
+    id: 'pages.lang.select',
+    defaultMessage: 'Select a language',
+  });
+
+  const openLanguageMenu = () => {
+    actionRef.current?.querySelector<HTMLElement>('.tg-global-language-selector')?.click();
+  };
+
+  return (
+    <button
+      ref={actionRef}
+      aria-haspopup='menu'
+      aria-label={label}
+      className='tg-global-language-action'
+      title={label}
+      type='button'
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          openLanguageMenu();
+        }
+      }}
+    >
+      <SelectLang />
+    </button>
   );
 };
 

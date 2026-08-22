@@ -364,21 +364,31 @@ jest.mock('antd', () => {
     };
   };
 
-  return {
-    __esModule: true,
-    Button,
-    Card,
-    ConfigProvider,
-    Drawer,
-    Form,
-    Input,
-    Modal,
-    Space,
-    Spin,
-    Switch,
-    Tooltip,
-    message,
-  };
+  return (() => {
+    const antdModuleMock = {
+      __esModule: true,
+      Button,
+      Card,
+      ConfigProvider,
+      Drawer,
+      Form,
+      Input,
+      Modal,
+      Space,
+      Spin,
+      Switch,
+      Tooltip,
+      message,
+    };
+    return {
+      ...antdModuleMock,
+      App: {
+        useApp: () => ({
+          message: antdModuleMock.message,
+        }),
+      },
+    };
+  })();
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -460,7 +470,7 @@ jest.mock('@ant-design/pro-components', () => {
       }),
     );
     const scrollToFieldMockRef = React.useRef(jest.fn());
-    const formApiRef = React.useRef<any>();
+    const formApiRef = React.useRef<any>(undefined);
 
     if (!formApiRef.current) {
       formApiRef.current = {

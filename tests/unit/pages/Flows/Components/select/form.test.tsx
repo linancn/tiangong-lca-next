@@ -624,4 +624,68 @@ describe('FlowsSelectForm', () => {
     await waitFor(() => expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-legacy', ''));
     expect(onData).toHaveBeenCalledTimes(1);
   });
+
+  it('matches ref checks against resolved detail identity and clears a stale edit result', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'local-flow');
+    setValueAtPath(['reference', '@version'], '9.9.9');
+    mockGetRefData.mockResolvedValueOnce({
+      data: {
+        id: 'resolved-flow',
+        version: '1.0.0',
+        userId: 'user-1',
+        stateCode: 10,
+        ruleVerification: true,
+      },
+    });
+    mockRefCheckContextValue.refCheckData = [
+      {
+        id: 'resolved-flow',
+        version: '1.0.0',
+        ruleVerification: true,
+        nonExistent: true,
+      },
+    ];
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    const { rerender } = renderWithProviders(
+      <FlowsSelectForm
+        name={['reference']}
+        label='Flow'
+        lang='en'
+        formRef={formRef as any}
+        drawerVisible={true}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'edit local-flow:9.9.9' }));
+
+    mockRefCheckContextValue.refCheckData = [
+      {
+        id: 'different-flow',
+        version: '2.0.0',
+        ruleVerification: true,
+        nonExistent: true,
+      },
+    ];
+    rerender(
+      <FlowsSelectForm
+        name={['reference']}
+        label='Flow'
+        lang='en'
+        formRef={formRef as any}
+        drawerVisible={true}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(screen.queryByText('err-ref')).not.toBeInTheDocument());
+  });
 });

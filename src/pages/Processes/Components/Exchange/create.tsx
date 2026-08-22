@@ -57,7 +57,7 @@ const ProcessExchangeCreate: FC<Props> = ({
   disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const formRefCreate = useRef<ProFormInstance>();
+  const formRefCreate = useRef<ProFormInstance | undefined>(undefined);
   const [fromData, setFromData] = useState<ProcessExchangeData>({});
   const [asInput, setAsInput] = useState(false);
   const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
@@ -125,7 +125,7 @@ const ProcessExchangeCreate: FC<Props> = ({
             defaultMessage='Create Exchange'
           />
         }
-        width='90%'
+        size='90%'
         closable={false}
         extra={
           <Button
@@ -134,7 +134,7 @@ const ProcessExchangeCreate: FC<Props> = ({
             onClick={() => setDrawerVisible(false)}
           />
         }
-        maskClosable={false}
+        mask={{ closable: false }}
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
@@ -166,7 +166,7 @@ const ProcessExchangeCreate: FC<Props> = ({
             return true;
           }}
         >
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space orientation='vertical' style={{ width: '100%' }}>
             <Form.Item
               label={
                 <FormattedMessage
@@ -187,7 +187,6 @@ const ProcessExchangeCreate: FC<Props> = ({
             >
               <Select
                 // placeholder="Select a direction"
-                optionFilterProp='direction'
                 options={[
                   {
                     value: 'Input',
@@ -514,7 +513,7 @@ const ProcessExchangeCreate: FC<Props> = ({
                       initialValue={[{}]}
                     >
                       {(fields, { add, remove }) => (
-                        <Space direction='vertical' style={{ width: '100%' }}>
+                        <Space orientation='vertical' style={{ width: '100%' }}>
                           {fields.map((field, index) => (
                             <div key={field.key} style={{ position: 'relative' }}>
                               <SourceSelectForm
@@ -567,7 +566,7 @@ const ProcessExchangeCreate: FC<Props> = ({
                 },
               ]}
             />
-            <Divider orientationMargin='0' orientation='left' plain>
+            <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
               <FormattedMessage
                 id='pages.process.view.exchange.generalComment'
                 defaultMessage='Comment'
@@ -605,7 +604,7 @@ const ProcessExchangeCreate: FC<Props> = ({
               </Form.Item>
               {functionalUnitOrOther ? (
                 <>
-                  <Divider orientationMargin='0' orientation='left' plain>
+                  <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
                     <FormattedMessage
                       id='pages.process.view.exchange.functionalUnitOrOther'
                       defaultMessage='Functional unit, Production period, or Other parameter'
