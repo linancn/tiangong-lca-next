@@ -298,9 +298,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             },
           }
         : undefined,
-    waterMarkProps: {
-      // content: initialState?.currentUser?.name,
-    },
     footerRender: maintenanceActive ? undefined : () => <Footer />,
     onPageChange: () => {
       if (maintenanceActive) {

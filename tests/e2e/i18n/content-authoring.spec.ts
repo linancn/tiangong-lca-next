@@ -28,7 +28,10 @@ test('team authoring exposes every registry language without submitting', async 
       await selectAppLocaleThroughUi(page, locale);
       await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
       await expect(
-        page.getByText(getLocaleMessage(locale, 'pages.team.info.title'), { exact: true }).first(),
+        page
+          .locator('.team-lang-field')
+          .filter({ hasText: getLocaleMessage(locale, 'pages.team.info.title') })
+          .first(),
       ).toBeVisible();
       const firstLanguageSelector = page.locator('.team-info-form').getByRole('combobox').first();
       await expect(firstLanguageSelector).toBeVisible();

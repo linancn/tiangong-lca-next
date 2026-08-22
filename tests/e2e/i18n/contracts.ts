@@ -475,9 +475,15 @@ export async function selectAppLocaleThroughUi(
     `Expected one ${localeDefinition.nativeLabel} item in the visible locale menu.`,
   );
   await target.waitFor({ state: 'visible' });
-  // Keyboard activation follows the menu's accessible interaction contract and avoids an
-  // unrelated header tooltip intercepting pointer events in Firefox after locale changes.
-  await target.press('Enter');
+  if (options.forceTrigger) {
+    // The mounted drawer intentionally blocks pointer coordinates. Activate the real menu item
+    // directly, matching the forced trigger path above without depending on overlay geometry.
+    await target.evaluate((element) => (element as HTMLElement).click());
+  } else {
+    // Keyboard activation follows the menu's accessible interaction contract and avoids an
+    // unrelated header tooltip intercepting pointer events in Firefox after locale changes.
+    await target.press('Enter');
+  }
   await page.waitForFunction(({ key, value }) => localStorage.getItem(key) === value, {
     key: UMI_LOCALE_STORAGE_KEY,
     value: locale,

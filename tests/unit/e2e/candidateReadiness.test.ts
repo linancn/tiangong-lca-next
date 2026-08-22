@@ -102,6 +102,12 @@ describe('candidate frontend readiness', () => {
       path.resolve(process.cwd(), 'tests/e2e/i18n/global-setup.ts'),
       'utf8',
     );
+    const readiness = readFileSync(
+      path.resolve(process.cwd(), 'tests/e2e/i18n/candidate-readiness.ts'),
+      'utf8',
+    );
     expect(globalSetup).toContain('await waitForCandidateFrontendReady(');
+    expect(readiness).toContain("process.env.E2E_QUALIFICATION === 'true'");
+    expect(readiness).toContain("installSemanticBackendSimulator(context, 'anonymous')");
   });
 });

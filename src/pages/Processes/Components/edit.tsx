@@ -1158,6 +1158,7 @@ const ProcessEdit: FC<Props> = ({
           </Tooltip>
         ))}
       <Drawer
+        classNames={{ section: 'tg-process-drawer' }}
         getContainer={() => document.body}
         destroyOnHidden
         title={
@@ -1238,6 +1239,7 @@ const ProcessEdit: FC<Props> = ({
         <span
           aria-hidden='true'
           data-auto-check-required={autoCheckRequired ? 'required' : 'optional'}
+          data-detail-ready={initData && !spinning ? 'true' : 'false'}
           data-route-mode='edit'
           data-testid='process-deep-link-state'
           hidden

@@ -402,10 +402,10 @@ async function expectProcessDrawerMounted(
   } else {
     await expect(state).not.toHaveAttribute('data-auto-check-required');
   }
-  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  const drawer = page.locator('.tg-process-drawer:visible').filter({ has: state });
   await expect(drawer).toHaveCount(1);
   await expect(drawer).toBeVisible();
-  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0);
+  await expect(state).toHaveAttribute('data-detail-ready', 'true');
   return drawer;
 }
 
@@ -445,7 +445,7 @@ async function expectProcessDeepLinkMountSettled(input: {
   await expect(state).toBeAttached();
   await expect(state).toHaveAttribute('data-route-mode', 'edit');
   await expect(state).toHaveAttribute('data-auto-check-required', required);
-  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  const drawer = page.locator('.tg-process-drawer:visible').filter({ has: state });
   await expect(drawer).toHaveCount(1);
   await expect(drawer).toBeVisible();
 
@@ -454,7 +454,7 @@ async function expectProcessDeepLinkMountSettled(input: {
       .poll(readTrappedValidationDrafts)
       .toBeGreaterThan(trappedValidationDraftsBeforeMount);
   }
-  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0);
+  await expect(state).toHaveAttribute('data-detail-ready', 'true');
   if (required === 'optional') {
     expect(readTrappedValidationDrafts()).toBe(trappedValidationDraftsBeforeMount);
   }
