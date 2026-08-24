@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "31b8f6b2534a2b94eae67273daaace1622e5efd9d14d3174f502c487a7460cdf",
+    "auditedInputDigest": "13cc24a019981b3decf8ea5f147355bd4ad5d5b1398cb2acac273d06c5dcc473",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -11988,7 +11988,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 312,
+          "line": 320,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -12015,7 +12015,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 312,
+              "line": 320,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -24414,7 +24414,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 283,
+          "line": 291,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Logout",
@@ -24429,7 +24429,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 283,
+              "line": 291,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -24615,7 +24615,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 255,
+          "line": 260,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Account Profile",
@@ -24639,7 +24639,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 255,
+              "line": 260,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -24713,8 +24713,8 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 274,
-          "column": 14,
+          "line": 281,
+          "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "Review Management",
           "defaultMessageExpression": null
@@ -24728,8 +24728,8 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 274,
-              "column": 14,
+              "line": 281,
+              "column": 20,
               "kind": "FormattedMessage"
             }
           ]
@@ -24855,7 +24855,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 260,
+          "line": 265,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "My Team",
@@ -24888,7 +24888,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 260,
+              "line": 265,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -27798,8 +27798,8 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 265,
-          "column": 14,
+          "line": 272,
+          "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "System Management",
           "defaultMessageExpression": null
@@ -27831,8 +27831,8 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 265,
-              "column": 14,
+              "line": 272,
+              "column": 20,
               "kind": "FormattedMessage"
             },
             {

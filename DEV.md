@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-24
-lastReviewedCommit: 97bdd539964fb800e52d0ae0625e9783f7337b7a
+lastReviewedCommit: 91c3cedca29e7ab3aadf331bd2f177009b4580d2
 lastReviewedNote: 'Reviewed for Next Issue #924: the React 19 / Ant Design 6 migration, semantic browser proof, and no-argument E2E resume parser fix use the existing install, Docpact, build, gate, and managed-push workflow.'
 ---
 
