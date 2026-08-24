@@ -42,8 +42,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: 0047e79e83db054a95843b8ed934da048ad741f7
+lastReviewedAt: 2026-08-24
+lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
 lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 focused and browser evidence remains additive to the existing hook-owned full gate; no trigger or quality-bar change is required.'
 ---
 

@@ -436,6 +436,7 @@ describe('FlowpropertiesEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /edit/i }));
 
     await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-1', '1.0.0'));
+    expect(latestFlowpropertyFormProps.formType).toBe('edit');
 
     const nameInput = await screen.findByLabelText(/flow property name/i);
     await userEvent.clear(nameInput);

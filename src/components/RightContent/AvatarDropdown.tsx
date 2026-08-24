@@ -248,7 +248,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     return loading;
   }
 
-  const menuItems = [
+  const canViewSystemManagement = ['admin', 'owner', 'member'].includes(systemUserData?.role ?? '');
+  const canViewReviewManagement = ['review-admin', 'review-member'].includes(
+    reviewUserData?.role ?? '',
+  );
+
+  const menuItems: MenuProps['items'] = [
     {
       key: 'profile',
       icon: <UserOutlined />,
@@ -259,21 +264,24 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       icon: <TeamOutlined />,
       label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
     },
-    {
-      key: 'system',
-      icon: <SettingOutlined />,
-      label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
-      hidden:
-        systemUserData?.role !== 'admin' &&
-        systemUserData?.role !== 'owner' &&
-        systemUserData?.role !== 'member',
-    },
-    {
-      key: 'review',
-      icon: <AuditOutlined />,
-      label: <FormattedMessage id='menu.account.review' defaultMessage='Review Management' />,
-      hidden: reviewUserData?.role !== 'review-admin' && reviewUserData?.role !== 'review-member',
-    },
+    ...(canViewSystemManagement
+      ? [
+          {
+            key: 'system',
+            icon: <SettingOutlined />,
+            label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
+          },
+        ]
+      : []),
+    ...(canViewReviewManagement
+      ? [
+          {
+            key: 'review',
+            icon: <AuditOutlined />,
+            label: <FormattedMessage id='menu.account.review' defaultMessage='Review Management' />,
+          },
+        ]
+      : []),
     {
       type: 'divider' as const,
     },

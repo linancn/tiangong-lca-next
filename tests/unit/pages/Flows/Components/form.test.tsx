@@ -10,6 +10,7 @@ const toText = (node: any): string => {
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
   if (node?.props?.id) return node.props.id;
+  if (node?.props?.label) return toText(node.props.label);
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
@@ -91,8 +92,8 @@ jest.mock('antd', () => {
       {children}
     </label>
   );
-  const Input = ({ value = '', onChange }: any) => (
-    <input value={value} onChange={(e) => onChange?.(e)} />
+  const Input = ({ value = '', onChange, ...rest }: any) => (
+    <input value={value} onChange={(e) => onChange?.(e)} {...rest} />
   );
   const Select = (props: any) => {
     mockSelectProps.push(props);
@@ -413,6 +414,16 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
         (call) => Array.isArray(call.name) && call.name.includes('common:referenceToDataSetFormat'),
       )?.defaultSourceName,
     ).toBeUndefined();
+  });
+
+  it('locks the dataset version in edit mode', async () => {
+    await act(async () => {
+      render(
+        <FlowForm {...baseProps()} activeTabKey='administrativeInformation' formType='edit' />,
+      );
+    });
+
+    expect(screen.getByRole('textbox', { name: /Data set version/i })).toBeDisabled();
   });
 
   it('passes sdk row highlights to property drawers and marks the focused row', async () => {

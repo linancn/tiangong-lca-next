@@ -10,6 +10,7 @@ const toText = (node: any): string => {
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
   if (node?.props?.id) return node.props.id;
+  if (node?.props?.label) return toText(node.props.label);
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
@@ -449,7 +450,7 @@ describe('UnitGroupForm', () => {
     expect(screen.getByTestId('contact-select')).toHaveTextContent('"showRequiredLabel":true');
   });
 
-  it('keeps non-create administrative fields editable and skips create-only default sources', () => {
+  it('locks the dataset version in edit mode and skips create-only default sources', () => {
     const { rerender } = renderWithProviders(
       <UnitGroupForm {...baseProps} activeTabKey='modellingAndValidation' formType='edit' />,
     );
@@ -462,7 +463,7 @@ describe('UnitGroupForm', () => {
       <UnitGroupForm {...baseProps} activeTabKey='administrativeInformation' formType='edit' />,
     );
 
-    expect(screen.getAllByRole('textbox')[1]).not.toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Data set version' })).toBeDisabled();
     expect(screen.getAllByTestId('source-select')[0]).not.toHaveTextContent('ILCD format');
   });
 

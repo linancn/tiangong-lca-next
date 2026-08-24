@@ -1,5 +1,6 @@
 /* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
+import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
@@ -260,6 +261,7 @@ const ContactEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setInitData(undefined);
       setCurrentStateCode(undefined);
       setShowRules(false);
       setSdkValidationDetails([]);
@@ -727,59 +729,61 @@ const ContactEdit: FC<Props> = ({
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => void handleCheckData()}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
-            </Button>
-            {showSyncOpenDataButton && isReviewAdmin && (
+          <LoadingDisabledActionGroup loading={spinning || !initData}>
+            <Space size={'middle'} className={styles.footer_right}>
+              <Button onClick={() => void handleCheckData()}>
+                <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
+              </Button>
+              {showSyncOpenDataButton && isReviewAdmin && (
+                <Button
+                  disabled={spinning || currentStateCode === 100}
+                  onClick={handleSyncToOpenData}
+                >
+                  <FormattedMessage
+                    id='pages.button.syncToOpenData'
+                    defaultMessage='Sync to Open Data'
+                  />
+                </Button>
+              )}
+              <DatasetSubmitReviewButton
+                table='contacts'
+                id={id}
+                version={version}
+                disabled={spinning || currentStateCode !== 0}
+                beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
+                onSuccess={() => {
+                  setCurrentStateCode(20);
+                  actionRef?.current?.reload();
+                  closeDrawer();
+                }}
+              />
               <Button
-                disabled={spinning || currentStateCode === 100}
-                onClick={handleSyncToOpenData}
+                onClick={() => {
+                  handleUpdateReference();
+                }}
               >
                 <FormattedMessage
-                  id='pages.button.syncToOpenData'
-                  defaultMessage='Sync to Open Data'
+                  id='pages.button.updateReference'
+                  defaultMessage='Update Reference'
                 />
               </Button>
-            )}
-            <DatasetSubmitReviewButton
-              table='contacts'
-              id={id}
-              version={version}
-              disabled={spinning || currentStateCode !== 0}
-              beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
-              onSuccess={() => {
-                setCurrentStateCode(20);
-                actionRef?.current?.reload();
-                closeDrawer();
-              }}
-            />
-            <Button
-              onClick={() => {
-                handleUpdateReference();
-              }}
-            >
-              <FormattedMessage
-                id='pages.button.updateReference'
-                defaultMessage='Update Reference'
-              />
-            </Button>
-            <Button onClick={closeDrawer}>
-              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-            </Button>
-            {/* <Button onClick={onReset}>
+              <Button onClick={closeDrawer}>
+                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+              </Button>
+              {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
-            <Button
-              onClick={async () => {
-                setShowRules(false);
-                await handleSubmit(true);
-              }}
-              type='primary'
-            >
-              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-            </Button>
-          </Space>
+              <Button
+                onClick={async () => {
+                  setShowRules(false);
+                  await handleSubmit(true);
+                }}
+                type='primary'
+              >
+                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
+              </Button>
+            </Space>
+          </LoadingDisabledActionGroup>
         }
       >
         <Spin spinning={spinning}>
@@ -804,6 +808,7 @@ const ContactEdit: FC<Props> = ({
               }}
             >
               <ContactForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 formRef={formRefEdit}

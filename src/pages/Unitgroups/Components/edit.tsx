@@ -1,5 +1,6 @@
 /* istanbul ignore file -- drawer orchestration is covered by behavioral tests; remaining branches are UI scheduling only */
 import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
+import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';
 import RefsOfNewVersionDrawer, { RefVersionItem } from '@/components/RefsOfNewVersionDrawer';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
@@ -272,6 +273,7 @@ const UnitGroupEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setInitData(undefined);
       setDetailStateCode(undefined);
       setRefCheckContextValue({ refCheckData: [] });
       setShowRules(false);
@@ -613,48 +615,53 @@ const UnitGroupEdit: FC<Props> = ({
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <Button onClick={() => void handleCheckData()}>
-              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
-            </Button>
-            <DatasetSubmitReviewButton
-              table='unitgroups'
-              id={id}
-              version={version}
-              disabled={spinning || detailStateCode !== 0}
-              beforeSubmit={() => handleCheckData()}
-              onSuccess={() => {
-                setDetailStateCode(20);
-                actionRef?.current?.reload();
-                closeDrawer();
-              }}
-            />
-            <Button
-              onClick={() => {
-                handleUpdateReference();
-              }}
-            >
-              <FormattedMessage
-                id='pages.button.updateReference'
-                defaultMessage='Update Reference'
+          <LoadingDisabledActionGroup loading={spinning || !initData}>
+            <Space size={'middle'} className={styles.footer_right}>
+              <Button onClick={() => void handleCheckData()}>
+                <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
+              </Button>
+              <DatasetSubmitReviewButton
+                table='unitgroups'
+                id={id}
+                version={version}
+                disabled={spinning || detailStateCode !== 0}
+                beforeSubmit={() => handleCheckData()}
+                onSuccess={() => {
+                  setDetailStateCode(20);
+                  actionRef?.current?.reload();
+                  closeDrawer();
+                }}
               />
-            </Button>
-            <Button onClick={closeDrawer}>
-              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel'></FormattedMessage>
-            </Button>
-            {/* <Button onClick={onReset}>
+              <Button
+                onClick={() => {
+                  handleUpdateReference();
+                }}
+              >
+                <FormattedMessage
+                  id='pages.button.updateReference'
+                  defaultMessage='Update Reference'
+                />
+              </Button>
+              <Button onClick={closeDrawer}>
+                <FormattedMessage
+                  id='pages.button.cancel'
+                  defaultMessage='Cancel'
+                ></FormattedMessage>
+              </Button>
+              {/* <Button onClick={onReset}>
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset"></FormattedMessage>
             </Button> */}
-            <Button
-              onClick={async () => {
-                setShowRules(false);
-                await handleSubmit(true);
-              }}
-              type='primary'
-            >
-              <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
-            </Button>
-          </Space>
+              <Button
+                onClick={async () => {
+                  setShowRules(false);
+                  await handleSubmit(true);
+                }}
+                type='primary'
+              >
+                <FormattedMessage id='pages.button.save' defaultMessage='Save'></FormattedMessage>
+              </Button>
+            </Space>
+          </LoadingDisabledActionGroup>
         }
       >
         <Spin spinning={spinning}>
@@ -679,6 +686,7 @@ const UnitGroupEdit: FC<Props> = ({
               }}
             >
               <UnitGroupForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 formRef={formRefEdit}
