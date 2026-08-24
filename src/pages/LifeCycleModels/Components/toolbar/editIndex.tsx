@@ -53,6 +53,7 @@ import {
   SaveOutlined,
   SendOutlined,
 } from '@ant-design/icons';
+import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';
 import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
 import { App, Button, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
@@ -1772,37 +1773,40 @@ const ToolbarEdit: FC<Props> = ({
     nodes.some((node) => node.selected) || edges.some((edge) => edge.selected);
 
   return (
-    <Space
-      orientation='vertical'
-      size={'middle'}
-      style={{ height: '70vh', overflowY: 'auto', paddingRight: 10, paddingLeft: 10 }}
+    <LoadingDisabledActionGroup
+      loading={spinning || (drawerVisible && Object.keys(infoData ?? {}).length === 0)}
     >
-      <ToolbarEditInfo
-        ref={editInfoRef}
-        action={thisAction}
-        actionType={actionType}
-        data={infoData}
-        onData={updateInfoData}
-        lang={lang}
-        onNavigateProcessInstance={handleNavigateProcessInstance}
-        onProcessInstanceValidationChange={handleProcessInstanceValidationChange}
-      />
-      {getShowResult()}
-      <EdgeExhange
-        lang={lang}
-        disabled={!selectedEdge}
-        edge={selectedEdge as LifeCycleModelGraphEdge}
-      />
-      <TargetAmount
-        refNode={quantitativeReferenceNode as LifeCycleModelGraphNode}
-        drawerVisible={targetAmountDrawerVisible}
-        lang={lang}
-        setDrawerVisible={setTargetAmountDrawerVisible}
-        onData={updateTargetAmount}
-      />
+      <Space
+        orientation='vertical'
+        size={'middle'}
+        style={{ height: '70vh', overflowY: 'auto', paddingRight: 10, paddingLeft: 10 }}
+      >
+        <ToolbarEditInfo
+          ref={editInfoRef}
+          action={thisAction}
+          actionType={actionType}
+          data={infoData}
+          onData={updateInfoData}
+          lang={lang}
+          onNavigateProcessInstance={handleNavigateProcessInstance}
+          onProcessInstanceValidationChange={handleProcessInstanceValidationChange}
+        />
+        {getShowResult()}
+        <EdgeExhange
+          lang={lang}
+          disabled={!selectedEdge}
+          edge={selectedEdge as LifeCycleModelGraphEdge}
+        />
+        <TargetAmount
+          refNode={quantitativeReferenceNode as LifeCycleModelGraphNode}
+          drawerVisible={targetAmountDrawerVisible}
+          lang={lang}
+          setDrawerVisible={setTargetAmountDrawerVisible}
+          onData={updateTargetAmount}
+        />
 
-      <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
-      {/* <Tooltip
+        <ModelToolbarAdd buttonType={'icon'} lang={lang} onData={addProcessNodes} />
+        {/* <Tooltip
             title={
               <FormattedMessage
                 id="pages.button.model.design"
@@ -1821,60 +1825,62 @@ const ToolbarEdit: FC<Props> = ({
               }
             />
           </Tooltip> */}
-      <Tooltip
-        title={
-          <FormattedMessage id='pages.button.updateReference' defaultMessage='Update Reference' />
-        }
-        placement='left'
-      >
-        <Button
-          type='primary'
-          size='small'
-          icon={<CopyOutlined />}
-          style={{ boxShadow: 'none' }}
-          onClick={() => updateReference(true)}
-        />
-      </Tooltip>
-      <Tooltip
-        title={<FormattedMessage id='pages.button.model.delete' defaultMessage='Delete element' />}
-        placement='left'
-      >
-        <Button
-          type='primary'
-          size='small'
-          icon={<DeleteOutlined />}
-          style={{ boxShadow: 'none' }}
-          disabled={
-            nodes.filter((node) => node.selected).length === 0 &&
-            edges.filter((edge) => edge.selected).length === 0
+        <Tooltip
+          title={
+            <FormattedMessage id='pages.button.updateReference' defaultMessage='Update Reference' />
           }
-          onClick={deleteCell}
-        />
-      </Tooltip>
-      <br />
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            icon={<CopyOutlined />}
+            style={{ boxShadow: 'none' }}
+            onClick={() => updateReference(true)}
+          />
+        </Tooltip>
+        <Tooltip
+          title={
+            <FormattedMessage id='pages.button.model.delete' defaultMessage='Delete element' />
+          }
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            icon={<DeleteOutlined />}
+            style={{ boxShadow: 'none' }}
+            disabled={
+              nodes.filter((node) => node.selected).length === 0 &&
+              edges.filter((edge) => edge.selected).length === 0
+            }
+            onClick={deleteCell}
+          />
+        </Tooltip>
+        <br />
 
-      <Tooltip
-        title={<FormattedMessage id='pages.button.model.save' defaultMessage='Save data' />}
-        placement='left'
-      >
-        <Button
-          type='primary'
-          size='small'
-          icon={<SaveOutlined />}
-          style={{ boxShadow: 'none' }}
-          onClick={() => {
-            saveData(true);
-            updateNodeCb({
-              '@refObjectId': id,
-              '@version': version,
-              '@type': 'lifeCycleModel data set',
-            });
-          }}
-        />
-      </Tooltip>
-      <br />
+        <Tooltip
+          title={<FormattedMessage id='pages.button.model.save' defaultMessage='Save data' />}
+          placement='left'
+        >
+          <Button
+            type='primary'
+            size='small'
+            icon={<SaveOutlined />}
+            style={{ boxShadow: 'none' }}
+            onClick={() => {
+              saveData(true);
+              updateNodeCb({
+                '@refObjectId': id,
+                '@version': version,
+                '@type': 'lifeCycleModel data set',
+              });
+            }}
+          />
+        </Tooltip>
+        <br />
 
-      {/* <ProcessView
+        {/* <ProcessView
         id={id ?? ''}
         version={version ?? ''}
         lang={lang}
@@ -1882,81 +1888,82 @@ const ToolbarEdit: FC<Props> = ({
         actionRef={undefined}
         disabled={false}
       /> */}
-      <ModelResult
-        submodels={(jsonTg?.submodels ?? []).map((submodel) => ({
-          id: submodel.id,
-          version: submodel.version ?? thisVersion,
-        }))}
-        modelId={thisId}
-        modelVersion={thisVersion}
-        lang={lang}
-        actionType='edit'
-      />
-      <Tooltip
-        title={<FormattedMessage id='pages.button.check' defaultMessage='Data Check' />}
-        placement='left'
-      >
-        <Button
-          type='primary'
-          size='small'
-          icon={<CheckCircleOutlined />}
-          style={{ boxShadow: 'none' }}
-          onClick={() => void handleCheckData()}
+        <ModelResult
+          submodels={(jsonTg?.submodels ?? []).map((submodel) => ({
+            id: submodel.id,
+            version: submodel.version ?? thisVersion,
+          }))}
+          modelId={thisId}
+          modelVersion={thisVersion}
+          lang={lang}
+          actionType='edit'
         />
-      </Tooltip>
-      {!hideReviewButton ? (
         <Tooltip
-          title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />}
+          title={<FormattedMessage id='pages.button.check' defaultMessage='Data Check' />}
           placement='left'
         >
           <Button
             type='primary'
             size='small'
-            icon={<SendOutlined />}
+            icon={<CheckCircleOutlined />}
             style={{ boxShadow: 'none' }}
-            onClick={handelSubmitReview}
+            onClick={() => void handleCheckData()}
           />
         </Tooltip>
-      ) : null}
-      <Control
-        items={[
-          'undo',
-          'redo',
-          'paste',
-          'duplicate',
-          'zoomOut',
-          'zoomTo',
-          'zoomIn',
-          'zoomToFit',
-          'zoomToOrigin',
-          'autoLayoutLR',
-        ]}
-        editorActions={{
-          undo: undoGraph,
-          redo: redoGraph,
-          paste: pasteSelection,
-          duplicate: duplicateSelection,
-        }}
-        canDuplicate={hasSelectedCells}
-      />
-      <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
-      <IoPortSelect
-        lang={lang}
-        node={ioPortSelectorNode as LifeCycleModelGraphNode}
-        direction={ioPortSelectorDirection}
-        drawerVisible={ioPortSelectorDrawerVisible}
-        onData={updateNodePorts}
-        onDrawerVisible={setIoPortSelectorDrawerVisible}
-      />
-      <ConnectableProcesses
-        lang={lang}
-        drawerVisible={connectableProcessesDrawerVisible}
-        setDrawerVisible={setConnectableProcessesDrawerVisible}
-        portId={connectableProcessesPortId}
-        flowVersion={connectableProcessesFlowVersion}
-        onData={addProcessNodes}
-      />
-    </Space>
+        {!hideReviewButton ? (
+          <Tooltip
+            title={<FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />}
+            placement='left'
+          >
+            <Button
+              type='primary'
+              size='small'
+              icon={<SendOutlined />}
+              style={{ boxShadow: 'none' }}
+              onClick={handelSubmitReview}
+            />
+          </Tooltip>
+        ) : null}
+        <Control
+          items={[
+            'undo',
+            'redo',
+            'paste',
+            'duplicate',
+            'zoomOut',
+            'zoomTo',
+            'zoomIn',
+            'zoomToFit',
+            'zoomToOrigin',
+            'autoLayoutLR',
+          ]}
+          editorActions={{
+            undo: undoGraph,
+            redo: redoGraph,
+            paste: pasteSelection,
+            duplicate: duplicateSelection,
+          }}
+          canDuplicate={hasSelectedCells}
+        />
+        <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
+        <IoPortSelect
+          lang={lang}
+          node={ioPortSelectorNode as LifeCycleModelGraphNode}
+          direction={ioPortSelectorDirection}
+          drawerVisible={ioPortSelectorDrawerVisible}
+          onData={updateNodePorts}
+          onDrawerVisible={setIoPortSelectorDrawerVisible}
+        />
+        <ConnectableProcesses
+          lang={lang}
+          drawerVisible={connectableProcessesDrawerVisible}
+          setDrawerVisible={setConnectableProcessesDrawerVisible}
+          portId={connectableProcessesPortId}
+          flowVersion={connectableProcessesFlowVersion}
+          onData={addProcessNodes}
+        />
+      </Space>
+    </LoadingDisabledActionGroup>
   );
 };
 

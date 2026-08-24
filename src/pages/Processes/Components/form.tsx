@@ -2389,7 +2389,7 @@ export const ProcessForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input disabled={actionFrom === 'modelResult'} />
+            <Input disabled={formType === 'edit' || actionFrom === 'modelResult'} />
           </DatasetCreateVersionFormItem>
 
           <Form.Item

@@ -1701,6 +1701,14 @@ describe('ProcessForm component', () => {
         expect.objectContaining({ defaultSourceName: '' }),
       );
     });
+
+    expect(
+      within(
+        screen.getByTestId(
+          'form-item-administrativeInformation.publicationAndOwnership.common:dataSetVersion',
+        ),
+      ).getByRole('textbox'),
+    ).toBeDisabled();
   });
 
   it('marks output rows with issues and enriches output exchanges with flow state metadata', async () => {
