@@ -574,7 +574,7 @@ export const UnitGroupForm: FC<Props> = ({
             ]['rules'] ?? [],
           )}
         >
-          <Input />
+          <Input disabled={formType === 'edit'} />
         </DatasetCreateVersionFormItem>
         <ContactSelectForm
           lang={lang}

@@ -9,6 +9,7 @@ const toText = (node: any): string => {
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
   if (node?.props?.id) return node.props.id;
+  if (node?.props?.label) return toText(node.props.label);
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
@@ -248,7 +249,7 @@ describe('LifeCycleModelForm', () => {
     );
   });
 
-  it('keeps dataset version editable and does not inject the create default source otherwise', () => {
+  it('locks dataset version in edit mode and does not inject the create default source', () => {
     renderWithProviders(
       <LifeCycleModelForm
         {...baseProps}
@@ -257,7 +258,7 @@ describe('LifeCycleModelForm', () => {
       />,
     );
 
-    expect(screen.getAllByRole('textbox')[1]).not.toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Data set version' })).toBeDisabled();
     expect(
       getSourceSelects().every(
         (sourceSelect) => !sourceSelect.textContent?.includes('ILCD format'),

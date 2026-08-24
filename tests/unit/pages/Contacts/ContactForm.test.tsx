@@ -10,6 +10,7 @@ const toText = (node: any): string => {
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
   if (node?.props?.id) return node.props.id;
+  if (node?.props?.label) return toText(node.props.label);
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
@@ -238,7 +239,7 @@ describe('ContactForm component', () => {
   });
 
   it('does not inject the default source name outside create mode', () => {
-    renderForm({ formType: 'edit' });
+    renderForm({ activeTabKey: 'administrativeInformation', formType: 'edit' });
 
     const dataSetFormatCall = mockSourceSelectForm.mock.calls.find(
       ([props]: any[]) =>
@@ -248,6 +249,7 @@ describe('ContactForm component', () => {
     );
 
     expect(dataSetFormatCall?.[0]?.defaultSourceName).toBeUndefined();
+    expect(screen.getByRole('textbox', { name: 'Data set version' })).toBeDisabled();
   });
 
   it('applies validation rules when showRules is true', () => {

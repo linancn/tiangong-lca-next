@@ -9,6 +9,7 @@ const toText = (node: any): string => {
   if (Array.isArray(node)) return node.map(toText).join('');
   if (node?.props?.defaultMessage) return node.props.defaultMessage;
   if (node?.props?.id) return node.props.id;
+  if (node?.props?.label) return toText(node.props.label);
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
@@ -327,6 +328,20 @@ describe('FlowpropertyForm', () => {
     expect(
       screen.getAllByRole('textbox').some((element) => !element.hasAttribute('disabled')),
     ).toBe(true);
+
+    rerender(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='administrativeInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='edit'
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: /Data set version/i })).toBeDisabled();
   });
 
   it('derives schema rules when showRules is enabled', async () => {

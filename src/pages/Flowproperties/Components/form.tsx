@@ -433,7 +433,7 @@ export const FlowpropertyForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'edit'} />
           </DatasetCreateVersionFormItem>
           {/* <FlowpropertiesSelectForm
             name={[

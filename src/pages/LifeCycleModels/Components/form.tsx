@@ -717,7 +717,7 @@ export const LifeCycleModelForm: FC<Props> = ({
               ]['common:dataSetVersion']['rules'],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'edit'} />
           </DatasetCreateVersionFormItem>
           <Form.Item
             required={false}

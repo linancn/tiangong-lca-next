@@ -415,7 +415,7 @@ export const SourceForm: FC<Props> = ({
               ]['rules'] ?? [],
             )}
           >
-            <Input />
+            <Input disabled={formType === 'edit'} />
           </DatasetCreateVersionFormItem>
           <ContactSelectForm
             label={

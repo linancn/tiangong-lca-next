@@ -462,7 +462,7 @@ export const ContactForm: FC<Props> = ({
                 ]['rules'] ?? [],
               )}
             >
-              <Input />
+              <Input disabled={formType === 'edit'} />
             </DatasetCreateVersionFormItem>
             <ContactSelectForm
               label={
