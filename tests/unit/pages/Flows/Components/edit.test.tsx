@@ -548,6 +548,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() => expect(mockGetFlowDetail).toHaveBeenCalledWith('flow-1', '1.0.0'));
     expect(await screen.findByTestId('flow-form')).toBeInTheDocument();
+    expect(latestFlowFormProps.formType).toBe('edit');
 
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 

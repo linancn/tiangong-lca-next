@@ -663,6 +663,7 @@ const SourceEdit: FC<Props> = ({
               }}
             >
               <SourceForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 formRef={formRefEdit}

@@ -1292,6 +1292,7 @@ const ProcessEdit: FC<Props> = ({
               }}
             >
               <ProcessForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 actionFrom={actionFrom}

@@ -590,6 +590,7 @@ describe('SourceEdit component', () => {
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
     const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+    expect(latestSourceFormProps.formType).toBe('edit');
 
     const shortNameInput = within(drawer).getByLabelText('Short Name');
     await user.clear(shortNameInput);

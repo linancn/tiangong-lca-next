@@ -636,6 +636,7 @@ const FlowpropertiesEdit: FC<Props> = ({
               }}
             >
               <FlowpropertyForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 drawerVisible={drawerVisible}

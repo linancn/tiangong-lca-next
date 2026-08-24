@@ -591,6 +591,7 @@ describe('ContactEdit component', () => {
     await waitFor(() =>
       expect(mockGetContactDetail).toHaveBeenCalledWith('contact-123', '01.00.000'),
     );
+    expect(latestContactFormProps.formType).toBe('edit');
 
     const shortNameInput = within(drawer).getByDisplayValue('Original contact');
     await user.clear(shortNameInput);
