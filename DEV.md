@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: 0047e79e83db054a95843b8ed934da048ad741f7
+lastReviewedAt: 2026-08-24
+lastReviewedCommit: 4679f0ff6a34b41a5980376f9a883ddb4629728c
 lastReviewedNote: 'Reviewed for Next Issue #924: the React 19 / Ant Design 6 migration, semantic browser proof, and no-argument E2E resume parser fix use the existing install, Docpact, build, gate, and managed-push workflow.'
 ---
 

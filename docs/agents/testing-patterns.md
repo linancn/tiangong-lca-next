@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: 0047e79e83db054a95843b8ed934da048ad741f7
+lastReviewedAt: 2026-08-24
+lastReviewedCommit: 4679f0ff6a34b41a5980376f9a883ddb4629728c
 lastReviewedNote: 'Reviewed for Next Issue #924: every shipped Pro Components JSX instance now maps to one explicit surface family with live static or browser evidence.'
 ---
 

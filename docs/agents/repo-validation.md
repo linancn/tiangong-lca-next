@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: 0047e79e83db054a95843b8ed934da048ad741f7
+lastReviewedAt: 2026-08-24
+lastReviewedCommit: 4679f0ff6a34b41a5980376f9a883ddb4629728c
 lastReviewedNote: 'Reviewed for Next Issue #924: Pro Components proof now closes 121 runtime instances and exercises responsive option strips, nested selectors, forms, layouts, and overlays.'
 related:
   - ../AGENTS.md

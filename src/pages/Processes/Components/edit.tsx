@@ -1,5 +1,6 @@
 /* istanbul ignore file -- process editor orchestration is covered by behavioral tests; remaining misses are UI scheduling only */
 import AISuggestion from '@/components/AISuggestion';
+import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import {
@@ -1038,6 +1039,7 @@ const ProcessEdit: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) {
+      setInitData(undefined);
       setShowRules(false);
       setRefCheckData([]);
       setValidationIssueTabNames([]);
@@ -1181,60 +1183,62 @@ const ProcessEdit: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          <Space size={'middle'} className={styles.footer_right}>
-            <AISuggestion
-              type='process'
-              onLatestJsonChange={handleLatestJsonChange}
-              onClose={handleAISuggestionClose}
-              originJson={originJson}
-            />
-            <Button
-              onClick={async () => {
-                await runCheckData();
-              }}
-            >
-              <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
-            </Button>
-            <>
-              {!hideReviewButton && (
-                <Button
-                  disabled={spinning}
-                  onClick={() => {
-                    submitReview();
-                  }}
-                >
-                  <FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />
-                </Button>
-              )}
+          <LoadingDisabledActionGroup loading={spinning || !initData}>
+            <Space size={'middle'} className={styles.footer_right}>
+              <AISuggestion
+                type='process'
+                onLatestJsonChange={handleLatestJsonChange}
+                onClose={handleAISuggestionClose}
+                originJson={originJson}
+              />
               <Button
-                onClick={() => {
-                  handleUpdateReference();
+                onClick={async () => {
+                  await runCheckData();
                 }}
               >
-                <FormattedMessage
-                  id='pages.button.updateReference'
-                  defaultMessage='Update Reference'
-                />
+                <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
               </Button>
-            </>
-            <Button onClick={() => setDrawerVisible(false)}>
-              <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
-            </Button>
-            {/* <Button onClick={onReset}>
+              <>
+                {!hideReviewButton && (
+                  <Button
+                    disabled={spinning}
+                    onClick={() => {
+                      submitReview();
+                    }}
+                  >
+                    <FormattedMessage id='pages.button.review' defaultMessage='Submit for Review' />
+                  </Button>
+                )}
+                <Button
+                  onClick={() => {
+                    handleUpdateReference();
+                  }}
+                >
+                  <FormattedMessage
+                    id='pages.button.updateReference'
+                    defaultMessage='Update Reference'
+                  />
+                </Button>
+              </>
+              <Button onClick={() => setDrawerVisible(false)}>
+                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+              </Button>
+              {/* <Button onClick={onReset}>
               {' '}
               <FormattedMessage id="pages.button.reset" defaultMessage="Reset" />
             </Button> */}
 
-            <Button
-              onClick={() => {
-                setShowRules(false);
-                formRefEdit.current?.submit();
-              }}
-              type='primary'
-            >
-              <FormattedMessage id='pages.button.save' defaultMessage='Save' />
-            </Button>
-          </Space>
+              <Button
+                onClick={() => {
+                  setShowRules(false);
+                  formRefEdit.current?.submit();
+                }}
+                type='primary'
+              >
+                <FormattedMessage id='pages.button.save' defaultMessage='Save' />
+              </Button>
+            </Space>
+          </LoadingDisabledActionGroup>
         }
       >
         <span
