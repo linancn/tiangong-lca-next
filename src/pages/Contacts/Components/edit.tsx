@@ -808,6 +808,7 @@ const ContactEdit: FC<Props> = ({
               }}
             >
               <ContactForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 formRef={formRefEdit}

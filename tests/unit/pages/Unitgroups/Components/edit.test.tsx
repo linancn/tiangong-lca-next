@@ -15,6 +15,7 @@ const toText = (node: any): string => {
 };
 
 let latestRefsDrawerProps: any = null;
+let latestUnitGroupFormProps: any = null;
 const mockParentRefCheckContext = { refCheckData: [] as any[] };
 let mockProblemNodes: any = [];
 const mockIntl = {
@@ -313,61 +314,59 @@ jest.mock(
 
 jest.mock('@/pages/Unitgroups/Components/form', () => ({
   __esModule: true,
-  UnitGroupForm: ({
-    unitDataSource,
-    onTabChange,
-    onData,
-    onUnitData,
-    onUnitDataCreate,
-    formRef,
-  }: any) => (
-    <div>
-      <div>{`unit-group-form-${unitDataSource?.length ?? 0}`}</div>
-      <button type='button' onClick={() => onTabChange?.('customTab')}>
-        switch-custom-tab
-      </button>
-      <button type='button' onClick={() => onData?.()}>
-        sync-tab-data
-      </button>
-      <button
-        type='button'
-        onClick={() =>
-          onUnitData?.([
-            {
-              '@dataSetInternalID': '9',
-              name: 'g',
-              quantitativeReference: true,
-            },
-          ])
-        }
-      >
-        replace-units
-      </button>
-      <button
-        type='button'
-        onClick={() =>
-          onUnitDataCreate?.({
-            name: 'lb',
-            quantitativeReference: false,
-          })
-        }
-      >
-        create-unit
-      </button>
-      <button
-        type='button'
-        onClick={() => formRef?.current?.setFieldsValue({ anotherTab: { note: 'x' } })}
-      >
-        push-form-values
-      </button>
-    </div>
-  ),
+  UnitGroupForm: (props: any) => {
+    latestUnitGroupFormProps = props;
+    const { unitDataSource, onTabChange, onData, onUnitData, onUnitDataCreate, formRef } = props;
+    return (
+      <div>
+        <div>{`unit-group-form-${unitDataSource?.length ?? 0}`}</div>
+        <button type='button' onClick={() => onTabChange?.('customTab')}>
+          switch-custom-tab
+        </button>
+        <button type='button' onClick={() => onData?.()}>
+          sync-tab-data
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            onUnitData?.([
+              {
+                '@dataSetInternalID': '9',
+                name: 'g',
+                quantitativeReference: true,
+              },
+            ])
+          }
+        >
+          replace-units
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            onUnitDataCreate?.({
+              name: 'lb',
+              quantitativeReference: false,
+            })
+          }
+        >
+          create-unit
+        </button>
+        <button
+          type='button'
+          onClick={() => formRef?.current?.setFieldsValue({ anotherTab: { note: 'x' } })}
+        >
+          push-form-values
+        </button>
+      </div>
+    );
+  },
 }));
 
 describe('UnitGroupEdit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     latestRefsDrawerProps = null;
+    latestUnitGroupFormProps = null;
     mockProblemNodes = [];
     mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockGenUnitGroupFromData.mockImplementation(() => generatedUnitGroup);
@@ -403,6 +402,7 @@ describe('UnitGroupEdit', () => {
     await waitFor(() =>
       expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unitgroup-1', '1.0.0'),
     );
+    expect(latestUnitGroupFormProps.formType).toBe('edit');
     expect(screen.getByText('unit-group-form-1')).toBeInTheDocument();
   });
 

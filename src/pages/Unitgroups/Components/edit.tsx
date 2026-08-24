@@ -686,6 +686,7 @@ const UnitGroupEdit: FC<Props> = ({
               }}
             >
               <UnitGroupForm
+                formType='edit'
                 lang={lang}
                 activeTabKey={activeTabKey}
                 formRef={formRefEdit}

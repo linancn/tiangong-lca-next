@@ -497,6 +497,7 @@ describe('ProcessEdit component', () => {
     });
 
     expect(latestProcessFormProps).toBeTruthy();
+    expect(latestProcessFormProps.formType).toBe('edit');
 
     const currentValues = proFormApi?.getFieldsValue() ?? {};
     await act(async () => {
