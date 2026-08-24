@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-24
-lastReviewedCommit: 97bdd539964fb800e52d0ae0625e9783f7337b7a
+lastReviewedCommit: 91c3cedca29e7ab3aadf331bd2f177009b4580d2
 lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 fixture migration, handle-free browser shims, and focused semantic proof extend the maintained validation model without reopening broader strategy work.'
 ---
 

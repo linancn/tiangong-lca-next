@@ -153,8 +153,7 @@ const setupModuleMocks = () => {
     () => ({
       __esModule: true,
       default: function HeaderDropdown({ menu, children, trigger }: any) {
-        const items =
-          menu.items?.filter((item: any) => !item.hidden && item.type !== 'divider') ?? [];
+        const items = menu.items?.filter((item: any) => item.type !== 'divider') ?? [];
         return (
           <div>
             <div data-testid='header-trigger' data-trigger={trigger?.join(',')}>
@@ -404,6 +403,25 @@ describe('AvatarDropdown', () => {
     });
 
     mockedGetSystemUserRoleApi.mockResolvedValue(null);
+    mockedGetReviewUserRoleApi.mockResolvedValue(null);
+
+    render(<AvatarDropdown>avatar</AvatarDropdown>);
+
+    expect(await screen.findByRole('button', { name: 'Account Profile' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'System Management' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Review Management' })).not.toBeInTheDocument();
+  });
+
+  it('hides system management from data product managers without a management role', async () => {
+    const setInitialState = jest.fn();
+    mockUseModel.mockImplementation((model: string) => {
+      if (model === '@@initialState') {
+        return { initialState: { currentUser: { name: 'Morgan' } }, setInitialState };
+      }
+      return {};
+    });
+
+    mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'data_product_manager' });
     mockedGetReviewUserRoleApi.mockResolvedValue(null);
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
