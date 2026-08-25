@@ -29,15 +29,21 @@ const datasetFactories = [
 function assertStableErrorEnvelope(result, factoryName) {
   assert.equal(result.success, false, `${factoryName} empty data must fail strict validation`);
   assert.equal(result.mode, 'strict');
-  assert.ok(result.error instanceof Error);
+  assert.equal(typeof result.error, 'object');
+  assert.equal(result.error?.name, 'ZodError');
+  assert.equal(typeof result.error?.message, 'string');
   assert.ok(Array.isArray(result.error.issues));
   assert.ok(result.error.issues.length > 0);
   assert.ok(Array.isArray(result.validationIssues));
-  assert.ok(result.validationIssues.length > 0);
-  for (const issue of result.validationIssues) {
+  assert.equal(result.validationIssues.length, result.error.issues.length);
+  for (const [index, issue] of result.validationIssues.entries()) {
+    const rawIssue = result.error.issues[index];
     assert.equal(typeof issue.code, 'string');
     assert.ok(Array.isArray(issue.path));
     assert.ok(['error', 'warning', 'info'].includes(issue.severity));
+    assert.equal(issue.rawCode, rawIssue.code);
+    assert.deepEqual(issue.path, rawIssue.path);
+    assert.equal(issue.message, rawIssue.message);
   }
 }
 
@@ -48,6 +54,14 @@ test('loads the exact released SDK from the installed package graph', () => {
 });
 
 test('all seven dataset factories expose validateEnhanced and its stable error envelope', () => {
+  for (const name of [
+    'TIDAS_DEEP_VALIDATION',
+    'TIDAS_INCLUDE_WARNINGS',
+    'TIDAS_THROW_ON_ERROR',
+    'TIDAS_VALIDATION_MODE',
+  ]) {
+    assert.equal(process.env[name], undefined, `${name} must use the SDK default`);
+  }
   for (const [datasetName, factoryName, rootKey] of datasetFactories) {
     const factory = installedCore[factoryName];
     assert.equal(typeof factory, 'function', `${factoryName} must be exported`);
