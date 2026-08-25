@@ -601,6 +601,7 @@ function loadEnvironmentContractFromWorkingTree(repositoryRoot = REPOSITORY_ROOT
     contract.schemaVersion !== 1 ||
     contract.playwrightVersion !== '1.61.1' ||
     contract.nodeMajor !== 24 ||
+    contract.nodeVersion !== '24.19.0' ||
     !String(contract.playwrightImage).includes('@sha256:')
   ) {
     throw new ReleaseE2EError('The release E2E environment contract is unsupported or unpinned.', {
@@ -637,15 +638,14 @@ function inspectImage(reference) {
 }
 
 function assertHostPrerequisites() {
-  const nodeMajor = Number(process.versions.node.split('.')[0]);
-  if (nodeMajor !== 24) {
+  if (process.versions.node !== '24.19.0') {
     throw new ReleaseE2EError(
-      `Node.js 24 is required to launch release E2E; found ${process.version}.`,
+      `Node.js 24.19.0 is required to launch release E2E; found ${process.version}.`,
       {
         exitCode: EXIT.ENVIRONMENT,
         failureCode: 'E2E_HOST_NODE_VERSION_MISMATCH',
         phase: 'environment',
-        nextCommand: 'nvm use 24',
+        nextCommand: 'nvm use 24.19.0',
       },
     );
   }
@@ -1001,6 +1001,7 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
       dockerfileSha256: sha256(dockerfileRaw),
       frontendTarget,
       nodeMajor: committedEnvironment.nodeMajor,
+      nodeVersion: committedEnvironment.nodeVersion,
       playwrightImage: committedEnvironment.playwrightImage,
       playwrightVersion: committedEnvironment.playwrightVersion,
     },

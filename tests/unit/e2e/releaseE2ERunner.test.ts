@@ -188,7 +188,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.22.0',
+        packageManager: 'pnpm@11.23.0',
         version: '1.0.0',
       })}\n`,
     );
@@ -203,6 +203,7 @@ describe('release E2E controller contracts', () => {
         schemaVersion: 1,
         playwrightVersion: '1.61.1',
         nodeMajor: 24,
+        nodeVersion: '24.19.0',
         playwrightImage: `image@sha256:${'1'.repeat(64)}`,
       })}\n`,
     );
@@ -228,7 +229,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.22.0',
+        packageManager: 'pnpm@11.23.0',
         version: '1.0.1',
       })}\n`,
     );

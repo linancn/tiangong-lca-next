@@ -111,7 +111,7 @@ const createFixtureSeed = (): FixtureSeed => {
     name: 'receipt-fixture',
     version: '1.0.0',
     private: true,
-    packageManager: 'pnpm@11.22.0',
+    packageManager: 'pnpm@11.23.0',
     scripts: {
       'docpact:gate': 'node scripts/fake-gate.cjs docpact',
       'prepush:gate': 'node scripts/fake-gate.cjs prepush',
@@ -528,8 +528,8 @@ describe('bounded checked-push transport receipt', () => {
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
-  it('uses an already-active Node 24 without requiring an NVM-managed install', () => {
-    expect(process.versions.node.split('.')[0]).toBe('24');
+  it('uses an already-active Node 24.19.0 without requiring an NVM-managed install', () => {
+    expect(process.versions.node).toBe('24.19.0');
     const current = fixture();
     const fakeHome = path.join(current.container, 'home');
     writeExecutable(
@@ -576,7 +576,7 @@ describe('bounded checked-push transport receipt', () => {
     expect(remoteSha(current)).toBe(current.head);
   });
 
-  it('fails clearly when neither PATH nor NVM can provide Node 24', () => {
+  it('fails clearly when neither PATH nor NVM can provide Node 24.19.0', () => {
     const current = fixture();
     const fakeHome = path.join(current.container, 'home');
     const fakeBin = path.join(current.container, 'fake-bin');
@@ -595,7 +595,7 @@ describe('bounded checked-push transport receipt', () => {
     );
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Node.js 24 is required for the pre-push gate.');
+    expect(result.stderr).toContain('Node.js 24.19.0 is required for the pre-push gate.');
     expect(readGateLog(current)).toEqual([]);
   });
 
