@@ -158,7 +158,9 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
     expect(oxlint.rules).not.toHaveProperty('sort-imports');
 
     const buildWorkflow = read('.github/workflows/build.yml');
-    expect(buildWorkflow).toContain('uses: pnpm/setup@v2');
+    expect(buildWorkflow).toContain(
+      'uses: pnpm/setup@d36251dc5e9235e7dae772d97bccdad4fb6271b9 # v2.0.2',
+    );
     expect(buildWorkflow).toContain('pnpm install --frozen-lockfile');
     expect(buildWorkflow).toContain('pnpm tsc:electron');
     expect(buildWorkflow).toContain('pnpm exec electron-builder');

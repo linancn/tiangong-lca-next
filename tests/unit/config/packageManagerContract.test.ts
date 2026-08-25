@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repositoryRoot = path.resolve(__dirname, '../../..');
+const pinnedPnpmSetup = 'uses: pnpm/setup@d36251dc5e9235e7dae772d97bccdad4fb6271b9 # v2.0.2';
 
 function read(relativePath: string): string {
   return fs.readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -50,6 +51,7 @@ describe('pnpm package-manager contract', () => {
       });
     }
     for (const workflow of workflows.filter(({ source }) => source.includes('uses: pnpm/setup@'))) {
+      expect(workflow.source).toContain(pinnedPnpmSetup);
       expect(workflow.source).toContain('version: 11.23.0');
       expect(workflow.source).toContain('runtime: node@24.19.0');
     }
