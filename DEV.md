@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
 lastReviewedNote: 'Reviewed for Next Issue #936: the AI suggestion service cutover uses the existing focused-test, lint, build, Docpact, and managed-push workflow.'
 ---
 

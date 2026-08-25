@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
 lastReviewedNote: 'Added focused proof for AI suggestion authentication, enqueue/poll sequencing, progressive intervals, terminal failures, timeout/abort, and versioned result validation.'
 related:
   - ../AGENTS.md
