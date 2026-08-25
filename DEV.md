@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Reviewed for Next Issue #936: the AI suggestion service cutover uses the existing focused-test, lint, build, Docpact, and managed-push workflow.'
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: bootstrap, digest-bound containers, CI, and runtime gates now use exact Node 24.19.0 and pnpm 11.23.0, with SDK 0.2.0 and TypeScript 7.0.2 as the single installed track.'
 ---
 
 # Development Bootstrap
@@ -65,15 +65,15 @@ lastReviewedNote: 'Reviewed for Next Issue #936: the AI suggestion service cutov
 
 ## Prerequisites
 
-- Node.js `24`
-- Corepack with the repository-pinned `pnpm` `11.22.0`
-- local shell configured so `nvm use 24` works
+- Node.js `24.19.0`
+- Corepack with the repository-pinned `pnpm` `11.23.0`
+- local shell configured so `nvm install` and `nvm use` honor `.nvmrc`
 
 ## Bootstrap
 
 ```bash
 nvm install
-nvm use 24
+nvm use
 corepack enable
 pnpm install --frozen-lockfile
 ```
@@ -97,7 +97,7 @@ pnpm e2e:env:doctor
 
 ## Default Work Loop
 
-1. `nvm use 24`
+1. `nvm use`
 2. `pnpm start`
 3. make the scoped change
 4. run focused validation
@@ -167,7 +167,11 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | retry one receipt-bound failed transport | `pnpm push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-The repository has one TypeScript track: the direct `typescript` dependency resolves to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
+The repository has one TypeScript track: the direct `typescript` dependency is exact-pinned to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
+
+The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.2.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced` plus its normalized failure envelope; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
+
+Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 
@@ -261,7 +265,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - run `pnpm test:api:smoke <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - ordinary local pushes run the Husky pre-push hook, which runs `pnpm docpact:gate` first and `pnpm prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. No-update and raw deletion-only pushes skip gates, normal exact-branch `HEAD` refspecs are accepted, and every other ineligible checked ref shape fails before Docpact/full tests. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
 - exact marker-bound Release PRs targeting `dev` run the reusable clean-runner non-browser Release Gate: static contracts plus the complete Jest gate. PRs targeting `main` and normal post-merge publication verify the resulting exact proof and unchanged-tree merge chain; none of these release stages run or require browser E2E
-- the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
+- the hook keeps an already-active exact Node.js 24.19.0 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24.19.0` only when the active Node is absent or has another version
 - treat `pnpm prepush:gate` as the authoritative local test gate
 - during normal delivery, use `pnpm push:checked <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local evidence and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does

@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Reviewed for Next Issue #936: AI polling tests use controlled clocks and leave no new open-handle or gate-recovery troubleshooting path.'
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: added recovery guidance for real installed SDK/package-graph drift and exact Node 24.19.0 gate failures.'
 ---
 
 # Testing Troubleshooting
@@ -70,6 +70,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | a visible action exists but the expected request never starts | the control is present but still disabled while prerequisite data loads | wait for the control to become enabled, then interact; do not replace the product guard with an arbitrary delay |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
+| SDK-backed Jest suites pass but the installed TIDAS SDK contract fails | Jest's `@tiangong-lca/tidas-sdk/core` mapper hid a package-version, factory, or validation-envelope incompatibility | run `pnpm test:ci tests/unit/config/installedTidasSdkContract.test.ts --runInBand --no-coverage`, inspect the child Node output, and repair the exact installed `0.2.0` graph or real package contract instead of weakening the mapper-independent assertion |
 | a slow or instrumented run briefly renders loaded data and then replaces it with an empty response | mount initialization and an immediate user action called the same async loader before React committed its loading state | guard the request with a ref-backed in-flight owner rather than a render-state closure, then add a deferred-response test that fires the action before resolving the first request and requires one service call |
 | TypeScript 7 source-analysis output is stale, traversal is incomplete, or a script hangs after parsing | a consumer bypassed the repository adapter, the adapter did not replace/dispose its virtual source, or a TypeScript upgrade changed the pinned unstable API | run `pnpm test:ci tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` plus the affected i18n/source-analysis suite; keep `typescript/unstable/*` imports only in `scripts/typescript-native-parser.mjs` and its declaration, and never add TS6 as a fallback |
 | `pnpm lint` reports an unused or deprecated API that Prettier did not remove | Oxlint now owns correctness while Prettier formats only and no longer organizes imports | run `pnpm lint:js` to isolate the finding, remove or replace the unused/deprecated code explicitly, then run `pnpm lint:prettier`; do not restore ESLint, the standalone deprecated scanner, or the organize-imports plugin |
@@ -141,7 +142,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | managed push transport fails after both gates pass | `push:checked` activated the ignored exact-intent receipt and the remote may or may not have accepted the commit | run argument-free `pnpm push:retry`; it succeeds idempotently when the exact SHA already arrived and otherwise retries only while the remote and all bound inputs remain unchanged |
 | checked push reports an ineligible ref update | the source is not the current exact branch/`HEAD`, the destination is not a branch, or more than one update was requested | correct the refspec shown by the command; the helper must reject this shape before Docpact/full tests, and an ordinary raw deletion-only push intentionally skips those gates |
 | raw push fails after its hook passed but no receipt exists | only `push:checked` can bind the original push intent and activate bounded recovery after a failed transport | run a fresh `pnpm push:checked <normal-git-push-args>` so its ordinary hook re-establishes evidence; never use `--no-verify` or `HUSKY=0` manually |
-| every hook-driven receipt test exits before either fake gate on GitHub Ubuntu | the hook forced `nvm use 24` even though `setup-node` had already activated Node 24 outside NVM | verify the active Node major first, use it when already 24, and consult NVM only as a fallback |
+| every hook-driven receipt test exits before either fake gate on GitHub Ubuntu | the hook forced NVM even though `setup-node` had already activated exact Node 24.19.0 outside NVM | verify the active exact version first, use it when already 24.19.0, and consult NVM only as a fallback |
 
 ## Open-Handle Playbook
 

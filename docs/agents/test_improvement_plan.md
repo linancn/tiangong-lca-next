@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI enqueue/poll behavior follows the maintained strategy and does not reopen broader testing work.'
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: an unmocked installed-package contract closes SDK consumer risk without reopening the broader coverage strategy.'
 ---
 
 # Testing Strategy
@@ -56,7 +56,8 @@ lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI en
 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
-- dependency installation is a governed proof input: the repository pins pnpm, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.23.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed `0.2.0` package and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes

@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Documented the AI suggestion app-side polling boundary; Edge owns authentication/API projection, Database owns durable jobs, and Worker owns model execution.'
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: the exact Node/pnpm/TypeScript and SDK package cutover preserves the existing Supabase environment, production-data, and cross-repository ownership boundaries.'
 ---
 
 # Supabase Environment And Database Workflow

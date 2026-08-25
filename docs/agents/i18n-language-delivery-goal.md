@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: a5279243f4c1d22ee00c50ed92787614d585800c
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: exact Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, and SDK 0.2.0 pins preserve the language-delivery, semantic-E2E, and production-data contracts.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

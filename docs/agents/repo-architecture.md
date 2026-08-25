@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Documented AI校验 as a service-owned enqueue/poll flow over Edge and the generic backend ai-worker while retaining the existing diff UI.'
+lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedNote: 'Reviewed for Next Issue #938: the exact toolchain and SDK consumer cutover changes test/build infrastructure but does not change frontend runtime ownership or the stable path map.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-25'
-lastReviewedCommit: 'f8784672c1b6cd30f07a66c3f0643b8622ba649c'
-lastReviewedNote: 'Added explicit routing for the AI suggestion enqueue/poll service and focused unit proof; existing data-boundary and testing contracts remain authoritative.'
+lastReviewedCommit: '1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0'
+lastReviewedNote: 'Reviewed for Next Issue #938: existing bootstrap, testing, data-boundary, and i18n routing fully covers the exact toolchain, SDK consumer, CI, container, and runtime-gate changes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
