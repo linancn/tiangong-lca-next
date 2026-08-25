@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
 lastReviewedNote: 'Reviewed for Next Issue #938: exact Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, and SDK 0.2.0 pins preserve the language-delivery, semantic-E2E, and production-data contracts.'
 baselineObservedAt: 2026-07-18
 related:

@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
 lastReviewedNote: 'Reviewed for Next Issue #938: the exact toolchain and SDK consumer cutover changes test/build infrastructure but does not change frontend runtime ownership or the stable path map.'
 related:
   - ../AGENTS.md

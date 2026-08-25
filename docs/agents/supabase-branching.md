@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
 lastReviewedNote: 'Reviewed for Next Issue #938: the exact Node/pnpm/TypeScript and SDK package cutover preserves the existing Supabase environment, production-data, and cross-repository ownership boundaries.'
 ---
 

@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
 lastReviewedNote: 'Reviewed for Next Issue #938: an unmocked installed-package contract closes SDK consumer risk without reopening the broader coverage strategy.'
 ---
 
@@ -57,7 +57,7 @@ lastReviewedNote: 'Reviewed for Next Issue #938: an unmocked installed-package c
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
 - dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.23.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
-- CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed immutable v2.0.2 commit SHA rather than a movable major tag
+- CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v2.0.2 commit SHA rather than an annotated-tag object or movable major tag
 - the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed `0.2.0` package and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth

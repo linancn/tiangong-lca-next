@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
 lastReviewedNote: 'Reviewed for Next Issue #938: the repository pins Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, released TIDAS SDK 0.2.0, digest-bound containers, and the pnpm setup action across local and CI proof.'
 related:
   - .docpact/config.yaml
