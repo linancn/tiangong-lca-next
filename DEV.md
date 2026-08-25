@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
-lastReviewedNote: 'Reviewed for Next Issue #938: bootstrap, digest-bound containers, CI, and runtime gates now use exact Node 24.19.0 and pnpm 11.23.0, with SDK 0.2.0 and TypeScript 7.0.2 as the single installed track.'
+lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
+lastReviewedNote: 'Reviewed for Next Issue #938: bootstrap, digest-bound containers, immutable pnpm setup, CI, and runtime gates now use exact Node 24.19.0 and pnpm 11.23.0, with SDK 0.2.0 and TypeScript 7.0.2 as the single installed track.'
 ---
 
 # Development Bootstrap
@@ -172,6 +172,8 @@ The repository has one TypeScript track: the direct `typescript` dependency is e
 The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.2.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced` plus its normalized failure envelope; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
+
+Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed `pnpm/setup` v2.0.2 commit SHA, while its inputs still pin pnpm `11.23.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the SHA with a moving major tag.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 

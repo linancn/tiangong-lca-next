@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 1ce98bd4ff3455e9499f0a17f0f0ae869eb018c0
+lastReviewedCommit: fddbee600f2dc9d4cfd18dbf84261b79ac0ebb0c
 lastReviewedNote: 'Reviewed for Next Issue #938: the exact toolchain and installed SDK 0.2.0 package contracts create no open coverage queue; final full closure remains gate-owned.'
 ---
 
