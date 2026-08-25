@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: every shipped Pro Components JSX instance now maps to one explicit surface family with live static or browser evidence.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedNote: 'Reviewed for Next Issue #936: deterministic mocked Edge envelopes and injected polling clocks follow the existing service-unit and canonical async-task patterns.'
 ---
 
 # Testing Patterns Reference

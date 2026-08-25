@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: React 19 timing, App.useApp fixtures, Image/Drawer semantic API drift, MessageChannel handles, and locale artifact refresh now have explicit recovery guidance.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedNote: 'Reviewed for Next Issue #936: AI polling tests use controlled clocks and leave no new open-handle or gate-recovery troubleshooting path.'
 ---
 
 # Testing Troubleshooting

@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: the exact React 19 / Ant Design 6 runtime, App feedback boundary, semantic UI slots, and regenerated locale evidence stay within existing repository ownership and branch policy.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedNote: 'Reviewed for Next Issue #936: authenticated AI suggestion enqueue/poll remains app-side service behavior and does not change repository ownership, branch policy, or UI runtime rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

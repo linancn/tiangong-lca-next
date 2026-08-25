@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: the React 19 / Ant Design 6 migration, semantic browser proof, and no-argument E2E resume parser fix use the existing install, Docpact, build, gate, and managed-push workflow.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedNote: 'Reviewed for Next Issue #936: the AI suggestion service cutover uses the existing focused-test, lint, build, Docpact, and managed-push workflow.'
 ---
 
 # Development Bootstrap
