@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 focused and browser evidence remains additive to the existing hook-owned full gate; no trigger or quality-bar change is required.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedNote: 'Reviewed for Next Issue #936: focused AI suggestion service proof is additive; no pre-push trigger, quality bar, or release-gate policy changes.'
 ---
 
 # Pre-Push Gate Policy

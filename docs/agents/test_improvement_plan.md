@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 fixture migration, handle-free browser shims, and focused semantic proof extend the maintained validation model without reopening broader strategy work.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI enqueue/poll behavior follows the maintained strategy and does not reopen broader testing work.'
 ---
 
 # Testing Strategy

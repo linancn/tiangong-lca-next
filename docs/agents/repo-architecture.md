@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 91c3cedca29e7ab3aadf331bd2f177009b4580d2
-lastReviewedNote: 'Reviewed for Next Issue #924: the UI runtime now uses one React 19 / Ant Design 6 / ProComponents 3 generation with Umi-global App, theme, and non-component feedback registration.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedNote: 'Documented AI校验 as a service-owned enqueue/poll flow over Edge and the generic backend ai-worker while retaining the existing diff UI.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -53,6 +53,7 @@ This repo is a Umi-based React 19 SPA on one native Ant Design 6 / ProComponents
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
 | `src/services/general/tidasScalarStorage.ts` | canonical TIDAS year/percentage scalar normalization and the Process/Flow save-boundary issue format |
+| `src/services/general/aiSuggestion.ts` | authenticated AI suggestion enqueue, bounded polling, terminal validation, and versioned result decoding |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
@@ -82,6 +83,7 @@ Rules:
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
 - language behavior is split across typed owners: `localeRegistry.ts` owns UI locale/adapters, `contentLanguageRegistry.ts` owns TIDAS/ILCD reading and authoring plus service-query resolution, `referenceResources/manifest.ts` owns classification/location availability and provenance, and `localeCapabilities.ts` is the derived joined view. The current canonical UI keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`; business consumers and parameterized capability tests discover them from the registries. A fixed locale array may appear only in an explicitly labeled fail-closed product-contract test whose purpose is to force deliberate review when that snapshot changes
 - app locale, content language, service-query language, and reference-resource language are separate boundaries. Content reading priorities, backend-query fallbacks, and reference-resource delivery states are declared independently; a native reference overlay exists only after its exact structure/evidence gate passes. Documentation, legal, and public-doc surfaces keep their separately disclosed fallbacks
+- Process and Flow AI校验 keeps the existing `AISuggestion` diff/field-acceptance UI, while `src/services/general/aiSuggestion.ts` owns the asynchronous transport. It submits the current TIDAS JSON to authenticated Edge `ai_suggest`, polls the returned requester-scoped job with a bounded progressive interval, accepts only `ai.tidas_suggestion.result.v1` `complete`/`partial` results, and fails closed on malformed, failed, cancelled, blocked, aborted, or timed-out jobs. Next never reads `worker_jobs` directly and does not receive queue payloads, leases, diagnostics, or model credentials.
 - anonymous SPA access is limited to the explicit login/recovery allowlist. Root/Welcome, every other configured application route, case variants, and unmatched paths require the session guard and redirect anonymous users to the canonical login route; authenticated unmatched paths may render the localized 404. Role gates defer missing-session decisions to that global redirect, then enforce their role only after a user exists, so they cannot replace login with an anonymous 403. Localization route/view coverage records this access context but must never broaden it. Authenticated redirects that drive localized query/hash views must preserve their URL state
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
 - LCIA result transport state and calculation-evidence trust state are separate: a failed or pending result query renders its own state and cannot be reinterpreted as missing or mismatched evidence; only a successfully returned numerical result enters the fail-closed evidence validator

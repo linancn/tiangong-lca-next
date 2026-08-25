@@ -1530,58 +1530,6 @@ describe('getAllVersions', () => {
   });
 });
 
-describe('getAISuggestion', () => {
-  it('should invoke ai_suggest function with serialized payload', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-4' } } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { suggestion: { foo: 'bar' } } });
-    const tidasData = { toJSONString: () => 'serialized' } as any;
-
-    const result = await generalApi.getAISuggestion(tidasData, 'process', { maxRetries: 1 });
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('ai_suggest', {
-      headers: { Authorization: 'Bearer token-4' },
-      body: { tidasData, dataType: 'process', options: { maxRetries: 1 } },
-      region: expect.anything(),
-    });
-    expect(result).toEqual({ suggestion: { foo: 'bar' } });
-  });
-
-  it('should return undefined when session is missing', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: null } });
-
-    const result = await generalApi.getAISuggestion({}, 'flow', {});
-
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toBeUndefined();
-  });
-
-  it('should handle error response from function', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-5' } } });
-    mockFunctionsInvoke.mockResolvedValue({ error: { message: 'AI service unavailable' } });
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
-    const result = await generalApi.getAISuggestion({}, 'process', {});
-
-    expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'AI service unavailable' });
-    expect(result).toBeUndefined();
-
-    consoleLogSpy.mockRestore();
-  });
-
-  it('should use an empty bearer token for AI suggestions when access token is absent', async () => {
-    mockAuthGetSession.mockResolvedValue({ data: { session: {} } });
-    mockFunctionsInvoke.mockResolvedValue({ data: { suggestion: { foo: 'bar' } } });
-
-    await generalApi.getAISuggestion({}, 'process', {});
-
-    expect(mockFunctionsInvoke).toHaveBeenCalledWith('ai_suggest', {
-      headers: { Authorization: 'Bearer ' },
-      body: { tidasData: {}, dataType: 'process', options: {} },
-      region: expect.anything(),
-    });
-  });
-});
-
 describe('multilingual save normalization', () => {
   it('should normalize payload and auto-fill English translation from AI response', async () => {
     mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-6' } } });
@@ -4137,7 +4085,7 @@ describe('Edge Cases and Error Handling', () => {
     });
   });
 
-  describe('getAISuggestion', () => {
+  describe('legacy mutation boundary', () => {
     it('returns the structured removed-result envelope for legacy mutation boundaries', () => {
       const result = generalApi.createLegacyMutationRemovedResult('legacyBoundary');
 
@@ -4153,46 +4101,6 @@ describe('Edge Cases and Error Handling', () => {
         status: 410,
         statusText: 'LEGACY_ENDPOINT_REMOVED',
       });
-    });
-
-    it('should get AI suggestion successfully', async () => {
-      const mockResponse = { suggestion: 'AI generated content' };
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: mockResponse, error: null });
-
-      const result = await generalApi.getAISuggestion({ name: 'test' }, 'process', { lang: 'en' });
-
-      expect(mockFunctionsInvoke).toHaveBeenCalledWith('ai_suggest', {
-        headers: { Authorization: 'Bearer token-xyz' },
-        body: {
-          tidasData: { name: 'test' },
-          dataType: 'process',
-          options: { lang: 'en' },
-        },
-        region: FunctionRegion.UsEast1,
-      });
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('should return undefined when no session exists', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: null } });
-
-      const result = await generalApi.getAISuggestion({ name: 'test' }, 'process', {});
-
-      expect(result).toBeUndefined();
-    });
-
-    it('should handle edge function error', async () => {
-      mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-xyz' } } });
-      mockFunctionsInvoke.mockResolvedValue({ data: null, error: { message: 'AI error' } });
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      const result = await generalApi.getAISuggestion({ name: 'test' }, 'flow', {});
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'AI error' });
-      expect(result).toBeNull();
-
-      consoleLogSpy.mockRestore();
     });
   });
 });

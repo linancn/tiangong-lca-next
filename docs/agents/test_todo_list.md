@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: native Ant Design 6 App, Form.List, fixture, dependency, and semantic-browser proof preserve full-closure maintenance mode and create no compatibility queue.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedNote: 'Reviewed for Next Issue #936: the new AI suggestion service has focused branch/terminal-state proof and creates no open coverage queue; final full closure remains push-gate owned.'
 ---
 
 # Testing Execution State

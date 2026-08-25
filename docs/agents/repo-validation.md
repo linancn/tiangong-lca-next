@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-24
-lastReviewedCommit: 36505f132116e624aa8a5f2409c7651dfa208b5f
-lastReviewedNote: 'Reviewed for Next Issue #924: Pro Components proof now closes 121 runtime instances and exercises responsive option strips, nested selectors, forms, layouts, and overlays.'
+lastReviewedAt: 2026-08-25
+lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedNote: 'Added focused proof for AI suggestion authentication, enqueue/poll sequencing, progressive intervals, terminal failures, timeout/abort, and versioned result validation.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -85,6 +85,7 @@ pnpm prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `pnpm lint`; focused `pnpm test:ci <jest-args>`; `pnpm build` | `pnpm prepush:gate` | shared UX changes often affect multiple entrypoints; Process LCIA query/evidence state changes include `tests/unit/pages/Processes/Components/processLciaResultsPanel.test.tsx` |
 | services or env selection | `pnpm lint`; focused `pnpm test:ci <jest-args>`; `pnpm build` | `pnpm prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
+| Process/Flow AI suggestion transport | `pnpm test:ci --runInBand tests/unit/services/general/aiSuggestion.test.ts`; `pnpm lint`; `pnpm build` | final `pnpm prepush:gate` through `push:checked`; smoke against matching non-production Database, Edge, and generic `ai-worker` revisions when deployed | Assert authenticated enqueue, requester-scoped polling, bounded progressive intervals, timeout/abort, all terminal failures, malformed projections, and exact `ai.tidas_suggestion.result.v1` complete/partial decoding. Keep diff generation and selective acceptance in the existing component; do not expose worker payloads, leases, diagnostics, or provider details. |
 | Process or Flow TIDAS scalar storage normalization | `pnpm lint`; focused general scalar-normalizer, Process/Flow serializer, and Process/Flow API suites; `pnpm build` | final `pnpm prepush:gate` through `push:checked` | Assert Process years persist as integers in `1000..9999`, affected percentage values persist as TIDAS-compatible strings with at most three fractional digits, zero is retained, and create/update/create-version reject non-canonical non-empty values before persistence. |
 | TIDAS package export task identity or recovery | `pnpm test:ci --runInBand tests/unit/services/tidasPackage/taskCenter.test.ts`; `pnpm lint`; `pnpm build` | final `pnpm prepush:gate`; pair with Database package-cache pgTAP proof when enqueue semantics changed | Assert repeated queue responses, persisted aliases, poll completion/failure, and Worker refreshes sharing `workerJobId` or `jobId` produce one visible task; retain the earliest local presentation identity, use backend timestamps/state, and never revive an alias after canonical reconciliation. |
 | Process keyword search service or LCA picker scope | focused `tests/unit/services/processes/api.test.ts` plus the Process full-text data-workflow unit; `pnpm lint`; `pnpm build` | smoke against the exact non-production Database revision that exposes `search_processes`; cover public, personal, and `public_plus_owner_draft` scopes, including actor-owned state-zero rows with non-null team/review metadata | Assert explicit `query_terms`, no direct app-side ILIKE field filter, and `owner_draft_only=true` only for the personal branch of the calculation scope. Database owns latest-version, actor/state eligibility, workflow metadata, and `search_text` index semantics. |
