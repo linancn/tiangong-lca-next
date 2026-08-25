@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
 lastReviewedNote: 'Reviewed for Next Issue #936: authenticated AI suggestion enqueue/poll remains app-side service behavior and does not change repository ownership, branch policy, or UI runtime rules.'
 related:
   - .docpact/config.yaml
