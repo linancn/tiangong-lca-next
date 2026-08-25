@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
 lastReviewedNote: 'Reviewed after integrating current dev: trigger policy is unchanged; hook, CI, container, and receipt identity bind exact Node/pnpm while the merged review-validation/i18n change stays inside the existing full gate.'
 ---
 

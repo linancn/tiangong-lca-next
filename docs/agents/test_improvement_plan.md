@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
 lastReviewedNote: 'Reviewed the merged SDK package proof and current dev review-validation/i18n coverage; neither reopens broader testing-strategy work.'
 ---
 

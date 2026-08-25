@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
 lastReviewedNote: 'Reviewed after integrating current dev: SDK/package-graph, exact Node, review-validation, and i18n failures retain the documented focused recovery paths.'
 ---
 
