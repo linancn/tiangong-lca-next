@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: bootstrap, digest-bound containers, immutable pnpm setup, CI, and runtime gates now use exact Node 24.19.0 and pnpm 11.23.0, with SDK 0.2.0 and TypeScript 7.0.2 as the single installed track.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: bootstrap and gates retain exact Node 24.19.0, pnpm 11.23.0, SDK 0.2.0, and TypeScript 7.0.2 while the normal focused/full workflow remains unchanged.'
 ---
 
 # Development Bootstrap

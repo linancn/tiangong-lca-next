@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: the repository pins Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, released TIDAS SDK 0.2.0, digest-bound containers, and the pnpm setup action across local and CI proof.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm/TS7, SDK 0.2.0, digest-bound containers, and immutable pnpm setup coexist with the latest review-validation/i18n delivery without changing ownership or branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

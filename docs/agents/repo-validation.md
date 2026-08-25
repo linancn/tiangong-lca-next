@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Added exact Node 24.19.0 and pnpm 11.23.0 proof plus an unmocked installed TIDAS SDK 0.2.0 contract covering all seven factories and normalized validation errors.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm and the unmocked seven-factory SDK 0.2.0 contract join the latest review-validation/i18n tests under the existing proof matrix.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: an unmocked installed-package contract closes SDK consumer risk without reopening the broader coverage strategy.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed the merged SDK package proof and current dev review-validation/i18n coverage; neither reopens broader testing-strategy work.'
 ---
 
 # Testing Strategy

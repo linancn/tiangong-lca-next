@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: trigger policy is unchanged, while hook, immutable CI setup, container, and receipt identity now bind exact Node 24.19.0 and pnpm 11.23.0.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: trigger policy is unchanged; hook, CI, container, and receipt identity bind exact Node/pnpm while the merged review-validation/i18n change stays inside the existing full gate.'
 ---
 
 # Pre-Push Gate Policy

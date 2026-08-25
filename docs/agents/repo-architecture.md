@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: the exact toolchain and SDK consumer cutover changes test/build infrastructure but does not change frontend runtime ownership or the stable path map.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed the merged exact-toolchain/SDK and review-validation/i18n delivery; frontend ownership and the stable runtime path map remain accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

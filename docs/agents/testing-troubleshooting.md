@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: added recovery guidance for real installed SDK/package-graph drift and exact Node 24.19.0 gate failures.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: SDK/package-graph, exact Node, review-validation, and i18n failures retain the documented focused recovery paths.'
 ---
 
 # Testing Troubleshooting

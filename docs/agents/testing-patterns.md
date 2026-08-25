@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: the real installed SDK package is now tested in a child Node process outside Jest mapping, alongside exact toolchain contracts.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-process proof, exact toolchain contracts, and latest review-validation cases follow the maintained patterns.'
 ---
 
 # Testing Patterns Reference
