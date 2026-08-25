@@ -973,15 +973,16 @@ export const buildValidationIssues = ({
     }
 
     if (node.versionUnderReview) {
+      if (node.underReviewVersion !== node['@version']) {
+        return;
+      }
+
       if (isAllowedExactUnderReviewReference(actionFrom, node, rootRef)) {
         return;
       }
 
       pushValidationIssue(issues, issueKeys, {
-        code:
-          actionFrom === 'review' && node.underReviewVersion === node['@version']
-            ? 'underReview'
-            : 'versionUnderReview',
+        code: 'underReview',
         link: getDatasetDetailAbsoluteUrl(ref),
         ref,
         underReviewVersion: node.underReviewVersion,
@@ -1093,13 +1094,14 @@ export class ReffPath {
       let isProblemNode = node.ruleVerification === false || node.nonExistent === true;
 
       if (actionFrom === 'review') {
+        const exactVersionUnderReview =
+          node.versionUnderReview === true && node.underReviewVersion === node['@version'];
         const exactUnderReviewReferenceAllowed =
-          node.versionUnderReview === true &&
-          isAllowedExactUnderReviewReference(actionFrom, node, this);
+          exactVersionUnderReview && isAllowedExactUnderReviewReference(actionFrom, node, this);
         isProblemNode =
           isProblemNode ||
           node?.versionIsInTg === true ||
-          (node?.versionUnderReview === true && !exactUnderReviewReferenceAllowed);
+          (exactVersionUnderReview && !exactUnderReviewReferenceAllowed);
       }
 
       if (isProblemNode) {
@@ -1282,7 +1284,7 @@ export const checkVersions = async (refs: Set<string>, path?: ReffPath) => {
 
         if (detail.state_code >= 20 && detail.state_code < 100) {
           referencedVersions.forEach((refVersion) => {
-            if (path) {
+            if (path && refVersion === detail.version) {
               path.set(
                 {
                   '@type': tableName,

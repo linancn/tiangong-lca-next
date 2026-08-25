@@ -726,7 +726,7 @@ describe('review utilities', () => {
     });
   });
 
-  it('applies review-mode version checks to the recursive ordered-json reference chain', async () => {
+  it('ignores another reviewed version in the recursive ordered-json reference chain', async () => {
     mockGetRefData.mockResolvedValue({
       success: true,
       data: {
@@ -777,16 +777,13 @@ describe('review utilities', () => {
       fallbackToLatest: true,
     });
     expect(mockGetRefDataByIds).toHaveBeenCalledWith(['source-review'], 'sources');
-    expect(path.findProblemNodes('review')).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          '@refObjectId': 'source-review',
-          '@version': '01',
-          underReviewVersion: '02',
-          versionUnderReview: true,
-        }),
-      ]),
-    );
+    expect(path.findProblemNodes('review')).toEqual([
+      expect.objectContaining({
+        '@refObjectId': 'root-flow',
+        ruleVerification: false,
+      }),
+    ]);
+    expect((path.children[0] as any).versionUnderReview).toBeUndefined();
   });
 
   it('returns early when orderedJson contains no additional references', async () => {
@@ -1381,7 +1378,7 @@ describe('review utilities', () => {
     );
   });
 
-  it('updates nested nodes and treats another under-review version as a problem in review mode', () => {
+  it('ignores another under-review version in review mode', () => {
     const parent = new ReffPath(
       {
         '@refObjectId': 'parent',
@@ -1421,12 +1418,7 @@ describe('review utilities', () => {
       '02',
     );
 
-    expect(parent.findProblemNodes('review')).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ '@refObjectId': 'child', versionUnderReview: true }),
-        expect.objectContaining({ '@refObjectId': 'parent' }),
-      ]),
-    );
+    expect(parent.findProblemNodes('review')).toEqual([]);
   });
 
   it('allows the exact referenced version to remain under review during root submission', () => {
