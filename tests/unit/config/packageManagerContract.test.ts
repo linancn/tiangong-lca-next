@@ -30,11 +30,19 @@ describe('pnpm package-manager contract', () => {
     expect(packageJson.packageManager).toBe('pnpm@11.23.0');
     expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: '11.23.0' });
     expect(read('.nvmrc').trim()).toBe('24.19.0');
-    expect(applicationDockerfile).toContain('FROM node:24.19.0-alpine');
+    expect(applicationDockerfile).toMatch(/^FROM node:24\.19\.0-alpine@sha256:[a-f0-9]{64}$/mu);
     expect(applicationDockerfile).toContain('pnpm@11.23.0');
-    expect(e2eDockerfile).toContain('node:24.19.0-bookworm-slim');
+    expect(e2eDockerfile).toMatch(
+      /^ARG NODE_IMAGE=node:24\.19\.0-bookworm-slim@sha256:[a-f0-9]{64}$/mu,
+    );
     expect(e2eDockerfile).toContain('pnpm@11.23.0');
-    expect(e2eEnvironment).toMatchObject({ nodeMajor: 24, nodeVersion: '24.19.0' });
+    expect(e2eEnvironment).toMatchObject({
+      nodeImage:
+        'node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df',
+      nodeMajor: 24,
+      nodeVersion: '24.19.0',
+    });
+    expect(e2eDockerfile).toContain(`ARG NODE_IMAGE=${e2eEnvironment.nodeImage}`);
     for (const workflow of workflows) {
       expect(workflow).toEqual({
         fileName: workflow.fileName,

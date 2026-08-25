@@ -28,6 +28,11 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     runDirectory: string,
     runtimeInputs: Record<string, any>,
   ) => string[];
+  loadEnvironmentContractFromWorkingTree: (root?: string) => {
+    contract: Record<string, any>;
+    raw: string;
+    sha256: string;
+  };
   lockedDependencyVersion: (packageName: string, root?: string) => string;
   parseOptions: (command: string, args: string[]) => Record<string, any>;
   qualificationIdentity: (root?: string) => {
@@ -125,6 +130,27 @@ describe('release E2E controller contracts', () => {
     expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.61.1');
   });
 
+  it('binds the exact digest-pinned Node image in the E2E environment contract', () => {
+    const current = controller.loadEnvironmentContractFromWorkingTree();
+    expect(current.contract).toMatchObject({
+      nodeImage:
+        'node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df',
+      nodeMajor: 24,
+      nodeVersion: '24.19.0',
+    });
+
+    const root = makeTemporaryDirectory();
+    const environmentPath = path.join(root, 'docker/e2e/environment.json');
+    fs.mkdirSync(path.dirname(environmentPath), { recursive: true });
+    fs.writeFileSync(
+      environmentPath,
+      `${JSON.stringify({ ...current.contract, nodeImage: 'node:24.19.0-bookworm-slim' })}\n`,
+    );
+    expect(() => controller.loadEnvironmentContractFromWorkingTree(root)).toThrow(
+      'unsupported or unpinned',
+    );
+  });
+
   it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
     const identity = {
       inputSha256: 'a'.repeat(64),
@@ -203,6 +229,7 @@ describe('release E2E controller contracts', () => {
         schemaVersion: 1,
         playwrightVersion: '1.61.1',
         nodeMajor: 24,
+        nodeImage: `node:24.19.0-bookworm-slim@sha256:${'2'.repeat(64)}`,
         nodeVersion: '24.19.0',
         playwrightImage: `image@sha256:${'1'.repeat(64)}`,
       })}\n`,
