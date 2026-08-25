@@ -20,10 +20,36 @@ function trackedRuntimeSources(): Array<{ relativePath: string; source: string }
 describe('pnpm package-manager contract', () => {
   it('pins the exact Node 24 and pnpm 11 toolchain and keeps one pnpm lockfile', () => {
     const packageJson = JSON.parse(read('package.json'));
+    const applicationDockerfile = read('Dockerfile.app');
+    const e2eDockerfile = read('docker/e2e/Dockerfile');
+    const e2eEnvironment = JSON.parse(read('docker/e2e/environment.json'));
+    const workflows = fs
+      .readdirSync(path.join(repositoryRoot, '.github/workflows'))
+      .map((fileName) => ({ fileName, source: read(`.github/workflows/${fileName}`) }));
 
     expect(packageJson.packageManager).toBe('pnpm@11.23.0');
     expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: '11.23.0' });
     expect(read('.nvmrc').trim()).toBe('24.19.0');
+    expect(applicationDockerfile).toContain('FROM node:24.19.0-alpine');
+    expect(applicationDockerfile).toContain('pnpm@11.23.0');
+    expect(e2eDockerfile).toContain('node:24.19.0-bookworm-slim');
+    expect(e2eDockerfile).toContain('pnpm@11.23.0');
+    expect(e2eEnvironment).toMatchObject({ nodeMajor: 24, nodeVersion: '24.19.0' });
+    for (const workflow of workflows) {
+      expect(workflow).toEqual({
+        fileName: workflow.fileName,
+        source: expect.not.stringMatching(/11\.22\.0|node@24(?:\s|$)|node-version:\s*24(?:\s|$)/mu),
+      });
+    }
+    for (const workflow of workflows.filter(({ source }) => source.includes('uses: pnpm/setup@'))) {
+      expect(workflow.source).toContain('version: 11.23.0');
+      expect(workflow.source).toContain('runtime: node@24.19.0');
+    }
+    for (const workflow of workflows.filter(({ source }) =>
+      source.includes('uses: actions/setup-node@'),
+    )) {
+      expect(workflow.source).toContain('node-version: 24.19.0');
+    }
     expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^29.7.0');
     expect(fs.existsSync(path.join(repositoryRoot, 'pnpm-lock.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(repositoryRoot, 'package-lock.json'))).toBe(false);
