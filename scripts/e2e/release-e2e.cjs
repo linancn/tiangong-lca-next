@@ -601,6 +601,8 @@ function loadEnvironmentContractFromWorkingTree(repositoryRoot = REPOSITORY_ROOT
     contract.schemaVersion !== 1 ||
     contract.playwrightVersion !== '1.61.1' ||
     contract.nodeMajor !== 24 ||
+    contract.nodeVersion !== '24.19.0' ||
+    !/^node:24[.]19[.]0-bookworm-slim@sha256:[a-f0-9]{64}$/u.test(String(contract.nodeImage)) ||
     !String(contract.playwrightImage).includes('@sha256:')
   ) {
     throw new ReleaseE2EError('The release E2E environment contract is unsupported or unpinned.', {
@@ -637,15 +639,14 @@ function inspectImage(reference) {
 }
 
 function assertHostPrerequisites() {
-  const nodeMajor = Number(process.versions.node.split('.')[0]);
-  if (nodeMajor !== 24) {
+  if (process.versions.node !== '24.19.0') {
     throw new ReleaseE2EError(
-      `Node.js 24 is required to launch release E2E; found ${process.version}.`,
+      `Node.js 24.19.0 is required to launch release E2E; found ${process.version}.`,
       {
         exitCode: EXIT.ENVIRONMENT,
         failureCode: 'E2E_HOST_NODE_VERSION_MISMATCH',
         phase: 'environment',
-        nextCommand: 'nvm use 24',
+        nextCommand: 'nvm use 24.19.0',
       },
     );
   }
@@ -963,7 +964,10 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
     });
   }
   const committedEnvironment = JSON.parse(environmentRaw);
-  if (committedEnvironment.playwrightImage !== environment.contract.playwrightImage) {
+  if (
+    committedEnvironment.playwrightImage !== environment.contract.playwrightImage ||
+    committedEnvironment.nodeImage !== environment.contract.nodeImage
+  ) {
     throw new ReleaseE2EError('Committed and controller environment identities differ.', {
       exitCode: EXIT.CANDIDATE,
       failureCode: 'E2E_ENVIRONMENT_IDENTITY_MISMATCH',
@@ -1001,6 +1005,8 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
       dockerfileSha256: sha256(dockerfileRaw),
       frontendTarget,
       nodeMajor: committedEnvironment.nodeMajor,
+      nodeImage: committedEnvironment.nodeImage,
+      nodeVersion: committedEnvironment.nodeVersion,
       playwrightImage: committedEnvironment.playwrightImage,
       playwrightVersion: committedEnvironment.playwrightVersion,
     },
@@ -2163,6 +2169,7 @@ module.exports = {
   createReceipt,
   dockerRunArguments,
   jsonText,
+  loadEnvironmentContractFromWorkingTree,
   lockedDependencyVersion,
   parseOptions,
   playwrightArguments,

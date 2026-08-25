@@ -55,6 +55,8 @@ type CandidateManifest = {
     dockerfileSha256: string;
     frontendTarget: 'main' | 'qualification';
     nodeMajor: number;
+    nodeImage: string;
+    nodeVersion: string;
     playwrightImage: string;
     playwrightVersion: string;
   };
@@ -74,6 +76,8 @@ type EnvironmentContract = {
   home: string;
   kind: 'tiangong-next-release-e2e-environment';
   nodeMajor: number;
+  nodeImage: string;
+  nodeVersion: string;
   outputPath: string;
   playwrightImage: string;
   playwrightVersion: string;
@@ -273,6 +277,7 @@ async function verifyCandidateIdentity(
       String(environment.nodeMajor),
       'Node major',
     ],
+    [process.versions.node, environment.nodeVersion, 'Node version'],
   ].filter(([actual, expected]) => actual !== expected);
   if (mismatches.length > 0) {
     throw new Error(
@@ -283,6 +288,8 @@ async function verifyCandidateIdentity(
     manifest.environment.playwrightImage !== environment.playwrightImage ||
     manifest.environment.playwrightVersion !== environment.playwrightVersion ||
     manifest.environment.nodeMajor !== environment.nodeMajor ||
+    manifest.environment.nodeImage !== environment.nodeImage ||
+    manifest.environment.nodeVersion !== environment.nodeVersion ||
     manifest.environment.frontendTarget !==
       (process.env.E2E_QUALIFICATION === 'true' ? 'qualification' : 'main')
   ) {

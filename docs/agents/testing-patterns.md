@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
-lastReviewedNote: 'Reviewed for Next Issue #936: deterministic mocked Edge envelopes and injected polling clocks follow the existing service-unit and canonical async-task patterns.'
+lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
+lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-process proof, exact toolchain contracts, and latest review-validation cases follow the maintained patterns.'
 ---
 
 # Testing Patterns Reference
@@ -105,6 +105,7 @@ Validation-specific rule:
 Toolchain-specific rule:
 
 - keep TypeScript `7.0.2` as the only direct compiler/API implementation; command-contract tests must reject a TS6 alias, a `tsc6`/compat command, or a non-repository compiler entrypoint
+- for an upgraded package that Jest maps to a test double, launch a child Node test through normal package resolution and assert the real installed manifest plus representative runtime behavior. The TIDAS SDK contract must cover all seven dataset factories, `validateEnhanced`, and the normalized failure envelope at exact version `0.2.0`
 - keep every `typescript/unstable/*` import inside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`. Adapter proof must cover source replacement without stale AST state, traversal and parent/text ranges, TSX guards, syntactic diagnostics, JSON parsing, and clean process exit
 - use Oxlint for unused and deprecated API correctness and Prettier for formatting only. Keep the focused repo-local `tiangong/no-invalid-this` rule until Oxlint provides a native equivalent, and prove it rejects module-level `this`. Tests must reject reintroducing ESLint, the standalone deprecated scanner, or a Prettier organize-imports plugin
 
@@ -216,7 +217,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | --- | --- |
 | focused unit or component run | `pnpm test:ci tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `pnpm test:ci tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
-| TypeScript 7/Oxlint command and adapter contract | `pnpm test:ci tests/unit/config/toolchainCommandContract.test.ts tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` |
+| TypeScript 7/Oxlint command, installed SDK, and adapter contract | `pnpm test:ci tests/unit/config/toolchainCommandContract.test.ts tests/unit/config/installedTidasSdkContract.test.ts tests/unit/scripts/typescriptNativeParser.test.ts --runInBand --no-coverage` |
 | slow-first and receipt-fixture contract | `pnpm test:ci tests/unit/scripts/slowJestSequencer.test.ts tests/unit/scripts/prepushGateReceipt.test.ts --runInBand --no-coverage` |
 | focused semantic localization browser proof | `pnpm e2e:dev <Playwright arguments>` |
 | exact-candidate release browser proof | `pnpm e2e:env:doctor` then `pnpm e2e:release <release options>` |

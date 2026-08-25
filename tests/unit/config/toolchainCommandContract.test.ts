@@ -63,19 +63,26 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
   });
 
   it('installs only TypeScript 7 and removes the legacy lint and organize-import tools', () => {
-    expect(packageJson.devDependencies.typescript).toBe('^7.0.2');
+    expect(packageJson.devDependencies.typescript).toBe('7.0.2');
     expect(packageJson.devDependencies.oxlint).toBe('^1.79.0');
     expect(packageJson.devDependencies['oxlint-tsgolint']).toBe('^7.0.2001');
     expect(packageJson.devDependencies['@types/node']).toBe('^24.13.3');
     for (const removed of [
       '@typescript/native',
       '@typescript/typescript6',
+      '@typescript/vfs',
       '@umijs/lint',
       'eslint',
       'prettier-plugin-organize-imports',
+      'ts-to-zod',
     ]) {
       expect(dependencies).not.toHaveProperty(removed);
     }
+
+    const lockfile = read('pnpm-lock.yaml');
+    expect(lockfile).toMatch(/^\s{2}typescript@7\.0\.2\s*:/mu);
+    expect(lockfile).not.toMatch(/^\s{2}typescript@[0-6]\./mu);
+    expect(lockfile).not.toMatch(/^\s{2}(?:'@typescript\/vfs|ts-to-zod)@/mu);
   });
 
   it('keeps native API volatility inside one source-analysis adapter', () => {
@@ -151,7 +158,9 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
     expect(oxlint.rules).not.toHaveProperty('sort-imports');
 
     const buildWorkflow = read('.github/workflows/build.yml');
-    expect(buildWorkflow).toContain('uses: pnpm/setup@v2');
+    expect(buildWorkflow).toContain(
+      'uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2',
+    );
     expect(buildWorkflow).toContain('pnpm install --frozen-lockfile');
     expect(buildWorkflow).toContain('pnpm tsc:electron');
     expect(buildWorkflow).toContain('pnpm exec electron-builder');

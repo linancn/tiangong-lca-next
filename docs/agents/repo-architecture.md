@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
-lastReviewedNote: 'Documented AI校验 as a service-owned enqueue/poll flow over Edge and the generic backend ai-worker while retaining the existing diff UI.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed the merged exact-toolchain/SDK and review-validation/i18n delivery; frontend ownership and the stable runtime path map remain accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
