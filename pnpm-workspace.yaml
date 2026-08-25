@@ -25,3 +25,6 @@ allowBuilds:
   electron-winstaller: true
   es5-ext: false
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@tiangong-lca/tidas-sdk@0.2.0'

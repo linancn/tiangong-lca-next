@@ -1,7 +1,7 @@
 {
   "name": "tiangong-lca-next",
   "version": "0.0.85",
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.23.0",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -139,7 +139,7 @@
     "@antv/x6-react-shape": "^3.0.1",
     "@dagrejs/dagre": "^3.0.0",
     "@supabase/supabase-js": "^2.110.1",
-    "@tiangong-lca/tidas-sdk": "^0.1.45",
+    "@tiangong-lca/tidas-sdk": "0.2.0",
     "antd": "6.6.1",
     "bignumber.js": "^11.1.5",
     "d3-geo": "^3.1.1",
@@ -187,10 +187,10 @@
     "prettier": "^3.9.4",
     "supabase": "^2.109.1",
     "tsx": "^4.23.0",
-    "typescript": "^7.0.2"
+    "typescript": "7.0.2"
   },
   "engines": {
-    "node": ">=24.0.0",
-    "pnpm": "11.22.0"
+    "node": "24.19.0",
+    "pnpm": "11.23.0"
   }
 }
