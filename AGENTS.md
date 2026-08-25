@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
 lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm/TS7, SDK 0.2.0, digest-bound containers, and immutable pnpm setup coexist with the latest review-validation/i18n delivery without changing ownership or branch policy.'
 related:
   - .docpact/config.yaml

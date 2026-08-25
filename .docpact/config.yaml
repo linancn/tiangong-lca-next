@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-08-25'
-lastReviewedCommit: '41b791e4760b4b6cd1e18633c32525874f64d60b'
+lastReviewedAt: "2026-08-25"
+lastReviewedCommit: "232a338aea7ae5e0cbfa061a0ba2f77c62bcde99"
 lastReviewedNote: 'Reviewed the merged Issue #938 exact toolchain/SDK consumer and current dev review-validation/i18n changes; existing ownership, routing, and proof rules cover the combined delivery.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
