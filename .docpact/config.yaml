@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-24"
-lastReviewedCommit: "36505f132116e624aa8a5f2409c7651dfa208b5f"
-lastReviewedNote: 'Reviewed for Next Issue #924: React 19 / Ant Design 6 dependency, runtime, fixture, semantic-browser, and generated locale paths remain covered by the existing routing and testing contracts.'
+lastReviewedAt: '2026-08-25'
+lastReviewedCommit: 'f8784672c1b6cd30f07a66c3f0643b8622ba649c'
+lastReviewedNote: 'Added explicit routing for the AI suggestion enqueue/poll service and focused unit proof; existing data-boundary and testing contracts remain authoritative.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -190,10 +190,17 @@ routing:
         - config/supabaseEnv.ts
         - src/services/auth/**
         - src/services/general/api.ts
+        - src/services/general/aiSuggestion.ts
         - src/services/general/localeRegistry.ts
         - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
         - docker/**
+    ai-suggestion:
+      paths:
+        - src/components/AISuggestion/**
+        - src/services/general/aiSuggestion.ts
+        - src/services/general/api.ts
+        - tests/unit/services/general/aiSuggestion.test.ts
     testing-gates:
       paths:
         - package.json
