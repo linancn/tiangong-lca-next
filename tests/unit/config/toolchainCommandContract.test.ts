@@ -63,19 +63,26 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
   });
 
   it('installs only TypeScript 7 and removes the legacy lint and organize-import tools', () => {
-    expect(packageJson.devDependencies.typescript).toBe('^7.0.2');
+    expect(packageJson.devDependencies.typescript).toBe('7.0.2');
     expect(packageJson.devDependencies.oxlint).toBe('^1.79.0');
     expect(packageJson.devDependencies['oxlint-tsgolint']).toBe('^7.0.2001');
     expect(packageJson.devDependencies['@types/node']).toBe('^24.13.3');
     for (const removed of [
       '@typescript/native',
       '@typescript/typescript6',
+      '@typescript/vfs',
       '@umijs/lint',
       'eslint',
       'prettier-plugin-organize-imports',
+      'ts-to-zod',
     ]) {
       expect(dependencies).not.toHaveProperty(removed);
     }
+
+    const lockfile = read('pnpm-lock.yaml');
+    expect(lockfile).toMatch(/^\s{2}typescript@7\.0\.2\s*:/mu);
+    expect(lockfile).not.toMatch(/^\s{2}typescript@[0-6]\./mu);
+    expect(lockfile).not.toMatch(/^\s{2}(?:'@typescript\/vfs|ts-to-zod)@/mu);
   });
 
   it('keeps native API volatility inside one source-analysis adapter', () => {

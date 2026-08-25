@@ -18,15 +18,28 @@ function trackedRuntimeSources(): Array<{ relativePath: string; source: string }
 }
 
 describe('pnpm package-manager contract', () => {
-  it('pins pnpm 11 and keeps a single pnpm lockfile', () => {
+  it('pins the exact Node 24 and pnpm 11 toolchain and keeps one pnpm lockfile', () => {
     const packageJson = JSON.parse(read('package.json'));
 
-    expect(packageJson.packageManager).toBe('pnpm@11.22.0');
-    expect(packageJson.engines).toMatchObject({ node: '>=24.0.0', pnpm: '11.22.0' });
+    expect(packageJson.packageManager).toBe('pnpm@11.23.0');
+    expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: '11.23.0' });
+    expect(read('.nvmrc').trim()).toBe('24.19.0');
     expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^29.7.0');
     expect(fs.existsSync(path.join(repositoryRoot, 'pnpm-lock.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(repositoryRoot, 'package-lock.json'))).toBe(false);
     expect(fs.existsSync(path.join(repositoryRoot, 'yarn.lock'))).toBe(false);
+  });
+
+  it('pins the released SDK and removes its retired compiler-generation graph', () => {
+    const packageJson = JSON.parse(read('package.json'));
+    const lockfile = read('pnpm-lock.yaml');
+
+    expect(packageJson.dependencies['@tiangong-lca/tidas-sdk']).toBe('0.2.0');
+    expect(packageJson.devDependencies.typescript).toBe('7.0.2');
+    expect(lockfile).toMatch(/^\s{2}'?@tiangong-lca\/tidas-sdk@0\.2\.0'?\s*:/mu);
+    expect(lockfile).toMatch(/^\s{2}typescript@7\.0\.2\s*:/mu);
+    expect(lockfile).not.toMatch(/^\s{2}typescript@[0-6]\./mu);
+    expect(lockfile).not.toMatch(/^\s{2}(?:'@typescript\/vfs|ts-to-zod)@/mu);
   });
 
   it('uses only the reviewed isolated-linker compatibility and build policy', () => {
