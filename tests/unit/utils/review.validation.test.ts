@@ -234,7 +234,7 @@ describe('review helper coverage', () => {
     ]);
   });
 
-  it('builds deduplicated validation issues while allowing an exact under-review reference', () => {
+  it('builds deduplicated validation issues while ignoring under-review version differences', () => {
     const rootRef = {
       '@type': 'lifeCycleModel data set',
       '@refObjectId': 'model-1',
@@ -341,16 +341,6 @@ describe('review helper coverage', () => {
         },
       },
       {
-        code: 'versionUnderReview',
-        link: 'http://localhost:8000/#/mydata/processes?id=process-2&version=01.00.000&required=1',
-        ref: {
-          '@type': 'process data set',
-          '@refObjectId': 'process-2',
-          '@version': '01.00.000',
-        },
-        underReviewVersion: '02.00.000',
-      },
-      {
         code: 'versionIsInTg',
         link: 'http://localhost:8000/#/mydata/flows?id=flow-1&version=01.00.000&required=1',
         ref: {
@@ -436,7 +426,7 @@ describe('review helper coverage', () => {
     ]);
   });
 
-  it('keeps root and conflicting-version review blockers while allowing an exact reference review', () => {
+  it('keeps the exact root blocker while allowing exact references and other versions', () => {
     const rootRef = {
       '@type': 'process data set',
       '@refObjectId': 'process-root',
@@ -480,11 +470,6 @@ describe('review helper coverage', () => {
       expect.objectContaining({
         code: 'underReview',
         ref: rootRef,
-      }),
-      expect.objectContaining({
-        code: 'versionUnderReview',
-        ref: expect.objectContaining({ '@refObjectId': 'source-conflict' }),
-        underReviewVersion: '02.00.000',
       }),
     ]);
   });
