@@ -9,16 +9,19 @@ const contractPath = path.join(
 
 describe('installed TIDAS SDK package contract', () => {
   it('runs against Node package resolution outside the Jest module mapper', () => {
+    const defaultRuntimeEnvironment = { ...process.env };
+    for (const name of [
+      'TIDAS_DEEP_VALIDATION',
+      'TIDAS_INCLUDE_WARNINGS',
+      'TIDAS_THROW_ON_ERROR',
+      'TIDAS_VALIDATION_MODE',
+    ]) {
+      delete defaultRuntimeEnvironment[name];
+    }
     const result = spawnSync(process.execPath, ['--test', contractPath], {
       cwd: repositoryRoot,
       encoding: 'utf8',
-      env: {
-        ...process.env,
-        TIDAS_DEEP_VALIDATION: 'false',
-        TIDAS_INCLUDE_WARNINGS: 'false',
-        TIDAS_THROW_ON_ERROR: 'false',
-        TIDAS_VALIDATION_MODE: 'strict',
-      },
+      env: defaultRuntimeEnvironment,
     });
 
     expect({
