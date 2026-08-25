@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: f8784672c1b6cd30f07a66c3f0643b8622ba649c
+lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
 lastReviewedNote: 'Documented AI校验 as a service-owned enqueue/poll flow over Edge and the generic backend ai-worker while retaining the existing diff UI.'
 related:
   - ../AGENTS.md

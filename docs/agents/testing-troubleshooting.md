@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
 lastReviewedNote: 'Reviewed for Next Issue #936: AI polling tests use controlled clocks and leave no new open-handle or gate-recovery troubleshooting path.'
 ---
 

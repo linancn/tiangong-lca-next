@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: a24e6eebb28c89cbe33e75bb1de8a207d18728ad
+lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
 lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI enqueue/poll behavior follows the maintained strategy and does not reopen broader testing work.'
 ---
 
