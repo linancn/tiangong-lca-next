@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
-lastReviewedNote: 'Reviewed for Next Issue #936: focused AI suggestion service proof is additive; no pre-push trigger, quality bar, or release-gate policy changes.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: trigger policy is unchanged; hook, CI, container, and receipt identity bind exact Node/pnpm while the merged review-validation/i18n change stays inside the existing full gate.'
 ---
 
 # Pre-Push Gate Policy
@@ -117,7 +117,7 @@ It does not own:
 
 ## Adoption Conditions
 
-- the hook accepts an already-active Node.js 24 from `PATH`; it falls back to local NVM only when the active Node is absent or has another major version, and fails clearly if Node 24 is still unavailable
+- the hook accepts an already-active exact Node.js 24.19.0 from `PATH`; it falls back to local NVM only when the active Node is absent or has another version, and fails clearly if Node 24.19.0 is still unavailable
 - hook behavior and release-gate behavior must match the documented policy
 - every normal release must have exactly one valid aggregate gate for its exact dev candidate; promotion and publication may only reuse the bound proof
 - branch policy must stay aligned with `dev -> main`
@@ -132,7 +132,7 @@ It does not own:
 ## Short Rule Summary
 
 - keep one authoritative full gate
-- do not require an NVM-managed copy of Node 24 when the runner or operator already has Node 24 active on `PATH`
+- do not require an NVM-managed copy of Node 24.19.0 when the runner or operator already has that exact runtime active on `PATH`
 - for ordinary delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; deterministic release-candidate and promotion pushes use only their restricted structural/static profiles because the dev Release PR owns aggregate acceptance
 - use manual full-gate execution only when a no-push handoff needs the evidence
 - use `pnpm push:checked <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper

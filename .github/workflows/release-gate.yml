@@ -48,10 +48,10 @@ jobs:
           fetch-depth: 0
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@v2
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
-          version: 11.22.0
-          runtime: node@24
+          version: 11.23.0
+          runtime: node@24.19.0
           cache: true
           install: false
 

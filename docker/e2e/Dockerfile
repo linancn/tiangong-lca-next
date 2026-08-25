@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
 ARG PLAYWRIGHT_IMAGE=mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
+ARG NODE_IMAGE=node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df
+FROM ${NODE_IMAGE} AS pinned-node
 FROM ${PLAYWRIGHT_IMAGE} AS dependencies
 
 ARG E2E_FRONTEND_ENV=main
@@ -13,8 +15,11 @@ ENV CI=true \
 
 WORKDIR /app
 
+COPY --from=pinned-node /usr/local/bin/node /usr/local/bin/node
+
 RUN corepack enable \
-    && corepack install --global pnpm@11.22.0
+    && test "$(node --version)" = "v24.19.0" \
+    && corepack install --global pnpm@11.23.0
 
 # The lockfile layer is intentionally before the candidate archive. Docker can therefore reuse
 # the exact pnpm dependency graph when application commits change without changing the lockfile.

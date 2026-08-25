@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
-lastReviewedNote: 'Reviewed for Next Issue #936: authenticated AI suggestion enqueue/poll remains app-side service behavior and does not change repository ownership, branch policy, or UI runtime rules.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm/TS7, SDK 0.2.0, digest-bound containers, and immutable pnpm setup coexist with the latest review-validation/i18n delivery without changing ownership or branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -138,6 +138,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
+- `tests/package-contracts/installedTidasSdk.contract.test.mjs` resolves the real installed `@tiangong-lca/tidas-sdk` `0.2.0` package outside Jest's SDK mapper and protects all seven dataset factories plus the normalized `validateEnhanced` error envelope
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - run Umi-generating focused tests, coverage, and `pnpm prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Run manual hermetic browser qualification on the open business PR before merge or release-to-dev when the change risk warrants it, so a failure can be fixed on that same PR. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns the non-browser release gate. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
 - new dependencies require human approval
@@ -147,8 +148,8 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 
 Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
-- package manager: repository-pinned `pnpm` `11.22.0`; install with `pnpm install --frozen-lockfile`
-- Node baseline: `24` via `.nvmrc` and `nvm use 24`
+- package manager: repository-pinned `pnpm` `11.23.0`; install with `pnpm install --frozen-lockfile`
+- Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
 - UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
 - shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)
 - explicit main-environment run: `pnpm start:main`

@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-25
-lastReviewedCommit: aa42492d221695296473aa7acaa1171de36314c8
-lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI enqueue/poll behavior follows the maintained strategy and does not reopen broader testing work.'
+lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
+lastReviewedNote: 'Reviewed the merged SDK package proof and current dev review-validation/i18n coverage; neither reopens broader testing-strategy work.'
 ---
 
 # Testing Strategy
@@ -56,7 +56,9 @@ lastReviewedNote: 'Reviewed for Next Issue #936: service-unit coverage for AI en
 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
-- dependency installation is a governed proof input: the repository pins pnpm, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.23.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v2.0.2 commit SHA rather than an annotated-tag object or movable major tag
+- the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed `0.2.0` package and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
