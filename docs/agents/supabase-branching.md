@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: the exact Node/pnpm/TypeScript and SDK package cutover preserves the existing Supabase environment, production-data, and cross-repository ownership boundaries.'
+lastReviewedAt: 2026-08-26
+lastReviewedCommit: a550ecb7db5fd28a6e093cc486c34b8f7d6824c8
+lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 container-resolver-only update preserves the existing Supabase environment, production-data, and cross-repository ownership boundaries.'
 ---
 
 # Supabase Environment And Database Workflow
