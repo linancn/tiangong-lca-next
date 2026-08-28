@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-26
-lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
 lastReviewedNote: 'Reviewed for Next Issue #946: the existing package-manager proof matrix now requires exact pnpm 11.24.0 without changing Node, TypeScript, SDK, application, packaging, or runtime behavior.'
 related:
   - ../AGENTS.md

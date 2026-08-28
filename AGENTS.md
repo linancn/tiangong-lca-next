@@ -45,8 +45,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-26
-lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
 lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 now spans local, CI, and container resolvers while Node 24.19.0, TypeScript 7.0.2, SDK 0.2.0, ownership, and branch policy remain unchanged.'
 related:
   - .docpact/config.yaml
