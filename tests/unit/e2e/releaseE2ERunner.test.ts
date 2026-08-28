@@ -214,7 +214,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.23.0',
+        packageManager: 'pnpm@11.24.0',
         version: '1.0.0',
       })}\n`,
     );
@@ -256,7 +256,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.23.0',
+        packageManager: 'pnpm@11.24.0',
         version: '1.0.1',
       })}\n`,
     );

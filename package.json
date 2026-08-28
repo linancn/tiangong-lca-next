@@ -1,7 +1,7 @@
 {
   "name": "tiangong-lca-next",
   "version": "0.0.87",
-  "packageManager": "pnpm@11.23.0",
+  "packageManager": "pnpm@11.24.0",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -191,6 +191,6 @@
   },
   "engines": {
     "node": "24.19.0",
-    "pnpm": "11.23.0"
+    "pnpm": "11.24.0"
   }
 }

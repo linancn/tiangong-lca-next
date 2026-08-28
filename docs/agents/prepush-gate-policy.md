@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
-lastReviewedNote: 'Reviewed after integrating current dev: trigger policy is unchanged; hook, CI, container, and receipt identity bind exact Node/pnpm while the merged review-validation/i18n change stays inside the existing full gate.'
+lastReviewedAt: 2026-08-26
+lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
+lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains covered by the existing hook and receipt identity; trigger policy and the full-gate boundary are unchanged.'
 ---
 
 # Pre-Push Gate Policy

@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
-lastReviewedNote: 'Reviewed after integrating current dev: SDK/package-graph, exact Node, review-validation, and i18n failures retain the documented focused recovery paths.'
+lastReviewedAt: 2026-08-26
+lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
+lastReviewedNote: 'Reviewed for Next Issue #946: a pnpm 11.24.0 resolver or receipt failure retains the documented package-contract and focused recovery paths.'
 ---
 
 # Testing Troubleshooting

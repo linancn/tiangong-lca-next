@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: exact Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, and SDK 0.2.0 pins preserve the language-delivery, semantic-E2E, and production-data contracts.'
+lastReviewedAt: 2026-08-26
+lastReviewedCommit: a550ecb7db5fd28a6e093cc486c34b8f7d6824c8
+lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 resolver-only update preserves the language-delivery, semantic-E2E, and production-data contracts while Node 24.19.0, TypeScript 7.0.2, and SDK 0.2.0 remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

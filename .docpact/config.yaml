@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-25"
-lastReviewedCommit: "232a338aea7ae5e0cbfa061a0ba2f77c62bcde99"
-lastReviewedNote: 'Reviewed the merged Issue #938 exact toolchain/SDK consumer and current dev review-validation/i18n changes; existing ownership, routing, and proof rules cover the combined delivery.'
+lastReviewedAt: "2026-08-26"
+lastReviewedCommit: "fcf58d2d757549a2ec8b0017918a45a5bb15f2f8"
+lastReviewedNote: 'Reviewed for Next Issue #946: existing bootstrap, testing, CI, container, and proof routing fully covers the exact pnpm 11.24.0 toolchain-only update.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

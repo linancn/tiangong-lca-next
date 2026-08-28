@@ -19,7 +19,7 @@ COPY --from=pinned-node /usr/local/bin/node /usr/local/bin/node
 
 RUN corepack enable \
     && test "$(node --version)" = "v24.19.0" \
-    && corepack install --global pnpm@11.23.0
+    && corepack install --global pnpm@11.24.0
 
 # The lockfile layer is intentionally before the candidate archive. Docker can therefore reuse
 # the exact pnpm dependency graph when application commits change without changing the lockfile.
