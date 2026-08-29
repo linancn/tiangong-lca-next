@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: versioned list request identity and stale-row clearing stay within the existing frontend ownership, dependency, and branch-policy contract.'
+lastReviewedCommit: 5c2f80c865b989753b48cc871ae6eb6892aef45c
+lastReviewedNote: 'Reviewed for Next Issue #955: the Processes test-only strict-act repair stays within existing frontend ownership, dependency, and dev-target branch-policy rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
