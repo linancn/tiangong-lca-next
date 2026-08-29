@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: deferred promises, explicit request identity, and visible stale-row assertions follow the existing asynchronous integration-test pattern.'
+lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedNote: 'Reviewed for Next Issue #955: wrapping direct mock request callbacks in async act follows the existing state-update synchronization pattern without weakening assertions.'
 ---
 
 # Testing Patterns Reference

@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: the existing focused-test and full-gate recovery paths cover versioned list request-lifecycle failures without new troubleshooting rules.'
+lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedNote: 'Reviewed for Next Issue #955: the existing strict act-warning diagnostics and focused-test recovery path identified and verify this defect without new troubleshooting rules.'
 ---
 
 # Testing Troubleshooting

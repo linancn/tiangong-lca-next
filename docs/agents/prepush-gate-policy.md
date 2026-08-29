@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: the versioned list runtime and regression changes remain covered by the existing hook-owned full gate; trigger policy is unchanged.'
+lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedNote: 'Reviewed for Next Issue #955: strict React act-warning enforcement correctly caught the Processes test synchronization defect; the hook-owned gate and trigger policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
