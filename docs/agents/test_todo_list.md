@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 contract adds no open coverage queue; final full closure remains gate-owned.'
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: the hotfix adds direct service, runtime, and page coverage with no new deferred coverage queue; final closure remains gate-owned.'
 ---
 
 # Testing Execution State

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-29"
-lastReviewedCommit: "567bec27382ff73b34719530b1df448795a7b824"
-lastReviewedNote: 'Reviewed for Next Issue #946: existing bootstrap, testing, CI, container, and proof routing fully covers the exact pnpm 11.24.0 toolchain-only update.'
+lastReviewedCommit: "93d048e0"
+lastReviewedNote: 'Reviewed for Next Issue #951: existing service, frontend runtime, localization, and testing rules cover the authentication recovery hotfix without routing changes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

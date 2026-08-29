@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: the existing package-manager proof matrix now requires exact pnpm 11.24.0 without changing Node, TypeScript, SDK, application, packaging, or runtime behavior.'
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: existing auth service, login-page, app-runtime, localization, lint, type, build, and full-gate proof remains sufficient.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

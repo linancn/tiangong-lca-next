@@ -42,6 +42,8 @@ export default {
   'pages.login.password.strengthWeak': 'Stärke: Schwach',
   'pages.login.password.validation': 'Das Passwort ist ungültig.',
   'pages.login.passwordLogin.errorMessage': 'Benutzername oder Passwort ist falsch.',
+  'pages.login.passwordLogin.emailNotConfirmed': 'Bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden.',
+  'pages.login.passwordLogin.rateLimited': 'Zu viele Anmeldeversuche. Warten Sie einen Moment und versuchen Sie es erneut.',
   'pages.login.phoneLogin.errorMessage': 'Der Bestätigungscode ist falsch.',
   'pages.login.phoneLogin.getVerificationCode': 'Code anfordern',
   'pages.login.phoneLogin.tab': 'Telefonanmeldung',

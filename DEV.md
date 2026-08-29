@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: bootstrap, CI, containers, and gates now resolve exact pnpm 11.24.0 while Node 24.19.0, SDK 0.2.0, TypeScript 7.0.2, and the focused/full workflow remain unchanged.'
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: the Auth recovery hotfix uses the existing focused lint, type, test, build, and checked-push workflow without bootstrap changes.'
 ---
 
 # Development Bootstrap

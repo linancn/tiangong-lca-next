@@ -42,6 +42,8 @@ export default {
   'pages.login.password.strengthWeak': '强度：弱',
   'pages.login.password.validation': '密码无效！',
   'pages.login.passwordLogin.errorMessage': '错误的用户名和密码',
+  'pages.login.passwordLogin.emailNotConfirmed': '请先确认邮箱，再登录。',
+  'pages.login.passwordLogin.rateLimited': '登录尝试过于频繁，请稍后再试。',
   'pages.login.phoneLogin.errorMessage': '验证码错误',
   'pages.login.phoneLogin.getVerificationCode': '获取验证码',
   'pages.login.phoneLogin.tab': '手机号登录',

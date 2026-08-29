@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-26
-lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
-lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 resolver-only update leaves frontend ownership, shipped behavior, and the stable runtime path map unchanged.'
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: password-recovery state stays inside the existing auth service and app runtime boundaries; the stable runtime path map is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

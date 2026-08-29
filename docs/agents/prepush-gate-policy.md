@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains covered by the existing hook and receipt identity; trigger policy and the full-gate boundary are unchanged.'
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: the authentication hotfix uses the existing focused-test path and still requires the unchanged full pre-push gate before checked push.'
 ---
 
 # Pre-Push Gate Policy

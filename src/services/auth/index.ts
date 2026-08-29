@@ -14,3 +14,9 @@ export {
 export { cognitoChangeEmail, cognitoChangePassword, cognitoSignUp } from './cognito';
 export { changePassword, forgotPasswordSendEmail, setPassword } from './password';
 export { changeEmail, setProfile } from './profile';
+export {
+  completePasswordRecovery,
+  getPasswordRecoveryUser,
+  recordPasswordRecoverySession,
+  subscribeToPasswordRecovery,
+} from './recovery';

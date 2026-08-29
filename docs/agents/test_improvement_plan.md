@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains inside the established dependency-identity strategy and does not reopen broader testing work.'
+lastReviewedCommit: 93d048e0
+lastReviewedNote: 'Reviewed for Next Issue #951: focused Auth recovery coverage fits the established unit-test strategy and does not reopen broader testing work.'
 ---
 
 # Testing Strategy

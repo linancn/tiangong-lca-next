@@ -42,6 +42,8 @@ export default {
   'pages.login.password.strengthWeak': 'Robustesse : faible',
   'pages.login.password.validation': 'Le mot de passe n’est pas valide !',
   'pages.login.passwordLogin.errorMessage': 'Nom d’utilisateur ou mot de passe incorrect',
+  'pages.login.passwordLogin.emailNotConfirmed': 'Confirmez votre adresse e-mail avant de vous connecter.',
+  'pages.login.passwordLogin.rateLimited': 'Trop de tentatives de connexion. Patientez un instant, puis réessayez.',
   'pages.login.phoneLogin.errorMessage': 'Code de vérification incorrect',
   'pages.login.phoneLogin.getVerificationCode': 'Obtenir le code',
   'pages.login.phoneLogin.tab': 'Connexion par téléphone',
