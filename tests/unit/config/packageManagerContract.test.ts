@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const repositoryRoot = path.resolve(__dirname, '../../..');
 const pinnedPnpmSetup = 'uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2';
+const expectedPnpmVersion = '11.24.0';
 
 function read(relativePath: string): string {
   return fs.readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -28,15 +29,15 @@ describe('pnpm package-manager contract', () => {
       .readdirSync(path.join(repositoryRoot, '.github/workflows'))
       .map((fileName) => ({ fileName, source: read(`.github/workflows/${fileName}`) }));
 
-    expect(packageJson.packageManager).toBe('pnpm@11.23.0');
-    expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: '11.23.0' });
+    expect(packageJson.packageManager).toBe(`pnpm@${expectedPnpmVersion}`);
+    expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: expectedPnpmVersion });
     expect(read('.nvmrc').trim()).toBe('24.19.0');
     expect(applicationDockerfile).toMatch(/^FROM node:24\.19\.0-alpine@sha256:[a-f0-9]{64}$/mu);
-    expect(applicationDockerfile).toContain('pnpm@11.23.0');
+    expect(applicationDockerfile).toContain(`pnpm@${expectedPnpmVersion}`);
     expect(e2eDockerfile).toMatch(
       /^ARG NODE_IMAGE=node:24\.19\.0-bookworm-slim@sha256:[a-f0-9]{64}$/mu,
     );
-    expect(e2eDockerfile).toContain('pnpm@11.23.0');
+    expect(e2eDockerfile).toContain(`pnpm@${expectedPnpmVersion}`);
     expect(e2eEnvironment).toMatchObject({
       nodeImage:
         'node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df',
@@ -47,12 +48,14 @@ describe('pnpm package-manager contract', () => {
     for (const workflow of workflows) {
       expect(workflow).toEqual({
         fileName: workflow.fileName,
-        source: expect.not.stringMatching(/11\.22\.0|node@24(?:\s|$)|node-version:\s*24(?:\s|$)/mu),
+        source: expect.not.stringMatching(
+          /11\.(?:22|23)\.0|node@24(?:\s|$)|node-version:\s*24(?:\s|$)/mu,
+        ),
       });
     }
     for (const workflow of workflows.filter(({ source }) => source.includes('uses: pnpm/setup@'))) {
       expect(workflow.source).toContain(pinnedPnpmSetup);
-      expect(workflow.source).toContain('version: 11.23.0');
+      expect(workflow.source).toContain(`version: ${expectedPnpmVersion}`);
       expect(workflow.source).toContain('runtime: node@24.19.0');
     }
     for (const workflow of workflows.filter(({ source }) =>

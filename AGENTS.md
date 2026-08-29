@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
-lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm/TS7, SDK 0.2.0, digest-bound containers, and immutable pnpm setup coexist with the latest review-validation/i18n delivery without changing ownership or branch policy.'
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
+lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 now spans local, CI, and container resolvers while Node 24.19.0, TypeScript 7.0.2, SDK 0.2.0, ownership, and branch policy remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -148,7 +148,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 
 Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
-- package manager: repository-pinned `pnpm` `11.23.0`; install with `pnpm install --frozen-lockfile`
+- package manager: repository-pinned `pnpm` `11.24.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
 - UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
 - shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)

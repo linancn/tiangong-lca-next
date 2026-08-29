@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
-lastReviewedNote: 'Reviewed after integrating current dev: exact-toolchain, SDK 0.2.0, review-validation, and i18n cases create no open queue; full closure remains gate-owned.'
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
+lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 contract adds no open coverage queue; final full closure remains gate-owned.'
 ---
 
 # Testing Execution State
@@ -67,6 +67,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - touched code must stay at full closure
 - Issue #914 implements one TypeScript `7.0.2` compiler/API track, the repository-owned native parser adapter, and Oxlint in place of ESLint plus the standalone deprecated-API scanner. A small repo-local Oxlint plugin retains the legacy `no-invalid-this` contract that native Oxlint does not yet support. No TypeScript 6 alias or `tsc6` path is part of the candidate; Prettier remains formatting-only and no longer organizes imports.
 - Issue #938 exact-pins Node `24.19.0`, pnpm `11.23.0`, TypeScript `7.0.2`, and released `@tiangong-lca/tidas-sdk` `0.2.0`; the frozen graph contains no TypeScript below 7, `ts-to-zod`, or `@typescript/vfs`. A child Node package contract bypasses the Jest SDK mapper and proves all seven dataset factories plus the normalized validation error envelope without reopening a coverage queue.
+- Issue #946 advances only the active package-manager contract to exact pnpm `11.24.0`; RED/GREEN resolver and identity proofs preserve Node `24.19.0`, TypeScript `7.0.2`, SDK `0.2.0`, the byte-identical dependency lock, and the closed coverage queue.
 - Issue #924 moves the complete UI runtime to exact React/React DOM `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`. Package contracts reject React 18, antd 4/5, ProComponents 2, split Pro imports, CommonJS antd deep imports, and removed member-style APIs; real antd 6 Form.List tests preserve registered-field submission, while App/theme registrar tests preserve global feedback and dark/light CSS-variable updates without a production or test-only static fallback. Post-migration proof closes 415 unit suites / 5,742 tests and 14 integration suites / 67 tests, plus nine focused Chromium semantic scenarios and the Firefox/WebKit critical locale-selector pair. The one reviewed Ant Design CLI performance finding is the four-language selector's intentional `virtual={false}` semantic-DOM contract, not an open optimization queue.
 - Issue #914 also adds deterministic slow-first Jest scheduling without changing discovery or the suite inventory. Its pre-push receipt fixture builds one seed, then copies a separate repository and bare remote for every test so receipt, branch, and transport mutations remain isolated.
 - Issue #914's first Linux Release Gate exposed a real publication-loader race: mount initialization and an immediate Publication-tab action could start overlapping requests, letting a later empty response replace valid rows. The loader now has a render-independent in-flight guard and a deterministic deferred-response regression.

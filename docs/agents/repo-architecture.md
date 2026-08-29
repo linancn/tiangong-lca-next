@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 41b791e4760b4b6cd1e18633c32525874f64d60b
-lastReviewedNote: 'Reviewed the merged exact-toolchain/SDK and review-validation/i18n delivery; frontend ownership and the stable runtime path map remain accurate.'
+lastReviewedAt: 2026-08-26
+lastReviewedCommit: fcf58d2d757549a2ec8b0017918a45a5bb15f2f8
+lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 resolver-only update leaves frontend ownership, shipped behavior, and the stable runtime path map unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
-lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-process proof, exact toolchain contracts, and latest review-validation cases follow the maintained patterns.'
+lastReviewedAt: 2026-08-29
+lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
+lastReviewedNote: 'Reviewed for Next Issue #946: the pnpm 11.24.0 RED/GREEN resolver and identity checks follow the existing exact-toolchain contract pattern.'
 ---
 
 # Testing Patterns Reference
