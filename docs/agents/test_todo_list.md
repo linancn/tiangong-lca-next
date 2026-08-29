@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedCommit: daee75b4cb370b7a89301489c367a9ae36d8f23d
 lastReviewedNote: 'Reviewed for Next Issue #950: the scoped versioned-list regression coverage is implemented and adds no open coverage queue; full closure remains gate-owned.'
 ---
 

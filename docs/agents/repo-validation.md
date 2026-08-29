@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedCommit: daee75b4cb370b7a89301489c367a9ae36d8f23d
 lastReviewedNote: 'Reviewed for Next Issue #950: targeted race, route-identity, and 1-to-2-to-1 tests plus lint and build fit the existing validation matrix; no gate rule changes are needed.'
 related:
   - ../AGENTS.md
