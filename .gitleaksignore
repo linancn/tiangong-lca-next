@@ -9,3 +9,8 @@
 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/hybrid_search_handler.ts:generic-api-key:67
 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/_shared/hybrid_search_handler.ts:generic-api-key:68
 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8:docker/volumes/functions/lca_release_results/index.ts:generic-api-key:74
+
+# Verified false positive for the password-reset route constant in Issue #951.
+# The follow-up commit renames the constant; this exact historical fingerprint
+# remains because PR scanning covers every commit in the delivery range.
+f219d24431b3a18b82fccd25ea7f3a5cb99f837e:src/app.tsx:generic-api-key:52

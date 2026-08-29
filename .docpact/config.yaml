@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: "2026-08-29"
 lastReviewedCommit: "93d048e0"
-lastReviewedNote: 'Reviewed for Next Issue #951: existing service, frontend runtime, localization, and testing rules cover the authentication recovery hotfix without routing changes.'
+lastReviewedNote: 'Reviewed for Next Issue #951: existing service, frontend runtime, localization, and testing rules cover the authentication recovery hotfix; the exact Gitleaks false-positive ledger now follows the existing secret-scan config route.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -53,6 +53,7 @@ ownership:
           - .dockerignore
           - .gitignore
           - .gitleaks.toml
+          - .gitleaksignore
           - .oxlintrc.json
           - .prettierignore
           - .prettierrc.js
@@ -125,6 +126,7 @@ coverage:
     - .dockerignore
     - .gitignore
     - .gitleaks.toml
+    - .gitleaksignore
     - .oxlintrc.json
     - .prettierignore
     - .prettierrc.js
@@ -209,6 +211,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -283,6 +286,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -428,6 +432,8 @@ rules:
       - path: .dockerignore
         kind: container-build-input
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .nvmrc
         kind: runtime-baseline
@@ -680,6 +686,8 @@ rules:
       - path: .gitignore
         kind: local-runtime-boundary
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .oxlintrc.json
         kind: lint-gate
