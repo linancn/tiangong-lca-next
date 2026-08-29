@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains covered by the existing hook and receipt identity; trigger policy and the full-gate boundary are unchanged.'
+lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedNote: 'Reviewed for Next Issue #950: the versioned list runtime and regression changes remain covered by the existing hook-owned full gate; trigger policy is unchanged.'
 ---
 
 # Pre-Push Gate Policy

@@ -22,6 +22,7 @@
 import LifeCycleModelsPage from '@/pages/LifeCycleModels';
 import userEvent from '@testing-library/user-event';
 import { act, renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
+import { proComponentsMocks } from '../../mocks/proComponents';
 
 const setLifeCycleModelsLocation = (pathname: string, search = '') => {
   const umi = require('@/tests/mocks/umi');
@@ -1044,5 +1045,49 @@ describe('LifeCycleModels workflows', () => {
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
     expect(screen.queryByText('delete-model')).not.toBeInTheDocument();
     expect(screen.getByText('export')).toBeInTheDocument();
+  });
+
+  it('does not keep the previous model snapshot visible while a replacement request is pending', async () => {
+    const staleRow = {
+      key: 'model-stale:1.0.0.001',
+      id: 'model-stale',
+      name: 'Stale Model Snapshot',
+      version: '1.0.0.001',
+      modifiedAt: '2026-08-08T09:27:51Z',
+      generalComment: 'stale',
+      classification: 'Energy',
+      teamId: null,
+    };
+    const latestRow = {
+      ...staleRow,
+      key: 'model-latest:1.0.0.002',
+      id: 'model-latest',
+      name: 'Latest Model Snapshot',
+      version: '1.0.0.002',
+      modifiedAt: '2026-08-29T09:40:45Z',
+    };
+    let resolveLatestRequest!: (value: any) => void;
+
+    mockGetLifeCycleModelTableAll.mockResolvedValueOnce({
+      data: [staleRow],
+      success: true,
+      total: 1,
+    });
+    mockGetLifeCycleModelTableAll.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveLatestRequest = resolve;
+        }),
+    );
+
+    await renderLifeCycleModels();
+    expect(await screen.findByText('Stale Model Snapshot')).toBeInTheDocument();
+
+    void proComponentsMocks.lastProTableAction?.reload();
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText('Stale Model Snapshot')).not.toBeInTheDocument();
+
+    resolveLatestRequest({ data: [latestRow], success: true, total: 1 });
+    expect(await screen.findByText('Latest Model Snapshot')).toBeInTheDocument();
   });
 });
