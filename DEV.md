@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: bootstrap, CI, containers, and gates now resolve exact pnpm 11.24.0 while Node 24.19.0, SDK 0.2.0, TypeScript 7.0.2, and the focused/full workflow remain unchanged.'
+lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedNote: 'Reviewed for Next Issue #950: the focused test, lint, build, and hook-owned full-gate workflow already covers the versioned list request-lifecycle fix.'
 ---
 
 # Development Bootstrap

@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 now spans local, CI, and container resolvers while Node 24.19.0, TypeScript 7.0.2, SDK 0.2.0, ownership, and branch policy remain unchanged.'
+lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedNote: 'Reviewed for Next Issue #950: versioned list request identity and stale-row clearing stay within the existing frontend ownership, dependency, and branch-policy contract.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

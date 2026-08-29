@@ -88,8 +88,11 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request, columns = [], actionRef, toolBarRender }: any) => {
+  const ProTable = ({ request, params = {}, columns = [], actionRef, toolBarRender }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const requestRef = React.useRef(request);
+    requestRef.current = request;
+    const paramsKey = JSON.stringify(params);
 
     React.useEffect(() => {
       if (actionRef) {
@@ -104,7 +107,7 @@ jest.mock('@ant-design/pro-components', () => {
     React.useEffect(() => {
       let mounted = true;
       const load = async () => {
-        const result = await request?.({ current: 1, pageSize: 10 }, {}, {});
+        const result = await requestRef.current?.({ ...params, current: 1, pageSize: 10 }, {}, {});
         if (mounted) {
           setRows(result?.data ?? []);
         }
@@ -113,7 +116,7 @@ jest.mock('@ant-design/pro-components', () => {
       return () => {
         mounted = false;
       };
-    }, [request]);
+    }, [paramsKey]);
 
     const optionColumn = columns.find((column: any) => column.dataIndex === 'option');
     const toolbarNodes = toolBarRender?.() ?? [];

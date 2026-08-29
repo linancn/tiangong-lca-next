@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains inside the established dependency-identity strategy and does not reopen broader testing work.'
+lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
+lastReviewedNote: 'Reviewed for Next Issue #950: the added deferred-request, route-identity, and pagination regressions close the scoped gap without reopening broader testing work.'
 ---
 
 # Testing Strategy
