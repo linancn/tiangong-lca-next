@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: focused Auth recovery coverage fits the established unit-test strategy and does not reopen broader testing work.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: focused Auth recovery coverage fits the established unit-test strategy and does not reopen broader testing work.'
 ---
 
 # Testing Strategy

@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the Auth recovery listener remains in app runtime and all Supabase access remains under services; ownership and branch policy are unchanged.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the Auth recovery listener remains in app runtime, Supabase access remains under services, and ownership plus branch policy are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

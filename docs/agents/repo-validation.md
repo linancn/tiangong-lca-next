@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: existing auth service, login-page, app-runtime, localization, lint, type, build, and full-gate proof remains sufficient.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: existing auth service, login-page, app-runtime, localization, lint, type, build, and full-gate proof remains sufficient.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

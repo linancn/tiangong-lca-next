@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the Auth recovery hotfix uses the existing focused lint, type, test, build, and checked-push workflow without bootstrap changes.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the Auth recovery hotfix still uses the existing focused lint, type, test, build, Docpact, and checked-push workflow without bootstrap changes.'
 ---
 
 # Development Bootstrap

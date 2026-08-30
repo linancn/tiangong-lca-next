@@ -1,7 +1,7 @@
 // @ts-nocheck
 import ProcessesPage, { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
@@ -377,22 +377,25 @@ jest.mock('@ant-design/pro-components', () => {
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
     paramsRef.current = params;
+    const paramsKey = JSON.stringify(params);
 
     React.useEffect(() => {
       requestRef.current = request;
-      latestRequest = request;
+      latestRequest = (requestParams: any, sort: any) =>
+        requestRef.current?.({ ...requestParams, ...paramsRef.current }, sort);
     }, [request]);
 
-    const reload = jest.fn(async () => {
+    const reload = React.useCallback(async () => {
       const result = await requestRef.current?.(
         { pageSize: 10, current: 1, ...paramsRef.current },
         {},
       );
       setRows(result?.data ?? []);
       return result;
-    });
-    const reloadAndRest = jest.fn(async () =>
-      requestRef.current?.({ pageSize: 10, current: 1, ...paramsRef.current }, {}),
+    }, []);
+    const reloadAndRest = React.useCallback(
+      async () => requestRef.current?.({ pageSize: 10, current: 1, ...paramsRef.current }, {}),
+      [],
     );
 
     React.useEffect(() => {
@@ -404,7 +407,7 @@ jest.mock('@ant-design/pro-components', () => {
         };
       }
       void reload();
-    }, [actionRef, reload, reloadAndRest]);
+    }, [actionRef, paramsKey, reload, reloadAndRest]);
 
     return (
       <section data-testid='pro-table'>
@@ -687,12 +690,18 @@ describe('ProcessesPage', () => {
   it('maps search and table sort fields for pgroonga and table-all requests', async () => {
     renderWithProviders(<ProcessesPage />);
 
+    const requestTable = async (requestParams: any, sort: any) => {
+      await act(async () => {
+        await latestRequest(requestParams, sort);
+      });
+    };
+
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() => expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalled());
 
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -705,7 +714,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'descend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -718,7 +727,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { classification: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { classification: 'descend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -731,7 +740,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { classification: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { classification: 'ascend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -751,7 +760,7 @@ describe('ProcessesPage', () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       {
@@ -764,7 +773,7 @@ describe('ProcessesPage', () => {
       'all',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { location: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { location: 'descend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       { location: 'descend' },
@@ -1009,13 +1018,13 @@ describe('ProcessesPage', () => {
     mockGetDataSource.mockReturnValue('co');
     rerender(<ProcessesPage />);
 
-    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalledTimes(2));
     expect(screen.queryByTestId('review-detail')).not.toBeInTheDocument();
     expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
     expect(
-      screen
-        .getAllByTestId('process-create')
-        .some((node) => node.textContent?.includes('"actionType":"copy"')),
+      (await screen.findAllByTestId('process-create')).some((node) =>
+        node.textContent?.includes('"actionType":"copy"'),
+      ),
     ).toBe(true);
   });
 

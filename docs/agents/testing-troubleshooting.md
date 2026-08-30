@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the authentication tests use existing Jest, Umi, and Supabase mock recovery paths; no new troubleshooting branch is required.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the authentication tests use existing Jest, Umi, and Supabase mock recovery paths; no new troubleshooting branch is required.'
 ---
 
 # Testing Troubleshooting

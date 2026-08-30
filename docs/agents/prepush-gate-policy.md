@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the authentication hotfix uses the existing focused-test path and still requires the unchanged full pre-push gate before checked push.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the authentication hotfix retains the focused-test path and unchanged hook-owned full pre-push gate before checked push.'
 ---
 
 # Pre-Push Gate Policy

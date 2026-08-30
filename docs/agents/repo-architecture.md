@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: password-recovery state stays inside the existing auth service and app runtime boundaries; the stable runtime path map is unchanged.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: password-recovery state stays within the existing auth service and app runtime boundaries; the stable runtime path map remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

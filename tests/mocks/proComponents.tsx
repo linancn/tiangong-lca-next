@@ -239,8 +239,11 @@ export const createProComponentsMock = () => {
     pagination,
     toolBarRender,
     headerTitle,
+    dataSource,
+    onDataSourceChange,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const renderedRows = dataSource ?? rows;
     const paramsRef = React.useRef<any>({
       current: pagination?.current ?? 1,
       pageSize: pagination?.pageSize ?? 10,
@@ -251,10 +254,14 @@ export const createProComponentsMock = () => {
       async (override: any = {}) => {
         paramsRef.current = { ...paramsRef.current, ...(override ?? {}) };
         const result = await requestRef.current?.(paramsRef.current, {});
-        setRows(result?.data ?? []);
+        if (result?.success !== false) {
+          const nextRows = result?.data ?? [];
+          setRows(nextRows);
+          onDataSourceChange?.(nextRows);
+        }
         return result;
       },
-      [setRows],
+      [onDataSourceChange, setRows],
     );
 
     React.useEffect(() => {
@@ -342,12 +349,12 @@ export const createProComponentsMock = () => {
         <div data-testid='pro-table-header'>{resolvedHeader}</div>
         <div data-testid='pro-table-options'>{renderToolbar(renderedOptions)}</div>
         <div data-testid='pro-table-toolbar'>{renderToolbar(toolbar)}</div>
-        {rows.length === 0 ? (
+        {renderedRows.length === 0 ? (
           <div data-testid='pro-table-empty'>No Data</div>
         ) : (
           <table>
             <tbody>
-              {rows.map((row, rowIndex) => {
+              {renderedRows.map((row: any, rowIndex: number) => {
                 const identifier =
                   typeof rowKey === 'function'
                     ? rowKey(row, rowIndex)

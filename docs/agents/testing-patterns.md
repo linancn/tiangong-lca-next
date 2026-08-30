@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: Supabase recovery events, session markers, stable error codes, and UI outcomes follow the existing focused mock-and-contract pattern.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: Supabase recovery events, session markers, stable error codes, and UI outcomes continue to follow the focused mock-and-contract pattern.'
 ---
 
 # Testing Patterns Reference

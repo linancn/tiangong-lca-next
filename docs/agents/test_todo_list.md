@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the hotfix adds direct service, runtime, and page coverage with no new deferred coverage queue; final closure remains gate-owned.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the hotfix adds direct service, runtime, and page coverage without a deferred queue; final closure remains gate-owned.'
 ---
 
 # Testing Execution State
