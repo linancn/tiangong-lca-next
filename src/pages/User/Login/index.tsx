@@ -16,6 +16,7 @@ import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 import { Footer } from '@/components';
 import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
+import { resolveSafeLoginRedirect } from '@/services/general/publicRoutePolicy';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -147,7 +148,7 @@ const Login: React.FC = () => {
           messageApi.success(defaultLoginSuccessMessage);
           await fetchUserInfo();
           const urlParams = new URLSearchParams(location.search);
-          history.push(urlParams.get('redirect') || '/');
+          history.push(resolveSafeLoginRedirect(urlParams.get('redirect')));
           return;
         }
         // 如果失败去设置用户错误信息

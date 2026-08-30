@@ -1,0 +1,110 @@
+import { cognitoSignUp, listOAuthGrants, login, revokeOAuthGrant } from '@/services/auth';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+const mockMessage = { error: jest.fn(), success: jest.fn() };
+const mockConfirm = jest.fn();
+
+jest.mock('@/contexts/AntdAppContext', () => ({
+  useAntdAppApi: () => ({ message: mockMessage, modal: { confirm: mockConfirm } }),
+}));
+
+jest.mock('@umijs/max', () => ({
+  useIntl: () => ({
+    locale: 'en-US',
+    formatMessage: ({ defaultMessage, id }: any, values: Record<string, unknown> = {}) =>
+      String(defaultMessage ?? id).replace(/\{(\w+)\}/gu, (placeholder, key) =>
+        values[key] === undefined ? placeholder : String(values[key]),
+      ),
+  }),
+}));
+
+jest.mock('@/services/auth', () => ({
+  cognitoSignUp: jest.fn(),
+  listOAuthGrants: jest.fn(),
+  login: jest.fn(),
+  revokeOAuthGrant: jest.fn(),
+}));
+
+const OAuthConnections = require('@/pages/Account/OAuthConnections').default;
+
+const mockListGrants = jest.mocked(listOAuthGrants);
+const mockRevokeGrant = jest.mocked(revokeOAuthGrant);
+const mockLogin = jest.mocked(login);
+const mockCognitoSignUp = jest.mocked(cognitoSignUp);
+
+const grant = {
+  client: {
+    id: 'client-1',
+    name: 'TianGong CLI',
+    uri: 'https://lca.tiangong.earth',
+    logo_uri: '',
+  },
+  scopes: ['openid', 'email'],
+  granted_at: '2026-08-31T08:00:00.000Z',
+};
+
+describe('OAuthConnections', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListGrants.mockResolvedValue({ data: [grant], error: null } as any);
+    mockRevokeGrant.mockResolvedValue({ data: {}, error: null } as any);
+    mockLogin.mockResolvedValue({ status: 'ok' } as any);
+    mockCognitoSignUp.mockResolvedValue(undefined);
+  });
+
+  it('lists grants and clearly retires password-encoded API keys', async () => {
+    render(<OAuthConnections email='user@example.com' />);
+
+    expect(screen.getByText('Password-encoded API keys are retired')).toBeInTheDocument();
+    expect(await screen.findByText('TianGong CLI')).toBeInTheDocument();
+    expect(screen.getByText('openid')).toBeInTheDocument();
+    expect(screen.getByText('email')).toBeInTheDocument();
+    expect(screen.queryByText('Generate API Key')).not.toBeInTheDocument();
+  });
+
+  it('revokes the selected grant after explicit confirmation', async () => {
+    const user = userEvent.setup();
+    render(<OAuthConnections email='user@example.com' />);
+
+    await user.click(await screen.findByRole('button', { name: /Disconnect/u }));
+    const confirmation = mockConfirm.mock.calls[0][0];
+    await confirmation.onOk();
+
+    expect(mockRevokeGrant).toHaveBeenCalledWith('client-1');
+    expect(mockMessage.success).toHaveBeenCalledWith('Application disconnected.');
+    await waitFor(() => expect(screen.queryByText('TianGong CLI')).not.toBeInTheDocument());
+  });
+
+  it('shows a retryable error instead of an empty grant list on transport failure', async () => {
+    mockListGrants.mockResolvedValueOnce({ data: null, error: new Error('offline') } as any);
+    const user = userEvent.setup();
+    render(<OAuthConnections email='user@example.com' />);
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Retry',
+      }),
+    );
+    expect(mockListGrants).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps Cognito provisioning separate and never creates a password-derived key', async () => {
+    const user = userEvent.setup();
+    render(<OAuthConnections email='user@example.com' />);
+
+    await user.click(await screen.findByText('Legacy compatibility provisioning'));
+    await user.type(screen.getByLabelText('Current Password'), 'P@ssword123');
+    await user.click(screen.getByRole('button', { name: /Provision legacy access/u }));
+
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'P@ssword123',
+      }),
+    );
+    expect(mockCognitoSignUp).toHaveBeenCalledWith('P@ssword123');
+    expect(mockMessage.success).toHaveBeenCalledWith('Legacy compatibility access provisioned.');
+    expect(screen.queryByText('API Key')).not.toBeInTheDocument();
+  });
+});

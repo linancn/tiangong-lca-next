@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 93d048e0
-lastReviewedNote: 'Reviewed for Next Issue #951: the recovery callback changes app-side Auth handling only; Supabase environment, production-data, and database-engine ownership boundaries remain unchanged.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
+lastReviewedNote: 'Reviewed for Next Issue #962: Next owns the OAuth consent/grant UI and safe browser bridge; Supabase OAuth enablement, clients, and database capability truth remain database/environment operations.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -66,6 +66,7 @@ Rules:
 - explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults; selected `.env*` files are fallback configuration, not an immutable deployment target
 - closed semantic qualification builds with `REACT_APP_ENV=qualification` and `docker/e2e/qualification.env`; this fixed `.invalid` target is intercepted completely and is never a production or deployable backend identity
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- OAuth consent and grant management use the shared Supabase client under `src/services/auth/oauth.ts`. Next owns the `/oauth/consent` bridge/page, getClaims-based session check, safe callback navigation, and user grant list/revoke presentation. `database-engine` owns OAuth server configuration and client-capability enforcement; environment operators register separate exact redirect URIs and client IDs for Dev and production
 - the shared shipped client defaults to `db.schema = api`; non-core reads use Database-owned query facades and mutations use established command/Edge boundaries
 - browser startup reads `api.qry_system_status()` once before authentication through `src/services/general/systemStatus.ts`; `APP_RUNTIME_CONFIG_ENABLED` defaults to enabled, and only an explicit case-insensitive `false` skips the RPC and continues with the normal status; maintenance and verification phases render the localized app-shell boundary, while an unavailable or malformed control response fails open to normal startup and is checked again only after a full page refresh
 - direct relation access is fail-closed through `src/services/supabase/public.ts` and is limited to `processes`, `flows`, `contacts`, `sources`, `unitgroups`, `flowproperties`, `lciamethods`, `lifecyclemodels`, and `ilcd`; callers must not broaden this list to regain access to implementation tables

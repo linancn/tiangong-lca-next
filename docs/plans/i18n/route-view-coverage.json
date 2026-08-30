@@ -304,7 +304,7 @@
   "policy": {
     "catalogOwnership": "Every reachable static string belongs to the shared locale catalog or to an explicitly declared fallback row.",
     "queryPersistence": "Locale switching, root redirect, and refresh preserve the route query and selected view.",
-    "authenticationBoundary": "This localization artifact records the existing access context but never grants or expands anonymous access. Anonymous SPA access is limited by the runtime policy to the login and account-recovery flow; all other configured and unmatched routes require an authenticated session.",
+    "authenticationBoundary": "This localization artifact records the existing access context but never grants product access. Anonymous SPA entry is limited by the runtime policy to login, account recovery, and the OAuth consent route; consent performs its own getClaims verification and all other configured or unmatched routes require an authenticated session.",
     "blockedContextAllowed": false
   },
   "proofPolicy": {
@@ -314,7 +314,7 @@
       "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v2",
       "schemaPath": "docs/plans/i18n/semantic-e2e-evidence.schema.json",
       "evidencePath": ".local/e2e-release/semantic-e2e-evidence.json",
-      "requiredAssertionCount": 49,
+      "requiredAssertionCount": 50,
       "requiredLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
       "requiredBrowsers": ["chromium", "firefox", "webkit"],
       "browserCoverage": {
@@ -818,6 +818,23 @@
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.login.login.tab"]
+      }
+    },
+    "rv.oauth.consent-invalid-request": {
+      "kind": "localized-view",
+      "requiredScenarios": ["route"],
+      "session": "anonymous",
+      "navigate": {
+        "hashPath": "/oauth/consent",
+        "hashQuery": { "error": "invalid_authorization_request" }
+      },
+      "expected": {
+        "hashPath": "/oauth/consent",
+        "hashQuery": { "error": "invalid_authorization_request" }
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.oauth.consent.error.invalid"]
       }
     },
     "rv.login.password-forgot": {
@@ -1763,6 +1780,60 @@
           "all registry locales render the guide title, body, preparation, workflow, schema, and enabled navigation actions",
           "all registry locales drive exact signed-URL loading, media rendering, media failure, and retry states without a production write",
           "mounted locale switching and refresh preserve the outer query, carbon-footprint view query, and registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/oauth/consent",
+      "viewState": "invalid-authorization-request",
+      "executableAssertionId": "rv.oauth.consent-invalid-request",
+      "trigger": "Open the consent route without one valid authorization_id.",
+      "component": "src/pages/OAuth/Consent/index.tsx",
+      "accessContext": "anonymous entry with page-owned getClaims verification before authorization details or decisions",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/services/auth/oauth.ts",
+          "src/pages/OAuth/Consent/index.tsx",
+          "src/locales/en-US/pages.ts"
+        ],
+        "localeMessageIds": [
+          "pages.name",
+          "pages.oauth.consent.title",
+          "pages.oauth.consent.error.invalid",
+          "pages.oauth.consent.return"
+        ],
+        "localeMessageIdPrefixes": ["pages.oauth.consent."],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "loading",
+        "invalid-request",
+        "login-continuation",
+        "consent-details",
+        "approve-loading",
+        "deny-loading",
+        "service-error",
+        "unsafe-callback"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact authorization ID parsing, getClaims boundary, same-origin login continuation, callback validation, and localized decision/error states",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/OAuth/Consent.test.tsx",
+          "tests/unit/services/auth/oauth.test.ts",
+          "tests/unit/config/oauthConsentBridge.test.ts"
+        ],
+        "plannedBrowserAssertions": [
+          "all registry locales render the malformed-request state without contacting an OAuth backend"
         ]
       },
       "unownedStaticContent": 0,

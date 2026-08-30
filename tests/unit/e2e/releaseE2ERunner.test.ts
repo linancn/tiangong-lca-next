@@ -151,7 +151,7 @@ describe('release E2E controller contracts', () => {
     );
   });
 
-  it('fails release qualification closed unless all 49 IDs ran with exact case closure', () => {
+  it('fails release qualification closed unless all 50 IDs ran with exact case closure', () => {
     const identity = {
       inputSha256: 'a'.repeat(64),
       environmentContractSha256: 'b'.repeat(64),
@@ -164,11 +164,11 @@ describe('release E2E controller contracts', () => {
       })),
       cleanup: { cleaned: 0, created: 0, leaked: 0 },
       coverage: {
-        contractAssertionCount: 49,
+        contractAssertionCount: 50,
         discoveredCases: 81,
         executedCases: 51,
         harnessControlCases: 12,
-        liveAssertionCount: 49,
+        liveAssertionCount: 50,
         qualificationDiscoveredCases: 93,
         skippedCases: 30,
       },

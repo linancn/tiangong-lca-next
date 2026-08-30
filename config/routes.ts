@@ -274,6 +274,12 @@ export default [
     component: './Teams',
   },
   {
+    path: '/oauth/consent',
+    layout: false,
+    menu: false,
+    component: './OAuth/Consent',
+  },
+  {
     path: '/user',
     layout: false,
     routes: [

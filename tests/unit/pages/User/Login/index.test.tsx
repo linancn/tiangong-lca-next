@@ -386,6 +386,19 @@ describe('Login page', () => {
     mockLocation = { pathname: '/', search: '' };
   });
 
+  it('rejects an external redirect query after a successful login', async () => {
+    mockLocation = {
+      pathname: '/login',
+      search: '?redirect=https%3A%2F%2Fevil.example%2Fcallback',
+    };
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(mockHistory.push).toHaveBeenCalledWith('/'));
+    expect(mockHistory.push).not.toHaveBeenCalledWith('https://evil.example/callback');
+  });
+
   it('shows the login error alert when the login service returns an error status', async () => {
     mockLogin.mockResolvedValueOnce({
       status: 'error',
