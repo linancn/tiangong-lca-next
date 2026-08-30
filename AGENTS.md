@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 035ec247
+lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
 lastReviewedNote: 'Reviewed for Next Issue #951: the direct-main hotfix CI path now binds the tracked Issue, current main base, exact PR head, and unchanged version before one clean-runner full gate.'
 related:
   - .docpact/config.yaml
