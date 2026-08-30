@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 035ec247
+lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
 lastReviewedNote: 'Reviewed for Next Issue #951: exact marked main-hotfix qualification preserves the single-owner release strategy while adding a distinct clean-runner hotfix gate.'
 ---
 

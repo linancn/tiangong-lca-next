@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 035ec247
+lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
 lastReviewedNote: 'Reviewed for Next Issue #951: an exact, explicitly marked main hotfix now receives one clean-runner full gate while normal dev promotion remains proof-only and fail-closed.'
 ---
 

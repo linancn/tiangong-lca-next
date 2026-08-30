@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 035ec247
+lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
 lastReviewedNote: 'Reviewed for Next Issue #951: troubleshooting now separates promotion-proof failures from direct-main hotfix marker/base/head/version failures.'
 ---
 

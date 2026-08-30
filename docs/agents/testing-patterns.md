@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 035ec247
+lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
 lastReviewedNote: 'Reviewed for Next Issue #951: release-proof fixtures now distinguish strict proof-reuse promotions from exact marked main hotfixes that own one fresh full gate.'
 ---
 
