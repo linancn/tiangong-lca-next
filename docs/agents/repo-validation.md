@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
 lastReviewedNote: 'Reviewed for Next Issue #955: focused strict-act Processes proof plus lint and the final full gate fit the existing validation matrix; no gate rule changes are needed.'
 related:
   - ../AGENTS.md

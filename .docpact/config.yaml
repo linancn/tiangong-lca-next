@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-29"
-lastReviewedCommit: "f61a8699264b10a42c483f85333d42540a394327"
+lastReviewedAt: "2026-08-30"
+lastReviewedCommit: "00d0a8cb1594356a8fab5a397f47bf389e8c18bf"
 lastReviewedNote: 'Reviewed for Next Issue #955: the Processes strict-act synchronization fix remains covered by the existing testing-and-gate route; routing rules are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
