@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 5c2f80c865b989753b48cc871ae6eb6892aef45c
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
 lastReviewedNote: 'Reviewed for Next Issue #955: focused strict-act proof, lint, Docpact, and the hook-owned full gate cover the release-blocking test synchronization fix.'
 ---
 

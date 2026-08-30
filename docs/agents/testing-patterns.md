@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
 lastReviewedNote: 'Reviewed for Next Issue #955: wrapping direct mock request callbacks in async act follows the existing state-update synchronization pattern without weakening assertions.'
 ---
 
