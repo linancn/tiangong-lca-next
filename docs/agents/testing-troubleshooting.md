@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: a pnpm 11.24.0 resolver or receipt failure retains the documented package-contract and focused recovery paths.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
+lastReviewedNote: 'Reviewed for Next Issue #955: the existing strict act-warning diagnostics and focused-test recovery path identified and verify this defect without new troubleshooting rules.'
 ---
 
 # Testing Troubleshooting

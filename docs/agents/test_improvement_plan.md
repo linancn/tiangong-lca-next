@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains inside the established dependency-identity strategy and does not reopen broader testing work.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
+lastReviewedNote: 'Reviewed for Next Issue #955: awaiting direct ProTable request state updates repairs the scoped strict-act defect without reopening broader testing strategy work.'
 ---
 
 # Testing Strategy

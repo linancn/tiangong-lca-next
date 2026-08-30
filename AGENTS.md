@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 now spans local, CI, and container resolvers while Node 24.19.0, TypeScript 7.0.2, SDK 0.2.0, ownership, and branch policy remain unchanged.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
+lastReviewedNote: 'Reviewed for Next Issue #955: the Processes test-only strict-act repair stays within existing frontend ownership, dependency, and dev-target branch-policy rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

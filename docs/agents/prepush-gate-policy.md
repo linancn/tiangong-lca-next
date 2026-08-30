@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: exact pnpm 11.24.0 remains covered by the existing hook and receipt identity; trigger policy and the full-gate boundary are unchanged.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
+lastReviewedNote: 'Reviewed for Next Issue #955: strict React act-warning enforcement correctly caught the Processes test synchronization defect; the hook-owned gate and trigger policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

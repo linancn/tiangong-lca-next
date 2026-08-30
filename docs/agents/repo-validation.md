@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 567bec27382ff73b34719530b1df448795a7b824
-lastReviewedNote: 'Reviewed for Next Issue #946: the existing package-manager proof matrix now requires exact pnpm 11.24.0 without changing Node, TypeScript, SDK, application, packaging, or runtime behavior.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
+lastReviewedNote: 'Reviewed for Next Issue #955: focused strict-act Processes proof plus lint and the final full gate fit the existing validation matrix; no gate rule changes are needed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

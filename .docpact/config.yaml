@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-29"
-lastReviewedCommit: "567bec27382ff73b34719530b1df448795a7b824"
-lastReviewedNote: 'Reviewed for Next Issue #946: existing bootstrap, testing, CI, container, and proof routing fully covers the exact pnpm 11.24.0 toolchain-only update.'
+lastReviewedAt: "2026-08-30"
+lastReviewedCommit: "00d0a8cb1594356a8fab5a397f47bf389e8c18bf"
+lastReviewedNote: 'Reviewed for Next Issue #955: the Processes strict-act synchronization fix remains covered by the existing testing-and-gate route; routing rules are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
