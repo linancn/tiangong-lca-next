@@ -98,6 +98,7 @@ describe('anonymous route policy', () => {
     ['https://evil.example/callback', '/'],
     ['//evil.example/callback', '/'],
     ['/\\evil.example/callback', '/'],
+    ['/\t/evil.example/callback', '/'],
     ['javascript:alert(1)', '/'],
     [null, '/'],
   ] as const)('resolves post-login redirect %s to %s', (redirect, expected) => {

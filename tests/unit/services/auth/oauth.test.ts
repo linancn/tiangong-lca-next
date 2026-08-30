@@ -6,6 +6,7 @@ import {
   isSafeOAuthCallbackUrl,
   listOAuthGrants,
   parseOAuthAuthorizationId,
+  redirectToOAuthCallback,
   revokeOAuthGrant,
 } from '@/services/auth/oauth';
 import { supabase } from '@/services/supabase';
@@ -75,8 +76,14 @@ describe('OAuth auth service', () => {
     ['data:text/html,unsafe', false],
     ['https://user:password@example.com/callback', false],
     ['/relative/callback', false],
+    [`https://example.com/${'a'.repeat(4096)}`, false],
   ])('validates OAuth callback %s as %s', (callback, expected) => {
     expect(isSafeOAuthCallbackUrl(callback)).toBe(expected);
+  });
+
+  it('redirects a safe browser callback and rejects an unsafe one', () => {
+    expect(redirectToOAuthCallback(window.location.href)).toBe(true);
+    expect(redirectToOAuthCallback('javascript:alert(1)')).toBe(false);
   });
 
   it('uses getClaims for identity verification', async () => {
@@ -87,6 +94,12 @@ describe('OAuth auth service', () => {
     expect(await getVerifiedOAuthSubject()).toBe('user-1');
 
     auth.getClaims.mockResolvedValueOnce({ data: null, error: new Error('invalid') });
+    expect(await getVerifiedOAuthSubject()).toBeNull();
+
+    auth.getClaims.mockResolvedValueOnce({ data: { claims: { sub: '' } }, error: null });
+    expect(await getVerifiedOAuthSubject()).toBeNull();
+
+    auth.getClaims.mockResolvedValueOnce({ data: { claims: { sub: 42 } }, error: null });
     expect(await getVerifiedOAuthSubject()).toBeNull();
   });
 

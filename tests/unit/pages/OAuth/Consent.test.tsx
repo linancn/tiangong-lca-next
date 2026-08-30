@@ -5,7 +5,7 @@ import {
   getVerifiedOAuthSubject,
   redirectToOAuthCallback,
 } from '@/services/auth';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const authorizationId = '123e4567-e89b-42d3-a456-426614174000';
@@ -55,6 +55,14 @@ const details = {
   scope: 'openid email profile',
 };
 
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+};
+
 describe('OAuth consent page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -98,6 +106,65 @@ describe('OAuth consent page', () => {
     expect(screen.getByText('Signed in as user@example.com')).toBeInTheDocument();
   });
 
+  it('renders phone and unknown scopes while safely falling back for a malformed display URI', async () => {
+    mockGetAuthorizationDetails.mockResolvedValueOnce({
+      data: { ...details, redirect_uri: 'not-a-url', scope: 'phone custom_scope' },
+      error: null,
+    } as any);
+    render(<OAuthConsentPage />);
+
+    expect(await screen.findByText('not-a-url')).toBeInTheDocument();
+    expect(screen.getByText('Read your phone number')).toBeInTheDocument();
+    expect(screen.getByText('Request the custom_scope identity permission')).toBeInTheDocument();
+  });
+
+  it('renders an explicit empty identity-scope state', async () => {
+    mockGetAuthorizationDetails.mockResolvedValueOnce({
+      data: { ...details, scope: '   ' },
+      error: null,
+    } as any);
+    render(<OAuthConsentPage />);
+    expect(
+      await screen.findByText('No additional identity information requested'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows a bounded unavailable state for stale authorization details', async () => {
+    mockGetAuthorizationDetails.mockResolvedValueOnce({
+      data: null,
+      error: new Error('expired'),
+    } as any);
+    const user = userEvent.setup();
+    render(<OAuthConsentPage />);
+
+    expect(
+      await screen.findByText(
+        'This authorization request is invalid, expired, or no longer available.',
+      ),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Return to TianGong LCA' }));
+    expect(mockReplace).toHaveBeenCalledWith('/account');
+  });
+
+  it('ignores a verified-session result after unmount', async () => {
+    const subject = deferred<string | null>();
+    mockGetVerifiedOAuthSubject.mockReturnValueOnce(subject.promise);
+    const { unmount } = render(<OAuthConsentPage />);
+    unmount();
+    await act(async () => subject.resolve('user-1'));
+    expect(mockGetAuthorizationDetails).not.toHaveBeenCalled();
+  });
+
+  it('ignores authorization details that resolve after unmount', async () => {
+    const authorization = deferred<any>();
+    mockGetAuthorizationDetails.mockReturnValueOnce(authorization.promise);
+    const { unmount } = render(<OAuthConsentPage />);
+    await waitFor(() => expect(mockGetAuthorizationDetails).toHaveBeenCalled());
+    unmount();
+    await act(async () => authorization.resolve({ data: details, error: null }));
+    expect(mockRedirectToCallback).not.toHaveBeenCalled();
+  });
+
   it('approves through Supabase and redirects only through the callback validator', async () => {
     const user = userEvent.setup();
     const redirectUrl = 'http://127.0.0.1:43821/callback?code=one&state=two';
@@ -130,6 +197,58 @@ describe('OAuth consent page', () => {
       expect(mockDecideAuthorization).toHaveBeenCalledWith(authorizationId, 'deny'),
     );
     expect(mockRedirectToCallback).toHaveBeenCalledWith(redirectUrl);
+  });
+
+  it('reports a failed decision and permits a later retry', async () => {
+    const user = userEvent.setup();
+    mockDecideAuthorization
+      .mockResolvedValueOnce({ data: null, error: new Error('stale') } as any)
+      .mockResolvedValueOnce({
+        data: { redirect_url: 'https://mcp.tiangong.earth/callback?code=retry' },
+        error: null,
+      } as any);
+    render(<OAuthConsentPage />);
+
+    await user.click(await screen.findByRole('button', { name: /Allow connection/u }));
+    expect(
+      await screen.findByText(
+        'This authorization request is invalid, expired, or no longer available.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('fails closed when a decision response contains an unsafe callback', async () => {
+    const user = userEvent.setup();
+    mockDecideAuthorization.mockResolvedValueOnce({
+      data: { redirect_url: 'javascript:alert(1)' },
+      error: null,
+    } as any);
+    mockRedirectToCallback.mockReturnValueOnce(false);
+    render(<OAuthConsentPage />);
+
+    await user.click(await screen.findByRole('button', { name: /Allow connection/u }));
+    expect(
+      await screen.findByText('The application returned an unsafe callback. Nothing was shared.'),
+    ).toBeInTheDocument();
+  });
+
+  it('serializes duplicate decision events before the first response settles', async () => {
+    const pending = deferred<any>();
+    mockDecideAuthorization.mockReturnValueOnce(pending.promise);
+    render(<OAuthConsentPage />);
+    const button = await screen.findByRole('button', { name: /Allow connection/u });
+
+    act(() => {
+      fireEvent.click(button);
+      fireEvent.click(button);
+    });
+    expect(mockDecideAuthorization).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      pending.resolve({
+        data: { redirect_url: 'https://mcp.tiangong.earth/callback?code=one' },
+        error: null,
+      });
+    });
   });
 
   it('handles an already-consented redirect without rendering another approval', async () => {

@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 import type { OAuthAuthorizationDetails } from '@supabase/supabase-js';
 import { Alert, Avatar, Button, Card, Divider, Empty, Space, Spin, Tag, Typography } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet, history, useIntl, useLocation } from 'umi';
 import styles from './index.less';
 
@@ -81,6 +81,7 @@ export default function OAuthConsentPage() {
   const [error, setError] = useState<ConsentError | null>(null);
   const [loading, setLoading] = useState(true);
   const [decision, setDecision] = useState<'approve' | 'deny' | null>(null);
+  const decisionInFlight = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -132,17 +133,20 @@ export default function OAuthConsentPage() {
   }, [authorizationId]);
 
   const handleDecision = async (nextDecision: 'approve' | 'deny') => {
-    if (!authorizationId || decision) return;
+    if (decisionInFlight.current || !authorizationId) return;
+    decisionInFlight.current = true;
     setDecision(nextDecision);
     const response = await decideOAuthAuthorization(authorizationId, nextDecision);
     if (response.error || !response.data) {
       setError('unavailable');
       setDecision(null);
+      decisionInFlight.current = false;
       return;
     }
     if (!redirectToOAuthCallback(response.data.redirect_url)) {
       setError('unsafe_redirect');
       setDecision(null);
+      decisionInFlight.current = false;
     }
   };
 

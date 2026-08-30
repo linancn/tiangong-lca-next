@@ -24,13 +24,9 @@ export const resolveSafeLoginRedirect = (value: string | null | undefined): stri
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
     return '/';
   }
-  try {
-    const parsed = new URL(value, 'https://local.invalid');
-    if (parsed.origin !== 'https://local.invalid') {
-      return '/';
-    }
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
+  const parsed = new URL(value, 'https://local.invalid');
+  if (parsed.origin !== 'https://local.invalid') {
     return '/';
   }
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
 };
