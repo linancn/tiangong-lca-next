@@ -1,4 +1,4 @@
-import { buildExternalUrl, getAppOrigin } from '@/utils/appUrl';
+import { buildAuthCallbackUrl, buildExternalUrl, getAppOrigin } from '@/utils/appUrl';
 
 describe('appUrl helpers', () => {
   it('returns the browser origin when window is available', () => {
@@ -29,6 +29,11 @@ describe('appUrl helpers', () => {
     expect(buildExternalUrl('/user/login/password_reset', 'https://demo.example/')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
+  });
+
+  it('builds an auth callback without a hash-history fragment', () => {
+    expect(buildAuthCallbackUrl('https://demo.example///')).toBe('https://demo.example/');
+    expect(buildAuthCallbackUrl()).toBe('http://localhost:8000/');
   });
 
   it('normalizes already-hashed route input before building absolute URLs', () => {

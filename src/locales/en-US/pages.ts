@@ -42,6 +42,8 @@ export default {
   'pages.login.password.strengthWeak': 'Strength: Weak',
   'pages.login.password.validation': 'Password is invalid!',
   'pages.login.passwordLogin.errorMessage': 'Incorrect username/password',
+  'pages.login.passwordLogin.emailNotConfirmed': 'Confirm your email before signing in.',
+  'pages.login.passwordLogin.rateLimited': 'Too many login attempts. Wait a moment and try again.',
   'pages.login.phoneLogin.errorMessage': 'Verification Code Error',
   'pages.login.phoneLogin.getVerificationCode': 'Get Code',
   'pages.login.phoneLogin.tab': 'Phone Login',

@@ -145,12 +145,18 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
     it('returns an error status when Supabase rejects the credentials', async () => {
       authMock.signInWithPassword.mockResolvedValueOnce({
         data: { user: null },
-        error: { message: 'Invalid login credentials' },
+        error: { message: 'Invalid login credentials', code: 'invalid_credentials', status: 400 },
       });
 
       const result = await login({ email: 'user@example.com', password: 'wrong', type: 'login' });
 
-      expect(result).toEqual({ status: 'error', type: 'login', currentAuthority: 'guest' });
+      expect(result).toEqual({
+        status: 'error',
+        type: 'login',
+        currentAuthority: 'guest',
+        errorCode: 'invalid_credentials',
+        errorStatus: 400,
+      });
     });
 
     it('uses empty-string fallback for missing credentials', async () => {

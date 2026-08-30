@@ -12,6 +12,7 @@ const READINESS_WORKFLOW_FILE = 'release-readiness.yml';
 const READINESS_WORKFLOW_PATH = `.github/workflows/${READINESS_WORKFLOW_FILE}`;
 const RELEASE_GATE_JOB_NAME = 'Release Candidate / Aggregate Exact Release Proof';
 const RELEASE_MARKER_PREFIX = 'tiangong-next-release-automation:v2';
+const HOTFIX_MARKER_PREFIX = 'tiangong-next-main-hotfix:v1';
 const PROOF_SCOPE = Object.freeze(['release-gate']);
 const PROOF_FILE_NAME = 'release-gate-proof.json';
 const GIT_OBJECT_ID_PATTERN = /^[0-9a-f]{40}$/u;
@@ -98,6 +99,23 @@ function parseReleaseMarker(body) {
     candidateBase: requireSha(match[3], 'candidate base'),
     releaseBase: requireSha(match[4], 'release base'),
     candidateHead: requireSha(match[5], 'candidate head'),
+  };
+}
+
+function parseHotfixMarker(body) {
+  const escapedPrefix = HOTFIX_MARKER_PREFIX.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const pattern = new RegExp(
+    `<!-- ${escapedPrefix} issue=(\\d+) main-base=([0-9a-f]{40}) candidate=([0-9a-f]{40}) -->`,
+    'u',
+  );
+  const match = pattern.exec(String(body || ''));
+  if (!match) {
+    fail('main_hotfix_marker_invalid', 'The main hotfix marker is missing or invalid.');
+  }
+  return {
+    issue: requirePositiveInteger(match[1], 'hotfix Issue'),
+    releaseBase: requireSha(match[2], 'hotfix main base'),
+    candidateHead: requireSha(match[3], 'hotfix candidate head'),
   };
 }
 
@@ -434,6 +452,110 @@ function readCandidateContext({ root, eventPath }) {
   return context;
 }
 
+function hotfixContextFromPullRequest({ root, pullRequest }, dependencies = {}) {
+  if (pullRequest?.base?.ref !== 'main') {
+    fail('main_hotfix_wrong_base', 'The hotfix PR must target main.', {
+      base_ref: pullRequest?.base?.ref ?? null,
+    });
+  }
+  const marker = parseHotfixMarker(pullRequest?.body);
+  const releaseBase = requireSha(pullRequest?.base?.sha, 'main base');
+  const candidateHead = requireSha(pullRequest?.head?.sha, 'hotfix candidate head');
+  const mismatches = [];
+  if (marker.releaseBase !== releaseBase) {
+    mismatches.push({ field: 'main_base', expected: releaseBase, actual: marker.releaseBase });
+  }
+  if (marker.candidateHead !== candidateHead) {
+    mismatches.push({
+      field: 'candidate_head',
+      expected: candidateHead,
+      actual: marker.candidateHead,
+    });
+  }
+  if (mismatches.length > 0) {
+    fail('main_hotfix_marker_mismatch', 'The main hotfix marker does not match the PR.', {
+      mismatches,
+    });
+  }
+
+  const git = dependencies.gitText || gitText;
+  const checkedOutHead = requireSha(git(root, ['rev-parse', 'HEAD']), 'checked-out HEAD');
+  if (checkedOutHead !== candidateHead) {
+    fail('checked_out_head_mismatch', 'The checked-out commit is not the hotfix PR head.', {
+      checked_out_head: checkedOutHead,
+      candidate_head: candidateHead,
+    });
+  }
+  const mergeBase = requireSha(
+    git(root, ['merge-base', releaseBase, candidateHead]),
+    'hotfix merge base',
+  );
+  if (mergeBase !== releaseBase) {
+    fail(
+      'main_hotfix_not_based_on_current_main',
+      'The hotfix candidate is not based on current main.',
+      {
+        main_base: releaseBase,
+        merge_base: mergeBase,
+      },
+    );
+  }
+  const baseVersion = requireStableVersion(
+    JSON.parse(git(root, ['show', `${releaseBase}:package.json`])).version,
+    'main package version',
+  );
+  const candidateVersion = requireStableVersion(
+    JSON.parse(git(root, ['show', `${candidateHead}:package.json`])).version,
+    'hotfix package version',
+  );
+  if (candidateVersion !== baseVersion) {
+    fail('main_hotfix_version_changed', 'A direct main hotfix must not change package version.', {
+      main_version: baseVersion,
+      candidate_version: candidateVersion,
+    });
+  }
+  return {
+    schema_version: RESOLUTION_SCHEMA_VERSION,
+    command: 'main-candidate-context',
+    complete: true,
+    gate_mode: 'hotfix-full',
+    reason: 'exact_main_hotfix_candidate',
+    issue: marker.issue,
+    release_base: releaseBase,
+    promotion_head: candidateHead,
+    release_version: candidateVersion,
+  };
+}
+
+async function resolveMainCandidate({ root, repository, eventPath, token }, dependencies = {}) {
+  const event = JSON.parse(
+    fs.readFileSync(path.resolve(requireText(eventPath, '--event-path')), 'utf8'),
+  );
+  const pullRequest = event.pull_request;
+  if (String(pullRequest?.body || '').includes(HOTFIX_MARKER_PREFIX)) {
+    return hotfixContextFromPullRequest({ root, pullRequest }, dependencies);
+  }
+  if (pullRequest?.base?.ref !== 'main') {
+    fail('main_candidate_wrong_base', 'The main candidate PR must target main.', {
+      base_ref: pullRequest?.base?.ref ?? null,
+    });
+  }
+  const releaseBase = requireSha(pullRequest?.base?.sha, 'main base');
+  const promotionHead = requireSha(pullRequest?.head?.sha, 'promotion head');
+  const git = dependencies.gitText || gitText;
+  const checkedOutHead = requireSha(git(root, ['rev-parse', 'HEAD']), 'checked-out HEAD');
+  if (checkedOutHead !== promotionHead) {
+    fail('checked_out_head_mismatch', 'The checked-out commit is not the main PR head.', {
+      checked_out_head: checkedOutHead,
+      candidate_head: promotionHead,
+    });
+  }
+  return resolvePromotionProof(
+    { root, repository, releaseBase, promotionHead, token },
+    dependencies,
+  );
+}
+
 async function resolvePromotionProof(
   { root, repository, releaseBase, promotionHead, token },
   dependencies = {},
@@ -740,7 +862,7 @@ function parseArguments(argv) {
 }
 
 function helpText() {
-  return `Create or verify an exact dev Release PR proof.\n\nUsage:\n  node scripts/release/release-gate-proof.cjs candidate-context --event-path <event.json> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs create --repository owner/repo --pr-number 123 --release-base <main-sha> --candidate-base <dev-sha> --release-head <candidate-sha> --release-version <x.y.z> --run-id <id> --run-attempt <n> --output <path> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs verify-promotion --repository owner/repo --release-base <main-sha> --promotion-head <dev-merge-sha> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs resolve --repository owner/repo --release-base <main-sha> --release-head <main-merge-sha> [--github-output <path>]\n\nResolve behavior:\n  A normal promotion or main release reuses only the exact successful dev Release PR proof. Missing, expired, ambiguous, or mismatched proof fails closed without rerunning the aggregate gate. Explicit tag/workflow-dispatch recovery remains the only full-gate fallback.`;
+  return `Create or verify an exact dev Release PR proof.\n\nUsage:\n  node scripts/release/release-gate-proof.cjs candidate-context --event-path <event.json> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs main-candidate-context --repository owner/repo --event-path <event.json> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs create --repository owner/repo --pr-number 123 --release-base <main-sha> --candidate-base <dev-sha> --release-head <candidate-sha> --release-version <x.y.z> --run-id <id> --run-attempt <n> --output <path> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs verify-promotion --repository owner/repo --release-base <main-sha> --promotion-head <dev-merge-sha> [--github-output <path>]\n  node scripts/release/release-gate-proof.cjs resolve --repository owner/repo --release-base <main-sha> --release-head <main-merge-sha> [--github-output <path>]\n\nResolve behavior:\n  A normal promotion or main release reuses only the exact successful dev Release PR proof. A marked direct main hotfix must be based on the exact current main commit, keep package version unchanged, and runs one fresh full gate on its exact PR head. Missing, expired, ambiguous, or mismatched promotion proof fails closed without rerunning the aggregate gate.`;
 }
 
 async function main(argv = process.argv.slice(2)) {
@@ -822,6 +944,27 @@ async function main(argv = process.argv.slice(2)) {
     process.stdout.write(`${JSON.stringify(result)}\n`);
     return;
   }
+  if (command === 'main-candidate-context') {
+    const root = repositoryRoot();
+    const result = await resolveMainCandidate({
+      root,
+      repository: options.repository,
+      eventPath: options['event-path'],
+      token: process.env.GITHUB_TOKEN,
+    });
+    appendGithubOutput(options['github-output'], {
+      gate_mode: result.gate_mode,
+      gate_reason: result.reason,
+      release_base: result.release_base,
+      promotion_head: result.promotion_head,
+      proof_run_id: result.workflow_run_id || '',
+      proof_pr_number: result.release_pull_request_number || '',
+      proof_artifact_id: result.artifact_id || '',
+      proof_artifact_name: result.artifact_name || '',
+    });
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    return;
+  }
   if (command === 'resolve') {
     const root = repositoryRoot();
     const result = await resolveWithFallback({
@@ -868,15 +1011,19 @@ module.exports = {
   PROOF_SCHEMA_VERSION,
   READINESS_WORKFLOW_PATH,
   RELEASE_GATE_JOB_NAME,
+  HOTFIX_MARKER_PREFIX,
   RELEASE_MARKER_PREFIX,
   ReleaseGateProofError,
   artifactName,
   assertProofMatches,
   buildProof,
   candidateContextFromPullRequest,
+  hotfixContextFromPullRequest,
+  parseHotfixMarker,
   parseReleaseMarker,
   resolveExactProof,
   resolvePromotionProof,
+  resolveMainCandidate,
   resolveWithFallback,
   selectMergedPullRequest,
   writeProof,

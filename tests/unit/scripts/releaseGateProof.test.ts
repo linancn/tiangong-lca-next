@@ -1,6 +1,7 @@
 const proofModule = require('../../../scripts/release/release-gate-proof.cjs') as {
   PROOF_SCOPE: string[];
   PROOF_SCHEMA_VERSION: string;
+  HOTFIX_MARKER_PREFIX: string;
   READINESS_WORKFLOW_PATH: string;
   RELEASE_GATE_JOB_NAME: string;
   RELEASE_MARKER_PREFIX: string;
@@ -23,6 +24,11 @@ const proofModule = require('../../../scripts/release/release-gate-proof.cjs') a
     runAttempt: number;
   }) => Record<string, unknown>;
   candidateContextFromPullRequest: (input: Record<string, unknown>) => Record<string, unknown>;
+  hotfixContextFromPullRequest: (
+    input: { root: string; pullRequest: Record<string, unknown> },
+    dependencies: Pick<Dependencies, 'gitText'>,
+  ) => Record<string, unknown>;
+  parseHotfixMarker: (body: string) => Record<string, unknown>;
   parseReleaseMarker: (body: string) => Record<string, unknown>;
   resolvePromotionProof: (
     input: {
@@ -80,6 +86,9 @@ const artifactId = 987654;
 const releaseMarker =
   `<!-- ${proofModule.RELEASE_MARKER_PREFIX} issue=867 version=${releaseVersion} ` +
   `dev-base=${candidateBase} main-base=${releaseBase} candidate=${candidateHead} -->`;
+const hotfixMarker =
+  `<!-- ${proofModule.HOTFIX_MARKER_PREFIX} issue=951 main-base=${releaseBase} ` +
+  `candidate=${promotionHead} -->`;
 
 const expectedArtifactName = proofModule.artifactName({
   releaseBase,
@@ -238,6 +247,98 @@ describe('release gate proof', () => {
       candidateHead,
     });
   });
+
+  it('accepts an exact marked hotfix based on current main with an unchanged version', () => {
+    const gitText = jest.fn((_root: string, args: string[]) => {
+      if (args.join(' ') === 'rev-parse HEAD') return promotionHead;
+      if (args.join(' ') === `merge-base ${releaseBase} ${promotionHead}`) return releaseBase;
+      if (args.join(' ') === `show ${releaseBase}:package.json`) {
+        return JSON.stringify({ version: releaseVersion });
+      }
+      if (args.join(' ') === `show ${promotionHead}:package.json`) {
+        return JSON.stringify({ version: releaseVersion });
+      }
+      throw new Error(`Unexpected git arguments: ${args.join(' ')}`);
+    });
+    const pullRequest = {
+      number: promotionPullRequestNumber,
+      body: hotfixMarker,
+      base: { ref: 'main', sha: releaseBase },
+      head: { ref: 'codex/issue-951-auth-recovery-hotfix', sha: promotionHead },
+    };
+
+    expect(proofModule.parseHotfixMarker(hotfixMarker)).toEqual({
+      issue: 951,
+      releaseBase,
+      candidateHead: promotionHead,
+    });
+    expect(
+      proofModule.hotfixContextFromPullRequest({ root: '/fixture', pullRequest }, { gitText }),
+    ).toMatchObject({
+      complete: true,
+      gate_mode: 'hotfix-full',
+      reason: 'exact_main_hotfix_candidate',
+      issue: 951,
+      release_base: releaseBase,
+      promotion_head: promotionHead,
+      release_version: releaseVersion,
+    });
+  });
+
+  it.each([
+    {
+      name: 'stale marker head',
+      marker: hotfixMarker.replace(promotionHead, releaseHead),
+      mergeBase: releaseBase,
+      baseVersion: releaseVersion,
+      candidateVersion: releaseVersion,
+      reason: 'main_hotfix_marker_mismatch',
+    },
+    {
+      name: 'candidate not based on current main',
+      marker: hotfixMarker,
+      mergeBase: candidateBase,
+      baseVersion: releaseVersion,
+      candidateVersion: releaseVersion,
+      reason: 'main_hotfix_not_based_on_current_main',
+    },
+    {
+      name: 'version change',
+      marker: hotfixMarker,
+      mergeBase: releaseBase,
+      baseVersion: releaseVersion,
+      candidateVersion: '1.2.4',
+      reason: 'main_hotfix_version_changed',
+    },
+  ])(
+    'rejects a marked hotfix with a $name',
+    ({ marker, mergeBase, baseVersion, candidateVersion, reason }) => {
+      const gitText = jest.fn((_root: string, args: string[]) => {
+        if (args.join(' ') === 'rev-parse HEAD') return promotionHead;
+        if (args[0] === 'merge-base') return mergeBase;
+        if (args.join(' ') === `show ${releaseBase}:package.json`) {
+          return JSON.stringify({ version: baseVersion });
+        }
+        if (args.join(' ') === `show ${promotionHead}:package.json`) {
+          return JSON.stringify({ version: candidateVersion });
+        }
+        throw new Error(`Unexpected git arguments: ${args.join(' ')}`);
+      });
+      expect(() =>
+        proofModule.hotfixContextFromPullRequest(
+          {
+            root: '/fixture',
+            pullRequest: {
+              body: marker,
+              base: { ref: 'main', sha: releaseBase },
+              head: { ref: 'codex/issue-951-auth-recovery-hotfix', sha: promotionHead },
+            },
+          },
+          { gitText },
+        ),
+      ).toThrow(expect.objectContaining({ code: reason }));
+    },
+  );
 
   it('verifies an immutable dev promotion from one exact candidate proof', async () => {
     const dependencies = createDependencies();

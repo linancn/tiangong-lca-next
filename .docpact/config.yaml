@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-30"
-lastReviewedCommit: "00d0a8cb1594356a8fab5a397f47bf389e8c18bf"
-lastReviewedNote: 'Reviewed for Next Issue #955: the Processes strict-act synchronization fix remains covered by the existing testing-and-gate route; routing rules are unchanged.'
+lastReviewedAt: '2026-08-30'
+lastReviewedCommit: '035ec247dbddb574f247ec73e279010feaefcfb5'
+lastReviewedNote: 'Reviewed for Next Issue #951: the exact marked main-hotfix CI path remains governed by release, testing, workflow, and pre-push policy routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -53,6 +53,7 @@ ownership:
           - .dockerignore
           - .gitignore
           - .gitleaks.toml
+          - .gitleaksignore
           - .oxlintrc.json
           - .prettierignore
           - .prettierrc.js
@@ -125,6 +126,7 @@ coverage:
     - .dockerignore
     - .gitignore
     - .gitleaks.toml
+    - .gitleaksignore
     - .oxlintrc.json
     - .prettierignore
     - .prettierrc.js
@@ -209,6 +211,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -283,6 +286,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -428,6 +432,8 @@ rules:
       - path: .dockerignore
         kind: container-build-input
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .nvmrc
         kind: runtime-baseline
@@ -680,6 +686,8 @@ rules:
       - path: .gitignore
         kind: local-runtime-boundary
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .oxlintrc.json
         kind: lint-gate
