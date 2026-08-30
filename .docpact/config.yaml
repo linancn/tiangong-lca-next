@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-30"
-lastReviewedCommit: "035ec247dbddb574f247ec73e279010feaefcfb5"
-lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the Auth recovery hotfix and exact Gitleaks false-positive ledger remain covered by the existing service, runtime, localization, testing, and secret-scan routes.'
+lastReviewedAt: '2026-08-30'
+lastReviewedCommit: '035ec247dbddb574f247ec73e279010feaefcfb5'
+lastReviewedNote: 'Reviewed for Next Issue #951: the exact marked main-hotfix CI path remains governed by release, testing, workflow, and pre-push policy routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

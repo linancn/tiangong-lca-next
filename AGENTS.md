@@ -47,7 +47,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-08-30
 lastReviewedCommit: 035ec247
-lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the Auth recovery listener remains in app runtime, Supabase access remains under services, and ownership plus branch policy are unchanged.'
+lastReviewedNote: 'Reviewed for Next Issue #951: the direct-main hotfix CI path now binds the tracked Issue, current main base, exact PR head, and unchanged version before one clean-runner full gate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -178,6 +178,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - `release:to-dev --apply` changes only version metadata and bounded Docpact review metadata; its restricted local push runs Docpact plus static preflight and never runs browsers or writes proof into the branch
 - the exact marker-bound Release PR into `dev` runs one non-browser Release Gate before merge and emits an external proof for later main checks; it does not run or require browser E2E
 - every `main`-target promotion PR keeps the required `Main Candidate / Release Gate` check but verifies only immutable lineage, unchanged tree/main baseline, and the exact dev proof; it does not rerun the aggregate
+- an explicitly marked direct `main` hotfix keeps that required check name but must bind its Issue, current main base, and exact PR head, preserve package version, and pass one fresh clean-runner non-browser full gate
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
@@ -215,7 +216,7 @@ Route those tasks to:
 - promote path: `dev -> main`
 - normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
 - marker-bound version PRs targeting `dev` run the non-browser Release Gate against their exact base/head and retain proof only after the complete gate succeeds; their restricted local push runs Docpact and static preflight, while browser E2E remains a separate manual business-PR-stage decision
-- PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight
+- promotion PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight. A marked direct main hotfix instead proves exact base/head, unchanged version, static readiness, and the full non-browser gate
 - canonical version-changing `main` pushes reuse that dev proof only when the exact dev and main two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and unexpired artifact payload all match; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case fails before publication and requires a new dev candidate
 - canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump

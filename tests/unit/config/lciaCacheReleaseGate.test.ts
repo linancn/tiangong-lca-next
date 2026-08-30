@@ -142,7 +142,7 @@ describe('Publication workflow gates', () => {
     }
   });
 
-  it('runs the deterministic dev Release gate once and makes main PRs proof-only', () => {
+  it('reuses proof for promotions and freshly gates exact marked main hotfixes', () => {
     const workflow = read('.github/workflows/release-readiness.yml');
     const releaseGate = read('.github/workflows/release-gate.yml');
     expect(workflow).toContain('pull_request:');
@@ -160,7 +160,11 @@ describe('Publication workflow gates', () => {
       'proof_pr_number: ${{ needs.release-candidate-context.outputs.proof_pr_number }}',
     );
     expect(workflow).toContain('name: Main Candidate / Release Gate');
-    expect(workflow).toContain('release-gate-proof.cjs verify-promotion');
+    expect(workflow).toContain('release-gate-proof.cjs main-candidate-context');
+    expect(workflow).toContain("steps.context.outputs.gate_mode == 'hotfix-full'");
+    expect(workflow).toContain('pnpm docpact:gate --base "$RELEASE_BASE" --head "$RELEASE_HEAD"');
+    expect(workflow).toContain('pnpm release:static-preflight');
+    expect(workflow).toContain('pnpm prepush:gate');
     expect(releaseGate).toContain('node scripts/release/release-gate-proof.cjs create');
     expect(releaseGate).toContain('Upload exact aggregate release proof');
     expect(releaseGate).toContain('retention-days: 30');

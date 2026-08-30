@@ -42,7 +42,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-30
 lastReviewedCommit: 035ec247
-lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: the hotfix adds direct service, runtime, and page coverage without a deferred queue; final closure remains gate-owned.'
+lastReviewedNote: 'Reviewed for Next Issue #951: exact marked main-hotfix CI coverage closes the promotion misclassification without creating a deferred test queue.'
 ---
 
 # Testing Execution State
@@ -95,6 +95,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - qualification identity is content-addressed from behavior inputs, shared helpers, Git mode/type, and the browser environment; its fixed `.invalid` simulator profile excludes deployment-only `.env`, the manual workflow always executes without proof-cache reuse, and no tracked receipt, evidence, compatibility, or waiver hash file exists
 - exact marker-bound dev Release PRs run the non-browser reusable Release Gate against their exact base/head and emit a 30-day proof only after static/full tests succeed; generated candidate/promotion local pushes use restricted Docpact-plus-static profiles
 - the main promotion PR and canonical version-changing `main` push reuse that dev proof only when both exact two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and artifact payload all match; direct/squash/rebase merges, changed trees, expired or missing proof, or API failure fail closed and require a new dev candidate, while explicit manual tag and recovery dispatch events may run a fresh full Release Gate
+- an explicitly marked direct main hotfix must match its tracked Issue, current main base, and exact PR head, keep `package.json.version` unchanged, and pass one fresh static/full clean-runner gate; focused fixtures reject stale markers, non-ancestral bases, and version drift
 - release qualification delegates the complete Jest inventory to one `prepush:gate` lane on the exact dev Release PR; tag creation waits for proof verification, normal later stages never repeat candidate acceptance, and no release stage runs or requires browser E2E
 - Issue #819 keeps the exact complete coverage inventory on two workers but requires a `512MB` idle-memory recycle boundary and full managed-gate proof; lower boundaries that force collection around the normal instrumented worker footprint are not an accepted optimization
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `pnpm push:retry`; any controlled-input drift requires a fresh managed push and gate

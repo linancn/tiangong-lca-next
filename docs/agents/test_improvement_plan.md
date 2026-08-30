@@ -45,7 +45,7 @@ checkPaths:
   - Dockerfile.app
 lastReviewedAt: 2026-08-30
 lastReviewedCommit: 035ec247
-lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: focused Auth recovery coverage fits the established unit-test strategy and does not reopen broader testing work.'
+lastReviewedNote: 'Reviewed for Next Issue #951: exact marked main-hotfix qualification preserves the single-owner release strategy while adding a distinct clean-runner hotfix gate.'
 ---
 
 # Testing Strategy
@@ -77,7 +77,7 @@ lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: focu
 - gate eligibility should be decided before gate execution: exact current-branch and `HEAD` source spellings may proceed, raw deletion/no-update shapes spend no test budget, and invalid checked ref shapes fail before Docpact or the full suite
 - release-risk gates should be split by repair cost: operator-selected browser evidence runs while the business PR is still open, so failures stay on that PR; the generated release-candidate push runs only structural/static proof, and the exact dev Release PR runs the non-browser static/full gate. A successful dev Release PR emits proof bound to the main/dev bases, candidate head/tree/version, PR, run attempt, and artifact; immutable promotion/main stages verify it instead of repeating the gate
 - deterministic release orchestration should fail before transport on version scope, cumulative Docpact review, and composed-candidate static preflight; it must not generate browser proof. Release-line proof accepts direct ancestry or only a tree-identical two-parent promotion whose second parent remains in `dev`, while promotion retains the exact merged `dev` SHA and the original main baseline
-- each production release candidate should have one non-browser proof owner: the exact dev Release PR runs `prepush:gate` once. Browser qualification remains a separate manual signal and is never consumed by release proof. Normal main PR/push paths fail closed on absent or mismatched release proof rather than creating a late fallback; explicit recovery events may run a fresh non-browser gate
+- each production release candidate should have one non-browser proof owner: the exact dev Release PR runs `prepush:gate` once. Browser qualification remains a separate manual signal and is never consumed by release proof. Normal promotion PR/push paths fail closed on absent or mismatched release proof rather than creating a late fallback; an explicitly marked, unchanged-version main hotfix is a separate exact-head candidate and owns one clean-runner full gate; explicit recovery events may also run a fresh non-browser gate
 - generated localization evidence should be canonical and idempotent at its source: the reporter resolves repository formatting independently of its ignored/external destination, one dependency-ordered invocation produces every tracked locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
 - semantic proof reuse should follow computed behavior boundaries rather than mutable source records: an external proof may be reused only after its content key and closure validate against the current candidate; there is no tracked receipt, compatibility map, or waiver state
