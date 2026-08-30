@@ -16,7 +16,7 @@ var mockMessageApi: any;
 // eslint-disable-next-line no-var
 var mockSetPassword: any;
 // eslint-disable-next-line no-var
-var mockGetCurrentUser: any;
+var mockGetPasswordRecoveryUser: any;
 // eslint-disable-next-line no-var
 var mockHistory: any;
 // eslint-disable-next-line no-var
@@ -146,11 +146,11 @@ jest.mock('antd', () => {
 
 jest.mock('@/services/auth', () => {
   mockSetPassword = jest.fn();
-  mockGetCurrentUser = jest.fn();
+  mockGetPasswordRecoveryUser = jest.fn();
   return {
     __esModule: true,
     setPassword: (...args: any[]) => mockSetPassword(...args),
-    getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
+    getPasswordRecoveryUser: (...args: any[]) => mockGetPasswordRecoveryUser(...args),
   };
 });
 
@@ -209,14 +209,14 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
     mockSetPassword.mockResolvedValue({ status: 'ok' });
-    mockGetCurrentUser.mockResolvedValue({ userid: 'u1', email: 'user@test.com' });
+    mockGetPasswordRecoveryUser.mockResolvedValue({ userid: 'u1', email: 'user@test.com' });
   });
 
   it('loads current user data and submits successfully', async () => {
     render(<PasswordReset />);
 
     await waitFor(() => {
-      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(mockGetPasswordRecoveryUser).toHaveBeenCalled();
     });
 
     fireEvent.click(screen.getByTestId('submit'));
@@ -232,13 +232,13 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
         content: 'Password reset successfully!',
         duration: 3,
       });
-      expect(mockHistory.push).toHaveBeenCalledWith('/');
+      expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
     });
   });
 
   it('ignores a current-user response that arrives after unmount', async () => {
     let resolveCurrentUser: (value: { userid: string; email: string }) => void = () => undefined;
-    mockGetCurrentUser.mockImplementationOnce(
+    mockGetPasswordRecoveryUser.mockImplementationOnce(
       () =>
         new Promise((resolve) => {
           resolveCurrentUser = resolve;
@@ -246,7 +246,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
     );
 
     const { unmount } = render(<PasswordReset />);
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockGetPasswordRecoveryUser).toHaveBeenCalledTimes(1));
     unmount();
 
     await act(async () => {
@@ -285,7 +285,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       expect(mockSetPassword).toHaveBeenCalled();
     });
     expect(mockMessageApi.open).not.toHaveBeenCalled();
-    expect(mockMessageApi.error).not.toHaveBeenCalled();
+    expect(mockMessageApi.error).toHaveBeenCalledWith('Password reset failed, please try again.');
     expect(mockHistory.push).not.toHaveBeenCalled();
   });
 
@@ -305,7 +305,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   it('renders weak, medium and strong password strength states', async () => {
     render(<PasswordReset />);
 
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetPasswordRecoveryUser).toHaveBeenCalled());
 
     const statusRender = mockLatestPasswordFields.newPassword.fieldProps.statusRender;
     expect(toText(statusRender('Ab1!'))).toContain('Strength: Weak');
@@ -316,7 +316,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   it('validates confirmation password matches the new password', async () => {
     render(<PasswordReset />);
 
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetPasswordRecoveryUser).toHaveBeenCalled());
 
     const confirmRuleFactory = mockLatestPasswordFields.confirmNewPassword.rules[1];
     const confirmRule = confirmRuleFactory({
@@ -330,12 +330,12 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   });
 
   it('shows a recovery action when the current user is unavailable', async () => {
-    mockGetCurrentUser.mockResolvedValueOnce({ userid: '', email: 'ghost@test.com' });
+    mockGetPasswordRecoveryUser.mockResolvedValueOnce(null);
 
     render(<PasswordReset />);
 
     await waitFor(() => {
-      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(mockGetPasswordRecoveryUser).toHaveBeenCalled();
       expect(screen.getByRole('alert')).toHaveTextContent(
         'This password reset link is invalid or has expired. Request a new link.',
       );
@@ -349,7 +349,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   });
 
   it('shows the same recovery action when the current user lookup rejects', async () => {
-    mockGetCurrentUser.mockRejectedValueOnce(new Error('session lookup failed'));
+    mockGetPasswordRecoveryUser.mockRejectedValueOnce(new Error('session lookup failed'));
 
     render(<PasswordReset />);
 
@@ -362,12 +362,12 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   });
 
   it('falls back to an empty email string when the current user payload omits email', async () => {
-    mockGetCurrentUser.mockResolvedValueOnce({ userid: 'u1' });
+    mockGetPasswordRecoveryUser.mockResolvedValueOnce({ userid: 'u1' });
 
     render(<PasswordReset />);
 
     await waitFor(() => {
-      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(mockGetPasswordRecoveryUser).toHaveBeenCalled();
       expect(screen.getByTestId('fields')).toHaveTextContent('"value":""');
     });
   });
@@ -379,7 +379,7 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
 
     render(<PasswordReset />);
 
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+    await waitFor(() => expect(mockGetPasswordRecoveryUser).toHaveBeenCalled());
     expect(screen.getByTestId('login-title')).toHaveTextContent('Offene Ökobilanz-Plattform');
     expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Deutscher Untertitel');
     expect(mockGetLocalizedAppTitle).toHaveBeenCalledWith('de-DE');

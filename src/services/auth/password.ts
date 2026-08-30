@@ -1,5 +1,6 @@
 import { supabase } from '@/services/supabase';
-import { buildExternalUrl } from '@/utils/appUrl';
+import { buildAuthCallbackUrl } from '@/utils/appUrl';
+import { completePasswordRecovery, getPasswordRecoveryUser } from './recovery';
 
 /**
  * Change user password
@@ -42,17 +43,34 @@ export async function changePassword(body: Auth.PasswordChangeParams): Promise<A
  * @param body - New password parameters
  * @returns Result with status and user authority
  */
-export async function setPassword(body: any): Promise<Auth.LoginResult> {
-  const { data, error } = await supabase.auth.updateUser({
-    email: body.email ?? '',
+export async function setPassword(body: Auth.PasswordChangeParams): Promise<Auth.LoginResult> {
+  const recoveryUser = await getPasswordRecoveryUser();
+  if (!recoveryUser) {
+    return {
+      status: 'error',
+      type: body.type,
+      currentAuthority: 'guest',
+      errorCode: 'recovery_session_missing',
+    };
+  }
+
+  const { error } = await supabase.auth.updateUser({
     password: body.confirmNewPassword ?? '',
   });
 
   if (error) {
-    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
-  } else {
-    return { status: 'ok', type: body.type, currentAuthority: data.user.role };
+    return {
+      status: 'error',
+      type: body.type,
+      currentAuthority: 'guest',
+      errorCode: error.code,
+      errorStatus: error.status,
+    };
   }
+
+  completePasswordRecovery();
+  await supabase.auth.signOut({ scope: 'local' });
+  return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }
 
 /**
@@ -62,11 +80,17 @@ export async function setPassword(body: any): Promise<Auth.LoginResult> {
  */
 export async function forgotPasswordSendEmail(body: Auth.LoginParams): Promise<Auth.LoginResult> {
   const { error } = await supabase.auth.resetPasswordForEmail(body.email ?? '', {
-    redirectTo: buildExternalUrl('/user/login/password_reset'),
+    redirectTo: buildAuthCallbackUrl(),
   });
 
   if (error) {
-    return { status: 'error', message: error.message, type: body.type, currentAuthority: 'guest' };
+    return {
+      status: 'error',
+      type: body.type,
+      currentAuthority: 'guest',
+      errorCode: error.code,
+      errorStatus: error.status,
+    };
   }
   return { status: 'ok', type: body.type, currentAuthority: 'guest' };
 }

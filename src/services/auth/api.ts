@@ -41,7 +41,13 @@ export async function login(body: Auth.LoginParams): Promise<Auth.LoginResult> {
     password: body.password ?? '',
   });
   if (error) {
-    return { status: 'error', type: body.type, currentAuthority: 'guest' };
+    return {
+      status: 'error',
+      type: body.type,
+      currentAuthority: 'guest',
+      errorCode: error.code,
+      errorStatus: error.status,
+    };
   }
   return { status: 'ok', type: body.type, currentAuthority: data.user.role };
 }

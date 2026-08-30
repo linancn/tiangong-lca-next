@@ -23,6 +23,7 @@ import {
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
+import { subscribeToPasswordRecovery } from '@/services/auth/recovery';
 import { LOGIN_PATH, isAnonymousAllowedPath } from '@/services/general/publicRoutePolicy';
 import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
 import {
@@ -48,11 +49,16 @@ import { errorConfig } from './requestErrorConfig';
 const isDev = process.env.NODE_ENV === 'development';
 const dashboardPath = '/dashboard/national-carbon';
 const dataProcessingPath = '/data-processing';
+const recoveryFormPath = '/user/login/password_reset';
 const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['admin', 'admin'],
   ['owner', 'admin'],
   ['data_product_manager', 'data_product_manager'],
 ]);
+
+subscribeToPasswordRecovery(() => {
+  history.replace(recoveryFormPath);
+});
 
 export const antd: RuntimeAntdConfig = (memo) => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';

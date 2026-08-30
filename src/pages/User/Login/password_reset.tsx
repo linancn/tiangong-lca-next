@@ -1,7 +1,7 @@
 import { Footer } from '@/components';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { AntdThemeSync } from '@/contexts/AntdThemeSync';
-import { getCurrentUser, setPassword } from '@/services/auth';
+import { getPasswordRecoveryUser, setPassword } from '@/services/auth';
 
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { LoginForm, ProConfigProvider, ProFormText, ProLayout } from '@ant-design/pro-components';
@@ -46,7 +46,7 @@ const PasswordSet: FC = () => {
     });
   };
 
-  const handleSubmit = async (values: Auth.LoginParams) => {
+  const handleSubmit = async (values: Auth.PasswordChangeParams) => {
     try {
       setLoading(true);
       const msg = await setPassword(values);
@@ -60,9 +60,14 @@ const PasswordSet: FC = () => {
           content: defaultResetSuccessMessage,
           duration: 3,
         });
-        history.push('/');
+        history.push('/user/login');
         return;
       }
+      const defaultResetFailureMessage = intl.formatMessage({
+        id: 'pages.login.password.reset.failure',
+        defaultMessage: 'Password reset failed, please try again.',
+      });
+      messageApi.error(defaultResetFailureMessage);
       return;
     } catch (error) {
       const defaultResetFailureMessage = intl.formatMessage({
@@ -77,7 +82,7 @@ const PasswordSet: FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    getCurrentUser()
+    getPasswordRecoveryUser()
       .then((res) => {
         if (!isMounted) {
           return;
@@ -158,7 +163,7 @@ const PasswordSet: FC = () => {
                   name='password_reset'
                   fields={initData}
                   onFinish={async (values) => {
-                    await handleSubmit(values as Auth.LoginParams);
+                    await handleSubmit(values as Auth.PasswordChangeParams);
                   }}
                   submitter={{
                     resetButtonProps: {

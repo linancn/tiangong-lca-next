@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: controlled ProTable rows and self-contained request params remain page-owned orchestration and do not change the stable runtime path map.'
+lastReviewedAt: 2026-08-30
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951 after merging current main: password-recovery state stays within the existing auth service and app runtime boundaries; the stable runtime path map remains accurate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

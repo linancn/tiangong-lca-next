@@ -30,3 +30,10 @@ const buildHashHistoryPath = (path: string) => `/#${normalizeAppPath(path)}`;
  */
 export const buildExternalUrl = (path: string, origin: string = getAppOrigin()) =>
   `${normalizeOrigin(origin)}${buildHashHistoryPath(path)}`;
+
+/**
+ * Build an auth callback that leaves the URL fragment exclusively to Supabase.
+ * Hash-history routes cannot share that fragment with implicit-flow tokens.
+ */
+export const buildAuthCallbackUrl = (origin: string = getAppOrigin()) =>
+  `${normalizeOrigin(origin)}/`;

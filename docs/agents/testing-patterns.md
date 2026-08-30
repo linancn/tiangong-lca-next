@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-30
-lastReviewedCommit: 00d0a8cb1594356a8fab5a397f47bf389e8c18bf
-lastReviewedNote: 'Reviewed for Next Issue #955: wrapping direct mock request callbacks in async act follows the existing state-update synchronization pattern without weakening assertions.'
+lastReviewedCommit: 035ec247
+lastReviewedNote: 'Reviewed for Next Issue #951: release-proof fixtures now distinguish strict proof-reuse promotions from exact marked main hotfixes that own one fresh full gate.'
 ---
 
 # Testing Patterns Reference
@@ -185,6 +185,7 @@ Release Gate proof pattern:
 - resolve publication reuse through both merges: require the main merge's first parent to equal the proof-bound main baseline, its second parent to equal the verified dev merge, and all promotion/release/candidate trees to remain equal
 - require exactly one matching merged dev PR and main PR, a successful readiness workflow and named aggregate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
 - fail closed on missing, ambiguous, expired, mismatched, unavailable, direct, squash, or rebase identity during a normal promotion/main release; use a fresh full aggregate only for explicit tag or recovery-dispatch events
+- classify a direct main hotfix only when its PR carries the exact Issue/main-base/head marker, current main is an ancestor, and package version is unchanged; stale marker, divergent base, or version drift must fail before the fresh exact-head gate starts
 
 Documentation capture profile pattern:
 

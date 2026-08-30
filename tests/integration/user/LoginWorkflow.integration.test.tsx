@@ -69,6 +69,8 @@ type AuthResponse = {
   type?: string;
   currentAuthority?: string;
   message?: string;
+  errorCode?: string;
+  errorStatus?: number;
 };
 
 type LoginBody = {
@@ -271,7 +273,12 @@ describe('Login workflow integration', () => {
   });
 
   it('shows inline error messaging when login credentials are rejected', async () => {
-    mockLogin.mockResolvedValue({ status: 'error', type: 'login' });
+    mockLogin.mockResolvedValue({
+      status: 'error',
+      type: 'login',
+      errorCode: 'invalid_credentials',
+      errorStatus: 400,
+    });
 
     renderWithProviders(<Login />);
 
