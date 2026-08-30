@@ -499,6 +499,7 @@ describe('shared locale delivery contracts', () => {
             '/user/login',
             '/user/login/password_forgot',
             '/user/login/password_reset',
+            '/oauth/consent',
           ],
           defaultAccess: 'authenticated-session-required',
           unknownPathAccess: 'authenticated-session-required',
