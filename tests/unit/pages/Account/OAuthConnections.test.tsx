@@ -1,5 +1,5 @@
 import { cognitoSignUp, listOAuthGrants, login, revokeOAuthGrant } from '@/services/auth';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockMessage = { error: jest.fn(), success: jest.fn() };
@@ -69,7 +69,9 @@ describe('OAuthConnections', () => {
 
     await user.click(await screen.findByRole('button', { name: /Disconnect/u }));
     const confirmation = mockConfirm.mock.calls[0][0];
-    await confirmation.onOk();
+    await act(async () => {
+      await confirmation.onOk();
+    });
 
     expect(mockRevokeGrant).toHaveBeenCalledWith('client-1');
     expect(mockMessage.success).toHaveBeenCalledWith('Application disconnected.');
