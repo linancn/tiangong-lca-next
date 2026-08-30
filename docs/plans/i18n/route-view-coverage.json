@@ -822,6 +822,7 @@
     },
     "rv.oauth.consent-invalid-request": {
       "kind": "localized-view",
+      "localeTransition": "storage-reload",
       "requiredScenarios": ["route"],
       "session": "anonymous",
       "navigate": {

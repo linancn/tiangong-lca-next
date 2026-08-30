@@ -56,6 +56,7 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
 };
 const staticServer = require('../../../scripts/e2e/static-server.cjs') as {
   bundleDigest: (root: string) => string;
+  configuredAssetPath: (root: string, pathname: string) => string | undefined;
   safeAssetPath: (root: string, pathname: string) => string | undefined;
 };
 const buildVerifier = require('../../../scripts/e2e/verify-build-input.cjs') as {
@@ -586,6 +587,16 @@ describe('release E2E isolated runtime inputs', () => {
     expect(staticServer.bundleDigest(root)).toBe(firstDigest);
     expect(staticServer.safeAssetPath(root, '/assets/app.js')).toBe(
       fs.realpathSync(path.join(root, 'assets/app.js')),
+    );
+    fs.writeFileSync(path.join(root, 'oauth-consent-bridge.html'), '<main>oauth bridge</main>\n');
+    fs.writeFileSync(
+      path.join(root, 'edgeone.json'),
+      `${JSON.stringify({
+        rewrites: [{ source: '/oauth/consent', destination: '/oauth-consent-bridge.html' }],
+      })}\n`,
+    );
+    expect(staticServer.configuredAssetPath(root, '/oauth/consent')).toBe(
+      fs.realpathSync(path.join(root, 'oauth-consent-bridge.html')),
     );
     expect(staticServer.safeAssetPath(root, '/../outside.txt')).toBeUndefined();
     const outside = path.join(makeTemporaryDirectory(), 'secret.txt');
