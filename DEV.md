@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: direct-main hotfix CI now validates an exact Issue/base/head marker and unchanged version before running one clean-runner full gate.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
+lastReviewedNote: 'Reviewed for Next Issue #962: the Supabase JS OAuth API upgrade and consent route use the existing bootstrap, focused-test, build, and checked-push workflow.'
 ---
 
 # Development Bootstrap

@@ -1256,8 +1256,8 @@ function validateQualificationProof(proof, expectedIdentity = qualificationIdent
     proof?.schemaVersion !== QUALIFICATION_PROOF_SCHEMA_VERSION ||
     proof.status !== 'qualified' ||
     proof.coverage?.discoveredCases !== 81 ||
-    proof.coverage?.contractAssertionCount !== 49 ||
-    proof.coverage?.liveAssertionCount !== 49 ||
+    proof.coverage?.contractAssertionCount !== 50 ||
+    proof.coverage?.liveAssertionCount !== 50 ||
     proof.coverage?.executedCases !== 51 ||
     proof.coverage?.skippedCases !== 30 ||
     proof.coverage?.harnessControlCases !== 12 ||
@@ -1801,8 +1801,8 @@ function runQualification(options) {
   if (
     discovery?.fullListedTests !== 81 ||
     discovery?.listedTests !== 93 ||
-    assertionCount !== 49 ||
-    qualification?.assertionIds?.length !== 49 ||
+    assertionCount !== 50 ||
+    qualification?.assertionIds?.length !== 50 ||
     canonicalCounts.executed !== 51 ||
     canonicalCounts.skipped !== 30 ||
     harnessCounts.executed !== 12 ||

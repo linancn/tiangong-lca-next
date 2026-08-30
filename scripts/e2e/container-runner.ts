@@ -737,7 +737,7 @@ async function main(): Promise<number> {
       if (
         canonicalCheck.status !== 0 ||
         !Array.isArray(assertionIds) ||
-        assertionIds.length !== 49 ||
+        assertionIds.length !== 50 ||
         canonicalTotals?.executed !== 51 ||
         canonicalTotals?.skipped !== 30 ||
         harnessTotals?.executed !== 12 ||

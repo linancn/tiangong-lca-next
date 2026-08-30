@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: an exact, explicitly marked main hotfix now receives one clean-runner full gate while normal dev promotion remains proof-only and fail-closed.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
+lastReviewedNote: 'Reviewed for Next Issue #962: the semantic route contract expands from 49 to 50 IDs without changing gate ownership, browser trust, or release-proof policy.'
 ---
 
 # Pre-Push Gate Policy
@@ -152,7 +152,7 @@ It does not own:
 - keep one logical full-suite qualification for each canonical release candidate: the exact dev Release PR runs it and emits the proof; normal promotion/main paths never fall back to another aggregate run when proof identity cannot be established. The aggregate command runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with exactly two workers and a `512MB` per-worker idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
-- keep semantic E2E independent from `prepush:gate` and release proof: routine PR/dev/release events do not trigger browser work, an operator may run one hermetic credential-free qualification while the business PR remains open, and only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
+- keep semantic E2E independent from `prepush:gate` and release proof: routine PR/dev/release events do not trigger browser work, an operator may run one hermetic credential-free qualification while the business PR remains open, and only an explicitly authorized local operator run may close the authenticated 50-ID digest-bound proof
 - keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate
 - keep publication automation in the same `main` push workflow, but create the tag only after exact dev-candidate proof verification; reserve a fresh aggregate run for explicit tag or `workflow_dispatch` recovery, not a normal main-push fallback
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code

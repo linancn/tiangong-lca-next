@@ -487,8 +487,13 @@ describe('app runtime config', () => {
     },
   );
 
-  it.each(['/user/login', '/user/login/password_forgot', '/user/login/password_reset'])(
-    'getInitialState skips user loading on anonymous login-flow route %s',
+  it.each([
+    '/user/login',
+    '/user/login/password_forgot',
+    '/user/login/password_reset',
+    '/oauth/consent',
+  ])(
+    'getInitialState skips global user loading on the self-authenticating entry route %s',
     async (pathname) => {
       const { getInitialState } = require('@/app');
       mockHistory.location.pathname = pathname;

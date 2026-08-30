@@ -7,8 +7,8 @@
  * Journeys validated:
  * 1. User loads the account page and sees their current profile information populated.
  * 2. User updates the nickname, submits the form, and receives success feedback.
- * 3. User navigates account tabs and generated API keys are cleared after leaving the tab.
- * 4. Failure states surface visible recovery messaging for password changes and API key generation.
+ * 3. User navigates account tabs and reaches the connected-applications surface.
+ * 4. Failure states surface visible recovery messaging for password changes.
  * 5. Profile load and email-change failures stay visible instead of deadlocking the page.
  *
  * Services mocked:
@@ -18,8 +18,6 @@
  * - changeEmail
  * - cognitoChangePassword
  * - cognitoChangeEmail
- * - cognitoSignUp
- * - login
  */
 
 import Profile from '@/pages/Account';
@@ -28,9 +26,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  cognitoSignUp,
   getCurrentUser,
-  login,
   setProfile,
 } from '@/services/auth';
 import userEvent from '@testing-library/user-event';
@@ -432,10 +428,15 @@ jest.mock('@/services/auth', () => ({
   changePassword: jest.fn(),
   cognitoChangeEmail: jest.fn(),
   cognitoChangePassword: jest.fn(),
-  cognitoSignUp: jest.fn(),
   getCurrentUser: jest.fn(),
-  login: jest.fn(),
   setProfile: jest.fn(),
+}));
+
+jest.mock('@/pages/Account/OAuthConnections', () => ({
+  __esModule: true,
+  default: ({ email }: { email?: string }) => (
+    <div data-testid='oauth-connections'>Connected applications for {email}</div>
+  ),
 }));
 
 const mockSetProfile = setProfile as jest.MockedFunction<any>;
@@ -444,16 +445,8 @@ const mockChangePassword = changePassword as jest.MockedFunction<any>;
 const mockChangeEmail = changeEmail as jest.MockedFunction<any>;
 const mockCognitoChangePassword = cognitoChangePassword as jest.MockedFunction<any>;
 const mockCognitoChangeEmail = cognitoChangeEmail as jest.MockedFunction<any>;
-const mockCognitoSignUp = cognitoSignUp as jest.MockedFunction<any>;
-const mockLogin = login as jest.MockedFunction<any>;
 
 describe('Account profile integration workflow', () => {
-  beforeAll(() => {
-    if (typeof global.btoa === 'undefined') {
-      global.btoa = (input: string) => Buffer.from(input, 'binary').toString('base64');
-    }
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockSetInitialState.mockReset();
@@ -470,8 +463,6 @@ describe('Account profile integration workflow', () => {
     mockChangeEmail.mockResolvedValue({ status: 'ok' } as any);
     mockCognitoChangePassword.mockResolvedValue(undefined as any);
     mockCognitoChangeEmail.mockResolvedValue(undefined as any);
-    mockCognitoSignUp.mockResolvedValue(undefined as any);
-    mockLogin.mockResolvedValue({ status: 'ok' } as any);
   });
 
   it('allows a user to view and edit their basic profile information', async () => {
@@ -517,7 +508,7 @@ describe('Account profile integration workflow', () => {
     expect(updatedState.currentUser.locale).toBe('en-US');
   });
 
-  it('switches tabs and clears generated API keys after leaving the API key tab', async () => {
+  it('switches from profile controls to the connected-applications surface', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<Profile />);
@@ -537,34 +528,14 @@ describe('Account profile integration workflow', () => {
     await user.click(screen.getByRole('button', { name: 'Change Email' }));
     expect(screen.getByLabelText('New Email')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-
-    const passwordField = screen.getByLabelText('Current Password') as HTMLInputElement;
-    await user.type(passwordField, 'P@ssword123');
-    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
-
-    const expectedApiKey = Buffer.from(
-      JSON.stringify({
-        email: 'user@example.com',
-        password: 'P@ssword123',
-      }),
-    ).toString('base64');
-
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith({
-        email: 'user@example.com',
-        password: 'P@ssword123',
-      }),
+    await user.click(screen.getByRole('button', { name: 'Connected apps' }));
+    expect(screen.getByTestId('oauth-connections')).toHaveTextContent(
+      'Connected applications for user@example.com',
     );
-    expect(mockCognitoSignUp).toHaveBeenCalledWith('P@ssword123');
-    expect(message.success).toHaveBeenCalledWith('API Key generated successfully!');
-    expect(screen.getByDisplayValue(expectedApiKey)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Generate API Key' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Basic Information' }));
     expect(screen.getByLabelText('Nickname')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-    expect(screen.queryByDisplayValue(expectedApiKey)).not.toBeInTheDocument();
   });
 
   it('surfaces an invalid-current-password error on the change-password tab', async () => {
@@ -602,38 +573,6 @@ describe('Account profile integration workflow', () => {
 
     expect(message.error).toHaveBeenCalledWith('Invalid password');
     expect(message.success).not.toHaveBeenCalledWith('Password changed successfully!');
-  });
-
-  it('prevents API key generation when credential validation fails', async () => {
-    mockLogin.mockResolvedValueOnce({ status: 'error' } as any);
-
-    const user = userEvent.setup();
-
-    renderWithProviders(<Profile />);
-
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-    await waitFor(() =>
-      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-    await user.type(screen.getByLabelText('Current Password'), 'WrongP@ssword1');
-    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
-
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith({
-        email: 'user@example.com',
-        password: 'WrongP@ssword1',
-      }),
-    );
-
-    expect(mockCognitoSignUp).not.toHaveBeenCalled();
-    expect(message.error).toHaveBeenCalledWith('Invalid credentials. Please check your password.');
-    expect(
-      screen.queryByText(
-        'Make sure to copy it to a secure location. This key will not be shown again.',
-      ),
-    ).not.toBeInTheDocument();
   });
 
   it('shows the backend error message when email change fails', async () => {
