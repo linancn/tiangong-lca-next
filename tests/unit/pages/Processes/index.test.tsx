@@ -1,7 +1,7 @@
 // @ts-nocheck
 import ProcessesPage, { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor, within } from '../../../helpers/testUtils';
 
 jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
@@ -690,12 +690,18 @@ describe('ProcessesPage', () => {
   it('maps search and table sort fields for pgroonga and table-all requests', async () => {
     renderWithProviders(<ProcessesPage />);
 
+    const requestTable = async (requestParams: any, sort: any) => {
+      await act(async () => {
+        await latestRequest(requestParams, sort);
+      });
+    };
+
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() => expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalled());
 
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -708,7 +714,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'descend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -721,7 +727,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { classification: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { classification: 'descend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -734,7 +740,7 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { classification: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { classification: 'ascend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       'en',
@@ -754,7 +760,7 @@ describe('ProcessesPage', () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    await latestRequest({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       {
@@ -767,7 +773,7 @@ describe('ProcessesPage', () => {
       'all',
     );
 
-    await latestRequest({ pageSize: 10, current: 1 }, { location: 'descend' });
+    await requestTable({ pageSize: 10, current: 1 }, { location: 'descend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       { location: 'descend' },

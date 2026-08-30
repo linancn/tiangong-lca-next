@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: the focused test, lint, build, and hook-owned full-gate workflow already covers the versioned list request-lifecycle fix.'
+lastReviewedCommit: 5c2f80c865b989753b48cc871ae6eb6892aef45c
+lastReviewedNote: 'Reviewed for Next Issue #955: focused strict-act proof, lint, Docpact, and the hook-owned full gate cover the release-blocking test synchronization fix.'
 ---
 
 # Development Bootstrap

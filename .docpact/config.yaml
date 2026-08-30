@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-29"
-lastReviewedCommit: "24f0be95dcd3f77038f97a66f665eb7a6f85aad8"
-lastReviewedNote: 'Reviewed for Next Issue #950: existing frontend-runtime and test routing covers request identity, stale-row clearing, and ProTable race regressions; routing rules remain unchanged.'
+lastReviewedCommit: "f61a8699264b10a42c483f85333d42540a394327"
+lastReviewedNote: 'Reviewed for Next Issue #955: the Processes strict-act synchronization fix remains covered by the existing testing-and-gate route; routing rules are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

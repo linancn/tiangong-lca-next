@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: targeted race, route-identity, and 1-to-2-to-1 tests plus lint and build fit the existing validation matrix; no gate rule changes are needed.'
+lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedNote: 'Reviewed for Next Issue #955: focused strict-act Processes proof plus lint and the final full gate fit the existing validation matrix; no gate rule changes are needed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

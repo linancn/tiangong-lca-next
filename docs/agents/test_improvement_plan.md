@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-29
-lastReviewedCommit: 24f0be95dcd3f77038f97a66f665eb7a6f85aad8
-lastReviewedNote: 'Reviewed for Next Issue #950: the added deferred-request, route-identity, and pagination regressions close the scoped gap without reopening broader testing work.'
+lastReviewedCommit: f61a8699264b10a42c483f85333d42540a394327
+lastReviewedNote: 'Reviewed for Next Issue #955: awaiting direct ProTable request state updates repairs the scoped strict-act defect without reopening broader testing strategy work.'
 ---
 
 # Testing Strategy
