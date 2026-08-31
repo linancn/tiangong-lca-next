@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: the runbook now diagnoses Playwright package/image drift, Jest 30 migration surfaces, and electron-builder repository detection from a Git worktree.'
+lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
+lastReviewedNote: 'Reviewed for Next Issue #982: the runbook now includes the Chromium-only ProTable first-request sort drift found by the upgraded hermetic qualification.'
 ---
 
 # Testing Troubleshooting
@@ -70,6 +70,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | `pnpm start` or `pnpm start:dev` returns production `feature_disabled` for a Dev OAuth authorization that succeeds through the Dev SDK | Umi populated `process.env` from main `.env` before the Dev config selected `.env.development` | run `pnpm test:ci tests/unit/config/supabaseEnv.test.ts --runInBand --no-coverage`, verify the rendered bundle targets the Dev project, and repair exact main-default decontamination without weakening distinct explicit overrides or enabling OAuth in the wrong project |
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | a visible action exists but the expected request never starts | the control is present but still disabled while prerequisite data loads | wait for the control to become enabled, then interact; do not replace the product guard with an arbitrary delay |
+| a table browser fixture receives the service fallback sort in only one engine after an Ant Design/ProTable upgrade | the page relied on browser-dependent internal initialization instead of declaring its product-owned first sort | set the intended sortable column's `defaultSortOrder` explicitly, add a focused column-contract assertion, and rerun the exact browser scope; do not widen the fixture to accept two different initial RPC contracts |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | SDK-backed Jest suites pass but the installed TIDAS SDK contract fails | Jest's `@tiangong-lca/tidas-sdk/core` mapper hid a package-version, factory, or validation-envelope incompatibility | run `pnpm test:ci tests/unit/config/installedTidasSdkContract.test.ts --runInBand --no-coverage`, inspect the child Node output, and repair the exact installed `0.2.0` graph or real package contract instead of weakening the mapper-independent assertion |
 | Jest 30 fails before or during discovery after a dependency update | a removed matcher alias, `jest.SpyInstance`-only typing, `testPathPattern`, unsupported internal deep import, or custom-sequencer constructor drift escaped the migration contract | run `pnpm test:ci tests/unit/config/packageManagerContract.test.ts tests/unit/scripts/slowJestSequencer.test.ts --runInBand --no-coverage`, preserve the explicit inventory and public package entrypoints, and fix the first exact migration finding instead of narrowing discovery |

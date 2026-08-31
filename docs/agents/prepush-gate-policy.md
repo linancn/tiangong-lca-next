@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible dependency graph and Jest/Electron/Playwright migrations continue to use the existing one-full-gate ownership and separate browser-qualification trust boundary.'
+lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
+lastReviewedNote: 'Reviewed for Next Issue #982: the Chromium-only Process sort finding was repaired through focused page/browser proof and does not change one-full-gate ownership or the separate browser-qualification trust boundary.'
 ---
 
 # Pre-Push Gate Policy

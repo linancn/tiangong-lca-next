@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 migration scans, the inherited custom-sequencer constructor, mapper-independent TIDAS proof, and Playwright 1.62 environment identity preserve the existing test-selection patterns.'
+lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
+lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded Chromium matrix demonstrates the existing pattern for turning browser-dependent table initialization into an explicit product sort plus focused unit contract.'
 ---
 
 # Testing Patterns Reference
@@ -81,6 +81,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 migration scans, the in
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
+- when a Table/ProTable dependency upgrade changes the first request in only one browser, preserve the intended product order through an explicit `defaultSortOrder`, assert that column contract in Jest, and keep the exact audited first RPC body in browser proof instead of accepting a browser-dependent fallback
 
 ## Reusable Helpers
 

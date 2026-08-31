@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible dependency graph preserves the exact Node/pnpm/TypeScript/TIDAS baselines, moves Jest to 30, Umi to 4.7.9, Electron to 44.1, and keeps one reviewed React 19 / antd 6 product generation.'
+lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
+lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible dependency graph preserves the exact Node/pnpm/TypeScript/TIDAS baselines, moves Jest to 30, Umi to 4.7.9, Electron to 44.1, and explicitly preserves the Process name-sort contract exposed by browser qualification.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
