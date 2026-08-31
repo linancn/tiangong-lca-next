@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: environment proof covers Umi-preloaded main defaults, distinct and partial explicit overrides, the production build, and a real Dev PKCE consent read.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: profile service and account-page regressions cover organization read, trim, clear, refresh fallback, and UI state; the ordinary full gate remains authoritative.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

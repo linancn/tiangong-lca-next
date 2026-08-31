@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: Umi-loaded main-default and partial explicit-override cases are covered now and create no deferred testing queue.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: organization load, update, clear, refresh-failure, and missing-profile paths are covered now and create no deferred testing queue.'
 ---
 
 # Testing Execution State

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "dee1cddd1238e135cf9866280676e54715129dfd"
-lastReviewedNote: 'Reviewed for Next Issue #971: existing service-env and testing routes cover Dev selection when Umi preloads main defaults, per-key explicit overrides, and focused regression proof; no routing change is required.'
+lastReviewedAt: '2026-08-31'
+lastReviewedCommit: '1044b7d727d64507d1f8562981f64697ee7a198f'
+lastReviewedNote: 'Reviewed for Next Issue #983: existing account-page, Auth service, type, locale, and test routes cover optional organization profile metadata; no routing change is required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
