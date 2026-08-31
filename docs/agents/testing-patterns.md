@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
 lastReviewedNote: 'Reviewed for Next Issue #971: config tests distinguish Umi-preloaded main defaults from distinct per-key build overrides without changing service/component/integration patterns.'
 ---
 
