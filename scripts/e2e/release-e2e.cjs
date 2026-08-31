@@ -1325,7 +1325,9 @@ function receiptOptions(options) {
     authenticated: options.authenticated,
     grep: options.grep,
     offline: options.offline,
+    proof: options.proof ? path.resolve(options.proof) : undefined,
     project: options.project,
+    qualification: Boolean(options.qualification),
     recoveryLedger: path.resolve(options.recoveryLedger),
     repeatEach: options.repeatEach,
     role: options.role,
@@ -1440,8 +1442,15 @@ function validateReceipt(receipt, now = Date.now(), key) {
     !/^[0-9a-f]{64}$/u.test(receipt.environment.trackedMainEnvironmentSha256 ?? '') ||
     !receipt.image ||
     !(receipt.image.id === 'not-built' || /^sha256:[0-9a-f]{64}$/u.test(receipt.image.id ?? '')) ||
-    !/^tiangong-lca-next-e2e:[0-9a-f-]+$/u.test(receipt.image.tag ?? '') ||
     !receipt.invocation ||
+    typeof receipt.invocation.qualification !== 'boolean' ||
+    (receipt.invocation.proof !== undefined && !path.isAbsolute(receipt.invocation.proof)) ||
+    !new RegExp(
+      `^tiangong-lca-next-e2e:[0-9a-f]{12}-[0-9a-f]{12}-${
+        receipt.invocation.qualification ? 'qualification' : 'main'
+      }$`,
+      'u',
+    ).test(receipt.image.tag ?? '') ||
     !['candidate-build', 'candidate-server', 'preflight'].includes(receipt.failedPhase) ||
     typeof receipt.failureCode !== 'string'
   ) {
@@ -1766,19 +1775,7 @@ function runRelease(options, state = {}) {
   }
 }
 
-function runQualification(options) {
-  const result = runRelease(
-    {
-      ...options,
-      allowProductionData: false,
-      authenticated: false,
-      qualification: true,
-      recoveryLedger: path.join(RUNTIME_ROOT, 'qualification-recovery-ledger.json'),
-      role: 'user',
-      writeVerifiedEvidence: false,
-    },
-    { qualificationBootstrap: true },
-  );
+function finalizeQualification(result, options) {
   const preflight = readJson(result.artifacts.preflightReport);
   const discovery = preflight.checks.find(
     ({ id }) => id === 'environment.playwright-discovery',
@@ -1857,6 +1854,23 @@ function runQualification(options) {
   assertExternalProofPath(proofPath);
   writePrivateJson(proofPath, proof);
   return { ...result, qualificationProof: proofPath, proofKey: proof.proofKey };
+}
+
+function runQualification(options, state = {}) {
+  const qualificationOptions = {
+    ...options,
+    allowProductionData: false,
+    authenticated: false,
+    qualification: true,
+    recoveryLedger: path.join(RUNTIME_ROOT, 'qualification-recovery-ledger.json'),
+    role: 'user',
+    writeVerifiedEvidence: false,
+  };
+  const result = runRelease(qualificationOptions, {
+    ...state,
+    qualificationBootstrap: true,
+  });
+  return finalizeQualification(result, qualificationOptions);
 }
 
 function runDoctor(options) {
@@ -2002,7 +2016,9 @@ function resumeRelease() {
         nextCommand: 'pnpm e2e:release',
       });
     }
-    return runRelease(options, { receipt });
+    return options.qualification
+      ? runQualification(options, { receipt })
+      : runRelease(options, { receipt });
   } catch (error) {
     if (error instanceof ReleaseE2EError && !error.receiptEligible && error.phase === 'resume') {
       invalidateReceipt();

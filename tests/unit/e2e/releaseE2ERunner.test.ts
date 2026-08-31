@@ -443,7 +443,7 @@ describe('release E2E controller contracts', () => {
       {
         error: { failureCode: 'E2E_SERVER_FAILED', phase: 'candidate-server' },
         imageId: `sha256:${'1'.repeat(64)}`,
-        imageTag: 'tiangong-lca-next-e2e:abc123-def456',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-main',
         manifest: {
           candidate: {
             commit: 'a'.repeat(40),
@@ -461,6 +461,7 @@ describe('release E2E controller contracts', () => {
     );
     const now = Date.now();
     expect(controller.validateReceipt(receipt, now, key)).toBe(receipt);
+    expect(receipt.invocation.qualification).toBe(false);
     expect(() =>
       controller.validateReceipt(receipt, Date.parse(receipt.expiresAt) + 1, key),
     ).toThrow('continuation receipt has expired');
@@ -480,6 +481,50 @@ describe('release E2E controller contracts', () => {
     ).toThrow('unsupported shape');
     expect(() => controller.validateReceipt(receipt, now, Buffer.alloc(32, 8))).toThrow(
       'integrity check failed',
+    );
+    const qualificationProof = path.join(makeTemporaryDirectory(), 'qualification-proof.json');
+    const qualificationOptions = {
+      ...controller.parseOptions('qualify', ['--proof', qualificationProof]),
+      qualification: true,
+      recoveryLedger: path.join(makeTemporaryDirectory(), 'qualification-ledger.json'),
+    };
+    const qualificationReceipt = controller.createReceipt(
+      {
+        error: { failureCode: 'E2E_CANDIDATE_BUILD_FAILED', phase: 'candidate-build' },
+        imageId: 'not-built',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-qualification',
+        manifest: {
+          candidate: receipt.candidate,
+          environment: receipt.environment,
+          sources: { e2eTree: 'e'.repeat(40) },
+        },
+        options: qualificationOptions,
+        runtimeInputs: { trackedMainEnvironmentPath },
+      },
+      key,
+    );
+    expect(controller.validateReceipt(qualificationReceipt, now, key)).toBe(qualificationReceipt);
+    expect(qualificationReceipt.invocation).toMatchObject({
+      proof: path.resolve(qualificationProof),
+      qualification: true,
+    });
+    const mismatchedQualificationReceipt = controller.createReceipt(
+      {
+        error: { failureCode: 'E2E_CANDIDATE_BUILD_FAILED', phase: 'candidate-build' },
+        imageId: 'not-built',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-main',
+        manifest: {
+          candidate: receipt.candidate,
+          environment: receipt.environment,
+          sources: { e2eTree: 'e'.repeat(40) },
+        },
+        options: qualificationOptions,
+        runtimeInputs: { trackedMainEnvironmentPath },
+      },
+      key,
+    );
+    expect(() => controller.validateReceipt(mismatchedQualificationReceipt, now, key)).toThrow(
+      'unsupported shape',
     );
     const refreshed = controller.createReceipt(
       {
