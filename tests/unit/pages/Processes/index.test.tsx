@@ -518,7 +518,7 @@ describe('ProcessesPage', () => {
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
     expect(latestColumns.find((column) => column.dataIndex === 'name')).toMatchObject({
-      defaultSortOrder: 'ascend',
+      defaultSortOrder: 'descend',
       sorter: true,
     });
 
