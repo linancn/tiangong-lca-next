@@ -44,6 +44,8 @@ describe('OAuth consent hash-history bridge', () => {
     '',
     '?authorization_id=javascript:alert(1)',
     '?authorization_id=unsafe%2Fsegment',
+    '?authorization_id=.',
+    '?authorization_id=%2E%2E',
     `?authorization_id=${'a'.repeat(257)}`,
     '?authorization_id=123e4567-e89b-42d3-a456-426614174000&authorization_id=123e4567-e89b-42d3-a456-426614174000',
   ])('fails closed for malformed bridge input %s', (search) => {

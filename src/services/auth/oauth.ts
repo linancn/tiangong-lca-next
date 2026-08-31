@@ -14,6 +14,9 @@ export { OAUTH_CONSENT_PATH };
 // unreserved path segment because auth-js places the value in a request path.
 const AUTHORIZATION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,256}$/u;
 
+const isSafeAuthorizationId = (value: string): boolean =>
+  AUTHORIZATION_ID_PATTERN.test(value) && !/^\.+$/u.test(value);
+
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export type OAuthAuthorizationResult = OAuthAuthorizationDetails | OAuthRedirect;
@@ -26,14 +29,14 @@ export type OAuthServiceResponse<T> = {
 export function parseOAuthAuthorizationId(search: string): string | null {
   const params = new URLSearchParams(search);
   const values = params.getAll('authorization_id');
-  if (values.length !== 1 || !AUTHORIZATION_ID_PATTERN.test(values[0])) {
+  if (values.length !== 1 || !isSafeAuthorizationId(values[0])) {
     return null;
   }
   return values[0];
 }
 
 export function buildOAuthLoginPath(authorizationId: string): string {
-  if (!AUTHORIZATION_ID_PATTERN.test(authorizationId)) {
+  if (!isSafeAuthorizationId(authorizationId)) {
     throw new Error('Invalid OAuth authorization request');
   }
   const returnPath = `${OAUTH_CONSENT_PATH}?authorization_id=${encodeURIComponent(

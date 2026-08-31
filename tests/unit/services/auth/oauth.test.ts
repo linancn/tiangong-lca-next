@@ -51,6 +51,8 @@ describe('OAuth auth service', () => {
     expect(parseOAuthAuthorizationId('')).toBeNull();
     expect(parseOAuthAuthorizationId('?authorization_id=javascript:alert(1)')).toBeNull();
     expect(parseOAuthAuthorizationId('?authorization_id=unsafe%2Fsegment')).toBeNull();
+    expect(parseOAuthAuthorizationId('?authorization_id=.')).toBeNull();
+    expect(parseOAuthAuthorizationId('?authorization_id=%2E%2E')).toBeNull();
     expect(parseOAuthAuthorizationId(`?authorization_id=${'a'.repeat(257)}`)).toBeNull();
     expect(
       parseOAuthAuthorizationId(
@@ -68,6 +70,7 @@ describe('OAuth auth service', () => {
     expect(() => buildOAuthLoginPath('https://evil.example/callback')).toThrow(
       'Invalid OAuth authorization request',
     );
+    expect(() => buildOAuthLoginPath('..')).toThrow('Invalid OAuth authorization request');
     expect(buildOAuthLoginPath(uppercaseUuidAuthorizationId)).toContain(
       encodeURIComponent(uppercaseUuidAuthorizationId),
     );
