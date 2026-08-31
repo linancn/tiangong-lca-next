@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
 lastReviewedNote: 'Reviewed for Next Issue #971: a valid Dev OAuth handle returning production feature_disabled now has an exact env-target diagnosis and focused recovery path.'
 ---
 
