@@ -9,7 +9,7 @@ type ProFormContextValue = {
 
 export const proComponentsMocks = {
   lastProTableAction: null as null | {
-    reload: () => Promise<any>;
+    reload: (resetPageIndex?: boolean) => Promise<any>;
     setPageInfo: (info: any) => Promise<any>;
   },
 };
@@ -281,7 +281,7 @@ export const createProComponentsMock = () => {
 
     React.useEffect(() => {
       const handlers = {
-        reload: () => scheduleRun(),
+        reload: (resetPageIndex?: boolean) => scheduleRun(resetPageIndex ? { current: 1 } : {}),
         setPageInfo: (info: any) => scheduleRun(info ?? {}),
       };
       if (actionRef) {
