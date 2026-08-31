@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 87a482592fd70e689df4798989b62e7a7a1da40d
+lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
 lastReviewedNote: 'Reviewed for Next Issue #964: Next preserves the environment-issued opaque authorization handle across its bridge/UI; OAuth enablement, clients, and database capability truth remain external operations.'
 ---
 

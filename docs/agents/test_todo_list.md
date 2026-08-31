@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 87a482592fd70e689df4798989b62e7a7a1da40d
+lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
 lastReviewedNote: 'Reviewed for Next Issue #964: hosted opaque-handle and unsafe-input cases are covered now and create no deferred testing queue.'
 ---
 
