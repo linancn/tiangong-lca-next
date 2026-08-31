@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
+lastReviewedCommit: db1965b0
 lastReviewedNote: 'Reviewed for Next Issue #964: bridge, service, page, and redirect tests cover hosted opaque authorization handles without changing the bounded semantic E2E strategy.'
 ---
 

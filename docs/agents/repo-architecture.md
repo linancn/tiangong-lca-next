@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
+lastReviewedCommit: db1965b0
 lastReviewedNote: 'Reviewed for Next Issue #964: the bridge/auth service share one bounded opaque-handle contract and exclude dot-only segments before auth-js path construction.'
 related:
   - ../AGENTS.md
