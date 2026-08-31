@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: db1965b0
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
 lastReviewedNote: 'Reviewed for Next Issue #964: OAuth consent preserves one bounded opaque URL-safe handle byte-for-byte while rejecting dot-only URL-normalizing path segments.'
 related:
   - .docpact/config.yaml
