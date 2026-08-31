@@ -3,12 +3,12 @@
 
   const values = new URLSearchParams(window.location.search).getAll('authorization_id');
   const authorizationId = values.length === 1 ? values[0] : '';
+  // authorization_id is an opaque Supabase handle. Permit one bounded RFC
+  // 3986 unreserved path segment and preserve it byte-for-byte.
   const valid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
-      authorizationId,
-    );
+    /^[A-Za-z0-9._~-]{1,256}$/u.test(authorizationId) && !/^\.+$/u.test(authorizationId);
   const destination = valid
-    ? `/#/oauth/consent?authorization_id=${encodeURIComponent(authorizationId.toLowerCase())}`
+    ? `/#/oauth/consent?authorization_id=${encodeURIComponent(authorizationId)}`
     : '/#/oauth/consent?error=invalid_authorization_request';
 
   window.location.replace(destination);

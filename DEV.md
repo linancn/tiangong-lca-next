@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
-lastReviewedNote: 'Reviewed for Next Issue #962: the Supabase JS OAuth API upgrade and consent route use the existing bootstrap, focused-test, build, and checked-push workflow.'
+lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
+lastReviewedNote: 'Reviewed for Next Issue #964: the opaque authorization-handle repair uses the existing bootstrap, focused OAuth tests, build, and checked-push workflow.'
 ---
 
 # Development Bootstrap

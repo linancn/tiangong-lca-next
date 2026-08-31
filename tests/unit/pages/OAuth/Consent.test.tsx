@@ -8,7 +8,7 @@ import {
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-const authorizationId = '123e4567-e89b-42d3-a456-426614174000';
+const authorizationId = 'jteae32pgurfg3oqqppq2yravsyh4ezw';
 const mockReplace = jest.fn();
 let mockSearch = `?authorization_id=${authorizationId}`;
 

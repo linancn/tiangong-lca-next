@@ -91,8 +91,8 @@ describe('anonymous route policy', () => {
 
   it.each([
     [
-      '/oauth/consent?authorization_id=123e4567-e89b-42d3-a456-426614174000',
-      '/oauth/consent?authorization_id=123e4567-e89b-42d3-a456-426614174000',
+      '/oauth/consent?authorization_id=jteae32pgurfg3oqqppq2yravsyh4ezw',
+      '/oauth/consent?authorization_id=jteae32pgurfg3oqqppq2yravsyh4ezw',
     ],
     ['/welcome#section', '/welcome#section'],
     ['https://evil.example/callback', '/'],
