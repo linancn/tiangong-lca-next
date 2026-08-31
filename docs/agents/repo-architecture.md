@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
-lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service map remains accurate for Umi 4.7.9, Electron 44.1, the Playwright 1.62 environment, and the page-owned explicit Process name sort.'
+lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
+lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service map remains accurate for Umi 4.7.9, Electron 44.1, the Playwright 1.62 environment, and the page-owned explicit descending Process name sort.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -89,7 +89,7 @@ Rules:
 - LCIA result transport state and calculation-evidence trust state are separate: a failed or pending result query renders its own state and cannot be reinterpreted as missing or mismatched evidence; only a successfully returned numerical result enters the fail-closed evidence validator
 - Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned actor-draft mode for its personal branch, requiring owner `state_code=0` rows regardless of team/review workflow metadata, then merges that result with public state-100 rows. Database migrations own the `search_text` lexical source and its PGroonga index
-- the Process list page explicitly declares name ascending as its initial table sort so ProTable/Ant Design browser initialization cannot silently fall back to service-level `modified_at` order; the service fallback remains authoritative only when a caller supplies no active product sort
+- the Process list page explicitly declares name descending as its initial table sort so ProTable/Ant Design browser initialization cannot silently fall back to service-level `modified_at` order; the service fallback remains authoritative only when a caller supplies no active product sort
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `pnpm reference-data:check`

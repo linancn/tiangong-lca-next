@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
-lastReviewedNote: 'Reviewed for Next Issue #982: the Chromium-only Process sort finding was repaired through focused page/browser proof and does not change one-full-gate ownership or the separate browser-qualification trust boundary.'
+lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
+lastReviewedNote: 'Reviewed for Next Issue #982: the descending Process sort and exact qualification-resume repair remain focused browser infrastructure work and do not change one-full-gate ownership.'
 ---
 
 # Pre-Push Gate Policy

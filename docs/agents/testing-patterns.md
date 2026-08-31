@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
-lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded Chromium matrix demonstrates the existing pattern for turning browser-dependent table initialization into an explicit product sort plus focused unit contract.'
+lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
+lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow demonstrates explicit table defaults and exact mode/proof binding for resumable qualification without weakening either contract.'
 ---
 
 # Testing Patterns Reference
@@ -82,6 +82,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded Chromium matrix de
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 - when a Table/ProTable dependency upgrade changes the first request in only one browser, preserve the intended product order through an explicit `defaultSortOrder`, assert that column contract in Jest, and keep the exact audited first RPC body in browser proof instead of accepting a browser-dependent fallback
+- continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
 
 ## Reusable Helpers
 

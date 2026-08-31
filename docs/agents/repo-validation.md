@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
-lastReviewedNote: 'Reviewed for Next Issue #982: dependency proof covers Jest 30 / jsdom 26 behavior, the real TIDAS 0.2 package and data workflows, Umi/Electron builds, and the Playwright 1.62 qualification that exposed and closed a Chromium-only initial Process sort drift.'
+lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
+lastReviewedNote: 'Reviewed for Next Issue #982: browser proof now covers the exact descending Process first request and qualification receipts preserve main/qualification mode, offline policy, and proof destination across argument-free resume.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-08-31'
-lastReviewedCommit: '5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e'
-lastReviewedNote: 'Reviewed for Next Issue #982: existing frontend-runtime and testing routes cover the explicit Process default-sort repair exposed by the upgraded Chromium qualification, in addition to the dependency/Jest/Electron/Playwright migration; no routing change is required.'
+lastReviewedCommit: 'a5d0195b8bae77c79b1704f7978bd3ff07d2ae09'
+lastReviewedNote: 'Reviewed for Next Issue #982: existing frontend-runtime and testing routes cover the explicit descending Process sort and exact main/qualification continuation receipts exposed by the upgraded browser workflow; no routing change is required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

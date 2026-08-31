@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 5d5b7af53b0d3f1df56db2cf2411e7d295b7d47e
-lastReviewedNote: 'Reviewed for Next Issue #982: the existing browser matrix caught a Chromium-only initial Process sort drift and the explicit-default repair closes it without expanding the maintained testing strategy.'
+lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
+lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix caught the Process sort drift and live continuation exposed a receipt-mode defect; both are closed inside existing focused contracts without a new strategy queue.'
 ---
 
 # Testing Strategy
