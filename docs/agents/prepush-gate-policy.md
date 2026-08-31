@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
 lastReviewedNote: 'Reviewed for Next Issue #971: Dev environment decontamination uses focused config proof plus the existing ordinary full gate and real browser smoke; gate ownership and browser trust are unchanged.'
 ---
 
