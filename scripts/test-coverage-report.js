@@ -145,6 +145,17 @@ function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
   let hit = 0;
   let ignoredSyntheticAlternates = 0;
 
+  const missingHitVectors = Object.keys(branchMap).filter(
+    (branchId) => !Object.hasOwn(branchHits, branchId),
+  );
+  if (missingHitVectors.length > 0) {
+    throw new Error(
+      `Coverage branch map has no hit vector for ${filePath}: ${missingHitVectors
+        .slice(0, 5)
+        .join(', ')}.`,
+    );
+  }
+
   for (const [branchId, hits] of Object.entries(branchHits)) {
     const branch = branchMap[branchId];
     if (!branch || !Array.isArray(branch.locations) || !Array.isArray(hits)) {

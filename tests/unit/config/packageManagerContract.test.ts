@@ -249,6 +249,18 @@ describe('pnpm package-manager contract', () => {
         'src/malformed.ts',
       ),
     ).toThrow('unsupported unmapped path');
+
+    expect(() =>
+      summarizeSourceMappedBranches(
+        {
+          b: {},
+          branchMap: {
+            0: { locations: [sourceLocation, sourceLocation], type: 'cond-expr' },
+          },
+        },
+        'src/truncated.ts',
+      ),
+    ).toThrow('branch map has no hit vector');
   });
 
   it('keeps the Electron 44 publication matrix on supported 64-bit targets', () => {
