@@ -36,6 +36,7 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
+import { getActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import {
   contributeLifeCycleModel,
@@ -539,9 +540,9 @@ const TableList: FC = () => {
                       order: 'asc' | 'desc';
                     }
                   | undefined;
-                if (sort && Object.keys(sort).length > 0) {
-                  const field = Object.keys(sort)[0];
-                  const order = sort[field];
+                const activeSort = getActiveTableSort(sort);
+                if (activeSort) {
+                  const { field, order } = activeSort;
                   if (field === 'name') {
                     orderBy = {
                       key: 'baseName',

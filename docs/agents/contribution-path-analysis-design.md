@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: ae01a014
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 22913af33ac440636d9eba4df1b42a45e7cd66fb
 lastReviewedNote: 'Reviewed for Next Issue #901: removing an unreachable Task Center diagnostic guard and covering retained diagnostic fallbacks does not change calculation, analysis, or contribution-path contracts.'
 ---
 

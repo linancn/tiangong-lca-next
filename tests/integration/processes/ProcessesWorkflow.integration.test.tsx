@@ -653,6 +653,7 @@ describe('Processes workflow integration', () => {
     expect(await screen.findByText('Newly created process')).toBeInTheDocument();
     expect(screen.queryByText('Existing page two process')).not.toBeInTheDocument();
     expect(getProcessTableAll.mock.calls.map((call: any[]) => call[0].current)).toEqual([1, 2, 1]);
+    expect(getProcessTableAll.mock.calls.map((call: any[]) => call[1])).toEqual([{}, {}, {}]);
     expect(getProcessTablePgroongaSearch).not.toHaveBeenCalled();
     expect(process_hybrid_search).not.toHaveBeenCalled();
   });

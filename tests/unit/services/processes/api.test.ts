@@ -936,6 +936,26 @@ describe('getProcessTableAll', () => {
         sort_direction: 'desc',
       }),
     );
+
+    createQueryBuilder({ data: [], count: 0 });
+
+    await processesApi.getProcessTableAll(
+      { current: 1, pageSize: 10 },
+      { name: undefined } as any,
+      'en',
+      'tg',
+      [],
+      undefined,
+      undefined,
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_process_versions',
+      expect.objectContaining({
+        sort_by: 'modified_at',
+        sort_direction: 'desc',
+      }),
+    );
   });
 
   it('returns failure when personal data has no active session', async () => {

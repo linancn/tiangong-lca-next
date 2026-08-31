@@ -388,7 +388,7 @@ describe('ContactCreate component', () => {
     await waitFor(() =>
       expect(getMockAntdMessage().success).toHaveBeenCalledWith('Created successfully!'),
     );
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
 
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Create Contact' })).not.toBeInTheDocument(),
