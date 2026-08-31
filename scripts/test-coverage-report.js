@@ -125,6 +125,65 @@ function summarizeCoverageShape(entry) {
   };
 }
 
+function isSourceMappedLocation(location) {
+  return Number.isFinite(location?.start?.line) && Number.isFinite(location?.start?.column);
+}
+
+function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
+  const branchMap = entry?.branchMap;
+  const branchHits = entry?.b;
+  if (
+    !branchMap ||
+    typeof branchMap !== 'object' ||
+    !branchHits ||
+    typeof branchHits !== 'object'
+  ) {
+    throw new Error(`Coverage branch map is missing for ${filePath}.`);
+  }
+
+  let found = 0;
+  let hit = 0;
+  let ignoredSyntheticAlternates = 0;
+
+  for (const [branchId, hits] of Object.entries(branchHits)) {
+    const branch = branchMap[branchId];
+    if (!branch || !Array.isArray(branch.locations) || !Array.isArray(hits)) {
+      throw new Error(`Coverage branch ${branchId} is malformed for ${filePath}.`);
+    }
+    if (branch.locations.length !== hits.length) {
+      throw new Error(`Coverage branch ${branchId} has mismatched paths for ${filePath}.`);
+    }
+
+    hits.forEach((branchHit, index) => {
+      if (!Number.isFinite(branchHit) || branchHit < 0) {
+        throw new Error(`Coverage branch ${branchId} has invalid hits for ${filePath}.`);
+      }
+      const location = branch.locations[index];
+      if (isSourceMappedLocation(location)) {
+        found += 1;
+        if (branchHit > 0) hit += 1;
+        return;
+      }
+
+      const isJest30SyntheticAlternate =
+        branch.type === 'if' && index === 1 && isSourceMappedLocation(branch.locations[0]);
+      if (!isJest30SyntheticAlternate) {
+        throw new Error(
+          `Coverage branch ${branchId} has an unsupported unmapped path for ${filePath}.`,
+        );
+      }
+      ignoredSyntheticAlternates += 1;
+    });
+  }
+
+  return {
+    found,
+    hit,
+    pct: found === 0 ? 100 : calculatePercent(hit, found),
+    ignoredSyntheticAlternates,
+  };
+}
+
 function parseCoverageArtifacts() {
   const summaryPath = path.join(COVERAGE_DIR, 'coverage-summary.json');
   const finalPath = path.join(COVERAGE_DIR, 'coverage-final.json');
@@ -144,9 +203,19 @@ function parseCoverageArtifacts() {
       };
     }
 
+    let ignoredSyntheticAlternates = 0;
+    const normalizedBranchPaths = new Set();
     for (const [filePath, entry] of Object.entries(finalJson)) {
       const normalized = normalizePath(filePath);
       if (!files[normalized]) continue;
+      const branchCoverage = summarizeSourceMappedBranches(entry, normalized);
+      files[normalized].coverage.branches = {
+        found: branchCoverage.found,
+        hit: branchCoverage.hit,
+        pct: branchCoverage.pct,
+      };
+      ignoredSyntheticAlternates += branchCoverage.ignoredSyntheticAlternates;
+      normalizedBranchPaths.add(normalized);
       const uncoveredLines = Object.entries(entry.s || {})
         .filter(([, hits]) => hits === 0)
         .map(([statementId]) => entry.statementMap?.[statementId]?.start?.line)
@@ -154,10 +223,35 @@ function parseCoverageArtifacts() {
       files[normalized].uncoveredLines = uncoveredLines;
     }
 
+    const missingBranchMaps = Object.keys(files).filter(
+      (filePath) => !normalizedBranchPaths.has(filePath),
+    );
+    if (missingBranchMaps.length > 0) {
+      throw new Error(
+        `Coverage branch maps are missing for: ${missingBranchMaps.slice(0, 5).join(', ')}.`,
+      );
+    }
+
+    const normalizedBranchTotal = Object.values(files).reduce(
+      (total, file) => ({
+        found: total.found + file.coverage.branches.found,
+        hit: total.hit + file.coverage.branches.hit,
+      }),
+      { found: 0, hit: 0 },
+    );
+    const total = summarizeCoverageShape(summaryJson.total);
+    total.branches = {
+      ...normalizedBranchTotal,
+      pct:
+        normalizedBranchTotal.found === 0
+          ? 100
+          : calculatePercent(normalizedBranchTotal.hit, normalizedBranchTotal.found),
+    };
+
     return {
-      total: summarizeCoverageShape(summaryJson.total),
+      total,
       files,
-      source: 'json',
+      source: `json; ${ignoredSyntheticAlternates} source-less Jest 30 synthetic if-alternates excluded`,
     };
   }
 
@@ -652,10 +746,17 @@ function generateReport() {
   }
 }
 
-try {
-  generateReport();
-} catch (error) {
-  console.error(colorize('\n❌ Error:', 'red'), error.message);
-  console.error(error.stack);
-  process.exit(1);
+if (require.main === module) {
+  try {
+    generateReport();
+  } catch (error) {
+    console.error(colorize('\n❌ Error:', 'red'), error.message);
+    console.error(error.stack);
+    process.exit(1);
+  }
 }
+
+module.exports = {
+  isSourceMappedLocation,
+  summarizeSourceMappedBranches,
+};

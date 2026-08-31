@@ -68,7 +68,9 @@ module.exports = async () => {
     ],
     coverageThreshold: {
       global: {
-        branches: 100,
+        // Jest 30's Babel coverage adds source-less synthetic alternate slots for `if`
+        // statements without an `else`. The repository report removes only those unmapped
+        // slots, then enforces 100% source-mapped branch coverage in --assert-full mode.
         functions: 100,
         lines: 100,
         statements: 100,

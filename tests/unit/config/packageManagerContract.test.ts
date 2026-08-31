@@ -178,6 +178,79 @@ describe('pnpm package-manager contract', () => {
     expect(read('jest.config.cjs')).not.toMatch(/\btestPathPattern\b/u);
   });
 
+  it('enforces full source-mapped branch coverage under Jest 30', () => {
+    const jestConfig = read('jest.config.cjs');
+    const coverageReportSource = read('scripts/test-coverage-report.js');
+    const packageJson = JSON.parse(read('package.json'));
+    const { summarizeSourceMappedBranches } = require(
+      path.join(repositoryRoot, 'scripts/test-coverage-report.js'),
+    ) as {
+      summarizeSourceMappedBranches: (
+        entry: Record<string, unknown>,
+        filePath: string,
+      ) => {
+        found: number;
+        hit: number;
+        ignoredSyntheticAlternates: number;
+        pct: number;
+      };
+    };
+    const sourceLocation = {
+      end: { column: 8, line: 2 },
+      start: { column: 0, line: 2 },
+    };
+
+    expect(jestConfig).toContain('source-less synthetic alternate slots');
+    expect(jestConfig).not.toMatch(/coverageThreshold:[\s\S]*?branches:\s*100/u);
+    expect(packageJson.scripts['prepush:gate']).toContain('test:coverage:assert-full');
+    expect(coverageReportSource).toContain("['Branches', total.branches]");
+
+    expect(
+      summarizeSourceMappedBranches(
+        {
+          b: {
+            0: [4, 0],
+            1: [2, 3],
+          },
+          branchMap: {
+            0: { locations: [sourceLocation, {}], type: 'if' },
+            1: { locations: [sourceLocation, sourceLocation], type: 'cond-expr' },
+          },
+        },
+        'src/example.ts',
+      ),
+    ).toEqual({
+      found: 3,
+      hit: 3,
+      ignoredSyntheticAlternates: 1,
+      pct: 100,
+    });
+
+    expect(
+      summarizeSourceMappedBranches(
+        {
+          b: { 0: [1, 0] },
+          branchMap: {
+            0: { locations: [sourceLocation, sourceLocation], type: 'cond-expr' },
+          },
+        },
+        'src/uncovered.ts',
+      ),
+    ).toMatchObject({ found: 2, hit: 1, ignoredSyntheticAlternates: 0, pct: 50 });
+
+    expect(() =>
+      summarizeSourceMappedBranches(
+        {
+          b: { 0: [1, 0] },
+          branchMap: {
+            0: { locations: [sourceLocation, {}], type: 'cond-expr' },
+          },
+        },
+        'src/malformed.ts',
+      ),
+    ).toThrow('unsupported unmapped path');
+  });
+
   it('keeps the Electron 44 publication matrix on supported 64-bit targets', () => {
     const electronSources = ['electron/main.ts', 'electron/preload.ts'].map(read).join('\n');
     const buildWorkflow = read('.github/workflows/build.yml');
