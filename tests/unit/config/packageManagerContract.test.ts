@@ -182,9 +182,14 @@ describe('pnpm package-manager contract', () => {
     const jestConfig = read('jest.config.cjs');
     const coverageReportSource = read('scripts/test-coverage-report.js');
     const packageJson = JSON.parse(read('package.json'));
-    const { summarizeSourceMappedBranches } = require(
+    const { assertRawBranchSummary, summarizeSourceMappedBranches } = require(
       path.join(repositoryRoot, 'scripts/test-coverage-report.js'),
     ) as {
+      assertRawBranchSummary: (
+        rawCoverage: { found: number; hit: number },
+        normalizedCoverage: { rawFound: number; rawHit: number },
+        filePath: string,
+      ) => void;
       summarizeSourceMappedBranches: (
         entry: Record<string, unknown>,
         filePath: string,
@@ -193,6 +198,8 @@ describe('pnpm package-manager contract', () => {
         hit: number;
         ignoredSyntheticAlternates: number;
         pct: number;
+        rawFound: number;
+        rawHit: number;
       };
     };
     const sourceLocation = {
@@ -224,6 +231,8 @@ describe('pnpm package-manager contract', () => {
       hit: 3,
       ignoredSyntheticAlternates: 1,
       pct: 100,
+      rawFound: 4,
+      rawHit: 3,
     });
 
     expect(
@@ -236,7 +245,14 @@ describe('pnpm package-manager contract', () => {
         },
         'src/uncovered.ts',
       ),
-    ).toMatchObject({ found: 2, hit: 1, ignoredSyntheticAlternates: 0, pct: 50 });
+    ).toMatchObject({
+      found: 2,
+      hit: 1,
+      ignoredSyntheticAlternates: 0,
+      pct: 50,
+      rawFound: 2,
+      rawHit: 1,
+    });
 
     expect(() =>
       summarizeSourceMappedBranches(
@@ -261,6 +277,24 @@ describe('pnpm package-manager contract', () => {
         'src/truncated.ts',
       ),
     ).toThrow('branch map has no hit vector');
+
+    expect(() =>
+      summarizeSourceMappedBranches(
+        {
+          b: { 0: [] },
+          branchMap: { 0: { locations: [], type: 'if' } },
+        },
+        'src/empty-vector.ts',
+      ),
+    ).toThrow('empty path vector');
+
+    expect(() =>
+      assertRawBranchSummary(
+        { found: 3, hit: 2 },
+        { rawFound: 2, rawHit: 2 },
+        'src/truncated-summary.ts',
+      ),
+    ).toThrow('summary does not match its path vectors');
   });
 
   it('keeps the Electron 44 publication matrix on supported 64-bit targets', () => {

@@ -125,25 +125,31 @@ function summarizeCoverageShape(entry) {
   };
 }
 
+function isPlainRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 function isSourceMappedLocation(location) {
-  return Number.isFinite(location?.start?.line) && Number.isFinite(location?.start?.column);
+  return (
+    Number.isSafeInteger(location?.start?.line) &&
+    location.start.line >= 1 &&
+    Number.isSafeInteger(location?.start?.column) &&
+    location.start.column >= 0
+  );
 }
 
 function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
   const branchMap = entry?.branchMap;
   const branchHits = entry?.b;
-  if (
-    !branchMap ||
-    typeof branchMap !== 'object' ||
-    !branchHits ||
-    typeof branchHits !== 'object'
-  ) {
+  if (!isPlainRecord(branchMap) || !isPlainRecord(branchHits)) {
     throw new Error(`Coverage branch map is missing for ${filePath}.`);
   }
 
   let found = 0;
   let hit = 0;
   let ignoredSyntheticAlternates = 0;
+  let rawFound = 0;
+  let rawHit = 0;
 
   const missingHitVectors = Object.keys(branchMap).filter(
     (branchId) => !Object.hasOwn(branchHits, branchId),
@@ -158,17 +164,28 @@ function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
 
   for (const [branchId, hits] of Object.entries(branchHits)) {
     const branch = branchMap[branchId];
-    if (!branch || !Array.isArray(branch.locations) || !Array.isArray(hits)) {
+    if (
+      !isPlainRecord(branch) ||
+      typeof branch.type !== 'string' ||
+      branch.type.length === 0 ||
+      !Array.isArray(branch.locations) ||
+      !Array.isArray(hits)
+    ) {
       throw new Error(`Coverage branch ${branchId} is malformed for ${filePath}.`);
+    }
+    if (branch.locations.length === 0 || hits.length === 0) {
+      throw new Error(`Coverage branch ${branchId} has an empty path vector for ${filePath}.`);
     }
     if (branch.locations.length !== hits.length) {
       throw new Error(`Coverage branch ${branchId} has mismatched paths for ${filePath}.`);
     }
 
     hits.forEach((branchHit, index) => {
-      if (!Number.isFinite(branchHit) || branchHit < 0) {
+      if (!Number.isSafeInteger(branchHit) || branchHit < 0) {
         throw new Error(`Coverage branch ${branchId} has invalid hits for ${filePath}.`);
       }
+      rawFound += 1;
+      if (branchHit > 0) rawHit += 1;
       const location = branch.locations[index];
       if (isSourceMappedLocation(location)) {
         found += 1;
@@ -177,7 +194,10 @@ function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
       }
 
       const isJest30SyntheticAlternate =
-        branch.type === 'if' && index === 1 && isSourceMappedLocation(branch.locations[0]);
+        branch.type === 'if' &&
+        branch.locations.length === 2 &&
+        index === 1 &&
+        isSourceMappedLocation(branch.locations[0]);
       if (!isJest30SyntheticAlternate) {
         throw new Error(
           `Coverage branch ${branchId} has an unsupported unmapped path for ${filePath}.`,
@@ -192,7 +212,18 @@ function summarizeSourceMappedBranches(entry, filePath = '<unknown>') {
     hit,
     pct: found === 0 ? 100 : calculatePercent(hit, found),
     ignoredSyntheticAlternates,
+    rawFound,
+    rawHit,
   };
+}
+
+function assertRawBranchSummary(rawCoverage, normalizedCoverage, filePath) {
+  if (
+    rawCoverage?.found !== normalizedCoverage.rawFound ||
+    rawCoverage?.hit !== normalizedCoverage.rawHit
+  ) {
+    throw new Error(`Coverage branch summary does not match its path vectors for ${filePath}.`);
+  }
 }
 
 function parseCoverageArtifacts() {
@@ -220,6 +251,7 @@ function parseCoverageArtifacts() {
       const normalized = normalizePath(filePath);
       if (!files[normalized]) continue;
       const branchCoverage = summarizeSourceMappedBranches(entry, normalized);
+      assertRawBranchSummary(files[normalized].coverage.branches, branchCoverage, normalized);
       files[normalized].coverage.branches = {
         found: branchCoverage.found,
         hit: branchCoverage.hit,
@@ -768,6 +800,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  assertRawBranchSummary,
+  isPlainRecord,
   isSourceMappedLocation,
   summarizeSourceMappedBranches,
 };
