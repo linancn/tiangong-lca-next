@@ -24,6 +24,7 @@ import {
   TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from './contentLanguageRegistry';
 import { getRuntimeLocale } from './runtimeLocale';
+import { resolveTableSort } from './tableSort';
 import { sortDataSetVersionRows } from './version';
 
 const NO_TEAM_MESSAGE_ID = 'teams.modal.noTeam.title';
@@ -1227,8 +1228,7 @@ export async function getAllVersions(
   dataSource: string,
   stateCode?: number,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'version';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'version');
 
   let query = publicEntity(tableName)
     .select(

@@ -79,8 +79,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
   const intl = useIntl();
   const importedId = getImportedId(importData?.[0]);
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
+  const reloadFromFirstPage = useCallback(async () => {
+    await actionRef.current?.reload(true);
   }, [actionRef]);
 
   const handletFromData = () => {
@@ -327,7 +327,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
                   );
                   formRefCreate.current?.resetFields();
                   setDrawerVisible(false);
-                  reload();
+                  await reloadFromFirstPage();
                 } else {
                   message.error(
                     isSupabaseDuplicateKeyError(result.error)

@@ -8,6 +8,7 @@ import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
+import { resolveTableSort } from '../general/tableSort';
 import { getLangText, jsonToList } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
@@ -592,9 +593,7 @@ export async function getReviewsTableDataOfReviewMember(
     });
   }
 
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
   const { data, error } = await supabase.rpc('qry_review_get_member_queue_items_v3', {
     p_status: type,
@@ -649,9 +648,7 @@ export async function getReviewsTableDataOfReviewAdmin(
   lang: string,
   filters: ReviewQueueFilters = {},
 ) {
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
   const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items_v3', {
     p_status: type,

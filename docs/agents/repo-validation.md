@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
 lastReviewedNote: 'Reviewed for Next Issue #971: environment proof covers Umi-preloaded main defaults, distinct and partial explicit overrides, the production build, and a real Dev PKCE consent read.'
 related:
   - ../AGENTS.md

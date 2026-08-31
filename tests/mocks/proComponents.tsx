@@ -249,11 +249,29 @@ export const createProComponentsMock = () => {
       pageSize: pagination?.pageSize ?? 10,
     });
     const requestRef = React.useRef<any>(request);
+    const sortRef = React.useRef<
+      Record<string, 'ascend' | 'descend' | null | undefined> | undefined
+    >(undefined);
+
+    if (sortRef.current === undefined) {
+      sortRef.current = columns.reduce(
+        (inactiveSort: Record<string, 'ascend' | 'descend' | null | undefined>, column: any) => {
+          const field = Array.isArray(column?.dataIndex)
+            ? column.dataIndex.join('.')
+            : column?.dataIndex;
+          if (column?.sorter && typeof field === 'string') {
+            inactiveSort[field] = undefined;
+          }
+          return inactiveSort;
+        },
+        {},
+      );
+    }
 
     const runRequest = React.useCallback(
       async (override: any = {}) => {
         paramsRef.current = { ...paramsRef.current, ...(override ?? {}) };
-        const result = await requestRef.current?.(paramsRef.current, {});
+        const result = await requestRef.current?.(paramsRef.current, sortRef.current ?? {});
         if (result?.success !== false) {
           const nextRows = result?.data ?? [];
           setRows(nextRows);

@@ -27,6 +27,7 @@ import {
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
 import { invokeFoundationHybridSearch } from '../general/hybridSearch';
+import { resolveTableSort } from '../general/tableSort';
 import { genUnitGroupJsonOrdered } from './util';
 
 type UnitGroupListRpcRow = {
@@ -286,8 +287,7 @@ export async function getUnitGroupTableAll(
   tid: string | [],
   stateCode?: string | number,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
   const session = await supabase.auth.getSession();
   if (dataSource === 'my' && !session.data.session) {

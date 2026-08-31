@@ -91,9 +91,13 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
     maxHeight: 'calc(100%)',
   };
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
-  }, [actionRef]);
+  const handleClose = useCallback(async () => {
+    if (isSave) {
+      await actionRef.current?.reload(true);
+      setIsSave(false);
+    }
+    setDrawerVisible(false);
+  }, [actionRef, isSave]);
 
   return (
     <>
@@ -139,22 +143,10 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
         }
         size='100%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => {
-              if (isSave) reload();
-              setDrawerVisible(false);
-            }}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={handleClose} />}
         mask={{ closable: false }}
         open={drawerVisible}
-        onClose={() => {
-          if (isSave) reload();
-          setDrawerVisible(false);
-        }}
+        onClose={handleClose}
       >
         <GraphProvider>
           <Layout style={layoutStyle}>

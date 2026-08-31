@@ -91,8 +91,8 @@ const SourceCreate: FC<CreateProps> = ({
     setActiveTabKey(key);
   };
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
+  const reloadFromFirstPage = useCallback(async () => {
+    await actionRef.current?.reload(true);
   }, [actionRef]);
 
   const onSubmit = async () => {
@@ -165,7 +165,7 @@ const SourceCreate: FC<CreateProps> = ({
         formRefCreate.current?.resetFields();
         formRefCreate.current?.setFieldsValue({});
         setDrawerVisible(false);
-        reload();
+        await reloadFromFirstPage();
       } else {
         message.error(
           isSupabaseDuplicateKeyError(result.error)

@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "078dbf4ebd7bf84d4a425731ae2b722177fde9c4"
+lastReviewedCommit: "dee1cddd1238e135cf9866280676e54715129dfd"
 lastReviewedNote: 'Reviewed for Next Issue #971: existing service-env and testing routes cover Dev selection when Umi preloads main defaults, per-key explicit overrides, and focused regression proof; no routing change is required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

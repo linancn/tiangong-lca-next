@@ -2,6 +2,7 @@ import { createLegacyMutationRemovedError, invokeDatasetCommand } from '@/servic
 import { supabase } from '@/services/supabase';
 import { getUserId } from '@/services/users/api';
 import type { SortOrder } from 'antd/es/table/interface';
+import { resolveTableSort } from '../general/tableSort';
 
 type ReviewCommentCommandFunctionName =
   'app_review_save_comment_draft' | 'app_review_submit_comment';
@@ -66,9 +67,7 @@ async function getReviewMemberQueueComments(
   sort?: Record<string, SortOrder>,
   user_id?: string,
 ) {
-  const normalizedSort = sort ?? {};
-  const sortBy = Object.keys(normalizedSort)[0] ?? 'modified_at';
-  const orderBy = normalizedSort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
   const userId = user_id ?? (await getUserId());
 
   if (!userId) {

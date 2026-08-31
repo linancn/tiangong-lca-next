@@ -3,6 +3,7 @@ import { addTeam } from '@/services/teams/api';
 import { getUserId, getUserIdByEmail } from '@/services/users/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import type { SortOrder } from 'antd/es/table/interface';
+import { resolveTableSort } from '../general/tableSort';
 
 const SYSTEM_TEAM_ID = '00000000-0000-0000-0000-000000000000';
 
@@ -30,8 +31,8 @@ type TeamNotificationRpcRow = {
 };
 
 const getSortParams = (sort: Record<string, SortOrder>) => {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
-  const sortOrder = (sort[sortBy] ?? 'descend') === 'ascend' ? 'asc' : 'desc';
+  const { field: sortBy, order } = resolveTableSort(sort, 'created_at');
+  const sortOrder = order === 'ascend' ? 'asc' : 'desc';
   return { sortBy, sortOrder };
 };
 
