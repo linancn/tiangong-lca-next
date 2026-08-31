@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "b4c66b9fdba8a11cd27c3fa7bbb4d9b3eba3c419"
+lastReviewedCommit: "f8c1a2de8446a3b7582998f31c04c461b484a965"
 lastReviewedNote: 'Reviewed for Next Issue #962: routing and proof now cover OAuth consent, EdgeOne hash bridging, safe login/callback redirects, grants, and legacy-key retirement.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

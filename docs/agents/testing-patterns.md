@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b4c66b9fdba8a11cd27c3fa7bbb4d9b3eba3c419
+lastReviewedCommit: f8c1a2de8446a3b7582998f31c04c461b484a965
 lastReviewedNote: 'Reviewed for Next Issue #962: OAuth consent follows service/component/integration patterns and adds one fail-closed route assertion to the 50-ID matrix.'
 ---
 

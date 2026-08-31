@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b4c66b9fdba8a11cd27c3fa7bbb4d9b3eba3c419
+lastReviewedCommit: f8c1a2de8446a3b7582998f31c04c461b484a965
 lastReviewedNote: 'Reviewed for Next Issue #962: the Supabase JS OAuth API upgrade and consent route use the existing bootstrap, focused-test, build, and checked-push workflow.'
 ---
 
