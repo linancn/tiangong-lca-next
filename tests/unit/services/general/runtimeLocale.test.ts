@@ -113,30 +113,20 @@ describe('runtimeLocale', () => {
   });
 
   it('keeps detached intl publication and subscription safe without a browser window', () => {
-    const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
-    Object.defineProperty(globalThis, 'window', {
-      configurable: true,
-      value: undefined,
-    });
     const listener = jest.fn();
 
-    try {
-      expect(() =>
-        publishRuntimeIntlChange({
+    expect(() =>
+      publishRuntimeIntlChange(
+        {
           locale: 'en-US',
           formatMessage: ({ id }) => id,
-        }),
-      ).not.toThrow();
-      const unsubscribe = subscribeRuntimeIntlChange(listener);
-      expect(() => unsubscribe()).not.toThrow();
-      expect(listener).not.toHaveBeenCalled();
-    } finally {
-      if (windowDescriptor) {
-        Object.defineProperty(globalThis, 'window', windowDescriptor);
-      } else {
-        Reflect.deleteProperty(globalThis, 'window');
-      }
-    }
+        },
+        null,
+      ),
+    ).not.toThrow();
+    const unsubscribe = subscribeRuntimeIntlChange(listener, null);
+    expect(() => unsubscribe()).not.toThrow();
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it('prefers the Umi locale getter when it returns a supported locale', () => {
@@ -306,31 +296,13 @@ describe('runtimeLocale', () => {
   });
 
   it('uses the configured fallback outside a browser runtime', () => {
-    const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
-    const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-    Object.defineProperty(globalThis, 'window', {
-      configurable: true,
-      value: undefined,
-    });
-    Object.defineProperty(globalThis, 'navigator', {
-      configurable: true,
-      value: undefined,
-    });
-
-    try {
-      expect(resolveBrowserRuntimeLocale({ fallbackLocale: 'en-US' })).toBe('en-US');
-    } finally {
-      if (windowDescriptor) {
-        Object.defineProperty(globalThis, 'window', windowDescriptor);
-      } else {
-        Reflect.deleteProperty(globalThis, 'window');
-      }
-      if (navigatorDescriptor) {
-        Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
-      } else {
-        Reflect.deleteProperty(globalThis, 'navigator');
-      }
-    }
+    expect(
+      resolveBrowserRuntimeLocale({
+        fallbackLocale: 'en-US',
+        navigator: null,
+        storage: null,
+      }),
+    ).toBe('en-US');
   });
 
   it('discards an unsupported cached locale and uses the first supported navigator preference', () => {

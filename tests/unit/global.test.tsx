@@ -21,7 +21,6 @@ const flushAsync = async () => {
 describe('global runtime side effects', () => {
   const originalCaches = window.caches;
   const originalGlobalCaches = global.caches;
-  const originalLocation = window.location;
   const originalServiceWorker = navigator.serviceWorker;
 
   afterEach(() => {
@@ -34,10 +33,6 @@ describe('global runtime side effects', () => {
     Object.defineProperty(global, 'caches', {
       configurable: true,
       value: originalGlobalCaches,
-    });
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
     });
     Object.defineProperty(navigator, 'serviceWorker', {
       configurable: true,
@@ -81,6 +76,12 @@ describe('global runtime side effects', () => {
         action({ message: mockMessage, notification: mockNotification }),
     }));
 
+    jest.doMock('@/utils/browserNavigation', () => ({
+      __esModule: true,
+      readBrowserProtocol: () => protocol,
+      reloadBrowserPage: reloadSpy ?? jest.fn(),
+    }));
+
     jest.doMock('antd', () => ({
       __esModule: true,
       Button: ({ children, onClick }: any) => (
@@ -115,15 +116,6 @@ describe('global runtime side effects', () => {
           : {}),
         getRegistration: jest.fn().mockResolvedValue(getRegistration ?? null),
       },
-    });
-    const locationValue = {
-      protocol,
-      reload: reloadSpy ?? jest.fn(),
-    };
-
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: locationValue,
     });
     Object.defineProperty(global, 'MessageChannel', {
       configurable: true,

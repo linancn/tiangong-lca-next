@@ -34,6 +34,11 @@ type RuntimeLocaleNavigator = {
   languages?: readonly string[];
 };
 
+type RuntimeIntlEventTarget = Pick<
+  Window,
+  'addEventListener' | 'dispatchEvent' | 'removeEventListener'
+>;
+
 export type BrowserRuntimeLocaleOptions = {
   fallbackLocale?: SupportedAppLocale;
   navigator?: RuntimeLocaleNavigator | null;
@@ -50,14 +55,18 @@ function getDefaultRuntimeEnv(): RuntimeLocaleEnv {
 
 function getDefaultBrowserStorage(): RuntimeLocaleStorage | undefined {
   try {
-    return typeof window === 'object' ? window.localStorage : undefined;
+    return (globalThis as typeof globalThis & { window?: Window }).window?.localStorage;
   } catch {
     return undefined;
   }
 }
 
 function getDefaultBrowserNavigator(): RuntimeLocaleNavigator | undefined {
-  return typeof navigator === 'object' ? navigator : undefined;
+  return (globalThis as typeof globalThis & { navigator?: RuntimeLocaleNavigator }).navigator;
+}
+
+function getDefaultRuntimeIntlTarget(): RuntimeIntlEventTarget | undefined {
+  return (globalThis as typeof globalThis & { window?: RuntimeIntlEventTarget }).window;
 }
 
 /**
@@ -74,11 +83,14 @@ export function normalizeRuntimeLocale(value?: string | null): SupportedAppLocal
  * Publish the current registry-backed intl instance so those roots can remain
  * reactive without copying catalogs or hard-coding locale branches.
  */
-export function publishRuntimeIntlChange(intl: RuntimeIntlShapeLike): void {
-  if (typeof window !== 'object' || !normalizeRuntimeLocale(intl.locale)) {
+export function publishRuntimeIntlChange(
+  intl: RuntimeIntlShapeLike,
+  target: RuntimeIntlEventTarget | null | undefined = getDefaultRuntimeIntlTarget(),
+): void {
+  if (!target || !normalizeRuntimeLocale(intl.locale)) {
     return;
   }
-  window.dispatchEvent(
+  target.dispatchEvent(
     new CustomEvent<{ intl: RuntimeIntlShapeLike }>(RUNTIME_INTL_CHANGE_EVENT, {
       detail: { intl },
     }),
@@ -87,8 +99,9 @@ export function publishRuntimeIntlChange(intl: RuntimeIntlShapeLike): void {
 
 export function subscribeRuntimeIntlChange(
   listener: (intl: RuntimeIntlShapeLike) => void,
+  target: RuntimeIntlEventTarget | null | undefined = getDefaultRuntimeIntlTarget(),
 ): () => void {
-  if (typeof window !== 'object') {
+  if (!target) {
     return () => undefined;
   }
   const handleChange = (event: Event) => {
@@ -97,8 +110,8 @@ export function subscribeRuntimeIntlChange(
       listener(intl);
     }
   };
-  window.addEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
-  return () => window.removeEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
+  target.addEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
+  return () => target.removeEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
 }
 
 function safeReadStoredLocale(storage?: RuntimeLocaleStorage | null): string | null | undefined {

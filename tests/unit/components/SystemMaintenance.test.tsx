@@ -3,6 +3,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 
 const mockReload = jest.fn();
 
+jest.mock('@/utils/browserNavigation', () => ({
+  __esModule: true,
+  reloadBrowserPage: (...args: unknown[]) => mockReload(...args),
+}));
+
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ id }: { id: string }) => <span>{id}</span>,
@@ -33,19 +38,6 @@ jest.mock('antd', () => ({
 }));
 
 describe('SystemMaintenance', () => {
-  const originalLocation = window.location;
-
-  beforeAll(() => {
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { ...originalLocation, reload: mockReload },
-    });
-  });
-
-  afterAll(() => {
-    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
-  });
-
   beforeEach(() => mockReload.mockClear());
 
   it('renders release maintenance details and reloads only on user request', () => {

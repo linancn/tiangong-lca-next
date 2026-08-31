@@ -1,5 +1,6 @@
 import { LOGIN_PATH, OAUTH_CONSENT_PATH } from '@/services/general/publicRoutePolicy';
 import { supabase } from '@/services/supabase';
+import { assignBrowserLocation } from '@/utils/browserNavigation';
 import type {
   AuthError,
   OAuthAuthorizationDetails,
@@ -67,7 +68,7 @@ export function redirectToOAuthCallback(value: string): boolean {
   if (!isSafeOAuthCallbackUrl(value)) {
     return false;
   }
-  window.location.assign(value);
+  assignBrowserLocation(window.location, value);
   return true;
 }
 

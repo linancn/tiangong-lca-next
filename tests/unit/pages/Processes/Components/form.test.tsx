@@ -768,10 +768,10 @@ describe('ProcessForm component', () => {
 
     expect(
       screen.getByRole('button', { name: 'Inputs and Outputs' }).querySelector('span'),
-    ).toHaveStyle({ color: 'red' });
+    ).toHaveStyle({ color: 'rgb(255, 0, 0)' });
     expect(
       screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
-    ).not.toHaveStyle({ color: 'red' });
+    ).not.toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 
   it('counts review and compliance issues on their rendered tabs', async () => {
@@ -1093,7 +1093,7 @@ describe('ProcessForm component', () => {
     });
     expect(
       screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
-    ).toHaveStyle({ color: 'red' });
+    ).toHaveStyle({ color: 'rgb(255, 0, 0)' });
     expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith([
       {
         errors: [],

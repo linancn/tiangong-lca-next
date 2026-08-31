@@ -18,8 +18,13 @@ const normalizeAppPath = (path: string) => {
 
 const normalizeOrigin = (origin: string) => origin.replace(/\/+$/, '');
 
-export const getAppOrigin = () =>
-  typeof window !== 'undefined' ? window.location.origin : DEFAULT_APP_ORIGIN;
+type AppOriginWindow = { location: Pick<Location, 'origin'> };
+
+export const getAppOrigin = (
+  browserWindow: AppOriginWindow | null | undefined = (
+    globalThis as typeof globalThis & { window?: AppOriginWindow }
+  ).window,
+) => browserWindow?.location.origin ?? DEFAULT_APP_ORIGIN;
 
 const buildHashHistoryPath = (path: string) => `/#${normalizeAppPath(path)}`;
 

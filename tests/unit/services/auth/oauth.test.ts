@@ -11,6 +11,13 @@ import {
 } from '@/services/auth/oauth';
 import { supabase } from '@/services/supabase';
 
+const mockAssignBrowserLocation = jest.fn();
+
+jest.mock('@/utils/browserNavigation', () => ({
+  __esModule: true,
+  assignBrowserLocation: (...args: unknown[]) => mockAssignBrowserLocation(...args),
+}));
+
 jest.mock('@/services/supabase', () => ({
   supabase: {
     auth: {
@@ -93,7 +100,9 @@ describe('OAuth auth service', () => {
 
   it('redirects a safe browser callback and rejects an unsafe one', () => {
     expect(redirectToOAuthCallback(window.location.href)).toBe(true);
+    expect(mockAssignBrowserLocation).toHaveBeenCalledWith(window.location, window.location.href);
     expect(redirectToOAuthCallback('javascript:alert(1)')).toBe(false);
+    expect(mockAssignBrowserLocation).toHaveBeenCalledTimes(1);
   });
 
   it('uses getClaims for identity verification', async () => {

@@ -1,3 +1,4 @@
+import { replaceBrowserLocation } from '@/utils/browserNavigation';
 import type { ReactNode } from 'react';
 import { Component, useEffect } from 'react';
 
@@ -8,9 +9,12 @@ declare global {
   }
 }
 
-export function getStaticFallbackUrl(reason: string): string {
-  if (window.location.protocol === 'file:') {
-    const url = new URL('./maintenance.html', window.location.href);
+export function getStaticFallbackUrl(
+  reason: string,
+  location: Pick<Location, 'href' | 'protocol'> = window.location,
+): string {
+  if (location.protocol === 'file:') {
+    const url = new URL('./maintenance.html', location.href);
     url.searchParams.set('reason', reason);
     return url.toString();
   }
@@ -44,7 +48,7 @@ export class StaticFallbackErrorBoundary extends Component<
   }
 
   componentDidCatch() {
-    window.location.replace(getStaticFallbackUrl('render-failure'));
+    replaceBrowserLocation(window.location, getStaticFallbackUrl('render-failure'));
   }
 
   render() {

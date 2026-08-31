@@ -1,10 +1,11 @@
 import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
+import { readBrowserProtocol, reloadBrowserPage } from '@/utils/browserNavigation';
 import { getIntl } from '@umijs/max';
 import { Button } from 'antd';
 import defaultSettings from '../config/defaultSettings';
 
 const { pwa } = defaultSettings;
-const isHttps = window.location.protocol === 'https:';
+const isHttps = readBrowserProtocol(window.location) === 'https:';
 
 const clearCache = () => {
   // remove all caches
@@ -53,7 +54,7 @@ if (pwa) {
       });
 
       clearCache();
-      window.location.reload();
+      reloadBrowserPage(window.location);
       return true;
     };
     const key = `open${Date.now()}`;
