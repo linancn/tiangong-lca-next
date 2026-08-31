@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1a7fd6ce822e8d508c34020d2d3d4a4df712581d
+lastReviewedCommit: adcaa91de1937a4e694fb18d29bd000316ab427a
 lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-process proof, exact toolchain contracts, and latest review-validation cases follow the maintained patterns.'
 ---
 

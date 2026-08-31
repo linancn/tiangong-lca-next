@@ -78,8 +78,8 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "16af4069db04011eda5710ed79670447fae49c9a6e8e7fe776285e4835ee330d",
-    "qualityDigest": "172cbdd5c29985a2767f1be249bd3dd5cfaa0e0c1d2d4bb29bdcb493adb4feb4",
+    "contextDigest": "6d8e15ada21e9491065d1c926a20267f01206ab4dbb423f8dbb2ccd7f9d1ad03",
+    "qualityDigest": "4d2ec881555727973465bc419f4ec6408a1145ebd3330ca424cb339285614bbc",
     "correctionLedgerDigest": "aa1ce07437550c229c6835918fe64d8200f0c251910c4723bad48b684ac6af9b",
     "routeViewCoverageDigest": "af2b0a681f42f4841d592ad99a1f1b7d9b24a893793daffdda408c452786e556",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
@@ -125,5 +125,5 @@
       "ownerIssue": "#867"
     }
   ],
-  "activationDigest": "c37831879192d4f947367a53c2d3fe05d3666e1c4bba7d89a637d2070603f67b"
+  "activationDigest": "e6e4a0227b465b4e1921e71a120635fd3e36751c443bf021bbc7e812e7ce7cb0"
 }
