@@ -130,6 +130,7 @@ describe('pnpm package-manager contract', () => {
     expect(config).not.toContain('root-entry-name');
     expect(config).not.toContain('umi-presets-pro');
     expect(lockfile).not.toMatch(/(?:^|\W)antd@(?:4|5)\./mu);
+    expect(lockfile).not.toMatch(/^\s{2}'?@ant-design\/icons@6\.3\.2'?:/mu);
     expect(lockfile).not.toMatch(/@ant-design\/pro-components@2\./u);
     expect(lockfile).not.toMatch(/(?:^|\W)react(?:-dom)?@18\./mu);
   });

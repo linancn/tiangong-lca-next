@@ -43,6 +43,10 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
   };
 
   it('keeps every compiler and linter command on the repository-owned single track', () => {
+    expect(packageJson.repository).toEqual({
+      type: 'git',
+      url: 'https://github.com/linancn/tiangong-lca-next.git',
+    });
     expect(scripts.lint).toBe('pnpm lint:js && pnpm lint:prettier && pnpm tsc');
     expect(scripts['lint-staged:js']).toBe('oxlint --format=stylish');
     expect(scripts['lint:fix']).toBe('oxlint --fix --format=stylish ./src ./tests');
