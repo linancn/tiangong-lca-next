@@ -32,16 +32,19 @@ describe('OAuth consent hash-history bridge', () => {
     );
   });
 
-  it('moves one valid authorization ID into the SPA hash route', () => {
-    const replace = runBridge('?authorization_id=123E4567-E89B-42D3-A456-426614174000');
-    expect(replace).toHaveBeenCalledWith(
-      '/#/oauth/consent?authorization_id=123e4567-e89b-42d3-a456-426614174000',
-    );
-  });
+  it.each(['jteae32pgurfg3oqqppq2yravsyh4ezw', '123E4567-E89B-42D3-A456-426614174000'])(
+    'moves opaque authorization ID %s into the SPA hash route without normalization',
+    (id) => {
+      const replace = runBridge(`?authorization_id=${id}`);
+      expect(replace).toHaveBeenCalledWith(`/#/oauth/consent?authorization_id=${id}`);
+    },
+  );
 
   it.each([
     '',
     '?authorization_id=javascript:alert(1)',
+    '?authorization_id=unsafe%2Fsegment',
+    `?authorization_id=${'a'.repeat(257)}`,
     '?authorization_id=123e4567-e89b-42d3-a456-426614174000&authorization_id=123e4567-e89b-42d3-a456-426614174000',
   ])('fails closed for malformed bridge input %s', (search) => {
     const replace = runBridge(search);

@@ -9,8 +9,10 @@ import type {
 
 export { OAUTH_CONSENT_PATH };
 
-const AUTHORIZATION_ID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+// Supabase defines authorization_id as an opaque handle. Keep the browser
+// boundary format-agnostic while admitting only one bounded RFC 3986
+// unreserved path segment because auth-js places the value in a request path.
+const AUTHORIZATION_ID_PATTERN = /^[A-Za-z0-9._~-]{1,256}$/u;
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -27,7 +29,7 @@ export function parseOAuthAuthorizationId(search: string): string | null {
   if (values.length !== 1 || !AUTHORIZATION_ID_PATTERN.test(values[0])) {
     return null;
   }
-  return values[0].toLowerCase();
+  return values[0];
 }
 
 export function buildOAuthLoginPath(authorizationId: string): string {
@@ -35,7 +37,7 @@ export function buildOAuthLoginPath(authorizationId: string): string {
     throw new Error('Invalid OAuth authorization request');
   }
   const returnPath = `${OAUTH_CONSENT_PATH}?authorization_id=${encodeURIComponent(
-    authorizationId.toLowerCase(),
+    authorizationId,
   )}`;
   return `${LOGIN_PATH}?redirect=${encodeURIComponent(returnPath)}`;
 }

@@ -37,17 +37,21 @@ const auth = supabase.auth as unknown as {
   };
 };
 
-const authorizationId = '123e4567-e89b-42d3-a456-426614174000';
+const authorizationId = 'jteae32pgurfg3oqqppq2yravsyh4ezw';
+const uppercaseUuidAuthorizationId = '123E4567-E89B-42D3-A456-426614174000';
 
 describe('OAuth auth service', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('accepts one UUID authorization_id and rejects malformed or duplicate values', () => {
-    expect(parseOAuthAuthorizationId(`?authorization_id=${authorizationId.toUpperCase()}`)).toBe(
-      authorizationId,
+  it('accepts one bounded opaque authorization_id without normalization', () => {
+    expect(parseOAuthAuthorizationId(`?authorization_id=${authorizationId}`)).toBe(authorizationId);
+    expect(parseOAuthAuthorizationId(`?authorization_id=${uppercaseUuidAuthorizationId}`)).toBe(
+      uppercaseUuidAuthorizationId,
     );
     expect(parseOAuthAuthorizationId('')).toBeNull();
     expect(parseOAuthAuthorizationId('?authorization_id=javascript:alert(1)')).toBeNull();
+    expect(parseOAuthAuthorizationId('?authorization_id=unsafe%2Fsegment')).toBeNull();
+    expect(parseOAuthAuthorizationId(`?authorization_id=${'a'.repeat(257)}`)).toBeNull();
     expect(
       parseOAuthAuthorizationId(
         `?authorization_id=${authorizationId}&authorization_id=${authorizationId}`,
@@ -63,6 +67,9 @@ describe('OAuth auth service', () => {
     );
     expect(() => buildOAuthLoginPath('https://evil.example/callback')).toThrow(
       'Invalid OAuth authorization request',
+    );
+    expect(buildOAuthLoginPath(uppercaseUuidAuthorizationId)).toContain(
+      encodeURIComponent(uppercaseUuidAuthorizationId),
     );
   });
 
