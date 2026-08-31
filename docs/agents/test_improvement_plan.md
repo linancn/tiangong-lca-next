@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
+lastReviewedCommit: b4c66b9fdba8a11cd27c3fa7bbb4d9b3eba3c419
 lastReviewedNote: 'Reviewed for Next Issue #962: OAuth consent adds one executable route assertion while preserving the bounded semantic E2E and single full-gate strategy.'
 ---
 
