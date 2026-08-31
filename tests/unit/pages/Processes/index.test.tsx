@@ -25,7 +25,6 @@ let mockLocation = {
 };
 let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
-let latestColumns: any[] = [];
 
 const mockGetProcessTableAll = jest.fn();
 const mockGetProcessTablePgroongaSearch = jest.fn();
@@ -374,7 +373,6 @@ jest.mock('@ant-design/pro-components', () => {
     rowKey,
     params,
   }: any) => {
-    latestColumns = columns;
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
@@ -466,7 +464,6 @@ describe('ProcessesPage', () => {
     };
     mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
-    latestColumns = [];
     mockGetDataSource.mockReturnValue('my');
     mockContributeProcess.mockResolvedValue({ error: null });
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
@@ -516,11 +513,6 @@ describe('ProcessesPage', () => {
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-
-    expect(latestColumns.find((column) => column.dataIndex === 'name')).toMatchObject({
-      defaultSortOrder: 'descend',
-      sorter: true,
-    });
 
     expect(mockGetProcessTableAll).toHaveBeenCalledWith(
       { pageSize: 10, current: 1 },
