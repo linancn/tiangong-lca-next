@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "1bf4840ca333a2ff768db70e475dd6a43144678b"
+lastReviewedCommit: "d7bc98fcc62139b7631829c3f8e930e058054277"
 lastReviewedNote: 'Reviewed for Next Issue #964: routing and proof bind the bridge/service to one bounded byte-preserved opaque handle and reject dot-only URL-normalizing segments.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
