@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 22913af33ac440636d9eba4df1b42a45e7cd66fb
+lastReviewedCommit: c4e259ac1b15b83db4e1ff7c0205cdd0e844921b
 lastReviewedNote: 'Reviewed for Next Issue #964: OAuth focused proof accepts hosted opaque handles unchanged while rejecting duplicate, delimiter, injection, oversized, and dot-only inputs.'
 related:
   - ../AGENTS.md

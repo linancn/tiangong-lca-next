@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 22913af33ac440636d9eba4df1b42a45e7cd66fb
+lastReviewedCommit: c4e259ac1b15b83db4e1ff7c0205cdd0e844921b
 lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle failures are diagnosed through the existing focused OAuth fixtures and live Dev flow; no recovery rule changes.'
 ---
 
