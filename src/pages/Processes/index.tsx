@@ -181,6 +181,7 @@ const TableList: FC = () => {
       title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
       dataIndex: 'name',
       sorter: true,
+      defaultSortOrder: 'ascend',
       search: false,
       render: (_, row) => {
         return dataListText(row.name, row.generalComment);
