@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "21f6b7d5197eaaec278b467ed6e5d2a8c4db7ac79fead28e63505e89eff46393",
+    "auditedInputDigest": "15289f4ed80f940e6e6c29170cdc7b029d44228163a8436fa615df6324312e15",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -74,7 +74,7 @@
     "activeStaticKeyCount": 2176,
     "activeDynamicKeyCount": 306,
     "reservedKeyCount": 770,
-    "productionSourceFileCount": 454,
+    "productionSourceFileCount": 455,
     "literalReferenceCount": 4184,
     "dynamicCallsiteCount": 32,
     "dynamicCallsiteSummaryCount": 32,
@@ -457,7 +457,7 @@
         {
           "kind": "formatMessage",
           "path": "src/global.tsx",
-          "line": 28,
+          "line": 29,
           "column": 23,
           "symbol": "<module>",
           "defaultMessage": null,
@@ -501,7 +501,7 @@
         {
           "kind": "formatMessage",
           "path": "src/global.tsx",
-          "line": 82,
+          "line": 83,
           "column": 16,
           "symbol": "<module>",
           "defaultMessage": null,
@@ -545,7 +545,7 @@
         {
           "kind": "formatMessage",
           "path": "src/global.tsx",
-          "line": 70,
+          "line": 71,
           "column": 17,
           "symbol": "actions",
           "defaultMessage": "Refresh failed, please reload the page manually",
@@ -558,7 +558,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/global.tsx", "line": 70, "column": 17, "kind": "formatMessage" }
+            { "path": "src/global.tsx", "line": 71, "column": 17, "kind": "formatMessage" }
           ]
         }
       ]
@@ -598,7 +598,7 @@
         {
           "kind": "formatMessage",
           "path": "src/global.tsx",
-          "line": 83,
+          "line": 84,
           "column": 22,
           "symbol": "<module>",
           "defaultMessage": null,
@@ -642,7 +642,7 @@
         {
           "kind": "formatMessage",
           "path": "src/global.tsx",
-          "line": 78,
+          "line": 79,
           "column": 12,
           "symbol": "actions",
           "defaultMessage": null,
@@ -11988,7 +11988,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 320,
+          "line": 321,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -12015,7 +12015,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 320,
+              "line": 321,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -17233,7 +17233,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 45,
+          "line": 46,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17302,7 +17302,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 67,
+          "line": 68,
           "column": 19,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17371,7 +17371,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 33,
+          "line": 34,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17440,7 +17440,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 81,
+          "line": 82,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17509,7 +17509,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 59,
+          "line": 60,
           "column": 19,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17578,7 +17578,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 42,
+          "line": 43,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17647,7 +17647,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 45,
+          "line": 46,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -17716,7 +17716,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/SystemMaintenance/index.tsx",
-          "line": 33,
+          "line": 34,
           "column": 11,
           "symbol": "SystemMaintenance",
           "defaultMessage": null,
@@ -24414,7 +24414,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 291,
+          "line": 292,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Logout",
@@ -24429,7 +24429,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 291,
+              "line": 292,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -24615,7 +24615,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 260,
+          "line": 261,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Account Profile",
@@ -24639,7 +24639,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 260,
+              "line": 261,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -24713,7 +24713,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 281,
+          "line": 282,
           "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "Review Management",
@@ -24728,7 +24728,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 281,
+              "line": 282,
               "column": 20,
               "kind": "FormattedMessage"
             }
@@ -24855,7 +24855,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 265,
+          "line": 266,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "My Team",
@@ -24864,7 +24864,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 957,
+          "line": 958,
           "column": 15,
           "symbol": "renderTeamMembersForm",
           "defaultMessage": "My Team",
@@ -24873,7 +24873,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 1049,
+          "line": 1050,
           "column": 27,
           "symbol": "Team",
           "defaultMessage": "My Team",
@@ -24888,19 +24888,19 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 265,
+              "line": 266,
               "column": 14,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 957,
+              "line": 958,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 1049,
+              "line": 1050,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -27798,7 +27798,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 272,
+          "line": 273,
           "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "System Management",
@@ -27831,7 +27831,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 272,
+              "line": 273,
               "column": 20,
               "kind": "FormattedMessage"
             },
@@ -242700,7 +242700,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 262,
+          "line": 263,
           "column": 11,
           "symbol": "createTeamInfo",
           "defaultMessage": "Team created successfully.",
@@ -242715,7 +242715,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 262,
+              "line": 263,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -242783,7 +242783,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 231,
+          "line": 232,
           "column": 11,
           "symbol": "editTeamInfo",
           "defaultMessage": "Team updated successfully.",
@@ -242798,7 +242798,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 231,
+              "line": 232,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -242866,7 +242866,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 106,
+          "line": 107,
           "column": 9,
           "symbol": "getTeamInfo",
           "defaultMessage": "Failed to get details, please refresh!",
@@ -242881,7 +242881,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 106,
+              "line": 107,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -242967,7 +242967,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 665,
+          "line": 666,
           "column": 19,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Dark Logo",
@@ -242994,7 +242994,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 665,
+              "line": 666,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -243062,7 +243062,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 671,
+          "line": 672,
           "column": 23,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please upload dark logo!",
@@ -243071,7 +243071,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 681,
+          "line": 682,
           "column": 21,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please upload dark logo!",
@@ -243086,13 +243086,13 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 671,
+              "line": 672,
               "column": 23,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 681,
+              "line": 682,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -243169,7 +243169,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 464,
+          "line": 465,
           "column": 25,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team Description",
@@ -243178,7 +243178,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 477,
+          "line": 478,
           "column": 23,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team Description",
@@ -243199,13 +243199,13 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 464,
+              "line": 465,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 477,
+              "line": 478,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -243273,7 +243273,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 486,
+          "line": 487,
           "column": 27,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please input team description!",
@@ -243288,7 +243288,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 486,
+              "line": 487,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -243374,7 +243374,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 579,
+          "line": 580,
           "column": 19,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Light Logo",
@@ -243401,7 +243401,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 579,
+              "line": 580,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -243469,7 +243469,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 585,
+          "line": 586,
           "column": 23,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please upload light logo!",
@@ -243478,7 +243478,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 595,
+          "line": 596,
           "column": 21,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please upload light logo!",
@@ -243493,13 +243493,13 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 585,
+              "line": 586,
               "column": 23,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 595,
+              "line": 596,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -243567,7 +243567,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 756,
+          "line": 757,
           "column": 15,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Transparent PNG or SVG is recommended for the best display effect.",
@@ -243582,7 +243582,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 756,
+              "line": 757,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -243668,7 +243668,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 513,
+          "line": 514,
           "column": 21,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Public team information",
@@ -243695,7 +243695,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 513,
+              "line": 514,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -243763,7 +243763,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 517,
+          "line": 518,
           "column": 37,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": null,
@@ -243832,7 +243832,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 421,
+          "line": 422,
           "column": 15,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Basic Information",
@@ -243847,7 +243847,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 421,
+              "line": 422,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -243915,7 +243915,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 572,
+          "line": 573,
           "column": 15,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team Logo",
@@ -243930,7 +243930,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 572,
+              "line": 573,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -243998,7 +243998,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 502,
+          "line": 503,
           "column": 15,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team visibility and display",
@@ -244013,7 +244013,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 502,
+              "line": 503,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -244081,7 +244081,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 536,
+          "line": 537,
           "column": 21,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Apply to display on the homepage",
@@ -244096,7 +244096,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 536,
+              "line": 537,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -244164,7 +244164,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 541,
+          "line": 542,
           "column": 30,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": null,
@@ -244242,7 +244242,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 433,
+          "line": 434,
           "column": 25,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team Name",
@@ -244251,7 +244251,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 443,
+          "line": 444,
           "column": 23,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Team Name",
@@ -244272,13 +244272,13 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 433,
+              "line": 434,
               "column": 25,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 443,
+              "line": 444,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -244346,7 +244346,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 449,
+          "line": 450,
           "column": 27,
           "symbol": "renderTeamInfoForm",
           "defaultMessage": "Please input team name!",
@@ -244361,7 +244361,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 449,
+              "line": 450,
               "column": 27,
               "kind": "FormattedMessage"
             }
@@ -244488,7 +244488,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 1036,
+          "line": 1037,
           "column": 14,
           "symbol": "tabs",
           "defaultMessage": "Team Information",
@@ -244503,7 +244503,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 1036,
+              "line": 1037,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -244571,7 +244571,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 958,
+          "line": 959,
           "column": 15,
           "symbol": "renderTeamMembersForm",
           "defaultMessage": "Team Members",
@@ -244580,7 +244580,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 1043,
+          "line": 1044,
           "column": 14,
           "symbol": "Team",
           "defaultMessage": "Team Members",
@@ -244595,13 +244595,13 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 958,
+              "line": 959,
               "column": 15,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 1043,
+              "line": 1044,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -244669,7 +244669,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 224,
+          "line": 225,
           "column": 11,
           "symbol": "editTeamInfo",
           "defaultMessage": "Failed to update team information.",
@@ -244678,7 +244678,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 255,
+          "line": 256,
           "column": 11,
           "symbol": "createTeamInfo",
           "defaultMessage": "Failed to update team information.",
@@ -244693,13 +244693,13 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 224,
+              "line": 225,
               "column": 11,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 255,
+              "line": 256,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -263515,7 +263515,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 278,
+          "line": 279,
           "column": 15,
           "symbol": "uploadLogo",
           "defaultMessage": "Only image files can be uploaded!",
@@ -263536,7 +263536,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 278,
+              "line": 279,
               "column": 15,
               "kind": "formatMessage"
             }
@@ -263622,7 +263622,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 296,
+          "line": 297,
           "column": 17,
           "symbol": "uploadLogo",
           "defaultMessage": "Failed to upload team logo.",
@@ -263631,7 +263631,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 315,
+          "line": 316,
           "column": 15,
           "symbol": "uploadLogo",
           "defaultMessage": "Failed to upload team logo.",
@@ -263658,13 +263658,13 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 296,
+              "line": 297,
               "column": 17,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 315,
+              "line": 316,
               "column": 15,
               "kind": "formatMessage"
             }
@@ -263845,7 +263845,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 773,
+          "line": 774,
           "column": 13,
           "symbol": "updateRole",
           "defaultMessage": "Action failed!",
@@ -263854,7 +263854,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 861,
+          "line": 862,
           "column": 31,
           "symbol": "columns",
           "defaultMessage": "Action failed!",
@@ -263863,7 +263863,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 929,
+          "line": 930,
           "column": 25,
           "symbol": "columns",
           "defaultMessage": "Action failed!",
@@ -263890,19 +263890,19 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 773,
+              "line": 774,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 861,
+              "line": 862,
               "column": 31,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 929,
+              "line": 930,
               "column": 25,
               "kind": "formatMessage"
             }
@@ -264006,7 +264006,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 780,
+          "line": 781,
           "column": 13,
           "symbol": "updateRole",
           "defaultMessage": "Action success!",
@@ -264015,7 +264015,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 868,
+          "line": 869,
           "column": 31,
           "symbol": "columns",
           "defaultMessage": "Action success!",
@@ -264024,7 +264024,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 937,
+          "line": 938,
           "column": 25,
           "symbol": "columns",
           "defaultMessage": "Action success!",
@@ -264051,19 +264051,19 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 780,
+              "line": 781,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 868,
+              "line": 869,
               "column": 31,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 937,
+              "line": 938,
               "column": 25,
               "kind": "formatMessage"
             }
@@ -264149,7 +264149,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 824,
+          "line": 825,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Actions",
@@ -264176,7 +264176,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 824,
+              "line": 825,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -264253,7 +264253,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 965,
+          "line": 966,
           "column": 24,
           "symbol": "renderTeamMembersForm",
           "defaultMessage": "Add Member",
@@ -264274,7 +264274,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 965,
+              "line": 966,
               "column": 24,
               "kind": "FormattedMessage"
             }
@@ -265008,7 +265008,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 831,
+          "line": 832,
           "column": 19,
           "symbol": "columns",
           "defaultMessage": "Remove Member",
@@ -265029,7 +265029,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 831,
+              "line": 832,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -265106,7 +265106,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 851,
+          "line": 852,
           "column": 32,
           "symbol": "columns",
           "defaultMessage": null,
@@ -265184,7 +265184,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 850,
+          "line": 851,
           "column": 30,
           "symbol": "columns",
           "defaultMessage": null,
@@ -265280,7 +265280,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 794,
+          "line": 795,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Email",
@@ -265313,7 +265313,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 794,
+              "line": 795,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -265586,7 +265586,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 799,
+          "line": 800,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Member Name",
@@ -265607,7 +265607,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 799,
+              "line": 800,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -265675,7 +265675,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 916,
+          "line": 917,
           "column": 24,
           "symbol": "columns",
           "defaultMessage": "Re-invite",
@@ -265690,7 +265690,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 916,
+              "line": 917,
               "column": 24,
               "kind": "FormattedMessage"
             }
@@ -265767,7 +265767,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 804,
+          "line": 805,
           "column": 16,
           "symbol": "columns",
           "defaultMessage": "Role",
@@ -265788,7 +265788,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 804,
+              "line": 805,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -265874,7 +265874,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 810,
+          "line": 811,
           "column": 15,
           "symbol": "columns",
           "defaultMessage": "Admin",
@@ -265901,7 +265901,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 810,
+              "line": 811,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -266052,7 +266052,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 812,
+          "line": 813,
           "column": 15,
           "symbol": "columns",
           "defaultMessage": "Invited",
@@ -266067,7 +266067,7 @@
           "locations": [
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 812,
+              "line": 813,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -266144,7 +266144,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 818,
+          "line": 819,
           "column": 15,
           "symbol": "columns",
           "defaultMessage": "Member",
@@ -266165,7 +266165,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 818,
+              "line": 819,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -266251,7 +266251,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 814,
+          "line": 815,
           "column": 15,
           "symbol": "columns",
           "defaultMessage": "Owner",
@@ -266278,7 +266278,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 814,
+              "line": 815,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -266355,7 +266355,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 816,
+          "line": 817,
           "column": 15,
           "symbol": "columns",
           "defaultMessage": "Rejected",
@@ -266376,7 +266376,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 816,
+              "line": 817,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -266453,7 +266453,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 887,
+          "line": 888,
           "column": 19,
           "symbol": "columns",
           "defaultMessage": "Set as Admin",
@@ -266474,7 +266474,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 887,
+              "line": 888,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -266551,7 +266551,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Teams/index.tsx",
-          "line": 902,
+          "line": 903,
           "column": 19,
           "symbol": "columns",
           "defaultMessage": "Set as Member",
@@ -266572,7 +266572,7 @@
             },
             {
               "path": "src/pages/Teams/index.tsx",
-              "line": 902,
+              "line": 903,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -266640,7 +266640,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 145,
+          "line": 146,
           "column": 22,
           "symbol": "confirmModal",
           "defaultMessage": "You can create a team or join an existing team.",
@@ -266655,7 +266655,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 145,
+              "line": 146,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -266723,7 +266723,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 184,
+          "line": 185,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "Create Team",
@@ -266738,7 +266738,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 184,
+              "line": 185,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -266806,7 +266806,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 159,
+          "line": 160,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "Join Team",
@@ -266821,7 +266821,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 159,
+              "line": 160,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -266889,7 +266889,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 141,
+          "line": 142,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "You are not in any team",
@@ -266904,7 +266904,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 141,
+              "line": 142,
               "column": 20,
               "kind": "formatMessage"
             }
