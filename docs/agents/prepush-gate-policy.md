@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
-lastReviewedNote: 'Reviewed for Next Issue #962: the semantic route contract expands from 49 to 50 IDs without changing gate ownership, browser trust, or release-proof policy.'
+lastReviewedCommit: 87a482592fd70e689df4798989b62e7a7a1da40d
+lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle regressions stay inside the existing focused OAuth plus full pre-push gate; gate ownership and browser trust are unchanged.'
 ---
 
 # Pre-Push Gate Policy

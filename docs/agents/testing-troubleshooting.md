@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
-lastReviewedNote: 'Reviewed for Next Issue #962: semantic evidence troubleshooting now reflects the 50-ID route contract; no recovery or trust-boundary rule changes.'
+lastReviewedCommit: 87a482592fd70e689df4798989b62e7a7a1da40d
+lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle failures are diagnosed through the existing focused OAuth fixtures and live Dev flow; no recovery rule changes.'
 ---
 
 # Testing Troubleshooting

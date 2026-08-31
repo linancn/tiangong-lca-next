@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
-lastReviewedNote: 'Reviewed for Next Issue #962: focused OAuth and route-contract proof expands the matrix to 50 IDs without creating a deferred coverage queue.'
+lastReviewedCommit: 87a482592fd70e689df4798989b62e7a7a1da40d
+lastReviewedNote: 'Reviewed for Next Issue #964: hosted opaque-handle and unsafe-input cases are covered now and create no deferred testing queue.'
 ---
 
 # Testing Execution State
