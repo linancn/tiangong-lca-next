@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: c4e259ac1b15b83db4e1ff7c0205cdd0e844921b
-lastReviewedNote: 'Reviewed for Next Issue #964: the opaque authorization-handle repair uses the existing bootstrap, focused OAuth tests, build, and checked-push workflow.'
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
+lastReviewedNote: 'Reviewed for Next Issue #971: `pnpm start` and `pnpm start:dev` now prove the selected Dev Supabase target despite Umi preloading main `.env`; explicit per-key build overrides remain supported.'
 ---
 
 # Development Bootstrap
@@ -240,7 +240,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 
 ## Command Rules
 
-- `pnpm start` and `pnpm start:dev` are equivalent
+- `pnpm start` and `pnpm start:dev` are equivalent. Both select `.env.development*` when Umi has preloaded exact main-file defaults; a distinct explicit `SUPABASE_URL` or `SUPABASE_PUBLISHABLE_KEY` supplied by the shell/build remains higher priority per key
 - Edge mirror refresh accepts only a full reviewed commit SHA, records the resolved source in `docker/volumes/functions/.source-revision.json`, deletes stale mirror files, and must be rerun once with no resulting tracked change before handoff
 - documentation capture is a separate local operator workflow: this repository supplies only `config/docs-capture/profile.v1.json`, stable semantic locators, and its exact UI runtime
 - the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces

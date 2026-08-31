@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: c4e259ac1b15b83db4e1ff7c0205cdd0e844921b
-lastReviewedNote: 'Reviewed for Next Issue #964: OAuth service and bridge tests share hosted opaque and unsafe fixtures while preserving existing service/component/integration patterns.'
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
+lastReviewedNote: 'Reviewed for Next Issue #971: config tests distinguish Umi-preloaded main defaults from distinct per-key build overrides without changing service/component/integration patterns.'
 ---
 
 # Testing Patterns Reference
@@ -80,6 +80,7 @@ lastReviewedNote: 'Reviewed for Next Issue #964: OAuth service and bridge tests 
 - retain parallel unit execution on macOS, but start Jest workers with concurrent recompilation and Maglev disabled and recycle a unit worker after it crosses `512MB`; this avoids the documented Node 24/V8 stale-left-trimmed-pointer failure while allowing the slow-first suites to overlap ordinary work
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
+- when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 
 ## Reusable Helpers
 

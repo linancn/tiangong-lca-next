@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: c4e259ac1b15b83db4e1ff7c0205cdd0e844921b
-lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle regressions stay inside the existing focused OAuth plus full pre-push gate; gate ownership and browser trust are unchanged.'
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
+lastReviewedNote: 'Reviewed for Next Issue #971: Dev environment decontamination uses focused config proof plus the existing ordinary full gate and real browser smoke; gate ownership and browser trust are unchanged.'
 ---
 
 # Pre-Push Gate Policy
