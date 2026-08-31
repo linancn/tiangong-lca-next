@@ -22,6 +22,7 @@ declare const REACT_APP_ENV: 'test' | 'dev' | 'pre' | 'main' | false;
 declare namespace Auth {
   type CurrentUser = {
     name?: string;
+    organization?: string;
     avatar?: string;
     userid?: string;
     teamid?: string;
@@ -77,6 +78,7 @@ declare namespace Auth {
 
   type ProfileUpdateParams = {
     name?: string;
+    organization?: string;
     type?: string;
   };
 }

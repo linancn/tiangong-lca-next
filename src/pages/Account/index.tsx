@@ -4,12 +4,18 @@ import {
   cognitoChangeEmail,
   cognitoChangePassword,
   cognitoSignUp,
-  getCurrentUser,
+  getAccountProfile,
   login,
   setProfile,
 } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
-import { IdcardOutlined, LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  BankOutlined,
+  IdcardOutlined,
+  LockOutlined,
+  MailOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Grid, Input, Spin, Tabs, theme } from 'antd';
@@ -62,6 +68,11 @@ const Profile: FC = () => {
           try {
             const msg = await setProfile(values);
             if (msg.status === 'ok') {
+              const organization = values.organization?.trim() ?? '';
+              formRefEdit.current?.setFieldsValue({ organization });
+              setInitData((current) =>
+                current ? { ...current, ...values, organization } : current,
+              );
               message.success(
                 intl.formatMessage({
                   id: 'pages.account.editsuccess',
@@ -73,6 +84,7 @@ const Profile: FC = () => {
                 currentUser: {
                   ...s?.currentUser,
                   name: values.name,
+                  organization,
                 },
               }));
             } else {
@@ -113,6 +125,41 @@ const Profile: FC = () => {
           }
         >
           <Input prefix={<UserOutlined />} />
+        </Form.Item>
+        <Form.Item
+          label={
+            <FormattedMessage
+              id='pages.account.profile.organization'
+              defaultMessage='Organization'
+            />
+          }
+          name={'organization'}
+          tooltip={
+            <FormattedMessage
+              id='pages.account.profile.organization.tooltip'
+              defaultMessage='The organization or institution you belong to'
+            />
+          }
+          rules={[
+            {
+              max: 200,
+              message: (
+                <FormattedMessage
+                  id='pages.account.profile.organization.maxLength'
+                  defaultMessage='Organization must not exceed 200 characters'
+                />
+              ),
+            },
+          ]}
+        >
+          <Input
+            prefix={<BankOutlined />}
+            maxLength={200}
+            placeholder={intl.formatMessage({
+              id: 'pages.account.profile.organization.placeholder',
+              defaultMessage: 'Enter your organization',
+            })}
+          />
         </Form.Item>
       </ProForm>
     </Flex>
@@ -698,7 +745,7 @@ const Profile: FC = () => {
     const loadCurrentUser = async () => {
       setSpinning(true);
       try {
-        const res = await getCurrentUser();
+        const res = await getAccountProfile();
         if (!active) {
           return;
         }

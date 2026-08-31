@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 897d45a4142cac4f5c393db06aa79a3c12068f0e
 lastReviewedNote: 'Reviewed after integrating current dev: exact-toolchain, SDK 0.2.0, review-validation, and i18n cases create no open queue; full closure remains gate-owned.'
 ---
 

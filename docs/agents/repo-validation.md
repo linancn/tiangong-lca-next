@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 897d45a4142cac4f5c393db06aa79a3c12068f0e
 lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm and the unmocked seven-factory SDK 0.2.0 contract join the latest review-validation/i18n tests under the existing proof matrix.'
 related:
   - ../AGENTS.md

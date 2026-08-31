@@ -43,8 +43,8 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 897d45a4142cac4f5c393db06aa79a3c12068f0e
 lastReviewedNote: 'Reviewed the merged SDK package proof and current dev review-validation/i18n coverage; neither reopens broader testing-strategy work.'
 ---
 

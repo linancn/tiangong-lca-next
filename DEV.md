@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 232a338aea7ae5e0cbfa061a0ba2f77c62bcde99
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 897d45a4142cac4f5c393db06aa79a3c12068f0e
 lastReviewedNote: 'Reviewed after integrating current dev: bootstrap and gates retain exact Node 24.19.0, pnpm 11.23.0, SDK 0.2.0, and TypeScript 7.0.2 while the normal focused/full workflow remains unchanged.'
 ---
 

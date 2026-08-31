@@ -13,7 +13,7 @@ import {
   cognitoChangeEmail,
   cognitoChangePassword,
   cognitoSignUp,
-  getCurrentUser,
+  getAccountProfile,
   login,
   setProfile,
 } from '@/services/auth';
@@ -63,6 +63,7 @@ jest.mock('@umijs/max', () => ({
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
+  BankOutlined: () => <span data-testid='icon-bank' />,
   IdcardOutlined: () => <span data-testid='icon-idcard' />,
   LockOutlined: () => <span data-testid='icon-lock' />,
   MailOutlined: () => <span data-testid='icon-mail' />,
@@ -442,13 +443,14 @@ jest.mock('@/services/auth', () => ({
   cognitoChangeEmail: jest.fn(),
   cognitoChangePassword: jest.fn(),
   cognitoSignUp: jest.fn(),
-  getCurrentUser: jest.fn(),
+  getAccountProfile: jest.fn(),
   login: jest.fn(),
   setProfile: jest.fn(),
 }));
 
 const mockSetProfile = setProfile as jest.MockedFunction<any>;
-const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<any>;
+const mockGetAccountProfile = getAccountProfile as jest.MockedFunction<any>;
+const mockGetCurrentUser = mockGetAccountProfile;
 const mockChangePassword = changePassword as jest.MockedFunction<any>;
 const mockChangeEmail = changeEmail as jest.MockedFunction<any>;
 const mockCognitoChangePassword = cognitoChangePassword as jest.MockedFunction<any>;
@@ -477,10 +479,11 @@ describe('Account profile page (unit)', () => {
     jest.clearAllMocks();
     mockSetInitialState.mockReset();
 
-    mockGetCurrentUser.mockResolvedValue({
+    mockGetAccountProfile.mockResolvedValue({
       id: 'user-1',
       email: 'user@example.com',
       name: 'Alice',
+      organization: 'Tsinghua University',
       role: 'admin',
     } as any);
 
@@ -498,7 +501,7 @@ describe('Account profile page (unit)', () => {
 
     renderWithProviders(<Profile />);
 
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockGetAccountProfile).toHaveBeenCalledTimes(1));
     await waitFor(() =>
       expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
     );
@@ -514,8 +517,14 @@ describe('Account profile page (unit)', () => {
     const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
     expect(nicknameField.value).toBe('Alice');
 
+    const organizationField = screen.getByLabelText('Organization') as HTMLInputElement;
+    expect(organizationField.value).toBe('Tsinghua University');
+    expect(organizationField).toHaveAttribute('maxlength', '200');
+
     await user.clear(nicknameField);
     await user.type(nicknameField, 'Alice Prime');
+    await user.clear(organizationField);
+    await user.type(organizationField, 'TianGong Initiative');
 
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
@@ -525,6 +534,7 @@ describe('Account profile page (unit)', () => {
       expect.objectContaining({
         email: 'user@example.com',
         name: 'Alice Prime',
+        organization: 'TianGong Initiative',
         role: 'Unknown role (admin)',
       }),
     );
@@ -535,12 +545,13 @@ describe('Account profile page (unit)', () => {
     const updater = mockSetInitialState.mock.calls[0][0];
     const updatedState = updater({ currentUser: { name: 'Old Name', locale: 'en-US' } });
     expect(updatedState.currentUser.name).toBe('Alice Prime');
+    expect(updatedState.currentUser.organization).toBe('TianGong Initiative');
     expect(updatedState.currentUser.locale).toBe('en-US');
   });
 
   it('ignores late current-user responses after the page unmounts', async () => {
     let resolveCurrentUser: (value: any) => void = () => {};
-    mockGetCurrentUser.mockImplementationOnce(
+    mockGetAccountProfile.mockImplementationOnce(
       () =>
         new Promise((resolve) => {
           resolveCurrentUser = resolve;
@@ -549,7 +560,7 @@ describe('Account profile page (unit)', () => {
 
     const { unmount } = renderWithProviders(<Profile />);
 
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockGetAccountProfile).toHaveBeenCalledTimes(1));
 
     unmount();
 
