@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 browser tests use explicit navigation/runtime boundaries without changing OAuth, team, locale, or modified-at-desc Process behavior.'
+lastReviewedCommit: 4098838128bcbaa9a9f5f9ed87137bcfdbd11e3b
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 browser/runtime boundaries and descriptive account organization metadata do not change repository ownership, authorization, delivery, or modified-at-desc Process behavior.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

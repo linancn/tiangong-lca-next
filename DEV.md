@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: bootstrap and proof commands now describe Jest 30, Umi 4.7.9, Electron 44.1, the Playwright 1.62.1 image contract, and the unchanged exact Node/pnpm/TypeScript/TIDAS baselines.'
+lastReviewedCommit: 4098838128bcbaa9a9f5f9ed87137bcfdbd11e3b
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: bootstrap/proof commands cover the upgraded Jest/Umi/Electron/Playwright stack, while account organization keeps existing startup, Supabase Auth, and environment workflows.'
 ---
 
 # Development Bootstrap

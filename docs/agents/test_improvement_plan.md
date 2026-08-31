@@ -45,7 +45,7 @@ checkPaths:
   - Dockerfile.app
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: browser, continuation, jsdom runtime, and source-mapped coverage findings are closed through reusable boundaries without a new queue.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser, continuation, jsdom, coverage, profile-service, and account-page findings close through existing strategy without a new queue or browser matrix.'
 ---
 
 # Testing Strategy

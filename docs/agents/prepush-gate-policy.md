@@ -44,7 +44,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 keeps one full-gate owner while source-mapped branch normalization excludes only synthetic no-source slots and retains 100% enforcement.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: source-mapped Jest 30 coverage and organization profile regressions retain one full-gate owner and unchanged 100% enforcement.'
 ---
 
 # Pre-Push Gate Policy

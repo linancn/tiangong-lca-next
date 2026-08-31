@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 validation retains 100% source-mapped coverage while explicit browser runtime inputs, sorting, geometry, and receipt contracts remain exact.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 keeps 100% source-mapped coverage, and profile service/account regressions cover organization read, trim, clear, refresh fallback, and UI state.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

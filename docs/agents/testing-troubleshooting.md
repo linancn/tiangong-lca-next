@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: the runbook covers service defaults, geometry, browser globals, and Jest 30 source-mapped coverage without weakening proof.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: service defaults, geometry, browser globals, source-mapped coverage, and organization failures use existing fail-closed diagnostics.'
 ---
 
 # Testing Troubleshooting

@@ -42,7 +42,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: sorting, geometry, continuation, browser globals, and source-mapped Jest 30 coverage are closed; no testing queue is open.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest/browser migration and organization load/update/clear/refresh/missing-profile paths are closed with no deferred testing queue.'
 ---
 
 # Testing Execution State

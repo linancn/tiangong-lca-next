@@ -44,7 +44,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
 lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
-lastReviewedNote: 'Reviewed for Next Issue #982: atomic geometry, explicit browser-runtime inputs, and fail-closed source-mapped coverage retain exact service and resume contracts.'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: atomic geometry, explicit runtime inputs, fail-closed coverage, and organization profile proof all reuse existing service/page/integration patterns.'
 ---
 
 # Testing Patterns Reference
