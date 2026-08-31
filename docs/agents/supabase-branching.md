@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: dependency, Jest, Electron, and Playwright upgrades leave frontend environment selection, closed qualification, production-backed E2E, and external OAuth ownership unchanged.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
+lastReviewedNote: 'Reviewed for Next Issue #982: the explicit browser-navigation test boundary leaves frontend environment selection, OAuth callback safety, closed qualification, and external OAuth ownership unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

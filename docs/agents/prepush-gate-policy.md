@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
-lastReviewedNote: 'Reviewed for Next Issue #982: corrected Process sorting, atomic toolbar geometry, and exact qualification resume remain focused browser infrastructure and do not change one-full-gate ownership.'
+lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
+lastReviewedNote: 'Reviewed for Next Issue #982: the failed final gate correctly exposed Jest 30/jsdom 26 test-boundary drift; its focused repair does not change one-full-gate ownership.'
 ---
 
 # Pre-Push Gate Policy

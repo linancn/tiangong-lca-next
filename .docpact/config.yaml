@@ -606,6 +606,8 @@ rules:
         kind: app-runtime
       - path: src/utils/appUrl.ts
         kind: app-runtime
+      - path: src/utils/browserNavigation.ts
+        kind: app-runtime
       - path: src/utils/localeFormatting.ts
         kind: ui-locale
       - path: src/utils/reviewSubmitGateGuidance.ts

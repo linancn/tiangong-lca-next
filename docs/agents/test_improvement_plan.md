@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
-lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix exposed a Process fixture error and a cross-frame geometry artifact, while live continuation exposed a receipt-mode defect; all are closed without a new strategy queue.'
+lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
+lastReviewedNote: 'Reviewed for Next Issue #982: browser, continuation, and Jest 30/jsdom 26 migration findings are closed through reusable boundaries without opening a new strategy queue.'
 ---
 
 # Testing Strategy
@@ -69,6 +69,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix exposed a Pr
 - exact committed browser qualification treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
 - semantic-harness qualification is content-addressed credential-free proof run manually on the open business PR before `release:to-dev` when risk warrants it; it builds against a fixed `.invalid` backend profile and intercepts every backend request, so deployment-target `.env` is not part of the semantic identity. Canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, while the key also covers shared helpers plus Git mode/type. `release:to-dev --apply` and every later release stage run no browser and write no browser proof
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
+- Jest/jsdom dependency upgrades keep browser globals platform-owned: navigation mutations cross one explicit `Location` boundary, SSR/storage/event-target branches accept explicit inputs, and tests never delete or redefine `window`/`location`
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint

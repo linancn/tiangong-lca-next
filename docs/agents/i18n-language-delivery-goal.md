@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
-lastReviewedNote: 'Reviewed for Next Issue #982: atomic responsive-toolbar geometry evidence preserves the reusable 50-ID/browser trust boundary on the exact Playwright 1.62.1 package and digest-pinned image.'
+lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
+lastReviewedNote: 'Reviewed for Next Issue #982: atomic geometry and explicit nullable runtime event targets preserve the reusable 50-ID/browser trust boundary on Playwright 1.62.1.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

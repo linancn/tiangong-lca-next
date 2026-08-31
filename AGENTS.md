@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible graph preserves the exact runtime baselines and existing modified-at-desc Process default, while resumable qualification stays bound to its original mode and proof destination.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
+lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 browser tests use explicit navigation/runtime boundaries without changing OAuth, team, locale, or modified-at-desc Process behavior.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
