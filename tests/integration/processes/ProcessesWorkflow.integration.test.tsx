@@ -8,7 +8,7 @@
  *
  * User journey covered:
  * 1. Owner lands on /mydata processes list, team metadata resolves, and rows render from getProcessTableAll.
- * 2. Owner imports JSON to seed create drawer, triggers create flow, and ProTable reloads.
+ * 2. Owner imports JSON to seed create drawer, triggers create flow, and ProTable reloads page 1.
  * 3. Owner opens inline edit drawer, saves changes, and observes another table reload.
  * 4. Owner expands review detail from the actions dropdown.
  * 5. Owner can jump from the table toolbar to the analysis page.
@@ -246,9 +246,9 @@ jest.mock('@/pages/Processes/Components/create', () => {
           <div data-testid={`process-create-panel-${actionType}`}>
             <button
               type='button'
-              onClick={() => {
+              onClick={async () => {
                 message.success(`${current.trigger} success`);
-                actionRef?.current?.reload?.();
+                await actionRef?.current?.reload?.(true);
                 setOpen(false);
               }}
             >
@@ -614,6 +614,47 @@ describe('Processes workflow integration', () => {
     expect(screen.queryByText('Solar panel manufacturing')).not.toBeInTheDocument();
     expect(getProcessTableAll.mock.calls[1][3]).toBe('tg');
     expect(getProcessTableAll.mock.calls[1][4]).toBe('team-open');
+  });
+
+  it('returns to page one and renders a newly created process without a search', async () => {
+    const user = userEvent.setup();
+    const pageTwoRow = {
+      ...baseRow,
+      id: 'process-page-2',
+      name: 'Existing page two process',
+    };
+    const createdRow = {
+      ...baseRow,
+      id: '4c221a23-4c69-4da6-86e8-6171b9550c88',
+      version: '01.01.000',
+      name: 'Newly created process',
+      modifiedAt: '2026-08-31T08:00:00Z',
+    };
+
+    getProcessTableAll.mockImplementation(async (params: { current?: number }) => {
+      if (params.current === 2) {
+        return { data: [pageTwoRow], page: 2, success: true, total: 20 };
+      }
+      const row = getProcessTableAll.mock.calls.length >= 3 ? createdRow : baseRow;
+      return { data: [row], page: 1, success: true, total: 20 };
+    });
+
+    renderWithProviders(<ProcessesPage />);
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 2 });
+    });
+    expect(await screen.findByText('Existing page two process')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Create Process' }));
+    await user.click(screen.getByRole('button', { name: 'Submit Process' }));
+
+    expect(await screen.findByText('Newly created process')).toBeInTheDocument();
+    expect(screen.queryByText('Existing page two process')).not.toBeInTheDocument();
+    expect(getProcessTableAll.mock.calls.map((call: any[]) => call[0].current)).toEqual([1, 2, 1]);
+    expect(getProcessTablePgroongaSearch).not.toHaveBeenCalled();
+    expect(process_hybrid_search).not.toHaveBeenCalled();
   });
 
   it('keeps page identity, version, and modification time stable across 1 -> 2 -> 1', async () => {

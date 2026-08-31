@@ -107,8 +107,8 @@ const ProcessCreate: FC<CreateProps> = ({
     }
   };
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
+  const reloadFromFirstPage = useCallback(async () => {
+    await actionRef.current?.reload(true);
   }, [actionRef]);
 
   const handletExchangeDataCreate = (data: ProcessExchangeData) => {
@@ -388,7 +388,7 @@ const ProcessCreate: FC<CreateProps> = ({
                 );
                 formRefCreate.current?.resetFields();
                 setDrawerVisible(false);
-                reload();
+                await reloadFromFirstPage();
               } else {
                 message.error(
                   isSupabaseDuplicateKeyError(result.error)
