@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
-lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher cannot silently retain Umi-loaded main defaults; distinct explicit build overrides, qualification isolation, and external OAuth ownership remain unchanged.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: organization is written through Auth user metadata and mirrored by the database-owned sync contract; Supabase environment and branch bindings are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

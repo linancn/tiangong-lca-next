@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: `pnpm start` and `pnpm start:dev` now prove the selected Dev Supabase target despite Umi preloading main `.env`; explicit per-key build overrides remain supported.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: account organization uses the existing Supabase Auth client and account page; local startup, environment selection, and contributor workflow are unchanged.'
 ---
 
 # Development Bootstrap

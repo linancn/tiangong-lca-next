@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher selects `.env.development*` even after Umi preloads exact main-file defaults, while distinct explicit overrides keep priority.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: account organization remains descriptive Auth metadata and does not change repository ownership, authorization, delivery, or runtime boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

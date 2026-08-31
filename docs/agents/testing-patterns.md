@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: config tests distinguish Umi-preloaded main defaults from distinct per-key build overrides without changing service/component/integration patterns.'
+lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
+lastReviewedNote: 'Reviewed for Next Issue #983: organization coverage follows the existing Auth-service, account-page unit, and workflow-integration patterns without adding a new test pattern.'
 ---
 
 # Testing Patterns Reference
