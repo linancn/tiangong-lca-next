@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: tests now use atomic visual geometry and explicit Jest 30/jsdom 26 browser-runtime inputs while existing service and resume contracts remain exact.'
+lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
+lastReviewedNote: 'Reviewed for Next Issue #982: atomic geometry, explicit browser-runtime inputs, and fail-closed source-mapped coverage retain exact service and resume contracts.'
 ---
 
 # Testing Patterns Reference
@@ -84,6 +84,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: tests now use atomic visual geo
 - when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
 - when a browser assertion compares several rectangles inside an opening Drawer, Modal, or responsive toolbar, read all rectangles in one in-page evaluation and poll the complete invariant. Sort by rendered coordinates when the contract is visual order; sequential locator `boundingBox()` calls can sample different animation frames, and DOM order is not a horizontal-layout contract
 - Jest 30/jsdom 26 owns non-configurable `window` and `location` objects. Pass mock `Location` methods through `src/utils/browserNavigation.ts`, pass nullable event-target/storage/window inputs to pure runtime helpers, and use `history.pushState` for URL state; never delete or redefine the jsdom globals. jest-dom 7 style expectations use computed normalized colors such as `rgb(...)`, not named-color serialization
+- Jest 30's Babel report may add an alternate slot without source coordinates for an `if` that has no `else`. Keep Babel coverage for Umi/esbuild source-map fidelity; let Jest enforce 100% statements/functions/lines, then let `test:coverage:assert-full` exclude only that exact source-less `if` alternate shape and require 100% of every source-mapped branch. Any other missing map, mismatched path count, invalid hit count, or uncovered source-mapped branch fails closed
 - continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
 
 ## Reusable Helpers

@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: browser, continuation, and Jest 30/jsdom 26 migration findings are closed through reusable boundaries without opening a new strategy queue.'
+lastReviewedCommit: 42e076fb34ad3805b850ffc2f053473d39bc2f90
+lastReviewedNote: 'Reviewed for Next Issue #982: browser, continuation, jsdom runtime, and source-mapped coverage findings are closed through reusable boundaries without a new queue.'
 ---
 
 # Testing Strategy
@@ -70,6 +70,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: browser, continuation, and Jest
 - semantic-harness qualification is content-addressed credential-free proof run manually on the open business PR before `release:to-dev` when risk warrants it; it builds against a fixed `.invalid` backend profile and intercepts every backend request, so deployment-target `.env` is not part of the semantic identity. Canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, while the key also covers shared helpers plus Git mode/type. `release:to-dev --apply` and every later release stage run no browser and write no browser proof
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
 - Jest/jsdom dependency upgrades keep browser globals platform-owned: navigation mutations cross one explicit `Location` boundary, SSR/storage/event-target branches accept explicit inputs, and tests never delete or redefine `window`/`location`
+- Jest 30 coverage keeps the established 100% product contract by separating source-mapped executable branches from Babel/Istanbul's new source-less synthetic `if` alternates. The normalizer is fail-closed for every other unmapped shape and has direct positive, missed-branch, and malformed-map contracts
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
