@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix exposed an incorrect Process fixture and live continuation exposed a receipt-mode defect; both are closed inside existing focused contracts without a new strategy queue.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix exposed a Process fixture error and a cross-frame geometry artifact, while live continuation exposed a receipt-mode defect; all are closed without a new strategy queue.'
 ---
 
 # Testing Strategy

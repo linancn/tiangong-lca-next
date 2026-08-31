@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
-lastReviewedNote: 'Reviewed for Next Issue #982: the reusable language Goal keeps its 50-ID/browser trust boundary while advancing the exact Playwright package and digest-pinned image contract to 1.62.1.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: atomic responsive-toolbar geometry evidence preserves the reusable 50-ID/browser trust boundary on the exact Playwright 1.62.1 package and digest-pinned image.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

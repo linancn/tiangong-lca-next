@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: the runbook now distinguishes an incorrect table fixture from real runtime drift and keeps qualification receipts bound to mode/offline/proof identity.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: the runbook distinguishes service-default fixture drift and cross-frame geometry artifacts from runtime regressions while preserving exact qualification receipt identity.'
 ---
 
 # Testing Troubleshooting
@@ -87,6 +87,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | a real antd 6 Form/List test hangs after assertions finish | a native `worker_threads` MessageChannel or observer shim retained an event-loop handle | use the repository's browser-like microtask MessageChannel and inert ResizeObserver from `tests/setupTests.jsx`, then rerun the narrow file with `--detectOpenHandles`; do not hide the handle with force exit |
 | a locale switch replaces the app with a `drawImage` zero-size canvas error | ProLayout received truthy but empty `waterMarkProps`, causing antd 6 Watermark to render without usable content | omit `waterMarkProps` entirely until the product owns real watermark content; prove the affected mounted locale and Drawer flows in the semantic browser harness |
 | a browser assertion finds the state marker but not its Drawer or Modal ancestor | the test still targets an antd 5/private structural class that changed in antd 6 | pass a project-owned class through the component's public semantic `classNames` slot and locate that class plus the state marker; do not rename the assertion to another private `.ant-*` class |
+| a full browser qualification reports overlapping horizontal toolbar icons but focused repeats pass | sequential `boundingBox()` calls sampled different Drawer-animation frames, or the assertion treated upstream DOM order as rendered left-to-right order | atomically read the root, table, and every icon rectangle in one browser evaluation; poll aligned/contained/non-overlapping as one invariant and sort by rendered x coordinate. Keep exact icon count, boundary, alignment, non-overlap, and tooltip checks; do not add retries or weaken the layout contract |
 | focused qualification readiness blocks the first system-status RPC as external | Playwright started the default `start:main` bundle while the request guard expected the fixed qualification simulator origin | compile and serve the `qualification` frontend profile on loopback, set `E2E_EXTERNAL_SERVER=true`, and keep the simulator enabled for both readiness and test contexts; never allowlist the real backend request |
 | the controller returns `pnpm e2e:release:resume` but that command reports `E2E_UNKNOWN_COMMAND` | the public no-argument resume route is missing from the parser command allowlist even though execution supports it | restore the empty `resume` option set and its positive parser contract; do not expose receipt internals or replace the controller continuation with a reconstructed command |
 | qualification returns `pnpm e2e:release:resume` but the receipt is rejected or resumes as a normal release | the receipt tag validator omitted the generated `-qualification` suffix, or invocation serialization dropped qualification/proof identity | require exact `-main`/`-qualification` tag-to-mode matching, persist the absolute proof path, and route resumed qualification through its finalizer; an offline receipt must remain offline and may require a new online qualification rather than mutating the saved invocation |

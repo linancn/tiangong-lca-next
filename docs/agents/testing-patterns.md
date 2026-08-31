@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow demonstrates exact service-default table assertions and exact mode/proof binding for resumable qualification without weakening either contract.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: browser geometry evidence now samples one animation frame and compares visual order, while service-default sorting and resumable qualification remain exact.'
 ---
 
 # Testing Patterns Reference
@@ -82,6 +82,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow d
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 - when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
+- when a browser assertion compares several rectangles inside an opening Drawer, Modal, or responsive toolbar, read all rectangles in one in-page evaluation and poll the complete invariant. Sort by rendered coordinates when the contract is visual order; sequential locator `boundingBox()` calls can sample different animation frames, and DOM order is not a horizontal-layout contract
 - continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
 
 ## Reusable Helpers

@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: the corrected Process fixture and exact qualification-resume repair remain focused browser infrastructure work and do not change one-full-gate ownership.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: corrected Process sorting, atomic toolbar geometry, and exact qualification resume remain focused browser infrastructure and do not change one-full-gate ownership.'
 ---
 
 # Pre-Push Gate Policy

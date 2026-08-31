@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
-lastReviewedNote: 'Reviewed for Next Issue #982: browser proof now requires the existing modified-at-desc Process first request, while qualification receipts preserve main/qualification mode, offline policy, and proof destination across argument-free resume.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 19afd78a63aef93b60f46f8762e37ac1638a4231
+lastReviewedNote: 'Reviewed for Next Issue #982: browser proof requires modified-at-desc Process requests and atomic toolbar geometry, while receipts preserve mode, offline policy, and proof destination across resume.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
