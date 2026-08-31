@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
+lastReviewedCommit: db1965b0
 lastReviewedNote: 'Reviewed for Next Issue #964: the opaque authorization-handle repair uses the existing bootstrap, focused OAuth tests, build, and checked-push workflow.'
 ---
 

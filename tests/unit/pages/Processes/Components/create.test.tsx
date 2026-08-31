@@ -252,6 +252,7 @@ describe('ProcessCreate component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     actionRef.current.reload.mockClear();
+    actionRef.current.reload.mockResolvedValue(undefined);
     mockCreateProcess.mockResolvedValue({ data: { id: 'generated-id' } });
     mockCreateProcessVersion.mockResolvedValue({ data: { id: 'generated-id' } });
   });
@@ -284,7 +285,38 @@ describe('ProcessCreate component', () => {
 
     expect(mockCreateProcess).toHaveBeenCalledWith('generated-id', expect.any(Object));
     expect(mockAntdMessage.success).toHaveBeenCalled();
-    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
+  });
+
+  it('waits for the first-page reload before completing a successful submission', async () => {
+    let resolveReload!: () => void;
+    actionRef.current.reload.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveReload = resolve;
+        }),
+    );
+
+    render(<ProcessCreate {...baseProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'create' }));
+
+    let submissionSettled = false;
+    let submission: Promise<void> | undefined;
+    await act(async () => {
+      submission = proFormApi?.submit().then(() => {
+        submissionSettled = true;
+      });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(actionRef.current.reload).toHaveBeenCalledWith(true));
+    expect(submissionSettled).toBe(false);
+
+    await act(async () => {
+      resolveReload();
+      await submission;
+    });
+    expect(submissionSettled).toBe(true);
   });
 
   it('prevents submission when allocated fraction exceeds 100%', async () => {
@@ -462,6 +494,36 @@ describe('ProcessCreate component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  it('reloads the first page after a copied process is saved', async () => {
+    mockGetProcessDetail.mockResolvedValue({
+      data: {
+        json: {
+          processDataSet: {},
+        },
+      },
+    });
+    mockGenProcessFromData.mockReturnValue({
+      administrativeInformation: {
+        publicationAndOwnership: {},
+      },
+      exchanges: {
+        exchange: [],
+      },
+    });
+
+    render(<ProcessCreate {...baseProps} actionType='copy' id='process-1' version='01.00.000' />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'copy-icon' }));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+
+    await act(async () => {
+      await proFormApi?.submit();
+    });
+
+    expect(mockCreateProcess).toHaveBeenCalledWith('generated-id', expect.any(Object));
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
   });
 
   it('handles tab snapshots, lcia results, and createVersion save errors', async () => {
@@ -656,6 +718,7 @@ describe('ProcessCreate component', () => {
     await waitFor(() =>
       expect(mockCreateProcessVersion).toHaveBeenCalledWith('', '', expect.anything()),
     );
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
   });
 
   it('opens automatically from imported data and reuses the imported UUID on submit', async () => {
