@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
-lastReviewedNote: 'Reviewed for Next Issue #982: the descending Process sort and exact qualification-resume repair remain focused browser infrastructure work and do not change one-full-gate ownership.'
+lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
+lastReviewedNote: 'Reviewed for Next Issue #982: the corrected Process fixture and exact qualification-resume repair remain focused browser infrastructure work and do not change one-full-gate ownership.'
 ---
 
 # Pre-Push Gate Policy

@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
-lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow demonstrates explicit table defaults and exact mode/proof binding for resumable qualification without weakening either contract.'
+lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
+lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow demonstrates exact service-default table assertions and exact mode/proof binding for resumable qualification without weakening either contract.'
 ---
 
 # Testing Patterns Reference
@@ -81,7 +81,7 @@ lastReviewedNote: 'Reviewed for Next Issue #982: the upgraded browser workflow d
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
-- when a Table/ProTable dependency upgrade changes the first request in only one browser, preserve the intended product order through an explicit `defaultSortOrder`, assert that column contract in Jest, and keep the exact audited first RPC body in browser proof instead of accepting a browser-dependent fallback
+- when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
 - continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
 
 ## Reusable Helpers

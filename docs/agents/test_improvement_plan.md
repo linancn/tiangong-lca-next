@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
-lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix caught the Process sort drift and live continuation exposed a receipt-mode defect; both are closed inside existing focused contracts without a new strategy queue.'
+lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
+lastReviewedNote: 'Reviewed for Next Issue #982: the browser matrix exposed an incorrect Process fixture and live continuation exposed a receipt-mode defect; both are closed inside existing focused contracts without a new strategy queue.'
 ---
 
 # Testing Strategy

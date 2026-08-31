@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: a5d0195b8bae77c79b1704f7978bd3ff07d2ae09
-lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible graph preserves the exact runtime baselines, explicitly keeps descending Process name sort, and binds resumable qualification to its original mode and proof destination.'
+lastReviewedCommit: 9b8c3d1e1407dc23d4c583870dadf8b6b8dd9829
+lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible graph preserves the exact runtime baselines and existing modified-at-desc Process default, while resumable qualification stays bound to its original mode and proof destination.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
