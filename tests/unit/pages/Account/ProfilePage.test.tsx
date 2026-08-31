@@ -549,6 +549,28 @@ describe('Account profile page (unit)', () => {
     expect(updatedState.currentUser.locale).toBe('en-US');
   });
 
+  it('normalizes a missing organization when the account profile is unavailable', async () => {
+    mockGetAccountProfile.mockResolvedValueOnce(null);
+    const user = userEvent.setup();
+
+    renderWithProviders(<Profile />);
+
+    await waitFor(() => expect(mockGetAccountProfile).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('spin').getAttribute('data-spinning')).toBe('false'),
+    );
+
+    const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
+    await user.type(nicknameField, 'Fallback User');
+    await user.click(screen.getAllByRole('button', { name: /submit/i })[0]);
+
+    await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
+    expect(mockSetProfile).toHaveBeenCalledWith(expect.objectContaining({ name: 'Fallback User' }));
+
+    const updater = mockSetInitialState.mock.calls[0][0];
+    expect(updater({ currentUser: null }).currentUser.organization).toBe('');
+  });
+
   it('ignores late current-user responses after the page unmounts', async () => {
     let resolveCurrentUser: (value: any) => void = () => {};
     mockGetAccountProfile.mockImplementationOnce(
