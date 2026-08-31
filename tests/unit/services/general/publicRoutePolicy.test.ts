@@ -2,6 +2,8 @@ import {
   ANONYMOUS_ROUTE_PATHS,
   isAnonymousAllowedPath,
   LOGIN_PATH,
+  OAUTH_CONSENT_PATH,
+  resolveSafeLoginRedirect,
 } from '@/services/general/publicRoutePolicy';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -43,15 +45,16 @@ const collectPublicHtmlPaths = (directory: string): readonly string[] =>
     .sort();
 
 describe('anonymous route policy', () => {
-  it('keeps the anonymous allowlist limited to the login flow', () => {
+  it('keeps anonymous entry limited to login/recovery and the self-verifying consent route', () => {
     expect(ANONYMOUS_ROUTE_PATHS).toEqual([
       LOGIN_PATH,
       '/user/login/password_forgot',
       '/user/login/password_reset',
+      OAUTH_CONSENT_PATH,
     ]);
   });
 
-  it.each(ANONYMOUS_ROUTE_PATHS)('allows the explicit login-flow route %s', (pathname) => {
+  it.each(ANONYMOUS_ROUTE_PATHS)('allows the explicit anonymous entry route %s', (pathname) => {
     expect(isAnonymousAllowedPath(pathname)).toBe(true);
   });
 
@@ -86,9 +89,26 @@ describe('anonymous route policy', () => {
     expect(isAnonymousAllowedPath('/welcome')).toBe(false);
   });
 
+  it.each([
+    [
+      '/oauth/consent?authorization_id=jteae32pgurfg3oqqppq2yravsyh4ezw',
+      '/oauth/consent?authorization_id=jteae32pgurfg3oqqppq2yravsyh4ezw',
+    ],
+    ['/welcome#section', '/welcome#section'],
+    ['https://evil.example/callback', '/'],
+    ['//evil.example/callback', '/'],
+    ['/\\evil.example/callback', '/'],
+    ['/\t/evil.example/callback', '/'],
+    ['javascript:alert(1)', '/'],
+    [null, '/'],
+  ] as const)('resolves post-login redirect %s to %s', (redirect, expected) => {
+    expect(resolveSafeLoginRedirect(redirect)).toBe(expected);
+  });
+
   it('keeps SPA-external anonymous HTML limited to maintenance and legal pages', () => {
     expect(collectPublicHtmlPaths(publicRoot)).toEqual([
       '/maintenance.html',
+      '/oauth-consent-bridge.html',
       '/privacy_notice.html',
       '/terms_of_use.html',
     ]);

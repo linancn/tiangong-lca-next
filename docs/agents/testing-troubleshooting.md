@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: troubleshooting now separates promotion-proof failures from direct-main hotfix marker/base/head/version failures.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
+lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle failures are diagnosed through the existing focused OAuth fixtures and live Dev flow; no recovery rule changes.'
 ---
 
 # Testing Troubleshooting
@@ -101,7 +101,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | the manual semantic workflow reports missing login controls, detached menus, or lost URL state | the selected committed candidate or hermetic harness failed browser acceptance | fix the behavior or harness on the same open business PR, keep `failOnFlakyTests` enabled, and do not add a fixed sleep or make this workflow a release prerequisite |
 | authenticated semantic E2E skips or fails before setup | the authorized local session lacks a mode-`0600` users env file, explicit authenticated/write/evidence options, the production target proof, or a safe recovery-ledger path | keep GitHub Actions credential-free/read-only; run `pnpm e2e:release --authenticated --allow-production-data --write-verified-evidence --users-env-file <path>` locally, and inspect the role-neutral auth/safety preflight check rather than assuming a required business role |
 | production-data release E2E reports `E2E_PRODUCTION_DATA_FORBIDDEN_IN_HOST_CI` | the host exported `CI` or `GITHUB_ACTIONS`, so the controller cannot prove a local operator boundary | run from a genuine local operator shell after removing only an accidentally inherited host marker; never clear a real CI marker or bypass the guard. The controller itself clears the release image's inherited markers only after this host check passes. |
-| explicit production locale readiness rejects external semantic evidence | the artifact is absent or one of the 49 assertion IDs, registry locales, required browsers, current backend/package/runtime/route/test/source bindings, or cleanup counts is incomplete or stale | inspect the first mismatched contract field and rerun the authorized closure when required. Never edit evidence to simulate execution; the static release preflight intentionally checks only the proof contract. |
+| explicit production locale readiness rejects external semantic evidence | the artifact is absent or one of the 50 assertion IDs, registry locales, required browsers, current backend/package/runtime/route/test/source bindings, or cleanup counts is incomplete or stale | inspect the first mismatched contract field and rerun the authorized closure when required. Never edit evidence to simulate execution; the static release preflight intentionally checks only the proof contract. |
 | Firefox reference-race E2E sees no pending stale consumer after a search/hash navigation | Firefox restored the current candidate document runtime and its warm in-memory reference cache, so clearing IndexedDB/localStorage did not force the intercepted asset request | cross an explicit neutral-document boundary before opening the next candidate deep link, then require the stale request/pending consumer and repeat the focused Firefox scope; do not weaken the race assertion or add a fixed sleep |
 | WebKit reference-cache qualification fails with `route.fetch: socket hang up` during navigation | a count-only route handler unnecessarily proxied the static response, so navigation cancellation tore down the test-owned fetch | retain the request counter but use `route.fallback()` so the normal static-server transport owns the response; do not hide the failure with retry, a blanket catch, or a weaker cache assertion |
 | a deterministic dev Release PR does not show browser E2E | browser qualification is intentionally outside release proof | if browser evidence is warranted, stop before release-to-dev and manually dispatch `i18n-semantic-e2e.yml` for the still-open business PR; release PR, promotion, and publication must not add a late browser gate |

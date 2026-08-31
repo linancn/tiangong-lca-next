@@ -88,7 +88,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   browserName,
   page,
 }, testInfo) => {
-  // This is intentionally one auditable matrix: 49 stable route assertions × four locales.
+  // This is intentionally one auditable matrix: 50 stable route assertions × four locales.
   // Keep the timeout local so ordinary focused E2E tests retain the stricter suite default.
   test.setTimeout(15 * 60_000);
   test.skip(

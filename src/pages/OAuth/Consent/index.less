@@ -1,0 +1,164 @@
+.page {
+  position: relative;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
+  padding: 48px 20px;
+  background: linear-gradient(145deg, #eff8f5 0%, #f7f8fb 48%, #edf1f8 100%);
+}
+
+.backdrop {
+  position: absolute;
+  inset: -30%;
+  background:
+    radial-gradient(circle at 28% 32%, rgb(24 144 104 / 16%), transparent 24%),
+    radial-gradient(circle at 74% 68%, rgb(41 83 147 / 12%), transparent 28%);
+  filter: blur(8px);
+}
+
+.card {
+  width: min(100%, 620px);
+  border: 1px solid rgb(15 55 45 / 8%);
+  border-radius: 24px;
+  box-shadow: 0 28px 90px rgb(22 48 63 / 14%);
+
+  :global(.ant-card-body) {
+    padding: clamp(28px, 6vw, 52px);
+  }
+}
+
+.brandMark {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 28px;
+  color: #fff;
+  font-size: 26px;
+  background: linear-gradient(145deg, #087f5b, #145b72);
+  border-radius: 16px;
+  place-items: center;
+  box-shadow: 0 12px 24px rgb(8 127 91 / 22%);
+}
+
+.heading {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #087f5b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.clientRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: rgb(8 127 91 / 5%);
+  border: 1px solid rgb(8 127 91 / 10%);
+  border-radius: 16px;
+}
+
+.clientAvatar {
+  flex: 0 0 auto;
+  color: #087f5b;
+  background: #dff5ec;
+}
+
+.clientText {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+
+  :global(.ant-typography) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.scopeList {
+  display: grid;
+  padding: 0;
+  margin: 10px 0 0;
+  list-style: none;
+}
+
+.scopeItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(15 55 45 / 8%);
+}
+
+.scopeText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scopeCheck {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  color: #087f5b;
+  background: #e4f6ef;
+  border-radius: 50%;
+  place-items: center;
+}
+
+.notice {
+  margin-top: 20px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.loading {
+  display: flex;
+  min-height: 280px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  .page {
+    align-items: start;
+    padding: 18px 12px;
+  }
+
+  .card {
+    border-radius: 18px;
+  }
+
+  .clientRow {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+
+    :global(.ant-btn) {
+      width: 100%;
+    }
+  }
+}

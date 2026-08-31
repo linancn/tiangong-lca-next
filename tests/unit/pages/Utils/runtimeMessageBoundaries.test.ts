@@ -21,6 +21,8 @@ describe('runtime i18n boundaries', () => {
 
     expect(formatAccountRole(intl, 'authenticated')).toBe('Member');
     expect(formatAccountRole(intl, 'future-jwt-role')).toBe('Unknown role (future-jwt-role)');
+    expect(formatAccountRole(intl, null)).toBe('Unknown role (-)');
+    expect(formatAccountRole(intl, '   ')).toBe('Unknown role (-)');
   });
 
   it('maps known persisted tab tokens and localizes unknown tokens without using them as ids', () => {

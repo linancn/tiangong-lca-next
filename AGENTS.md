@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: the direct-main hotfix CI path now binds the tracked Issue, current main base, exact PR head, and unchanged version before one clean-runner full gate.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
+lastReviewedNote: 'Reviewed for Next Issue #964: OAuth consent preserves one bounded opaque URL-safe handle byte-for-byte while rejecting dot-only URL-normalizing path segments.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -182,6 +182,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
+- Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; users manage grants under Account → Connected apps, while password-encoded API keys are retired
 - startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
 
 ## Ownership Boundaries

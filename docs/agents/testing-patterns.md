@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: release-proof fixtures now distinguish strict proof-reuse promotions from exact marked main hotfixes that own one fresh full gate.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
+lastReviewedNote: 'Reviewed for Next Issue #964: OAuth service and bridge tests share hosted opaque and unsafe fixtures while preserving existing service/component/integration patterns.'
 ---
 
 # Testing Patterns Reference
@@ -146,7 +146,7 @@ Special cases:
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
-14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 50-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
 17. keep browser proof outside the repository and identify it from behavior-affecting inputs; never maintain or imply release reuse by committing generated hashes or compatibility records
@@ -167,7 +167,7 @@ Browser semantic E2E pattern:
 - keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
-- run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
+- run the complete 50-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
 - keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while routine PR/dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-30"
-lastReviewedCommit: "6d58750de93a54f6c2dfcdb40143080f05775eb7"
-lastReviewedNote: 'Reviewed for Next Issue #951: the exact marked main-hotfix CI path remains governed by release, testing, workflow, and pre-push policy routes.'
+lastReviewedAt: "2026-08-31"
+lastReviewedCommit: "3e59737a2632f1dfa6450ae9c7a396296e27da80"
+lastReviewedNote: 'Reviewed for Next Issue #964: routing and proof bind the bridge/service to one bounded byte-preserved opaque handle and reject dot-only URL-normalizing segments.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -197,6 +197,17 @@ routing:
         - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
         - docker/**
+    oauth-authorization:
+      paths:
+        - config/routes.ts
+        - public/edgeone.json
+        - public/oauth-consent-bridge.*
+        - src/pages/OAuth/**
+        - src/pages/Account/OAuthConnections.tsx
+        - src/services/auth/oauth.ts
+        - src/services/general/publicRoutePolicy.ts
+        - tests/**/*OAuth*.test.*
+        - tests/unit/config/oauthConsentBridge.test.ts
     ai-suggestion:
       paths:
         - src/components/AISuggestion/**
@@ -633,6 +644,36 @@ rules:
       - path: docs/agents/supabase-branching.md
         mode: review_or_update
     reason: App-side service, environment, and local stack changes alter the frontend data boundary and should refresh both the repo routing layer and the Supabase branching guide.
+  - id: next-oauth-authorization-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: config/routes.ts
+        kind: oauth-route
+      - path: public/edgeone.json
+        kind: oauth-edge-rewrite
+      - path: public/oauth-consent-bridge.*
+        kind: oauth-hash-bridge
+      - path: src/pages/OAuth/**
+        kind: oauth-consent-ui
+      - path: src/pages/Account/OAuthConnections.tsx
+        kind: oauth-grant-ui
+      - path: src/services/auth/oauth.ts
+        kind: oauth-client-service
+      - path: src/services/general/publicRoutePolicy.ts
+        kind: oauth-entry-policy
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+      - path: docs/agents/supabase-branching.md
+        mode: review_or_update
+    reason: OAuth consent, same-origin login continuation, callback safety, grant revocation, EdgeOne bridging, and legacy-key retirement must remain one reviewed frontend authorization boundary.
   - id: next-branding-and-packaging-contract
     scope: repo
     repo: next

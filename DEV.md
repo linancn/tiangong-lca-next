@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-30
-lastReviewedCommit: 6d58750de93a54f6c2dfcdb40143080f05775eb7
-lastReviewedNote: 'Reviewed for Next Issue #951: direct-main hotfix CI now validates an exact Issue/base/head marker and unchanged version before running one clean-runner full gate.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
+lastReviewedNote: 'Reviewed for Next Issue #964: the opaque authorization-handle repair uses the existing bootstrap, focused OAuth tests, build, and checked-push workflow.'
 ---
 
 # Development Bootstrap
