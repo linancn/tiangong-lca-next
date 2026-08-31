@@ -128,7 +128,7 @@ describe('release E2E controller contracts', () => {
   });
 
   it('resolves the Playwright pin from pnpm lockfile state', () => {
-    expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.61.1');
+    expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.62.1');
   });
 
   it('binds the exact digest-pinned Node image in the E2E environment contract', () => {
@@ -161,7 +161,7 @@ describe('release E2E controller contracts', () => {
     const proof = {
       browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
         name,
-        version: '1.61.1',
+        version: '1.62.1',
       })),
       cleanup: { cleaned: 0, created: 0, leaked: 0 },
       coverage: {
@@ -228,7 +228,7 @@ describe('release E2E controller contracts', () => {
       'docker/e2e/environment.json',
       `${JSON.stringify({
         schemaVersion: 1,
-        playwrightVersion: '1.61.1',
+        playwrightVersion: '1.62.1',
         nodeMajor: 24,
         nodeImage: `node:24.19.0-bookworm-slim@sha256:${'2'.repeat(64)}`,
         nodeVersion: '24.19.0',
@@ -542,9 +542,9 @@ describe('release E2E controller contracts', () => {
       'utf8',
     );
     const controllerSource = fs.readFileSync(controllerPath, 'utf8');
-    expect(environment.playwrightVersion).toBe('1.61.1');
+    expect(environment.playwrightVersion).toBe('1.62.1');
     expect(environment.playwrightImage).toMatch(
-      /^mcr\.microsoft\.com\/playwright:v1\.61\.1-noble@sha256:[a-f0-9]{64}$/u,
+      /^mcr\.microsoft\.com\/playwright:v1\.62\.1-noble@sha256:[a-f0-9]{64}$/u,
     );
     expect(dockerfile).toContain(`ARG PLAYWRIGHT_IMAGE=${environment.playwrightImage}`);
     expect(dockerfile).toContain('ARG E2E_FRONTEND_ENV=main');
