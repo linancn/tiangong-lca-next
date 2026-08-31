@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
 lastReviewedNote: 'Reviewed for Next Issue #971: `pnpm start` and `pnpm start:dev` now prove the selected Dev Supabase target despite Umi preloading main `.env`; explicit per-key build overrides remain supported.'
 ---
 

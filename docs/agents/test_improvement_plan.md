@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
 lastReviewedNote: 'Reviewed for Next Issue #971: two targeted env-selection regressions protect a live Dev OAuth failure without expanding the maintained testing strategy or browser matrix.'
 ---
 
