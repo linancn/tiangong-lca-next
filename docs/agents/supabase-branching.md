@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
-lastReviewedNote: 'Reviewed for Next Issue #964: Next preserves the environment-issued opaque authorization handle across its bridge/UI; OAuth enablement, clients, and database capability truth remain external operations.'
+lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher cannot silently retain Umi-loaded main defaults; distinct explicit build overrides, qualification isolation, and external OAuth ownership remain unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -63,7 +63,7 @@ Rules:
 
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
-- explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults; selected `.env*` files are fallback configuration, not an immutable deployment target
+- explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults. For `REACT_APP_ENV=dev`, a runtime value that exactly equals the selected main-file default is treated as Umi's preloaded `.env` value and replaced by the corresponding `.env.development*` value; a distinct per-key runtime value remains explicit. Selected files otherwise remain fallback configuration, not an immutable deployment target
 - closed semantic qualification builds with `REACT_APP_ENV=qualification` and `docker/e2e/qualification.env`; this fixed `.invalid` target is intercepted completely and is never a production or deployable backend identity
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - OAuth consent and grant management use the shared Supabase client under `src/services/auth/oauth.ts`. Next owns the `/oauth/consent` bridge/page, the bounded byte-preserved opaque authorization-handle boundary, getClaims-based session check, safe callback navigation, and user grant list/revoke presentation. `database-engine` owns OAuth server configuration and client-capability enforcement; environment operators register separate exact redirect URIs and client IDs for Dev and production

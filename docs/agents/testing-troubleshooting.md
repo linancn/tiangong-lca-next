@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
-lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle failures are diagnosed through the existing focused OAuth fixtures and live Dev flow; no recovery rule changes.'
+lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedNote: 'Reviewed for Next Issue #971: a valid Dev OAuth handle returning production feature_disabled now has an exact env-target diagnosis and focused recovery path.'
 ---
 
 # Testing Troubleshooting
@@ -67,6 +67,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | --- | --- | --- |
 | timeout or maximum update depth | loop in effect, stale mock, unresolved async state | narrow to one file, then inspect effect triggers and mocked promises |
 | auth or session flow failing | missing provider, missing auth mock, stale route state | reuse existing auth wrapper and compare against nearby passing tests |
+| `pnpm start` or `pnpm start:dev` returns production `feature_disabled` for a Dev OAuth authorization that succeeds through the Dev SDK | Umi populated `process.env` from main `.env` before the Dev config selected `.env.development` | run `pnpm test:ci tests/unit/config/supabaseEnv.test.ts --runInBand --no-coverage`, verify the rendered bundle targets the Dev project, and repair exact main-default decontamination without weakening distinct explicit overrides or enabling OAuth in the wrong project |
 | element not found | query too early, wrong role/text, render path not reached | assert the prerequisite state first, then switch to semantic query |
 | a visible action exists but the expected request never starts | the control is present but still disabled while prerequisite data loads | wait for the control to become enabled, then interact; do not replace the product guard with an arbitrary delay |
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
