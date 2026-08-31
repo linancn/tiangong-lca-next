@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
 lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher cannot silently retain Umi-loaded main defaults; distinct explicit build overrides, qualification isolation, and external OAuth ownership remain unchanged.'
 ---
 

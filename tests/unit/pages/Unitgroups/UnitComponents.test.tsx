@@ -691,7 +691,7 @@ describe('Unitgroups unit components', () => {
     );
 
     expect(message.success).toHaveBeenCalledWith('Created successfully!');
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
   });
 
   it('reuses the original id for createVersion and updates the dataset version', async () => {
@@ -903,7 +903,7 @@ describe('Unitgroups unit components', () => {
           }),
         ),
       );
-      expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+      expect(actionRef.current.reload).toHaveBeenCalledWith(true);
     } finally {
       globalThis.queueMicrotask = originalQueueMicrotask;
     }

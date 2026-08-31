@@ -344,7 +344,10 @@ jest.mock('@ant-design/pro-components', () => {
     paramsRef.current = params;
 
     const runRequest = React.useCallback(
-      async (sort: Record<string, string> = {}, requestParams = pageInfoRef.current) => {
+      async (
+        sort: Record<string, string | undefined> = {},
+        requestParams = pageInfoRef.current,
+      ) => {
         const result = await requestRef.current?.({ ...requestParams, ...paramsRef.current }, sort);
         if (result?.success !== false) {
           const { act: testingLibraryAct } = require('@testing-library/react');
@@ -357,7 +360,7 @@ jest.mock('@ant-design/pro-components', () => {
 
     const reload = React.useMemo(() => jest.fn(async () => runRequest()), [runRequest]);
     const requestWith = React.useMemo(
-      () => jest.fn(async (sort: Record<string, string> = {}) => runRequest(sort)),
+      () => jest.fn(async (sort: Record<string, string | undefined> = {}) => runRequest(sort)),
       [runRequest],
     );
     const paramsKey = JSON.stringify(params);
@@ -393,6 +396,9 @@ jest.mock('@ant-design/pro-components', () => {
         </button>
         <button type='button' onClick={() => requestWith({ modifiedAt: 'descend' })}>
           request-unknown-sort
+        </button>
+        <button type='button' onClick={() => requestWith({ name: undefined })}>
+          request-inactive-sort
         </button>
         {rows.map((row: any, rowIndex: number) => {
           const key = rowKey ? rowKey(row) : `row-${rowIndex}`;
@@ -624,6 +630,20 @@ describe('LifeCycleModelsPage', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'request-unknown-sort' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        '20',
+        undefined,
+        'team-1',
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'request-inactive-sort' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },

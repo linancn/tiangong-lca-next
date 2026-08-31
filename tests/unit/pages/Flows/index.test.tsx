@@ -350,7 +350,7 @@ jest.mock('@ant-design/pro-components', () => {
 
     const runRequest = React.useCallback(
       async (
-        sort: Record<string, string> = {},
+        sort: Record<string, string | undefined> = {},
         filter: Record<string, any> = {},
         requestParams = latestPageInfoRef.current,
       ) => {
@@ -377,8 +377,9 @@ jest.mock('@ant-design/pro-components', () => {
     );
     const requestWith = React.useMemo(
       () =>
-        jest.fn(async (sort: Record<string, string> = {}, filter: Record<string, any> = {}) =>
-          runRequest(sort, filter),
+        jest.fn(
+          async (sort: Record<string, string | undefined> = {}, filter: Record<string, any> = {}) =>
+            runRequest(sort, filter),
         ),
       [runRequest],
     );
@@ -431,6 +432,9 @@ jest.mock('@ant-design/pro-components', () => {
         </button>
         <button type='button' onClick={() => requestWith({ CASNumber: 'descend' }, {})}>
           request-search-unknown-sort
+        </button>
+        <button type='button' onClick={() => requestWith({ name: undefined }, {})}>
+          request-inactive-sort
         </button>
         {rows.map((row: any, rowIndex: number) => {
           const key = rowKey ? rowKey(row) : `row-${rowIndex}`;
@@ -659,6 +663,20 @@ describe('FlowsPage', () => {
       ),
     );
 
+    await user.click(screen.getByRole('button', { name: /request-inactive-sort/i }));
+    await waitFor(() =>
+      expect(mockGetFlowTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        { flowType: '' },
+        '20',
+        undefined,
+        'team-1',
+      ),
+    );
+
     await user.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
@@ -703,6 +721,19 @@ describe('FlowsPage', () => {
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         { modifiedAt: 'descend' },
+        'en',
+        'my',
+        'team-1',
+        { flowType: '' },
+        'all',
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: /request-inactive-sort/i }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
         'en',
         'my',
         'team-1',

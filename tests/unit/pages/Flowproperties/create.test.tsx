@@ -309,7 +309,7 @@ describe('FlowpropertiesCreate', () => {
 
     const { message } = jest.requireMock('antd');
     expect(message.success).toHaveBeenCalledWith('Created successfully!');
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 

@@ -285,8 +285,13 @@ describe('LifeCycleModelCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /mark-save/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
 
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
   });
 
   it('reloads after a saved mask close', async () => {
@@ -302,7 +307,7 @@ describe('LifeCycleModelCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /mark-save/i }));
     await userEvent.click(screen.getByRole('button', { name: /mask-close/i }));
 
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

@@ -753,6 +753,19 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
+    await requestTable({ pageSize: 10, current: 1 }, { name: undefined });
+    expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
+      { pageSize: 10, current: 1 },
+      'en',
+      'my',
+      'cement',
+      {},
+      'all',
+      'all',
+      undefined,
+      'team-1',
+    );
+
     mockLocation = {
       pathname: '/mydata/processes',
       search: '?tid=team-1',
@@ -777,6 +790,17 @@ describe('ProcessesPage', () => {
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
       { pageSize: 10, current: 1 },
       { location: 'descend' },
+      'en',
+      'my',
+      'team-1',
+      'all',
+      'all',
+    );
+
+    await requestTable({ pageSize: 10, current: 1 }, { name: undefined });
+    expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
       'en',
       'my',
       'team-1',

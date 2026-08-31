@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
 lastReviewedNote: 'Reviewed for Next Issue #971: standard Dev selection replaces only Umi-preloaded values equal to main-file defaults, while distinct explicit build overrides and qualification isolation remain intact.'
 related:
   - ../AGENTS.md
