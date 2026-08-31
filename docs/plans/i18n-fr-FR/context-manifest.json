@@ -5,12 +5,12 @@
     "repository": "linancn/tiangong-lca-next",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "19ca900444af3ad9554562c87dc3817bb8e15f3f01f4a934c0c172ffee5d99f4",
-    "auditedInputDigest": "f259e0a0665e38e98412de6dfc3054a35d5490e9912f02c40da6e6552a0ececa"
+    "sourceManifestDigest": "39adf2112ced5474c6b8de9241d60ce690bd964a81fb087a1dd279b732f0297d",
+    "auditedInputDigest": "f6f14e13a181d2887803610c2e51949c338a2cd5d3a9c38adeb4a75a98b32bc0"
   },
   "inventory": {
-    "sourceMessageCount": 3208,
-    "localeMessageCount": 3208,
+    "sourceMessageCount": 3212,
+    "localeMessageCount": 3212,
     "leafModuleCount": 31,
     "dynamicFamilyCount": 15,
     "dynamicCallsiteCount": 32,
@@ -44,18 +44,18 @@
       "preserved tokens and layout/RTL/dark risks",
       "candidate/rationale/risk/validation"
     ],
-    "messageCount": 3208,
-    "completeCount": 3208,
+    "messageCount": 3212,
+    "completeCount": 3212,
     "blockedCount": 0,
-    "dossierDigest": "1bf254e9533eeb3ea9bd2bf8c7fbcc837aaf9d5f8b0ddc63b28141bbb0f2cc4b",
-    "catalogDigest": "24238218499ffff02768ab879d2c55877b656be79221b03b56b8d951d0f0068b",
+    "dossierDigest": "e934da8d80285d4ad7a002a9beed9b4bdb8c562094277efe5b3dd81e3d5ea331",
+    "catalogDigest": "6cbd8733e3bcfc9651b5a1030da75a396b4dcb873a2b30b0098a6485efc61995",
     "moduleCount": 32,
     "moduleDigest": "3b4f2df2201d552cc6e09b75bcebf64a30ac3511d401d79c50d4eb6e806195d3",
     "roleCounts": {
       "error-or-validation": 371,
-      "explanatory-copy": 115,
-      "field-guidance": 51,
-      "label-or-body-copy": 1297,
+      "explanatory-copy": 116,
+      "field-guidance": 52,
+      "label-or-body-copy": 1299,
       "navigation-or-tab": 227,
       "reserved-catalog-copy": 284,
       "status-or-empty-state": 112,
@@ -69,9 +69,9 @@
       "interactive-ready": 533,
       "retained-not-currently-reachable": 391,
       "successful-completion": 185,
-      "visible": 1681
+      "visible": 1685
     },
-    "riskCounts": { "high": 1439, "low": 1543, "medium": 226 },
+    "riskCounts": { "high": 1439, "low": 1547, "medium": 226 },
     "highRiskMessageCount": 1439,
     "highRiskMessageDigest": "242e485b18626071aa4becd095c275fb0453286a5d8fe092257c1089e6151981"
   },
@@ -88,7 +88,7 @@
   },
   "usageIndex": {
     "source": "docs/plans/i18n-de-DE/manifest.json messages[*].references/moduleOwnership/dynamicFamilies",
-    "literalReferenceCount": 4150,
+    "literalReferenceCount": 4154,
     "dynamicCallsiteCount": 32,
     "glossaryRuleScope": "full target catalog at the automated quality gate",
     "onDemandCommand": "pnpm i18n:context:dossier --locale fr-FR --message <MESSAGE_ID>"
@@ -137,7 +137,7 @@
         "focusedVariantCount": 7
       },
       "sourceFileCount": 35,
-      "sourceEvidenceDigest": "0eb33e15d47fb5008d6e894a846178789bf85c3d560153738086394f879bd57f",
+      "sourceEvidenceDigest": "6944082beae72a765bb81a1b9672a5631200b38f186c4bf0da307fefeea60477",
       "rowEvidence": [
         {
           "executableAssertionId": "rv.root.redirect-to-welcome",
@@ -222,7 +222,7 @@
           "route": "/user/login",
           "viewState": "login-and-register",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "cae64c8b8e46bc52374ea31707b1b4fe447e8b07bb1b53806d623840eafdbe15",
+          "sourceDigest": "fc00a2ef4d5028e0ecb1a456f151228651c73f7d7b3b03b729323c6a6cd0cbc7",
           "focusedTestDigest": "f35416b8e2598a5d92f5ae9e7f1f944f4718ce088072595c6b52671c868fde10",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "5598e3ac5fb06b788671b7f7e67b5643b4f0057c5c9deef1fe99da6152ed7fc7",
@@ -247,7 +247,7 @@
           "route": "/user/login/password_forgot",
           "viewState": "password-forgot",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "69cb71f54dae8726d7ac1cf175a79ed1f48c6e9be82b2dbbb2d52efe6ae7ddf1",
+          "sourceDigest": "e74f9ca511261b4d28c933f662e84768b8a11f962d3318c45b311f32982d0b3d",
           "focusedTestDigest": "3db7e7a98962f698d28b2b7e387dc75866bac5c47e28c15ac912a260c0005e57",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "0ed279e14ece4881b06a02af5603f00ded7d5e8b34bf6de078d7b8d46cf68f00",
@@ -270,7 +270,7 @@
           "route": "/user/login/password_reset",
           "viewState": "password-reset",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "7d5d3bffd2cb7303cc5e71f247f822f30c51556618006f50087f45366601a858",
+          "sourceDigest": "31cd28e579200e3ff7b4b8ef0af4bfdc1b91c54afdcb4f2947c8236dc1f8b101",
           "focusedTestDigest": "be9e99f26ea1ceb2f0c014b8acb8c3b4939a3d51d7382ca8b3dad27ff7464469",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "55def77fcde5265acb3f816b429fc087d63aafe080dbe461da66189fbcd75fde",
@@ -360,7 +360,7 @@
           "route": "*",
           "viewState": "not-found",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "b957cf6bb2418944b07bfc50d0bc508ca402452ed28549bccf95a753bc5c4098",
+          "sourceDigest": "41a6b78f98372ae02e0c2e27fa78efc72e3f8043d76e22a5eb3780926c06e930",
           "focusedTestDigest": "d0860c3b29f4190f2c7200ce7cb8ce23427185edf6cbe3fedda342aa488c3467",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "b8ea1e9c64fab4ac0f3adc277885552796c3a6f8f15c10a81ade409284f6cb99",
@@ -1057,12 +1057,12 @@
           "route": "/account",
           "viewState": "account-profile",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "5a3ebda065a3475d25b8fef912f15686575203736d4a81ff959b67832f0195ef",
-          "focusedTestDigest": "38c4bc8140f5458b4638122fa773e6784b54b1ef35efa4ee81733fa80ee07771",
+          "sourceDigest": "f93419fe433adcc3438278fa1b827671f0f0bcd9e8f1a82ca07c2159da43a801",
+          "focusedTestDigest": "fed2a4c45f2d53ef82af5bd29f4e24147d4679c563da9582c06bd2774202cbef",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "93ce64d1c24a3196fb75191740708109e8c0cf47d24f73a8a13db8ba3f7c08cf",
-          "derivedMessageCount": 51,
-          "derivedMessageDigest": "b39b94acfba02a9fb4c43633c81b9856b9623981291398cd9063c8d0204c8454",
+          "derivedMessageCount": 55,
+          "derivedMessageDigest": "0bedd080a250793b0863a88b61211a94053a7374d287ac5edefe6d57aae7abb1",
           "stateSignals": ["error", "loading", "success", "unavailable"],
           "queryParameters": [],
           "navigationTargets": [],
@@ -1089,7 +1089,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "0e3e6676aeeeced8fc8863ee26fe2c940f322bb6069efb260ca1728dbd4fe5f8",
+      "rowEvidenceDigest": "deff5aaef68fe31c7768012d71bda0258e4c0c9f68334c67d0a960eb05b3eafd",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1113,5 +1113,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "9492858b5b5290cd8ab9fa33199e53ab3f5824ae61b1be81392b0be8e023a220"
+  "contextDigest": "6257c209bc866191236a0a41106514010b79496a329c4d6cdd88ea7b7a12da34"
 }
