@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: adcaa91de1937a4e694fb18d29bd000316ab427a
-lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-process proof, exact toolchain contracts, and latest review-validation cases follow the maintained patterns.'
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
+lastReviewedNote: 'Reviewed for Next Issue #971: config tests distinguish Umi-preloaded main defaults from distinct per-key build overrides without changing service/component/integration patterns.'
 ---
 
 # Testing Patterns Reference
@@ -80,6 +80,7 @@ lastReviewedNote: 'Reviewed after integrating current dev: the real SDK child-pr
 - retain parallel unit execution on macOS, but start Jest workers with concurrent recompilation and Maglev disabled and recycle a unit worker after it crosses `512MB`; this avoids the documented Node 24/V8 stale-left-trimmed-pointer failure while allowing the slow-first suites to overlap ordinary work
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
+- when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 
 ## Reusable Helpers
 
@@ -146,7 +147,7 @@ Special cases:
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
-14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 50-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
 17. keep browser proof outside the repository and identify it from behavior-affecting inputs; never maintain or imply release reuse by committing generated hashes or compatibility records
@@ -167,7 +168,7 @@ Browser semantic E2E pattern:
 - keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
-- run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
+- run the complete 50-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
 - keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while routine PR/dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
@@ -185,6 +186,7 @@ Release Gate proof pattern:
 - resolve publication reuse through both merges: require the main merge's first parent to equal the proof-bound main baseline, its second parent to equal the verified dev merge, and all promotion/release/candidate trees to remain equal
 - require exactly one matching merged dev PR and main PR, a successful readiness workflow and named aggregate job, one unexpired artifact, and a byte-parsed payload whose identity fields all match; do not trust artifact naming alone
 - fail closed on missing, ambiguous, expired, mismatched, unavailable, direct, squash, or rebase identity during a normal promotion/main release; use a fresh full aggregate only for explicit tag or recovery-dispatch events
+- classify a direct main hotfix only when its PR carries the exact Issue/main-base/head marker, current main is an ancestor, and package version is unchanged; stale marker, divergent base, or version drift must fail before the fresh exact-head gate starts
 
 Documentation capture profile pattern:
 

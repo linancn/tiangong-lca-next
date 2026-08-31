@@ -52,6 +52,8 @@ declare namespace Auth {
     type?: string;
     currentAuthority?: string;
     message?: string;
+    errorCode?: string;
+    errorStatus?: number;
   };
 
   type LoginParams = {

@@ -3,9 +3,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  cognitoSignUp,
-  getAccountProfile,
-  login,
+  getCurrentUser,
   setProfile,
 } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
@@ -21,6 +19,7 @@ import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Grid, Input, Spin, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState, type CSSProperties, type FC } from 'react';
 import { formatAccountRole } from './roleMessage';
+import OAuthConnections from './OAuthConnections';
 
 export const ACCOUNT_FORM_CONTAINER_STYLE: CSSProperties = {
   width: '100%',
@@ -37,7 +36,6 @@ const Profile: FC = () => {
   const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [initData, setInitData] = useState<Auth.CurrentUser | null>(null);
   const [roleValue, setRoleValue] = useState<string>('');
-  const [apiKey, setApiKey] = useState<string>('');
   const intl = useIntl();
   const { token } = theme.useToken();
   const { setInitialState } = useModel('@@initialState');
@@ -45,13 +43,7 @@ const Profile: FC = () => {
   const screens = useBreakpoint();
   const isMobile = screens.md === false;
 
-  const onTabChange = (key: string) => {
-    if (activeTabKey === 'generateAPIKey' && key !== 'generateAPIKey' && apiKey) {
-      setApiKey('');
-    }
-
-    setActiveTabKey(key);
-  };
+  const onTabChange = (key: string) => setActiveTabKey(key);
 
   const renderBaseForm = () => (
     <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
@@ -546,199 +538,6 @@ const Profile: FC = () => {
     </Flex>
   );
 
-  const renderGenerateAPIKey = () => {
-    return (
-      <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
-        <ProForm
-          formRef={formRefEdit}
-          submitter={{
-            searchConfig: {
-              submitText: intl.formatMessage({
-                id: 'pages.account.apiKey.generateButton',
-                defaultMessage: 'Generate Key',
-              }),
-            },
-            render: (props, doms) => {
-              return (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Flex gap='middle'>{doms}</Flex>
-                </div>
-              );
-            },
-          }}
-          onFinish={async (values) => {
-            setSpinning(true);
-            try {
-              // First validate credentials by attempting to login
-              const loginResult = await login({
-                email: initData?.email || '',
-                password: values.currentPassword,
-              });
-
-              if (loginResult.status !== 'ok') {
-                message.error(
-                  intl.formatMessage({
-                    id: 'pages.account.invalidCredentials',
-                    defaultMessage: 'Invalid credentials. Please check your password.',
-                  }),
-                );
-                setSpinning(false);
-                return false;
-              }
-
-              // If login successful, generate API key
-              const payload = {
-                email: initData?.email || '',
-                password: values.currentPassword,
-              };
-
-              // Convert JSON to string and then to Base64
-              const jsonString = JSON.stringify(payload, null, 0);
-              const encodedKey = btoa(jsonString);
-
-              // Wait for cognitoSignUp to complete before showing API Key
-              await cognitoSignUp(values.currentPassword);
-
-              // Only set API Key after cognitoSignUp is complete
-              setApiKey(encodedKey);
-
-              const successMsg = intl.formatMessage({
-                id: 'pages.account.apiKey.generated.success',
-                defaultMessage: 'API Key generated successfully!',
-              });
-              message.success(successMsg);
-
-              setSpinning(false);
-              return true;
-            } catch (error) {
-              setSpinning(false);
-              message.error(
-                intl.formatMessage({
-                  id: 'pages.account.apiKey.generateError',
-                  defaultMessage:
-                    'A system error occurred while generating the API key. Please try again later.',
-                }),
-              );
-              return false;
-            }
-          }}
-        >
-          <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
-            <Input />
-          </Form.Item>
-
-          <ProFormText.Password
-            name='currentPassword'
-            label={
-              <FormattedMessage
-                id='pages.account.password.currentPassword'
-                defaultMessage='Current Password'
-              />
-            }
-            tooltip={
-              <FormattedMessage
-                id='pages.account.apiKey.currentPassword.tooltip'
-                defaultMessage='Please enter your current account password to verify your identity and generate the API Key.'
-              />
-            }
-            fieldProps={{
-              size: 'middle',
-              prefix: <LockOutlined />,
-              strengthText: (
-                <FormattedMessage
-                  id='pages.account.newPassword.strengthText'
-                  defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
-                />
-              ),
-              statusRender: (value) => {
-                const getStatus = () => {
-                  if (value && value.length > 12) {
-                    return 'ok';
-                  }
-                  if (value && value.length > 8) {
-                    return 'pass';
-                  }
-                  return 'poor';
-                };
-                const pwdStatus = getStatus();
-                if (pwdStatus === 'pass') {
-                  return (
-                    <span style={{ color: token.colorWarning }}>
-                      <FormattedMessage
-                        id='pages.account.newPassword.strengthMedium'
-                        defaultMessage='Strength: Medium'
-                      />
-                    </span>
-                  );
-                }
-                if (pwdStatus === 'ok') {
-                  return (
-                    <span style={{ color: token.colorSuccess }}>
-                      <FormattedMessage
-                        id='pages.account.newPassword.strengthStrong'
-                        defaultMessage='Strength: Strong'
-                      />
-                    </span>
-                  );
-                }
-                return (
-                  <span style={{ color: token.colorError }}>
-                    <FormattedMessage
-                      id='pages.account.newPassword.strengthWeak'
-                      defaultMessage='Strength: Weak'
-                    />
-                  </span>
-                );
-              },
-            }}
-            placeholder={intl.formatMessage({
-              id: 'pages.account.apiKey.currentPassword',
-              defaultMessage: 'Current Password',
-            })}
-            rules={[
-              {
-                required: true,
-                message: (
-                  <FormattedMessage
-                    id='pages.account.currentPassword.required'
-                    defaultMessage='Please input the current password!'
-                  />
-                ),
-              },
-              {
-                pattern:
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
-                message: (
-                  <FormattedMessage
-                    id='pages.account.newPassword.validation'
-                    defaultMessage='Password is invalid!'
-                  />
-                ),
-              },
-            ]}
-            hasFeedback
-          />
-
-          {apiKey && (
-            <Form.Item
-              label={<FormattedMessage id='pages.account.apiKey' defaultMessage='API Key' />}
-            >
-              <Input.TextArea value={apiKey} autoSize={{ minRows: 2, maxRows: 6 }} readOnly />
-              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
-                <div style={{ color: token.colorWarning, marginTop: 8 }}>
-                  <FormattedMessage
-                    id='pages.account.apiKey.viewed'
-                    defaultMessage='Make sure to copy it to a secure location. This key will not be shown again.'
-                  />
-                </div>
-              </div>
-            </Form.Item>
-          )}
-        </ProForm>
-      </Flex>
-    );
-  };
-
   useEffect(() => {
     let active = true;
 
@@ -814,12 +613,12 @@ const Profile: FC = () => {
               children: renderChangeEmailForm(),
             },
             {
-              key: 'generateAPIKey',
+              key: 'oauthConnections',
               label: intl.formatMessage({
-                id: 'pages.account.generateAPIKey',
-                defaultMessage: 'Generate API Key',
+                id: 'pages.account.oauth.tab',
+                defaultMessage: 'Connected apps',
               }),
-              children: renderGenerateAPIKey(),
+              children: <OAuthConnections email={initData?.email} />,
             },
           ]}
         ></Tabs>

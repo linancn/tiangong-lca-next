@@ -8,7 +8,7 @@
  *
  * User journey covered:
  * 1. Owner lands on /mydata processes list, team metadata resolves, and rows render from getProcessTableAll.
- * 2. Owner imports JSON to seed create drawer, triggers create flow, and ProTable reloads.
+ * 2. Owner imports JSON to seed create drawer, triggers create flow, and ProTable reloads page 1.
  * 3. Owner opens inline edit drawer, saves changes, and observes another table reload.
  * 4. Owner expands review detail from the actions dropdown.
  * 5. Owner can jump from the table toolbar to the analysis page.
@@ -26,7 +26,8 @@
 
 import ProcessesPage from '@/pages/Processes';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
+import { proComponentsMocks } from '../../mocks/proComponents';
 
 const setTestLocation = (pathname: string, search = '') => {
   const umi = require('@/tests/mocks/umi');
@@ -245,9 +246,9 @@ jest.mock('@/pages/Processes/Components/create', () => {
           <div data-testid={`process-create-panel-${actionType}`}>
             <button
               type='button'
-              onClick={() => {
+              onClick={async () => {
                 message.success(`${current.trigger} success`);
-                actionRef?.current?.reload?.();
+                await actionRef?.current?.reload?.(true);
                 setOpen(false);
               }}
             >
@@ -511,6 +512,192 @@ describe('Processes workflow integration', () => {
 
     await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
     expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+  });
+
+  it('does not keep the previous snapshot visible while a replacement request is pending', async () => {
+    const user = userEvent.setup();
+    let resolveLatestRequest!: (value: any) => void;
+    const latestRow = {
+      ...baseRow,
+      version: '01.00.001',
+      name: 'Latest solar panel manufacturing',
+      modifiedAt: '2026-08-29T09:40:45Z',
+    };
+
+    getProcessTableAll.mockReset();
+    getProcessTableAll.mockResolvedValueOnce({
+      data: [baseRow],
+      success: true,
+      total: 1,
+    });
+    getProcessTableAll.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveLatestRequest = resolve;
+        }),
+    );
+
+    renderWithProviders(<ProcessesPage />);
+
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
+
+    expect(screen.queryByText('Solar panel manufacturing')).not.toBeInTheDocument();
+
+    resolveLatestRequest({ data: [latestRow], success: true, total: 1 });
+    expect(await screen.findByText('Latest solar panel manufacturing')).toBeInTheDocument();
+  });
+
+  it('does not let an older aborted request restore the previous snapshot', async () => {
+    let resolveOlderRequest!: (value: any) => void;
+    let resolveLatestRequest!: (value: any) => void;
+    const latestRow = {
+      ...baseRow,
+      id: 'process-latest',
+      version: '01.01.003',
+      name: 'Current process snapshot',
+      modifiedAt: '2026-08-29T09:40:45Z',
+    };
+
+    getProcessTableAll.mockReset();
+    getProcessTableAll
+      .mockResolvedValueOnce({ data: [baseRow], success: true, total: 1 })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveOlderRequest = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveLatestRequest = resolve;
+          }),
+      );
+
+    renderWithProviders(<ProcessesPage />);
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+
+    const olderReload = proComponentsMocks.lastProTableAction?.reload();
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
+    const latestReload = proComponentsMocks.lastProTableAction?.reload();
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(3));
+
+    resolveOlderRequest({ data: [baseRow], success: true, total: 1 });
+    await act(async () => {
+      await olderReload;
+    });
+    expect(screen.queryByText('Solar panel manufacturing')).not.toBeInTheDocument();
+
+    resolveLatestRequest({ data: [latestRow], success: true, total: 1 });
+    await act(async () => {
+      await latestReload;
+    });
+    expect(await screen.findByText('Current process snapshot')).toBeInTheDocument();
+  });
+
+  it('treats the route data source as part of the table request identity', async () => {
+    const renderResult = renderWithProviders(<ProcessesPage />);
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+
+    setLocation('/tgdata/processes?tid=team-open');
+    getProcessTableAll.mockResolvedValueOnce({
+      data: [{ ...baseRow, id: 'process-open-latest', name: 'Latest open process' }],
+      success: true,
+      total: 1,
+    });
+    renderResult.rerender(<ProcessesPage />);
+
+    await waitFor(() => expect(getProcessTableAll).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Latest open process')).toBeInTheDocument();
+    expect(screen.queryByText('Solar panel manufacturing')).not.toBeInTheDocument();
+    expect(getProcessTableAll.mock.calls[1][3]).toBe('tg');
+    expect(getProcessTableAll.mock.calls[1][4]).toBe('team-open');
+  });
+
+  it('returns to page one and renders a newly created process without a search', async () => {
+    const user = userEvent.setup();
+    const pageTwoRow = {
+      ...baseRow,
+      id: 'process-page-2',
+      name: 'Existing page two process',
+    };
+    const createdRow = {
+      ...baseRow,
+      id: '4c221a23-4c69-4da6-86e8-6171b9550c88',
+      version: '01.01.000',
+      name: 'Newly created process',
+      modifiedAt: '2026-08-31T08:00:00Z',
+    };
+
+    getProcessTableAll.mockImplementation(async (params: { current?: number }) => {
+      if (params.current === 2) {
+        return { data: [pageTwoRow], page: 2, success: true, total: 20 };
+      }
+      const row = getProcessTableAll.mock.calls.length >= 3 ? createdRow : baseRow;
+      return { data: [row], page: 1, success: true, total: 20 };
+    });
+
+    renderWithProviders(<ProcessesPage />);
+    expect(await screen.findByText('Solar panel manufacturing')).toBeInTheDocument();
+
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 2 });
+    });
+    expect(await screen.findByText('Existing page two process')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Create Process' }));
+    await user.click(screen.getByRole('button', { name: 'Submit Process' }));
+
+    expect(await screen.findByText('Newly created process')).toBeInTheDocument();
+    expect(screen.queryByText('Existing page two process')).not.toBeInTheDocument();
+    expect(getProcessTableAll.mock.calls.map((call: any[]) => call[0].current)).toEqual([1, 2, 1]);
+    expect(getProcessTableAll.mock.calls.map((call: any[]) => call[1])).toEqual([{}, {}, {}]);
+    expect(getProcessTablePgroongaSearch).not.toHaveBeenCalled();
+    expect(process_hybrid_search).not.toHaveBeenCalled();
+  });
+
+  it('keeps page identity, version, and modification time stable across 1 -> 2 -> 1', async () => {
+    const latestPageOneRow = {
+      ...baseRow,
+      id: 'process-page-1',
+      version: '01.01.003',
+      name: 'Latest page one process',
+      modifiedAt: '2026-08-29T09:40:45Z',
+    };
+    const pageTwoRow = {
+      ...baseRow,
+      id: 'process-page-2',
+      version: '01.02.000',
+      name: 'Page two process',
+      modifiedAt: '2026-08-28T08:30:00Z',
+    };
+    getProcessTableAll.mockImplementation(async (params: { current?: number }) => ({
+      data: [params.current === 2 ? pageTwoRow : latestPageOneRow],
+      page: params.current ?? 1,
+      success: true,
+      total: 20,
+    }));
+
+    renderWithProviders(<ProcessesPage />);
+    expect(await screen.findByText('Latest page one process')).toBeInTheDocument();
+    expect(screen.getByText('01.01.003')).toBeInTheDocument();
+    expect(screen.getByText('2026-08-29T09:40:45Z')).toBeInTheDocument();
+
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 2 });
+    });
+    expect(await screen.findByText('Page two process')).toBeInTheDocument();
+    expect(screen.queryByText('Latest page one process')).not.toBeInTheDocument();
+
+    await act(async () => {
+      await proComponentsMocks.lastProTableAction?.setPageInfo({ current: 1 });
+    });
+    expect(await screen.findByText('Latest page one process')).toBeInTheDocument();
+    expect(screen.getByText('01.01.003')).toBeInTheDocument();
+    expect(screen.getByText('2026-08-29T09:40:45Z')).toBeInTheDocument();
+    expect(getProcessTableAll.mock.calls.map((call: any[]) => call[0].current)).toEqual([1, 2, 1]);
   });
 
   it('uses the open-data route matrix for tgdata processes', async () => {

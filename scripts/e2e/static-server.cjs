@@ -78,6 +78,32 @@ function safeAssetPath(root, pathname) {
   return candidate;
 }
 
+function configuredAssetPath(root, pathname) {
+  const configPath = path.join(root, 'edgeone.json');
+  if (!fs.existsSync(configPath)) return safeAssetPath(root, pathname);
+
+  let config;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch {
+    throw new Error('Static candidate edgeone.json is not valid JSON');
+  }
+  const rewrite = Array.isArray(config.rewrites)
+    ? config.rewrites.find(
+        (candidate) =>
+          candidate &&
+          typeof candidate === 'object' &&
+          candidate.source === pathname &&
+          typeof candidate.destination === 'string',
+      )
+    : undefined;
+  if (!rewrite) return safeAssetPath(root, pathname);
+  if (!rewrite.destination.startsWith('/') || rewrite.destination.startsWith('//')) {
+    return undefined;
+  }
+  return safeAssetPath(root, rewrite.destination);
+}
+
 function createStaticCandidateServer(options) {
   const root = path.resolve(options.root);
   const manifest = options.manifest;
@@ -107,7 +133,7 @@ function createStaticCandidateServer(options) {
       return;
     }
 
-    const requestedAsset = safeAssetPath(root, requestUrl.pathname);
+    const requestedAsset = configuredAssetPath(root, requestUrl.pathname);
     if (!requestedAsset) {
       response.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
       response.end('Invalid path\n');
@@ -157,7 +183,13 @@ async function main() {
   });
 }
 
-module.exports = { bundleDigest, createStaticCandidateServer, safeAssetPath, sha256 };
+module.exports = {
+  bundleDigest,
+  configuredAssetPath,
+  createStaticCandidateServer,
+  safeAssetPath,
+  sha256,
+};
 
 if (require.main === module) {
   main().catch((error) => {

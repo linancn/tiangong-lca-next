@@ -9,7 +9,7 @@ type ProFormContextValue = {
 
 export const proComponentsMocks = {
   lastProTableAction: null as null | {
-    reload: () => Promise<any>;
+    reload: (resetPageIndex?: boolean) => Promise<any>;
     setPageInfo: (info: any) => Promise<any>;
   },
 };
@@ -239,22 +239,47 @@ export const createProComponentsMock = () => {
     pagination,
     toolBarRender,
     headerTitle,
+    dataSource,
+    onDataSourceChange,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const renderedRows = dataSource ?? rows;
     const paramsRef = React.useRef<any>({
       current: pagination?.current ?? 1,
       pageSize: pagination?.pageSize ?? 10,
     });
     const requestRef = React.useRef<any>(request);
+    const sortRef = React.useRef<
+      Record<string, 'ascend' | 'descend' | null | undefined> | undefined
+    >(undefined);
+
+    if (sortRef.current === undefined) {
+      sortRef.current = columns.reduce(
+        (inactiveSort: Record<string, 'ascend' | 'descend' | null | undefined>, column: any) => {
+          const field = Array.isArray(column?.dataIndex)
+            ? column.dataIndex.join('.')
+            : column?.dataIndex;
+          if (column?.sorter && typeof field === 'string') {
+            inactiveSort[field] = undefined;
+          }
+          return inactiveSort;
+        },
+        {},
+      );
+    }
 
     const runRequest = React.useCallback(
       async (override: any = {}) => {
         paramsRef.current = { ...paramsRef.current, ...(override ?? {}) };
-        const result = await requestRef.current?.(paramsRef.current, {});
-        setRows(result?.data ?? []);
+        const result = await requestRef.current?.(paramsRef.current, sortRef.current ?? {});
+        if (result?.success !== false) {
+          const nextRows = result?.data ?? [];
+          setRows(nextRows);
+          onDataSourceChange?.(nextRows);
+        }
         return result;
       },
-      [setRows],
+      [onDataSourceChange, setRows],
     );
 
     React.useEffect(() => {
@@ -274,7 +299,7 @@ export const createProComponentsMock = () => {
 
     React.useEffect(() => {
       const handlers = {
-        reload: () => scheduleRun(),
+        reload: (resetPageIndex?: boolean) => scheduleRun(resetPageIndex ? { current: 1 } : {}),
         setPageInfo: (info: any) => scheduleRun(info ?? {}),
       };
       if (actionRef) {
@@ -342,12 +367,12 @@ export const createProComponentsMock = () => {
         <div data-testid='pro-table-header'>{resolvedHeader}</div>
         <div data-testid='pro-table-options'>{renderToolbar(renderedOptions)}</div>
         <div data-testid='pro-table-toolbar'>{renderToolbar(toolbar)}</div>
-        {rows.length === 0 ? (
+        {renderedRows.length === 0 ? (
           <div data-testid='pro-table-empty'>No Data</div>
         ) : (
           <table>
             <tbody>
-              {rows.map((row, rowIndex) => {
+              {renderedRows.map((row: any, rowIndex: number) => {
                 const identifier =
                   typeof rowKey === 'function'
                     ? rowKey(row, rowIndex)

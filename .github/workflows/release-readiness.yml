@@ -68,21 +68,66 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out exact promotion candidate
+      - name: Check out exact main candidate
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
-          node-version: 24.19.0
+          version: 11.24.0
+          runtime: node@24.19.0
+          cache: true
+          install: false
 
-      - name: Verify exact dev Release PR proof
+      - name: Resolve exact main candidate gate
+        id: context
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
-          PROMOTION_HEAD: ${{ github.event.pull_request.head.sha }}
         run: >-
-          node scripts/release/release-gate-proof.cjs verify-promotion --repository "$GITHUB_REPOSITORY" --release-base "$RELEASE_BASE" --promotion-head "$PROMOTION_HEAD"
+          node scripts/release/release-gate-proof.cjs main-candidate-context --repository "$GITHUB_REPOSITORY" --event-path "$GITHUB_EVENT_PATH" --github-output "$GITHUB_OUTPUT"
+
+      - name: Install stable Rust toolchain
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install docpact
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        run: cargo install docpact --version 0.1.9 --force
+
+      - name: Install dependencies
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify reviewed LCIA cache bundle
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        run: pnpm lcia-cache:verify
+
+      - name: Run docpact hotfix gate
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        env:
+          RELEASE_BASE: ${{ steps.context.outputs.release_base }}
+          RELEASE_HEAD: ${{ steps.context.outputs.promotion_head }}
+        run: pnpm docpact:gate --base "$RELEASE_BASE" --head "$RELEASE_HEAD"
+
+      - name: Verify static hotfix readiness
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        run: pnpm release:static-preflight
+
+      - name: Run full hotfix gate
+        if: steps.context.outputs.gate_mode == 'hotfix-full'
+        env:
+          TIANGONG_AGENT_MODE: '1'
+          TIANGONG_TEST_LOG_DIR: .local/test-logs/main-hotfix-${{ github.run_id }}-${{ github.run_attempt }}
+        run: pnpm prepush:gate
+
+      - name: Upload full Jest logs
+        if: always() && steps.context.outputs.gate_mode == 'hotfix-full'
+        uses: actions/upload-artifact@v6
+        with:
+          name: main-hotfix-jest-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/test-logs/**
+          if-no-files-found: ignore
+          retention-days: 7

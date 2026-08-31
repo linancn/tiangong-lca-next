@@ -36,6 +36,7 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
+import { getActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import {
   contributeLifeCycleModel,
@@ -72,10 +73,21 @@ import LifeCycleModelEdit from './Components/edit';
 import LifeCycleModelView from './Components/view';
 const { Search } = Input;
 
+type LifeCycleModelTableRequestParams = LocaleAwareTableParams & {
+  dataSource: string;
+  teamId: string;
+  keyword: string;
+  searchRevision: number;
+  searchMode: 'keyword' | 'ai' | 'reference';
+  stateCode: string | number;
+};
+
 const TableList: FC = () => {
   const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState('');
-  const [, setStateCode] = useState<string | number>('all');
+  const [searchRevision, setSearchRevision] = useState(0);
+  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [tableDataSource, setTableDataSource] = useState<LifeCycleModelTable[]>([]);
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -105,8 +117,6 @@ const TableList: FC = () => {
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType>(undefined);
-  const keyWordRef = useRef('');
-  const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: LifeCycleModelTable[];
@@ -341,13 +351,11 @@ const TableList: FC = () => {
   ];
 
   const onSearch: SearchProps['onSearch'] = (value) => {
-    keyWordRef.current = value;
     setKeyWord(value);
-    actionRef.current?.setPageInfo?.({ current: 1 });
+    setSearchRevision((revision) => revision + 1);
     if (referenceLookup && !getReferenceLookupUuid(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
     }
-    actionRef.current?.reload();
   };
 
   useEffect(() => {
@@ -416,7 +424,8 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<LifeCycleModelTable, LocaleAwareTableParams>
+      <ProTable<LifeCycleModelTable, LifeCycleModelTableRequestParams>
+        key={`lifecycle-model-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -426,7 +435,17 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
-        params={{ locale: appLocale }}
+        dataSource={tableDataSource}
+        onDataSourceChange={setTableDataSource}
+        params={{
+          locale: appLocale,
+          dataSource,
+          teamId: tid ?? '',
+          keyword: keyWord,
+          searchRevision,
+          searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
+          stateCode,
+        }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -441,9 +460,7 @@ const TableList: FC = () => {
                 key={2}
                 width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
-                  stateCodeRef.current = val;
                   setStateCode(val);
-                  actionRef.current?.reload();
                 }}
               />,
             ];
@@ -463,36 +480,45 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
+          params: LifeCycleModelTableRequestParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const { locale: requestedLocale, ...requestParams } = params;
+          const {
+            locale: requestedLocale,
+            dataSource: requestedDataSource,
+            teamId: requestedTeamId,
+            keyword: requestedKeyword,
+            searchRevision: _searchRevision,
+            searchMode,
+            stateCode: requestedStateCode,
+            ...requestParams
+          } = params;
+          void _searchRevision;
+          setTableDataSource([]);
           return guardLocaleMaterializedTableRequest(
             requestedLocale,
             () => currentAppLocaleRef.current,
             tableRequestEpochRef,
             async ({ isCurrentRequest }) => {
-              const currentKeyWord = keyWordRef.current || keyWord;
-              const currentStateCode = stateCodeRef.current;
-              if (referenceLookup) {
-                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+              if (searchMode === 'reference') {
+                const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
                 if (!referenceLookupUuid) {
                   return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
                 }
-                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+                const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
 
                 const result = await getLifeCycleModelTableUuidMentionSearch(
                   requestParams,
                   lang,
-                  dataSource,
+                  requestedDataSource,
                   referenceLookupUuid,
-                  currentStateCode,
+                  requestedStateCode,
                   referenceLookupTeamId,
                 );
                 const noticeKey = [
-                  dataSource,
+                  requestedDataSource,
                   referenceLookupUuid,
-                  currentStateCode,
+                  requestedStateCode,
                   referenceLookupTeamId,
                   requestedLocale,
                 ].join(':');
@@ -506,7 +532,7 @@ const TableList: FC = () => {
                 }
                 return attachReviewState(result);
               }
-              if (currentKeyWord.length > 0) {
+              if (requestedKeyword.length > 0) {
                 let orderBy:
                   | {
                       key: 'common:class' | 'baseName';
@@ -514,9 +540,9 @@ const TableList: FC = () => {
                       order: 'asc' | 'desc';
                     }
                   | undefined;
-                if (sort && Object.keys(sort).length > 0) {
-                  const field = Object.keys(sort)[0];
-                  const order = sort[field];
+                const activeSort = getActiveTableSort(sort);
+                if (activeSort) {
+                  const { field, order } = activeSort;
                   if (field === 'name') {
                     orderBy = {
                       key: 'baseName',
@@ -527,15 +553,15 @@ const TableList: FC = () => {
                     orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
                   }
                 }
-                if (openAI) {
+                if (searchMode === 'ai') {
                   return attachReviewState(
                     await lifeCycleModel_hybrid_search(
                       requestParams,
                       lang,
-                      dataSource,
-                      currentKeyWord,
+                      requestedDataSource,
+                      requestedKeyword,
                       {},
-                      currentStateCode,
+                      requestedStateCode,
                     ),
                   );
                 }
@@ -543,12 +569,12 @@ const TableList: FC = () => {
                   await getLifeCycleModelTablePgroongaSearch(
                     requestParams,
                     lang,
-                    dataSource,
-                    currentKeyWord,
+                    requestedDataSource,
+                    requestedKeyword,
                     {},
-                    currentStateCode,
+                    requestedStateCode,
                     orderBy,
-                    tid ?? '',
+                    requestedTeamId,
                   ),
                 );
               }
@@ -557,9 +583,9 @@ const TableList: FC = () => {
                   requestParams,
                   sort,
                   lang,
-                  dataSource,
-                  tid ?? '',
-                  currentStateCode,
+                  requestedDataSource,
+                  requestedTeamId,
+                  requestedStateCode,
                 ),
               );
             },

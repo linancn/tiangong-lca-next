@@ -16,6 +16,7 @@ import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 import { Footer } from '@/components';
 import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
+import { resolveSafeLoginRedirect } from '@/services/general/publicRoutePolicy';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -43,6 +44,34 @@ const LoginMessage: React.FC<{
 );
 
 const { Link: TypographyLink } = Typography;
+
+const getPasswordLoginErrorMessage = (
+  errorCode: string | undefined,
+  formatMessage: (descriptor: { id: string; defaultMessage: string }) => string,
+) => {
+  switch (errorCode) {
+    case 'invalid_credentials':
+      return formatMessage({
+        id: 'pages.login.passwordLogin.errorMessage',
+        defaultMessage: 'Incorrect username/password',
+      });
+    case 'email_not_confirmed':
+      return formatMessage({
+        id: 'pages.login.passwordLogin.emailNotConfirmed',
+        defaultMessage: 'Confirm your email before signing in.',
+      });
+    case 'over_request_rate_limit':
+      return formatMessage({
+        id: 'pages.login.passwordLogin.rateLimited',
+        defaultMessage: 'Too many login attempts. Wait a moment and try again.',
+      });
+    default:
+      return formatMessage({
+        id: 'pages.login.failure',
+        defaultMessage: 'Login failed, please try again!',
+      });
+  }
+};
 
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
@@ -119,7 +148,7 @@ const Login: React.FC = () => {
           messageApi.success(defaultLoginSuccessMessage);
           await fetchUserInfo();
           const urlParams = new URLSearchParams(location.search);
-          history.push(urlParams.get('redirect') || '/');
+          history.push(resolveSafeLoginRedirect(urlParams.get('redirect')));
           return;
         }
         // 如果失败去设置用户错误信息
@@ -157,7 +186,7 @@ const Login: React.FC = () => {
     });
   };
 
-  const { status, type: loginType } = userLoginState;
+  const { status, type: loginType, errorCode } = userLoginState;
   const brandTheme = getBrandTheme(isDarkMode);
   const appTitle =
     getLocalizedAppTitle(intl.locale) ??
@@ -275,10 +304,7 @@ const Login: React.FC = () => {
               />
               {status === 'error' && loginType === 'login' && (
                 <LoginMessage
-                  content={intl.formatMessage({
-                    id: 'pages.login.passwordLogin.errorMessage',
-                    defaultMessage: 'Incorrect username/password',
-                  })}
+                  content={getPasswordLoginErrorMessage(errorCode, intl.formatMessage)}
                 />
               )}
               {status === 'error' && loginType === 'register' && (

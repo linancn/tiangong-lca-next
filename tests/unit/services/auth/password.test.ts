@@ -9,6 +9,7 @@
  */
 
 import { changePassword, forgotPasswordSendEmail, setPassword } from '@/services/auth/password';
+import { completePasswordRecovery, getPasswordRecoveryUser } from '@/services/auth/recovery';
 import { supabase } from '@/services/supabase';
 
 jest.mock('@/services/supabase', () => ({
@@ -17,8 +18,14 @@ jest.mock('@/services/supabase', () => ({
       signInWithPassword: jest.fn(),
       updateUser: jest.fn(),
       resetPasswordForEmail: jest.fn(),
+      signOut: jest.fn(),
     },
   },
+}));
+
+jest.mock('@/services/auth/recovery', () => ({
+  completePasswordRecovery: jest.fn(),
+  getPasswordRecoveryUser: jest.fn(),
 }));
 
 const authMock = (
@@ -27,6 +34,7 @@ const authMock = (
       signInWithPassword: jest.Mock;
       updateUser: jest.Mock;
       resetPasswordForEmail: jest.Mock;
+      signOut: jest.Mock;
     };
   }
 ).auth;
@@ -34,6 +42,11 @@ const authMock = (
 describe('Auth password helpers (src/services/auth/password.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (getPasswordRecoveryUser as jest.Mock).mockResolvedValue({
+      userid: 'recovery-user',
+      role: 'member',
+    });
+    authMock.signOut.mockResolvedValue({ error: null });
   });
 
   describe('changePassword', () => {
@@ -146,16 +159,17 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.updateUser).toHaveBeenCalledWith({
-        email: 'user@example.com',
         password: 'ResetPass3#',
       });
-      expect(result).toEqual({ status: 'ok', type: 'reset', currentAuthority: 'member' });
+      expect(completePasswordRecovery).toHaveBeenCalledTimes(1);
+      expect(authMock.signOut).toHaveBeenCalledWith({ scope: 'local' });
+      expect(result).toEqual({ status: 'ok', type: 'reset', currentAuthority: 'guest' });
     });
 
-    it('propagates Supabase errors so the reset page can display them', async () => {
+    it('returns stable Supabase error metadata without exposing the provider message', async () => {
       authMock.updateUser.mockResolvedValueOnce({
         data: null,
-        error: { message: 'Token invalid' },
+        error: { message: 'Token invalid', code: 'same_password', status: 422 },
       });
 
       const result = await setPassword({
@@ -166,13 +180,16 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
 
       expect(result).toEqual({
         status: 'error',
-        message: 'Token invalid',
         type: 'reset',
         currentAuthority: 'guest',
+        errorCode: 'same_password',
+        errorStatus: 422,
       });
+      expect(completePasswordRecovery).not.toHaveBeenCalled();
+      expect(authMock.signOut).not.toHaveBeenCalled();
     });
 
-    it('falls back to empty reset fields when the payload is incomplete', async () => {
+    it('falls back to an empty password when the payload is incomplete', async () => {
       authMock.updateUser.mockResolvedValueOnce({
         data: { user: { role: 'member' } },
         error: null,
@@ -185,10 +202,23 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.updateUser).toHaveBeenCalledWith({
-        email: '',
         password: '',
       });
-      expect(result).toEqual({ status: 'ok', type: 'reset', currentAuthority: 'member' });
+      expect(result).toEqual({ status: 'ok', type: 'reset', currentAuthority: 'guest' });
+    });
+
+    it('rejects ordinary sessions that were not established by password recovery', async () => {
+      (getPasswordRecoveryUser as jest.Mock).mockResolvedValueOnce(null);
+
+      const result = await setPassword({ confirmNewPassword: 'ResetPass3#', type: 'reset' });
+
+      expect(authMock.updateUser).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        status: 'error',
+        type: 'reset',
+        currentAuthority: 'guest',
+        errorCode: 'recovery_session_missing',
+      });
     });
   });
 
@@ -202,14 +232,14 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.resetPasswordForEmail).toHaveBeenCalledWith('user@example.com', {
-        redirectTo: 'http://localhost:8000/#/user/login/password_reset',
+        redirectTo: 'http://localhost:8000/',
       });
       expect(result).toEqual({ status: 'ok', type: 'forgot', currentAuthority: 'guest' });
     });
 
     it('returns error details when Supabase cannot send the email', async () => {
       authMock.resetPasswordForEmail.mockResolvedValueOnce({
-        error: { message: 'User not found' },
+        error: { message: 'User not found', code: 'over_email_send_rate_limit', status: 429 },
       });
 
       const result = await forgotPasswordSendEmail({
@@ -219,9 +249,10 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
 
       expect(result).toEqual({
         status: 'error',
-        message: 'User not found',
         type: 'forgot',
         currentAuthority: 'guest',
+        errorCode: 'over_email_send_rate_limit',
+        errorStatus: 429,
       });
     });
 
@@ -234,7 +265,7 @@ describe('Auth password helpers (src/services/auth/password.ts)', () => {
       });
 
       expect(authMock.resetPasswordForEmail).toHaveBeenCalledWith('', {
-        redirectTo: 'http://localhost:8000/#/user/login/password_reset',
+        redirectTo: 'http://localhost:8000/',
       });
       expect(result).toEqual({ status: 'ok', type: 'forgot', currentAuthority: 'guest' });
     });

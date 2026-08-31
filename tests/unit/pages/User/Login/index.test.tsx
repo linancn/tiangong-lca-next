@@ -386,8 +386,25 @@ describe('Login page', () => {
     mockLocation = { pathname: '/', search: '' };
   });
 
+  it('rejects an external redirect query after a successful login', async () => {
+    mockLocation = {
+      pathname: '/login',
+      search: '?redirect=https%3A%2F%2Fevil.example%2Fcallback',
+    };
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => expect(mockHistory.push).toHaveBeenCalledWith('/'));
+    expect(mockHistory.push).not.toHaveBeenCalledWith('https://evil.example/callback');
+  });
+
   it('shows the login error alert when the login service returns an error status', async () => {
-    mockLogin.mockResolvedValueOnce({ status: 'error', type: 'login' });
+    mockLogin.mockResolvedValueOnce({
+      status: 'error',
+      type: 'login',
+      errorCode: 'invalid_credentials',
+    });
 
     render(<LoginPage />);
 
@@ -395,6 +412,19 @@ describe('Login page', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect username/password');
     expect(mockHistory.push).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['email_not_confirmed', 'Confirm your email before signing in.'],
+    ['over_request_rate_limit', 'Too many login attempts. Wait a moment and try again.'],
+    ['unexpected_failure', 'Login failed, please try again!'],
+  ])('maps stable login error code %s to a safe message', async (errorCode, expectedMessage) => {
+    mockLogin.mockResolvedValueOnce({ status: 'error', type: 'login', errorCode });
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(expectedMessage);
   });
 
   it('renders the forgot-password link as an Umi app route', () => {

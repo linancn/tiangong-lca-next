@@ -3,7 +3,7 @@
  * Unit tests for src/pages/Account/index.tsx.
  *
  * Focus:
- * - API key generation workflow (success and failure branches).
+ * - account forms, responsive tabs, and connected-app navigation.
  */
 
 import Profile, { ACCOUNT_FORM_CONTAINER_STYLE, getAccountTabPlacement } from '@/pages/Account';
@@ -12,9 +12,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  cognitoSignUp,
-  getAccountProfile,
-  login,
+  getCurrentUser,
   setProfile,
 } from '@/services/auth';
 import { act } from '@testing-library/react';
@@ -442,10 +440,15 @@ jest.mock('@/services/auth', () => ({
   changePassword: jest.fn(),
   cognitoChangeEmail: jest.fn(),
   cognitoChangePassword: jest.fn(),
-  cognitoSignUp: jest.fn(),
-  getAccountProfile: jest.fn(),
-  login: jest.fn(),
+  getCurrentUser: jest.fn(),
   setProfile: jest.fn(),
+}));
+
+jest.mock('@/pages/Account/OAuthConnections', () => ({
+  __esModule: true,
+  default: ({ email }: { email?: string }) => (
+    <div data-testid='oauth-connections'>Connected applications for {email}</div>
+  ),
 }));
 
 const mockSetProfile = setProfile as jest.MockedFunction<any>;
@@ -455,8 +458,6 @@ const mockChangePassword = changePassword as jest.MockedFunction<any>;
 const mockChangeEmail = changeEmail as jest.MockedFunction<any>;
 const mockCognitoChangePassword = cognitoChangePassword as jest.MockedFunction<any>;
 const mockCognitoChangeEmail = cognitoChangeEmail as jest.MockedFunction<any>;
-const mockCognitoSignUp = cognitoSignUp as jest.MockedFunction<any>;
-const mockLogin = login as jest.MockedFunction<any>;
 
 describe('Account profile page (unit)', () => {
   it('uses shrinkable form containers and moves account tabs above compact content', () => {
@@ -467,12 +468,6 @@ describe('Account profile page (unit)', () => {
     });
     expect(getAccountTabPlacement(false)).toBe('start');
     expect(getAccountTabPlacement(true)).toBe('top');
-  });
-
-  beforeAll(() => {
-    if (typeof global.btoa === 'undefined') {
-      global.btoa = (input: string) => Buffer.from(input, 'binary').toString('base64');
-    }
   });
 
   beforeEach(() => {
@@ -492,8 +487,6 @@ describe('Account profile page (unit)', () => {
     mockChangeEmail.mockResolvedValue({ status: 'ok' } as any);
     mockCognitoChangePassword.mockResolvedValue(undefined as any);
     mockCognitoChangeEmail.mockResolvedValue(undefined as any);
-    mockCognitoSignUp.mockResolvedValue(undefined as any);
-    mockLogin.mockResolvedValue({ status: 'ok' } as any);
   });
 
   it('loads and updates basic profile information successfully', async () => {
@@ -934,7 +927,7 @@ describe('Account profile page (unit)', () => {
     expect(mockChangeEmail).not.toHaveBeenCalled();
   });
 
-  it('renders password strength feedback in the password and API key tabs', async () => {
+  it('renders password strength feedback in the password tab', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<Profile />);
@@ -951,153 +944,16 @@ describe('Account profile page (unit)', () => {
 
     await user.type(newPassword, 'More1!');
     expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Strong');
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-
-    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Weak');
-
-    const currentPassword = screen.getByLabelText('Current Password');
-    await user.type(currentPassword, 'Abcdefg1!');
-    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Medium');
-
-    await user.type(currentPassword, 'More1!');
-    expect(screen.getByTestId('status-currentPassword')).toHaveTextContent('Strength: Strong');
   });
 
-  it('generates an API key after validating credentials successfully', async () => {
+  it('renders connected applications without exposing the retired API-key generator', async () => {
     const user = userEvent.setup();
-
     renderWithProviders(<Profile />);
-
     await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-
-    const generateTab = screen.getByRole('button', { name: 'Generate API Key' });
-    await user.click(generateTab);
-
-    const passwordField = screen.getByLabelText('Current Password') as HTMLInputElement;
-    await user.type(passwordField, 'Abcdefg1!');
-
-    const generateButton = screen.getByRole('button', { name: 'Generate Key' });
-    await user.click(generateButton);
-
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith({
-        email: 'user@example.com',
-        password: 'Abcdefg1!',
-      }),
+    await user.click(screen.getByRole('button', { name: 'Connected apps' }));
+    expect(screen.getByTestId('oauth-connections')).toHaveTextContent(
+      'Connected applications for user@example.com',
     );
-
-    expect(mockCognitoSignUp).toHaveBeenCalledWith('Abcdefg1!');
-
-    const payload = JSON.stringify({ email: 'user@example.com', password: 'Abcdefg1!' }, null, 0);
-    const encodedKey = btoa(payload);
-
-    expect(message.success).toHaveBeenCalledWith('API Key generated successfully!');
-    expect(screen.getByDisplayValue(encodedKey)).toBeInTheDocument();
-
-    const baseTab = screen.getByRole('button', { name: 'Basic Information' });
-    await user.click(baseTab);
-
-    await waitFor(() => expect(screen.queryByDisplayValue(encodedKey)).not.toBeInTheDocument());
-  });
-
-  it('surfaces an error when credentials are invalid during API key generation', async () => {
-    mockLogin.mockResolvedValueOnce({ status: 'error' } as any);
-
-    const user = userEvent.setup();
-    renderWithProviders(<Profile />);
-
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-
-    const generateTab = screen.getByRole('button', { name: 'Generate API Key' });
-    await user.click(generateTab);
-
-    const passwordField = screen.getByLabelText('Current Password') as HTMLInputElement;
-    await user.type(passwordField, 'Abcdefg1!');
-
-    const generateButton = screen.getByRole('button', { name: 'Generate Key' });
-    await user.click(generateButton);
-
-    await waitFor(() => expect(mockLogin).toHaveBeenCalledTimes(1));
-    expect(message.error).toHaveBeenCalledWith('Invalid credentials. Please check your password.');
-    expect(mockCognitoSignUp).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
-  });
-
-  it('shows a generic error when API key generation throws after login succeeds', async () => {
-    mockCognitoSignUp.mockRejectedValueOnce(new Error('cognito failed'));
-
-    const user = userEvent.setup();
-    renderWithProviders(<Profile />);
-
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
-
-    const generateButton = screen.getByRole('button', { name: 'Generate Key' });
-    await user.click(generateButton);
-
-    await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith(
-        'A system error occurred while generating the API key. Please try again later.',
-      ),
-    );
-    expect(screen.queryByLabelText('API Key')).not.toBeInTheDocument();
-  });
-
-  it('falls back to an empty email string when generating an API key without a loaded email', async () => {
-    mockGetCurrentUser.mockResolvedValueOnce({
-      userid: 'user-1',
-      name: 'Test User',
-    } as any);
-
-    const user = userEvent.setup();
-    renderWithProviders(<Profile />);
-
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
-    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
-
-    await waitFor(() =>
-      expect(mockLogin).toHaveBeenCalledWith({
-        email: '',
-        password: 'Abcdefg1!',
-      }),
-    );
-
-    const payload = JSON.stringify({ email: '', password: 'Abcdefg1!' }, null, 0);
-    expect(screen.getByDisplayValue(btoa(payload))).toBeInTheDocument();
-  });
-
-  it('clears the generated API key when leaving the API key tab', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<Profile />);
-
-    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
-
-    await user.click(screen.getByRole('button', { name: 'Generate API Key' }));
-    await user.type(screen.getByLabelText('Current Password'), 'Abcdefg1!');
-    await user.click(screen.getByRole('button', { name: 'Generate Key' }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          'Make sure to copy it to a secure location. This key will not be shown again.',
-        ),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole('button', { name: 'Basic Information' }));
-
-    await waitFor(() => {
-      expect(
-        screen.queryByText(
-          'Make sure to copy it to a secure location. This key will not be shown again.',
-        ),
-      ).not.toBeInTheDocument();
-    });
+    expect(screen.queryByRole('button', { name: 'Generate API Key' })).not.toBeInTheDocument();
   });
 });

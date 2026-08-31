@@ -33,6 +33,7 @@ import {
   searchDatasetJsonUuidMentionPage,
 } from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
+import { resolveTableSort } from '../general/tableSort';
 import {
   createTidasScalarValidationError,
   validateProcessTidasScalarStorage,
@@ -524,8 +525,7 @@ export async function getProcessTableAll(
   stateCode?: string | number,
   typeOfDataSet?: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
   const session = await supabase.auth.getSession();
   if (dataSource === 'my' && !session.data.session) {
@@ -595,8 +595,7 @@ async function getProcessTableAllData(
     return { data: [], success: false, error: 'unauthorized' };
   }
 
-  const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-  const orderBy = sort[sortBy] ?? 'descend';
+  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
   let query = publicEntity('processes')
     .select(selectStr4Table, { count: 'exact' })
     .or(
@@ -654,15 +653,15 @@ export async function getConnectableProcessesTable(
   portId: string,
   flowVersion: string,
 ) {
-  const requestedSortField = Object.keys(sort)[0];
+  const requestedSort = resolveTableSort(sort, 'modified_at');
   const connectableSortFieldMap: Record<string, string> = {
     id: 'id',
     version: 'version',
     modifiedAt: 'modified_at',
     modified_at: 'modified_at',
   };
-  const sortBy = connectableSortFieldMap[requestedSortField ?? ''] ?? 'modified_at';
-  const orderBy = (requestedSortField ? sort[requestedSortField] : undefined) ?? 'descend';
+  const sortBy = connectableSortFieldMap[requestedSort.field] ?? 'modified_at';
+  const orderBy = requestedSort.order;
   const direction = portId.split(':')[0];
   const flowId = portId.split(':').pop();
   if (!flowId) {

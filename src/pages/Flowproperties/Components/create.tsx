@@ -87,8 +87,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   const intl = useIntl();
   const importedId = getImportedId(importData?.[0]);
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
+  const reloadFromFirstPage = useCallback(async () => {
+    await actionRef.current?.reload(true);
   }, [actionRef]);
 
   const handletFromData = () => {
@@ -293,7 +293,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
                   setDrawerVisible(false);
                   setActiveTabKey('flowPropertiesInformation');
                   setFromData(undefined);
-                  reload();
+                  await reloadFromFirstPage();
                 } else {
                   message.error(
                     isSupabaseDuplicateKeyError(result.error)

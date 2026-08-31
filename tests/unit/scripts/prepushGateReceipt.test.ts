@@ -111,7 +111,7 @@ const createFixtureSeed = (): FixtureSeed => {
     name: 'receipt-fixture',
     version: '1.0.0',
     private: true,
-    packageManager: 'pnpm@11.23.0',
+    packageManager: 'pnpm@11.24.0',
     scripts: {
       'docpact:gate': 'node scripts/fake-gate.cjs docpact',
       'prepush:gate': 'node scripts/fake-gate.cjs prepush',

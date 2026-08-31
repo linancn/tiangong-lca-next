@@ -7,12 +7,15 @@ const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
 const mockResolveBrowserRuntimeLocale = jest.fn(() => 'de-DE');
 const mockBindTidasPackageTaskCenterOwner = jest.fn();
 const mockGetSystemStatus = jest.fn();
+const mockSubscribeToPasswordRecovery = jest.fn();
+let mockPasswordRecoveryCallback: (() => void) | undefined;
 const mockHistory = {
   location: {
     pathname: '/tgdata',
     search: '',
   },
   push: jest.fn(),
+  replace: jest.fn(),
 };
 const mockGetIntl = jest.fn(() => ({
   locale: 'en-US',
@@ -100,6 +103,14 @@ jest.mock('@/components/TidasPackageActions', () => ({
 jest.mock('@/services/auth', () => ({
   __esModule: true,
   getCurrentUser: (...args: any[]) => mockQueryCurrentUser(...args),
+}));
+
+jest.mock('@/services/auth/recovery', () => ({
+  __esModule: true,
+  subscribeToPasswordRecovery: (callback: () => void) => {
+    mockPasswordRecoveryCallback = callback;
+    return mockSubscribeToPasswordRecovery(callback);
+  },
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -217,6 +228,15 @@ jest.mock('@ant-design/pro-components', () => ({
 }));
 
 describe('app runtime config', () => {
+  it('routes Supabase password-recovery events to the reset form', () => {
+    require('@/app');
+
+    expect(mockPasswordRecoveryCallback).toEqual(expect.any(Function));
+    mockPasswordRecoveryCallback?.();
+
+    expect(mockHistory.replace).toHaveBeenCalledWith('/user/login/password_reset');
+  });
+
   it('replaces the ProLayout collapse div with one semantic button', () => {
     const { renderAccessibleCollapsedButton } = require('@/components/AccessibleCollapsedButton');
     const onClick = jest.fn();
@@ -467,8 +487,13 @@ describe('app runtime config', () => {
     },
   );
 
-  it.each(['/user/login', '/user/login/password_forgot', '/user/login/password_reset'])(
-    'getInitialState skips user loading on anonymous login-flow route %s',
+  it.each([
+    '/user/login',
+    '/user/login/password_forgot',
+    '/user/login/password_reset',
+    '/oauth/consent',
+  ])(
+    'getInitialState skips global user loading on the self-authenticating entry route %s',
     async (pathname) => {
       const { getInitialState } = require('@/app');
       mockHistory.location.pathname = pathname;

@@ -434,7 +434,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
     expect(calledId).toBe('uuid-1');
     expect(payload.flowProperties.flowProperty).toHaveLength(1);
     expect(mockMessage.success).toHaveBeenCalled();
-    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(actionRef.current.reload).toHaveBeenCalledWith(true);
     expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
     expect(mockSetFlowFormProps).toHaveBeenLastCalledWith(
       expect.objectContaining({ activeTabKey: 'flowInformation' }),

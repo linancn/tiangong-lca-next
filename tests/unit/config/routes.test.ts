@@ -32,7 +32,8 @@ describe('route access config', () => {
 
   it('wraps every protected layout-free content route with the session guard', () => {
     const protectedLayoutFreeRoutes = routes.filter(
-      (route) => route.layout === false && route.path !== '/user',
+      (route) =>
+        route.layout === false && route.path !== '/user' && route.path !== '/oauth/consent',
     );
 
     expect(protectedLayoutFreeRoutes).toEqual(
@@ -45,6 +46,17 @@ describe('route access config', () => {
     expect(
       protectedLayoutFreeRoutes.every((route) => route.wrappers?.includes('@/wrappers/AuthGuard')),
     ).toBe(true);
+  });
+
+  it('exposes the OAuth consent page outside ProLayout without the generic auth wrapper', () => {
+    expect(routes.find((route) => route.path === '/oauth/consent')).toEqual(
+      expect.objectContaining({
+        path: '/oauth/consent',
+        component: './OAuth/Consent',
+        layout: false,
+        menu: false,
+      }),
+    );
   });
 
   it('canonicalizes the user parent and guards every anonymous login-flow leaf', () => {

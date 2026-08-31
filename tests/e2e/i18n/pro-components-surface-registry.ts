@@ -171,8 +171,11 @@ export const PRO_COMPONENT_SURFACE_FAMILIES = [
   {
     id: 'account-profile-forms',
     componentTags: ['ProForm'],
-    sourcePaths: ['src/pages/Account/index.tsx'],
-    evidencePaths: ['tests/e2e/i18n/route-inventory.spec.ts'],
+    sourcePaths: ['src/pages/Account/index.tsx', 'src/pages/Account/OAuthConnections.tsx'],
+    evidencePaths: [
+      'tests/e2e/i18n/route-inventory.spec.ts',
+      'tests/unit/pages/Account/OAuthConnections.test.tsx',
+    ],
     visualStates: ['desktop', 'narrow', 'light', 'dark'],
   },
   {

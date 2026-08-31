@@ -48,12 +48,12 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
+import { getActiveTableSort, mapActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { SortOrder } from 'antd/es/table/interface';
 import type { FC, ReactNode } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
@@ -611,9 +611,9 @@ const TableList: FC = () => {
                       order: 'asc' | 'desc';
                     }
                   | undefined;
-                if (sort && Object.keys(sort).length > 0) {
-                  const field = Object.keys(sort)[0];
-                  const order = sort[field];
+                const activeSort = getActiveTableSort(sort);
+                if (activeSort) {
+                  const { field, order } = activeSort;
                   if (field === 'name') {
                     orderBy = {
                       key: 'baseName',
@@ -652,15 +652,7 @@ const TableList: FC = () => {
                 name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
               };
 
-              const convertedSort: Record<string, SortOrder> = {};
-              if (sort && Object.keys(sort).length > 0) {
-                const field = Object.keys(sort)[0];
-                if (sortFields[field]) {
-                  convertedSort[sortFields[field]] = sort[field];
-                } else {
-                  convertedSort[field] = sort[field];
-                }
-              }
+              const convertedSort = mapActiveTableSort(sort, sortFields);
 
               return attachReviewState(
                 await getFlowTableAll(

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "adcaa91de1937a4e694fb18d29bd000316ab427a"
-lastReviewedNote: 'Reviewed the merged Issue #938 exact toolchain/SDK consumer and current dev review-validation/i18n changes; existing ownership, routing, and proof rules cover the combined delivery.'
+lastReviewedCommit: "dee1cddd1238e135cf9866280676e54715129dfd"
+lastReviewedNote: 'Reviewed for Next Issue #971: existing service-env and testing routes cover Dev selection when Umi preloads main defaults, per-key explicit overrides, and focused regression proof; no routing change is required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -53,6 +53,7 @@ ownership:
           - .dockerignore
           - .gitignore
           - .gitleaks.toml
+          - .gitleaksignore
           - .oxlintrc.json
           - .prettierignore
           - .prettierrc.js
@@ -125,6 +126,7 @@ coverage:
     - .dockerignore
     - .gitignore
     - .gitleaks.toml
+    - .gitleaksignore
     - .oxlintrc.json
     - .prettierignore
     - .prettierrc.js
@@ -195,6 +197,17 @@ routing:
         - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
         - docker/**
+    oauth-authorization:
+      paths:
+        - config/routes.ts
+        - public/edgeone.json
+        - public/oauth-consent-bridge.*
+        - src/pages/OAuth/**
+        - src/pages/Account/OAuthConnections.tsx
+        - src/services/auth/oauth.ts
+        - src/services/general/publicRoutePolicy.ts
+        - tests/**/*OAuth*.test.*
+        - tests/unit/config/oauthConsentBridge.test.ts
     ai-suggestion:
       paths:
         - src/components/AISuggestion/**
@@ -209,6 +222,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -283,6 +297,7 @@ routing:
         - .dockerignore
         - .gitignore
         - .gitleaks.toml
+        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -428,6 +443,8 @@ rules:
       - path: .dockerignore
         kind: container-build-input
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .nvmrc
         kind: runtime-baseline
@@ -627,6 +644,36 @@ rules:
       - path: docs/agents/supabase-branching.md
         mode: review_or_update
     reason: App-side service, environment, and local stack changes alter the frontend data boundary and should refresh both the repo routing layer and the Supabase branching guide.
+  - id: next-oauth-authorization-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: config/routes.ts
+        kind: oauth-route
+      - path: public/edgeone.json
+        kind: oauth-edge-rewrite
+      - path: public/oauth-consent-bridge.*
+        kind: oauth-hash-bridge
+      - path: src/pages/OAuth/**
+        kind: oauth-consent-ui
+      - path: src/pages/Account/OAuthConnections.tsx
+        kind: oauth-grant-ui
+      - path: src/services/auth/oauth.ts
+        kind: oauth-client-service
+      - path: src/services/general/publicRoutePolicy.ts
+        kind: oauth-entry-policy
+    requiredDocs:
+      - path: AGENTS.md
+        mode: review_or_update
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+      - path: docs/agents/supabase-branching.md
+        mode: review_or_update
+    reason: OAuth consent, same-origin login continuation, callback safety, grant revocation, EdgeOne bridging, and legacy-key retirement must remain one reviewed frontend authorization boundary.
   - id: next-branding-and-packaging-contract
     scope: repo
     repo: next
@@ -680,6 +727,8 @@ rules:
       - path: .gitignore
         kind: local-runtime-boundary
       - path: .gitleaks.toml
+        kind: secret-scan-config
+      - path: .gitleaksignore
         kind: secret-scan-config
       - path: .oxlintrc.json
         kind: lint-gate

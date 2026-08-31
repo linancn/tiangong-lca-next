@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: adcaa91de1937a4e694fb18d29bd000316ab427a
-lastReviewedNote: 'Reviewed after integrating current dev: exact Node/pnpm/TS7, SDK 0.2.0, digest-bound containers, and immutable pnpm setup coexist with the latest review-validation/i18n delivery without changing ownership or branch policy.'
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
+lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher selects `.env.development*` even after Umi preloads exact main-file defaults, while distinct explicit overrides keep priority.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -148,10 +148,10 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 
 Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-validation.md` for the full command matrix and proof details.
 
-- package manager: repository-pinned `pnpm` `11.23.0`; install with `pnpm install --frozen-lockfile`
+- package manager: repository-pinned `pnpm` `11.24.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
 - UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
-- shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)
+- shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent); it selects `.env.development*` over exact Umi-preloaded main-file defaults while retaining distinct explicit per-key build overrides
 - explicit main-environment run: `pnpm start:main`
 - default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
 - Electron TypeScript 7 check: `pnpm tsc:electron`
@@ -178,9 +178,11 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - `release:to-dev --apply` changes only version metadata and bounded Docpact review metadata; its restricted local push runs Docpact plus static preflight and never runs browsers or writes proof into the branch
 - the exact marker-bound Release PR into `dev` runs one non-browser Release Gate before merge and emits an external proof for later main checks; it does not run or require browser E2E
 - every `main`-target promotion PR keeps the required `Main Candidate / Release Gate` check but verifies only immutable lineage, unchanged tree/main baseline, and the exact dev proof; it does not rerun the aggregate
+- an explicitly marked direct `main` hotfix keeps that required check name but must bind its Issue, current main base, and exact PR head, preserve package version, and pass one fresh clean-runner non-browser full gate
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
+- Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; users manage grants under Account → Connected apps, while password-encoded API keys are retired
 - startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
 
 ## Ownership Boundaries
@@ -215,7 +217,7 @@ Route those tasks to:
 - promote path: `dev -> main`
 - normal versioned releases must use `release:to-dev` followed, after that PR merges, by `release:promote-dev-to-main`; manual release-PR assembly is reserved for an explicitly diagnosed unsupported/recovery case and must preserve the same fail-closed gates
 - marker-bound version PRs targeting `dev` run the non-browser Release Gate against their exact base/head and retain proof only after the complete gate succeeds; their restricted local push runs Docpact and static preflight, while browser E2E remains a separate manual business-PR-stage decision
-- PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight
+- promotion PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight. A marked direct main hotfix instead proves exact base/head, unchanged version, static readiness, and the full non-browser gate
 - canonical version-changing `main` pushes reuse that dev proof only when the exact dev and main two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and unexpired artifact payload all match; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case fails before publication and requires a new dev candidate
 - canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump

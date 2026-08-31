@@ -81,8 +81,8 @@ const ContactCreate: FC<CreateProps> = ({
     setActiveTabKey(key);
   };
 
-  const reload = useCallback(() => {
-    actionRef.current?.reload();
+  const reloadFromFirstPage = useCallback(async () => {
+    await actionRef.current?.reload(true);
   }, [actionRef]);
 
   const getFormDetail = () => {
@@ -254,7 +254,7 @@ const ContactCreate: FC<CreateProps> = ({
                   );
                   formRefCreate.current?.resetFields();
                   setDrawerVisible(false);
-                  reload();
+                  await reloadFromFirstPage();
                 } else {
                   message.error(
                     isSupabaseDuplicateKeyError(result.error)

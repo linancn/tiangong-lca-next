@@ -55,13 +55,13 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
+import { getActiveTableSort, mapActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { SortOrder } from 'antd/es/table/interface';
 import type { FC, ReactElement } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
@@ -88,11 +88,23 @@ export const getProcesstypeOfDataSetOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
+type ProcessTableRequestParams = LocaleAwareTableParams & {
+  dataSource: string;
+  teamId: string;
+  keyword: string;
+  searchRevision: number;
+  searchMode: 'keyword' | 'ai' | 'reference';
+  stateCode: string | number;
+  typeOfDataSet: string;
+};
+
 const TableList: FC = () => {
   const { message } = App.useApp();
   const [keyWord, setKeyWord] = useState('');
-  const [, setStateCode] = useState<string | number>('all');
-  const [, setTypeOfDataSet] = useState<string>('all');
+  const [searchRevision, setSearchRevision] = useState(0);
+  const [stateCode, setStateCode] = useState<string | number>('all');
+  const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
+  const [tableDataSource, setTableDataSource] = useState<ProcessTable[]>([]);
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -137,15 +149,10 @@ const TableList: FC = () => {
       data: await attachStateCodesToRows('processes', result.data),
     };
   };
-  const keyWordRef = useRef('');
-  const stateCodeRef = useRef<string | number>('all');
-  const typeOfDataSetRef = useRef<string>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
   const typeOfDataSetFilter = (width: number) => {
     const onChange = (value: string) => {
-      typeOfDataSetRef.current = value;
       setTypeOfDataSet(value);
-      actionRef.current?.reloadAndRest?.();
     };
     return (
       <Select
@@ -514,13 +521,11 @@ const TableList: FC = () => {
   };
 
   const onSearch: SearchProps['onSearch'] = (value) => {
-    keyWordRef.current = value;
     setKeyWord(value);
-    actionRef.current?.setPageInfo?.({ current: 1 });
+    setSearchRevision((revision) => revision + 1);
     if (referenceLookup && !getReferenceLookupUuid(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
     }
-    actionRef.current?.reload();
   };
   const handleImportData = (jsonData: ProcessImportData) => {
     setImportData(jsonData);
@@ -590,7 +595,8 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<ProcessTable, LocaleAwareTableParams>
+      <ProTable<ProcessTable, ProcessTableRequestParams>
+        key={`process-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -600,7 +606,18 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
-        params={{ locale: appLocale }}
+        dataSource={tableDataSource}
+        onDataSourceChange={setTableDataSource}
+        params={{
+          locale: appLocale,
+          dataSource,
+          teamId: tid ?? '',
+          keyword: keyWord,
+          searchRevision,
+          searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
+          stateCode,
+          typeOfDataSet,
+        }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         optionsRender={
@@ -651,9 +668,7 @@ const TableList: FC = () => {
                 key={2}
                 width={isMobileDataList ? 112 : 140}
                 onChange={(val) => {
-                  stateCodeRef.current = val;
                   setStateCode(val);
-                  actionRef.current?.reload();
                 }}
               />,
             ];
@@ -700,42 +715,51 @@ const TableList: FC = () => {
           return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
         }}
         request={async (
-          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
+          params: ProcessTableRequestParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const { locale: requestedLocale, ...requestParams } = params;
+          const {
+            locale: requestedLocale,
+            dataSource: requestedDataSource,
+            teamId: requestedTeamId,
+            keyword: requestedKeyword,
+            searchRevision: _searchRevision,
+            searchMode,
+            stateCode: requestedStateCode,
+            typeOfDataSet: requestedTypeOfDataSet,
+            ...requestParams
+          } = params;
+          void _searchRevision;
+          setTableDataSource([]);
           return guardLocaleMaterializedTableRequest(
             requestedLocale,
             () => currentAppLocaleRef.current,
             tableRequestEpochRef,
             async ({ isCurrentRequest }) => {
               try {
-                const currentKeyWord = keyWordRef.current || keyWord;
-                const currentStateCode = stateCodeRef.current;
-                const currentTypeOfDataSet = typeOfDataSetRef.current;
-                if (referenceLookup) {
-                  const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (searchMode === 'reference') {
+                  const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
                   if (!referenceLookupUuid) {
                     return applyProcessTableResult(
                       getReferenceLookupEmptyResult(requestParams.current),
                     );
                   }
-                  const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+                  const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
 
                   const result = await getProcessTableUuidMentionSearch(
                     requestParams,
                     lang,
-                    dataSource,
+                    requestedDataSource,
                     referenceLookupUuid,
-                    currentStateCode,
-                    currentTypeOfDataSet,
+                    requestedStateCode,
+                    requestedTypeOfDataSet,
                     referenceLookupTeamId,
                   );
                   const noticeKey = [
-                    dataSource,
+                    requestedDataSource,
                     referenceLookupUuid,
-                    currentStateCode,
-                    currentTypeOfDataSet,
+                    requestedStateCode,
+                    requestedTypeOfDataSet,
                     referenceLookupTeamId,
                     requestedLocale,
                   ].join(':');
@@ -749,7 +773,7 @@ const TableList: FC = () => {
                   }
                   return applyProcessTableResult(result);
                 }
-                if (currentKeyWord.length > 0) {
+                if (requestedKeyword.length > 0) {
                   let orderBy:
                     | {
                         key: 'common:class' | 'baseName';
@@ -757,9 +781,9 @@ const TableList: FC = () => {
                         order: 'asc' | 'desc';
                       }
                     | undefined;
-                  if (sort && Object.keys(sort).length > 0) {
-                    const field = Object.keys(sort)[0];
-                    const order = sort[field];
+                  const activeSort = getActiveTableSort(sort);
+                  if (activeSort) {
+                    const { field, order } = activeSort;
                     if (field === 'name') {
                       orderBy = {
                         key: 'baseName',
@@ -770,16 +794,16 @@ const TableList: FC = () => {
                       orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
                     }
                   }
-                  if (openAI) {
+                  if (searchMode === 'ai') {
                     return applyProcessTableResult(
                       await process_hybrid_search(
                         requestParams,
                         lang,
-                        dataSource,
-                        currentKeyWord,
+                        requestedDataSource,
+                        requestedKeyword,
                         {},
-                        currentStateCode,
-                        currentTypeOfDataSet,
+                        requestedStateCode,
+                        requestedTypeOfDataSet,
                       ),
                     );
                   }
@@ -787,13 +811,13 @@ const TableList: FC = () => {
                     await getProcessTablePgroongaSearch(
                       requestParams,
                       lang,
-                      dataSource,
-                      currentKeyWord,
+                      requestedDataSource,
+                      requestedKeyword,
                       {},
-                      currentStateCode,
-                      currentTypeOfDataSet,
+                      requestedStateCode,
+                      requestedTypeOfDataSet,
                       orderBy,
-                      tid ?? '',
+                      requestedTeamId,
                     ),
                   );
                 }
@@ -804,25 +828,17 @@ const TableList: FC = () => {
                     'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
                 };
 
-                const convertedSort: Record<string, SortOrder> = {};
-                if (sort && Object.keys(sort).length > 0) {
-                  const field = Object.keys(sort)[0];
-                  if (sortFields[field]) {
-                    convertedSort[sortFields[field]] = sort[field];
-                  } else {
-                    convertedSort[field] = sort[field];
-                  }
-                }
+                const convertedSort = mapActiveTableSort(sort, sortFields);
 
                 return applyProcessTableResult(
                   await getProcessTableAll(
                     requestParams,
                     convertedSort,
                     lang,
-                    dataSource,
-                    tid ?? '',
-                    currentStateCode,
-                    currentTypeOfDataSet,
+                    requestedDataSource,
+                    requestedTeamId,
+                    requestedStateCode,
+                    requestedTypeOfDataSet,
                   ),
                 );
               } catch (error) {

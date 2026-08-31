@@ -94,9 +94,10 @@ describe.each(MAIN_DATASET_TABLES)('$file locale-aware ProTable contract', (tabl
   const source = fs.readFileSync(path.join(REPOSITORY_ROOT, table.file), 'utf8');
 
   it('uses the canonical registry locale as a request parameter', () => {
-    const tableStart = source.indexOf(`<ProTable<${table.rowType}, LocaleAwareTableParams>`);
-    const paramsStart = source.indexOf('params={{ locale: appLocale }}', tableStart);
+    const tableStart = source.indexOf(`<ProTable<${table.rowType},`);
+    const paramsStart = source.indexOf('params={{', tableStart);
     const requestStart = source.indexOf('request={async (', tableStart);
+    const paramsSource = source.slice(paramsStart, requestStart);
 
     expect(source).toContain(
       'const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;',
@@ -110,6 +111,7 @@ describe.each(MAIN_DATASET_TABLES)('$file locale-aware ProTable contract', (tabl
     expect(tableStart).toBeGreaterThanOrEqual(0);
     expect(paramsStart).toBeGreaterThan(tableStart);
     expect(paramsStart).toBeLessThan(requestStart);
+    expect(paramsSource).toMatch(/\blocale:\s*appLocale\b/u);
     expect(
       source.slice(requestStart, source.indexOf('\n        columns={', requestStart)),
     ).toContain('guardLocaleMaterializedTableRequest(');

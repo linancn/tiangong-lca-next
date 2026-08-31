@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-08-25
-lastReviewedCommit: 23c3c85208cea5dafedb9079f12a0ceb353fa977
-lastReviewedNote: 'Reviewed for Next Issue #938: exact Node 24.19.0, pnpm 11.23.0, TypeScript 7.0.2, and SDK 0.2.0 pins preserve the language-delivery, semantic-E2E, and production-data contracts.'
+lastReviewedAt: 2026-08-31
+lastReviewedCommit: cc36aebfb34950e472e9399ea07a12d78ae0f3a1
+lastReviewedNote: 'Reviewed for Next Issue #962: the reusable language Goal now reflects the 50-ID route/view matrix including localized OAuth consent error proof.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -626,7 +626,7 @@ locale inventory 和 route-view inventory 必须交叉校验：前者证明标�
 
 完整已登录 candidate-local + production-backend 闭包只能在用户明确授权的本地 operator session 中运行。该 session 从运行时提供凭据并设置 `E2E_AUTHENTICATED=true`；两个 production-write guard 分别是 `E2E_ALLOW_PRODUCTION_DATA=true` 和 `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`，生成 verified external evidence 还必须单独设置 `E2E_WRITE_VERIFIED_EVIDENCE=true`。执行者同时验证前端为 fresh loopback candidate、浏览器实际只访问 tracked production backend。不得把凭据、这些 opt-in 或写权限迁移到任何 semantic E2E GitHub Actions event。
 
-route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观察合同共 49 个 assertion ID；每个 ID 除 live route scenario 外，还必须闭合其 `executableTarget.requiredScenarios` 声明的匿名保护、fallback/refresh、状态机、authoring、响应式、持久化或参考数据刷新场景。Chromium 执行完整 route/view 矩阵，登录/语言选择器、团队内容语言录入和流程数据生命周期等关键场景在 Chromium、Firefox、WebKit 三种引擎中执行。locale 和可编辑内容语言集合必须从 `LOCALE_REGISTRY` 与 `CONTENT_LANGUAGE_REGISTRY` 动态派生；新增 registry locale 会自动扩大期望集合并使旧证据失效，不得人工修改旧证据继续使用。
+route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观察合同共 50 个 assertion ID；每个 ID 除 live route scenario 外，还必须闭合其 `executableTarget.requiredScenarios` 声明的匿名保护、fallback/refresh、状态机、authoring、响应式、持久化或参考数据刷新场景。Chromium 执行完整 route/view 矩阵，登录/语言选择器、团队内容语言录入和流程数据生命周期等关键场景在 Chromium、Firefox、WebKit 三种引擎中执行。locale 和可编辑内容语言集合必须从 `LOCALE_REGISTRY` 与 `CONTENT_LANGUAGE_REGISTRY` 动态派生；新增 registry locale 会自动扩大期望集合并使旧证据失效，不得人工修改旧证据继续使用。
 
 生产写入只允许随机 UUID 且 marker 以 `codex-e2e` 开头的数据。任何 create 之前必须先持久化 ignored intent ledger，绑定精确 `id + table + version + marker + createAttempted`。任何 delete 之前必须按 UUID 读取 production row，并同时验证 `common:UUID` 的确切 ILCD 路径、当前 authenticated owner，以及 `baseName`、`treatmentStandardsRoutes`、`mixAndLocationTypes`、`functionalUnitFlowProperties`、`generalComment` 五个确切字段路径中每个 registry authoring language 的 `@xml:lang`/exact-marker 配对；散落在其他位置的 marker 不构成 attestation。任一不符都拒绝删除，禁止扩大查询或模糊清理。只有完成上述 row attestation 后才能逐个删除 exact-ID versions，并验证 `created=cleaned`、`leaked=0`；前一次 ledger 未清零时不得创建下一条。截图、trace、video、持久化 auth state 和任何 credential-bearing artifact 全部禁用。
 
@@ -689,7 +689,7 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 | C1 source/context | source SHA、message inventory、route-view matrix、参考资源 edition/source/structure digest、context schema/digest | source/route/resource delta/context 闭包 |
 | C2 autonomous catalog | target catalog/reference overlay digest、零 blocked、100% resource coverage、quality report | 变化 message/resource/rule 闭包 |
 | C3 existing-locale repair | 全语言 capability audit、correction ledger/resource repair digest | 新发现或变化闭包 |
-| C4 runtime activation | activation manifest、capability/reference-data gates、49-ID semantic E2E closure、focused proof | 运行时影响范围 |
+| C4 runtime activation | activation manifest、capability/reference-data gates、50-ID semantic E2E closure、focused proof | 运行时影响范围 |
 | C5 delivery freeze | immutable SHA、clean proof、full gate | 受控 tracked 变化 |
 | C6 dev delivery | 三个 feature PR/dev merge SHAs | 远端实际未完成阶段 |
 | C7 release candidate | promote PR/version/batch digest | 变化的线上候选 |
@@ -811,11 +811,11 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 - 匿名登录流程和一个代表性已登录 shared Header browser smoke；匿名访问 `/`、`/welcome`、`/welcome?view=carbon-footprint` 及代表性未匹配/大小写变体路径时，必须逐项证明跳转 canonical login 且未挂载受保护内容；
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
-- 以 `pnpm test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
+- 以 `pnpm test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 50 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
 - 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `pnpm start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
-- semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
+- semantic evidence 必须绑定 route contract、50-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
 - 只有真实角色条件分支才扩大角色 smoke；共享路径不重复 Member/Reviewer/Admin；
 - 原生国旗 selector、长文案、明暗主题、窄屏和 RTL 条件 visual smoke。
 
@@ -828,7 +828,7 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
 3. 选择/确认唯一 package version，但此阶段不手工修改；最终 version bump 由阶段 I 的确定性 `release:to-dev` 命令一次完成。
-4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `pnpm i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `pnpm i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `pnpm i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
+4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `pnpm i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `pnpm i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、50-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `pnpm i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
    - 使用当前受支持 Node；
@@ -938,7 +938,7 @@ pnpm push:retry
 | glossary/style/context rule 变化 | usage index 求跨 locale 闭包 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
-| Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
+| Playwright config/spec、50-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
 | 仅 root release version metadata 变化 | restricted release-candidate push 跑 Docpact/static preflight；dev Release PR 生成非浏览器 release proof | 永不需要 | 本地不跑；dev full gate 一次 | browser evidence 不失效；release proof 仍绑定 exact candidate |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
@@ -972,7 +972,7 @@ pnpm push:retry
 - 不在 registries/Manifest/adapter allowlist 外写语言码判断、固定语言数组、固定资源 map 或缓存文件表。
 - 不只检查目标语言；所有 active locale 必须经过同一 catalog、capability、reference-resource、页面和 activation 审计。
 - 不因当前 UI catalog audit 干净而跳过 English/Chinese/German/French 或未来语言的其他能力审计。
-- 不把 planned browser assertion、匿名重定向或手工编辑的 JSON 当作 semantic execution evidence；必须通过 49 个稳定 ID 的 digest/closure 校验。
+- 不把 planned browser assertion、匿名重定向或手工编辑的 JSON 当作 semantic execution evidence；必须通过 50 个稳定 ID 的 digest/closure 校验。
 - 不给任何 semantic E2E GitHub Actions event（包括 `workflow_dispatch`）注入生产凭据或授权生产写入；完整写入测试只在明确授权的本地 operator session 中设置 `E2E_AUTHENTICATED=true`、两个 production-write guards 和独立 verified-evidence opt-in。
 - 不在 create intent ledger 持久化之前写生产，不创建非 `codex-e2e` 或非 UUID-scoped 测试数据，不在 delete 前缺少 production row UUID + authenticated owner + 五字段全 registry authoring-language exact marker 校验时删除，不按名称模糊清理，不在 `leaked>0` 时继续创建，也不保存/上传 screenshot、trace、video 或 auth state。
 - 不手工跑 `prepush:gate` 后立即让 push hook 再跑一遍。
@@ -1073,7 +1073,7 @@ pnpm push:retry
 - [ ] 明暗主题、窄屏、长文本和 RTL 条件矩阵通过。
 - [ ] 既有 locale 行为无回归，自动修订项达到预期。
 - [ ] `pnpm test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `pnpm start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
-- [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
+- [ ] 50 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
 - [ ] 日常 PR/普通 `dev` push 不自动触发浏览器矩阵；按风险在仍开放的业务 PR 上通过 `workflow_dispatch` 手动运行无凭据、无生产写的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；exact dev Release PR 只运行非浏览器 static/full gate，main-target PR 与正常 post-merge main 仅验证 release proof；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
@@ -1114,7 +1114,7 @@ pnpm push:retry
 - package/tag：<VERSION / TAG>
 - 三个交付 Issue：<LANGUAGE PLATFORM / REFERENCE LOCALIZATION / PAGE SWEEP E2E + PR/SHA>
 - 硬编码门禁：<ZERO VIOLATIONS / ALLOWLIST>
-- Semantic E2E：<49-ID CLOSURE / CHROMIUM FULL MATRIX / THREE-BROWSER CRITICAL / EVIDENCE DIGEST / CREATED=CLEANED, LEAKED=0>
+- Semantic E2E：<50-ID CLOSURE / CHROMIUM FULL MATRIX / THREE-BROWSER CRITICAL / EVIDENCE DIGEST / CREATED=CLEANED, LEAKED=0>
 - Next dev：<THREE FEATURE PRS / SHA>
 - 最终发布确认：<CONFIRMED RELEASE TUPLE>
 - 线上生效动作：<PRODUCTION_EFFECTIVE_ACTION>
@@ -1156,7 +1156,7 @@ pnpm push:retry
 - 如何阻止下一种语言再次引入固定 union、下拉数组、文件 map、缓存列表和语言特判？
 - 为什么新增 registry locale 会自动扩大 Playwright 期望集合并使旧 semantic evidence 失效？
 - 为什么日常 PR/`dev` push 不自动运行 semantic browser E2E，而是在业务 PR 仍开放时按风险通过 `workflow_dispatch` 手动运行无凭据、无写入、预构建候选的 hermetic qualification；为什么 release stages 不消费该证明，同时 authenticated closure 必须留在明确授权的本地 operator session，并使用 authenticated mode、两个 production-write guards 与独立 evidence opt-in？
-- 49 个 assertion ID、Chromium 全矩阵、三浏览器关键场景和 digest/ledger closure 如何共同防止 prose-only 或伪造浏览器证据？
+- 50 个 assertion ID、Chromium 全矩阵、三浏览器关键场景和 digest/ledger closure 如何共同防止 prose-only 或伪造浏览器证据？
 - 为什么生产测试数据只能是 UUID-scoped `codex-e2e` tuple，必须 create 前写 intent、delete 前验证 UUID/owner/五字段全语言 markers，并且最终 `created=cleaned`、`leaked=0`？
 - `SelectLang reload={false}` 如何让 same-document locale refresh 与旧请求 race 成为可验证合同，而不是由整页 reload 掩盖？
 - 三个 Issue 如何分工、依赖并共同组成最终候选？

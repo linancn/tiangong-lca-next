@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: adcaa91de1937a4e694fb18d29bd000316ab427a
-lastReviewedNote: 'Reviewed after integrating current dev: bootstrap and gates retain exact Node 24.19.0, pnpm 11.23.0, SDK 0.2.0, and TypeScript 7.0.2 while the normal focused/full workflow remains unchanged.'
+lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
+lastReviewedNote: 'Reviewed for Next Issue #971: `pnpm start` and `pnpm start:dev` now prove the selected Dev Supabase target despite Umi preloading main `.env`; explicit per-key build overrides remain supported.'
 ---
 
 # Development Bootstrap
@@ -66,7 +66,7 @@ lastReviewedNote: 'Reviewed after integrating current dev: bootstrap and gates r
 ## Prerequisites
 
 - Node.js `24.19.0`
-- Corepack with the repository-pinned `pnpm` `11.23.0`
+- Corepack with the repository-pinned `pnpm` `11.24.0`
 - local shell configured so `nvm install` and `nvm use` honor `.nvmrc`
 
 ## Bootstrap
@@ -173,7 +173,7 @@ The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.2.0`
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
-Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs still pin pnpm `11.23.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
+Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 
@@ -187,7 +187,7 @@ On macOS, the Jest child process disables V8 concurrent recompilation and Maglev
 
 For the normal deterministic flow, select browser evidence before `release:to-dev`, while the relevant business/fix PR is still open. When the change risk warrants it, dispatch `i18n-semantic-e2e.yml` for that PR branch or exact SHA; it always runs the credential-free hermetic qualification, including the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, so a failure can be fixed on the same PR. This is an operator-selected acceptance signal, not an unavoidable release check.
 
-`release:to-dev --apply` changes only `package.json.version` plus bounded Docpact review metadata and requires `pnpm-lock.yaml` to remain byte-identical. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` runs the reusable non-browser Release Gate—static contracts and the full Jest gate—then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main PR, and normal main publication verify candidate identity and that proof without running browser E2E. Canonical E2E discovery still recursively includes nested spec directories whenever manual qualification is invoked; unknown simulator requests, external origins, and production writes fail that qualification.
+`release:to-dev --apply` changes only `package.json.version` plus bounded Docpact review metadata and requires `pnpm-lock.yaml` to remain byte-identical. Its generated candidate push runs Docpact plus `release:static-preflight`; it does not run browsers and never writes proof into the branch. The exact resulting Release PR into `dev` runs the reusable non-browser Release Gate—static contracts and the full Jest gate—then emits an external proof bound to both branch bases, candidate head/tree/version, PR, run, attempt, and artifact. The immutable promotion push, main promotion PR, and normal version-changing main publication verify candidate identity and that proof without running browser E2E. A direct main hotfix is explicitly marker-bound to its tracked Issue, current main base, and exact PR head, must preserve package version, and runs one clean-runner static/full gate on that head. Canonical E2E discovery still recursively includes nested spec directories whenever manual qualification is invoked; unknown simulator requests, external origins, and production writes fail that qualification.
 
 Qualification builds with the fixed non-production profile in `docker/e2e/qualification.env`; it never reads or connects to the deployment target in `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime contracts, and the browser environment contract. Deployment-only `.env` and root release-version metadata are excluded. Manual GitHub qualification always executes and stores proof only as a 30-day Actions artifact; local proof lives under ignored `.local/e2e-release/**`. Source branches contain no qualification receipt, semantic evidence record, digest compatibility file, or proof hash update.
 
@@ -240,7 +240,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 
 ## Command Rules
 
-- `pnpm start` and `pnpm start:dev` are equivalent
+- `pnpm start` and `pnpm start:dev` are equivalent. Both select `.env.development*` when Umi has preloaded exact main-file defaults; a distinct explicit `SUPABASE_URL` or `SUPABASE_PUBLISHABLE_KEY` supplied by the shell/build remains higher priority per key
 - Edge mirror refresh accepts only a full reviewed commit SHA, records the resolved source in `docker/volumes/functions/.source-revision.json`, deletes stale mirror files, and must be rerun once with no resulting tracked change before handoff
 - documentation capture is a separate local operator workflow: this repository supplies only `config/docs-capture/profile.v1.json`, stable semantic locators, and its exact UI runtime
 - the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces
@@ -266,7 +266,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - use `pnpm test:workflows --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `pnpm test:api:smoke <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - ordinary local pushes run the Husky pre-push hook, which runs `pnpm docpact:gate` first and `pnpm prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. No-update and raw deletion-only pushes skip gates, normal exact-branch `HEAD` refspecs are accepted, and every other ineligible checked ref shape fails before Docpact/full tests. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
-- exact marker-bound Release PRs targeting `dev` run the reusable clean-runner non-browser Release Gate: static contracts plus the complete Jest gate. PRs targeting `main` and normal post-merge publication verify the resulting exact proof and unchanged-tree merge chain; none of these release stages run or require browser E2E
+- exact marker-bound Release PRs targeting `dev` run the reusable clean-runner non-browser Release Gate: static contracts plus the complete Jest gate. Promotion PRs targeting `main` and normal version-changing post-merge publication verify the resulting exact proof and unchanged-tree merge chain. A marked unchanged-version main hotfix runs one exact-head clean-runner static/full gate instead; none of these paths run or require browser E2E
 - the hook keeps an already-active exact Node.js 24.19.0 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24.19.0` only when the active Node is absent or has another version
 - treat `pnpm prepush:gate` as the authoritative local test gate
 - during normal delivery, use `pnpm push:checked <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
