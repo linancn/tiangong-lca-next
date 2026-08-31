@@ -63,7 +63,8 @@ describe('pnpm package-manager contract', () => {
     )) {
       expect(workflow.source).toContain('node-version: 24.19.0');
     }
-    expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^29.7.0');
+    expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^30.5.0');
+    expect(JSON.parse(read('.ncurc.json')).reject).toContain('@types/node');
     expect(fs.existsSync(path.join(repositoryRoot, 'pnpm-lock.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(repositoryRoot, 'package-lock.json'))).toBe(false);
     expect(fs.existsSync(path.join(repositoryRoot, 'yarn.lock'))).toBe(false);
@@ -92,7 +93,9 @@ describe('pnpm package-manager contract', () => {
     expect(workspace).toMatch(/core-js:\s+false/u);
     expect(workspace).toMatch(/core-js-pure:\s+false/u);
     expect(workspace).toMatch(/es5-ext:\s+false/u);
-    expect(workspace).toContain("'@umijs/max>antd': 6.6.1");
+    expect(workspace).toMatch(/'@parcel\/watcher':\s+false/u);
+    expect(workspace).toMatch(/unrs-resolver:\s+false/u);
+    expect(workspace).toContain("'@umijs/max>antd': 6.6.2");
     expect(workspace).toContain("'@umijs/plugins>@ant-design/pro-components': 3.1.14-6");
     expect(workspace).toContain("'@umijs/preset-umi>react': 19.2.8");
     expect(workspace).toContain("'@umijs/preset-umi>react-dom': 19.2.8");
@@ -109,16 +112,16 @@ describe('pnpm package-manager contract', () => {
     const lockfile = read('pnpm-lock.yaml');
 
     expect(packageJson.dependencies).toMatchObject({
-      '@ant-design/icons': '6.3.2',
+      '@ant-design/icons': '6.3.4',
       '@ant-design/pro-components': '3.1.14-6',
-      antd: '6.6.1',
+      antd: '6.6.2',
       react: '19.2.8',
       'react-dom': '19.2.8',
     });
     expect(packageJson.devDependencies).toMatchObject({
       '@types/react': '19.2.18',
-      '@types/react-dom': '19.2.4',
-      '@umijs/max': '4.7.7',
+      '@types/react-dom': '19.2.5',
+      '@umijs/max': '4.7.9',
       '@umijs/max-plugin-openapi': '2.0.3',
       '@umijs/request-record': '1.1.4',
     });
@@ -129,6 +132,61 @@ describe('pnpm package-manager contract', () => {
     expect(lockfile).not.toMatch(/(?:^|\W)antd@(?:4|5)\./mu);
     expect(lockfile).not.toMatch(/@ant-design\/pro-components@2\./u);
     expect(lockfile).not.toMatch(/(?:^|\W)react(?:-dom)?@18\./mu);
+  });
+
+  it('pins the reviewed Jest 30, DOM, Electron 44, and dependency-audit majors', () => {
+    const packageJson = JSON.parse(read('package.json'));
+    const devDependencies = packageJson.devDependencies as Record<string, string>;
+    const lockfile = read('pnpm-lock.yaml');
+    const firstPartySources = trackedRuntimeSources();
+
+    expect(devDependencies).toMatchObject({
+      '@jest/test-sequencer': '^30.5.0',
+      '@testing-library/jest-dom': '^7.0.1',
+      '@types/jest': '^30.0.0',
+      electron: '^44.1.0',
+      jest: '^30.5.0',
+      'jest-environment-jsdom': '^30.5.0',
+      'npm-check-updates': '^23.1.0',
+    });
+    expect(packageJson.scripts.ncu).toBe('ncu');
+    expect(packageJson.scripts['ncu:update']).toBe('ncu -u');
+    expect(lockfile).not.toMatch(
+      /^\s{2}(?:'@jest\/test-sequencer|jest|jest-environment-jsdom)@29\./mu,
+    );
+    expect(lockfile).not.toMatch(/^\s{2}electron@43\./mu);
+
+    const removedJestMatcherAlias =
+      /\.(?:toBeCalled|toBeCalledTimes|toBeCalledWith|lastCalledWith|nthCalledWith|toReturn|toReturnTimes|toReturnWith|lastReturnedWith|nthReturnedWith|toThrowError)\s*\(/u;
+    const jestInternalDeepImport =
+      /(?:from\s+|require\(\s*)['"](?:jest-[^'"]+|@jest\/[^'"]+)\/build\//u;
+    for (const { relativePath, source } of firstPartySources) {
+      expect({ relativePath, source }).toEqual({
+        relativePath,
+        source: expect.not.stringMatching(removedJestMatcherAlias),
+      });
+      expect({ relativePath, source }).toEqual({
+        relativePath,
+        source: expect.not.stringMatching(jestInternalDeepImport),
+      });
+      expect({ relativePath, source }).toEqual({
+        relativePath,
+        source: expect.not.stringMatching(/\bjest\.SpyInstance\b/u),
+      });
+    }
+    expect(read('jest.config.cjs')).not.toMatch(/\btestPathPattern\b/u);
+  });
+
+  it('keeps the Electron 44 publication matrix on supported 64-bit targets', () => {
+    const electronSources = ['electron/main.ts', 'electron/preload.ts'].map(read).join('\n');
+    const buildWorkflow = read('.github/workflows/build.yml');
+
+    expect(electronSources).not.toMatch(
+      /\b(?:clipboard|isUnityRunning|select-client-certificate|openAsHidden|wasOpenedAsHidden|restoreState)\b/u,
+    );
+    expect(buildWorkflow).toContain('os: macos-latest');
+    expect(buildWorkflow).toContain('os: ubuntu-24.04-arm');
+    expect(buildWorkflow).not.toMatch(/\b(?:ia32|armv7l)\b/u);
   });
 
   it('contains no Ant Design 5 patch or split ProComponents import path', () => {
