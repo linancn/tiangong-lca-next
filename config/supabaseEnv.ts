@@ -62,11 +62,28 @@ export const applySupabaseFrontendEnv = (
 ): SupabaseFrontendEnv => {
   const target = resolveSupabaseFrontendTarget(appEnv);
   const fileEnv = getSupabaseFrontendEnv(rootDir, appEnv);
+  const mainFileEnv = target === 'dev' ? getSupabaseFrontendEnv(rootDir, 'main') : null;
 
   return SUPABASE_FRONTEND_KEYS.reduce<SupabaseFrontendEnv>((merged, key) => {
     const runtimeValue = process.env[key];
+    const selectedFileValue = fileEnv[key];
+    // Umi loads `.env` before evaluating this config. During a Dev launch that
+    // makes the main-file default look like an explicit runtime override. Only
+    // replace that exact inherited default; a distinct shell/build value keeps
+    // its documented priority.
+    const runtimeIsInheritedMainDefault =
+      target === 'dev' &&
+      hasEnvValue(runtimeValue) &&
+      hasEnvValue(mainFileEnv?.[key]) &&
+      runtimeValue === mainFileEnv[key];
     const value =
-      target !== 'qualification' && hasEnvValue(runtimeValue) ? runtimeValue : fileEnv[key];
+      target === 'qualification'
+        ? selectedFileValue
+        : runtimeIsInheritedMainDefault && hasEnvValue(selectedFileValue)
+          ? selectedFileValue
+          : hasEnvValue(runtimeValue)
+            ? runtimeValue
+            : selectedFileValue;
 
     if (hasEnvValue(value)) {
       process.env[key] = value;

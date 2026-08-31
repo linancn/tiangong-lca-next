@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
-lastReviewedNote: 'Reviewed for Next Issue #964: OAuth consent preserves one bounded opaque URL-safe handle byte-for-byte while rejecting dot-only URL-normalizing path segments.'
+lastReviewedCommit: 078dbf4ebd7bf84d4a425731ae2b722177fde9c4
+lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher selects `.env.development*` even after Umi preloads exact main-file defaults, while distinct explicit overrides keep priority.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -151,7 +151,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - package manager: repository-pinned `pnpm` `11.24.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
 - UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
-- shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent)
+- shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent); it selects `.env.development*` over exact Umi-preloaded main-file defaults while retaining distinct explicit per-key build overrides
 - explicit main-environment run: `pnpm start:main`
 - default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)
 - Electron TypeScript 7 check: `pnpm tsc:electron`
