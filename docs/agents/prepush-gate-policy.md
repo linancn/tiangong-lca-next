@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: db1965b0
+lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
 lastReviewedNote: 'Reviewed for Next Issue #964: opaque authorization-handle regressions stay inside the existing focused OAuth plus full pre-push gate; gate ownership and browser trust are unchanged.'
 ---
 
