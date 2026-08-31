@@ -85,6 +85,52 @@ describe('supabase frontend env resolution (config/supabaseEnv.ts)', () => {
     expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('harness-key');
   });
 
+  it('replaces Umi-loaded main defaults with the selected Dev frontend values', () => {
+    fs.writeFileSync(
+      path.join(tempDir, '.env'),
+      'SUPABASE_URL=https://main.supabase.co\nSUPABASE_PUBLISHABLE_KEY=main-key\n',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, '.env.development'),
+      'SUPABASE_URL=https://dev.supabase.co\nSUPABASE_PUBLISHABLE_KEY=dev-key\n',
+    );
+
+    const { applySupabaseFrontendEnv } = require('../../../config/supabaseEnv');
+
+    process.env.SUPABASE_URL = 'https://main.supabase.co';
+    process.env.SUPABASE_PUBLISHABLE_KEY = 'main-key';
+
+    expect(applySupabaseFrontendEnv(tempDir, 'dev')).toEqual({
+      SUPABASE_URL: 'https://dev.supabase.co',
+      SUPABASE_PUBLISHABLE_KEY: 'dev-key',
+    });
+    expect(process.env.SUPABASE_URL).toBe('https://dev.supabase.co');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('dev-key');
+  });
+
+  it('preserves a per-key explicit Dev override while replacing an inherited main default', () => {
+    fs.writeFileSync(
+      path.join(tempDir, '.env'),
+      'SUPABASE_URL=https://main.supabase.co\nSUPABASE_PUBLISHABLE_KEY=main-key\n',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, '.env.development'),
+      'SUPABASE_URL=https://dev.supabase.co\nSUPABASE_PUBLISHABLE_KEY=dev-key\n',
+    );
+
+    const { applySupabaseFrontendEnv } = require('../../../config/supabaseEnv');
+
+    process.env.SUPABASE_URL = 'https://main.supabase.co';
+    process.env.SUPABASE_PUBLISHABLE_KEY = 'explicit-key';
+
+    expect(applySupabaseFrontendEnv(tempDir, 'dev')).toEqual({
+      SUPABASE_URL: 'https://dev.supabase.co',
+      SUPABASE_PUBLISHABLE_KEY: 'explicit-key',
+    });
+    expect(process.env.SUPABASE_URL).toBe('https://dev.supabase.co');
+    expect(process.env.SUPABASE_PUBLISHABLE_KEY).toBe('explicit-key');
+  });
+
   it('lets explicit build environment keys override repository defaults', () => {
     fs.writeFileSync(
       path.join(tempDir, '.env'),

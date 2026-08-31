@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: db1965b0
-lastReviewedNote: 'Reviewed for Next Issue #964: the bridge/auth service share one bounded opaque-handle contract and exclude dot-only segments before auth-js path construction.'
+lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedNote: 'Reviewed for Next Issue #971: standard Dev selection replaces only Umi-preloaded values equal to main-file defaults, while distinct explicit build overrides and qualification isolation remain intact.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -45,7 +45,7 @@ This repo is a Umi-based React 19 SPA on one native Ant Design 6 / ProComponents
 | `config/routes.ts` | route tree and route-family entrypoints |
 | `config/config.ts` | Umi runtime config |
 | `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
-| `config/supabaseEnv.ts` | frontend env selection; explicit build values override file defaults, and qualification selects a fixed non-production profile |
+| `config/supabaseEnv.ts` | frontend env selection; standard Dev replaces Umi-preloaded values that exactly match main-file defaults with `.env.development*`, distinct explicit build values retain priority, and qualification selects a fixed non-production profile |
 | `src/app.tsx` | runtime layout, auth redirect, cache monitors, and Umi-global antd 6 ConfigProvider/App theme synchronization |
 | `src/access.ts`, `src/global.tsx`, `src/requestErrorConfig.ts`, `src/contexts/**` | app-shell access control, request behavior, shared runtime state, and the global App feedback registrar used by non-component callers |
 | `src/pages/**` | route-level product pages |

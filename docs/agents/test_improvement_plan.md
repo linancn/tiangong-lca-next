@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
-lastReviewedNote: 'Reviewed for Next Issue #964: bridge, service, page, and redirect tests cover hosted opaque authorization handles without changing the bounded semantic E2E strategy.'
+lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedNote: 'Reviewed for Next Issue #971: two targeted env-selection regressions protect a live Dev OAuth failure without expanding the maintained testing strategy or browser matrix.'
 ---
 
 # Testing Strategy

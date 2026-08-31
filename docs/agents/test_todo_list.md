@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 3e59737a2632f1dfa6450ae9c7a396296e27da80
-lastReviewedNote: 'Reviewed for Next Issue #964: hosted opaque-handle and unsafe-input cases are covered now and create no deferred testing queue.'
+lastReviewedCommit: 7153e1bb6c0d09a3fea0ff5a344017e2cdfafd48
+lastReviewedNote: 'Reviewed for Next Issue #971: Umi-loaded main-default and partial explicit-override cases are covered now and create no deferred testing queue.'
 ---
 
 # Testing Execution State
