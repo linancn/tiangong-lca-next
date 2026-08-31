@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
-lastReviewedNote: 'Reviewed for Next Issue #971: standard Dev selection replaces only Umi-preloaded values equal to main-file defaults, while distinct explicit build overrides and qualification isolation remain intact.'
+lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
+lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service ownership map remains accurate for Umi 4.7.9, Electron 44.1, and the Playwright 1.62 isolated release environment.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -36,7 +36,7 @@ related:
 
 ## Repo Shape
 
-This repo is a Umi-based React 19 SPA on one native Ant Design 6 / ProComponents 3 generation, with service-first data access, cache-backed static resources, and strict validation gates.
+This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProComponents 3 generation, with service-first data access, an Electron `44.1.0` packaging surface, cache-backed static resources, and strict validation gates.
 
 ## Stable Path Map
 

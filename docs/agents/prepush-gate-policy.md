@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: Dev environment decontamination uses focused config proof plus the existing ordinary full gate and real browser smoke; gate ownership and browser trust are unchanged.'
+lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
+lastReviewedNote: 'Reviewed for Next Issue #982: the latest-compatible dependency graph and Jest/Electron/Playwright migrations continue to use the existing one-full-gate ownership and separate browser-qualification trust boundary.'
 ---
 
 # Pre-Push Gate Policy

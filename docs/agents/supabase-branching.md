@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
-lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher cannot silently retain Umi-loaded main defaults; distinct explicit build overrides, qualification isolation, and external OAuth ownership remain unchanged.'
+lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
+lastReviewedNote: 'Reviewed for Next Issue #982: dependency, Jest, Electron, and Playwright upgrades leave frontend environment selection, closed qualification, production-backed E2E, and external OAuth ownership unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: config tests distinguish Umi-preloaded main defaults from distinct per-key build overrides without changing service/component/integration patterns.'
+lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
+lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30 migration scans, the inherited custom-sequencer constructor, mapper-independent TIDAS proof, and Playwright 1.62 environment identity preserve the existing test-selection patterns.'
 ---
 
 # Testing Patterns Reference
@@ -154,7 +154,7 @@ Special cases:
 
 Browser semantic E2E pattern:
 
-- use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
+- use `@playwright/test` `1.62.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `pnpm e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `pnpm start:main` and must still reject a non-loopback Playwright base URL
 - a dirty credential-free qualification diagnostic must compile `REACT_APP_ENV=qualification`, serve that candidate on loopback, and run Playwright with `E2E_EXTERNAL_SERVER=true`; do not combine qualification simulator flags with the `start:main` bundle because its real backend target must be rejected by readiness
 - use `pnpm e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles

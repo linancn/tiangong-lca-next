@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: two targeted env-selection regressions protect a live Dev OAuth failure without expanding the maintained testing strategy or browser matrix.'
+lastReviewedCommit: b8246788b42d7bbfab0207c569e8444557fc250a
+lastReviewedNote: 'Reviewed for Next Issue #982: Jest 30, jsdom 26, Playwright 1.62, and Electron 44 remain inside the maintained closure strategy through migration contracts and the existing browser/platform matrices; no new testing strategy queue is required.'
 ---
 
 # Testing Strategy
