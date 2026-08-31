@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1bf4840ca333a2ff768db70e475dd6a43144678b
+lastReviewedCommit: d7bc98fcc62139b7631829c3f8e930e058054277
 lastReviewedNote: 'Reviewed for Next Issue #964: OAuth service and bridge tests share hosted opaque and unsafe fixtures while preserving existing service/component/integration patterns.'
 ---
 
