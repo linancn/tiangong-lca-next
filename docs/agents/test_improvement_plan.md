@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
-lastReviewedNote: 'Reviewed for Next Issue #983: focused profile-service and account-page tests close the organization metadata paths without changing the maintained testing strategy or browser matrix.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: dd1aa978ab50939cd68d957ae56a46f234d5c508
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser, continuation, jsdom, coverage, profile-service, and account-page findings close through existing strategy without a new queue or browser matrix.'
 ---
 
 # Testing Strategy
@@ -69,6 +69,8 @@ lastReviewedNote: 'Reviewed for Next Issue #983: focused profile-service and acc
 - exact committed browser qualification treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
 - semantic-harness qualification is content-addressed credential-free proof run manually on the open business PR before `release:to-dev` when risk warrants it; it builds against a fixed `.invalid` backend profile and intercepts every backend request, so deployment-target `.env` is not part of the semantic identity. Canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, while the key also covers shared helpers plus Git mode/type. `release:to-dev --apply` and every later release stage run no browser and write no browser proof
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
+- Jest/jsdom dependency upgrades keep browser globals platform-owned: navigation mutations cross one explicit `Location` boundary, SSR/storage/event-target branches accept explicit inputs, and tests never delete or redefine `window`/`location`
+- Jest 30 coverage keeps the established 100% product contract by separating source-mapped executable branches from Babel/Istanbul's new source-less synthetic `if` alternates. The normalizer is fail-closed for every other unmapped shape and has direct positive, missed-branch, and malformed-map contracts
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint

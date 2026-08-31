@@ -191,7 +191,7 @@ const renderModal = (props: any = {}) => {
 };
 
 describe('ManageSystem AddMemberModal', () => {
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
 
   beforeEach(() => {
     jest.clearAllMocks();

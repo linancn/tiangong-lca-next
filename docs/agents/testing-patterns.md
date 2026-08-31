@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
-lastReviewedNote: 'Reviewed for Next Issue #983: organization coverage follows the existing Auth-service, account-page unit, and workflow-integration patterns without adding a new test pattern.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: dd1aa978ab50939cd68d957ae56a46f234d5c508
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: atomic geometry, explicit runtime inputs, fail-closed coverage, and organization profile proof all reuse existing service/page/integration patterns.'
 ---
 
 # Testing Patterns Reference
@@ -81,6 +81,11 @@ lastReviewedNote: 'Reviewed for Next Issue #983: organization coverage follows t
 - test release-orchestration commands with temporary Git repositories plus fake `gh`/`pnpm`/Docpact executables: assert one JSON stdout document, exact remote/base/head/version identities, independent candidate and cumulative `main`-to-`dev` path evaluation, bounded review-only fixed-point behavior, branch-sensitive checked-push delegation, idempotent PR reuse, and stable fail-closed drift codes without creating real GitHub resources; additionally run a real Docpact canary in an isolated exact-`dev` clone to prove the current governed-document closure and metadata-only mutation boundary
 - keep semantic E2E specs anywhere below `tests/e2e/i18n/**`; qualification discovery must recurse through nested directories, exclude only the dedicated harness-control spec, and fail closed when the discovered, executed, or designed-skip totals drift
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
+- when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
+- when a browser assertion compares several rectangles inside an opening Drawer, Modal, or responsive toolbar, read all rectangles in one in-page evaluation and poll the complete invariant. Sort by rendered coordinates when the contract is visual order; sequential locator `boundingBox()` calls can sample different animation frames, and DOM order is not a horizontal-layout contract
+- Jest 30/jsdom 26 owns non-configurable `window` and `location` objects. Pass mock `Location` methods through `src/utils/browserNavigation.ts`, pass nullable event-target/storage/window inputs to pure runtime helpers, and use `history.pushState` for URL state; never delete or redefine the jsdom globals. jest-dom 7 style expectations use computed normalized colors such as `rgb(...)`, not named-color serialization
+- Jest 30's Babel report may add an alternate slot without source coordinates for an `if` that has no `else`. Keep Babel coverage for Umi/esbuild source-map fidelity; let Jest enforce 100% statements/functions/lines, then let `test:coverage:assert-full` exclude only that exact source-less `if` alternate shape and require 100% of every source-mapped branch. Any other missing map, mismatched path count, invalid hit count, or uncovered source-mapped branch fails closed
+- continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
 
 ## Reusable Helpers
 
@@ -154,7 +159,7 @@ Special cases:
 
 Browser semantic E2E pattern:
 
-- use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
+- use `@playwright/test` `1.62.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `pnpm e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `pnpm start:main` and must still reject a non-loopback Playwright base URL
 - a dirty credential-free qualification diagnostic must compile `REACT_APP_ENV=qualification`, serve that candidate on loopback, and run Playwright with `E2E_EXTERNAL_SERVER=true`; do not combine qualification simulator flags with the `start:main` bundle because its real backend target must be rejected by readiness
 - use `pnpm e2e:release` for exact committed browser qualification: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles

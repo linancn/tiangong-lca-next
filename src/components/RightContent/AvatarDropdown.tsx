@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { logout } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { getReviewUserRoleApi, getSystemUserRoleApi, getUserRoles } from '@/services/roles/api';
+import { reloadBrowserPage } from '@/utils/browserNavigation';
 import { Button, Modal, Spin, theme } from 'antd';
 import type { MenuProps } from 'antd';
 import { flushSync } from 'react-dom';
@@ -174,7 +175,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
                         pathname: location.pathname,
                         search: searchParams.toString(),
                       });
-                      window.location.reload();
+                      reloadBrowserPage(window.location);
                     } else {
                       history.push('/team?action=create');
                     }

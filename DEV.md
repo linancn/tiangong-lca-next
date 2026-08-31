@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
-lastReviewedNote: 'Reviewed for Next Issue #983: account organization uses the existing Supabase Auth client and account page; local startup, environment selection, and contributor workflow are unchanged.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 6e1fb9ce4ae7d0f9af3bdc72bea146c207a89d00
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: bootstrap/proof commands cover the upgraded Jest/Umi/Electron/Playwright stack, while account organization keeps existing startup, Supabase Auth, and environment workflows.'
 ---
 
 # Development Bootstrap
@@ -80,7 +80,7 @@ pnpm install --frozen-lockfile
 
 `pnpm install --frozen-lockfile` installs the exact dependency graph from the committed `pnpm-lock.yaml`. The project keeps pnpm's isolated linker and exposes only the narrow `@babel/*` and `umi` compatibility patterns recorded in `pnpm-workspace.yaml`; do not broaden them or enable `shamefully-hoist`. Narrow overrides collapse Umi's published React 18 / antd 4 / ProComponents 2 fallback metadata to the repository's one reviewed React 19 / antd 6 / ProComponents 3 generation. Run a non-frozen `pnpm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
-The direct development browser harness uses `@playwright/test` `1.61.1`. Install its browser engines only when using `pnpm e2e:dev` or `pnpm test:e2e:i18n` directly on the host:
+The direct development browser harness uses `@playwright/test` `1.62.1`. Install its browser engines only when using `pnpm e2e:dev` or `pnpm test:e2e:i18n` directly on the host:
 
 ```bash
 pnpm exec playwright install chromium firefox webkit
@@ -179,7 +179,9 @@ Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled e
 
 The qualified production bundle remains Umi's current Webpack path followed by the repo-owned TypeScript checks. Do not enable the optional Umi/Mako `forkTSChecker` path until its dependencies are proved compatible with TypeScript 7; the TypeScript 7 package's CommonJS root intentionally does not expose the legacy JavaScript Compiler API that this optional path currently expects.
 
-The UI dependency track is exact-pinned to React/React DOM `19.2.8`, antd `6.6.1`, icons `6.3.2`, and ProComponents `3.1.14-6`. Umi supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
+The UI dependency track is exact-pinned to React/React DOM `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`. Umi `4.7.9` supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
+
+The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@jest/test-sequencer` `30.5.0`, `@testing-library/jest-dom` `7.0.1`, Electron `44.1.0`, and `npm-check-updates` `23.1.0`. Jest 30 proof must preserve the explicit test inventory and slow-first sequencer, Electron publication remains on the four supported 64-bit targets, and the package manifest's canonical GitHub repository metadata must remain available to electron-builder from both normal checkouts and Git worktrees.
 
 `pnpm test` still discovers and executes the complete Jest inventory. The repository sequencer starts the three known process-heavy suites first, while preserving Jest's normal ordering within the remaining group. The pre-push receipt contract builds one reusable seed and gives every test its own copied repository and bare remote; never share mutable Git state between cases.
 

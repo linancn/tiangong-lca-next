@@ -128,7 +128,7 @@ describe('release E2E controller contracts', () => {
   });
 
   it('resolves the Playwright pin from pnpm lockfile state', () => {
-    expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.61.1');
+    expect(controller.lockedDependencyVersion('@playwright/test')).toBe('1.62.1');
   });
 
   it('binds the exact digest-pinned Node image in the E2E environment contract', () => {
@@ -161,7 +161,7 @@ describe('release E2E controller contracts', () => {
     const proof = {
       browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
         name,
-        version: '1.61.1',
+        version: '1.62.1',
       })),
       cleanup: { cleaned: 0, created: 0, leaked: 0 },
       coverage: {
@@ -228,7 +228,7 @@ describe('release E2E controller contracts', () => {
       'docker/e2e/environment.json',
       `${JSON.stringify({
         schemaVersion: 1,
-        playwrightVersion: '1.61.1',
+        playwrightVersion: '1.62.1',
         nodeMajor: 24,
         nodeImage: `node:24.19.0-bookworm-slim@sha256:${'2'.repeat(64)}`,
         nodeVersion: '24.19.0',
@@ -443,7 +443,7 @@ describe('release E2E controller contracts', () => {
       {
         error: { failureCode: 'E2E_SERVER_FAILED', phase: 'candidate-server' },
         imageId: `sha256:${'1'.repeat(64)}`,
-        imageTag: 'tiangong-lca-next-e2e:abc123-def456',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-main',
         manifest: {
           candidate: {
             commit: 'a'.repeat(40),
@@ -461,6 +461,7 @@ describe('release E2E controller contracts', () => {
     );
     const now = Date.now();
     expect(controller.validateReceipt(receipt, now, key)).toBe(receipt);
+    expect(receipt.invocation.qualification).toBe(false);
     expect(() =>
       controller.validateReceipt(receipt, Date.parse(receipt.expiresAt) + 1, key),
     ).toThrow('continuation receipt has expired');
@@ -480,6 +481,50 @@ describe('release E2E controller contracts', () => {
     ).toThrow('unsupported shape');
     expect(() => controller.validateReceipt(receipt, now, Buffer.alloc(32, 8))).toThrow(
       'integrity check failed',
+    );
+    const qualificationProof = path.join(makeTemporaryDirectory(), 'qualification-proof.json');
+    const qualificationOptions = {
+      ...controller.parseOptions('qualify', ['--proof', qualificationProof]),
+      qualification: true,
+      recoveryLedger: path.join(makeTemporaryDirectory(), 'qualification-ledger.json'),
+    };
+    const qualificationReceipt = controller.createReceipt(
+      {
+        error: { failureCode: 'E2E_CANDIDATE_BUILD_FAILED', phase: 'candidate-build' },
+        imageId: 'not-built',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-qualification',
+        manifest: {
+          candidate: receipt.candidate,
+          environment: receipt.environment,
+          sources: { e2eTree: 'e'.repeat(40) },
+        },
+        options: qualificationOptions,
+        runtimeInputs: { trackedMainEnvironmentPath },
+      },
+      key,
+    );
+    expect(controller.validateReceipt(qualificationReceipt, now, key)).toBe(qualificationReceipt);
+    expect(qualificationReceipt.invocation).toMatchObject({
+      proof: path.resolve(qualificationProof),
+      qualification: true,
+    });
+    const mismatchedQualificationReceipt = controller.createReceipt(
+      {
+        error: { failureCode: 'E2E_CANDIDATE_BUILD_FAILED', phase: 'candidate-build' },
+        imageId: 'not-built',
+        imageTag: 'tiangong-lca-next-e2e:abc123def456-def456abc123-main',
+        manifest: {
+          candidate: receipt.candidate,
+          environment: receipt.environment,
+          sources: { e2eTree: 'e'.repeat(40) },
+        },
+        options: qualificationOptions,
+        runtimeInputs: { trackedMainEnvironmentPath },
+      },
+      key,
+    );
+    expect(() => controller.validateReceipt(mismatchedQualificationReceipt, now, key)).toThrow(
+      'unsupported shape',
     );
     const refreshed = controller.createReceipt(
       {
@@ -542,9 +587,9 @@ describe('release E2E controller contracts', () => {
       'utf8',
     );
     const controllerSource = fs.readFileSync(controllerPath, 'utf8');
-    expect(environment.playwrightVersion).toBe('1.61.1');
+    expect(environment.playwrightVersion).toBe('1.62.1');
     expect(environment.playwrightImage).toMatch(
-      /^mcr\.microsoft\.com\/playwright:v1\.61\.1-noble@sha256:[a-f0-9]{64}$/u,
+      /^mcr\.microsoft\.com\/playwright:v1\.62\.1-noble@sha256:[a-f0-9]{64}$/u,
     );
     expect(dockerfile).toContain(`ARG PLAYWRIGHT_IMAGE=${environment.playwrightImage}`);
     expect(dockerfile).toContain('ARG E2E_FRONTEND_ENV=main');

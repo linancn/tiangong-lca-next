@@ -2,6 +2,12 @@
 
 let mockUmiLocation = { pathname: '/', search: '' };
 let mockScreens = { lg: true };
+const mockReloadBrowserPage = jest.fn();
+
+jest.mock('@/utils/browserNavigation', () => ({
+  __esModule: true,
+  reloadBrowserPage: (...args: unknown[]) => mockReloadBrowserPage(...args),
+}));
 
 jest.mock('@ant-design/icons', () => {
   const React = require('react');
@@ -662,6 +668,7 @@ describe('Team page validations', () => {
     mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded-logo.png' } } as any);
     mockRemoveLogoApi.mockResolvedValue(null as any);
     mockModalConfirm.mockReset();
+    mockReloadBrowserPage.mockReset();
   });
 
   it('moves team tabs above the form on narrow screens', () => {
@@ -726,15 +733,6 @@ describe('Team page validations', () => {
   it('creates a team successfully and redirects back into edit mode', async () => {
     setWindowLocation('?action=create');
     mockOmitTeamInitialValues = true;
-    const originalLocation = window.location;
-    const reloadSpy = jest.fn();
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        ...window.location,
-        reload: reloadSpy,
-      },
-    });
     mockCreateTeamMessage.mockResolvedValueOnce(null);
 
     renderWithProviders(<Team />);
@@ -763,12 +761,7 @@ describe('Team page validations', () => {
     });
     expect(message.success).toHaveBeenCalledWith('Team created successfully.');
     expect(mockHistory.replace).toHaveBeenCalledWith('/team?action=edit');
-    expect(reloadSpy).toHaveBeenCalledTimes(1);
-
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    });
+    expect(mockReloadBrowserPage).toHaveBeenCalledWith(window.location);
   });
 
   it('shows a generic error when team creation fails', async () => {
@@ -1226,57 +1219,41 @@ describe('Team page validations', () => {
 
   it('uploads new logos before saving a newly created team', async () => {
     setWindowLocation('?action=create');
-    const originalLocation = window.location;
-    const reloadSpy = jest.fn();
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        ...window.location,
-        reload: reloadSpy,
-      },
-    });
     mockCreateTeamMessage.mockResolvedValueOnce(null);
 
-    try {
-      renderWithProviders(<Team />);
+    renderWithProviders(<Team />);
 
-      fireEvent.change(screen.getByLabelText('Team Name'), {
-        target: { value: 'Uploaded Team' },
-      });
-      fireEvent.change(screen.getByLabelText('Team Description'), {
-        target: { value: 'Uploaded description' },
-      });
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'Uploaded Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Uploaded description' },
+    });
 
-      const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
-      await act(async () => {
-        fireEvent.click(uploadButtons[0]);
-        fireEvent.click(uploadButtons[1]);
-        await Promise.resolve();
-      });
+    const uploadButtons = screen.getAllByRole('button', { name: 'upload-file' });
+    await act(async () => {
+      fireEvent.click(uploadButtons[0]);
+      fireEvent.click(uploadButtons[1]);
+      await Promise.resolve();
+    });
 
-      fireEvent.click(screen.getByTestId('pro-form-submit'));
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
 
-      await waitFor(() => {
-        expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
-      });
-      expect(mockCreateTeamMessage).toHaveBeenCalledWith(
-        'unit-test-team-id',
-        expect.objectContaining({
-          title: [{ '#text': 'Uploaded Team', '@xml:lang': 'en' }],
-          description: [{ '#text': 'Uploaded description', '@xml:lang': 'en' }],
-          lightLogo: '../sys-files/uploaded-logo.png',
-          darkLogo: '../sys-files/uploaded-logo.png',
-        }),
-        -1,
-        false,
-      );
-      expect(reloadSpy).toHaveBeenCalledTimes(1);
-    } finally {
-      Object.defineProperty(window, 'location', {
-        configurable: true,
-        value: originalLocation,
-      });
-    }
+    await waitFor(() => {
+      expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
+    });
+    expect(mockCreateTeamMessage).toHaveBeenCalledWith(
+      'unit-test-team-id',
+      expect.objectContaining({
+        title: [{ '#text': 'Uploaded Team', '@xml:lang': 'en' }],
+        description: [{ '#text': 'Uploaded description', '@xml:lang': 'en' }],
+        lightLogo: '../sys-files/uploaded-logo.png',
+        darkLogo: '../sys-files/uploaded-logo.png',
+      }),
+      -1,
+      false,
+    );
+    expect(mockReloadBrowserPage).toHaveBeenCalledWith(window.location);
   });
 
   it('uses an empty suffix when uploaded logo filenames have no extension', async () => {

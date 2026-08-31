@@ -211,7 +211,7 @@ jest.mock('antd', () => {
 const mockMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
 
 describe('ReviewAddMemberModal', () => {
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
 
   const renderModal = (props: any = {}) => {
     const onCancel = jest.fn();

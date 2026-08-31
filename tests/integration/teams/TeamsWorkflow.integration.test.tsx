@@ -656,6 +656,12 @@ const mockGetBase64 = getBase64 as jest.MockedFunction<any>;
 const mockUploadLogoApi = uploadLogoApi as jest.MockedFunction<any>;
 const mockRemoveLogoApi = removeLogoApi as jest.MockedFunction<any>;
 const mockGetThumbFileUrls = getThumbFileUrls as jest.MockedFunction<any>;
+const mockReloadBrowserPage = jest.fn();
+
+jest.mock('@/utils/browserNavigation', () => ({
+  __esModule: true,
+  reloadBrowserPage: (...args: unknown[]) => mockReloadBrowserPage(...args),
+}));
 
 const setWindowLocation = (search: string) => {
   const normalizedSearch = search.startsWith('?') ? search : `?${search}`;
@@ -712,6 +718,7 @@ describe('Teams management workflows', () => {
       { status: 'done', thumbUrl: 'https://example.com/dark-thumb.png' },
     ] as any);
     mockRemoveLogoApi.mockResolvedValue(null as any);
+    mockReloadBrowserPage.mockReset();
   });
 
   it('creates a team with uploaded logos and acknowledges success', async () => {
@@ -719,77 +726,52 @@ describe('Teams management workflows', () => {
     mockGetUserRoles.mockResolvedValue({ data: [], success: true } as any);
     mockCreateTeamMessage.mockResolvedValue(null as any);
     mockEditTeamMessage.mockResolvedValue(null as any);
-    const originalLocation = window.location;
-    const locationMock: any = {
-      hash: originalLocation.hash,
-      host: originalLocation.host,
-      hostname: originalLocation.hostname,
-      href: originalLocation.href,
-      origin: originalLocation.origin,
-      pathname: originalLocation.pathname,
-      port: originalLocation.port,
-      protocol: originalLocation.protocol,
-      search: originalLocation.search,
-      ancestorOrigins: originalLocation.ancestorOrigins,
-      assign: jest.fn(),
-      replace: jest.fn(),
-      reload: jest.fn(),
-      toString: () => originalLocation.href,
-    };
-    delete (window as any).location;
-    (window as any).location = locationMock;
+    renderWithProviders(<Team />);
 
-    try {
-      renderWithProviders(<Team />);
+    fireEvent.change(screen.getByLabelText('Team Name'), {
+      target: { value: 'New Integration Team' },
+    });
+    fireEvent.change(screen.getByLabelText('Team Description'), {
+      target: { value: 'Team created via integration test' },
+    });
 
-      fireEvent.change(screen.getByLabelText('Team Name'), {
-        target: { value: 'New Integration Team' },
-      });
-      fireEvent.change(screen.getByLabelText('Team Description'), {
-        target: { value: 'Team created via integration test' },
-      });
+    const uploadButtons = screen.getAllByText('upload');
+    fireEvent.click(uploadButtons[0]);
+    fireEvent.click(uploadButtons[1]);
 
-      const uploadButtons = screen.getAllByText('upload');
-      fireEvent.click(uploadButtons[0]);
-      fireEvent.click(uploadButtons[1]);
+    await waitFor(() => {
+      expect(mockGetBase64).toHaveBeenCalledTimes(2);
+      expect(document.querySelectorAll('[data-file-count="1"]')).toHaveLength(2);
+    });
 
-      await waitFor(() => {
-        expect(mockGetBase64).toHaveBeenCalledTimes(2);
-        expect(document.querySelectorAll('[data-file-count="1"]')).toHaveLength(2);
-      });
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
 
-      fireEvent.click(screen.getByTestId('pro-form-submit'));
+    await waitFor(() => {
+      expect(mockCreateTeamMessage).toHaveBeenCalledTimes(1);
+    });
 
-      await waitFor(() => {
-        expect(mockCreateTeamMessage).toHaveBeenCalledTimes(1);
-      });
+    expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
+    const [[lightUploadCall], [darkUploadCall]] = mockUploadLogoApi.mock.calls;
+    expect(lightUploadCall).toBeDefined();
+    expect(darkUploadCall).toBeDefined();
 
-      expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
-      const [[lightUploadCall], [darkUploadCall]] = mockUploadLogoApi.mock.calls;
-      expect(lightUploadCall).toBeDefined();
-      expect(darkUploadCall).toBeDefined();
+    const [, payload, rank, isPublic] = mockCreateTeamMessage.mock.calls[0];
+    expect(payload.title?.[0]).toEqual({
+      '#text': 'New Integration Team',
+      '@xml:lang': 'en',
+    });
+    expect(payload.description?.[0]).toEqual({
+      '#text': 'Team created via integration test',
+      '@xml:lang': 'en',
+    });
+    expect(payload.lightLogo).toEqual('../sys-files/uploaded-logo.png');
+    expect(payload.darkLogo).toEqual('../sys-files/uploaded-logo.png');
+    expect(rank).toBe(-1);
+    expect(isPublic).toBe(false);
 
-      const [, payload, rank, isPublic] = mockCreateTeamMessage.mock.calls[0];
-      expect(payload.title?.[0]).toEqual({
-        '#text': 'New Integration Team',
-        '@xml:lang': 'en',
-      });
-      expect(payload.description?.[0]).toEqual({
-        '#text': 'Team created via integration test',
-        '@xml:lang': 'en',
-      });
-      expect(payload.lightLogo).toEqual('../sys-files/uploaded-logo.png');
-      expect(payload.darkLogo).toEqual('../sys-files/uploaded-logo.png');
-      expect(rank).toBe(-1);
-      expect(isPublic).toBe(false);
-
-      expect(history.replace).toHaveBeenCalledWith('/team?action=edit');
-      expect(message.success).toHaveBeenCalledWith('Team created successfully.');
-      expect(window.location.reload).toHaveBeenCalled();
-    } finally {
-      delete (window as any).location;
-      (window as any).location = originalLocation;
-    }
+    expect(history.replace).toHaveBeenCalledWith('/team?action=edit');
+    expect(message.success).toHaveBeenCalledWith('Team created successfully.');
+    expect(mockReloadBrowserPage).toHaveBeenCalledWith(window.location);
   });
 
   it('keeps owner-only member controls disabled for team admins while leaving allowed actions available', async () => {

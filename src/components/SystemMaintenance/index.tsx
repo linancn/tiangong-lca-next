@@ -1,4 +1,5 @@
 import type { SystemStatus } from '@/services/general/systemStatus';
+import { reloadBrowserPage } from '@/utils/browserNavigation';
 import { ReloadOutlined, ToolOutlined } from '@ant-design/icons';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Tag, Typography } from 'antd';
@@ -76,7 +77,7 @@ export default function SystemMaintenance({ status }: SystemMaintenanceProps) {
           type='primary'
           size='large'
           icon={<ReloadOutlined />}
-          onClick={() => window.location.reload()}
+          onClick={() => reloadBrowserPage(window.location)}
         >
           <FormattedMessage id='component.systemMaintenance.refresh' />
         </Button>

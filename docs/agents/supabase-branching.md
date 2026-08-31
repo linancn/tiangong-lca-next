@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
-lastReviewedNote: 'Reviewed for Next Issue #983: organization is written through Auth user metadata and mirrored by the database-owned sync contract; Supabase environment and branch bindings are unchanged.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 6e1fb9ce4ae7d0f9af3bdc72bea146c207a89d00
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser-navigation testing and organization Auth metadata leave Supabase environment/branch bindings, OAuth callback safety, and database-owned sync unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

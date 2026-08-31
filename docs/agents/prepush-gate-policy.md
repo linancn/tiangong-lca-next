@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 1044b7d727d64507d1f8562981f64697ee7a198f
-lastReviewedNote: 'Reviewed for Next Issue #983: account organization adds focused service/page regressions and canonical locale artifacts; pre-push gate ownership and enforcement remain unchanged.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: dd1aa978ab50939cd68d957ae56a46f234d5c508
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: source-mapped Jest 30 coverage and organization profile regressions retain one full-gate owner and unchanged 100% enforcement.'
 ---
 
 # Pre-Push Gate Policy
@@ -150,6 +150,7 @@ It does not own:
 - before a `dev -> main` promotion, require the dev Release PR non-browser proof; the main-target PR and post-merge workflow accept it only for structurally matching unchanged-tree merges and fail closed instead of rerunning the complete gate. Treat an explicitly marked, unchanged-version main hotfix as a separate exact-head full-gate path, never as a promotion-proof fallback
 - protect the actual local and release gates
 - keep one logical full-suite qualification for each canonical release candidate: the exact dev Release PR runs it and emits the proof; normal promotion/main paths never fall back to another aggregate run when proof identity cannot be established. The aggregate command runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with exactly two workers and a `512MB` per-worker idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
+- under Jest 30, the native threshold continues to enforce 100% statements, functions, and lines. `test:coverage:assert-full` excludes only Babel/Istanbul `if` alternate slots that have no source coordinates, fails closed for every other malformed map, and independently requires 100% of every source-mapped branch; raw synthetic-slot percentages are not a replacement baseline
 - keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep semantic E2E independent from `prepush:gate` and release proof: routine PR/dev/release events do not trigger browser work, an operator may run one hermetic credential-free qualification while the business PR remains open, and only an explicitly authorized local operator run may close the authenticated 50-ID digest-bound proof

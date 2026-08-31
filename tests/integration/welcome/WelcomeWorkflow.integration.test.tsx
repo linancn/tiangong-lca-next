@@ -106,26 +106,6 @@ const buildTeam = (overrides: Partial<TeamRecord> = {}): TeamRecord => {
 const flushTeamsLoading = () => waitFor(() => expect(mockGetTeams).toHaveBeenCalled());
 
 describe('WelcomeWorkflow integration', () => {
-  const originalLocation = window.location;
-
-  beforeAll(() => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: 'http://localhost/',
-        assign: jest.fn(),
-        replace: jest.fn(),
-      } as unknown as Location,
-      writable: true,
-    });
-  });
-
-  afterAll(() => {
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    });
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
     resetAntdToken();
@@ -136,7 +116,6 @@ describe('WelcomeWorkflow integration', () => {
       formatMessage: ({ defaultMessage, id }) =>
         (id ? welcomeMessages[id] : undefined) ?? defaultMessage ?? id ?? '',
     });
-    window.location.href = 'http://localhost/';
   });
 
   it('opens Data Ecosystem modal, resolves teams, and navigates to team models', async () => {

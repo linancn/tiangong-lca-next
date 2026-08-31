@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-08-31'
-lastReviewedCommit: '1044b7d727d64507d1f8562981f64697ee7a198f'
-lastReviewedNote: 'Reviewed for Next Issue #983: existing account-page, Auth service, type, locale, and test routes cover optional organization profile metadata; no routing change is required.'
+lastReviewedAt: '2026-09-01'
+lastReviewedCommit: '6e1fb9ce4ae7d0f9af3bdc72bea146c207a89d00'
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: frontend-runtime and testing routes cover the Jest/browser migration and optional organization profile metadata; the exact browser-navigation trigger remains explicit.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -605,6 +605,8 @@ rules:
       - path: src/typings.d.ts
         kind: app-runtime
       - path: src/utils/appUrl.ts
+        kind: app-runtime
+      - path: src/utils/browserNavigation.ts
         kind: app-runtime
       - path: src/utils/localeFormatting.ts
         kind: ui-locale
