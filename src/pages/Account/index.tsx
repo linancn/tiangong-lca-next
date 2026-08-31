@@ -3,7 +3,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  getCurrentUser,
+  getAccountProfile,
   setProfile,
 } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';

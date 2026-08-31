@@ -26,7 +26,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  getCurrentUser,
+  getAccountProfile,
   setProfile,
 } from '@/services/auth';
 import userEvent from '@testing-library/user-event';
@@ -429,7 +429,7 @@ jest.mock('@/services/auth', () => ({
   changePassword: jest.fn(),
   cognitoChangeEmail: jest.fn(),
   cognitoChangePassword: jest.fn(),
-  getCurrentUser: jest.fn(),
+  getAccountProfile: jest.fn(),
   setProfile: jest.fn(),
 }));
 

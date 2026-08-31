@@ -12,7 +12,7 @@ import {
   changePassword,
   cognitoChangeEmail,
   cognitoChangePassword,
-  getCurrentUser,
+  getAccountProfile,
   setProfile,
 } from '@/services/auth';
 import { act } from '@testing-library/react';
@@ -440,7 +440,7 @@ jest.mock('@/services/auth', () => ({
   changePassword: jest.fn(),
   cognitoChangeEmail: jest.fn(),
   cognitoChangePassword: jest.fn(),
-  getCurrentUser: jest.fn(),
+  getAccountProfile: jest.fn(),
   setProfile: jest.fn(),
 }));
 
