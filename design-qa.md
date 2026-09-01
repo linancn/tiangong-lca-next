@@ -146,3 +146,43 @@ The browser capture used a temporary local preview-only condition so the asynchr
 No actionable P0/P1/P2 findings remain for this scoped revision.
 
 final result: passed
+
+## 2026-09-01 Daily Creation Legend And Heatmap Proportion
+
+- Source visual truth: `/var/folders/_n/l0ct3k117s53plt200_n0t_00000gn/T/codex-clipboard-d52d6eeb-dc1a-4b8f-b1e8-f4480361277a.png`
+- Browser-rendered implementation: controlled Chrome capture at `2048 × 1120`, device scale factor `1`.
+- Source pixels: `3840 × 1856`; comparison was limited to the app-owned dashboard region.
+- State: authenticated `zh-CN`, screen `05`, `全部` scope, autoplay disabled.
+
+### Full-view and focused-region evidence
+
+- The three summary metrics remain on one line at the upper right of the daily-creation panel.
+- The six-step `少` to `多` legend now forms a compact second row directly below those metrics without overlap.
+- Heatmap cells are `18px × 18px` squares with `6px` row gaps. The 53 weekly columns use distributed horizontal spacing to fill the available panel width without stretching cells into rectangles.
+- The month-label and cell grids include `4px` transparent inline safety padding. First- and last-column hover captures confirm the `1.22` scale/glow remains fully visible instead of being clipped by the horizontal viewport.
+- Month and weekday labels remain aligned with their cells, and the chart fills the body without clipping or horizontal overflow at the verified viewport.
+- The KPI cards and main panels move upward by `24px`, removing the previously unused band above the cards. The daily-creation panel gains `20px` of height while preserving the `24px` outer margin and the gap to the ranking panels.
+- Browser measurement reported `18.67px × 18.67px` rendered cells after fixed-stage scaling, confirming a `1:1` aspect ratio. The daily panel measured `1941.33px × 275.85px` in the verified viewport.
+- Existing typography, localized copy, heat-level colors, borders, shadows, metric calculations, and data behavior remain unchanged.
+- Fonts and typography, spacing and layout rhythm, colors and tokens, image/asset fidelity, and copy/content all passed the focused comparison.
+
+### Interaction and runtime evidence
+
+- Scope switching changed the yearly total from `28,394` under `全部` to `27,711` under `过程`, then restored `28,394` after switching back.
+- Hovering an active cell displayed its date plus process, model, and total counts.
+- Browser console review found no runtime errors.
+- `pnpm test:ci --runInBand --no-watchman tests/unit/pages/NationalCarbonDashboard/index.test.tsx` passed all 13 tests.
+- `pnpm lint` and `pnpm build` passed.
+
+### Comparison history
+
+- Earlier P2: the legend occupied a separate body column at the far right and the `14px` cells made the heatmap visually dominant.
+- First fix: moved the legend into a right-aligned header metadata group and reduced cells/gaps to `12px`/`3px`.
+- Follow-up P2: limiting the viewport to `792px` left about half of the panel unused; stretching columns to fill that width then made the cells rectangular.
+- Final fix: restored square cells, enlarged them to `18px`, distributed the remaining width as column spacing, and reclaimed the unused top band for the content layout.
+- Edge-hover P2: the first and last columns touched the scroll viewport, so the scaled hover glow was partially clipped. Added a `4px` visual safety inset to both grid edges without changing cell dimensions or the full-width distribution.
+- Post-fix evidence: the controlled Chrome capture shows a full-width, square-cell heatmap with the compact legend grouped under the summary and no visible top dead space.
+
+No actionable P0/P1/P2 findings remain for this scoped revision. No P3 follow-up is required.
+
+final result: passed

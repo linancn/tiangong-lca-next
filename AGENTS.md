@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 615c6eaa62ab1134b9c8dbc9b42944f3ef1d509b
+lastReviewedCommit: f6d345a4be8162c21771adbb15a9ad141058aec9
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 browser/runtime boundaries and descriptive account organization metadata do not change repository ownership, authorization, delivery, or modified-at-desc Process behavior.'
 related:
   - .docpact/config.yaml

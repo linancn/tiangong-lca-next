@@ -2586,28 +2586,41 @@ function OrganizationDailyCreationHeatmap({
             )}
           </span>
         </div>
-        <dl className={styles.organizationDailyCreationSummary}>
-          <div>
-            <dt>
-              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.total' })}
-            </dt>
-            <dd>{formatNumber(total)}</dd>
+        <div className={styles.organizationDailyCreationMeta}>
+          <dl className={styles.organizationDailyCreationSummary}>
+            <div>
+              <dt>
+                {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.total' })}
+              </dt>
+              <dd>{formatNumber(total)}</dd>
+            </div>
+            <div>
+              <dt>
+                {intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.organization.daily.activeDays',
+                })}
+              </dt>
+              <dd>{formatNumber(activeDays)}</dd>
+            </div>
+            <div>
+              <dt>
+                {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.peak' })}
+              </dt>
+              <dd>{formatNumber(peak)}</dd>
+            </div>
+          </dl>
+          <div aria-hidden='true' className={styles.organizationHeatmapLegend}>
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.less' })}
+            </span>
+            {[0, 1, 2, 3, 4, 5].map((level) => (
+              <i data-level={level} key={level} />
+            ))}
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.more' })}
+            </span>
           </div>
-          <div>
-            <dt>
-              {intl.formatMessage({
-                id: 'pages.home.nationalCarbon.organization.daily.activeDays',
-              })}
-            </dt>
-            <dd>{formatNumber(activeDays)}</dd>
-          </div>
-          <div>
-            <dt>
-              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.peak' })}
-            </dt>
-            <dd>{formatNumber(peak)}</dd>
-          </div>
-        </dl>
+        </div>
       </div>
       <div className={styles.organizationHeatmapBody}>
         <div aria-hidden='true' className={styles.organizationHeatmapWeekdays}>
@@ -2670,17 +2683,6 @@ function OrganizationDailyCreationHeatmap({
               );
             })}
           </div>
-        </div>
-        <div aria-hidden='true' className={styles.organizationHeatmapLegend}>
-          <span>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.less' })}
-          </span>
-          {[0, 1, 2, 3, 4, 5].map((level) => (
-            <i data-level={level} key={level} />
-          ))}
-          <span>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.more' })}
-          </span>
         </div>
       </div>
     </article>
