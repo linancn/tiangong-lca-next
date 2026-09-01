@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: dee1cddd1238e135cf9866280676e54715129dfd
-lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher selects `.env.development*` even after Umi preloads exact main-file defaults, while distinct explicit overrides keep priority.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 browser/runtime boundaries and descriptive account organization metadata do not change repository ownership, authorization, delivery, or modified-at-desc Process behavior.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -124,10 +124,10 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - the compiler/tooling track is TypeScript `7.0.2` only: `pnpm tsc` checks the web project and `pnpm tsc:electron` checks the Electron project; there is no TypeScript 6 compatibility alias or `tsc6` command
-- the UI runtime is one exact React `19.2.8`, React DOM `19.2.8`, Ant Design `6.6.1`, icons `6.3.2`, and ProComponents `3.1.14-6` generation. Umi's global ConfigProvider and App own theme plus feedback context for every route; there is no Ant Design 5 patch, split ProComponents package, legacy component-member API, or static feedback fallback. ProComponents v3 remains exact-pinned while upstream publishes it as a prerelease, and the existing `skipLibCheck: true` is the bounded declaration-quality exception rather than an application-typecheck bypass
+- the UI runtime is one exact React `19.2.8`, React DOM `19.2.8`, Ant Design `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6` generation. Umi's global ConfigProvider and App own theme plus feedback context for every route; there is no Ant Design 5 patch, split ProComponents package, legacy component-member API, or static feedback fallback. ProComponents v3 remains exact-pinned while upstream publishes it as a prerelease, and the existing `skipLibCheck: true` is the bounded declaration-quality exception rather than an application-typecheck bypass
 - `scripts/typescript-native-parser.mjs` plus its `scripts/typescript-native-parser.d.mts` declaration are the sole allowed `typescript/unstable/*` import boundary; repository source-analysis consumers import that adapter, and a TypeScript upgrade must preserve its focused AST/traversal/diagnostic contract tests
 - Oxlint owns JavaScript/TypeScript correctness, including unused and deprecated API diagnostics. The repo-local `tiangong/no-invalid-this` Oxlint plugin preserves the one legacy rule that Oxlint does not yet implement natively. Prettier remains the formatter but no longer organizes imports; do not reintroduce ESLint, a standalone deprecated-API scanner, or a Compiler-API formatting plugin
-- Jest uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
+- Jest `30.5.0` uses the repository slow-first sequencer to start the three known process-heavy contract suites early without changing discovery or the test inventory. The pre-push receipt suite builds one reusable seed but copies an isolated repository and bare remote for every test case
 - on macOS, the shared Jest runner disables concurrent recompilation and Maglev after the documented Node 24/V8 `ClearStaleLeftTrimmedPointerVisitor` crash reproduced inside those optimization tiers; the unit stage retains its 25% worker pool and `512MB` idle-memory recycle boundary without serializing the suite
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
@@ -150,7 +150,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 
 - package manager: repository-pinned `pnpm` `11.24.0`; install with `pnpm install --frozen-lockfile`
 - Node baseline: exact `24.19.0` via `.nvmrc`; use `nvm install` and `nvm use`
-- UI baseline: exact React `19.2.8`, antd `6.6.1`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
+- UI baseline: exact React `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`; `pnpm-workspace.yaml` collapses Umi's published fallback metadata to this one native generation
 - shared dev environment: `pnpm start` (`pnpm start:dev` is equivalent); it selects `.env.development*` over exact Umi-preloaded main-file defaults while retaining distinct explicit per-key build overrides
 - explicit main-environment run: `pnpm start:main`
 - default lint gate: `pnpm lint` (Oxlint correctness, Prettier formatting, and native TypeScript 7 web typecheck)

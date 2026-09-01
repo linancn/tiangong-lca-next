@@ -26,7 +26,7 @@ export {
 } from './oauth';
 export type { OAuthAuthorizationResult, OAuthServiceResponse } from './oauth';
 export { changePassword, forgotPasswordSendEmail, setPassword } from './password';
-export { changeEmail, setProfile } from './profile';
+export { changeEmail, getAccountProfile, setProfile } from './profile';
 export {
   completePasswordRecovery,
   getPasswordRecoveryUser,

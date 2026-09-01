@@ -539,7 +539,7 @@ async function installProcessTableFixture(page: Page): Promise<() => number> {
       data_source: 'my',
       page_current: 1,
       page_size: 10,
-      sort_by: 'json->processDataSet->processInformation->dataSetInformation->name',
+      sort_by: 'modified_at',
       sort_direction: 'desc',
       state_code_filter: null,
       team_id_filter: null,

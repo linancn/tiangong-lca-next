@@ -22,6 +22,7 @@ const mockUseIntl: jest.Mock<
 
 const mockModalConfirm = jest.fn();
 const mockModalDestroy = jest.fn();
+const mockReloadBrowserPage = jest.fn();
 
 const setupModuleMocks = () => {
   jest.doMock(
@@ -34,6 +35,17 @@ const setupModuleMocks = () => {
     }),
     { virtual: true },
   );
+
+  jest.doMock('@umijs/max', () => ({
+    __esModule: true,
+    history: {
+      push: mockHistoryPush,
+      replace: mockHistoryReplace,
+    },
+    useIntl: () => mockUseIntl(),
+    useLocation: () => mockLocation,
+    useModel: (model: string) => mockUseModel(model),
+  }));
 
   jest.doMock('react-dom', () => {
     const actual = jest.requireActual('react-dom');
@@ -135,47 +147,35 @@ const setupModuleMocks = () => {
     { virtual: true },
   );
 
-  jest.doMock(
-    '@/components/AllTeams',
-    () => ({
-      __esModule: true,
-      default: (props: any) => (
-        <section aria-label='All Teams table' data-table-type={props.tableType}>
-          All Teams
-        </section>
-      ),
-    }),
-    { virtual: true },
-  );
+  jest.doMock('@/components/AllTeams', () => ({
+    __esModule: true,
+    default: (props: any) => (
+      <section aria-label='All Teams table' data-table-type={props.tableType}>
+        All Teams
+      </section>
+    ),
+  }));
 
-  jest.doMock(
-    '@/components/HeaderDropdown',
-    () => ({
-      __esModule: true,
-      default: function HeaderDropdown({ menu, children, trigger }: any) {
-        const items = menu.items?.filter((item: any) => item.type !== 'divider') ?? [];
-        return (
-          <div>
-            <div data-testid='header-trigger' data-trigger={trigger?.join(',')}>
-              {children}
-            </div>
-            <nav aria-label='User menu'>
-              {items.map((item: any) => (
-                <button
-                  key={item.key}
-                  type='button'
-                  onClick={() => menu.onClick({ key: item.key })}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
+  jest.doMock('@/components/HeaderDropdown', () => ({
+    __esModule: true,
+    default: function HeaderDropdown({ menu, children, trigger }: any) {
+      const items = menu.items?.filter((item: any) => item.type !== 'divider') ?? [];
+      return (
+        <div>
+          <div data-testid='header-trigger' data-trigger={trigger?.join(',')}>
+            {children}
           </div>
-        );
-      },
-    }),
-    { virtual: true },
-  );
+          <nav aria-label='User menu'>
+            {items.map((item: any) => (
+              <button key={item.key} type='button' onClick={() => menu.onClick({ key: item.key })}>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      );
+    },
+  }));
 
   jest.doMock(
     '@/services/auth',
@@ -196,24 +196,14 @@ const setupModuleMocks = () => {
     }),
     { virtual: true },
   );
+
+  jest.doMock('@/utils/browserNavigation', () => ({
+    __esModule: true,
+    reloadBrowserPage: (...args: unknown[]) => mockReloadBrowserPage(...args),
+  }));
 };
 
 setupModuleMocks();
-
-const umiMax = require('@umijs/max') as {
-  useIntl?: (...args: any[]) => any;
-  useLocation?: (...args: any[]) => any;
-  useModel?: (...args: any[]) => any;
-  history?: { push?: (...args: any[]) => any; replace?: (...args: any[]) => any };
-};
-
-umiMax.useIntl = () => mockUseIntl();
-umiMax.useLocation = () => mockLocation;
-umiMax.useModel = (model: string) => mockUseModel(model);
-umiMax.history = {
-  push: mockHistoryPush,
-  replace: mockHistoryReplace,
-};
 
 const { AvatarDropdown, AvatarName } =
   require('@/components/RightContent/AvatarDropdown') as typeof import('@/components/RightContent/AvatarDropdown');
@@ -238,6 +228,7 @@ describe('AvatarDropdown', () => {
     mockUseIntl.mockClear();
     mockModalConfirm.mockReset();
     mockModalDestroy.mockReset();
+    mockReloadBrowserPage.mockReset();
     mockLocation = { pathname: '/', search: '' };
 
     mockedLogout.mockResolvedValue(undefined);
@@ -512,16 +503,6 @@ describe('AvatarDropdown', () => {
     mockedGetUserRoles.mockResolvedValue({ data: [{ role: 'rejected' }] });
     mockedGetSystemUserRoleApi.mockResolvedValue({ role: 'member' });
     mockLocation = { pathname: '/team', search: '?view=detail' };
-    const reloadSpy = jest.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        ...originalLocation,
-        reload: reloadSpy,
-      },
-    });
-
     const user = userEvent.setup();
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
@@ -541,11 +522,7 @@ describe('AvatarDropdown', () => {
       pathname: '/team',
       search: 'view=detail&action=create',
     });
-    expect(reloadSpy).toHaveBeenCalledTimes(1);
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    });
+    expect(mockReloadBrowserPage).toHaveBeenCalledWith(window.location);
   });
 
   it('closes the all-teams modal through the modal onCancel action', async () => {

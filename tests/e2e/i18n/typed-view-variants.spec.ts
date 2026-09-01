@@ -427,41 +427,85 @@ async function expectNativeOptionsRemainHorizontal(page: Page, tableRoot: Locato
   await expect(tableRoot).toHaveCount(1);
   const table = tableRoot.locator('table').filter({ visible: true }).first();
   await expect(table).toBeVisible();
-  const [rootBox, tableBox] = await Promise.all([tableRoot.boundingBox(), table.boundingBox()]);
-  expect(rootBox).not.toBeNull();
-  expect(tableBox).not.toBeNull();
 
   // Native ProTable options are currently non-focusable spans in the upstream beta. Scope the
   // visual check through the project-owned table root, then select only visible SVG controls
-  // positioned above the table. Keyboard focus-visible remains covered by ToolBarButton on the
-  // main table and is not over-claimed for these upstream native spans.
-  const visibleIcons = tableRoot.locator('svg').filter({ visible: true });
-  const optionIcons: Locator[] = [];
-  for (let index = 0; index < (await visibleIcons.count()); index += 1) {
-    const icon = visibleIcons.nth(index);
-    const box = await icon.boundingBox();
-    if (box && box.y + box.height / 2 < tableBox!.y) {
-      optionIcons.push(icon);
-    }
-  }
+  // positioned above the table. Read every rectangle in one browser evaluation so a Drawer
+  // transition cannot compare controls sampled from different animation frames. Visual order,
+  // rather than upstream DOM order, owns the horizontal non-overlap contract.
+  const readGeometry = () =>
+    tableRoot.evaluate((element) => {
+      const round = (value: number) => Math.round(value * 1_000) / 1_000;
+      const isVisible = (candidate: Element) => {
+        const bounds = candidate.getBoundingClientRect();
+        const style = getComputedStyle(candidate);
+        return (
+          bounds.width > 0 &&
+          bounds.height > 0 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden'
+        );
+      };
+      const tableElement = Array.from(element.querySelectorAll('table')).find(isVisible);
+      if (!tableElement) {
+        return {
+          aligned: false,
+          contained: false,
+          leftmostSvgIndex: -1,
+          nonOverlapping: false,
+          optionBoxes: [],
+          optionCount: 0,
+        };
+      }
 
-  expect(optionIcons).toHaveLength(3);
-  const optionBoxes = await Promise.all(optionIcons.map((icon) => icon.boundingBox()));
-  expect(optionBoxes.every(Boolean)).toBe(true);
-  const centers = optionBoxes.map((box) => box!.y + box!.height / 2);
-  expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(1);
-  for (let index = 0; index < optionBoxes.length; index += 1) {
-    const box = optionBoxes[index]!;
-    expect(box.x).toBeGreaterThanOrEqual(rootBox!.x - 1);
-    expect(box.x + box.width).toBeLessThanOrEqual(rootBox!.x + rootBox!.width + 1);
-    if (index > 0) {
-      expect(box.x).toBeGreaterThanOrEqual(
-        optionBoxes[index - 1]!.x + optionBoxes[index - 1]!.width - 1,
-      );
-    }
-  }
+      const rootBounds = element.getBoundingClientRect();
+      const tableBounds = tableElement.getBoundingClientRect();
+      const optionBoxes = Array.from(element.querySelectorAll('svg'))
+        .map((icon, svgIndex) => ({ bounds: icon.getBoundingClientRect(), icon, svgIndex }))
+        .filter(
+          ({ bounds, icon }) => isVisible(icon) && bounds.y + bounds.height / 2 < tableBounds.y,
+        )
+        .map(({ bounds, svgIndex }) => ({
+          bottom: bounds.bottom,
+          height: bounds.height,
+          left: bounds.left,
+          right: bounds.right,
+          svgIndex,
+          top: bounds.top,
+          width: bounds.width,
+        }))
+        .sort((left, right) => left.left - right.left);
+      const centers = optionBoxes.map(({ height, top }) => top + height / 2);
 
-  await optionIcons[0].hover();
+      return {
+        aligned: centers.length > 0 && Math.max(...centers) - Math.min(...centers) <= 1,
+        contained: optionBoxes.every(
+          ({ left, right }) => left >= rootBounds.left - 1 && right <= rootBounds.right + 1,
+        ),
+        leftmostSvgIndex: optionBoxes[0]?.svgIndex ?? -1,
+        nonOverlapping: optionBoxes.every(
+          ({ left }, index) => index === 0 || left >= optionBoxes[index - 1]!.right - 1,
+        ),
+        optionBoxes: optionBoxes.map(({ bottom, left, right, top }) => ({
+          bottom: round(bottom),
+          left: round(left),
+          right: round(right),
+          top: round(top),
+        })),
+        optionCount: optionBoxes.length,
+      };
+    });
+
+  await expect.poll(readGeometry).toMatchObject({
+    aligned: true,
+    contained: true,
+    nonOverlapping: true,
+    optionCount: 3,
+  });
+  const { leftmostSvgIndex } = await readGeometry();
+  expect(leftmostSvgIndex).toBeGreaterThanOrEqual(0);
+
+  await tableRoot.locator('svg').nth(leftmostSvgIndex).hover();
   await expect(page.getByRole('tooltip').filter({ visible: true })).toContainText(/\S/u);
   await page.mouse.move(0, 0);
 }

@@ -20,6 +20,7 @@ import {
 } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMembersApi, getTeamMessageApi } from '@/services/teams/api';
 import { TeamMemberTable } from '@/services/teams/data';
+import { reloadBrowserPage } from '@/utils/browserNavigation';
 import {
   CrownOutlined,
   DeleteOutlined,
@@ -265,7 +266,7 @@ const Team = () => {
           }),
         );
         history.replace(`/team?action=edit`);
-        window.location.reload();
+        reloadBrowserPage(window.location);
       }
     };
 

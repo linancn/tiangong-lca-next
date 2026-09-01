@@ -1,4 +1,10 @@
 import { buildAuthCallbackUrl, buildExternalUrl, getAppOrigin } from '@/utils/appUrl';
+import {
+  assignBrowserLocation,
+  readBrowserProtocol,
+  reloadBrowserPage,
+  replaceBrowserLocation,
+} from '@/utils/browserNavigation';
 
 describe('appUrl helpers', () => {
   it('returns the browser origin when window is available', () => {
@@ -6,23 +12,11 @@ describe('appUrl helpers', () => {
   });
 
   it('falls back to the production origin when window is unavailable', () => {
-    const originalWindow = global.window;
-    Object.defineProperty(global, 'window', {
-      configurable: true,
-      value: undefined,
-    });
-
-    try {
-      expect(getAppOrigin()).toBe('https://lca.tiangong.earth');
-      expect(buildExternalUrl('/user/login/password_reset')).toBe(
-        'https://lca.tiangong.earth/#/user/login/password_reset',
-      );
-    } finally {
-      Object.defineProperty(global, 'window', {
-        configurable: true,
-        value: originalWindow,
-      });
-    }
+    const origin = getAppOrigin(null);
+    expect(origin).toBe('https://lca.tiangong.earth');
+    expect(buildExternalUrl('/user/login/password_reset', origin)).toBe(
+      'https://lca.tiangong.earth/#/user/login/password_reset',
+    );
   });
 
   it('builds absolute app urls for off-app consumers and trims trailing slashes', () => {
@@ -50,5 +44,23 @@ describe('appUrl helpers', () => {
     expect(buildExternalUrl('user/login/password_reset', 'https://demo.example')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
+  });
+
+  it('delegates browser navigation through an explicit Location boundary', () => {
+    const location = {
+      assign: jest.fn(),
+      protocol: 'file:',
+      reload: jest.fn(),
+      replace: jest.fn(),
+    };
+
+    assignBrowserLocation(location, 'https://example.com/callback');
+    reloadBrowserPage(location);
+    replaceBrowserLocation(location, '/maintenance.html');
+
+    expect(location.assign).toHaveBeenCalledWith('https://example.com/callback');
+    expect(location.reload).toHaveBeenCalledTimes(1);
+    expect(location.replace).toHaveBeenCalledWith('/maintenance.html');
+    expect(readBrowserProtocol(location)).toBe('file:');
   });
 });

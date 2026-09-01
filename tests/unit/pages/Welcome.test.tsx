@@ -80,7 +80,6 @@ const mockGetLangText = getLangText as jest.MockedFunction<any>;
 const mockGetTeams = getTeams as jest.MockedFunction<any>;
 const mockGetSignedStorageFileUrl = getSignedStorageFileUrl as jest.MockedFunction<any>;
 const mockGetThumbFileUrls = getThumbFileUrls as jest.MockedFunction<any>;
-const originalLocation = window.location;
 
 const teamsPayload = [
   {
@@ -102,31 +101,11 @@ const teamsPayload = [
 ];
 
 describe('Welcome page', () => {
-  beforeAll(() => {
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: {
-        href: 'http://localhost:8000/',
-        assign: jest.fn(),
-        replace: jest.fn(),
-      } as unknown as Location,
-      writable: true,
-    });
-  });
-
-  afterAll(() => {
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    });
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockHistoryPush.mockReset();
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
-    window.location.href = 'http://localhost:8000/';
     mockLocation = { pathname: '/welcome', search: '' };
     mockLocale = 'en-US';
     mockGetLang.mockReturnValue('en');

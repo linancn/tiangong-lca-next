@@ -425,8 +425,8 @@ describe('tidasPackage/taskCenter', () => {
     expect(parseErrorModule.listTidasPackageTasks()).toEqual([]);
 
     jest.resetModules();
-    const originalWindow = (global as any).window;
-    Object.defineProperty(global, 'window', {
+    const localStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
       configurable: true,
       value: undefined,
     });
@@ -435,10 +435,11 @@ describe('tidasPackage/taskCenter', () => {
       noWindowModule.submitTidasPackageExportTask({ scope: 'current_user' });
       expect(noWindowModule.listTidasPackageTasks()).toHaveLength(1);
     } finally {
-      Object.defineProperty(global, 'window', {
-        configurable: true,
-        value: originalWindow,
-      });
+      if (localStorageDescriptor) {
+        Object.defineProperty(window, 'localStorage', localStorageDescriptor);
+      } else {
+        Reflect.deleteProperty(window, 'localStorage');
+      }
     }
   });
 

@@ -13,6 +13,7 @@ import {
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
+import { getAppOrigin } from '@/utils/appUrl';
 
 const mockCreateContact = jest.fn();
 const mockCreateFlow = jest.fn();
@@ -135,21 +136,9 @@ describe('review helper coverage', () => {
       'http://localhost:8000/#/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
 
-    const originalWindow = (global as any).window;
-    Object.defineProperty(global, 'window', {
-      configurable: true,
-      value: undefined,
-    });
-    try {
-      expect(getDatasetDetailAbsoluteUrl(ref)).toBe(
-        'https://lca.tiangong.earth/#/mydata/processes?id=process-1&version=01.00.000&required=1',
-      );
-    } finally {
-      Object.defineProperty(global, 'window', {
-        configurable: true,
-        value: originalWindow,
-      });
-    }
+    expect(getDatasetDetailAbsoluteUrl(ref, getAppOrigin(null))).toBe(
+      'https://lca.tiangong.earth/#/mydata/processes?id=process-1&version=01.00.000&required=1',
+    );
 
     const unknownRef = {
       '@type': 'unknown data set',

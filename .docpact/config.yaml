@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-08-31"
-lastReviewedCommit: "dee1cddd1238e135cf9866280676e54715129dfd"
-lastReviewedNote: 'Reviewed for Next Issue #971: existing service-env and testing routes cover Dev selection when Umi preloads main defaults, per-key explicit overrides, and focused regression proof; no routing change is required.'
+lastReviewedAt: "2026-09-01"
+lastReviewedCommit: "7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303"
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: frontend-runtime and testing routes cover the Jest/browser migration and optional organization profile metadata; the exact browser-navigation trigger remains explicit.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -605,6 +605,8 @@ rules:
       - path: src/typings.d.ts
         kind: app-runtime
       - path: src/utils/appUrl.ts
+        kind: app-runtime
+      - path: src/utils/browserNavigation.ts
         kind: app-runtime
       - path: src/utils/localeFormatting.ts
         kind: ui-locale

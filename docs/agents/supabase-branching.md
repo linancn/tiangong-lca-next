@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-08-31
-lastReviewedCommit: 66f3ad0663b137c9d9a61ffde3abde887cd3f847
-lastReviewedNote: 'Reviewed for Next Issue #971: the standard Dev launcher cannot silently retain Umi-loaded main defaults; distinct explicit build overrides, qualification isolation, and external OAuth ownership remain unchanged.'
+lastReviewedAt: 2026-09-01
+lastReviewedCommit: 6e1fb9ce4ae7d0f9af3bdc72bea146c207a89d00
+lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser-navigation testing and organization Auth metadata leave Supabase environment/branch bindings, OAuth callback safety, and database-owned sync unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

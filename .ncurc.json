@@ -11,6 +11,7 @@
     "oxlint-tsgolint",
     "jest",
     "jest-environment-jsdom",
-    "@types/jest"
+    "@types/jest",
+    "@types/node"
   ]
 }

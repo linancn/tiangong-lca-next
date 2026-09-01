@@ -305,7 +305,7 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
   });
 
   describe('reauthenticate', () => {
-    let consoleSpy: jest.SpyInstance;
+    let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
     beforeEach(() => {
       consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});

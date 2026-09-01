@@ -67,13 +67,15 @@ describe('HeaderActionIcon', () => {
       fontSize: '16px',
       opacity: '0.5',
       cursor: 'pointer',
-      color: 'red',
+      color: 'rgb(255, 0, 0)',
     });
     expect(screen.getByTestId('badge')).toHaveAttribute('data-count', '3');
     expect(screen.getByTestId('badge')).toHaveAttribute('data-offset', '[1,2]');
     expect(screen.getByTestId('badge')).toHaveAttribute('data-size', 'small');
     expect(screen.getByTestId('badge')).toHaveAttribute('data-show-zero', 'false');
-    expect(screen.getByTestId('badge')).toHaveStyle({ backgroundColor: 'blue' });
+    expect(screen.getByTestId('badge')).toHaveStyle({
+      backgroundColor: 'rgb(0, 0, 255)',
+    });
   });
 
   it('uses the top-right badge offset by default', () => {
