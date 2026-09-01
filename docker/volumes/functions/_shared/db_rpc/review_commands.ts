@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { CommandAuditPayload } from '../command_runtime/audit_log.ts';
 import type {
@@ -6,6 +6,9 @@ import type {
   AssignReviewersRequest,
   RejectReviewRequest,
   ReviewCommandFailure,
+  ReviewerDecisionRequest,
+  ReviewIdRequest,
+  ReviewQualityDiagnosticRequest,
   RevokeReviewerRequest,
   SaveAssignmentDraftRequest,
   SaveCommentDraftRequest,
@@ -168,6 +171,39 @@ export function buildSimpleReviewDecisionRpcArgs(
   };
 }
 
+export function buildReviewFinalizeApproveByIdRpcArgs(
+  request: ReviewIdRequest,
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_audit: audit,
+  };
+}
+
+export function buildReviewFinalizeRejectByIdRpcArgs(
+  request: ReviewIdRequest & { reason: string },
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_reason: request.reason,
+    p_audit: audit,
+  };
+}
+
+export function buildReviewerDecisionRpcArgs(
+  request: ReviewerDecisionRequest,
+  audit: CommandAuditPayload,
+): Record<string, unknown> {
+  return {
+    p_review_id: request.reviewId,
+    p_decision: request.decision,
+    p_reason: request.decision === 'reject' ? request.reason : null,
+    p_audit: audit,
+  };
+}
+
 export function callReviewSaveAssignmentDraftRpc(
   supabase: RpcClient,
   request: SaveAssignmentDraftRequest,
@@ -262,4 +298,53 @@ export function callSimpleReviewDecisionRpc(
     'cmd_simple_review_submit_decision',
     buildSimpleReviewDecisionRpcArgs(request, audit),
   );
+}
+
+export function callReviewFinalizeApproveByIdRpc(
+  supabase: RpcClient,
+  request: ReviewIdRequest,
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_review_finalize_approve',
+    buildReviewFinalizeApproveByIdRpcArgs(request, audit),
+  );
+}
+
+export function callReviewFinalizeRejectByIdRpc(
+  supabase: RpcClient,
+  request: ReviewIdRequest & { reason: string },
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_review_finalize_reject',
+    buildReviewFinalizeRejectByIdRpcArgs(request, audit),
+  );
+}
+
+export function callReviewerDecisionRpc(
+  supabase: RpcClient,
+  request: ReviewerDecisionRequest,
+  audit: CommandAuditPayload,
+) {
+  return callReviewRpc(
+    supabase,
+    'cmd_reviewer_submit_decision',
+    buildReviewerDecisionRpcArgs(request, audit),
+  );
+}
+
+export function callReviewQualityDiagnosticStartRpc(supabase: RpcClient) {
+  return callReviewRpc(supabase, 'cmd_review_quality_diagnostic_start', {});
+}
+
+export function callReviewQualityDiagnosticReadRpc(
+  supabase: RpcClient,
+  request: Extract<ReviewQualityDiagnosticRequest, { action: 'read' }>,
+) {
+  return callReviewRpc(supabase, 'qry_review_quality_diagnostic', {
+    p_run_id: request.runId ?? null,
+  });
 }

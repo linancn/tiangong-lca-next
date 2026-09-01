@@ -171,11 +171,8 @@ export const PRO_COMPONENT_SURFACE_FAMILIES = [
   {
     id: 'account-profile-forms',
     componentTags: ['ProForm'],
-    sourcePaths: ['src/pages/Account/index.tsx', 'src/pages/Account/OAuthConnections.tsx'],
-    evidencePaths: [
-      'tests/e2e/i18n/route-inventory.spec.ts',
-      'tests/unit/pages/Account/OAuthConnections.test.tsx',
-    ],
+    sourcePaths: ['src/pages/Account/index.tsx'],
+    evidencePaths: ['tests/e2e/i18n/route-inventory.spec.ts'],
     visualStates: ['desktop', 'narrow', 'light', 'dark'],
   },
   {
@@ -245,7 +242,7 @@ export const EXPECTED_PRO_COMPONENT_RUNTIME_COUNTS = {
   DragSortTable: 1,
   LoginForm: 3,
   PageContainer: 15,
-  ProForm: 28,
+  ProForm: 27,
   ProLayout: 3,
   ProTable: 67,
   SettingDrawer: 1,

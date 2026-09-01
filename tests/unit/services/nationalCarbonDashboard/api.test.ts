@@ -159,4 +159,24 @@ describe('nationalCarbonDashboard organization contribution service', () => {
     expect(organizationContributionSnapshotSchema.safeParse(inconsistent).success).toBe(false);
     expect(organizationContributionSnapshotSchema.safeParse(nonConsecutive).success).toBe(false);
   });
+
+  it('rejects daily version ranges whose boundary dates do not match their day series', () => {
+    const mismatchedStart = {
+      ...validSnapshot,
+      dailyCreation: {
+        ...validSnapshot.dailyCreation,
+        startDate: '2025-08-31',
+      },
+    };
+    const mismatchedEnd = {
+      ...validSnapshot,
+      dailyCreation: {
+        ...validSnapshot.dailyCreation,
+        endDate: '2026-09-02',
+      },
+    };
+
+    expect(organizationContributionSnapshotSchema.safeParse(mismatchedStart).success).toBe(false);
+    expect(organizationContributionSnapshotSchema.safeParse(mismatchedEnd).success).toBe(false);
+  });
 });

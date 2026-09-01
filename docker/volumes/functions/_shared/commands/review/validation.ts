@@ -6,6 +6,8 @@ import {
   type ApproveReviewRequest,
   type AssignReviewersRequest,
   type RejectReviewRequest,
+  type ReviewBatchDecisionRequest,
+  type ReviewQualityDiagnosticRequest,
   type RevokeReviewerRequest,
   type SaveAssignmentDraftRequest,
   type SaveCommentDraftRequest,
@@ -83,6 +85,49 @@ export const simpleReviewDecisionRequestSchema = z.discriminatedUnion('decision'
     .extend({
       decision: z.literal('reject'),
       reason: z.string().trim().min(1, 'reason is required'),
+    })
+    .strict(),
+]);
+
+export const reviewBatchDecisionRequestSchema = z
+  .object({
+    reviewIds: z.array(uuidSchema).min(1).max(50),
+    decision: z.enum(['approve', 'reject']),
+    reason: z.string().trim().max(1000).optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.decision === 'reject' && !value.reason?.trim()) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reason'],
+        message: 'reason is required for reject',
+      });
+    }
+    if (value.decision === 'approve' && value.reason?.trim()) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reason'],
+        message: 'approve does not accept a reason',
+      });
+    }
+  })
+  .transform((value) => ({
+    ...value,
+    reviewIds: [...new Set(value.reviewIds)],
+    ...(value.reason?.trim() ? { reason: value.reason.trim() } : {}),
+  }));
+
+export const reviewQualityDiagnosticRequestSchema = z.discriminatedUnion('action', [
+  z
+    .object({
+      action: z.literal('start'),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.literal('read'),
+      runId: uuidSchema.optional(),
     })
     .strict(),
 ]);
@@ -172,6 +217,28 @@ export function parseSimpleReviewDecisionRequest(
   const parsed = simpleReviewDecisionRequestSchema.safeParse(body);
   if (!parsed.success) {
     return invalidPayload('Invalid simple review decision payload', parsed.error);
+  }
+
+  return { ok: true, value: parsed.data };
+}
+
+export function parseReviewBatchDecisionRequest(
+  body: unknown,
+): CommandParseResult<ReviewBatchDecisionRequest> {
+  const parsed = reviewBatchDecisionRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return invalidPayload('Invalid review batch decision payload', parsed.error);
+  }
+
+  return { ok: true, value: parsed.data };
+}
+
+export function parseReviewQualityDiagnosticRequest(
+  body: unknown,
+): CommandParseResult<ReviewQualityDiagnosticRequest> {
+  const parsed = reviewQualityDiagnosticRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return invalidPayload('Invalid review quality diagnostic payload', parsed.error);
   }
 
   return { ok: true, value: parsed.data };

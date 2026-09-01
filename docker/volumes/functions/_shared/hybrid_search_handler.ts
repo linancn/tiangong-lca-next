@@ -1,12 +1,9 @@
-import { InvokeEndpointCommand, SageMakerRuntimeClient } from '@aws-sdk/client-sagemaker-runtime';
-
 import { authenticateRequest, AuthMethod } from './auth.ts';
 import { corsHeaders } from './cors.ts';
 import { extractEmbeddingVector } from './embedding_vector.ts';
+import { generateHybridSearchEmbedding, rewriteHybridSearchQuery } from './hybrid_search_kernel.ts';
 import {
   buildHybridFulltextQueryTerms,
-  HYBRID_SYNONYM_RULES,
-  hybridQuerySchema,
   sanitizeHybridQueryOutput,
   type HybridSearchQuery,
 } from './hybrid_query_utils.ts';
@@ -19,8 +16,6 @@ import {
   HybridSearchRpcContextError,
   type HybridSearchRpcClientContext,
 } from './hybrid_search_rpc_context.ts';
-import { openaiStructuredOutput } from './openai_structured.ts';
-import { getRedisClient } from './redis_client.ts';
 import { supabaseAuthClient } from './supabase_client.ts';
 
 export interface HybridSearchRouteConfig {
@@ -49,100 +44,17 @@ export interface HybridSearchHandlerDependencies {
   logger: Pick<Console, 'log' | 'error'>;
 }
 
-const OPENAI_CHAT_MODEL = Deno.env.get('OPENAI_CHAT_MODEL') ?? 'gpt-4.1-mini';
-const SAGEMAKER_ENDPOINT_NAME = Deno.env.get('SAGEMAKER_ENDPOINT_NAME');
-const AWS_REGION = 'us-east-1';
-const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
-const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY');
-const AWS_SESSION_TOKEN = Deno.env.get('AWS_SESSION_TOKEN');
-const textDecoder = new TextDecoder();
-
-let sagemakerClient: SageMakerRuntimeClient | undefined;
-
-function getSageMakerClient(): SageMakerRuntimeClient {
-  if (!sagemakerClient) {
-    sagemakerClient = new SageMakerRuntimeClient({
-      region: AWS_REGION,
-      credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: AWS_SECRET_ACCESS_KEY ?? '',
-        sessionToken: AWS_SESSION_TOKEN ?? undefined,
-      },
-    });
-  }
-  return sagemakerClient;
-}
-
 async function defaultAuthenticate(request: Request): Promise<HybridSearchAuthResult> {
-  const redis = await getRedisClient();
   return await authenticateRequest(request, {
     authClient: supabaseAuthClient,
-    redis,
-    allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
+    allowedMethods: [AuthMethod.JWT, AuthMethod.SERVICE_API_KEY],
   });
-}
-
-async function defaultRewriteQuery(
-  config: HybridSearchRouteConfig,
-  queryText: string,
-): Promise<HybridSearchQuery> {
-  return await openaiStructuredOutput<HybridSearchQuery>({
-    schemaName: `${config.functionName}_queries`,
-    schema: hybridQuerySchema,
-    systemPrompt: `Field: Life Cycle Assessment (LCA)
-Task: Transform description of ${config.entityPlural} into three specific queries: SemanticQueryEN, FulltextQueryEN and FulltextQueryZH.
-${HYBRID_SYNONYM_RULES}`,
-    userPrompt: `${config.entityLabel} description: ${queryText}`,
-    options: { model: OPENAI_CHAT_MODEL, temperature: 0 },
-  });
-}
-
-async function readSageMakerBody(rawBody: unknown): Promise<string> {
-  if (typeof rawBody === 'string') return rawBody;
-  if (rawBody instanceof Uint8Array) return textDecoder.decode(rawBody);
-  if (
-    rawBody &&
-    typeof rawBody === 'object' &&
-    'transformToByteArray' in rawBody &&
-    typeof (rawBody as { transformToByteArray?: unknown }).transformToByteArray === 'function'
-  ) {
-    const bytes = await (
-      rawBody as unknown as { transformToByteArray: () => Promise<Uint8Array> }
-    ).transformToByteArray();
-    return textDecoder.decode(bytes);
-  }
-  throw new Error('unexpected response body type from SageMaker endpoint');
-}
-
-async function defaultGenerateEmbedding(text: string): Promise<number[]> {
-  if (!SAGEMAKER_ENDPOINT_NAME) {
-    throw new Error('missing SAGEMAKER_ENDPOINT_NAME environment variable');
-  }
-  if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-    throw new Error('missing AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY environment variable');
-  }
-
-  const response = await getSageMakerClient().send(
-    new InvokeEndpointCommand({
-      EndpointName: SAGEMAKER_ENDPOINT_NAME,
-      ContentType: 'application/json',
-      Accept: 'application/json',
-      Body: JSON.stringify({ inputs: text }),
-    }),
-  );
-  const httpStatus = response.$metadata.httpStatusCode ?? 500;
-  if (httpStatus < 200 || httpStatus >= 300) {
-    throw new Error(`SageMaker endpoint request failed: ${httpStatus}`);
-  }
-  if (!response.Body) throw new Error('empty response body from SageMaker endpoint');
-
-  return extractEmbeddingVector(JSON.parse(await readSageMakerBody(response.Body)));
 }
 
 const DEFAULT_DEPENDENCIES: HybridSearchHandlerDependencies = {
   authenticate: defaultAuthenticate,
-  rewriteQuery: defaultRewriteQuery,
-  generateEmbedding: defaultGenerateEmbedding,
+  rewriteQuery: rewriteHybridSearchQuery,
+  generateEmbedding: generateHybridSearchEmbedding,
   createRpcClient: createHybridSearchRpcClient,
   now: Date.now,
   logger: console,

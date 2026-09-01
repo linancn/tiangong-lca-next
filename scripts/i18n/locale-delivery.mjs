@@ -2953,6 +2953,26 @@ function validateCorrectionLedger(root, currentManifest) {
   if (!Array.isArray(trackedLocales) || trackedLocales.length === 0) {
     throw new Error('Correction ledger must declare tracked existing locales.');
   }
+  if (!Array.isArray(ledger.retiredMessages)) {
+    throw new Error('Correction ledger must declare retired baseline messages.');
+  }
+  const retiredMessageIds = new Set();
+  for (const retirement of ledger.retiredMessages) {
+    const messageId = typeof retirement?.messageId === 'string' ? retirement.messageId.trim() : '';
+    const issue = typeof retirement?.issue === 'string' ? retirement.issue.trim() : '';
+    const reason = typeof retirement?.reason === 'string' ? retirement.reason.trim() : '';
+    if (
+      !messageId ||
+      !/^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/u.test(issue) ||
+      !reason
+    ) {
+      throw new Error('Correction ledger contains an incomplete baseline-message retirement.');
+    }
+    if (retiredMessageIds.has(messageId)) {
+      throw new Error(`Duplicate retired baseline message: ${messageId}.`);
+    }
+    retiredMessageIds.add(messageId);
+  }
   const declared = new Map();
   for (const correction of ledger.corrections) {
     const body = {
@@ -2989,9 +3009,18 @@ function validateCorrectionLedger(root, currentManifest) {
 
   const actual = new Map();
   const currentById = new Map(currentManifest.messages.map((message) => [message.id, message]));
+  const baselineById = new Map(baselineManifest.messages.map((message) => [message.id, message]));
   for (const baselineMessage of baselineManifest.messages) {
     const currentMessage = currentById.get(baselineMessage.id);
-    if (!currentMessage) throw new Error(`Baseline message was removed: ${baselineMessage.id}.`);
+    if (!currentMessage) {
+      if (!retiredMessageIds.has(baselineMessage.id)) {
+        throw new Error(`Baseline message was removed: ${baselineMessage.id}.`);
+      }
+      continue;
+    }
+    if (retiredMessageIds.has(baselineMessage.id)) {
+      throw new Error(`Retired baseline message is still active: ${baselineMessage.id}.`);
+    }
     for (const locale of trackedLocales) {
       const before = baselineMessage.translations?.[locale]?.value;
       const after = currentMessage.translations?.[locale]?.value;
@@ -3021,9 +3050,15 @@ function validateCorrectionLedger(root, currentManifest) {
     if (!actual.has(key))
       throw new Error(`Correction dossier has no active catalog difference: ${key}.`);
   }
+  for (const messageId of retiredMessageIds) {
+    if (!baselineById.has(messageId)) {
+      throw new Error(`Retired message did not exist in the accepted baseline: ${messageId}.`);
+    }
+  }
   const correctionBody = {
     baselineSha: ledger.baselineSha,
     trackedLocales,
+    retiredMessages: ledger.retiredMessages,
     corrections: ledger.corrections,
   };
   if (ledger.correctionLedgerDigest !== digestJson(correctionBody)) {
@@ -3034,6 +3069,7 @@ function validateCorrectionLedger(root, currentManifest) {
     baselineSha: ledger.baselineSha,
     baselineMessageCount: baselineManifest.summary.canonicalCandidateKeyCount,
     correctionCount: actual.size,
+    retiredMessageCount: retiredMessageIds.size,
     correctionLedgerDigest: ledger.correctionLedgerDigest,
     privateConfirmationDependencies: [],
   };
