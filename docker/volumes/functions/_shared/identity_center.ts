@@ -1,5 +1,5 @@
 import * as jose from 'https://deno.land/x/jose@v4.14.4/index.ts';
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 import { assertOk, type WebhookAction } from './identity_center_core.ts';
 
 const ISSUER = Deno.env.get('KEYCLOAK_ISSUER_URL') ?? '';

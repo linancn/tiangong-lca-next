@@ -23,17 +23,64 @@ const rawEmbeddingFtJobSchema = z.object({
 
 export type EmbeddingFtJob = z.infer<typeof rawEmbeddingFtJobSchema>;
 
-const ALLOWED_CONTENT_FUNCTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
-  flows: new Set(['flows_embedding_ft_input', 'flows_derivative_rebuild_embedding_input']),
-  processes: new Set([
-    'processes_embedding_ft_input',
-    'processes_derivative_rebuild_embedding_input',
-  ]),
-  lifecyclemodels: new Set(['lifecyclemodels_embedding_ft_input']),
-  contacts: new Set(['contacts_embedding_ft_input']),
-  flowproperties: new Set(['flowproperties_embedding_ft_input']),
-  sources: new Set(['sources_embedding_ft_input']),
-  unitgroups: new Set(['unitgroups_embedding_ft_input']),
+export type EmbeddingFtFunctionTarget = Readonly<{
+  schema: string;
+  function: string;
+}>;
+
+const ALLOWED_EMBEDDING_FT_TARGETS: Readonly<
+  Record<string, Readonly<Record<string, EmbeddingFtFunctionTarget>>>
+> = {
+  flows: {
+    flows_embedding_ft_input: {
+      schema: 'api',
+      function: 'flows_embedding_ft_input',
+    },
+    flows_derivative_rebuild_embedding_input: {
+      schema: 'private',
+      function: 'flows_derivative_rebuild_embedding_input',
+    },
+  },
+  processes: {
+    processes_embedding_ft_input: {
+      schema: 'api',
+      function: 'processes_embedding_ft_input',
+    },
+    processes_derivative_rebuild_embedding_input: {
+      schema: 'private',
+      function: 'processes_derivative_rebuild_embedding_input',
+    },
+  },
+  lifecyclemodels: {
+    lifecyclemodels_embedding_ft_input: {
+      schema: 'api',
+      function: 'lifecyclemodels_embedding_ft_input',
+    },
+  },
+  contacts: {
+    contacts_embedding_ft_input: {
+      schema: 'public',
+      function: 'contacts_embedding_ft_input',
+    },
+  },
+  flowproperties: {
+    flowproperties_embedding_ft_input: {
+      schema: 'public',
+      function: 'flowproperties_embedding_ft_input',
+    },
+  },
+  sources: {
+    sources_embedding_ft_input: {
+      schema: 'public',
+      function: 'sources_embedding_ft_input',
+    },
+  },
+  unitgroups: {
+    unitgroups_embedding_ft_input: {
+      schema: 'public',
+      function: 'unitgroups_embedding_ft_input',
+    },
+  },
 };
 
 export class EmbeddingFtJobError extends Error {
@@ -46,18 +93,19 @@ export class EmbeddingFtJobError extends Error {
   }
 }
 
-export function assertAllowedEmbeddingFtJob(job: EmbeddingFtJob): EmbeddingFtJob {
-  const allowedFunctions = ALLOWED_CONTENT_FUNCTIONS[job.table];
-  if (
-    job.schema !== 'public' ||
-    job.embeddingColumn !== 'embedding_ft' ||
-    !allowedFunctions?.has(job.contentFunction)
-  ) {
+export function embeddingFtFunctionTarget(job: EmbeddingFtJob): EmbeddingFtFunctionTarget {
+  const target = ALLOWED_EMBEDDING_FT_TARGETS[job.table]?.[job.contentFunction];
+  if (job.schema !== 'public' || job.embeddingColumn !== 'embedding_ft' || !target) {
     throw new EmbeddingFtJobError(
       'UNSUPPORTED_EMBEDDING_TARGET',
       `unsupported embedding target ${job.schema}.${job.table}/${job.contentFunction}/${job.embeddingColumn}`,
     );
   }
+  return target;
+}
+
+export function assertAllowedEmbeddingFtJob(job: EmbeddingFtJob): EmbeddingFtJob {
+  embeddingFtFunctionTarget(job);
   return job;
 }
 
@@ -73,5 +121,28 @@ export function parseEmbeddingFtJobs(value: unknown): EmbeddingFtJob[] {
 }
 
 export function allowedEmbeddingFtTables(): string[] {
-  return Object.keys(ALLOWED_CONTENT_FUNCTIONS).sort();
+  return Object.keys(ALLOWED_EMBEDDING_FT_TARGETS).sort();
+}
+
+type PostgresSqlTag<TQuery> = {
+  (strings: TemplateStringsArray, ...values: unknown[]): TQuery;
+  (identifier: string): unknown;
+};
+
+export function buildEmbeddingFtContentQuery<TQuery>(
+  sql: PostgresSqlTag<TQuery>,
+  job: EmbeddingFtJob,
+): TQuery {
+  const target = embeddingFtFunctionTarget(job);
+
+  return sql`
+    select
+      id,
+      version,
+      ${sql(target.schema)}.${sql(target.function)}(t) as content
+    from
+      ${sql(job.schema)}.${sql(job.table)} t
+    where
+      id = ${job.id} and version = ${job.version}
+  `;
 }

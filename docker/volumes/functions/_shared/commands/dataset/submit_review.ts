@@ -2,12 +2,7 @@ import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import { buildCommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import { assertSubmitReviewPolicy } from './policy.ts';
 import { createDatasetCommandRepository, type DatasetCommandRepository } from './repository.ts';
-import {
-  REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-  REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-  type DatasetCommandExecutionResult,
-  type SubmitReviewRequest,
-} from './types.ts';
+import { type DatasetCommandExecutionResult, type SubmitReviewRequest } from './types.ts';
 import { parseSubmitReviewRequest, submitReviewRequestSchema } from './validation.ts';
 
 export { submitReviewRequestSchema };
@@ -32,14 +27,7 @@ export async function executeSubmitReviewCommand(
     targetTable: request.table,
     targetId: request.id,
     targetVersion: request.version,
-    payload: {
-      reviewSubmitGateRunId: request.reviewSubmitGateRunId ?? null,
-      revisionChecksum: request.revisionChecksum ?? null,
-      reviewSubmitPolicyProfile:
-        request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-      reviewSubmitReportSchemaVersion:
-        request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-    },
+    payload: {},
   });
 
   const result = await repository.submitReview(request, audit);

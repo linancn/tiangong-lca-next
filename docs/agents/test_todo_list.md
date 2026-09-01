@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest/browser migration and organization load/update/clear/refresh/missing-profile paths are closed with no deferred testing queue.'
+lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
+lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: Jest/browser migration, organization profile, OAuth Account, and external bridge-removal paths are closed with no deferred testing queue.'
 ---
 
 # Testing Execution State

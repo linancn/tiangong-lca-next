@@ -52,6 +52,19 @@ describe('German frozen-history and active automated-correction boundary', () =>
         germanRuntimeManifestDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
       }),
     );
+    expect(ledger.retiredMessages.map(({ messageId }: { messageId: string }) => messageId)).toEqual(
+      [
+        'pages.account.apiKey',
+        'pages.account.generateAPIKey',
+        'pages.account.apiKey.viewed',
+        'pages.account.apiKey.generateButton',
+        'pages.account.apiKey.currentPassword',
+        'pages.account.invalidCredentials',
+        'pages.account.apiKey.generated.success',
+        'pages.account.apiKey.generateError',
+        'pages.account.apiKey.currentPassword.tooltip',
+      ],
+    );
 
     const result = spawnSync(
       process.execPath,
@@ -68,6 +81,7 @@ describe('German frozen-history and active automated-correction boundary', () =>
         action: 'corrections',
         baselineSha: ledger.baselineSha,
         correctionCount: ledger.corrections.length,
+        retiredMessageCount: ledger.retiredMessages.length,
         privateConfirmationDependencies: [],
       }),
     );

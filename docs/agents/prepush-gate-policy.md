@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: source-mapped Jest 30 coverage and organization profile regressions retain one full-gate owner and unchanged 100% enforcement.'
+lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
+lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: source-mapped Jest 30 coverage, organization profile regressions, OAuth-only Account, and exact Edge mirror retain one full-gate owner and unchanged 100% enforcement.'
 ---
 
 # Pre-Push Gate Policy

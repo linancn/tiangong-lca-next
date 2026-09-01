@@ -34,8 +34,24 @@ export type DataProductBuildCreateRequest = {
 
 export type DataProductClosureCheckCreateRequest = {
   action: 'create_closure_check';
+  resultSetId?: string;
   requestedScope: DataProductClosureRequestedScope;
   requestIdempotencyToken: string;
+};
+
+export type DataProductResultSetCreateRequest = {
+  action: 'create_result_set';
+  name: string;
+};
+
+export type DataProductResultSetListRequest = {
+  action: 'list_result_sets';
+  limit?: number;
+};
+
+export type DataProductResultSetReadRequest = {
+  action: 'get_result_set';
+  resultSetId: string;
 };
 
 export type DataProductClosureCheckReadRequest = {
@@ -101,6 +117,9 @@ export type DataProductPublicationListRequest = {
 
 export type DataProductCommandRequest =
   | DataProductBuildCreateRequest
+  | DataProductResultSetCreateRequest
+  | DataProductResultSetListRequest
+  | DataProductResultSetReadRequest
   | DataProductClosureCheckCreateRequest
   | DataProductClosureCheckReadRequest
   | DataProductClosureIssuesRequest

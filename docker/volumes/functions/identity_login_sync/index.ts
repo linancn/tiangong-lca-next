@@ -1,4 +1,4 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { AuthMethod, authenticateRequest, handleCors } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
@@ -28,6 +28,7 @@ Deno.serve(async (req: Request) => {
   const auth = await authenticateRequest(req, {
     authClient: supabaseAuthClient,
     allowedMethods: [AuthMethod.JWT],
+    jwtAssurance: 'fresh_user',
   });
   if (!auth.isAuthenticated || !auth.user)
     return auth.response ?? json(401, { code: 'UNAUTHENTICATED' });
@@ -42,7 +43,7 @@ Deno.serve(async (req: Request) => {
     return json(401, { code: 'UNAUTHENTICATED', reason: 'invalid provider token' });
 
   // token 主体必须就是当前 Supabase 用户的 keycloak 身份(防挪用他人 token)。
-  // `UserIdentity.id`(@supabase/auth-js 2.98.0 `src/lib/types.ts`)是身份提供方自身的
+  // `UserIdentity.id`(@supabase/auth-js 2.112.4 `src/lib/types.ts`)是身份提供方自身的
   // subject id(OIDC `sub`),而非 `identity_id`(Supabase 该行的内部主键)或
   // `user_id`(Supabase 本地用户 id)——已核实并据此选定 `.id`。
   const { data: got } = await supabaseServiceClient.auth.admin.getUserById(auth.user.id);

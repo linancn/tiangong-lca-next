@@ -1,84 +1,23 @@
+import {
+  asArray as sharedAsArray,
+  collectLocalizedTexts as sharedCollectLocalizedTexts,
+  isRecord as sharedIsRecord,
+  pickProperty as sharedPickProperty,
+  readClassificationPath as sharedReadClassificationPath,
+  readDisplayTextLeaf as sharedReadDisplayTextLeaf,
+  readLocalizedText as sharedReadLocalizedText,
+  readReferenceShortDescription as sharedReadReferenceShortDescription,
+} from './projection_primitives.ts';
+
 const DEFAULT_LANG = 'en';
 
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isObject = sharedIsRecord;
+const pickProperty = sharedPickProperty;
+const ensureArray = sharedAsArray;
+const getTextFromDict = sharedReadDisplayTextLeaf;
 
-const pickProperty = (obj: unknown, names: string[]): unknown => {
-  if (!isObject(obj)) return undefined;
-  for (const name of names) {
-    const value = obj[name];
-    if (value !== undefined && value !== null) return value;
-  }
-  return undefined;
-};
-
-const ensureArray = <T>(value: T | T[] | null | undefined): T[] => {
-  if (value === null || value === undefined) return [];
-  return Array.isArray(value) ? value : [value];
-};
-
-const getTextFromDict = (data: unknown): string | null => {
-  if (data === null || data === undefined) return null;
-  if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
-    const text = String(data).trim();
-    return text || null;
-  }
-  if (!isObject(data)) return null;
-  const text = data['#text'] ?? data.text ?? data._text;
-  if (typeof text !== 'string') return null;
-  const trimmed = text.trim();
-  return trimmed || null;
-};
-
-const collectTexts = (value: unknown, lang = DEFAULT_LANG): string[] => {
-  if (value === null || value === undefined) return [];
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    const text = String(value).trim();
-    return text ? [text] : [];
-  }
-
-  const entries = Array.isArray(value) ? value : isObject(value) ? [value] : [];
-  const langMatches: string[] = [];
-  const fallback: string[] = [];
-
-  for (const entry of entries) {
-    if (entry === null || entry === undefined) continue;
-    if (typeof entry === 'string' || typeof entry === 'number' || typeof entry === 'boolean') {
-      const text = String(entry).trim();
-      if (text) fallback.push(text);
-      continue;
-    }
-    if (!isObject(entry)) continue;
-    const entryLang = pickProperty(entry, ['@xml:lang', 'xml:lang', 'xml_lang', 'lang']);
-    const text = getTextFromDict(entry);
-    if (!text) continue;
-    if (lang && entryLang === lang) {
-      langMatches.push(text);
-    } else {
-      fallback.push(text);
-    }
-  }
-
-  return langMatches.length ? langMatches : fallback;
-};
-
-const pickText = (value: unknown, lang = DEFAULT_LANG): string | null => {
-  if (isObject(value)) {
-    const getText = Reflect.get(value, 'get_text');
-    if (typeof getText === 'function') {
-      const text = getText.call(value, lang);
-      if (text) {
-        const trimmed = String(text).trim();
-        if (trimmed) return trimmed;
-      }
-    }
-  }
-
-  const texts = collectTexts(value, lang);
-  if (texts.length) return texts[0];
-  if (isObject(value)) return getTextFromDict(value);
-  return null;
-};
+const collectTexts = sharedCollectLocalizedTexts;
+const pickText = sharedReadLocalizedText;
 
 const joinTexts = (value: unknown, lang = DEFAULT_LANG, sep = '\n\n'): string | null => {
   const texts = collectTexts(value, lang)
@@ -127,51 +66,8 @@ const getDataSetVersion = (dataset: Record<string, unknown>): string | null => {
   return version ? toDisplayText(version) : null;
 };
 
-const getClassificationPath = (dataInfo: unknown): string | null => {
-  const classification = pickProperty(dataInfo, [
-    'classificationInformation',
-    'classification_information',
-  ]);
-  const container = pickProperty(classification, [
-    'common:elementaryFlowCategorization',
-    'common:classification',
-    'elementaryFlowCategorization',
-    'classification',
-    'common_elementary_flow_categorization',
-    'common_classification',
-  ]);
-  const categories = ensureArray(
-    pickProperty(container, [
-      'common:category',
-      'common:class',
-      'category',
-      'class',
-      'common_category',
-      'common_class',
-    ]),
-  );
-
-  const levelOf = (entry: unknown): number | null => {
-    const level = pickProperty(entry, ['@level', 'level']);
-    if (level === undefined || level === null) return null;
-    const parsed = Number(level);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  const parts = categories
-    .slice()
-    .sort((a, b) => {
-      const levelA = levelOf(a);
-      const levelB = levelOf(b);
-      if (levelA === null && levelB === null) return 0;
-      if (levelA === null) return 1;
-      if (levelB === null) return -1;
-      return levelA - levelB;
-    })
-    .map((entry) => getTextFromDict(entry))
-    .filter((text): text is string => Boolean(text));
-  return parts.length ? parts.join(' > ') : null;
-};
+const getClassificationPath = (dataInfo: unknown): string | null =>
+  sharedReadClassificationPath(dataInfo, { includeElementaryFlowCategorization: true });
 
 const composeFlowTitle = (dataInfo: unknown, lang = DEFAULT_LANG): string => {
   const nameObj = pickProperty(dataInfo, ['name']);
@@ -200,35 +96,7 @@ const formatNumber = (value: unknown): string => {
   return Number.isFinite(parsed) ? parsed.toString() : String(value);
 };
 
-const pickShortDescription = (ref: unknown, lang = DEFAULT_LANG): string | null => {
-  if (ref === null || ref === undefined) return null;
-  if (Array.isArray(ref)) {
-    for (const entry of ref) {
-      const text = pickShortDescription(entry, lang);
-      if (text) return text;
-    }
-    return null;
-  }
-
-  const shortDescription = pickProperty(ref, [
-    'common:shortDescription',
-    'common_short_description',
-    'shortDescription',
-    'short_description',
-  ]);
-  const text = pickText(shortDescription, lang);
-  if (text) return text;
-
-  const direct = getTextFromDict(ref);
-  if (direct) return direct;
-
-  if (typeof ref === 'string' || typeof ref === 'number' || typeof ref === 'boolean') {
-    const primitive = String(ref).trim();
-    return primitive || null;
-  }
-
-  return null;
-};
+const pickShortDescription = sharedReadReferenceShortDescription;
 
 const getReferencePropertySummary = (
   dataset: Record<string, unknown>,

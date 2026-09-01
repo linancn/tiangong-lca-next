@@ -57,6 +57,7 @@
         { "id": "map_status", "queryValue": "map_status" },
         { "id": "outcome_metrics", "queryValue": "outcome_metrics" },
         { "id": "connectivity", "queryValue": "connectivity" },
+        { "id": "organization_contribution", "queryValue": "organization_contribution" },
         { "id": "flow_topology", "queryValue": "flow_topology" }
       ]
     },

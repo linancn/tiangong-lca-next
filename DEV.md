@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: bootstrap/proof commands cover the upgraded Jest/Umi/Electron/Playwright stack, while account organization keeps existing startup, Supabase Auth, and environment workflows.'
+lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
+lastReviewedNote: 'Reviewed for Next #991 after the Jest/Umi/Electron/Playwright and organization-profile integrations: OAuth-only account and exact Edge-mirror retirement change no bootstrap commands; lint, test, build, managed-push, and deterministic release remain authoritative.'
 ---
 
 # Development Bootstrap
