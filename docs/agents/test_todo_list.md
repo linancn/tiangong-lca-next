@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 046c505882ac28ae473a3318e2d4c94a9bf0541d
+lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
 lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: Jest/browser migration, organization profile, OAuth Account, and external bridge-removal paths are closed with no deferred testing queue.'
 ---
 
