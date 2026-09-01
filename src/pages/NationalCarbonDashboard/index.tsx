@@ -61,6 +61,7 @@ import {
   formatDashboardDateTime,
   formatDashboardNumber as formatNumber,
   formatDashboardPercent,
+  getCanonicalRuntimeLocale,
   getDashboardRegionLabel,
   getDashboardScreenLabel,
   getDashboardStatusLabel,
@@ -2521,7 +2522,7 @@ function OrganizationDailyCreationHeatmap({
   dailyCreation: OrganizationContributionSnapshot['dailyCreation'];
 }) {
   const intl = useIntl();
-  const locale = (intl as DashboardIntl & { locale?: string }).locale ?? 'zh-CN';
+  const locale = getCanonicalRuntimeLocale();
   const getCount = useCallback(
     (day: (typeof dailyCreation.days)[number]) => {
       if (activeScope === 'process') return day.processCount;

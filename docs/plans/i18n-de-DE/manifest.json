@@ -1,9 +1,9 @@
 {
   "schemaVersion": "tiangong.i18n-manifest.v1",
   "source": {
-    "baseRef": "origin/dev",
-    "baseCommit": "f92522afb8bdcd7681d004d5792e108528ec86a9",
-    "auditedInputDigest": "5b9507fd4ec252f056dfc9ef807fe3f35308ec321666f8b72b1b26a68852880d",
+    "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "auditedInputDigest": "a4d0f503df21a95c502b60a4339c01b6b47d0f17648a055e38d741a01b69a539",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -71,11 +71,11 @@
     "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
     "localeUniqueKeyCounts": { "en-US": 3295, "zh-CN": 3295, "de-DE": 3295, "fr-FR": 3295 },
     "canonicalCandidateKeyCount": 3295,
-    "activeStaticKeyCount": 2213,
+    "activeStaticKeyCount": 2212,
     "activeDynamicKeyCount": 306,
-    "reservedKeyCount": 776,
+    "reservedKeyCount": 777,
     "productionSourceFileCount": 456,
-    "literalReferenceCount": 4224,
+    "literalReferenceCount": 4223,
     "dynamicCallsiteCount": 32,
     "dynamicCallsiteSummaryCount": 32,
     "registeredDynamicCallsiteCount": 32,
@@ -91306,7 +91306,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2272,
+          "line": 2276,
           "column": 22,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -91375,7 +91375,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2261,
+          "line": 2265,
           "column": 14,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -91444,7 +91444,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2294,
+          "line": 2298,
           "column": 16,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -91513,7 +91513,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2284,
+          "line": 2288,
           "column": 22,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -91582,7 +91582,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2278,
+          "line": 2282,
           "column": 22,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -91651,7 +91651,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2268,
+          "line": 2272,
           "column": 14,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -98602,7 +98602,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1339,
+          "line": 1343,
           "column": 18,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -98671,7 +98671,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1285,
+          "line": 1289,
           "column": 16,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -98740,7 +98740,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1294,
+          "line": 1298,
           "column": 18,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -98809,7 +98809,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 810,
+          "line": 814,
           "column": 10,
           "symbol": "ChinaStatusMap",
           "defaultMessage": null,
@@ -98878,7 +98878,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1292,
+          "line": 1296,
           "column": 22,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -98947,7 +98947,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1307,
+          "line": 1311,
           "column": 14,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -99016,7 +99016,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1331,
+          "line": 1335,
           "column": 17,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -99101,7 +99101,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 850,
+          "line": 854,
           "column": 23,
           "symbol": "ChinaStatusMap",
           "defaultMessage": null,
@@ -99170,7 +99170,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1325,
+          "line": 1329,
           "column": 18,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -99239,7 +99239,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2115,
+          "line": 2119,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -99320,7 +99320,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2187,
+          "line": 2191,
           "column": 16,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -99389,7 +99389,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2111,
+          "line": 2115,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -99458,7 +99458,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2184,
+          "line": 2188,
           "column": 20,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100424,7 +100424,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2105,
+          "line": 2109,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100493,7 +100493,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2182,
+          "line": 2186,
           "column": 20,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100562,7 +100562,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2231,
+          "line": 2235,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100631,7 +100631,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2223,
+          "line": 2227,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100700,7 +100700,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2239,
+          "line": 2243,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100769,7 +100769,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2235,
+          "line": 2239,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100838,7 +100838,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2227,
+          "line": 2231,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100907,7 +100907,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2208,
+          "line": 2212,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -100976,7 +100976,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2204,
+          "line": 2208,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101045,7 +101045,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2216,
+          "line": 2220,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101114,7 +101114,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2212,
+          "line": 2216,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101183,7 +101183,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2200,
+          "line": 2204,
           "column": 12,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101272,7 +101272,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2170,
+          "line": 2174,
           "column": 16,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101341,7 +101341,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2123,
+          "line": 2127,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101410,7 +101410,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2102,
+          "line": 2106,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101479,7 +101479,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2119,
+          "line": 2123,
           "column": 14,
           "symbol": "ConnectivityMatrix",
           "defaultMessage": null,
@@ -101824,7 +101824,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 962,
+          "line": 966,
           "column": 22,
           "symbol": "ChinaStatusMap",
           "defaultMessage": null,
@@ -101833,7 +101833,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1205,
+          "line": 1209,
           "column": 15,
           "symbol": "RegionDetail",
           "defaultMessage": null,
@@ -101902,7 +101902,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1118,
+          "line": 1122,
           "column": 20,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -102040,7 +102040,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1058,
+          "line": 1062,
           "column": 20,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -102049,7 +102049,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1317,
+          "line": 1321,
           "column": 14,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -102394,7 +102394,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1111,
+          "line": 1115,
           "column": 20,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -102670,7 +102670,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1052,
+          "line": 1056,
           "column": 20,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -102877,7 +102877,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 354,
+          "line": 358,
           "column": 14,
           "symbol": "getNarrativeMetric",
           "defaultMessage": null,
@@ -102946,7 +102946,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 347,
+          "line": 351,
           "column": 14,
           "symbol": "getNarrativeMetric",
           "defaultMessage": null,
@@ -103015,7 +103015,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 360,
+          "line": 364,
           "column": 12,
           "symbol": "getNarrativeMetric",
           "defaultMessage": null,
@@ -103372,7 +103372,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 624,
+          "line": 628,
           "column": 21,
           "symbol": "ScreenNavigator",
           "defaultMessage": null,
@@ -103441,7 +103441,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 613,
+          "line": 617,
           "column": 19,
           "symbol": "ScreenNavigator",
           "defaultMessage": null,
@@ -103510,7 +103510,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2463,
+          "line": 2467,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103579,7 +103579,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2471,
+          "line": 2475,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103648,7 +103648,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2454,
+          "line": 2458,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103717,7 +103717,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2457,
+          "line": 2461,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103786,7 +103786,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2451,
+          "line": 2455,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103855,7 +103855,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2460,
+          "line": 2464,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103924,7 +103924,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2468,
+          "line": 2472,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -103993,8 +103993,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2598,
-          "column": 16,
+          "line": 2603,
+          "column": 18,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
           "defaultMessageExpression": null
@@ -104074,7 +104074,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2632,
+          "line": 2649,
           "column": 33,
           "symbol": "ariaLabel",
           "defaultMessage": null,
@@ -104143,8 +104143,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2676,
-          "column": 14,
+          "line": 2618,
+          "column": 16,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
           "defaultMessageExpression": null
@@ -104212,8 +104212,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2682,
-          "column": 14,
+          "line": 2624,
+          "column": 16,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
           "defaultMessageExpression": null
@@ -104281,8 +104281,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2606,
-          "column": 16,
+          "line": 2611,
+          "column": 18,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
           "defaultMessageExpression": null
@@ -104362,7 +104362,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2583,
+          "line": 2587,
           "column": 14,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
@@ -104431,7 +104431,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2580,
+          "line": 2584,
           "column": 14,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
@@ -104500,8 +104500,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2592,
-          "column": 16,
+          "line": 2597,
+          "column": 18,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
           "defaultMessageExpression": null
@@ -104628,7 +104628,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2340,
+          "line": 2344,
           "column": 19,
           "symbol": "message",
           "defaultMessage": null,
@@ -104697,7 +104697,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2777,
+          "line": 2788,
           "column": 14,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -104766,7 +104766,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2815,
+          "line": 2826,
           "column": 22,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -104835,7 +104835,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2791,
+          "line": 2802,
           "column": 22,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -104904,7 +104904,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2807,
+          "line": 2818,
           "column": 22,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -104973,7 +104973,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2799,
+          "line": 2810,
           "column": 22,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -105042,7 +105042,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2360,
+          "line": 2364,
           "column": 19,
           "symbol": "message",
           "defaultMessage": null,
@@ -105170,7 +105170,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2397,
+          "line": 2401,
           "column": 11,
           "symbol": "metricLabel",
           "defaultMessage": null,
@@ -105239,7 +105239,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2396,
+          "line": 2400,
           "column": 11,
           "symbol": "metricLabel",
           "defaultMessage": null,
@@ -105308,7 +105308,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2394,
+          "line": 2398,
           "column": 9,
           "symbol": "metricLabel",
           "defaultMessage": null,
@@ -105377,7 +105377,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2446,
+          "line": 2450,
           "column": 14,
           "symbol": "OrganizationContributionRanking",
           "defaultMessage": null,
@@ -105564,7 +105564,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2781,
+          "line": 2792,
           "column": 14,
           "symbol": "OrganizationContributionScreen",
           "defaultMessage": null,
@@ -105633,7 +105633,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2655,
+          "line": 2672,
           "column": 26,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
@@ -105642,9 +105642,9 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2767,
-          "column": 19,
-          "symbol": "OrganizationContributionScreen",
+          "line": 2759,
+          "column": 11,
+          "symbol": "activeScopeLabel",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
@@ -105653,7 +105653,7 @@
     },
     {
       "id": "pages.home.nationalCarbon.organization.scope.ariaLabel",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_home"],
@@ -105707,17 +105707,7 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2747,
-          "column": 21,
-          "symbol": "OrganizationContributionScreen",
-          "defaultMessage": null,
-          "defaultMessageExpression": null
-        }
-      ],
+      "references": [],
       "defaultMessages": []
     },
     {
@@ -105780,7 +105770,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2649,
+          "line": 2666,
           "column": 26,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
@@ -105789,9 +105779,9 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2766,
-          "column": 19,
-          "symbol": "OrganizationContributionScreen",
+          "line": 2758,
+          "column": 11,
+          "symbol": "activeScopeLabel",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
@@ -105858,7 +105848,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2643,
+          "line": 2660,
           "column": 26,
           "symbol": "OrganizationDailyCreationHeatmap",
           "defaultMessage": null,
@@ -105867,9 +105857,9 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2764,
-          "column": 17,
-          "symbol": "OrganizationContributionScreen",
+          "line": 2756,
+          "column": 9,
+          "symbol": "activeScopeLabel",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
@@ -106054,7 +106044,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2402,
+          "line": 2406,
           "column": 14,
           "symbol": "OrganizationContributionChart",
           "defaultMessage": null,
@@ -106123,7 +106113,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1537,
+          "line": 1541,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106192,7 +106182,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1515,
+          "line": 1519,
           "column": 18,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106261,7 +106251,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1472,
+          "line": 1476,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106330,7 +106320,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1523,
+          "line": 1527,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106399,7 +106389,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1531,
+          "line": 1535,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106468,7 +106458,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1509,
+          "line": 1513,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106537,7 +106527,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1512,
+          "line": 1516,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106606,7 +106596,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1506,
+          "line": 1510,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106675,7 +106665,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1502,
+          "line": 1506,
           "column": 14,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106764,7 +106754,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1408,
+          "line": 1412,
           "column": 21,
           "symbol": "IndustryProgressRow",
           "defaultMessage": null,
@@ -106833,7 +106823,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1488,
+          "line": 1492,
           "column": 16,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -106902,7 +106892,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1400,
+          "line": 1404,
           "column": 14,
           "symbol": "IndustryProgressRow",
           "defaultMessage": null,
@@ -106971,7 +106961,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1483,
+          "line": 1487,
           "column": 18,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -107040,7 +107030,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1485,
+          "line": 1489,
           "column": 15,
           "symbol": "OutcomeMetricsScreen",
           "defaultMessage": null,
@@ -107109,7 +107099,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1104,
+          "line": 1108,
           "column": 16,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -107178,7 +107168,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1096,
+          "line": 1100,
           "column": 16,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -107247,7 +107237,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1100,
+          "line": 1104,
           "column": 16,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -107316,7 +107306,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1093,
+          "line": 1097,
           "column": 17,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -110283,7 +110273,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1201,
+          "line": 1205,
           "column": 15,
           "symbol": "RegionDetail",
           "defaultMessage": null,
@@ -110352,7 +110342,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1197,
+          "line": 1201,
           "column": 15,
           "symbol": "RegionDetail",
           "defaultMessage": null,
@@ -110421,7 +110411,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1194,
+          "line": 1198,
           "column": 16,
           "symbol": "RegionDetail",
           "defaultMessage": null,
@@ -111741,7 +111731,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 348,
+          "line": 352,
           "column": 13,
           "symbol": "getNarrativeMetric",
           "defaultMessage": null,
@@ -111750,7 +111740,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 361,
+          "line": 365,
           "column": 11,
           "symbol": "getNarrativeMetric",
           "defaultMessage": null,
@@ -111759,7 +111749,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1113,
+          "line": 1117,
           "column": 19,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -111897,7 +111887,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1060,
+          "line": 1064,
           "column": 19,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -111906,7 +111896,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1322,
+          "line": 1326,
           "column": 16,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -111975,7 +111965,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 959,
+          "line": 963,
           "column": 20,
           "symbol": "ChinaStatusMap",
           "defaultMessage": null,
@@ -111984,7 +111974,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1053,
+          "line": 1057,
           "column": 19,
           "symbol": "OverviewScreen",
           "defaultMessage": null,
@@ -111993,7 +111983,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 1313,
+          "line": 1317,
           "column": 16,
           "symbol": "MapStatusScreen",
           "defaultMessage": null,
@@ -112002,7 +111992,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2274,
+          "line": 2278,
           "column": 21,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
@@ -112011,7 +112001,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/NationalCarbonDashboard/index.tsx",
-          "line": 2280,
+          "line": 2284,
           "column": 21,
           "symbol": "ConnectivityScreen",
           "defaultMessage": null,
