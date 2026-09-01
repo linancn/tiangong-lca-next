@@ -1,7 +1,9 @@
 import {
   formatDashboardDate,
+  formatDashboardDateTime,
   formatDashboardExchangeAmount,
   formatDashboardNumber,
+  formatDashboardPercent,
   getCanonicalRuntimeLocale,
   getDashboardMapPathLabel,
   getDashboardRegionLabel,
@@ -57,6 +59,9 @@ describe('NationalCarbonDashboard i18n token adapters', () => {
     expect(formatDashboardDate('not-a-date')).toBe('not-a-date');
     expect(formatDashboardDate('2026-05-31')).toContain('2026');
     expect(formatDashboardDate('2026-05-31')).toContain('2026');
+    expect(formatDashboardDateTime('not-a-date')).toBe('not-a-date');
+    expect(formatDashboardDateTime('2026-09-01T08:00:00+08:00')).toContain('2026');
+    expect(formatDashboardPercent(0.125)).toBe('12,5 %');
 
     mockLocale = '';
     expect(formatDashboardNumber(12)).toBe('12');
@@ -83,11 +88,15 @@ describe('NationalCarbonDashboard i18n token adapters', () => {
   });
 
   it('covers every screen and status token plus safe fallbacks', () => {
-    ['overview', 'map_status', 'outcome_metrics', 'connectivity', 'flow_topology'].forEach(
-      (screen) =>
-        expect(getDashboardScreenLabel(intl, screen)).toContain(
-          'pages.home.nationalCarbon.screen.',
-        ),
+    [
+      'overview',
+      'map_status',
+      'outcome_metrics',
+      'connectivity',
+      'organization_contribution',
+      'flow_topology',
+    ].forEach((screen) =>
+      expect(getDashboardScreenLabel(intl, screen)).toContain('pages.home.nationalCarbon.screen.'),
     );
     expect(getDashboardScreenLabel(intl, 'custom')).toBe('custom');
 
