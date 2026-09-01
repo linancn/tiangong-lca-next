@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 45ad89afb41d6185ed7419c4ccba3967bea71787
+lastReviewedCommit: 6ff84d2eeeaf5398cf72838f8f4952a56648c35c
 lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service map includes the explicit browser-navigation boundary required by Jest 30/jsdom 26 without changing runtime behavior.'
 related:
   - ../AGENTS.md
