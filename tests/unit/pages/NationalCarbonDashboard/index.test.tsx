@@ -34,12 +34,27 @@ const makeOrganizationScope = (
   ],
 });
 
+const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
+  const date = new Date(Date.UTC(2025, 8, 1 + index)).toISOString().slice(0, 10);
+  const processCount = index === 0 ? 3 : 0;
+  const modelCount = index === 365 ? 2 : 0;
+  return { allCount: processCount + modelCount, date, modelCount, processCount };
+});
+
 const organizationContributionSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v1',
+  schemaVersion: 'national_carbon_organization_contribution_v2',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',
   defaultScope: 'all',
+  dailyCreation: {
+    metric: 'dataset_version_created_count',
+    deduplicationKey: ['datasetType', 'datasetId', 'version'],
+    timezone: 'Asia/Shanghai',
+    startDate: '2025-09-01',
+    endDate: '2026-09-01',
+    days: dailyCreationDays,
+  },
   scopes: {
     process: makeOrganizationScope('process', 3),
     model: makeOrganizationScope('model', 2),
@@ -51,8 +66,14 @@ const mockFormatMessage = (
   { defaultMessage, id }: { defaultMessage?: string; id: string },
   values?: Record<string, unknown>,
 ) => {
-  const homeMessages = jest.requireActual('@/locales/fr-FR/pages_home').default;
-  const pageMessages = jest.requireActual('@/locales/fr-FR/pages').default;
+  const homeMessages =
+    mockLocale === 'zh-CN'
+      ? jest.requireActual('@/locales/zh-CN/pages_home').default
+      : jest.requireActual('@/locales/fr-FR/pages_home').default;
+  const pageMessages =
+    mockLocale === 'zh-CN'
+      ? jest.requireActual('@/locales/zh-CN/pages').default
+      : jest.requireActual('@/locales/fr-FR/pages').default;
   const template = homeMessages[id] ?? pageMessages[id] ?? defaultMessage ?? id;
   return Object.entries(values ?? {}).reduce(
     (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
@@ -187,6 +208,9 @@ describe('NationalCarbonDashboard access guard', () => {
     render(<NationalCarbonDashboardPage />);
 
     expect((await screen.findAllByText('Institut Exemple')).length).toBe(2);
+    expect(screen.getByText('Création quotidienne de données')).toBeInTheDocument();
+    expect(screen.getByTestId('organization-daily-creation')).toBeInTheDocument();
+    expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('5');
     expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
 
@@ -197,6 +221,7 @@ describe('NationalCarbonDashboard access guard', () => {
       'aria-pressed',
       'true',
     );
+    expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('3');
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
     expect(screen.queryByText('Progression de la base TianGong')).not.toBeInTheDocument();

@@ -41,12 +41,27 @@ const makeScope = (datasetScope: 'process' | 'model' | 'all', publishedDatasetCo
       : [],
 });
 
+const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
+  const date = new Date(Date.UTC(2025, 8, 1 + index)).toISOString().slice(0, 10);
+  const processCount = index === 0 ? 1 : 0;
+  const modelCount = index === 365 ? 2 : 0;
+  return { allCount: processCount + modelCount, date, modelCount, processCount };
+});
+
 const validSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v1',
+  schemaVersion: 'national_carbon_organization_contribution_v2',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',
   defaultScope: 'all',
+  dailyCreation: {
+    metric: 'dataset_version_created_count',
+    deduplicationKey: ['datasetType', 'datasetId', 'version'],
+    timezone: 'Asia/Shanghai',
+    startDate: '2025-09-01',
+    endDate: '2026-09-01',
+    days: dailyCreationDays,
+  },
   scopes: {
     process: makeScope('process', 3),
     model: makeScope('model', 2),
@@ -119,5 +134,29 @@ describe('nationalCarbonDashboard organization contribution service', () => {
       code: 'INVALID_SNAPSHOT',
     });
     expect(organizationContributionSnapshotSchema.safeParse(validSnapshot).success).toBe(true);
+  });
+
+  it('rejects inconsistent or non-consecutive daily version counts', () => {
+    const inconsistent = {
+      ...validSnapshot,
+      dailyCreation: {
+        ...validSnapshot.dailyCreation,
+        days: validSnapshot.dailyCreation.days.map((day, index) =>
+          index === 10 ? { ...day, allCount: 9 } : day,
+        ),
+      },
+    };
+    const nonConsecutive = {
+      ...validSnapshot,
+      dailyCreation: {
+        ...validSnapshot.dailyCreation,
+        days: validSnapshot.dailyCreation.days.map((day, index) =>
+          index === 10 ? { ...day, date: '2025-09-12' } : day,
+        ),
+      },
+    };
+
+    expect(organizationContributionSnapshotSchema.safeParse(inconsistent).success).toBe(false);
+    expect(organizationContributionSnapshotSchema.safeParse(nonConsecutive).success).toBe(false);
   });
 });

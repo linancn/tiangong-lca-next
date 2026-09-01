@@ -7,6 +7,64 @@ export type OrganizationContributionDatasetScope =
   (typeof organizationContributionDatasetScopes)[number];
 
 const nonnegativeInteger = z.number().int().nonnegative();
+const isoCalendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+const dailyCreationDaySchema = z
+  .object({
+    date: isoCalendarDate,
+    processCount: nonnegativeInteger,
+    modelCount: nonnegativeInteger,
+    allCount: nonnegativeInteger,
+  })
+  .strict()
+  .refine((day) => day.allCount === day.processCount + day.modelCount, {
+    message: 'allCount must equal processCount + modelCount',
+    path: ['allCount'],
+  });
+
+const dailyCreationSchema = z
+  .object({
+    metric: z.literal('dataset_version_created_count'),
+    deduplicationKey: z.tuple([
+      z.literal('datasetType'),
+      z.literal('datasetId'),
+      z.literal('version'),
+    ]),
+    timezone: z.literal('Asia/Shanghai'),
+    startDate: isoCalendarDate,
+    endDate: isoCalendarDate,
+    days: z.array(dailyCreationDaySchema).min(365).max(371),
+  })
+  .strict()
+  .superRefine((dailyCreation, context) => {
+    const { days } = dailyCreation;
+    if (days[0]?.date !== dailyCreation.startDate) {
+      context.addIssue({
+        code: 'custom',
+        message: 'days must start at startDate',
+        path: ['days', 0, 'date'],
+      });
+    }
+    if (days[days.length - 1]?.date !== dailyCreation.endDate) {
+      context.addIssue({
+        code: 'custom',
+        message: 'days must end at endDate',
+        path: ['days', Math.max(days.length - 1, 0), 'date'],
+      });
+    }
+    for (let index = 1; index < days.length; index += 1) {
+      const previous = Date.parse(`${days[index - 1].date}T00:00:00Z`);
+      const current = Date.parse(`${days[index].date}T00:00:00Z`);
+      if (current - previous !== 86_400_000) {
+        context.addIssue({
+          code: 'custom',
+          message: 'days must be unique and consecutive',
+          path: ['days', index, 'date'],
+        });
+        break;
+      }
+    }
+  });
 
 const organizationContributionRankingSchema = z
   .object({
@@ -40,11 +98,12 @@ const makeScopeSchema = (datasetScope: OrganizationContributionDatasetScope) =>
 
 export const organizationContributionSnapshotSchema = z
   .object({
-    schemaVersion: z.literal('national_carbon_organization_contribution_v1'),
+    schemaVersion: z.literal('national_carbon_organization_contribution_v2'),
     attributionMode: z.literal('current_user_profile'),
     generatedAt: z.iso.datetime({ offset: true }),
     dataAsOf: z.iso.datetime({ offset: true }),
     defaultScope: z.literal('all'),
+    dailyCreation: dailyCreationSchema,
     scopes: z
       .object({
         process: makeScopeSchema('process'),

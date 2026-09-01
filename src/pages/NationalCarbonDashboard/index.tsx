@@ -2389,9 +2389,12 @@ function OrganizationContributionChart({
     1,
     ...scopeSnapshot.rankings.map((ranking) => ranking.publishedDatasetCount),
   );
-  const metricLabel = intl.formatMessage({
-    id: `pages.home.nationalCarbon.organization.metric.${scope}`,
-  });
+  const metricLabel =
+    scope === 'process'
+      ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.process' })
+      : scope === 'model'
+        ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.model' })
+        : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.all' });
 
   return (
     <article className={styles.organizationPanel}>
@@ -2507,6 +2510,183 @@ function OrganizationContributionRanking({
   );
 }
 
+function OrganizationDailyCreationHeatmap({
+  activeScope,
+  dailyCreation,
+}: {
+  activeScope: OrganizationContributionDatasetScope;
+  dailyCreation: OrganizationContributionSnapshot['dailyCreation'];
+}) {
+  const intl = useIntl();
+  const locale = (intl as DashboardIntl & { locale?: string }).locale ?? 'zh-CN';
+  const getCount = useCallback(
+    (day: (typeof dailyCreation.days)[number]) => {
+      if (activeScope === 'process') return day.processCount;
+      if (activeScope === 'model') return day.modelCount;
+      return day.allCount;
+    },
+    [activeScope],
+  );
+  const counts = useMemo(() => dailyCreation.days.map(getCount), [dailyCreation.days, getCount]);
+  const total = useMemo(() => counts.reduce((sum, count) => sum + count, 0), [counts]);
+  const activeDays = useMemo(() => counts.filter((count) => count > 0).length, [counts]);
+  const peak = useMemo(() => Math.max(0, ...counts), [counts]);
+  const monthFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }),
+    [locale],
+  );
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+        year: 'numeric',
+      }),
+    [locale],
+  );
+  const weekdayFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }),
+    [locale],
+  );
+  const monthLabels = useMemo(() => {
+    let previousMonth = -1;
+    return Array.from({ length: 53 }, (_, weekIndex) => {
+      const weekDays = dailyCreation.days.slice(weekIndex * 7, weekIndex * 7 + 7);
+      const labelDay =
+        weekDays.find((day) => new Date(`${day.date}T00:00:00Z`).getUTCDate() <= 7) ?? weekDays[0];
+      if (!labelDay) return '';
+      const date = new Date(`${labelDay.date}T00:00:00Z`);
+      const month = date.getUTCMonth();
+      if (weekIndex !== 0 && month === previousMonth) return '';
+      previousMonth = month;
+      return monthFormatter.format(date);
+    });
+  }, [dailyCreation.days, monthFormatter]);
+  const weekdayLabels = useMemo(
+    () =>
+      [0, 2, 4].map((offset) => weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + offset)))),
+    [weekdayFormatter],
+  );
+
+  return (
+    <article
+      className={`${styles.organizationPanel} ${styles.organizationDailyCreationPanel}`}
+      data-testid='organization-daily-creation'
+    >
+      <div className={styles.organizationDailyCreationHeader}>
+        <div>
+          <h2>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.title' })}
+          </h2>
+          <span>
+            {intl.formatMessage(
+              { id: 'pages.home.nationalCarbon.organization.daily.range' },
+              { startDate: dailyCreation.startDate, endDate: dailyCreation.endDate },
+            )}
+          </span>
+        </div>
+        <dl className={styles.organizationDailyCreationSummary}>
+          <div>
+            <dt>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.total' })}
+            </dt>
+            <dd>{formatNumber(total)}</dd>
+          </div>
+          <div>
+            <dt>
+              {intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.daily.activeDays',
+              })}
+            </dt>
+            <dd>{formatNumber(activeDays)}</dd>
+          </div>
+          <div>
+            <dt>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.peak' })}
+            </dt>
+            <dd>{formatNumber(peak)}</dd>
+          </div>
+        </dl>
+      </div>
+      <div className={styles.organizationHeatmapBody}>
+        <div aria-hidden='true' className={styles.organizationHeatmapWeekdays}>
+          <span>{weekdayLabels[0]}</span>
+          <span>{weekdayLabels[1]}</span>
+          <span>{weekdayLabels[2]}</span>
+        </div>
+        <div className={styles.organizationHeatmapViewport}>
+          <div aria-hidden='true' className={styles.organizationHeatmapMonths}>
+            {monthLabels.map((label, index) => (
+              <span key={`${index}-${label}`}>{label}</span>
+            ))}
+          </div>
+          <div className={styles.organizationHeatmapGrid} role='img'>
+            {dailyCreation.days.map((day) => {
+              const count = getCount(day);
+              const level =
+                count === 0 || peak === 0
+                  ? 0
+                  : Math.max(1, Math.ceil((Math.log1p(count) / Math.log1p(peak)) * 5));
+              const formattedDate = dateFormatter.format(new Date(`${day.date}T00:00:00Z`));
+              const ariaLabel = intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.organization.daily.cellAriaLabel' },
+                { count, date: formattedDate },
+              );
+              return (
+                <Tooltip
+                  key={day.date}
+                  title={
+                    <div className={styles.organizationHeatmapTooltip}>
+                      <strong>{formattedDate}</strong>
+                      <span>
+                        {intl.formatMessage({
+                          id: 'pages.home.nationalCarbon.organization.scope.process',
+                        })}
+                        <b>{formatNumber(day.processCount)}</b>
+                      </span>
+                      <span>
+                        {intl.formatMessage({
+                          id: 'pages.home.nationalCarbon.organization.scope.model',
+                        })}
+                        <b>{formatNumber(day.modelCount)}</b>
+                      </span>
+                      <span>
+                        {intl.formatMessage({
+                          id: 'pages.home.nationalCarbon.organization.scope.all',
+                        })}
+                        <b>{formatNumber(day.allCount)}</b>
+                      </span>
+                    </div>
+                  }
+                >
+                  <span
+                    aria-label={ariaLabel}
+                    className={styles.organizationHeatmapCell}
+                    data-count={count}
+                    data-level={level}
+                  />
+                </Tooltip>
+              );
+            })}
+          </div>
+        </div>
+        <div aria-hidden='true' className={styles.organizationHeatmapLegend}>
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.less' })}
+          </span>
+          {[0, 1, 2, 3, 4, 5].map((level) => (
+            <i data-level={level} key={level} />
+          ))}
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.daily.more' })}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function OrganizationContributionScreen({
   activeScope,
   activeScreen,
@@ -2580,9 +2760,11 @@ function OrganizationContributionScreen({
             onClick={() => onChangeScope(scope)}
             type='button'
           >
-            {intl.formatMessage({
-              id: `pages.home.nationalCarbon.organization.scope.${scope}`,
-            })}
+            {scope === 'process'
+              ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.process' })
+              : scope === 'model'
+                ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.model' })
+                : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.all' })}
           </button>
         ))}
       </div>
@@ -2642,6 +2824,10 @@ function OrganizationContributionScreen({
             <OrganizationContributionChart scope={activeScope} scopeSnapshot={scopeSnapshot} />
             <OrganizationContributionRanking scopeSnapshot={scopeSnapshot} />
           </div>
+          <OrganizationDailyCreationHeatmap
+            activeScope={activeScope}
+            dailyCreation={snapshot.dailyCreation}
+          />
         </>
       ) : null}
       <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
