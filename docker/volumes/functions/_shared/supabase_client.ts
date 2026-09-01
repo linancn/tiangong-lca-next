@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 function readEnv(name: string): string | undefined {
   try {

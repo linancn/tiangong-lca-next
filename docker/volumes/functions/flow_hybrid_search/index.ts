@@ -8,6 +8,6 @@ Deno.serve(
     entityKind: 'flow',
     entityLabel: 'Flow',
     entityPlural: 'flows',
-    rpcName: 'hybrid_search_flows_v2',
+    rpcName: 'hybrid_search_flows',
   }),
 );

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import { callWorkerJobEnqueueRpc, type WorkerJobEnqueueRequest } from './db_rpc/worker_jobs.ts';
 

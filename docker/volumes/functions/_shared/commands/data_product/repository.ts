@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
@@ -7,6 +7,9 @@ import {
   callDataProductPackageUnpublishRpc,
   callLciaResultBuildRequestRpc,
   callLciaResultPackagePublishRpc,
+  callLciaResultSetCreateRpc,
+  callLciaResultSetListRpc,
+  callLciaResultSetReadRpc,
   callLciaScopeClosureCheckReadRpc,
   callLciaScopeClosureCheckRequestRpc,
   callLciaScopeClosureIssuesRpc,
@@ -14,6 +17,7 @@ import {
   callTaskSummaryV2FeedRpc,
   type DataProductRpcResult,
 } from '../../db_rpc/data_product_commands.ts';
+import type { AllUnitQueryResult } from '../../lca_all_unit_query_artifact.ts';
 import { queryLcaSnapshotCandidates } from '../../lca_snapshot_capabilities.ts';
 import { createSupabaseServiceClient } from '../../supabase_client.ts';
 import {
@@ -37,6 +41,9 @@ import type {
   DataProductPackagePublishRequest,
   DataProductPackageUnpublishRequest,
   DataProductPublicationListRequest,
+  DataProductResultSetCreateRequest,
+  DataProductResultSetListRequest,
+  DataProductResultSetReadRequest,
   DataProductTaskFeedRequest,
 } from './types.ts';
 
@@ -105,6 +112,9 @@ export type DataProductPreviewMetadataResult =
     };
 
 export type DataProductCommandRepository = {
+  createResultSet: (request: DataProductResultSetCreateRequest) => Promise<DataProductRpcResult>;
+  listResultSets: (request: DataProductResultSetListRequest) => Promise<DataProductRpcResult>;
+  getResultSet: (request: DataProductResultSetReadRequest) => Promise<DataProductRpcResult>;
   createBuild: (
     request: DataProductBuildCreateRequest,
     audit: CommandAuditPayload,
@@ -137,6 +147,7 @@ export type DataProductCommandRepository = {
   fetchJsonArtifact: <T>(
     artifactUrl: string,
   ) => Promise<{ ok: true; data: T } | { ok: false; error: string }>;
+  fetchArtifactBytes: (artifactUrl: string) => Promise<AllUnitQueryResult<Uint8Array>>;
   fetchPreviewMetadata: (
     request: DataProductPreviewMetadataRequest,
   ) => Promise<DataProductPreviewMetadataResult>;
@@ -168,6 +179,12 @@ export function createDataProductCommandRepository(
   const now = options.now ?? Date.now;
 
   return {
+    createResultSet: async (request) =>
+      decodeResultSetRpcResult(await callLciaResultSetCreateRpc(actorClient, request)),
+    listResultSets: async (request) =>
+      decodeResultSetListRpcResult(await callLciaResultSetListRpc(actorClient, request)),
+    getResultSet: async (request) =>
+      decodeResultSetRpcResult(await callLciaResultSetReadRpc(actorClient, request)),
     createBuild: (request, audit) => callLciaResultBuildRequestRpc(actorClient, request, audit),
     createClosureCheck: (request, audit) =>
       callLciaScopeClosureCheckRequestRpc(actorClient, request, audit),
@@ -286,6 +303,7 @@ export function createDataProductCommandRepository(
     previewPackage: (request) => callDataProductPackagePreviewRpc(actorClient, request),
     fetchSnapshotArtifactUrl: (snapshotId) => fetchSnapshotArtifactUrl(serviceSupabase, snapshotId),
     fetchJsonArtifact: (artifactUrl) => fetchArtifactJson(serviceSupabase, artifactUrl),
+    fetchArtifactBytes: (artifactUrl) => fetchArtifactBytes(serviceSupabase, artifactUrl),
     fetchPreviewMetadata: (request) => fetchPreviewMetadata(serviceSupabase, request),
     publishPackage: (request, audit) =>
       callLciaResultPackagePublishRpc(actorClient, request, audit),
@@ -293,6 +311,68 @@ export function createDataProductCommandRepository(
       callDataProductPackageUnpublishRpc(actorClient, request, audit),
     listPublications: (request) => listLciaResultPublications(actorClient, request),
   };
+}
+
+const RESULT_SET_KEYS = ['schemaVersion', 'resultSetId', 'name', 'createdAt'];
+
+function decodeResultSet(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value) || !hasExactKeys(value, RESULT_SET_KEYS)) {
+    return null;
+  }
+  const schemaVersion = strictString(value.schemaVersion);
+  const resultSetId = strictString(value.resultSetId);
+  const name = strictString(value.name);
+  const createdAt = strictString(value.createdAt);
+  if (
+    schemaVersion !== 'lcia.result-set.v1' ||
+    !resultSetId ||
+    !UUID_PATTERN.test(resultSetId) ||
+    !name ||
+    !createdAt ||
+    !RFC3339_PATTERN.test(createdAt) ||
+    !Number.isFinite(Date.parse(createdAt))
+  ) {
+    return null;
+  }
+  return { schemaVersion, resultSetId, name, createdAt };
+}
+
+function invalidResultSetProjection(): DataProductCommandFailure {
+  return {
+    ok: false,
+    code: 'result_set_projection_invalid',
+    status: 502,
+    message: 'Result set projection is invalid',
+  };
+}
+
+function decodeResultSetRpcResult(result: DataProductRpcResult): DataProductRpcResult {
+  if (!result.ok) {
+    return result;
+  }
+  const decoded = decodeResultSet(result.data);
+  return decoded ? { ok: true, data: decoded } : invalidResultSetProjection();
+}
+
+function decodeResultSetListRpcResult(result: DataProductRpcResult): DataProductRpcResult {
+  if (!result.ok) {
+    return result;
+  }
+  if (!isRecord(result.data) || !hasExactKeys(result.data, ['items'])) {
+    return invalidResultSetProjection();
+  }
+  if (!Array.isArray(result.data.items)) {
+    return invalidResultSetProjection();
+  }
+  const items: Record<string, unknown>[] = [];
+  for (const item of result.data.items) {
+    const decoded = decodeResultSet(item);
+    if (!decoded) {
+      return invalidResultSetProjection();
+    }
+    items.push(decoded);
+  }
+  return { ok: true, data: { items } };
 }
 
 function normalizeClosureArtifactDownloadFailure(
@@ -546,7 +626,12 @@ function hasExactKeys(value: Record<string, unknown>, expectedKeys: string[]): b
 function decodeClosureArtifactDownloadDescriptor(
   value: unknown,
   expectedArtifactRole: DataProductClosureReportDownloadRequest['artifactRole'],
-): { ok: true; data: ClosureArtifactDownloadDescriptor } | { ok: false; reason: string } {
+):
+  | { ok: true; data: ClosureArtifactDownloadDescriptor }
+  | {
+      ok: false;
+      reason: string;
+    } {
   if (!isRecord(value)) {
     return { ok: false, reason: 'not_an_object' };
   }
@@ -797,6 +882,46 @@ async function fetchArtifactJson<T>(
     return { ok: false, error: `${storageError};${httpResult.error}` };
   }
   return httpResult;
+}
+
+async function fetchArtifactBytes(
+  supabase: SupabaseClient,
+  artifactUrl: string,
+): Promise<AllUnitQueryResult<Uint8Array>> {
+  const storagePath = parseStoragePathFromArtifactUrl(artifactUrl);
+  let storageError: string | null = null;
+  if (storagePath) {
+    const downloaded = await supabase.storage
+      .from(storagePath.bucket)
+      .download(storagePath.objectPath);
+    if (!downloaded.error) {
+      return {
+        ok: true,
+        data: new Uint8Array(await downloaded.data.arrayBuffer()),
+      };
+    }
+    storageError = `storage_download_failed:${downloaded.error.message}`;
+  }
+
+  try {
+    const response = await fetch(artifactUrl, { method: 'GET' });
+    if (!response.ok) {
+      const detail = `http_${response.status}`;
+      return {
+        ok: false,
+        error: 'result_projection_artifact_fetch_failed',
+        detail: storageError ? `${storageError};${detail}` : detail,
+      };
+    }
+    return { ok: true, data: new Uint8Array(await response.arrayBuffer()) };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'fetch_failed';
+    return {
+      ok: false,
+      error: 'result_projection_artifact_fetch_failed',
+      detail: storageError ? `${storageError};${detail}` : detail,
+    };
+  }
 }
 
 function rememberArtifactJson(artifactUrl: string, data: unknown): void {

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import { authenticateRequest, AuthMethod } from '../auth.ts';
 import { createRequestSupabaseClient } from '../supabase_client.ts';
@@ -52,7 +52,7 @@ export async function resolveActorContext(
     allowedMethods: [AuthMethod.JWT],
   });
 
-  if (!authResult.isAuthenticated || !authResult.user?.id) {
+  if (!authResult.isAuthenticated || !authResult.principal?.userId) {
     return {
       ok: false,
       response:
@@ -63,7 +63,7 @@ export async function resolveActorContext(
   return {
     ok: true,
     value: {
-      userId: authResult.user.id,
+      userId: authResult.principal.userId,
       accessToken,
       supabase: requestSupabase,
     },

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 export const DEFAULT_LCA_SNAPSHOT_SCOPE = 'full_library' as const;
 export type LcaSnapshotScope = typeof DEFAULT_LCA_SNAPSHOT_SCOPE | 'data_product';

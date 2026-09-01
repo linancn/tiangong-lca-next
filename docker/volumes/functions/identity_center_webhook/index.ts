@@ -1,4 +1,4 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { APP_CODE, applyActionToDesiredState } from '../_shared/identity_center.ts';
 import {

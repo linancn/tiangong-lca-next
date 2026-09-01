@@ -7,14 +7,7 @@
  */
 
 import Profile, { ACCOUNT_FORM_CONTAINER_STYLE, getAccountTabPlacement } from '@/pages/Account';
-import {
-  changeEmail,
-  changePassword,
-  cognitoChangeEmail,
-  cognitoChangePassword,
-  getAccountProfile,
-  setProfile,
-} from '@/services/auth';
+import { changeEmail, changePassword, getAccountProfile, setProfile } from '@/services/auth';
 import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { message } from 'antd';
@@ -438,17 +431,13 @@ jest.mock('@/services/auth', () => ({
   __esModule: true,
   changeEmail: jest.fn(),
   changePassword: jest.fn(),
-  cognitoChangeEmail: jest.fn(),
-  cognitoChangePassword: jest.fn(),
   getAccountProfile: jest.fn(),
   setProfile: jest.fn(),
 }));
 
 jest.mock('@/pages/Account/OAuthConnections', () => ({
   __esModule: true,
-  default: ({ email }: { email?: string }) => (
-    <div data-testid='oauth-connections'>Connected applications for {email}</div>
-  ),
+  default: () => <div data-testid='oauth-connections'>Connected applications</div>,
 }));
 
 const mockSetProfile = setProfile as jest.MockedFunction<any>;
@@ -456,8 +445,6 @@ const mockGetAccountProfile = getAccountProfile as jest.MockedFunction<any>;
 const mockGetCurrentUser = mockGetAccountProfile;
 const mockChangePassword = changePassword as jest.MockedFunction<any>;
 const mockChangeEmail = changeEmail as jest.MockedFunction<any>;
-const mockCognitoChangePassword = cognitoChangePassword as jest.MockedFunction<any>;
-const mockCognitoChangeEmail = cognitoChangeEmail as jest.MockedFunction<any>;
 
 describe('Account profile page (unit)', () => {
   it('uses shrinkable form containers and moves account tabs above compact content', () => {
@@ -485,8 +472,6 @@ describe('Account profile page (unit)', () => {
     mockSetProfile.mockResolvedValue({ status: 'ok' } as any);
     mockChangePassword.mockResolvedValue({ status: 'ok' } as any);
     mockChangeEmail.mockResolvedValue({ status: 'ok' } as any);
-    mockCognitoChangePassword.mockResolvedValue(undefined as any);
-    mockCognitoChangeEmail.mockResolvedValue(undefined as any);
   });
 
   it('loads and updates basic profile information successfully', async () => {
@@ -681,7 +666,6 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() => expect(mockCognitoChangePassword).toHaveBeenCalledWith('Abcdefg2!'));
     expect(mockChangePassword).toHaveBeenCalledWith(
       expect.objectContaining({
         currentPassword: 'Abcdefg1!',
@@ -768,7 +752,7 @@ describe('Account profile page (unit)', () => {
   });
 
   it('shows a generic error when password change throws unexpectedly', async () => {
-    mockCognitoChangePassword.mockRejectedValueOnce(new Error('cognito password failed'));
+    mockChangePassword.mockRejectedValueOnce(new Error('password change failed'));
 
     const user = userEvent.setup();
 
@@ -790,7 +774,13 @@ describe('Account profile page (unit)', () => {
         'A system error occurred while changing the password. Please try again later.',
       ),
     );
-    expect(mockChangePassword).not.toHaveBeenCalled();
+    expect(mockChangePassword).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentPassword: 'Abcdefg1!',
+        newPassword: 'Abcdefg2!',
+        confirmNewPassword: 'Abcdefg2!',
+      }),
+    );
   });
 
   it('blocks password submission when the new password matches the current password', async () => {
@@ -809,7 +799,6 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() => expect(mockCognitoChangePassword).not.toHaveBeenCalled());
     expect(mockChangePassword).not.toHaveBeenCalled();
   });
 
@@ -829,11 +818,10 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() => expect(mockCognitoChangePassword).not.toHaveBeenCalled());
     expect(mockChangePassword).not.toHaveBeenCalled();
   });
 
-  it('changes email successfully after cognito update', async () => {
+  it('changes email successfully through Supabase Auth', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<Profile />);
@@ -848,9 +836,6 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() =>
-      expect(mockCognitoChangeEmail).toHaveBeenCalledWith('alice.next@example.com'),
-    );
     expect(mockChangeEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         newEmail: 'alice.next@example.com',
@@ -886,7 +871,7 @@ describe('Account profile page (unit)', () => {
   });
 
   it('shows a generic error when email change throws unexpectedly', async () => {
-    mockCognitoChangeEmail.mockRejectedValueOnce(new Error('cognito email failed'));
+    mockChangeEmail.mockRejectedValueOnce(new Error('email change failed'));
 
     const user = userEvent.setup();
 
@@ -905,7 +890,12 @@ describe('Account profile page (unit)', () => {
     await waitFor(() =>
       expect(message.error).toHaveBeenCalledWith('An error occurred while changing the email.'),
     );
-    expect(mockChangeEmail).not.toHaveBeenCalled();
+    expect(mockChangeEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newEmail: 'alice.next@example.com',
+        confirmNewEmail: 'alice.next@example.com',
+      }),
+    );
   });
 
   it('blocks email submission when the confirmation email does not match', async () => {
@@ -923,7 +913,6 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() => expect(mockCognitoChangeEmail).not.toHaveBeenCalled());
     expect(mockChangeEmail).not.toHaveBeenCalled();
   });
 
@@ -946,14 +935,12 @@ describe('Account profile page (unit)', () => {
     expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Strong');
   });
 
-  it('renders connected applications without exposing the retired API-key generator', async () => {
+  it('renders connected applications without password-equivalent controls', async () => {
     const user = userEvent.setup();
     renderWithProviders(<Profile />);
     await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole('button', { name: 'Connected apps' }));
-    expect(screen.getByTestId('oauth-connections')).toHaveTextContent(
-      'Connected applications for user@example.com',
-    );
+    expect(screen.getByTestId('oauth-connections')).toHaveTextContent('Connected applications');
     expect(screen.queryByRole('button', { name: 'Generate API Key' })).not.toBeInTheDocument();
   });
 });

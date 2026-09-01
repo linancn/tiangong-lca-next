@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
 import {
@@ -7,10 +7,6 @@ import {
   callDatasetCreateVersionRpc,
   callDatasetDeleteRpc,
   callDatasetPublishRpc,
-  callDatasetReviewSubmitGateRpc,
-  callDatasetReviewSubmitJobEnqueueRpc,
-  callDatasetReviewSubmitJobReadLatestRpc,
-  callDatasetReviewSubmitJobReadRpc,
   callDatasetSaveDraftRpc,
   callDatasetSubmitReviewRpc,
   type DatasetRpcResult,
@@ -21,10 +17,6 @@ import type {
   CreateVersionRequest,
   DeleteRequest,
   PublishRequest,
-  ReviewSubmitGateRequest,
-  ReviewSubmitJobEnqueueRequest,
-  ReviewSubmitJobReadLatestRequest,
-  ReviewSubmitJobReadRequest,
   SaveDraftRequest,
   SubmitReviewRequest,
 } from './types.ts';
@@ -44,18 +36,6 @@ export type DatasetCommandRepository = {
   submitReview: (
     request: SubmitReviewRequest,
     audit: CommandAuditPayload,
-  ) => Promise<DatasetRpcResult>;
-  reviewSubmitGate: (
-    request: ReviewSubmitGateRequest,
-    audit: CommandAuditPayload,
-  ) => Promise<DatasetRpcResult>;
-  reviewSubmitJobEnqueue: (
-    request: ReviewSubmitJobEnqueueRequest,
-    audit: CommandAuditPayload,
-  ) => Promise<DatasetRpcResult>;
-  reviewSubmitJobRead: (request: ReviewSubmitJobReadRequest) => Promise<DatasetRpcResult>;
-  reviewSubmitJobReadLatest: (
-    request: ReviewSubmitJobReadLatestRequest,
   ) => Promise<DatasetRpcResult>;
 };
 
@@ -78,11 +58,5 @@ export function createDatasetCommandRepository(supabase: RpcClient): DatasetComm
     assignTeam: (request, audit) => callDatasetAssignTeamRpc(client, request, audit),
     publish: (request, audit) => callDatasetPublishRpc(client, request, audit),
     submitReview: (request, audit) => callDatasetSubmitReviewRpc(client, request, audit),
-    reviewSubmitGate: (request, audit) => callDatasetReviewSubmitGateRpc(client, request, audit),
-    reviewSubmitJobEnqueue: (request, audit) =>
-      callDatasetReviewSubmitJobEnqueueRpc(client, request, audit),
-    reviewSubmitJobRead: (request) => callDatasetReviewSubmitJobReadRpc(client, request),
-    reviewSubmitJobReadLatest: (request) =>
-      callDatasetReviewSubmitJobReadLatestRpc(client, request),
   };
 }

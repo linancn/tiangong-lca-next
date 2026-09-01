@@ -14,9 +14,9 @@ export const OWNER_DRAFT_PROCESS_STATE = 0;
 export const PUBLIC_PLUS_OWNER_DRAFT_SCOPE = 'public_plus_owner_draft';
 export const FILTERED_LIBRARY_SELECTION_MODE = 'filtered_library';
 export const REQUEST_ROOTS_CLOSURE_SELECTION_MODE = 'request_roots_closure';
-export const LCA_SCOPE_MANIFEST_SCHEMA_VERSION = 'lca.data_scope.manifest.v1';
+export const LCA_SCOPE_MANIFEST_SCHEMA_VERSION = 'lca.data_scope.manifest.v2';
 export const PUBLIC_PLUS_OWNER_DRAFT_PREDICATE_VERSION =
-  'public_state_100_or_authenticated_owner_state_0.v1';
+  'public_state_100_or_authenticated_owner_state_0.v2';
 export const LCA_METHOD_FACTOR_SOURCE_CONTRACT_SCHEMA_VERSION =
   'lca.method_factor_source.request.v2';
 export const LCIA_FACTOR_COVERAGE_CONTRACT_SCHEMA_VERSION =
@@ -63,10 +63,6 @@ export type LcaScopeManifest = {
     user_id: string;
   };
   applies_to: ['processes', 'flows'];
-  owner_draft_collaboration_guards: {
-    processes: { team_id: { is: null }; review_id: { is: null } };
-    flows: { team_id: { is: null }; review_id: { is: null } };
-  };
   predicate: {
     operator: 'or';
     clauses: [
@@ -290,10 +286,6 @@ export function buildPublicPlusOwnerDraftScopeManifest(userId: string): LcaScope
       user_id: actorUserId,
     },
     applies_to: ['processes', 'flows'],
-    owner_draft_collaboration_guards: {
-      processes: { team_id: { is: null }, review_id: { is: null } },
-      flows: { team_id: { is: null }, review_id: { is: null } },
-    },
     predicate: {
       operator: 'or',
       clauses: [
@@ -341,8 +333,6 @@ export async function buildSnapshotProcessFilter(
       process_states: [PUBLIC_PROCESS_STATE],
       include_user_id: binding.manifest.actor.user_id,
       include_user_state_codes: [OWNER_DRAFT_PROCESS_STATE],
-      include_user_unassigned_only: true,
-      include_user_review_free_only: true,
       scope_manifest: binding.manifest,
       scope_manifest_sha256: binding.manifest_sha256,
       ...selectionFields,

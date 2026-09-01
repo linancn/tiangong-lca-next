@@ -1,7 +1,11 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
-import { authenticateRequest, AuthMethod, type AuthResult } from '../_shared/auth.ts';
-import { getRedisClient, type RedisClient } from '../_shared/redis_client.ts';
+import {
+  authenticateRequest,
+  AuthMethod,
+  type AuthConfig,
+  type AuthResult,
+} from '../_shared/auth.ts';
 import { createSupabaseServiceClient, supabaseAuthClient } from '../_shared/supabase_client.ts';
 import {
   enqueueImportTidasPackage,
@@ -14,30 +18,12 @@ export type ImportTidasPackageHandlerDeps = {
   authClient: SupabaseClient;
   authenticateRequest: (
     req: Request,
-    config: {
-      authClient?: SupabaseClient;
-      redis?: RedisClient;
-      allowedMethods: AuthMethod[];
-    },
+    config: AuthConfig & { allowedMethods: AuthMethod[] },
   ) => Promise<AuthResult>;
-  getRedisClient: () => Promise<RedisClient | undefined>;
   supabase: SupabaseClient;
 };
 
 let cachedSupabaseClient: SupabaseClient | undefined;
-
-function resolveBearerToken(req: Request): string {
-  return (
-    req.headers
-      .get('Authorization')
-      ?.replace(/^Bearer\s+/i, '')
-      .trim() ?? ''
-  );
-}
-
-function looksLikeJwtToken(token: string): boolean {
-  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
-}
 
 function getDefaultSupabaseClient(): SupabaseClient {
   if (!cachedSupabaseClient) {
@@ -51,7 +37,6 @@ export function createImportTidasPackageHandler(
   deps: ImportTidasPackageHandlerDeps = {
     authClient: supabaseAuthClient,
     authenticateRequest,
-    getRedisClient,
     supabase: getDefaultSupabaseClient(),
   },
 ): (req: Request) => Promise<Response> {
@@ -71,18 +56,12 @@ export function createImportTidasPackageHandler(
       );
     }
 
-    const bearerToken = resolveBearerToken(req);
-    const shouldTryUserApiKey = bearerToken.length > 0 && !looksLikeJwtToken(bearerToken);
-    const redis = shouldTryUserApiKey ? await deps.getRedisClient() : undefined;
     const authResult = await deps.authenticateRequest(req, {
       authClient: deps.authClient,
-      redis,
-      allowedMethods: shouldTryUserApiKey
-        ? [AuthMethod.USER_API_KEY, AuthMethod.JWT]
-        : [AuthMethod.JWT],
+      allowedMethods: [AuthMethod.JWT],
     });
 
-    if (!authResult.isAuthenticated || !authResult.user?.id) {
+    if (!authResult.isAuthenticated || !authResult.principal?.userId) {
       return (
         authResult.response ??
         json(
@@ -95,7 +74,7 @@ export function createImportTidasPackageHandler(
         )
       );
     }
-    const userId = authResult.user.id;
+    const userId = authResult.principal.userId;
 
     let body: unknown = {};
     try {

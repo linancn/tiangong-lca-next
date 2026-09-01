@@ -8,7 +8,7 @@ Deno.serve(
     entityKind: 'unitgroup',
     entityLabel: 'Unit group',
     entityPlural: 'unit groups',
-    rpcName: 'hybrid_search_unitgroups_v2',
+    rpcName: 'hybrid_search_unitgroups',
     forwardVisibilityContext: true,
   }),
 );

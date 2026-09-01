@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 6ff84d2eeeaf5398cf72838f8f4952a56648c35c
-lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service map includes the explicit browser-navigation boundary required by Jest 30/jsdom 26 without changing runtime behavior.'
+lastReviewedCommit: 046c505882ac28ae473a3318e2d4c94a9bf0541d
+lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -79,6 +79,7 @@ Rules:
 - service modules own app-side data access
 - `src/utils/browserNavigation.ts` owns the thin `Location.assign`/`reload`/`replace` side-effect boundary. Runtime callers always pass the real `window.location`; tests pass an explicit mock `Location` or mock this module and must not redefine jsdom's global `window` or `location`
 - Account Basic Information reads current profile metadata through `supabase.auth.getUser()` and writes `display_name` plus the optional, trimmed, 200-character `organization` string through `supabase.auth.updateUser()`. The page may refresh the session after a successful write, but organization remains descriptive profile data and must never control frontend access or backend authorization
+- Account Connected Applications lists and revokes Supabase OAuth grants only. It contains no API-key history, password reauthentication form, Cognito provisioning action, or Cognito password/email synchronization helper; Supabase Auth is the sole account identity and credential owner
 - Process and Flow ordered-dataset serializers normalize TIDAS year values to bounded integers and percentage values to canonical strings. Their create, update, and create-version service paths reject non-empty affected scalars that cannot be represented canonically before invoking persistence; unrelated invalid-draft behavior remains unchanged
 - the startup system-status service treats `APP_RUNTIME_CONFIG_ENABLED` as a build-time emergency bypass: loading remains enabled by default, and only an explicit case-insensitive `false` returns the normal status without starting the Supabase RPC or its timeout
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role

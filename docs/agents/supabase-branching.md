@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 615c6eaa62ab1134b9c8dbc9b42944f3ef1d509b
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser-navigation testing and organization Auth metadata leave Supabase environment/branch bindings, OAuth callback safety, and database-owned sync unchanged.'
+lastReviewedCommit: 6ff84d2eeeaf5398cf72838f8f4952a56648c35c
+lastReviewedNote: 'Reviewed for Next Issue #991 after browser-navigation and organization metadata integration: OAuth grant management is the sole integration surface, Supabase Auth is the sole password/email owner, and environment/branch/callback/database boundaries remain unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -66,7 +66,7 @@ Rules:
 - explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults. For `REACT_APP_ENV=dev`, a runtime value that exactly equals the selected main-file default is treated as Umi's preloaded `.env` value and replaced by the corresponding `.env.development*` value; a distinct per-key runtime value remains explicit. Selected files otherwise remain fallback configuration, not an immutable deployment target
 - closed semantic qualification builds with `REACT_APP_ENV=qualification` and `docker/e2e/qualification.env`; this fixed `.invalid` target is intercepted completely and is never a production or deployable backend identity
 - do not create ad-hoc Supabase clients outside `src/services/**`
-- OAuth consent and grant management use the shared Supabase client under `src/services/auth/oauth.ts`. Next owns the `/oauth/consent` bridge/page, the bounded byte-preserved opaque authorization-handle boundary, getClaims-based session check, safe callback navigation, and user grant list/revoke presentation. `database-engine` owns OAuth server configuration and client-capability enforcement; environment operators register separate exact redirect URIs and client IDs for Dev and production
+- OAuth consent and grant management use the shared Supabase client under `src/services/auth/oauth.ts`. Next owns the `/oauth/consent` bridge/page, the bounded byte-preserved opaque authorization-handle boundary, getClaims-based session check, safe callback navigation, and user grant list/revoke presentation. Connected Applications contains no API-key history or compatibility provisioning action, and account password/email changes use only Supabase Auth with no Cognito bridge. `database-engine` owns OAuth server configuration and client-capability enforcement; environment operators register separate exact redirect URIs and client IDs for Dev and production
 - the shared shipped client defaults to `db.schema = api`; non-core reads use Database-owned query facades and mutations use established command/Edge boundaries
 - browser startup reads `api.qry_system_status()` once before authentication through `src/services/general/systemStatus.ts`; `APP_RUNTIME_CONFIG_ENABLED` defaults to enabled, and only an explicit case-insensitive `false` skips the RPC and continues with the normal status; maintenance and verification phases render the localized app-shell boundary, while an unavailable or malformed control response fails open to normal startup and is checked again only after a full page refresh
 - direct relation access is fail-closed through `src/services/supabase/public.ts` and is limited to `processes`, `flows`, `contacts`, `sources`, `unitgroups`, `flowproperties`, `lciamethods`, `lifecyclemodels`, and `ilcd`; callers must not broaden this list to regain access to implementation tables

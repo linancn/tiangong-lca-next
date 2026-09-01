@@ -1,4 +1,14 @@
 import { normalizeJsonOrdered } from './flow_extraction.ts';
+import {
+  asArray as sharedAsArray,
+  displayText as sharedDisplayText,
+  isRecord as sharedIsRecord,
+  pick as sharedPick,
+  preferredTitle as sharedPreferredTitle,
+  readClassificationPath as sharedReadClassificationPath,
+  readReferenceShortDescriptionDisplay as sharedReadReferenceShortDescriptionDisplay,
+  scalarText as sharedScalarText,
+} from './projection_primitives.ts';
 
 export type FoundationDatasetKind = 'contact' | 'flowproperty' | 'source' | 'unitgroup';
 
@@ -27,18 +37,8 @@ const PROFILE = {
   },
 } as const;
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function pick(record: unknown, ...keys: string[]): unknown {
-  if (!isRecord(record)) return undefined;
-  for (const key of keys) {
-    const value = record[key];
-    if (value !== undefined && value !== null) return value;
-  }
-  return undefined;
-}
+const isRecord = sharedIsRecord;
+const pick = sharedPick;
 
 function findDataset(value: unknown, rootKey: string): JsonRecord | null {
   if (!isRecord(value)) return null;
@@ -51,86 +51,15 @@ function findDataset(value: unknown, rootKey: string): JsonRecord | null {
   return null;
 }
 
-function asArray(value: unknown): unknown[] {
-  if (value === undefined || value === null) return [];
-  return Array.isArray(value) ? value : [value];
-}
-
-function scalarText(value: unknown): string | null {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    const text = String(value).trim();
-    return text || null;
-  }
-  return null;
-}
-
-function collectDisplayTexts(value: unknown): string[] {
-  const scalar = scalarText(value);
-  if (scalar) return [scalar];
-  if (Array.isArray(value)) return value.flatMap(collectDisplayTexts);
-  if (!isRecord(value)) return [];
-
-  for (const key of ['#text', 'text', '_text', 'value', 'common:shortDescription']) {
-    if (value[key] !== undefined && value[key] !== null) {
-      return collectDisplayTexts(value[key]);
-    }
-  }
-
-  return Object.entries(value)
-    .filter(([key]) => !key.startsWith('@') && key !== 'id')
-    .flatMap(([, child]) => collectDisplayTexts(child));
-}
-
-function uniqueTexts(value: unknown): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const item of collectDisplayTexts(value)) {
-    if (!seen.has(item)) {
-      seen.add(item);
-      result.push(item);
-    }
-  }
-  return result;
-}
-
-function displayText(value: unknown, separator = ' | '): string | null {
-  const values = uniqueTexts(value);
-  return values.length ? values.join(separator) : null;
-}
-
-function preferredTitle(value: unknown): string | null {
-  const candidates = asArray(value);
-  for (const candidate of candidates) {
-    if (!isRecord(candidate)) continue;
-    const lang = scalarText(pick(candidate, '@xml:lang', 'xml:lang', 'lang'));
-    if (lang?.toLowerCase().startsWith('en')) {
-      const text = displayText(pick(candidate, '#text', 'text', '_text'));
-      if (text) return text;
-    }
-  }
-  return displayText(value);
-}
+const asArray = sharedAsArray;
+const scalarText = sharedScalarText;
+const displayText = sharedDisplayText;
+const preferredTitle = sharedPreferredTitle;
 
 function classificationPath(dataSetInformation: unknown): string | null {
-  const classificationInformation = pick(
-    dataSetInformation,
-    'classificationInformation',
-    'classification_information',
-  );
-  const classification = pick(classificationInformation, 'common:classification', 'classification');
-  const classes = asArray(pick(classification, 'common:class', 'class'));
-  const sorted = classes.slice().sort((left, right) => {
-    const leftLevel = Number(pick(left, '@level', 'level'));
-    const rightLevel = Number(pick(right, '@level', 'level'));
-    if (Number.isFinite(leftLevel) && Number.isFinite(rightLevel)) return leftLevel - rightLevel;
-    if (Number.isFinite(leftLevel)) return -1;
-    if (Number.isFinite(rightLevel)) return 1;
-    return 0;
+  return sharedReadClassificationPath(dataSetInformation, {
+    labelNames: ['#text', 'value', 'common:name', 'name'],
   });
-  const labels = sorted
-    .map((entry) => displayText(pick(entry, '#text', 'value', 'common:name', 'name') ?? entry))
-    .filter((value): value is string => Boolean(value));
-  return labels.length ? labels.join(' > ') : null;
 }
 
 function datasetVersion(dataset: JsonRecord): string | null {
@@ -187,7 +116,7 @@ function appendFlowProperty(
   pushField(
     lines,
     'Reference Unit Group',
-    pick(referenceUnitGroup, 'common:shortDescription', 'shortDescription'),
+    sharedReadReferenceShortDescriptionDisplay(referenceUnitGroup),
   );
   pushSection(
     lines,
@@ -203,12 +132,12 @@ function appendSource(lines: string[], information: unknown, dataSetInformation:
   pushField(
     lines,
     'Contact',
-    pick(pick(dataSetInformation, 'referenceToContact'), 'common:shortDescription'),
+    sharedReadReferenceShortDescriptionDisplay(pick(dataSetInformation, 'referenceToContact')),
   );
   pushField(
     lines,
     'Digital File',
-    pick(pick(dataSetInformation, 'referenceToDigitalFile'), 'common:shortDescription'),
+    sharedReadReferenceShortDescriptionDisplay(pick(dataSetInformation, 'referenceToDigitalFile')),
   );
   pushSection(
     lines,
