@@ -95,7 +95,7 @@ export default {
   'pages.home.nationalCarbon.organization.column.reviewing': 'En révision',
   'pages.home.nationalCarbon.organization.column.share': 'Part',
   'pages.home.nationalCarbon.organization.dataAsOf': 'Données au {date}',
-  'pages.home.nationalCarbon.organization.empty': 'Aucune contribution publiée pour ce périmètre',
+  'pages.home.nationalCarbon.organization.empty': 'Aucune donnée',
   'pages.home.nationalCarbon.organization.error': 'Impossible de charger les contributions des organisations',
   'pages.home.nationalCarbon.organization.kpi.last30Days': 'Publiés sur 30 jours',
   'pages.home.nationalCarbon.organization.kpi.organizations': 'Organisations participantes',

@@ -14,12 +14,13 @@ import {
 import {
   DatabaseOutlined,
   FileDoneOutlined,
-  InfoCircleOutlined,
+  Loading3QuartersOutlined,
+  RadarChartOutlined,
   ReloadOutlined,
   RiseOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Button, Segmented, Spin, Tooltip } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { useIntl, useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
@@ -529,7 +530,7 @@ function ScreenNavigator({
     pointerId: number;
   } | null>(null);
   const flyoutSideClassName =
-    position.x > dashboardStageWidth - 430 ? styles.screenNavigatorFlyoutLeft : '';
+    position.x > dashboardStageWidth - 488 ? styles.screenNavigatorFlyoutLeft : '';
   const navClassName = [
     styles.screenNavigator,
     flyoutSideClassName,
@@ -2334,6 +2335,48 @@ function OrganizationContributionMetricCard({
   );
 }
 
+function OrganizationContributionEmptyState() {
+  const intl = useIntl();
+  const message = intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.empty' });
+
+  return (
+    <div
+      aria-label={message}
+      className={styles.organizationEmptyState}
+      data-testid='organization-empty-state'
+      role='status'
+    >
+      <div aria-hidden='true' className={styles.organizationEmptyVisual}>
+        <RadarChartOutlined className={styles.organizationEmptyRadar} />
+        <Loading3QuartersOutlined className={styles.organizationEmptyOrbit} />
+      </div>
+      <strong>{message}</strong>
+    </div>
+  );
+}
+
+function OrganizationContributionLoadingState() {
+  const intl = useIntl();
+  const message = intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.loading' });
+
+  return (
+    <div
+      aria-label={message}
+      aria-live='polite'
+      className={styles.organizationLoadingState}
+      data-testid='organization-loading-state'
+      role='status'
+    >
+      <div aria-hidden='true' className={styles.organizationLoadingVisual}>
+        <Loading3QuartersOutlined className={styles.organizationLoadingOrbitOuter} />
+        <Loading3QuartersOutlined className={styles.organizationLoadingOrbitInner} />
+        <DatabaseOutlined className={styles.organizationLoadingCore} />
+      </div>
+      <strong>{message}</strong>
+    </div>
+  );
+}
+
 function OrganizationContributionChart({
   scope,
   scopeSnapshot,
@@ -2357,9 +2400,7 @@ function OrganizationContributionChart({
         <span>{metricLabel}</span>
       </div>
       {scopeSnapshot.rankings.length === 0 ? (
-        <div className={styles.organizationEmptyState}>
-          {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.empty' })}
-        </div>
+        <OrganizationContributionEmptyState />
       ) : (
         <div className={styles.organizationBarChart} role='list'>
           {scopeSnapshot.rankings.map((ranking) => (
@@ -2428,9 +2469,7 @@ function OrganizationContributionRanking({
           </span>
         </div>
         {scopeSnapshot.rankings.length === 0 ? (
-          <div className={styles.organizationEmptyState}>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.empty' })}
-          </div>
+          <OrganizationContributionEmptyState />
         ) : (
           scopeSnapshot.rankings.map((ranking) => (
             <div className={styles.organizationTableRow} key={ranking.organizationKey} role='row'>
@@ -2520,47 +2559,35 @@ function OrganizationContributionScreen({
     };
   }, [loadSnapshot]);
 
-  const scopeOptions = organizationContributionDatasetScopes.map((scope) => ({
-    label: intl.formatMessage({ id: `pages.home.nationalCarbon.organization.scope.${scope}` }),
-    value: scope,
-  }));
   const scopeSnapshot = snapshot?.scopes[activeScope];
 
   return (
     <section className={`${styles.screenPanel} ${styles.organizationContributionScreen}`}>
-      <header className={styles.organizationHeader}>
-        <div className={styles.organizationHeaderDecoration} aria-hidden='true' />
-        <div>
-          <h1>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.title' })}</h1>
-          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.subtitle' })}</p>
-          <span>
-            {intl.formatMessage(
-              { id: 'pages.home.nationalCarbon.organization.dataAsOf' },
-              {
-                date: snapshot ? formatDashboardDateTime(snapshot.dataAsOf) : '--',
-              },
-            )}
-          </span>
-        </div>
-        <Segmented
-          aria-label={intl.formatMessage({
-            id: 'pages.home.nationalCarbon.organization.scope.ariaLabel',
-          })}
-          className={styles.organizationScopeSwitch}
-          onChange={(value) => onChangeScope(value as OrganizationContributionDatasetScope)}
-          options={scopeOptions}
-          value={activeScope}
-        />
-      </header>
+      <div
+        aria-label={intl.formatMessage({
+          id: 'pages.home.nationalCarbon.organization.scope.ariaLabel',
+        })}
+        className={styles.organizationScopeSwitch}
+        role='group'
+      >
+        {organizationContributionDatasetScopes.map((scope) => (
+          <button
+            aria-pressed={scope === activeScope}
+            className={`${styles.organizationScopeOption} ${
+              scope === activeScope ? styles.organizationScopeOptionActive : ''
+            }`}
+            key={scope}
+            onClick={() => onChangeScope(scope)}
+            type='button'
+          >
+            {intl.formatMessage({
+              id: `pages.home.nationalCarbon.organization.scope.${scope}`,
+            })}
+          </button>
+        ))}
+      </div>
 
-      {loadStatus === 'loading' && !snapshot ? (
-        <div className={styles.organizationLoadingState}>
-          <Spin size='large' />
-          <span>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.loading' })}
-          </span>
-        </div>
-      ) : null}
+      {loadStatus === 'loading' && !snapshot ? <OrganizationContributionLoadingState /> : null}
 
       {loadStatus === 'error' && !snapshot ? (
         <div className={styles.organizationErrorState}>
@@ -2615,35 +2642,6 @@ function OrganizationContributionScreen({
             <OrganizationContributionChart scope={activeScope} scopeSnapshot={scopeSnapshot} />
             <OrganizationContributionRanking scopeSnapshot={scopeSnapshot} />
           </div>
-
-          <footer className={styles.organizationFooter}>
-            <p>
-              <InfoCircleOutlined />
-              {intl.formatMessage(
-                { id: 'pages.home.nationalCarbon.organization.methodology' },
-                {
-                  scope: intl.formatMessage({
-                    id: `pages.home.nationalCarbon.organization.scope.${activeScope}`,
-                  }),
-                },
-              )}
-            </p>
-            {errorCode ? (
-              <span className={styles.organizationRefreshError}>
-                {intl.formatMessage({
-                  id: 'pages.home.nationalCarbon.organization.refreshError',
-                })}
-              </span>
-            ) : null}
-            <Button
-              icon={<ReloadOutlined spin={loadStatus === 'refreshing'} />}
-              loading={loadStatus === 'refreshing'}
-              onClick={() => void loadSnapshot(true)}
-              type='text'
-            >
-              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.refresh' })}
-            </Button>
-          </footer>
         </>
       ) : null}
       <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
@@ -2678,7 +2676,11 @@ export function NationalCarbonDashboardContent() {
   const stageLayout = useStageLayout();
 
   useEffect(() => {
-    if (!autoplayEnabled || activeScreen === 'flow_topology') {
+    if (
+      !autoplayEnabled ||
+      activeScreen === 'organization_contribution' ||
+      activeScreen === 'flow_topology'
+    ) {
       return undefined;
     }
 

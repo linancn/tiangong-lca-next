@@ -95,7 +95,7 @@ export default {
   'pages.home.nationalCarbon.organization.column.reviewing': 'In Prüfung',
   'pages.home.nationalCarbon.organization.column.share': 'Anteil',
   'pages.home.nationalCarbon.organization.dataAsOf': 'Datenstand {date}',
-  'pages.home.nationalCarbon.organization.empty': 'Keine veröffentlichten Organisationsbeiträge in diesem Bereich',
+  'pages.home.nationalCarbon.organization.empty': 'Keine Daten',
   'pages.home.nationalCarbon.organization.error': 'Organisationsbeiträge konnten nicht geladen werden',
   'pages.home.nationalCarbon.organization.kpi.last30Days': 'In 30 Tagen veröffentlicht',
   'pages.home.nationalCarbon.organization.kpi.organizations': 'Beteiligte Organisationen',

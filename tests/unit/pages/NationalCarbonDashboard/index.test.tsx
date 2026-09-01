@@ -126,6 +126,7 @@ describe('NationalCarbonDashboard access guard', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     mockInitialState = undefined;
     window.location.hash = '';
     global.fetch = originalFetch;
@@ -189,10 +190,90 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByText('Processus'));
+    expect(screen.getByRole('button', { name: 'Tout' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Processus' }));
     await waitFor(() => expect(screen.getAllByText('3').length).toBeGreaterThan(0));
+    expect(screen.getByRole('button', { name: 'Processus' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
+    expect(screen.queryByText('Progression de la base TianGong')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Méthode : les contributions/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Actualiser les données' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses the reviewing-data label in Chinese', async () => {
+    mockLocale = 'zh-CN';
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+
+    render(<NationalCarbonDashboardPage />);
+
+    expect(await screen.findByText('审核中数据')).toBeInTheDocument();
+    expect(screen.queryByText('待审核数据')).not.toBeInTheDocument();
+  });
+
+  it('renders the enhanced empty state in both contribution panels', async () => {
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+    mockGetOrganizationContributionSnapshot.mockResolvedValueOnce({
+      ...organizationContributionSnapshot,
+      scopes: Object.fromEntries(
+        Object.entries(organizationContributionSnapshot.scopes).map(([scope, snapshot]) => [
+          scope,
+          {
+            ...snapshot,
+            rankings: [],
+            summary: { ...snapshot.summary, organizationCount: 0 },
+          },
+        ]),
+      ),
+    });
+
+    render(<NationalCarbonDashboardPage />);
+
+    expect(await screen.findAllByTestId('organization-empty-state')).toHaveLength(2);
+    expect(screen.getAllByRole('status')).toHaveLength(2);
+    expect(screen.getAllByText('Aucune donnée')).toHaveLength(2);
+  });
+
+  it('renders the enhanced organization loading state', () => {
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+    mockGetOrganizationContributionSnapshot.mockImplementationOnce(() => new Promise(() => {}));
+
+    render(<NationalCarbonDashboardPage />);
+
+    expect(screen.getByTestId('organization-loading-state')).toHaveAttribute(
+      'aria-label',
+      'Agrégation des contributions des organisations…',
+    );
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('stops autoplay on organization contributions while keeping manual navigation available', () => {
+    jest.useFakeTimers();
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash = '#/dashboard/national-carbon?screen=connectivity';
+
+    render(<NationalCarbonDashboardPage />);
+
+    expect(screen.getByLabelText(/Vue actuelle : 04 Calculabilité/)).toBeInTheDocument();
+    act(() => jest.advanceTimersByTime(18_000));
+    expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
+    act(() => jest.advanceTimersByTime(18_000));
+    expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
+    expect(screen.queryByTestId('process-flow-graph-panel')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Graphe des flux'));
+    expect(screen.getByTestId('process-flow-graph-panel')).toBeInTheDocument();
   });
 
   it('uses localized screen labels while autoplay advances the dashboard', () => {
