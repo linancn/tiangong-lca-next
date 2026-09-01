@@ -147,6 +147,36 @@ No actionable P0/P1/P2 findings remain for this scoped revision.
 
 final result: passed
 
+## 2026-09-01 Unified Organization Scope Icon Control
+
+- Source visual truth: `/var/folders/_n/l0ct3k117s53plt200_n0t_00000gn/T/codex-clipboard-08a7cb22-80af-43b6-9c15-c843e9ea7bd5.png`
+- Browser-rendered implementation: `/private/tmp/national-carbon-unified-scope-button.png`
+- Combined comparison input: `/private/tmp/national-carbon-scope-comparison.png`
+- Source pixels: `3840 × 1856`; implementation viewport: `2048 × 1120`, device scale factor `1`.
+- State: authenticated `zh-CN`, screen `05`, `全部` scope, autoplay disabled.
+
+### Visual and interaction evidence
+
+- The former three-item text switch is represented by one `32px × 32px` circular icon button in the same upper-right utility position.
+- The cycle is deterministic: `全部 → 过程 → 模型 → 全部`. The icon changes from app grid to process document to model hierarchy, while the tooltip and accessible label expose the active localized scope.
+- All three states use the same low-contrast cyan-blue foreground, background, border, and glow values. Scope is communicated through icon shape rather than competing state colors.
+- Default visual values are `rgba(165, 211, 228, 0.78)` foreground, `rgba(8, 35, 62, 0.62)` background, and `rgba(86, 164, 193, 0.24)` border. Hover only slightly lifts and brightens the same tone.
+- The button remains subordinate to the KPI cards and does not overlap the first row, dashboard edge, or fixed screen navigator.
+- KPI glyphs render at `24px` while their labels remain `18px`, resolving the earlier undersized-icon imbalance without changing card dimensions.
+- Browser interaction verified the three-state cycle and matching icon names (`appstore`, `profile`, `apartment`). All three states reported identical computed color styling.
+- Browser console review found no runtime errors; only existing development-only Webpack target warnings remain.
+- Focused unit tests passed all `13` cases. `pnpm lint` and `pnpm build` passed after sequential execution.
+
+### Comparison history
+
+- Earlier P2: three status colors made a small utility control more prominent than intended.
+- Fix: removed state-specific blue and violet tones and retained one muted cyan-blue treatment for every scope.
+- Post-fix evidence: the combined comparison input shows a quieter single-color control while preserving clear icon-based state recognition and the existing information hierarchy.
+
+No actionable P0/P1/P2 findings remain for this scoped revision. No P3 follow-up is required.
+
+final result: passed
+
 ## 2026-09-01 Daily Creation Legend And Heatmap Proportion
 
 - Source visual truth: `/var/folders/_n/l0ct3k117s53plt200_n0t_00000gn/T/codex-clipboard-d52d6eeb-dc1a-4b8f-b1e8-f4480361277a.png`

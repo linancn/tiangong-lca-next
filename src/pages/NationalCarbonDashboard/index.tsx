@@ -12,9 +12,12 @@ import {
   resolveRouteViewState,
 } from '@/services/general/routeViewState';
 import {
+  ApartmentOutlined,
+  AppstoreOutlined,
   DatabaseOutlined,
   FileDoneOutlined,
   Loading3QuartersOutlined,
+  ProfileOutlined,
   RadarChartOutlined,
   ReloadOutlined,
   RiseOutlined,
@@ -2742,34 +2745,39 @@ function OrganizationContributionScreen({
   }, [loadSnapshot]);
 
   const scopeSnapshot = snapshot?.scopes[activeScope];
+  const activeScopeIndex = organizationContributionDatasetScopes.indexOf(activeScope);
+  const nextScope =
+    organizationContributionDatasetScopes[
+      (activeScopeIndex + 1) % organizationContributionDatasetScopes.length
+    ];
+  const activeScopeLabel =
+    activeScope === 'process'
+      ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.process' })
+      : activeScope === 'model'
+        ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.model' })
+        : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.all' });
+  const activeScopeIcon =
+    activeScope === 'process' ? (
+      <ProfileOutlined />
+    ) : activeScope === 'model' ? (
+      <ApartmentOutlined />
+    ) : (
+      <AppstoreOutlined />
+    );
 
   return (
     <section className={`${styles.screenPanel} ${styles.organizationContributionScreen}`}>
-      <div
-        aria-label={intl.formatMessage({
-          id: 'pages.home.nationalCarbon.organization.scope.ariaLabel',
-        })}
-        className={styles.organizationScopeSwitch}
-        role='group'
-      >
-        {organizationContributionDatasetScopes.map((scope) => (
-          <button
-            aria-pressed={scope === activeScope}
-            className={`${styles.organizationScopeOption} ${
-              scope === activeScope ? styles.organizationScopeOptionActive : ''
-            }`}
-            key={scope}
-            onClick={() => onChangeScope(scope)}
-            type='button'
-          >
-            {scope === 'process'
-              ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.process' })
-              : scope === 'model'
-                ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.model' })
-                : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.all' })}
-          </button>
-        ))}
-      </div>
+      <Tooltip placement='bottom' title={activeScopeLabel}>
+        <button
+          aria-label={activeScopeLabel}
+          className={styles.organizationScopeToggle}
+          data-scope={activeScope}
+          onClick={() => onChangeScope(nextScope)}
+          type='button'
+        >
+          {activeScopeIcon}
+        </button>
+      </Tooltip>
 
       {loadStatus === 'loading' && !snapshot ? <OrganizationContributionLoadingState /> : null}
 

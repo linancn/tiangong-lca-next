@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 615c6eaa62ab1134b9c8dbc9b42944f3ef1d509b
+lastReviewedCommit: 45ad89afb41d6185ed7419c4ccba3967bea71787
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: source-mapped Jest 30 coverage and organization profile regressions retain one full-gate owner and unchanged 100% enforcement.'
 ---
 

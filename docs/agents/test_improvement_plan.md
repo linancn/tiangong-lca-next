@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 615c6eaa62ab1134b9c8dbc9b42944f3ef1d509b
+lastReviewedCommit: 45ad89afb41d6185ed7419c4ccba3967bea71787
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser, continuation, jsdom, coverage, profile-service, and account-page findings close through existing strategy without a new queue or browser matrix.'
 ---
 

@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-09-01'
-lastReviewedCommit: 'f6d345a4be8162c21771adbb15a9ad141058aec9'
+lastReviewedAt: "2026-09-01"
+lastReviewedCommit: "45ad89afb41d6185ed7419c4ccba3967bea71787"
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: frontend-runtime and testing routes cover the Jest/browser migration and optional organization profile metadata; the exact browser-navigation trigger remains explicit.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

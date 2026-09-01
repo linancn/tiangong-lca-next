@@ -214,14 +214,32 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
 
-    expect(screen.getByRole('button', { name: 'Tout' })).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByRole('button', { name: 'Processus' }));
+    const scopeButton = screen.getByRole('button', { name: 'Tout' });
+    expect(scopeButton).toHaveAttribute('data-scope', 'all');
+    expect(scopeButton.querySelector('[data-icon="appstore"]')).toBeInTheDocument();
+
+    fireEvent.click(scopeButton);
     await waitFor(() => expect(screen.getAllByText('3').length).toBeGreaterThan(0));
-    expect(screen.getByRole('button', { name: 'Processus' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(scopeButton).toHaveAccessibleName('Processus');
+    expect(scopeButton).toHaveAttribute('data-scope', 'process');
+    expect(scopeButton.querySelector('[data-icon="profile"]')).toBeInTheDocument();
     expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('3');
+
+    fireEvent.click(scopeButton);
+    await waitFor(() =>
+      expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('2'),
+    );
+    expect(scopeButton).toHaveAccessibleName('Modèles');
+    expect(scopeButton).toHaveAttribute('data-scope', 'model');
+    expect(scopeButton.querySelector('[data-icon="apartment"]')).toBeInTheDocument();
+
+    fireEvent.click(scopeButton);
+    await waitFor(() =>
+      expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('5'),
+    );
+    expect(scopeButton).toHaveAccessibleName('Tout');
+    expect(scopeButton).toHaveAttribute('data-scope', 'all');
+    expect(scopeButton.querySelector('[data-icon="appstore"]')).toBeInTheDocument();
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
     expect(screen.queryByText('Progression de la base TianGong')).not.toBeInTheDocument();

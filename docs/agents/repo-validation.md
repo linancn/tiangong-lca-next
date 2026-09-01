@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: f6d345a4be8162c21771adbb15a9ad141058aec9
+lastReviewedCommit: 45ad89afb41d6185ed7419c4ccba3967bea71787
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 keeps 100% source-mapped coverage, and profile service/account regressions cover organization read, trim, clear, refresh fallback, and UI state.'
 related:
   - ../AGENTS.md
