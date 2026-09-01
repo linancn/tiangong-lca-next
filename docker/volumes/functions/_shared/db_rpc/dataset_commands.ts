@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { CommandAuditPayload } from '../command_runtime/audit_log.ts';
 import type {
@@ -8,18 +8,9 @@ import type {
   DatasetCommandFailure,
   DeleteRequest,
   PublishRequest,
-  ReviewSubmitGateRequest,
-  ReviewSubmitJobEnqueueRequest,
-  ReviewSubmitJobReadLatestRequest,
-  ReviewSubmitJobReadRequest,
   SaveDraftRequest,
   SubmitReviewRequest,
 } from '../commands/dataset/types.ts';
-import {
-  REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-  REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-} from '../commands/dataset/types.ts';
-
 type RpcClient = Pick<SupabaseClient, 'rpc'>;
 
 export type DatasetRpcResult = { ok: true; data: unknown } | DatasetCommandFailure;
@@ -174,68 +165,7 @@ export function buildDatasetSubmitReviewRpcArgs(
     p_target_table: request.table,
     p_target_id: request.id,
     p_target_version: request.version,
-    p_gate_context:
-      request.table === 'processes'
-        ? {
-            reviewSubmitGateRunId: request.reviewSubmitGateRunId,
-            revisionChecksum: request.revisionChecksum,
-            policyProfile: request.reviewSubmitPolicyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-            reportSchemaVersion:
-              request.reviewSubmitReportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
-          }
-        : null,
     p_audit: audit,
-  };
-}
-
-export function buildDatasetReviewSubmitGateRpcArgs(
-  request: ReviewSubmitGateRequest,
-  audit: CommandAuditPayload,
-): Record<string, unknown> {
-  return {
-    p_table: request.table,
-    p_id: request.id,
-    p_version: request.version,
-    p_revision_checksum: request.revisionChecksum,
-    p_policy_profile: request.policyProfile,
-    p_report_schema_version: request.reportSchemaVersion,
-    p_action: request.action,
-    p_gate_run_id: request.gateRunId ?? null,
-    p_audit: audit,
-  };
-}
-
-export function buildDatasetReviewSubmitJobEnqueueRpcArgs(
-  request: ReviewSubmitJobEnqueueRequest,
-  audit: CommandAuditPayload,
-): Record<string, unknown> {
-  return {
-    p_table: request.table,
-    p_id: request.id,
-    p_version: request.version,
-    p_revision_checksum: request.revisionChecksum,
-    p_policy_profile: request.policyProfile,
-    p_report_schema_version: request.reportSchemaVersion,
-    p_audit: audit,
-  };
-}
-
-export function buildDatasetReviewSubmitJobReadRpcArgs(
-  request: ReviewSubmitJobReadRequest,
-): Record<string, unknown> {
-  return {
-    p_job_id: request.reviewSubmitJobId,
-  };
-}
-
-export function buildDatasetReviewSubmitJobReadLatestRpcArgs(
-  request: ReviewSubmitJobReadLatestRequest,
-): Record<string, unknown> {
-  return {
-    p_table: request.table,
-    p_id: request.id,
-    p_version: request.version,
-    p_revision_checksum: request.revisionChecksum ?? null,
   };
 }
 
@@ -248,40 +178,6 @@ export function callDatasetSaveDraftRpc(
     supabase,
     'cmd_dataset_save_draft',
     buildDatasetSaveDraftRpcArgs(request, audit),
-  );
-}
-
-export function callDatasetReviewSubmitJobEnqueueRpc(
-  supabase: RpcClient,
-  request: ReviewSubmitJobEnqueueRequest,
-  audit: CommandAuditPayload,
-) {
-  return callDatasetRpc(
-    supabase,
-    'cmd_dataset_review_submit_job_enqueue',
-    buildDatasetReviewSubmitJobEnqueueRpcArgs(request, audit),
-  );
-}
-
-export function callDatasetReviewSubmitJobReadRpc(
-  supabase: RpcClient,
-  request: ReviewSubmitJobReadRequest,
-) {
-  return callDatasetRpc(
-    supabase,
-    'cmd_dataset_review_submit_job_read',
-    buildDatasetReviewSubmitJobReadRpcArgs(request),
-  );
-}
-
-export function callDatasetReviewSubmitJobReadLatestRpc(
-  supabase: RpcClient,
-  request: ReviewSubmitJobReadLatestRequest,
-) {
-  return callDatasetRpc(
-    supabase,
-    'cmd_dataset_review_submit_job_read_latest',
-    buildDatasetReviewSubmitJobReadLatestRpcArgs(request),
   );
 }
 
@@ -344,19 +240,7 @@ export function callDatasetSubmitReviewRpc(
 ) {
   return callDatasetRpc(
     supabase,
-    'cmd_review_submit_v2',
+    'cmd_review_submit',
     buildDatasetSubmitReviewRpcArgs(request, audit),
-  );
-}
-
-export function callDatasetReviewSubmitGateRpc(
-  supabase: RpcClient,
-  request: ReviewSubmitGateRequest,
-  audit: CommandAuditPayload,
-) {
-  return callDatasetRpc(
-    supabase,
-    'cmd_dataset_review_submit_gate',
-    buildDatasetReviewSubmitGateRpcArgs(request, audit),
   );
 }

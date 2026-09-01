@@ -81,6 +81,7 @@
           "map_status",
           "outcome_metrics",
           "connectivity",
+          "organization_contribution",
           "flow_topology"
         ],
         "proof": {

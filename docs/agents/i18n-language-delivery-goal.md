@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: atomic geometry and explicit nullable runtime event targets preserve the reusable 50-ID/browser trust boundary on Playwright 1.62.1.'
+lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
+lastReviewedNote: 'Reviewed for Next Issue #991: the correction ledger now records intentional baseline-message retirement without mutating frozen historical evidence or retaining dead runtime copy.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -449,6 +449,8 @@ C0 不做翻译评审，也不请求翻译确认。技术事实能够从仓库�
 - source/catalog digest。
 
 Git 只跟踪实际修订和紧凑 correction ledger/digest，不提交巨大逐消息渲染包。
+
+如果产品功能被明确移除，baseline message 可以随全部 locale 和生产调用点一起删除，但必须在 correction ledger 的 `retiredMessages` 中绑定 tracked Issue 和删除原因。检查器必须同时证明该 message 存在于不可变 baseline、已从当前 catalog 完全消失、没有重复 retirement；这不会修改或重新解释历史 German evidence，也不能把已退休文案作为兼容资源继续保留。
 
 ### 4.4 规则变化的传递闭包
 

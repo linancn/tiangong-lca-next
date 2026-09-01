@@ -5,6 +5,8 @@ import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { processDatasetExtractionJobs } from '../_shared/dataset_extraction_worker.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
+import { tidasLifeCycleModelToMarkdown } from '../webhook_model_embedding_ft/index.ts';
+import { tidasProcessToMarkdown } from '../webhook_process_embedding_ft/index.ts';
 
 interface WorkerRequestBody {
   batchSize?: number;
@@ -37,6 +39,10 @@ export async function handleProcessDatasetExtractionJobs(req: Request): Promise<
       batchSize: body.batchSize,
       visibilityTimeoutSeconds: body.visibilityTimeoutSeconds,
       maxReadCount: body.maxReadCount,
+      markdownGenerators: {
+        process: tidasProcessToMarkdown,
+        lifecyclemodel: tidasLifeCycleModelToMarkdown,
+      },
     });
 
     return new Response(JSON.stringify({ success: true, ...result }), {

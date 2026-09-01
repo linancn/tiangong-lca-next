@@ -6,6 +6,7 @@ import { InvokeEndpointCommand, SageMakerRuntimeClient } from '@aws-sdk/client-s
 import postgres from 'postgres';
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import {
+  buildEmbeddingFtContentQuery,
   parseEmbeddingFtJobs,
   type EmbeddingFtJobError,
   type EmbeddingFtJob as Job,
@@ -17,7 +18,6 @@ import {
   type ClassifiedEmbeddingJobError,
 } from '../_shared/embedding_queue_runtime.ts';
 import { extractEmbeddingVector } from '../_shared/embedding_vector.ts';
-import { getRedisClient } from '../_shared/redis_client.ts';
 import { supabaseAuthClient } from '../_shared/supabase_client.ts';
 
 const SAGEMAKER_ENDPOINT_NAME = Deno.env.get('SAGEMAKER_ENDPOINT_NAME');
@@ -92,12 +92,9 @@ Deno.serve(async (req) => {
     return new Response('expected json body', { status: 400 });
   }
 
-  const redis = await getRedisClient();
-
   const authResult = await authenticateRequest(req, {
     authClient: supabaseAuthClient,
-    redis: redis,
-    allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
+    allowedMethods: [AuthMethod.JWT, AuthMethod.SERVICE_API_KEY],
   });
 
   if (!authResult.isAuthenticated) {
@@ -263,7 +260,7 @@ async function generateEmbedding(text: string) {
  * Processes an embedding job.
  */
 async function processJob(job: Job): Promise<JobOutcome> {
-  const { jobId, id, version, schema, table, contentFunction, embeddingColumn } = job;
+  const { jobId, id, version, schema, table, contentFunction } = job;
   const jobStartedAt = performance.now();
 
   // Log the id & version for traceability of each job
@@ -277,16 +274,8 @@ async function processJob(job: Job): Promise<JobOutcome> {
 
   // Fetch content for the schema/table/row combination
   const fetchStartedAt = performance.now();
-  const [row]: [Row] = await sql`
-    select
-      id,
-      version,
-      ${sql(contentFunction)}(t) as content
-    from
-      ${sql(schema)}.${sql(table)} t
-    where
-      id = ${id} and version = ${version}
-  `;
+  const contentQuery = buildEmbeddingFtContentQuery(sql, job) as unknown as Promise<[Row]>;
+  const [row]: [Row] = await contentQuery;
 
   console.log('embedding job content fetch finished', {
     id,
@@ -407,6 +396,8 @@ async function updateEmbeddingWithTimeouts(job: Job, embedding: number[]) {
   const { id, version, schema, table, embeddingColumn } = job;
 
   return await sql.begin(async (transaction) => {
+    // postgres.js models TransactionSql with Omit<Sql, ...>, which drops Sql's
+    // callable template-tag signature even though the runtime value remains callable.
     const tx = transaction as unknown as typeof sql;
 
     await tx`

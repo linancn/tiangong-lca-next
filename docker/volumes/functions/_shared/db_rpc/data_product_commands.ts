@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { CommandAuditPayload } from '../command_runtime/audit_log.ts';
 import type {
@@ -11,6 +11,9 @@ import type {
   DataProductPackagePreviewRequest,
   DataProductPackagePublishRequest,
   DataProductPackageUnpublishRequest,
+  DataProductResultSetCreateRequest,
+  DataProductResultSetListRequest,
+  DataProductResultSetReadRequest,
   DataProductTaskFeedRequest,
 } from '../commands/data_product/types.ts';
 
@@ -109,6 +112,24 @@ export function buildLciaScopeClosureCheckRequestRpcArgs(
     p_request_idempotency_token: request.requestIdempotencyToken,
     p_audit: audit,
   };
+}
+
+export function buildLciaResultSetCreateRpcArgs(
+  request: DataProductResultSetCreateRequest,
+): Record<string, unknown> {
+  return { p_name: request.name };
+}
+
+export function buildLciaResultSetListRpcArgs(
+  request: DataProductResultSetListRequest,
+): Record<string, unknown> {
+  return { p_limit: request.limit ?? 100 };
+}
+
+export function buildLciaResultSetReadRpcArgs(
+  request: DataProductResultSetReadRequest,
+): Record<string, unknown> {
+  return { p_result_set_id: request.resultSetId };
 }
 
 export function buildLciaScopeClosureIssuesRpcArgs(
@@ -213,10 +234,49 @@ export function callLciaScopeClosureCheckRequestRpc(
   request: DataProductClosureCheckCreateRequest,
   audit: CommandAuditPayload,
 ) {
+  if (request.resultSetId) {
+    return callDataProductRpc(supabase, 'cmd_lcia_scope_closure_check_request_v3', {
+      p_result_set_id: request.resultSetId,
+      ...buildLciaScopeClosureCheckRequestRpcArgs(request, audit),
+    });
+  }
   return callDataProductRpc(
     supabase,
     'cmd_lcia_scope_closure_check_request_v2',
     buildLciaScopeClosureCheckRequestRpcArgs(request, audit),
+  );
+}
+
+export function callLciaResultSetCreateRpc(
+  supabase: RpcClient,
+  request: DataProductResultSetCreateRequest,
+) {
+  return callDataProductRpc(
+    supabase,
+    'cmd_lcia_result_set_create',
+    buildLciaResultSetCreateRpcArgs(request),
+  );
+}
+
+export function callLciaResultSetListRpc(
+  supabase: RpcClient,
+  request: DataProductResultSetListRequest,
+) {
+  return callDataProductRpc(
+    supabase,
+    'list_lcia_result_sets',
+    buildLciaResultSetListRpcArgs(request),
+  );
+}
+
+export function callLciaResultSetReadRpc(
+  supabase: RpcClient,
+  request: DataProductResultSetReadRequest,
+) {
+  return callDataProductRpc(
+    supabase,
+    'get_lcia_result_set',
+    buildLciaResultSetReadRpcArgs(request),
   );
 }
 

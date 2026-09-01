@@ -72,21 +72,7 @@ export function assertPublishPolicy(
 }
 
 export function assertSubmitReviewPolicy(
-  request: SubmitReviewRequest,
+  _request: SubmitReviewRequest,
 ): { ok: true } | DatasetCommandFailure {
-  if (request.table === 'processes' && !request.reviewSubmitGateRunId) {
-    return invalidInput(
-      'REVIEW_SUBMIT_GATE_REQUIRED',
-      'reviewSubmitGateRunId is required for process dataset review submission',
-    );
-  }
-
-  if (request.table === 'processes' && !request.revisionChecksum) {
-    return invalidInput(
-      'REVISION_CHECKSUM_REQUIRED',
-      'revisionChecksum is required for process dataset review submission',
-    );
-  }
-
   return { ok: true };
 }

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-01"
-lastReviewedCommit: "45ad89afb41d6185ed7419c4ccba3967bea71787"
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: frontend-runtime and testing routes cover the Jest/browser migration and optional organization profile metadata; the exact browser-navigation trigger remains explicit.'
+lastReviewedCommit: "6ff84d2eeeaf5398cf72838f8f4952a56648c35c"
+lastReviewedNote: 'Reviewed for Next Issue #991: existing OAuth, frontend-runtime, service, locale, exact Edge-mirror, and testing routes cover complete compatibility/account-bridge removal while retaining the integrated Jest/browser and organization-profile ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -675,7 +675,7 @@ rules:
         mode: review_or_update
       - path: docs/agents/supabase-branching.md
         mode: review_or_update
-    reason: OAuth consent, same-origin login continuation, callback safety, grant revocation, EdgeOne bridging, and legacy-key retirement must remain one reviewed frontend authorization boundary.
+    reason: OAuth consent, same-origin login continuation, callback safety, grant revocation, EdgeOne bridging, and the absence of retired compatibility surfaces must remain one reviewed frontend authorization boundary.
   - id: next-branding-and-packaging-contract
     scope: repo
     repo: next

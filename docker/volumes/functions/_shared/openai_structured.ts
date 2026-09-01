@@ -128,6 +128,7 @@ export interface OpenAIStructuredRequest {
   systemPrompt: string;
   userPrompt: string;
   options?: OpenAIStructuredOptions;
+  signal?: AbortSignal;
 }
 
 export async function openaiStructuredOutput<T>(request: OpenAIStructuredRequest): Promise<T> {
@@ -137,14 +138,20 @@ export async function openaiStructuredOutput<T>(request: OpenAIStructuredRequest
 
   const client = getClient(baseUrl);
   const clientAny = client as unknown as {
-    responses?: { create?: (args: unknown) => Promise<unknown> };
-    chat?: { completions?: { create?: (args: unknown) => Promise<unknown> } };
+    responses?: {
+      create?: (args: unknown, options?: { signal?: AbortSignal }) => Promise<unknown>;
+    };
+    chat?: {
+      completions?: {
+        create?: (args: unknown, options?: { signal?: AbortSignal }) => Promise<unknown>;
+      };
+    };
   };
 
   let response: unknown;
 
   if (clientAny.responses?.create) {
-    response = await clientAny.responses.create({
+    const parameters = {
       model,
       temperature,
       input: [
@@ -159,9 +166,12 @@ export async function openaiStructuredOutput<T>(request: OpenAIStructuredRequest
           strict: true,
         },
       },
-    });
+    };
+    response = request.signal
+      ? await clientAny.responses.create(parameters, { signal: request.signal })
+      : await clientAny.responses.create(parameters);
   } else if (clientAny.chat?.completions?.create) {
-    response = await clientAny.chat.completions.create({
+    const parameters = {
       model,
       temperature,
       messages: [
@@ -176,7 +186,10 @@ export async function openaiStructuredOutput<T>(request: OpenAIStructuredRequest
           strict: true,
         },
       },
-    });
+    };
+    response = request.signal
+      ? await clientAny.chat.completions.create(parameters, { signal: request.signal })
+      : await clientAny.chat.completions.create(parameters);
   } else {
     throw new Error('OpenAI SDK missing both responses.create and chat.completions.create');
   }

@@ -16,19 +16,10 @@
  * - setProfile
  * - changePassword
  * - changeEmail
- * - cognitoChangePassword
- * - cognitoChangeEmail
  */
 
 import Profile from '@/pages/Account';
-import {
-  changeEmail,
-  changePassword,
-  cognitoChangeEmail,
-  cognitoChangePassword,
-  getAccountProfile,
-  setProfile,
-} from '@/services/auth';
+import { changeEmail, changePassword, getAccountProfile, setProfile } from '@/services/auth';
 import userEvent from '@testing-library/user-event';
 import { message } from 'antd';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
@@ -427,17 +418,13 @@ jest.mock('@/services/auth', () => ({
   __esModule: true,
   changeEmail: jest.fn(),
   changePassword: jest.fn(),
-  cognitoChangeEmail: jest.fn(),
-  cognitoChangePassword: jest.fn(),
   getAccountProfile: jest.fn(),
   setProfile: jest.fn(),
 }));
 
 jest.mock('@/pages/Account/OAuthConnections', () => ({
   __esModule: true,
-  default: ({ email }: { email?: string }) => (
-    <div data-testid='oauth-connections'>Connected applications for {email}</div>
-  ),
+  default: () => <div data-testid='oauth-connections'>Connected applications</div>,
 }));
 
 const mockSetProfile = setProfile as jest.MockedFunction<any>;
@@ -445,8 +432,6 @@ const mockGetAccountProfile = getAccountProfile as jest.MockedFunction<any>;
 const mockGetCurrentUser = mockGetAccountProfile;
 const mockChangePassword = changePassword as jest.MockedFunction<any>;
 const mockChangeEmail = changeEmail as jest.MockedFunction<any>;
-const mockCognitoChangePassword = cognitoChangePassword as jest.MockedFunction<any>;
-const mockCognitoChangeEmail = cognitoChangeEmail as jest.MockedFunction<any>;
 
 describe('Account profile integration workflow', () => {
   beforeEach(() => {
@@ -464,8 +449,6 @@ describe('Account profile integration workflow', () => {
     mockSetProfile.mockResolvedValue({ status: 'ok' } as any);
     mockChangePassword.mockResolvedValue({ status: 'ok' } as any);
     mockChangeEmail.mockResolvedValue({ status: 'ok' } as any);
-    mockCognitoChangePassword.mockResolvedValue(undefined as any);
-    mockCognitoChangeEmail.mockResolvedValue(undefined as any);
   });
 
   it('allows a user to view and edit their basic profile information', async () => {
@@ -539,9 +522,7 @@ describe('Account profile integration workflow', () => {
     expect(screen.getByLabelText('New Email')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Connected apps' }));
-    expect(screen.getByTestId('oauth-connections')).toHaveTextContent(
-      'Connected applications for user@example.com',
-    );
+    expect(screen.getByTestId('oauth-connections')).toHaveTextContent('Connected applications');
     expect(screen.queryByRole('button', { name: 'Generate API Key' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Basic Information' }));
@@ -570,7 +551,6 @@ describe('Account profile integration workflow', () => {
     await user.type(screen.getByLabelText('Confirm New Password'), 'NewP@ssword1');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    await waitFor(() => expect(mockCognitoChangePassword).toHaveBeenCalledWith('NewP@ssword1'));
     await waitFor(() =>
       expect(mockChangePassword).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -605,7 +585,6 @@ describe('Account profile integration workflow', () => {
     await user.type(screen.getByLabelText('Confirm New Email'), 'next@example.com');
     await user.click(screen.getByRole('button', { name: 'submit' }));
 
-    await waitFor(() => expect(mockCognitoChangeEmail).toHaveBeenCalledWith('next@example.com'));
     await waitFor(() =>
       expect(mockChangeEmail).toHaveBeenCalledWith(
         expect.objectContaining({

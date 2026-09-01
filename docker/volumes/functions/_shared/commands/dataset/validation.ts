@@ -8,22 +8,14 @@ import {
   DATASET_TABLES,
   type DeleteRequest,
   type PublishRequest,
-  REVIEW_SUBMIT_GATE_POLICY_PROFILE,
-  REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
   type SaveDraftRequest,
   type SubmitReviewRequest,
 } from './types.ts';
 
 const versionPattern = /^\d{2}\.\d{2}\.\d{3}$/;
-const sha256Pattern = /^[a-f0-9]{64}$/;
-
 const datasetTableSchema = z.enum(DATASET_TABLES);
 const datasetIdSchema = z.string().uuid();
 const versionSchema = z.string().regex(versionPattern, 'version must be in 00.00.000 format');
-const sha256Schema = z
-  .string()
-  .regex(sha256Pattern, 'revisionChecksum must be a lowercase SHA-256 hex digest');
-
 const datasetIdTableSchema = z
   .object({
     table: datasetTableSchema,
@@ -71,47 +63,7 @@ export const assignTeamRequestSchema = datasetBaseRequestSchema
   .strict();
 
 export const publishRequestSchema = datasetBaseRequestSchema.strict();
-export const submitReviewRequestSchema = datasetBaseRequestSchema
-  .extend({
-    reviewSubmitGateRunId: z.string().uuid().optional(),
-    revisionChecksum: sha256Schema.optional(),
-    reviewSubmitPolicyProfile: z.literal(REVIEW_SUBMIT_GATE_POLICY_PROFILE).optional(),
-    reviewSubmitReportSchemaVersion: z.literal(REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION).optional(),
-  })
-  .strict()
-  .superRefine((value, ctx) => {
-    if (value.table !== 'processes') {
-      if (
-        value.reviewSubmitGateRunId !== undefined ||
-        value.revisionChecksum !== undefined ||
-        value.reviewSubmitPolicyProfile !== undefined ||
-        value.reviewSubmitReportSchemaVersion !== undefined
-      ) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['reviewSubmitGateRunId'],
-          message: 'review-submit Gate fields are only accepted for processes',
-        });
-      }
-      return;
-    }
-
-    if (!value.reviewSubmitGateRunId) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['reviewSubmitGateRunId'],
-        message: 'reviewSubmitGateRunId is required for process submit-review',
-      });
-    }
-
-    if (!value.revisionChecksum) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['revisionChecksum'],
-        message: 'revisionChecksum is required for process submit-review',
-      });
-    }
-  });
+export const submitReviewRequestSchema = datasetBaseRequestSchema.strict();
 
 function invalidPayload<T>(message: string, error: z.ZodError): CommandParseResult<T> {
   return {

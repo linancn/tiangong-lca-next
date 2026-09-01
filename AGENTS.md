@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 45ad89afb41d6185ed7419c4ccba3967bea71787
-lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: Jest 30 browser/runtime boundaries and descriptive account organization metadata do not change repository ownership, authorization, delivery, or modified-at-desc Process behavior.'
+lastReviewedCommit: 6ff84d2eeeaf5398cf72838f8f4952a56648c35c
+lastReviewedNote: 'Reviewed for Next Issue #991: Account exposes only OAuth Connected Applications and Supabase-owned profile credentials; compatibility and external account-bridge code is absent while the integrated Jest/browser, organization, delivery, and modified-at-desc Process contracts remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -182,7 +182,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - automatic release review independently checks the verified version-only `dev` candidate and the complete `main`-to-candidate promotion range, then records only Docpact `review_or_update` evidence; every uncovered, stale, semantic-document, dependency, or other package change fails closed
 - release-line validation accepts either direct `main` ancestry in `dev` or an exact two-parent `main` promotion whose second parent remains in `dev` history and whose tree is unchanged; every other divergence requires governed reconciliation
 - app-side Supabase and API access belongs only in `src/services/**`
-- Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; users manage grants under Account → Connected apps, while password-encoded API keys are retired
+- Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; Account → Connected apps is the sole integration surface, with no API-key history or compatibility provisioning action
 - startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
 
 ## Ownership Boundaries

@@ -1,11 +1,4 @@
-import {
-  changeEmail,
-  changePassword,
-  cognitoChangeEmail,
-  cognitoChangePassword,
-  getAccountProfile,
-  setProfile,
-} from '@/services/auth';
+import { changeEmail, changePassword, getAccountProfile, setProfile } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import {
   BankOutlined,
@@ -173,7 +166,6 @@ const Profile: FC = () => {
         onFinish={async (value) => {
           setSpinning(true);
           try {
-            await cognitoChangePassword(value.confirmNewPassword);
             const msg = await changePassword(value);
             if (msg.status === 'ok') {
               formRefEdit.current?.resetFields();
@@ -422,7 +414,6 @@ const Profile: FC = () => {
         onFinish={async (value) => {
           setSpinning(true);
           try {
-            await cognitoChangeEmail(value.newEmail);
             const msg = await changeEmail(value);
             if (msg.status === 'ok') {
               formRefEdit.current?.resetFields();
@@ -618,7 +609,7 @@ const Profile: FC = () => {
                 id: 'pages.account.oauth.tab',
                 defaultMessage: 'Connected apps',
               }),
-              children: <OAuthConnections email={initData?.email} />,
+              children: <OAuthConnections />,
             },
           ]}
         ></Tabs>
