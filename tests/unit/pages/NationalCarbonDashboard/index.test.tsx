@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import NationalCarbonDashboardPage, {
   canViewNationalCarbonDashboard,
@@ -6,6 +6,46 @@ import NationalCarbonDashboardPage, {
 
 let mockInitialState: { currentUser?: { access?: string } } | undefined;
 let mockLocale = 'fr-FR';
+const mockGetOrganizationContributionSnapshot = jest.fn();
+
+const makeOrganizationScope = (
+  datasetScope: 'process' | 'model' | 'all',
+  publishedDatasetCount: number,
+) => ({
+  datasetScope,
+  metric: 'latest_published_dataset_count',
+  summary: {
+    organizationCount: 1,
+    publishedDatasetCount,
+    pendingReviewDatasetCount: 2,
+    publishedLast30DaysCount: 1,
+  },
+  rankings: [
+    {
+      rank: 1,
+      organizationKey: 'institut exemple',
+      organizationName: 'Institut Exemple',
+      publishedDatasetCount,
+      reviewingDatasetCount: 2,
+      contributorCount: 3,
+      contributionShare: 0.5,
+      latestContributedAt: '2026-09-01T08:00:00+08:00',
+    },
+  ],
+});
+
+const organizationContributionSnapshot = {
+  schemaVersion: 'national_carbon_organization_contribution_v1',
+  attributionMode: 'current_user_profile',
+  generatedAt: '2026-09-01T09:00:00+08:00',
+  dataAsOf: '2026-09-01T08:00:00+08:00',
+  defaultScope: 'all',
+  scopes: {
+    process: makeOrganizationScope('process', 3),
+    model: makeOrganizationScope('model', 2),
+    all: makeOrganizationScope('all', 5),
+  },
+};
 
 const mockFormatMessage = (
   { defaultMessage, id }: { defaultMessage?: string; id: string },
@@ -33,6 +73,14 @@ jest.mock('@umijs/max', () => ({
     initialState: mockInitialState,
   }),
 }));
+
+jest.mock('@/services/nationalCarbonDashboard/api', () => {
+  return {
+    organizationContributionDatasetScopes: ['process', 'model', 'all'],
+    getOrganizationContributionSnapshot: (...args: unknown[]) =>
+      mockGetOrganizationContributionSnapshot(...args),
+  };
+});
 
 jest.mock('pixi.js', () => {
   const createGraphics = () => {
@@ -74,6 +122,7 @@ describe('NationalCarbonDashboard access guard', () => {
     mockLocale = 'fr-FR';
     window.location.hash = '#/dashboard/national-carbon?screen=overview&autoplay=0';
     global.fetch = jest.fn(() => new Promise(() => {})) as jest.Mock;
+    mockGetOrganizationContributionSnapshot.mockResolvedValue(organizationContributionSnapshot);
   });
 
   afterEach(() => {
@@ -125,8 +174,25 @@ describe('NationalCarbonDashboard access guard', () => {
     const { container } = render(<NationalCarbonDashboardPage />);
 
     expect(screen.getByTestId('process-flow-graph-panel')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Vue actuelle : 05 Graphe des flux/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Vue actuelle : 06 Graphe des flux/)).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/[\u3400-\u9fff]/u);
+  });
+
+  it('renders organization contributions and switches the local scope without another RPC', async () => {
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+
+    render(<NationalCarbonDashboardPage />);
+
+    expect((await screen.findAllByText('Institut Exemple')).length).toBe(2);
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+    expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText('Processus'));
+    await waitFor(() => expect(screen.getAllByText('3').length).toBeGreaterThan(0));
+    expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
   });
 
   it('uses localized screen labels while autoplay advances the dashboard', () => {

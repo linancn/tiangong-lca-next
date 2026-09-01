@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-01
-lastReviewedCommit: 6e1fb9ce4ae7d0f9af3bdc72bea146c207a89d00
+lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: browser-navigation testing and organization Auth metadata leave Supabase environment/branch bindings, OAuth callback safety, and database-owned sync unchanged.'
 ---
 

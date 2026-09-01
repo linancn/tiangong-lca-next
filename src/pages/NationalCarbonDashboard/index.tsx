@@ -1,8 +1,25 @@
 import AccessDenied from '@/components/AccessDenied';
 import {
+  getOrganizationContributionSnapshot,
+  organizationContributionDatasetScopes,
+  type OrganizationContributionDatasetScope,
+  type OrganizationContributionError,
+  type OrganizationContributionScopeSnapshot,
+  type OrganizationContributionSnapshot,
+} from '@/services/nationalCarbonDashboard/api';
+import {
   getRouteViewStateVariantIds,
   resolveRouteViewState,
 } from '@/services/general/routeViewState';
+import {
+  DatabaseOutlined,
+  FileDoneOutlined,
+  InfoCircleOutlined,
+  ReloadOutlined,
+  RiseOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
+import { Button, Segmented, Spin, Tooltip } from 'antd';
 import { useIntl, useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
@@ -15,6 +32,7 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from 'react';
 import {
   buildChinaMercatorMap,
@@ -36,7 +54,9 @@ import {
 } from './data/schema';
 import {
   formatDashboardDate,
+  formatDashboardDateTime,
   formatDashboardNumber as formatNumber,
+  formatDashboardPercent,
   getDashboardRegionLabel,
   getDashboardScreenLabel,
   getDashboardStatusLabel,
@@ -55,7 +75,13 @@ import {
 } from './i18n';
 import styles from './index.less';
 
-type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity' | 'flow_topology';
+type ScreenKey =
+  | 'overview'
+  | 'map_status'
+  | 'outcome_metrics'
+  | 'connectivity'
+  | 'organization_contribution'
+  | 'flow_topology';
 type StatusFilterKey = DashboardStatusKey | 'all';
 type ProvinceTooltipState = {
   anchorX: number;
@@ -2282,6 +2308,349 @@ function ConnectivityScreen({
   );
 }
 
+type OrganizationContributionLoadStatus = 'loading' | 'ready' | 'refreshing' | 'error';
+
+const organizationContributionRefreshIntervalMs = 5 * 60 * 1000;
+
+function OrganizationContributionMetricCard({
+  icon,
+  label,
+  tone,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  tone: 'blue' | 'cyan' | 'gold' | 'violet';
+  value: number;
+}) {
+  return (
+    <article className={`${styles.organizationMetricCard} ${styles[`organizationTone${tone}`]}`}>
+      <div className={styles.organizationMetricIcon}>{icon}</div>
+      <div>
+        <span>{label}</span>
+        <strong data-animate='metric'>{formatNumber(value)}</strong>
+      </div>
+    </article>
+  );
+}
+
+function OrganizationContributionChart({
+  scope,
+  scopeSnapshot,
+}: {
+  scope: OrganizationContributionDatasetScope;
+  scopeSnapshot: OrganizationContributionScopeSnapshot;
+}) {
+  const intl = useIntl();
+  const maximum = Math.max(
+    1,
+    ...scopeSnapshot.rankings.map((ranking) => ranking.publishedDatasetCount),
+  );
+  const metricLabel = intl.formatMessage({
+    id: `pages.home.nationalCarbon.organization.metric.${scope}`,
+  });
+
+  return (
+    <article className={styles.organizationPanel}>
+      <div className={styles.organizationPanelHeader}>
+        <h2>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.top10' })}</h2>
+        <span>{metricLabel}</span>
+      </div>
+      {scopeSnapshot.rankings.length === 0 ? (
+        <div className={styles.organizationEmptyState}>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.empty' })}
+        </div>
+      ) : (
+        <div className={styles.organizationBarChart} role='list'>
+          {scopeSnapshot.rankings.map((ranking) => (
+            <div
+              className={styles.organizationBarRow}
+              key={ranking.organizationKey}
+              role='listitem'
+            >
+              <span className={styles.organizationRankBadge} data-rank={ranking.rank}>
+                {ranking.rank}
+              </span>
+              <Tooltip title={ranking.organizationName}>
+                <span className={styles.organizationBarName}>{ranking.organizationName}</span>
+              </Tooltip>
+              <div className={styles.organizationBarTrack}>
+                <div
+                  className={styles.organizationBarFill}
+                  style={{ width: `${(ranking.publishedDatasetCount / maximum) * 100}%` }}
+                />
+              </div>
+              <strong>{formatNumber(ranking.publishedDatasetCount)}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function OrganizationContributionRanking({
+  scopeSnapshot,
+}: {
+  scopeSnapshot: OrganizationContributionScopeSnapshot;
+}) {
+  const intl = useIntl();
+
+  return (
+    <article className={`${styles.organizationPanel} ${styles.organizationRankingPanel}`}>
+      <div className={styles.organizationPanelHeader}>
+        <h2>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.ranking' })}</h2>
+      </div>
+      <div className={styles.organizationTable} role='table'>
+        <div className={styles.organizationTableHeader} role='row'>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.rank' })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.name' })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.published' })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.reviewing' })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({
+              id: 'pages.home.nationalCarbon.organization.column.contributors',
+            })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.share' })}
+          </span>
+          <span role='columnheader'>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.latest' })}
+          </span>
+        </div>
+        {scopeSnapshot.rankings.length === 0 ? (
+          <div className={styles.organizationEmptyState}>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.empty' })}
+          </div>
+        ) : (
+          scopeSnapshot.rankings.map((ranking) => (
+            <div className={styles.organizationTableRow} key={ranking.organizationKey} role='row'>
+              <span role='cell'>
+                <b className={styles.organizationTableRank} data-rank={ranking.rank}>
+                  {ranking.rank}
+                </b>
+              </span>
+              <Tooltip title={ranking.organizationName}>
+                <strong className={styles.organizationTableName} role='cell'>
+                  {ranking.organizationName}
+                </strong>
+              </Tooltip>
+              <span role='cell'>{formatNumber(ranking.publishedDatasetCount)}</span>
+              <span role='cell'>{formatNumber(ranking.reviewingDatasetCount)}</span>
+              <span role='cell'>{formatNumber(ranking.contributorCount)}</span>
+              <span role='cell'>
+                <b className={styles.organizationShareValue}>
+                  {formatDashboardPercent(ranking.contributionShare)}
+                </b>
+                <i className={styles.organizationShareTrack} aria-hidden='true'>
+                  <i style={{ width: `${ranking.contributionShare * 100}%` }} />
+                </i>
+              </span>
+              <span role='cell'>
+                {ranking.latestContributedAt
+                  ? formatDashboardDateTime(ranking.latestContributedAt)
+                  : '-'}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </article>
+  );
+}
+
+function OrganizationContributionScreen({
+  activeScope,
+  activeScreen,
+  onChangeScope,
+  onChangeScreen,
+}: {
+  activeScope: OrganizationContributionDatasetScope;
+  activeScreen: ScreenKey;
+  onChangeScope: (scope: OrganizationContributionDatasetScope) => void;
+  onChangeScreen: (screen: ScreenKey) => void;
+}) {
+  const intl = useIntl();
+  const [snapshot, setSnapshot] = useState<OrganizationContributionSnapshot | null>(null);
+  const [loadStatus, setLoadStatus] = useState<OrganizationContributionLoadStatus>('loading');
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const mountedRef = useRef(false);
+  const snapshotRef = useRef<OrganizationContributionSnapshot | null>(null);
+
+  const loadSnapshot = useCallback(async (forceRefresh: boolean) => {
+    setErrorCode(null);
+    setLoadStatus(snapshotRef.current ? 'refreshing' : 'loading');
+    try {
+      const nextSnapshot = await getOrganizationContributionSnapshot({ forceRefresh });
+      if (!mountedRef.current) {
+        return;
+      }
+      snapshotRef.current = nextSnapshot;
+      setSnapshot(nextSnapshot);
+      setLoadStatus('ready');
+    } catch (error) {
+      if (!mountedRef.current) {
+        return;
+      }
+      const nextErrorCode = (error as OrganizationContributionError)?.code ?? 'DATABASE_ERROR';
+      setErrorCode(nextErrorCode);
+      setLoadStatus(snapshotRef.current ? 'ready' : 'error');
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    void loadSnapshot(false);
+    const refreshTimer = window.setInterval(
+      () => void loadSnapshot(true),
+      organizationContributionRefreshIntervalMs,
+    );
+    return () => {
+      mountedRef.current = false;
+      window.clearInterval(refreshTimer);
+    };
+  }, [loadSnapshot]);
+
+  const scopeOptions = organizationContributionDatasetScopes.map((scope) => ({
+    label: intl.formatMessage({ id: `pages.home.nationalCarbon.organization.scope.${scope}` }),
+    value: scope,
+  }));
+  const scopeSnapshot = snapshot?.scopes[activeScope];
+
+  return (
+    <section className={`${styles.screenPanel} ${styles.organizationContributionScreen}`}>
+      <header className={styles.organizationHeader}>
+        <div className={styles.organizationHeaderDecoration} aria-hidden='true' />
+        <div>
+          <h1>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.title' })}</h1>
+          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.subtitle' })}</p>
+          <span>
+            {intl.formatMessage(
+              { id: 'pages.home.nationalCarbon.organization.dataAsOf' },
+              {
+                date: snapshot ? formatDashboardDateTime(snapshot.dataAsOf) : '--',
+              },
+            )}
+          </span>
+        </div>
+        <Segmented
+          aria-label={intl.formatMessage({
+            id: 'pages.home.nationalCarbon.organization.scope.ariaLabel',
+          })}
+          className={styles.organizationScopeSwitch}
+          onChange={(value) => onChangeScope(value as OrganizationContributionDatasetScope)}
+          options={scopeOptions}
+          value={activeScope}
+        />
+      </header>
+
+      {loadStatus === 'loading' && !snapshot ? (
+        <div className={styles.organizationLoadingState}>
+          <Spin size='large' />
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.loading' })}
+          </span>
+        </div>
+      ) : null}
+
+      {loadStatus === 'error' && !snapshot ? (
+        <div className={styles.organizationErrorState}>
+          <strong>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.error' })}
+          </strong>
+          <span>{errorCode}</span>
+          <Button icon={<ReloadOutlined />} onClick={() => void loadSnapshot(true)}>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.retry' })}
+          </Button>
+        </div>
+      ) : null}
+
+      {scopeSnapshot ? (
+        <>
+          <div className={styles.organizationMetricGrid}>
+            <OrganizationContributionMetricCard
+              icon={<TeamOutlined />}
+              label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.kpi.organizations',
+              })}
+              tone='cyan'
+              value={scopeSnapshot.summary.organizationCount}
+            />
+            <OrganizationContributionMetricCard
+              icon={<DatabaseOutlined />}
+              label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.kpi.published',
+              })}
+              tone='blue'
+              value={scopeSnapshot.summary.publishedDatasetCount}
+            />
+            <OrganizationContributionMetricCard
+              icon={<FileDoneOutlined />}
+              label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.kpi.pendingReview',
+              })}
+              tone='violet'
+              value={scopeSnapshot.summary.pendingReviewDatasetCount}
+            />
+            <OrganizationContributionMetricCard
+              icon={<RiseOutlined />}
+              label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.kpi.last30Days',
+              })}
+              tone='gold'
+              value={scopeSnapshot.summary.publishedLast30DaysCount}
+            />
+          </div>
+
+          <div className={styles.organizationMainGrid}>
+            <OrganizationContributionChart scope={activeScope} scopeSnapshot={scopeSnapshot} />
+            <OrganizationContributionRanking scopeSnapshot={scopeSnapshot} />
+          </div>
+
+          <footer className={styles.organizationFooter}>
+            <p>
+              <InfoCircleOutlined />
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.organization.methodology' },
+                {
+                  scope: intl.formatMessage({
+                    id: `pages.home.nationalCarbon.organization.scope.${activeScope}`,
+                  }),
+                },
+              )}
+            </p>
+            {errorCode ? (
+              <span className={styles.organizationRefreshError}>
+                {intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.organization.refreshError',
+                })}
+              </span>
+            ) : null}
+            <Button
+              icon={<ReloadOutlined spin={loadStatus === 'refreshing'} />}
+              loading={loadStatus === 'refreshing'}
+              onClick={() => void loadSnapshot(true)}
+              type='text'
+            >
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.refresh' })}
+            </Button>
+          </footer>
+        </>
+      ) : null}
+      <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
+    </section>
+  );
+}
+
 function FlowTopologyScreen({
   activeScreen,
   onChangeScreen,
@@ -2301,6 +2670,8 @@ function FlowTopologyScreen({
 
 export function NationalCarbonDashboardContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenKey>(() => getInitialScreen());
+  const [organizationContributionScope, setOrganizationContributionScope] =
+    useState<OrganizationContributionDatasetScope>('all');
   const rootRef = useRef<HTMLDivElement | null>(null);
   const activeIndex = screens.findIndex((screen) => screen.key === activeScreen);
   const autoplayEnabled = useMemo(() => getAutoplayEnabled(), []);
@@ -2399,6 +2770,14 @@ export function NationalCarbonDashboardContent() {
             activeScreen={activeScreen}
             onChangeScreen={setActiveScreen}
             snapshot={dashboardSnapshot}
+          />
+        )}
+        {activeScreen === 'organization_contribution' && (
+          <OrganizationContributionScreen
+            activeScope={organizationContributionScope}
+            activeScreen={activeScreen}
+            onChangeScope={setOrganizationContributionScope}
+            onChangeScreen={setActiveScreen}
           />
         )}
         {activeScreen === 'flow_topology' && (
