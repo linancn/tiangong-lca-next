@@ -441,6 +441,17 @@ function validateVersionGroups(value: VersionPageShape, context: z.RefinementCtx
       fail('representative must be the unique best matching version of its group');
     }
     groups.add(group.key.id);
+    const previousItem = value.items[index - 1];
+    if (
+      item &&
+      previousItem &&
+      (item.match.score > previousItem.match.score ||
+        (item.match.score === previousItem.match.score &&
+          (item.key.id < previousItem.key.id ||
+            (item.key.id === previousItem.key.id && item.key.version > previousItem.key.version))))
+    ) {
+      fail('representatives must be ordered by score descending, id ascending, version descending');
+    }
     let previous: (typeof group.matches)[number] | undefined;
     for (const match of group.matches) {
       const key = keyOf(match.key);

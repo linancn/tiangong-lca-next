@@ -1,4 +1,4 @@
-import { authenticateRequest, AuthMethod } from './auth.ts';
+import { authenticateRequest, AuthMethod, type AuthResult } from './auth.ts';
 import { corsHeaders } from './cors.ts';
 import { extractEmbeddingVector } from './embedding_vector.ts';
 import { generateHybridSearchEmbedding, rewriteHybridSearchQuery } from './hybrid_search_kernel.ts';
@@ -29,10 +29,7 @@ export interface HybridSearchRouteConfig {
   forwardVisibilityContext?: boolean;
 }
 
-interface HybridSearchAuthResult {
-  isAuthenticated: boolean;
-  response?: Response;
-}
+type HybridSearchAuthResult = Pick<AuthResult, 'isAuthenticated' | 'principal' | 'response'>;
 
 export interface HybridSearchHandlerDependencies {
   authenticate: (request: Request) => Promise<HybridSearchAuthResult>;
@@ -123,6 +120,15 @@ export function createHybridSearchHandler(
       const rpcName = versioned ? config.versionedRpcName! : config.rpcName;
       let rpcClientContext: HybridSearchRpcClientContext | undefined;
       if (versioned) {
+        if (authResult.principal?.authMethod !== 'supabase_jwt') {
+          return jsonResponse(
+            {
+              error: 'Matched version search requires a verified Supabase JWT user context',
+              code: 'HYBRID_SEARCH_USER_CONTEXT_REQUIRED',
+            },
+            403,
+          );
+        }
         try {
           rpcClientContext = dependencies.createRpcClient(
             request.headers.get('Authorization'),

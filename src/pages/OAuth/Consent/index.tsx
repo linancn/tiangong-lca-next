@@ -9,12 +9,12 @@ import {
 import {
   AppstoreOutlined,
   CheckOutlined,
-  CloseOutlined,
   SafetyCertificateOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import type { OAuthAuthorizationDetails } from '@supabase/supabase-js';
-import { Alert, Avatar, Button, Card, Divider, Empty, Space, Spin, Tag, Typography } from 'antd';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Avatar, Button, Card, Empty, Space, Spin, Typography, theme } from 'antd';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Helmet, history, useIntl, useLocation } from 'umi';
 import styles from './index.less';
 
@@ -61,18 +61,10 @@ const formatScopeMessage = (
   }
 };
 
-const describeRedirect = (redirectUri: string): string => {
-  try {
-    const target = new URL(redirectUri);
-    return `${target.host}${target.pathname}`;
-  } catch {
-    return redirectUri;
-  }
-};
-
 export default function OAuthConsentPage() {
   const location = useLocation();
   const intl = useIntl();
+  const { token } = theme.useToken();
   const authorizationId = useMemo(
     () => parseOAuthAuthorizationId(location.search),
     [location.search],
@@ -179,20 +171,33 @@ export default function OAuthConsentPage() {
   const scopes = details?.scope.split(/\s+/u).filter(Boolean) ?? [];
 
   return (
-    <main className={styles.page}>
+    <main
+      className={styles.page}
+      style={
+        {
+          '--consent-primary': token.colorPrimary,
+          '--consent-surface': token.colorBgContainer,
+          '--consent-text': token.colorText,
+          '--consent-muted': `color-mix(in srgb, ${token.colorText} 72%, ${token.colorBgContainer})`,
+          '--consent-border': token.colorBorderSecondary,
+        } as CSSProperties
+      }
+    >
       <Helmet>
         <title>
           {title} - {appTitle}
         </title>
       </Helmet>
-      <div className={styles.backdrop} aria-hidden />
-      <Card className={styles.card} variant='borderless'>
-        <div className={styles.brandMark}>
-          <SafetyCertificateOutlined />
-        </div>
-
+      <Card
+        className={[styles.card, (loading || error || !details) && styles.stateCard]
+          .filter(Boolean)
+          .join(' ')}
+        classNames={{ body: styles.cardBody }}
+        variant='borderless'
+      >
         {loading ? (
           <div className={styles.loading} role='status'>
+            <SafetyCertificateOutlined className={styles.brandMark} />
             <Spin size='large' />
             <Text>
               {intl.formatMessage({
@@ -202,7 +207,8 @@ export default function OAuthConsentPage() {
             </Text>
           </div>
         ) : error || !details ? (
-          <Space orientation='vertical' size='large' className={styles.fullWidth}>
+          <Space orientation='vertical' size='large' className={styles.errorState}>
+            <SafetyCertificateOutlined className={styles.brandMark} />
             <Title level={2}>{title}</Title>
             <Alert type='error' showIcon title={errorMessage} />
             <Button onClick={() => history.replace('/account')}>
@@ -213,15 +219,18 @@ export default function OAuthConsentPage() {
             </Button>
           </Space>
         ) : (
-          <>
-            <div className={styles.heading}>
-              <Text className={styles.eyebrow}>
-                {intl.formatMessage({
-                  id: 'pages.oauth.consent.eyebrow',
-                  defaultMessage: 'Secure connection request',
-                })}
-              </Text>
-              <Title level={2}>
+          <div className={styles.consentLayout}>
+            <header className={styles.header}>
+              <div className={styles.brandRow}>
+                <SafetyCertificateOutlined className={styles.brandMark} />
+                <Text className={styles.eyebrow}>
+                  {intl.formatMessage({
+                    id: 'pages.oauth.consent.eyebrow',
+                    defaultMessage: 'Secure connection request',
+                  })}
+                </Text>
+              </div>
+              <Title level={2} id='consent-title' className={styles.heading}>
                 {intl.formatMessage(
                   {
                     id: 'pages.oauth.consent.appTitle',
@@ -230,106 +239,98 @@ export default function OAuthConsentPage() {
                   { clientName: details.client.name },
                 )}
               </Title>
-              <Paragraph type='secondary'>
-                {intl.formatMessage({
-                  id: 'pages.oauth.consent.description',
-                  defaultMessage:
-                    'Review the identity information this application is requesting. Your LCA data permissions remain controlled separately by TianGong LCA.',
-                })}
-              </Paragraph>
-            </div>
+            </header>
 
-            <div className={styles.clientRow}>
-              <Avatar size={52} icon={<AppstoreOutlined />} className={styles.clientAvatar} />
-              <div className={styles.clientText}>
-                <Text strong>{details.client.name}</Text>
-                <Text type='secondary'>{describeRedirect(details.redirect_uri)}</Text>
+            <section className={styles.detailsPanel} aria-labelledby='consent-permissions'>
+              <div className={styles.clientRow}>
+                <Avatar size={56} icon={<AppstoreOutlined />} className={styles.clientAvatar} />
+                <div className={styles.clientText}>
+                  <Text strong className={styles.clientName}>
+                    {details.client.name}
+                  </Text>
+                </div>
               </div>
-              <Tag color='green'>
+
+              <Text strong id='consent-permissions' className={styles.permissionsTitle}>
                 {intl.formatMessage({
-                  id: 'pages.oauth.consent.registered',
-                  defaultMessage: 'Registered callback',
+                  id: 'pages.oauth.consent.permissions',
+                  defaultMessage: 'Requested identity permissions',
                 })}
-              </Tag>
-            </div>
-
-            <Divider />
-            <Text strong>
-              {intl.formatMessage({
-                id: 'pages.oauth.consent.permissions',
-                defaultMessage: 'Requested identity permissions',
-              })}
-            </Text>
-            {scopes.length ? (
-              <ul className={styles.scopeList}>
-                {scopes.map((scope) => {
-                  return (
-                    <li className={styles.scopeItem} key={scope}>
-                      <CheckOutlined className={styles.scopeCheck} />
-                      <div className={styles.scopeText}>
-                        <Text>{formatScopeMessage(scope, intl.formatMessage)}</Text>
-                        <Text code>{scope}</Text>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={intl.formatMessage({
-                  id: 'pages.oauth.consent.permissions.none',
-                  defaultMessage: 'No additional identity information requested',
-                })}
-              />
-            )}
-
-            <Alert
-              className={styles.notice}
-              type='info'
-              showIcon
-              title={intl.formatMessage(
-                {
-                  id: 'pages.oauth.consent.signedInAs',
-                  defaultMessage: 'Signed in as {email}',
-                },
-                { email: details.user.email },
+              </Text>
+              {scopes.length ? (
+                <ul className={styles.scopeList}>
+                  {scopes.map((scope) => {
+                    return (
+                      <li className={styles.scopeItem} key={scope}>
+                        <CheckOutlined className={styles.scopeCheck} />
+                        <Text className={styles.scopeLabel}>
+                          {formatScopeMessage(scope, intl.formatMessage)}
+                        </Text>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={intl.formatMessage({
+                    id: 'pages.oauth.consent.permissions.none',
+                    defaultMessage: 'No additional identity information requested',
+                  })}
+                />
               )}
-              description={intl.formatMessage({
-                id: 'pages.oauth.consent.revocationHint',
-                defaultMessage:
-                  'You can revoke this connection later from Account → Connected apps.',
-              })}
-            />
 
-            <div className={styles.actions}>
-              <Button
-                icon={<CloseOutlined />}
-                size='large'
-                disabled={decision !== null}
-                loading={decision === 'deny'}
-                onClick={() => void handleDecision('deny')}
-              >
-                {intl.formatMessage({
-                  id: 'pages.oauth.consent.deny',
-                  defaultMessage: 'Deny',
-                })}
-              </Button>
-              <Button
-                type='primary'
-                icon={<CheckOutlined />}
-                size='large'
-                disabled={decision !== null}
-                loading={decision === 'approve'}
-                onClick={() => void handleDecision('approve')}
-              >
-                {intl.formatMessage({
-                  id: 'pages.oauth.consent.approve',
-                  defaultMessage: 'Allow connection',
-                })}
-              </Button>
-            </div>
-          </>
+              <aside className={styles.accountSummary} aria-labelledby='consent-account'>
+                <Avatar size={40} icon={<UserOutlined />} className={styles.accountAvatar} />
+                <div className={styles.accountDetails}>
+                  <Text id='consent-account' className={styles.accountText}>
+                    {intl.formatMessage(
+                      {
+                        id: 'pages.oauth.consent.signedInAs',
+                        defaultMessage: 'Signed in as {email}',
+                      },
+                      { email: details.user.email },
+                    )}
+                  </Text>
+                  <Paragraph type='secondary' className={styles.revocationHint}>
+                    {intl.formatMessage({
+                      id: 'pages.oauth.consent.revocationHint',
+                      defaultMessage:
+                        'You can revoke this connection later from Account → Connected apps.',
+                    })}
+                  </Paragraph>
+                </div>
+              </aside>
+
+              <div className={styles.actions}>
+                <Button
+                  className={styles.actionButton}
+                  size='large'
+                  disabled={decision !== null}
+                  loading={decision === 'deny'}
+                  onClick={() => void handleDecision('deny')}
+                >
+                  {intl.formatMessage({
+                    id: 'pages.oauth.consent.deny',
+                    defaultMessage: 'Deny',
+                  })}
+                </Button>
+                <Button
+                  type='primary'
+                  className={styles.actionButton}
+                  size='large'
+                  disabled={decision !== null}
+                  loading={decision === 'approve'}
+                  onClick={() => void handleDecision('approve')}
+                >
+                  {intl.formatMessage({
+                    id: 'pages.oauth.consent.approve',
+                    defaultMessage: 'Allow connection',
+                  })}
+                </Button>
+              </div>
+            </section>
+          </div>
         )}
       </Card>
     </main>

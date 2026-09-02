@@ -42,6 +42,7 @@ describe('self-hosted Database snapshot compatibility', () => {
     expect(sql).toContain('CREATE ROLE api_internal_executor NOLOGIN INHERIT NOBYPASSRLS');
     expect(sql).toContain('CREATE ROLE portal_public_executor NOLOGIN NOINHERIT NOBYPASSRLS');
     expect(sql).toContain('GRANT authenticated TO api_internal_executor;');
+    expect(sql).toContain('GRANT USAGE ON SCHEMA extensions TO portal_public_executor;');
     expect(sql).toContain(
       "ALTER ROLE authenticator SET pgrst.db_pre_request = 'api.oauth_client_pre_request';",
     );

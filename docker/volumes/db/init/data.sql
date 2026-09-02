@@ -5,6 +5,7 @@ CREATE ROLE portal_public_executor NOLOGIN NOINHERIT NOBYPASSRLS NOCREATEDB NOCR
 GRANT api_internal_executor TO postgres WITH ADMIN OPTION;
 GRANT authenticated TO api_internal_executor;
 GRANT portal_public_executor TO postgres WITH ADMIN OPTION;
+GRANT USAGE ON SCHEMA extensions TO portal_public_executor;
 ALTER ROLE authenticator SET pgrst.db_pre_request = 'api.oauth_client_pre_request';
 --
 -- TianGong LCA filtered schema snapshot
