@@ -77193,6 +77193,13 @@ CREATE UNIQUE INDEX pending_embedding_jobs_pending_scope_key ON util.pending_emb
 
 
 --
+-- Name: users trg_sync_auth_users_to_private_users; Type: TRIGGER; Schema: auth; Owner: supabase_auth_admin
+--
+
+CREATE CONSTRAINT TRIGGER trg_sync_auth_users_to_private_users AFTER INSERT OR DELETE OR UPDATE ON auth.users DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.sync_auth_users_to_private_users();
+
+
+--
 -- Name: comments comments_v2_kind_guard; Type: TRIGGER; Schema: private; Owner: postgres
 --
 

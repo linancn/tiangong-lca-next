@@ -46,6 +46,10 @@ describe('self-hosted Database snapshot compatibility', () => {
       "ALTER ROLE authenticator SET pgrst.db_pre_request = 'api.oauth_client_pre_request';",
     );
     expect(sql).toContain('CREATE FUNCTION api.oauth_client_pre_request()');
+    expect(sql).toContain(
+      'CREATE CONSTRAINT TRIGGER trg_sync_auth_users_to_private_users AFTER INSERT OR DELETE OR UPDATE ON auth.users',
+    );
+    expect(sql).toContain('EXECUTE FUNCTION private.sync_auth_users_to_private_users();');
   });
 
   it('contains only allowlisted migration bootstrap rows, never copied users or datasets', () => {

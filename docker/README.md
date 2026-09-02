@@ -70,7 +70,7 @@ What the script does:
 - Pull a full schema-only dump with `pg_dump --schema-only`
 - Run `docker/desensitize_data.sql.sh` automatically
 - Keep `api`, `private`, `public`, `util`, `archive`, `pgmq`, and required business extensions
-- Export only the two constrained Database executor roles, their reviewed memberships, the OAuth pre-request setting, nine allowlisted migration-owned catalogs, and the two empty queue registrations; no user/business rows or credential catalogs are copied
+- Export only the two constrained Database executor roles, their reviewed memberships, the OAuth pre-request setting, the exact Database-owned Auth-to-private-user synchronization trigger, nine allowlisted migration-owned catalogs, and the two empty queue registrations; no user/business rows or credential catalogs are copied
 - Remove Supabase base-managed schemas/objects (for example `auth`, `extensions`, `graphql*`, `storage`, `supabase_functions`) and obvious PG17 dump noise such as `\restrict`, `\unrestrict`, and `SET transaction_timeout = 0;`
 - Write the filtered result to `docker/volumes/db/init/data.sql`
 

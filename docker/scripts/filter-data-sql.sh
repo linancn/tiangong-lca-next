@@ -88,6 +88,11 @@ function compatible_acl_line(line) {
 }
 
 function keep_block(name, obj_type, schema, ext_name) {
+  # This one Database-owned bridge is attached to a managed Auth table; keep
+  # its trigger only, never the Auth table, native routines, users or tokens.
+  if (schema == "auth" && obj_type == "TRIGGER" && name == "users trg_sync_auth_users_to_private_users") {
+    return 1
+  }
   if (schema == "auth" || schema == "cron" || schema == "extensions" || schema == "graphql" || schema == "graphql_public" || schema == "net" || schema == "pgbouncer" || schema == "pgsodium" || schema == "pgsodium_masks" || schema == "realtime" || schema == "storage" || schema == "supabase_functions" || schema == "supabase_migrations" || schema == "vault") {
     return 0
   }

@@ -73,7 +73,7 @@ REMOTE_DB_URL='postgresql://postgres:<local-password>@host.docker.internal:54322
 - 使用 `pg_dump --schema-only` 拉取本地完整 schema dump
 - 自动执行 `docker/desensitize_data.sql.sh` 脱敏
 - 保留 `api`、`private`、`public`、`util`、`archive`、`pgmq` 与必要业务扩展
-- 仅导出两个受约束的 Database 执行角色及其成员关系、OAuth pre-request 设置、九个允许的迁移静态目录与两个空队列注册；不复制任何用户、业务行或凭据目录
+- 仅导出两个受约束的 Database 执行角色及其成员关系、OAuth pre-request 设置、Database 自有的 Auth 到私有用户表同步触发器、九个允许的迁移静态目录与两个空队列注册；不复制任何用户、业务行或凭据目录
 - 去掉由 Supabase 底座负责的 schema/object（例如 `auth`、`extensions`、`graphql*`、`storage`、`supabase_functions`）以及明显的 PG17 dump 噪音（如 `\restrict`、`\unrestrict`、`SET transaction_timeout = 0;`）
 - 写入 `docker/volumes/db/init/data.sql`
 
