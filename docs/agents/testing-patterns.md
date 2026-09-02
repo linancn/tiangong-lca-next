@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
 lastReviewedNote: 'Reviewed for Next #1008: exact id/version and acknowledged-empty fixtures reuse existing typed service mocks and controlled focused coverage patterns.'
 ---
 

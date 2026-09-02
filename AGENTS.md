@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
 lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
 related:
   - .docpact/config.yaml
