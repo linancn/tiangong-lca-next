@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 2557f3139a93c110454c29f6e887fbd3d606f840
+lastReviewedCommit: 16a400f36fe47ad0ca24c97db99fe4a231e84f4a
 lastReviewedNote: 'Reviewed for Next #999: model-version, fallback, Edge-mirror, navigation, locale artifact, review-submit loading, and source-mapped coverage failures use existing fail-closed diagnostics.'
 ---
 
