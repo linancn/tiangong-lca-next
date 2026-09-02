@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
-lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next Issue #999: the frontend/service boundary maps nullable model_version and centralizes exact LifecycleModel ownership resolution without adding a relationship entity or lookup.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -92,6 +92,7 @@ Rules:
 - LCIA result transport state and calculation-evidence trust state are separate: a failed or pending result query renders its own state and cannot be reinterpreted as missing or mismatched evidence; only a successfully returned numerical result enters the fail-closed evidence validator
 - Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned actor-draft mode for its personal branch, requiring owner `state_code=0` rows regardless of team/review workflow metadata, then merges that result with public state-100 rows. Database migrations own the `search_text` lexical source and its PGroonga index
+- Process list rows carry nullable `model_version` alongside `model_id`. LifecycleModel actions resolve the exact owner version as `model_version ?? process.version`; null remains the legacy same-version fallback, while an explicit version must never be replaced with the latest LifecycleModel revision. LifecycleModel result submodels are queried with each submodel reference's own Process version rather than the parent Model version
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `pnpm reference-data:check`

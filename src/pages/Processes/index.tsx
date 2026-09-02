@@ -57,7 +57,11 @@ import {
 } from '@/services/general/runtimeLocale';
 import { getActiveTableSort, mapActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
-import { ProcessImportData, ProcessTable } from '@/services/processes/data';
+import {
+  ProcessImportData,
+  ProcessTable,
+  resolveProcessModelVersion,
+} from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -253,7 +257,8 @@ const TableList: FC = () => {
                 modified_at,
                 state_code,
                 team_id,
-                model_id
+                model_id,
+                model_version
               `}
               id={row.id}
               addVersionComponent={({ newVersion }) => (
@@ -298,6 +303,7 @@ const TableList: FC = () => {
       dataIndex: 'option',
       render: (_, row) => {
         const actionDisabled = isDataUnderReview(row.stateCode);
+        const modelVersion = resolveProcessModelVersion(row);
         if (dataSource === 'my') {
           return [
             <ResponsiveDataListActions
@@ -320,7 +326,7 @@ const TableList: FC = () => {
                         <LifeCycleModelCreate
                           actionType='copy'
                           id={row.modelId}
-                          version={row.version}
+                          version={modelVersion}
                           lang={lang}
                           actionRef={actionRef}
                           buttonType={'icon'}
@@ -343,7 +349,7 @@ const TableList: FC = () => {
                     <ContributeData
                       onOk={async () => {
                         const contributeResult = row.modelId
-                          ? await contributeLifeCycleModel(row.modelId, row.version)
+                          ? await contributeLifeCycleModel(row.modelId, modelVersion)
                           : await contributeProcess(row.id, row.version);
                         const contributeError = extractContributeDataError(contributeResult);
 
@@ -378,7 +384,7 @@ const TableList: FC = () => {
               <LifeCycleModelView
                 disabled={!row.modelId}
                 id={row.modelId}
-                version={row.version}
+                version={modelVersion}
                 lang={lang}
                 buttonType={'iconModel'}
                 actionRef={actionRef}
@@ -387,7 +393,7 @@ const TableList: FC = () => {
                 <LifeCycleModelEdit
                   disabled={actionDisabled}
                   id={row.modelId}
-                  version={row.version}
+                  version={modelVersion}
                   lang={lang}
                   actionRef={actionRef}
                   buttonType={'icon'}
@@ -451,7 +457,7 @@ const TableList: FC = () => {
               <LifeCycleModelView
                 disabled={!row.modelId}
                 id={row.modelId}
-                version={row.version}
+                version={modelVersion}
                 lang={lang}
                 buttonType={'iconModel'}
                 actionRef={actionRef}
@@ -474,7 +480,7 @@ const TableList: FC = () => {
             <LifeCycleModelView
               disabled={!row.modelId}
               id={row.modelId}
-              version={row.version}
+              version={modelVersion}
               lang={lang}
               buttonType={'iconModel'}
               actionRef={actionRef}

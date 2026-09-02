@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
-lastReviewedNote: 'Reviewed for Next Issue #991 after browser-navigation and organization metadata integration: OAuth grant management is the sole integration surface, Supabase Auth is the sole password/email owner, and environment/branch/callback/database boundaries remain unchanged.'
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next Issue #999: the additive nullable model_version projection changes no Supabase environment, branch, OAuth callback, or database ownership boundary.'
 ---
 
 # Supabase Environment And Database Workflow

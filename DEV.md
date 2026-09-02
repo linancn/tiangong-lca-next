@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 10d3f46dc513b9f027192564f4d0c5e1a250a303
-lastReviewedNote: 'Reviewed for Next #991 after the Jest/Umi/Electron/Playwright and organization-profile integrations: OAuth-only account and exact Edge-mirror retirement change no bootstrap commands; lint, test, build, managed-push, and deterministic release remain authoritative.'
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
+lastReviewedNote: 'Reviewed for Next #999: the additive Process ownership projection and regenerated locale artifacts change no bootstrap commands; lint, test, build, managed push, and deterministic release remain authoritative.'
 ---
 
 # Development Bootstrap

@@ -196,8 +196,8 @@ describe('ModelResult', () => {
     expect(mockGetProcessesByIdAndVersion).toHaveBeenNthCalledWith(
       2,
       [
-        { id: 'sub-1', version: '1.0.0' },
-        { id: 'sub-2', version: '1.0.0' },
+        { id: 'sub-1', version: '0.8.0' },
+        { id: 'sub-2', version: '0.7.0' },
       ],
       'en',
     );
@@ -205,7 +205,7 @@ describe('ModelResult', () => {
     await waitFor(() => expect(screen.getAllByTestId('process-view')).toHaveLength(3));
     expect(screen.getAllByTestId('process-edit')).toHaveLength(3);
     expect(screen.getByText('view:model-1:1.0.0')).toBeInTheDocument();
-    expect(screen.getByText('edit:sub-2:1.0.0')).toBeInTheDocument();
+    expect(screen.getByText('edit:sub-2:0.7.0')).toBeInTheDocument();
 
     await userEvent.click(screen.getAllByTestId('process-edit')[0]);
   });
