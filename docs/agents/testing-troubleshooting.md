@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: service defaults, geometry, browser globals, source-mapped coverage, organization, OAuth Account, and mirror failures use existing fail-closed diagnostics.'
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next #999: model-version projection, fallback, Edge-mirror, navigation, locale artifact, and source-mapped coverage failures use existing fail-closed diagnostics.'
 ---
 
 # Testing Troubleshooting

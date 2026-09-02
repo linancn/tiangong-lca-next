@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next Issue #991 after Issues #982/#983: 100% source-mapped Jest proof covers organization profile behavior plus OAuth grant/account flows, asserts compatibility/account-bridge absence, and retains Supabase password/email coverage.'
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next Issue #999: 100% source-mapped proof covers exact model_version resolution, null fallback, independent Process behavior, child-submodel ownership, and no-latest-Model lookup.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

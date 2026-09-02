@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-02"
-lastReviewedCommit: "d1b17a476945c9aee00d2106ba44c0f72ce5e5a2"
-lastReviewedNote: 'Reviewed for Next Issue #991: existing OAuth, frontend-runtime, service, locale, exact Edge-mirror, and testing routes cover complete compatibility/account-bridge removal while retaining the integrated Jest/browser and organization-profile ownership.'
+lastReviewedCommit: "c89d9e2e89481236724eb3ebd144e57fdd84714b"
+lastReviewedNote: 'Reviewed for Next Issue #999: frontend data, LifecycleModel result navigation, Process listing, exact Edge mirror, tests, and locale artifacts cover optional exact Process model ownership with legacy fallback.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

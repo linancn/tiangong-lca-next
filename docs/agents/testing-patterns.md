@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: atomic geometry, explicit inputs, fail-closed coverage, organization profile, OAuth Account, and removed-bridge proof reuse existing service/page/integration patterns.'
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next #999: exact-pair, null-fallback, independent-row, and no-latest-lookup proof reuse existing service, page, and integration patterns.'
 ---
 
 # Testing Patterns Reference
