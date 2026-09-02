@@ -14,6 +14,7 @@ import { message } from 'antd';
 import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
 const mockSetInitialState = jest.fn();
+const mockFormShouldUpdate = jest.fn();
 
 const mockIntl = {
   locale: 'en-US',
@@ -186,9 +187,13 @@ jest.mock('antd', () => {
     validateStatus,
     initialValue,
     style,
+    shouldUpdate,
   }: any) => {
     const context = React.useContext(FormContext);
     const fieldName = Array.isArray(name) ? name.join('.') : name;
+    if (typeof shouldUpdate === 'function') {
+      mockFormShouldUpdate(shouldUpdate);
+    }
 
     React.useEffect(() => {
       if (fieldName) {
@@ -335,7 +340,7 @@ jest.mock('antd', () => {
     App,
     ConfigProvider,
     Alert: ({ title }: any) => <div role='note'>{title}</div>,
-    Avatar: ({ children }: any) => <span>{children}</span>,
+    Avatar: ({ children }: any) => <span data-testid='profile-avatar'>{children}</span>,
     Progress: ({ percent, steps, size }: any) => (
       <progress value={percent} max={100} data-steps={steps} data-segment-width={size?.[0]} />
     ),
@@ -955,6 +960,54 @@ describe('Account profile page (unit)', () => {
     await user.click(submitButtons[0]);
 
     expect(mockChangeEmail).not.toHaveBeenCalled();
+  });
+
+  it('keeps an avatar initial when profile values and the fallback translation are empty', async () => {
+    const formatMessage = mockIntl.formatMessage;
+    const formatMessageSpy = jest
+      .spyOn(mockIntl, 'formatMessage')
+      .mockImplementation((descriptor, values) =>
+        descriptor.id === 'pages.account.profile.fallbackName'
+          ? ''
+          : formatMessage(descriptor, values),
+      );
+    mockGetAccountProfile.mockResolvedValueOnce({
+      id: 'user-1',
+      email: '',
+      name: '',
+      organization: '',
+      role: '',
+    });
+
+    try {
+      renderWithProviders(<Profile />);
+      await waitFor(() =>
+        expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false'),
+      );
+      expect(screen.getByTestId('profile-avatar')).toHaveTextContent(/^T$/);
+      expect(mockSetProfile).not.toHaveBeenCalled();
+    } finally {
+      formatMessageSpy.mockRestore();
+    }
+  });
+
+  it('refreshes password strength only when the new password changes', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+    await screen.findByRole('heading', { name: 'Alice' });
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    const shouldUpdate = mockFormShouldUpdate.mock.lastCall[0];
+    expect(shouldUpdate({}, { newPassword: 'Abcdefg1!' })).toBe(true);
+    expect(shouldUpdate({ newPassword: 'Abcdefg1!' }, { newPassword: '' })).toBe(true);
+    expect(
+      shouldUpdate(
+        { newPassword: 'Abcdefg1!', oldPassword: 'old' },
+        { newPassword: 'Abcdefg1!', oldPassword: 'changed' },
+      ),
+    ).toBe(false);
+    expect(shouldUpdate({}, {})).toBe(false);
+    expect(mockChangePassword).not.toHaveBeenCalled();
   });
 
   it('renders password strength feedback in the password tab', async () => {
