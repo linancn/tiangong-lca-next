@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
-lastReviewedNote: 'Reviewed for Next Issue #982: the stable frontend/service map includes the explicit browser-navigation boundary required by Jest 30/jsdom 26 without changing runtime behavior.'
+lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
+lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -79,6 +79,7 @@ Rules:
 - service modules own app-side data access
 - `src/utils/browserNavigation.ts` owns the thin `Location.assign`/`reload`/`replace` side-effect boundary. Runtime callers always pass the real `window.location`; tests pass an explicit mock `Location` or mock this module and must not redefine jsdom's global `window` or `location`
 - Account Basic Information reads current profile metadata through `supabase.auth.getUser()` and writes `display_name` plus the optional, trimmed, 200-character `organization` string through `supabase.auth.updateUser()`. The page may refresh the session after a successful write, but organization remains descriptive profile data and must never control frontend access or backend authorization
+- Account Connected Applications lists and revokes Supabase OAuth grants only. It contains no API-key history, password reauthentication form, Cognito provisioning action, or Cognito password/email synchronization helper; Supabase Auth is the sole account identity and credential owner
 - Process and Flow ordered-dataset serializers normalize TIDAS year values to bounded integers and percentage values to canonical strings. Their create, update, and create-version service paths reject non-empty affected scalars that cannot be represented canonically before invoking persistence; unrelated invalid-draft behavior remains unchanged
 - the startup system-status service treats `APP_RUNTIME_CONFIG_ENABLED` as a build-time emergency bypass: loading remains enabled by default, and only an explicit case-insensitive `false` returns the normal status without starting the Supabase RPC or its timeout
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
@@ -131,6 +132,8 @@ Process, Flow, Source, and Contact review submission use the same stable command
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
 Before calling that command, the Process editor validates the current saved record for TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. Process, Flow, Source, and Contact then recursively validate their existing reference chains through the same reference-access, rule-verification, and referenced-version checks. Any blocking reference-chain issue prevents submission and is shown through the review-specific validation surface. The submit action does not calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
+
+Every dataset editor keeps its drawer mounted and visibly busy for the complete save, validation, and review-command transaction. The editor disables close actions while that transaction is pending, reloads the owning list and closes only after the review command succeeds, and remains open after validation or submission failure so the user can inspect and retry the draft.
 
 Review Admin has a separate manual quality-diagnostic path:
 

@@ -1,15 +1,12 @@
 {
   "imports": {
-    "@aws-sdk/client-cognito-identity-provider": "npm:@aws-sdk/client-cognito-identity-provider@3.1004.0",
-    "@aws-sdk/client-sagemaker-runtime": "npm:@aws-sdk/client-sagemaker-runtime@3.1004.0",
-    "@langchain/langgraph-sdk": "npm:/@langchain/langgraph-sdk@1.6.5",
-    "@openai/openai": "npm:openai@6.27.0",
-    "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js@2.98.0/edge-runtime.d.ts",
-    "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2.98.0",
-    "@upstash/redis": "https://esm.sh/@upstash/redis@1.36.3",
-    "aws-jwt-verify": "npm:aws-jwt-verify@5.1.1",
+    "@aws-sdk/client-sagemaker-runtime": "npm:@aws-sdk/client-sagemaker-runtime@3.1121.0",
+    "@openai/openai": "npm:openai@7.8.0",
+    "@supabase/functions-js/edge-runtime.d.ts": "jsr:@supabase/functions-js@2.112.4/edge-runtime.d.ts",
+    "@supabase/supabase-js@2": "jsr:@supabase/supabase-js@2.112.4",
+    "@upstash/redis": "https://esm.sh/@upstash/redis@1.38.3",
     "postgres": "https://deno.land/x/postgresjs@v3.4.8/mod.js",
-    "redis": "jsr:@db/redis@0.40.0",
-    "zod": "npm:/zod@4.3.6"
+    "redis": "jsr:@db/redis@0.41.2",
+    "zod": "npm:/zod@4.5.4"
   }
 }

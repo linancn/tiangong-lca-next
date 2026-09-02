@@ -12,8 +12,56 @@
   "policy": {
     "newSourceMessages": "Allowed through the shared source/context/quality closure and do not constitute an existing-translation correction.",
     "existingTranslationChanges": "Every post-baseline change requires an exact compact dossier below; no private or human confirmation is read.",
-    "historicalGermanConfirmations": "Frozen snapshot only; never an input to current German or new-locale activation."
+    "historicalGermanConfirmations": "Frozen snapshot only; never an input to current German or new-locale activation.",
+    "baselineMessageRetirement": "A removed baseline message must be listed below with its tracked Issue and reason; the historical baseline stays immutable while the current catalog must omit the retired message."
   },
+  "retiredMessages": [
+    {
+      "messageId": "pages.account.apiKey",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.generateAPIKey",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.apiKey.viewed",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.apiKey.generateButton",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.apiKey.currentPassword",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.invalidCredentials",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the password-based compatibility provisioning form."
+    },
+    {
+      "messageId": "pages.account.apiKey.generated.success",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.apiKey.generateError",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    },
+    {
+      "messageId": "pages.account.apiKey.currentPassword.tooltip",
+      "issue": "https://github.com/linancn/tiangong-lca-next/issues/991",
+      "reason": "The OAuth-only account surface removes the retired user API-key presentation."
+    }
+  ],
   "corrections": [
     {
       "locale": "de-DE",
@@ -1486,5 +1534,5 @@
       "correctionDigest": "e1eb269af64b5cbd1d7dfa51aec65fd2e8b66e11c03abe8d6551bc4f819ba6a7"
     }
   ],
-  "correctionLedgerDigest": "aa1ce07437550c229c6835918fe64d8200f0c251910c4723bad48b684ac6af9b"
+  "correctionLedgerDigest": "fcda3136886694c111258daee7f51b6bf0f29e3333ed7e582d7fcc349f0b4c74"
 }

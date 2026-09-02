@@ -194,6 +194,7 @@ const ProcessEdit: FC<Props> = ({
   >(new Set());
   const [pendingTabValidationKey, setPendingTabValidationKey] = useState<TabKeysType | null>(null);
   const [spinning, setSpinning] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
   const intl = useIntl();
@@ -584,8 +585,8 @@ const ProcessEdit: FC<Props> = ({
         setSpinning(false);
         setDrawerVisible(false);
         setViewDrawerVisible(false);
+        actionRef?.current?.reload();
       }
-      actionRef?.current?.reload();
     } else {
       if (!silent) {
         if (updateResult?.error?.state_code === 100) {
@@ -950,49 +951,49 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const submitReview = async () => {
+    setReviewSubmitting(true);
     setSpinning(true);
+    try {
+      const updateResult = await handleSubmit(false, { langIntent: 'validation' });
+      const validationTarget = await resolveProcessCheckTarget(updateResult);
+      const updatedProcess = toSavedProcessCheckTarget(updateResult);
 
-    const updateResult = await handleSubmit(false, { langIntent: 'validation' });
-    const validationTarget = await resolveProcessCheckTarget(updateResult);
-    const updatedProcess = toSavedProcessCheckTarget(updateResult);
-
-    if (!validationTarget) {
-      setSpinning(false);
-      return;
-    }
-    const { checkResult } = await handleCheckData('review', validationTarget);
-
-    if (checkResult && updatedProcess) {
-      setSpinning(true);
-      const submitResult = await submitDatasetReview(
-        'processes',
-        updatedProcess.id,
-        updatedProcess.version,
-      );
-      if (submitResult.error) {
-        message.error(
-          submitResult.error.message ||
-            intl.formatMessage({
-              id: 'pages.process.review.submitFailed',
-              defaultMessage: 'Review submission failed',
-            }),
-        );
-        setSpinning(false);
+      if (!validationTarget) {
         return;
       }
+      const { checkResult } = await handleCheckData('review', validationTarget);
 
-      message.success(
-        intl.formatMessage({
-          id: 'pages.process.review.submitSuccess',
-          defaultMessage: 'Review submitted successfully',
-        }),
-      );
-      actionRef?.current?.reload();
-      setDrawerVisible(false);
-      setViewDrawerVisible(false);
+      if (checkResult && updatedProcess) {
+        setSpinning(true);
+        const submitResult = await submitDatasetReview(
+          'processes',
+          updatedProcess.id,
+          updatedProcess.version,
+        );
+        if (submitResult.error) {
+          message.error(
+            submitResult.error.message ||
+              intl.formatMessage({
+                id: 'pages.process.review.submitFailed',
+                defaultMessage: 'Review submission failed',
+              }),
+          );
+          return;
+        }
+
+        message.success(
+          intl.formatMessage({
+            id: 'pages.process.review.submitSuccess',
+            defaultMessage: 'Review submitted successfully',
+          }),
+        );
+        actionRef?.current?.reload();
+        setDrawerVisible(false);
+        setViewDrawerVisible(false);
+      }
+    } finally {
       setSpinning(false);
-    } else {
-      setSpinning(false);
+      setReviewSubmitting(false);
     }
   };
 
@@ -1173,6 +1174,7 @@ const ProcessEdit: FC<Props> = ({
         closable={false}
         extra={
           <Button
+            disabled={spinning || reviewSubmitting}
             data-testid='process-edit-close'
             icon={<CloseOutlined />}
             style={{ border: 0 }}
@@ -1183,7 +1185,7 @@ const ProcessEdit: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          <LoadingDisabledActionGroup loading={spinning || !initData}>
+          <LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>
             <Space size={'middle'} className={styles.footer_right}>
               <AISuggestion
                 type='process'
@@ -1201,7 +1203,7 @@ const ProcessEdit: FC<Props> = ({
               <>
                 {!hideReviewButton && (
                   <Button
-                    disabled={spinning}
+                    disabled={spinning || reviewSubmitting}
                     onClick={() => {
                       submitReview();
                     }}
@@ -1249,7 +1251,7 @@ const ProcessEdit: FC<Props> = ({
           data-testid='process-deep-link-state'
           hidden
         />
-        <Spin spinning={spinning}>
+        <Spin spinning={spinning || reviewSubmitting}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}

@@ -104,6 +104,7 @@ const FlowsEdit: FC<Props> = ({
   const aiSuggestionDataRef = useRef<Record<string, unknown> | null>(null);
   const [flowType, setFlowType] = useState<string>();
   const [spinning, setSpinning] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
@@ -661,12 +662,19 @@ const FlowsEdit: FC<Props> = ({
         title={<FormattedMessage id={'pages.button.edit'} defaultMessage={'Edit'} />}
         size='90%'
         closable={false}
-        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
+        extra={
+          <Button
+            disabled={spinning || reviewSubmitting}
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={closeDrawer}
+          />
+        }
         mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <LoadingDisabledActionGroup loading={spinning || !initData}>
+          <LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>
             <Space size={'middle'} className={styles.footer_right}>
               <AISuggestion
                 type='flow'
@@ -681,8 +689,9 @@ const FlowsEdit: FC<Props> = ({
                 table='flows'
                 id={id}
                 version={version}
-                disabled={spinning || detailStateCode !== 0}
+                disabled={spinning || reviewSubmitting || detailStateCode !== 0}
                 beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
+                onSubmittingChange={setReviewSubmitting}
                 onSuccess={() => {
                   setDetailStateCode(20);
                   actionRef?.current?.reload();
@@ -720,7 +729,7 @@ const FlowsEdit: FC<Props> = ({
           </LoadingDisabledActionGroup>
         }
       >
-        <Spin spinning={spinning}>
+        <Spin spinning={spinning || reviewSubmitting}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}

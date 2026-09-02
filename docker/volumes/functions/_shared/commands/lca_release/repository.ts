@@ -1,4 +1,4 @@
-import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.112.4';
 
 import type { ActorContext } from '../../command_runtime/actor_context.ts';
 import type { CommandAuditPayload } from '../../command_runtime/audit_log.ts';
@@ -37,6 +37,30 @@ export const LCA_RELEASE_SIGNED_URL_EXPIRES_IN_SECONDS = 15 * 60;
 export const LCA_CALCULATION_BUNDLE_MAX_MANIFEST_BYTES = 5 * 1024 * 1024;
 const DEFAULT_RELEASE_STORAGE_BUCKET = 'lca_results';
 const RELEASE_STORAGE_PREFIX = 'lca-releases/v1';
+const SUPPORTED_CALCULATION_BUNDLE_SCHEMAS = new Set([
+  'tiangong.calculation-bundle.v1',
+  'tiangong.calculation-bundle.v2',
+]);
+const CALCULATION_DOWNLOAD_ROLES = new Map([
+  [
+    'lcia_results_xlsx',
+    [
+      'results',
+      'lcia-results.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
+  ],
+  ['lcia_results_csv_zip', ['results', 'lcia-results.csv.zip', 'application/zip']],
+  [
+    'lci_inventory_parquet',
+    ['advanced_data', 'lci-inventory.parquet', 'application/vnd.apache.parquet'],
+  ],
+  ['lci_inventory_csv_zip', ['advanced_data', 'lci-inventory-csv.zip', 'application/zip']],
+  [
+    'calculation_evidence_bundle',
+    ['audit_evidence', 'calculation-evidence-bundle.zip', 'application/zip'],
+  ],
+]);
 
 export type LcaReleaseArtifactUpload = LcaReleaseUploadedArtifact & {
   token: string;
@@ -116,6 +140,7 @@ function withoutStorageLocator(value: Record<string, unknown>): Record<string, u
   delete sanitized.storageBucket;
   delete sanitized.objectKey;
   delete sanitized.manifestUrl;
+  delete sanitized.artifactUrl;
   return sanitized;
 }
 
@@ -393,11 +418,15 @@ async function getCalculationBundle(
 
   const data = recordValue(projection.data);
   const bundleRef = recordValue(data?.calculationBundle);
+  const productDownloadValues = Array.isArray(data?.productDownloads)
+    ? data.productDownloads
+    : null;
   const manifestUrl = stringValue(bundleRef?.manifestUrl);
   const manifestSha256 = stringValue(bundleRef?.manifestSha256);
   const manifestByteSize = finiteInteger(bundleRef?.manifestByteSize);
   const bundleContentHash = stringValue(bundleRef?.bundleContentHash);
   const artifactCount = finiteInteger(bundleRef?.artifactCount);
+  const durableSchemaVersion = stringValue(bundleRef?.schemaVersion);
   if (
     !data ||
     !bundleRef ||
@@ -405,7 +434,11 @@ async function getCalculationBundle(
     !manifestSha256 ||
     manifestByteSize === null ||
     !bundleContentHash ||
-    artifactCount === null
+    artifactCount === null ||
+    !durableSchemaVersion ||
+    !SUPPORTED_CALCULATION_BUNDLE_SCHEMAS.has(durableSchemaVersion) ||
+    !productDownloadValues ||
+    ![0, 5].includes(productDownloadValues.length)
   ) {
     return failure(
       'calculation_bundle_ref_invalid',
@@ -473,7 +506,7 @@ async function getCalculationBundle(
   }
   const manifestArtifacts = Array.isArray(manifest.artifacts) ? manifest.artifacts : null;
   if (
-    manifest.schemaVersion !== 'tiangong.calculation-bundle.v1' ||
+    manifest.schemaVersion !== durableSchemaVersion ||
     manifest.bundleContentHash !== bundleContentHash ||
     !manifestArtifacts ||
     manifestArtifacts.length !== artifactCount
@@ -530,6 +563,69 @@ async function getCalculationBundle(
     });
   }
 
+  const downloads: Array<Record<string, unknown>> = [];
+  const observedRoles = new Set<string>();
+  for (const downloadValue of productDownloadValues) {
+    const download = recordValue(downloadValue);
+    const role = stringValue(download?.role);
+    const group = stringValue(download?.group);
+    const fileName = stringValue(download?.fileName);
+    const schemaVersion = stringValue(download?.schemaVersion);
+    const mediaType = stringValue(download?.mediaType);
+    const sha256 = stringValue(download?.sha256);
+    const byteSize = finiteInteger(download?.byteSize);
+    const recordCount = finiteInteger(download?.recordCount);
+    const artifactUrl = stringValue(download?.artifactUrl);
+    const expected = role ? CALCULATION_DOWNLOAD_ROLES.get(role) : undefined;
+    const productStoragePath = artifactUrl ? parseStoragePathFromArtifactUrl(artifactUrl) : null;
+    const expectedProductObjectPath = fileName
+      ? childObjectPath(storagePath.objectPath, `downloads/${fileName}`)
+      : null;
+    if (
+      !download ||
+      !role ||
+      !expected ||
+      observedRoles.has(role) ||
+      group !== expected[0] ||
+      fileName !== expected[1] ||
+      mediaType !== expected[2] ||
+      schemaVersion !== 'tiangong.calculation-download.v1' ||
+      !sha256?.match(/^[0-9a-f]{64}$/) ||
+      byteSize === null ||
+      byteSize === 0 ||
+      recordCount === null ||
+      !productStoragePath ||
+      productStoragePath.bucket !== storagePath.bucket ||
+      productStoragePath.objectPath !== expectedProductObjectPath
+    ) {
+      return failure(
+        'calculation_download_ref_invalid',
+        409,
+        'Calculation product download metadata is incomplete or invalid',
+        downloadValue,
+      );
+    }
+    observedRoles.add(role);
+    const signed = await serviceSupabase.storage
+      .from(productStoragePath.bucket)
+      .createSignedUrl(productStoragePath.objectPath, LCA_RELEASE_SIGNED_URL_EXPIRES_IN_SECONDS, {
+        download: fileName,
+      });
+    if (signed.error || !signed.data?.signedUrl) {
+      return failure(
+        'calculation_download_sign_failed',
+        502,
+        'Failed to create a signed calculation product download URL',
+        { role, detail: signed.error?.message ?? null },
+      );
+    }
+    downloads.push({
+      ...withoutStorageLocator(download),
+      signedDownloadUrl: signed.data.signedUrl,
+      signedDownloadExpiresInSeconds: LCA_RELEASE_SIGNED_URL_EXPIRES_IN_SECONDS,
+    });
+  }
+
   return {
     ok: true,
     data: {
@@ -545,6 +641,7 @@ async function getCalculationBundle(
           signedDownloadExpiresInSeconds: LCA_RELEASE_SIGNED_URL_EXPIRES_IN_SECONDS,
         },
         artifacts,
+        downloads,
       },
     },
   };

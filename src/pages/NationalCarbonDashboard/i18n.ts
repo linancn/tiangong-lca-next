@@ -10,6 +10,8 @@ export type DashboardIntl = Pick<ReturnType<typeof useIntl>, 'formatMessage' | '
 const numberFormatters = new Map<string, Intl.NumberFormat>();
 const exchangeAmountFormatters = new Map<string, Intl.NumberFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+const percentFormatters = new Map<string, Intl.NumberFormat>();
 
 export function getCanonicalRuntimeLocale(): string {
   return normalizeRuntimeLocale(getLocale()) ?? DEFAULT_BROWSER_APP_LOCALE;
@@ -59,6 +61,41 @@ export function formatDashboardDate(value: string): string {
   return formatter.format(date);
 }
 
+export function formatDashboardDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const locale = getCanonicalRuntimeLocale();
+  let formatter = dateTimeFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    dateTimeFormatters.set(locale, formatter);
+  }
+  return formatter.format(date);
+}
+
+export function formatDashboardPercent(value: number): string {
+  const locale = getCanonicalRuntimeLocale();
+  let formatter = percentFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      style: 'percent',
+    });
+    percentFormatters.set(locale, formatter);
+  }
+  return formatter.format(value);
+}
+
 export function isChineseDashboardLocale(locale: string): boolean {
   return isTranslationSourceContentLanguage(locale);
 }
@@ -73,6 +110,10 @@ export function getDashboardScreenLabel(intl: DashboardIntl, screen: string): st
       return intl.formatMessage({ id: 'pages.home.nationalCarbon.screen.outcomeMetrics' });
     case 'connectivity':
       return intl.formatMessage({ id: 'pages.home.nationalCarbon.screen.connectivity' });
+    case 'organization_contribution':
+      return intl.formatMessage({
+        id: 'pages.home.nationalCarbon.screen.organizationContribution',
+      });
     case 'flow_topology':
       return intl.formatMessage({ id: 'pages.home.nationalCarbon.screen.flowTopology' });
     default:

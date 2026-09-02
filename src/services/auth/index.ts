@@ -11,7 +11,6 @@ export {
   updateIssueNotificationTime,
   updateTeamNotificationTime,
 } from './api';
-export { cognitoChangeEmail, cognitoChangePassword, cognitoSignUp } from './cognito';
 export {
   buildOAuthLoginPath,
   decideOAuthAuthorization,

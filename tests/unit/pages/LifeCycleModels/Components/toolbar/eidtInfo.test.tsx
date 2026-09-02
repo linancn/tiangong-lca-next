@@ -1363,12 +1363,14 @@ describe('ToolbarEditInfo', () => {
     });
     mockAntdMessage.success.mockClear();
 
+    let submitSucceeded;
     await act(async () => {
-      await ref.current?.submitReview(checkResult.unReview);
+      submitSucceeded = await ref.current?.submitReview(checkResult.unReview);
     });
 
     expect(mockSubmitDatasetReview).toHaveBeenCalledWith('lifecyclemodels', 'model-1', '1.0');
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(submitSucceeded).toBe(true);
   });
 
   it('stops the imperative review submission when the submit-review command fails', async () => {
@@ -1401,13 +1403,15 @@ describe('ToolbarEditInfo', () => {
     });
     mockAntdMessage.success.mockClear();
 
+    let submitSucceeded;
     await act(async () => {
-      await ref.current?.submitReview(checkResult.unReview);
+      submitSucceeded = await ref.current?.submitReview(checkResult.unReview);
     });
 
     expect(mockSubmitDatasetReview).toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith('review failed');
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+    expect(submitSucceeded).toBe(false);
   });
 
   it('falls back to the default submit-review error when the command omits a message', async () => {
@@ -1454,12 +1458,14 @@ describe('ToolbarEditInfo', () => {
 
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
+    let submitSucceeded;
     await act(async () => {
-      await ref.current?.submitReview([]);
+      submitSucceeded = await ref.current?.submitReview([]);
     });
 
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith('Submit review failed');
+    expect(submitSucceeded).toBe(false);
   });
 
   it('surfaces process-instance validation issues separately from tab-level errors', async () => {

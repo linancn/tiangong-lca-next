@@ -12,6 +12,7 @@ type Props = {
   disabled?: boolean;
   beforeSubmit: () => Promise<boolean>;
   onSuccess?: (result: unknown) => void | Promise<void>;
+  onSubmittingChange?: (submitting: boolean) => void;
 };
 
 const DatasetSubmitReviewButton: FC<Props> = ({
@@ -21,6 +22,7 @@ const DatasetSubmitReviewButton: FC<Props> = ({
   disabled = false,
   beforeSubmit,
   onSuccess,
+  onSubmittingChange,
 }) => {
   const { message } = useAntdAppApi();
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +30,7 @@ const DatasetSubmitReviewButton: FC<Props> = ({
 
   const submit = async () => {
     setSubmitting(true);
+    onSubmittingChange?.(true);
     try {
       const validationPassed = await beforeSubmit();
       if (!validationPassed) {
@@ -53,8 +56,18 @@ const DatasetSubmitReviewButton: FC<Props> = ({
         }),
       );
       await onSuccess?.(result.data);
+    } catch (error) {
+      message.error(
+        error instanceof Error && error.message
+          ? error.message
+          : intl.formatMessage({
+              id: 'pages.review.submit.error',
+              defaultMessage: 'Submit review failed.',
+            }),
+      );
     } finally {
       setSubmitting(false);
+      onSubmittingChange?.(false);
     }
   };
 
