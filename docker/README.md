@@ -39,35 +39,44 @@ The helper is safe to invoke from another working directory because it resolves
 the target from its own location. It removes stale mirror files; review the
 complete generated diff before committing it.
 
-### 2) Sync `data.sql` From Remote Supabase
+### 2) Generate `data.sql` From a Reviewed Database Rebuild
 
 Script: `docker/scripts/sync-migrations-to-data-sql.sh`
 
-Requirement:
-- Provide `REMOTE_DB_URL` in your environment before running the script.
-- Example format:
-  - `postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres?sslmode=require`
+Requirements:
+
+- Use a disposable local database rebuilt only from the reviewed `database-engine` migrations, without business seeds, Auth users, OAuth registrations, jobs, or datasets. Never point this workflow at production or shared Dev.
+- Set `DATABASE_SOURCE_ROOT` to that clean owning checkout and `DATABASE_SOURCE_COMMIT` to its full reviewed SHA. The helper verifies checkout identity and the database migration head.
+- `REMOTE_DB_URL` retains its historical name but must now use `localhost`, `127.0.0.1`, or `host.docker.internal`. A Docker client normally uses `host.docker.internal` with the isolated database's port. Invalid/remote addresses are rejected without printing credentials.
 
 Command:
 
 ```bash
 cd /path/to/tiangong-lca-next
-REMOTE_DB_URL='postgresql://postgres:***@db.xxx.supabase.co:5432/postgres?sslmode=require' \
+DATABASE_SOURCE_ROOT=/path/to/database-engine \
+DATABASE_SOURCE_COMMIT=<reviewed-40-character-database-commit> \
+REMOTE_DB_URL='postgresql://postgres:<local-password>@host.docker.internal:54322/postgres' \
   ./docker/scripts/sync-migrations-to-data-sql.sh
 ```
 
-Check-only mode (no file changes):
+Check-only mode (no file changes; use the same source environment):
 
 ```bash
 ./docker/scripts/sync-migrations-to-data-sql.sh --check
 ```
 
 What the script does:
+- Verify a migration-only empty source and record its exact commit/migration head in the snapshot
 - Pull a full schema-only dump with `pg_dump --schema-only`
 - Run `docker/desensitize_data.sql.sh` automatically
-- Filter the dump down to TianGong app-required objects (for example `public`, `pgmq`, `util`, and required business extensions)
+- Keep `api`, `private`, `public`, `util`, `archive`, `pgmq`, and required business extensions
+- Export only the two constrained Database executor roles, their reviewed memberships, the OAuth pre-request setting, the exact Database-owned Auth-to-private-user synchronization trigger, nine allowlisted migration-owned catalogs, and the two empty queue registrations; no user/business rows or credential catalogs are copied
 - Remove Supabase base-managed schemas/objects (for example `auth`, `extensions`, `graphql*`, `storage`, `supabase_functions`) and obvious PG17 dump noise such as `\restrict`, `\unrestrict`, and `SET transaction_timeout = 0;`
 - Write the filtered result to `docker/volumes/db/init/data.sql`
+
+The Docker image remains PostgreSQL 15.8. The filter removes only PG17's unsupported `MAINTAIN` token from table ACL blocks; it grants no replacement privilege and leaves function bodies unchanged. Existing canonical function-body whitespace is preserved. Supabase-managed Auth/Storage migrations and webhook setup remain owned by their existing pinned services/base initialization, not this snapshot.
+
+This is a **fresh-install initializer**, not an upgrade script for an existing database volume. Existing installs must apply Database-owned migrations through their operator workflow, retain backups, and include `api` in `PGRST_DB_SCHEMAS`; never expose `private`, `util`, or `archive`. Run the generator twice (`--check` on the second run), the snapshot contract test, and an isolated restore against the pinned Docker database plus its normal Auth migrations before updating the committed artifact.
 
 Desensitization rules include:
 - `"x_key":"<any>"` -> `"x_key":"edge-functions-key"`

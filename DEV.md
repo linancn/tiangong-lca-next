@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
-lastReviewedNote: 'Reviewed for Next #1009: UI, supporting tests, and locale artifact updates retain existing bootstrap and managed-push commands; no runtime mock preview setup is required.'
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
+lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
 ---
 
 # Development Bootstrap

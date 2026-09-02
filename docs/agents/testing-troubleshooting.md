@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
-lastReviewedNote: 'Reviewed for Next #1009: Account and consent UI, form, and obsolete-preview-flag regressions use existing diagnostics; no runtime preview helper or troubleshooting workflow is added.'
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
+lastReviewedNote: 'Reviewed for Next #1008: malformed acknowledgements, mapping fallbacks and uncovered empty-result branches follow the existing focused-test recovery workflow.'
 ---
 
 # Testing Troubleshooting

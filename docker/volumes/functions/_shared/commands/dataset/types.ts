@@ -16,6 +16,7 @@ export type SaveDraftRequest = {
   version: string;
   jsonOrdered: unknown;
   modelId?: string;
+  modelVersion?: string | null;
   ruleVerification?: boolean | null;
 };
 
@@ -24,6 +25,7 @@ export type CreateRequest = {
   id: string;
   jsonOrdered: unknown;
   modelId?: string | null;
+  modelVersion?: string | null;
   ruleVerification?: boolean | null;
 };
 
@@ -33,6 +35,7 @@ export type CreateVersionRequest = {
   sourceVersion: string;
   jsonOrdered: unknown;
   modelId?: string | null;
+  modelVersion?: string | null;
   ruleVerification?: boolean | null;
 };
 

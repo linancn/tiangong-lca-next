@@ -9,5 +9,6 @@ Deno.serve(
     entityLabel: 'Process',
     entityPlural: 'processes',
     rpcName: 'hybrid_search_processes',
+    versionedRpcName: 'hybrid_search_process_versions_v1',
   }),
 );

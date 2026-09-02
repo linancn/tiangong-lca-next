@@ -30,6 +30,7 @@ export async function executeCreateVersionCommand(
     payload: {
       sourceVersion: request.sourceVersion,
       ...(request.modelId ? { modelId: request.modelId } : {}),
+      ...(request.modelVersion ? { modelVersion: request.modelVersion } : {}),
     },
   });
 

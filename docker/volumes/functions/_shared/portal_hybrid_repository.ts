@@ -1,13 +1,14 @@
 import {
   portalHybridQuerySchema,
-  portalHybridSearchRequestSchema,
-  portalPublicHybridCandidatePageSchema,
   type PortalHybridSearchRequest,
+  portalHybridSearchRequestSchema,
   type PortalPublicHybridCandidatePage,
+  portalPublicHybridCandidatePageV1Schema,
+  portalPublicHybridCandidatePageV2Schema,
 } from './portal_hybrid_contract.ts';
 import {
-  readPortalPublishableCredential,
   readPortalBoundedStream,
+  readPortalPublishableCredential,
   readPortalSupabaseUrl,
   validatePortalPublishableCredential,
   validatePortalSupabaseUrl,
@@ -99,7 +100,11 @@ export function createPortalHybridRepository(
         throw new PortalHybridRepositoryError('contract_failure');
       }
       const normalizedTerms = parsedTerms.map((term) => (term.success ? term.data : ''));
-      const response = await fetchImpl(`${supabaseUrl}/rest/v1/rpc/portal_hybrid_search_v1`, {
+      const versioned = parsedRequest.data.schemaVersion === 'portal.hybrid-search-request.v2';
+      const rpcPath = versioned
+        ? '/rest/v1/rpc/portal_hybrid_search_v2'
+        : '/rest/v1/rpc/portal_hybrid_search_v1';
+      const response = await fetchImpl(`${supabaseUrl}${rpcPath}`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -113,6 +118,9 @@ export function createPortalHybridRepository(
           p_query_embedding: serializePortalHybridEmbedding(queryEmbedding),
           p_filters: parsedRequest.data.filters,
           p_limit: parsedRequest.data.limit,
+          ...(parsedRequest.data.schemaVersion === 'portal.hybrid-search-request.v2'
+            ? { p_cursor: parsedRequest.data.cursor }
+            : {}),
         }),
         signal,
       }).catch(() => {
@@ -122,8 +130,16 @@ export function createPortalHybridRepository(
         throw new PortalHybridRepositoryError('hybrid_upstream_unavailable');
       }
       const value = await readRepositoryResponse(response);
-      const parsed = portalPublicHybridCandidatePageSchema.safeParse(value);
-      if (!parsed.success || parsed.data.kind !== parsedRequest.data.kind) {
+      const parsed = (
+        versioned
+          ? portalPublicHybridCandidatePageV2Schema
+          : portalPublicHybridCandidatePageV1Schema
+      ).safeParse(value);
+      if (
+        !parsed.success ||
+        parsed.data.kind !== parsedRequest.data.kind ||
+        parsed.data.items.length > parsedRequest.data.limit
+      ) {
         throw new PortalHybridRepositoryError('contract_failure');
       }
       return parsed.data;

@@ -1,4 +1,5 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
+import { readMatchedHybridRows } from '@/services/general/hybridVersions';
 import { type SupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
 import {
   classificationToString,
@@ -700,10 +701,12 @@ export async function flow_hybrid_search(
   query: string,
   filter: FlowSearchFilters,
   stateCode?: string | number,
-) {
+): Promise<{ data: FlowTable[]; success: boolean; total?: number; page?: number }> {
   let result: any = {};
   const bodyParams: Record<string, any> = {
     query,
+    version_scope: 'matched',
+    match_count: 200,
     filter_condition: filter,
     data_source: dataSource,
     page_size: params.pageSize ?? 10,
@@ -725,8 +728,8 @@ export async function flow_hybrid_search(
   if (result.error) {
     console.log('error', result.error);
   }
-  if (Array.isArray(result.data?.data)) {
-    const resultData = result.data.data;
+  const resultData = result.error ? null : readMatchedHybridRows(result.data);
+  if (resultData) {
     const totalCount = normalizeFlowResultTotalCount(resultData, result.data);
 
     if (resultData.length === 0) {
@@ -748,7 +751,7 @@ export async function flow_hybrid_search(
       getCachedFlowCategorizationAll(lang),
     ]);
 
-    const data = resultData.map((i: any) => {
+    const data = resultData.map((i: any): FlowTable => {
       try {
         const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
         const typeOfDataSet = i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
@@ -756,7 +759,7 @@ export async function flow_hybrid_search(
         return {
           key: i.id + ':' + i.version,
           id: i.id,
-          name: genFlowName(dataInfo?.name ?? {}, lang),
+          name: genFlowName(dataInfo?.name ?? {}, lang) ?? '-',
           synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
           classification: getLocalizedFlowClassification(
             dataInfo?.classificationInformation,
@@ -765,6 +768,10 @@ export async function flow_hybrid_search(
           ),
           flowType: typeOfDataSet ?? '-',
           CASNumber: dataInfo?.CASNumber ?? '-',
+          refFlowPropertyId:
+            i.json?.flowDataSet?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.[
+              '@refObjectId'
+            ] ?? '-',
           locationOfSupply: resolveLocationOfSupply(
             i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
             locationData,
@@ -777,6 +784,17 @@ export async function flow_hybrid_search(
         console.error(e);
         return {
           id: i.id,
+          version: i.version,
+          key: i.id + ':' + i.version,
+          modifiedAt: new Date(i.modified_at),
+          teamId: i.team_id,
+          name: '-',
+          synonyms: '-',
+          classification: '-',
+          flowType: '-',
+          CASNumber: '-',
+          locationOfSupply: '-',
+          refFlowPropertyId: '-',
         };
       }
     });
