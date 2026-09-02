@@ -1292,13 +1292,15 @@ export async function process_hybrid_search(
   }
   const resultData = result.error ? null : readMatchedHybridRows(result.data);
   if (resultData) {
+    const totalCount = normalizeProcessResultTotalCount(resultData, result.data);
     if (resultData.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
+        page: params.current ?? 1,
+        total: totalCount,
       });
     }
-    const totalCount = normalizeProcessResultTotalCount(resultData, result.data);
 
     const locations: string[] = Array.from(
       new Set(

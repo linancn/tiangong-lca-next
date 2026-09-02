@@ -2402,6 +2402,30 @@ describe('getProcessExchange', () => {
 });
 
 describe('process_hybrid_search', () => {
+  it.each([undefined, 2])(
+    'accepts an acknowledged empty matched page %s and clears any previous result total',
+    async (current) => {
+      mockAuthGetSession.mockResolvedValueOnce({
+        data: { session: { access_token: 'version-test-token' } },
+      });
+      mockFunctionsInvoke.mockResolvedValueOnce({
+        data: { versionScope: 'matched', data: [] },
+        error: null,
+      });
+
+      const result = await processesApi.process_hybrid_search(
+        { current, pageSize: 10 },
+        'en',
+        'tg',
+        'no matching process',
+        {},
+        'all',
+      );
+
+      expect(result).toEqual({ data: [], success: true, page: current ?? 1, total: 0 });
+    },
+  );
+
   it('retains two exact matched versions instead of collapsing their shared id', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: { session: { access_token: 'version-test-token' } },
