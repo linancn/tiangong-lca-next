@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
 lastReviewedNote: 'Reviewed for Next #1008: app-side matched id/version validation is separated from Edge English rewriting and Database multilingual retrieval/visibility ownership.'
 related:
   - ../AGENTS.md
@@ -112,6 +112,8 @@ Main Process/Flow tables and their existing pickers retain version-qualified row
 Edge owns rewrite -> normalized English `semantic_query_en` -> embedding. Database owns each bounded lexical/semantic recall, exact-version fusion/hydration and `tg/co/my/te` visibility. Original multilingual full-text input remains intact; English vector input does not restrict authored full-text languages. Portal's separate state-100/200 allowlist must not be copied over Next's authorized personal/team scopes.
 
 The self-hosted mirror remains generated from one exact canonical Edge tree and receipt. The single online-backend exception for this delivery is recorded in `supabase-branching.md` and workspace #963; normal environment selection and promotion policy are unchanged.
+
+The companion self-hosted `data.sql` is a generated fresh-install artifact, not schema truth or an in-place upgrade. Its sync helper requires a reviewed Database commit and an isolated migration-only local rebuild, preserves all five application schemas plus queue metadata, and copies only constrained executor/extension grants, the Database-owned Auth synchronization trigger, OAuth pre-request configuration and allowlisted bootstrap catalogs. It never copies Auth users, OAuth registrations or business datasets. PostgreSQL 15 compatibility filtering removes only unsupported PG17 ACL syntax, not function bodies; the normal pinned Auth/Storage services still own managed-schema migrations. See `docker/README.md` for the source and restore procedure.
 
 ### TIDAS Package Export Task Identity
 

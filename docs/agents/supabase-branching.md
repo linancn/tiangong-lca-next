@@ -23,7 +23,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
 lastReviewedNote: 'Reviewed for Next #1008: the single user-authorized deployed-backend exception is source-pinned and does not change normal Dev selection, actor/team scope, promotion or root integration.'
 ---
 
@@ -97,6 +97,8 @@ Rules:
 The user explicitly approved a single exception for workspace #963: implement against the currently running Main backend before the normal candidate commits complete formal Git promotion. Database `470e66157fc0b363c3360ba952f75280cfa1ff73` (only two additive search migrations) and Edge `08b19d7b841395e5d16096ff5258d7ac405c9b6f` (three search functions) were deployed and read back; [the coordination evidence](https://github.com/tiangong-lca/workspace/issues/963#issuecomment-5508734216) records exact artifacts, ACLs, tests and rollback.
 
 This permits this delivery's exact generated mirror and consumer contract; it is not a standing waiver of the review/promote-first rule below. The shared Dev environment is not redirected to Production. Routine frontend merge/release still needs the matching backend contract in its selected environment; formal review, promotion and root integration remain tracked separately.
+
+Release follow-up: the Edge authentication/order corrections at `5d0dd0078a438513d8d2484d2c211def7a0d0cda` are included in Main merge `cb2b34210366bdc1f7ca93a23863d6b2a9931c02` and deployed to Dev/Main before this consumer release. The mirror now pins that reviewed source. Its paired `data.sql` is generated only from the exact Database migration rebuild described in `docker/README.md`; it includes the API/private/archive boundaries and static capability catalogs needed by those functions, without copying production data. Existing self-hosted database volumes must use Database-owned migrations, not replay the fresh-install snapshot.
 
 The Process/Flow Hybrid services keep the current user JWT and data-source/state scope, request the fixed 200-candidate matched mode, and reject an old backend that does not acknowledge that contract. They do not retry silently against a latest-only API.
 

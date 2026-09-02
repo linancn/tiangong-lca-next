@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
 lastReviewedNote: 'Reviewed for Next #1008: focused iteration and generated-mirror checkpoints preserve the existing one-full-gate-after-final-commit policy; no hook bypass or gate change was introduced.'
 ---
 

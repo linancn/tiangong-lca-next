@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
 lastReviewedNote: 'Reviewed for Next #1008: exact-version, malformed acknowledgement, empty-result paging, display fallback and generated-mirror proof are recorded; final full qualification remains owned by the controlled push hook.'
 related:
   - ../AGENTS.md
@@ -81,7 +81,7 @@ pnpm prepush:gate
 
 ## Proof Matrix
 
-For Next #1008, focused Process/Flow API and `general/hybridVersions` suites exercise distinct versions of one ID, strict acknowledgement/identity checks, empty-result paging, per-row display fallback and state/source forwarding. The controlled focused run has 252 passing tests and 100% statements, lines and functions across those three service modules; it is not a replacement for the final full push gate. Mirror synchronization at Edge `08b19d7b841395e5d16096ff5258d7ac405c9b6f` was idempotent and byte-preserving across the commit hook. Backend anonymous public-vector/identity probes are recorded in workspace #963; they do not attest a real authenticated private/team browser session or a production latency/relevance SLA.
+For Next #1008, focused Process/Flow API and `general/hybridVersions` suites exercise distinct versions of one ID, strict acknowledgement/identity checks, empty-result paging, per-row display fallback and state/source forwarding. The controlled focused run has 252 passing tests and 100% statements, lines and functions across those three service modules; it is not a replacement for the final full push gate. Release correction synchronization at the reviewed, Main-promoted Edge `5d0dd0078a438513d8d2484d2c211def7a0d0cda` is idempotent and byte-preserving. The Docker Database snapshot must accompany the mirror: the six snapshot contract tests protect source identity, API signatures, constrained roles, OAuth pre-request wiring, the Auth synchronization bridge, bootstrap-only rows and PG15-compatible filtering. An isolated PostgreSQL 15.8 restore with the pinned Auth migrations passed 203 owning Database assertions across exact-version Next/Portal search, Process model-version commands and OAuth capabilities. Backend anonymous public-vector/identity probes are recorded in workspace #963; neither those probes nor the isolated restore attests a real authenticated private/team production browser session or a production latency/relevance SLA.
 
 The final committed candidate still uses `pnpm push:checked origin feature/issue-1008`, with the hook owning the full gate. Record that result in the PR instead of rewriting an already-qualified tree merely to move a historical baseline marker.
 
