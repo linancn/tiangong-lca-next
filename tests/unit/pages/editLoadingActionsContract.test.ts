@@ -17,7 +17,9 @@ describe('dataset edit loading actions contract', () => {
     expect(source).toContain(
       "import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';",
     );
-    expect(source).toContain('<LoadingDisabledActionGroup loading={spinning || !initData}>');
+    expect(source).toContain(
+      '<LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>',
+    );
     expect(source).toContain('setInitData(undefined);');
   });
 
