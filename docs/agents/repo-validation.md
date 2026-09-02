@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
-lastReviewedNote: 'Reviewed for Next Issue #999: 100% source-mapped proof covers exact model_version resolution, null fallback, independent Process behavior, child-submodel ownership, and no-latest-Model lookup.'
+lastReviewedCommit: 7baa10259b25e1b54a9e3cfaf139e552bd6833b3
+lastReviewedNote: 'Reviewed for Next Issue #999: 100% source-mapped proof covers exact model_version resolution, null fallback, independent Process behavior, child ownership, no-latest lookup, and the current review-submit loading guard.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

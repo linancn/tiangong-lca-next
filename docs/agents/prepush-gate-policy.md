@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
-lastReviewedNote: 'Reviewed for Next #999: Process ownership regressions and regenerated locale artifacts retain the single managed pre-push gate and unchanged 100% coverage enforcement.'
+lastReviewedCommit: 7baa10259b25e1b54a9e3cfaf139e552bd6833b3
+lastReviewedNote: 'Reviewed for Next #999: Process ownership regressions, regenerated locale artifacts, and the integrated review-submit loading assertion retain the single managed pre-push gate and 100% coverage enforcement.'
 ---
 
 # Pre-Push Gate Policy

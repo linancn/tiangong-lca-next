@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
-lastReviewedNote: 'Reviewed for Next #999: exact model-version, null fallback, navigation, listing, and child-result cases close through the existing strategy without a new queue or browser matrix.'
+lastReviewedCommit: 7baa10259b25e1b54a9e3cfaf139e552bd6833b3
+lastReviewedNote: 'Reviewed for Next #999: exact model-version, null fallback, navigation, listing, child-result, and review-submit loading cases close through the existing strategy without a new queue or browser matrix.'
 ---
 
 # Testing Strategy

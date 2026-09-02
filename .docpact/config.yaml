@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-02"
-lastReviewedCommit: "c89d9e2e89481236724eb3ebd144e57fdd84714b"
-lastReviewedNote: 'Reviewed for Next Issue #999: frontend data, LifecycleModel result navigation, Process listing, exact Edge mirror, tests, and locale artifacts cover optional exact Process model ownership with legacy fallback.'
+lastReviewedCommit: "7baa10259b25e1b54a9e3cfaf139e552bd6833b3"
+lastReviewedNote: 'Reviewed for Next Issue #999: frontend data, model navigation, Process listing, Edge mirror, tests, locale artifacts, and the integrated review-submit loading contract cover exact ownership with legacy fallback.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
