@@ -72,10 +72,8 @@ const organizationContributionRankingSchema = z
     organizationKey: z.string().trim().min(1),
     organizationName: z.string().trim().min(1),
     publishedDatasetCount: nonnegativeInteger,
-    reviewingDatasetCount: nonnegativeInteger,
-    contributorCount: nonnegativeInteger,
-    contributionShare: z.number().min(0).max(1),
-    latestContributedAt: z.iso.datetime({ offset: true }).nullable(),
+    assignedReviewerDatasetCount: nonnegativeInteger,
+    unassignedReviewerDatasetCount: nonnegativeInteger,
   })
   .strict();
 
@@ -98,7 +96,7 @@ const makeScopeSchema = (datasetScope: OrganizationContributionDatasetScope) =>
 
 export const organizationContributionSnapshotSchema = z
   .object({
-    schemaVersion: z.literal('national_carbon_organization_contribution_v2'),
+    schemaVersion: z.literal('national_carbon_organization_contribution_v3'),
     attributionMode: z.literal('current_user_profile'),
     generatedAt: z.iso.datetime({ offset: true }),
     dataAsOf: z.iso.datetime({ offset: true }),
