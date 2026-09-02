@@ -2209,12 +2209,60 @@ describe('getFlowTableUuidMentionSearch', () => {
 });
 
 describe('flow_hybrid_search', () => {
+  it('retains two exact matched versions instead of collapsing their shared id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'version-test-token' } },
+    });
+    const rows = [
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        json: {},
+        modified_at: '2026-09-02T00:00:00Z',
+        total_count: 2,
+      },
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.001',
+        json: {},
+        modified_at: '2026-09-02T00:00:00Z',
+        total_count: 2,
+      },
+    ];
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: rows },
+      error: null,
+    });
+    const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'copper', {});
+    expect(result.success).toBe(true);
+    expect(result.data.map((row: any) => row.key)).toEqual(
+      rows.map((row) => row.id + ':' + row.version),
+    );
+    expect(result.total).toBe(2);
+  });
+
+  it('refuses an old server response that did not acknowledge matched-version search', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'version-test-token' } },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [{ id: '11111111-1111-4111-8111-111111111111', version: '01.00.001', json: {} }],
+      },
+      error: null,
+    });
+    const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'copper', {});
+    expect(result.data).toEqual([]);
+    expect(result.success).toBe(false);
+  });
+
   it('delegates to edge function and maps response', async () => {
     const hybridResult = {
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-h1',
+            id: 'f1000000-0000-4000-8000-000000000008',
             version: '01.00.001',
             modified_at: '2024-01-01T00:00:00Z',
             team_id: 'team-1',
@@ -2263,6 +2311,8 @@ describe('flow_hybrid_search', () => {
       'flow_hybrid_search',
       expect.objectContaining({
         body: {
+          version_scope: 'matched',
+          match_count: 200,
           query: 'nitrogen',
           filter_condition: { flowType: '' },
           data_source: 'tg',
@@ -2275,7 +2325,7 @@ describe('flow_hybrid_search', () => {
     );
     expect(result.data[0]).toEqual(
       expect.objectContaining({
-        id: 'flow-h1',
+        id: 'f1000000-0000-4000-8000-000000000008',
         name: 'Nitrogen',
         classification: 'Emissions to air',
         synonyms: 'N2',
@@ -2288,9 +2338,10 @@ describe('flow_hybrid_search', () => {
   it('should include total_count from function response', async () => {
     const hybridResult = {
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-h2',
+            id: 'f1000000-0000-4000-8000-000000000009',
             version: '01.00.002',
             modified_at: '2024-01-03T00:00:00Z',
             team_id: 'team-2',
@@ -2341,10 +2392,7 @@ describe('flow_hybrid_search', () => {
 
   it('returns empty success payload when hybrid search has no rows', async () => {
     mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        data: [],
-        total_count: 0,
-      },
+      data: { versionScope: 'matched', data: [], total_count: 0 },
       error: null,
     });
 
@@ -2362,14 +2410,12 @@ describe('flow_hybrid_search', () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
         session: {
-          user: { id: 'user-id' },
+          user: { id: 'f1000000-0000-4000-8000-000000000010' },
         },
       },
     });
     mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        data: [],
-      },
+      data: { versionScope: 'matched', data: [] },
       error: null,
     });
 
@@ -2380,6 +2426,8 @@ describe('flow_hybrid_search', () => {
       expect.objectContaining({
         headers: { Authorization: 'Bearer ' },
         body: {
+          version_scope: 'matched',
+          match_count: 200,
           query: 'steam',
           filter_condition: {},
           data_source: 'tg',
@@ -2398,10 +2446,7 @@ describe('flow_hybrid_search', () => {
 
   it('passes classification filters to hybrid search function', async () => {
     mockFunctionsInvoke.mockResolvedValue({
-      data: {
-        data: [],
-        total_count: 0,
-      },
+      data: { versionScope: 'matched', data: [], total_count: 0 },
     });
 
     await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'steam', {
@@ -2413,6 +2458,8 @@ describe('flow_hybrid_search', () => {
       'flow_hybrid_search',
       expect.objectContaining({
         body: {
+          version_scope: 'matched',
+          match_count: 200,
           query: 'steam',
           filter_condition: {
             flowType: 'Product flow',
@@ -2441,9 +2488,10 @@ describe('flow_hybrid_search', () => {
   it('localizes chinese hybrid search results and passes state_code', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-zh',
+            id: 'f1000000-0000-4000-8000-000000000007',
             version: '01.00.006',
             modified_at: '2024-01-06T00:00:00Z',
             team_id: 'team-zh',
@@ -2504,6 +2552,8 @@ describe('flow_hybrid_search', () => {
       'flow_hybrid_search',
       expect.objectContaining({
         body: {
+          version_scope: 'matched',
+          match_count: 200,
           query: '电力',
           filter_condition: {},
           data_source: 'my',
@@ -2516,9 +2566,10 @@ describe('flow_hybrid_search', () => {
     expect(result).toEqual({
       data: [
         {
-          key: 'flow-hybrid-zh:01.00.006',
-          id: 'flow-hybrid-zh',
+          key: 'f1000000-0000-4000-8000-000000000007:01.00.006',
+          id: 'f1000000-0000-4000-8000-000000000007',
           name: '电力',
+          refFlowPropertyId: '-',
           synonyms: '电能',
           classification: '产品 / 一般',
           flowType: 'Product flow',
@@ -2538,9 +2589,10 @@ describe('flow_hybrid_search', () => {
   it('maps chinese elementary hybrid results with localized categories', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-zh-elementary',
+            id: 'f1000000-0000-4000-8000-000000000001',
             version: '01.00.012',
             modified_at: '2024-01-12T00:00:00Z',
             team_id: 'team-zh',
@@ -2581,7 +2633,7 @@ describe('flow_hybrid_search', () => {
 
     expect(result.data[0]).toEqual(
       expect.objectContaining({
-        id: 'flow-hybrid-zh-elementary',
+        id: 'f1000000-0000-4000-8000-000000000001',
         classification: '空气',
         locationOfSupply: '-',
       }),
@@ -2591,9 +2643,10 @@ describe('flow_hybrid_search', () => {
   it('uses sparse chinese hybrid field fallbacks', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-zh-fallbacks',
+            id: 'f1000000-0000-4000-8000-000000000002',
             version: '01.00.016',
             modified_at: '2024-01-16T00:00:00Z',
             json: {
@@ -2630,7 +2683,7 @@ describe('flow_hybrid_search', () => {
 
     expect(result.data[0]).toEqual(
       expect.objectContaining({
-        id: 'flow-hybrid-zh-fallbacks',
+        id: 'f1000000-0000-4000-8000-000000000002',
         name: '-',
         synonyms: '-',
         flowType: '-',
@@ -2638,13 +2691,14 @@ describe('flow_hybrid_search', () => {
     );
   });
 
-  it('falls back to id-only rows when chinese hybrid mapping throws', async () => {
+  it('retains exact identity when chinese hybrid mapping throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-bad-zh',
+            id: 'f1000000-0000-4000-8000-000000000005',
             version: '01.00.013',
             modified_at: '2024-01-13T00:00:00Z',
             json: {
@@ -2677,7 +2731,22 @@ describe('flow_hybrid_search', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     expect(result).toEqual({
-      data: [{ id: 'flow-hybrid-bad-zh' }],
+      data: [
+        {
+          id: 'f1000000-0000-4000-8000-000000000005',
+          version: '01.00.013',
+          key: 'f1000000-0000-4000-8000-000000000005:01.00.013',
+          modifiedAt: new Date('2024-01-13T00:00:00Z'),
+          teamId: undefined,
+          name: '-',
+          synonyms: '-',
+          classification: '-',
+          flowType: '-',
+          CASNumber: '-',
+          locationOfSupply: '-',
+          refFlowPropertyId: '-',
+        },
+      ],
       page: 1,
       success: true,
       total: 1,
@@ -2685,13 +2754,14 @@ describe('flow_hybrid_search', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('falls back to id-only rows when hybrid mapping throws', async () => {
+  it('retains exact identity when hybrid mapping throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-bad',
+            id: 'f1000000-0000-4000-8000-000000000006',
             version: '01.00.007',
             modified_at: '2024-01-07T00:00:00Z',
             json: {
@@ -2720,7 +2790,22 @@ describe('flow_hybrid_search', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalled();
     expect(result).toEqual({
-      data: [{ id: 'flow-hybrid-bad' }],
+      data: [
+        {
+          id: 'f1000000-0000-4000-8000-000000000006',
+          version: '01.00.007',
+          key: 'f1000000-0000-4000-8000-000000000006:01.00.007',
+          modifiedAt: new Date('2024-01-07T00:00:00Z'),
+          teamId: undefined,
+          name: '-',
+          synonyms: '-',
+          classification: '-',
+          flowType: '-',
+          CASNumber: '-',
+          locationOfSupply: '-',
+          refFlowPropertyId: '-',
+        },
+      ],
       page: 1,
       success: true,
       total: 1,
@@ -2731,9 +2816,10 @@ describe('flow_hybrid_search', () => {
   it('maps english hybrid classification fallbacks for non-elementary sparse rows', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-en-fallbacks',
+            id: 'f1000000-0000-4000-8000-000000000003',
             version: '01.00.017',
             modified_at: '2024-01-17T00:00:00Z',
             json: {
@@ -2771,7 +2857,7 @@ describe('flow_hybrid_search', () => {
 
     expect(result.data[0]).toEqual(
       expect.objectContaining({
-        id: 'flow-hybrid-en-fallbacks',
+        id: 'f1000000-0000-4000-8000-000000000003',
         name: '-',
         classification: '',
         flowType: 'Product flow',
@@ -2782,9 +2868,10 @@ describe('flow_hybrid_search', () => {
   it('uses sparse english hybrid field fallbacks and default page numbers', async () => {
     mockFunctionsInvoke.mockResolvedValue({
       data: {
+        versionScope: 'matched',
         data: [
           {
-            id: 'flow-hybrid-en-defaults',
+            id: 'f1000000-0000-4000-8000-000000000004',
             version: '01.00.020',
             modified_at: '2024-01-20T00:00:00Z',
             json: {
@@ -2812,9 +2899,10 @@ describe('flow_hybrid_search', () => {
     expect(result).toEqual({
       data: [
         {
-          key: 'flow-hybrid-en-defaults:01.00.020',
-          id: 'flow-hybrid-en-defaults',
+          key: 'f1000000-0000-4000-8000-000000000004:01.00.020',
+          id: 'f1000000-0000-4000-8000-000000000004',
           name: '-',
+          refFlowPropertyId: '-',
           synonyms: '-',
           classification: '',
           flowType: '-',

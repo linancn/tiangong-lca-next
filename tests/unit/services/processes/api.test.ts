@@ -2402,6 +2402,65 @@ describe('getProcessExchange', () => {
 });
 
 describe('process_hybrid_search', () => {
+  it('retains two exact matched versions instead of collapsing their shared id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'version-test-token' } },
+    });
+    const rows = [
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        json: {},
+        modified_at: '2026-09-02T00:00:00Z',
+        total_count: 2,
+      },
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.001',
+        json: {},
+        modified_at: '2026-09-02T00:00:00Z',
+        total_count: 2,
+      },
+    ];
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: rows },
+      error: null,
+    });
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'copper',
+      {},
+    );
+    expect(result.success).toBe(true);
+    expect(result.data.map((row: any) => row.key)).toEqual(
+      rows.map((row) => row.id + ':' + row.version),
+    );
+    expect(result.total).toBe(2);
+  });
+
+  it('refuses an old server response that did not acknowledge matched-version search', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { access_token: 'version-test-token' } },
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        data: [{ id: '11111111-1111-4111-8111-111111111111', version: '01.00.001', json: {} }],
+      },
+      error: null,
+    });
+    const result = await processesApi.process_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'copper',
+      {},
+    );
+    expect(result.data).toEqual([]);
+    expect(result.success).toBe(false);
+  });
+
   it('maps hybrid search responses to table rows', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -2449,7 +2508,10 @@ describe('process_hybrid_search', () => {
       },
     ];
     (hybridData as any).total_count = 42;
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'US', '#text': 'United States' }]);
 
     const result = await processesApi.process_hybrid_search(
@@ -2465,6 +2527,8 @@ describe('process_hybrid_search', () => {
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
       headers: { Authorization: 'Bearer token-xyz' },
       body: {
+        version_scope: 'matched',
+        match_count: 200,
         query: 'steel',
         filter_condition: {},
         data_source: 'tg',
@@ -2501,7 +2565,7 @@ describe('process_hybrid_search', () => {
     });
   });
 
-  it('sends optional filters and handles empty data with invoke error', async () => {
+  it('preserves optional filters and rejects an invocation error, even with empty data', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -2512,7 +2576,7 @@ describe('process_hybrid_search', () => {
     });
     mockFunctionsInvoke.mockResolvedValueOnce({
       error: { message: 'hybrid failed' },
-      data: { data: [] },
+      data: { versionScope: 'matched', data: [] },
     });
 
     const result = await processesApi.process_hybrid_search(
@@ -2528,6 +2592,8 @@ describe('process_hybrid_search', () => {
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
       headers: { Authorization: 'Bearer ' },
       body: {
+        version_scope: 'matched',
+        match_count: 200,
         query: 'steel',
         filter_condition: { status: 'active' },
         data_source: 'my',
@@ -2539,7 +2605,7 @@ describe('process_hybrid_search', () => {
       region: FunctionRegion.UsEast1,
     });
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'hybrid failed' });
-    expect(result).toEqual({ data: [], success: true });
+    expect(result).toEqual({ error: { message: 'hybrid failed' }, data: [], success: false });
     logSpy.mockRestore();
   });
 
@@ -2580,7 +2646,10 @@ describe('process_hybrid_search', () => {
       },
     ];
     (hybridData as any).total_count = 7;
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
     mockGetCachedClassificationData.mockResolvedValueOnce([
       { '@value': 'class-zh', '#text': '分类' },
@@ -2657,7 +2726,10 @@ describe('process_hybrid_search', () => {
       },
     ];
     (hybridData as any).total_count = 4;
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockGetCachedLocationData.mockResolvedValueOnce([]);
     mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
     mockGenClassificationZH.mockReturnValueOnce(undefined as any);
@@ -2732,7 +2804,7 @@ describe('process_hybrid_search', () => {
       },
     ];
     mockFunctionsInvoke.mockResolvedValueOnce({
-      data: { data: hybridData, total_count: 5 },
+      data: { versionScope: 'matched', data: hybridData, total_count: 5 },
       error: null,
     });
     mockGetCachedLocationData.mockResolvedValueOnce([]);
@@ -2806,7 +2878,10 @@ describe('process_hybrid_search', () => {
         },
       },
     ];
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockGetCachedLocationData.mockResolvedValueOnce([]);
 
     const result = await processesApi.process_hybrid_search(
@@ -2843,7 +2918,7 @@ describe('process_hybrid_search', () => {
     });
   });
 
-  it('falls back to id-only rows when zh hybrid mapping throws', async () => {
+  it('retains exact identity when zh hybrid mapping throws', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -2872,7 +2947,10 @@ describe('process_hybrid_search', () => {
         },
       },
     ];
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockJsonToList.mockImplementationOnce(() => {
       throw new Error('bad zh hybrid class');
     });
@@ -2888,7 +2966,9 @@ describe('process_hybrid_search', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId, lang: 'zh' }],
+      data: [
+        { id: sampleId, version: sampleVersion, key: sampleId + ':' + sampleVersion, lang: 'zh' },
+      ],
       page: 1,
       success: true,
       total: 1,
@@ -2896,7 +2976,7 @@ describe('process_hybrid_search', () => {
     errorSpy.mockRestore();
   });
 
-  it('falls back to id-only rows when en hybrid mapping throws', async () => {
+  it('retains exact identity when en hybrid mapping throws', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
@@ -2925,7 +3005,10 @@ describe('process_hybrid_search', () => {
         },
       },
     ];
-    mockFunctionsInvoke.mockResolvedValueOnce({ data: { data: hybridData }, error: null });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { versionScope: 'matched', data: hybridData },
+      error: null,
+    });
     mockJsonToList.mockImplementationOnce(() => {
       throw new Error('bad en hybrid class');
     });
@@ -2941,7 +3024,9 @@ describe('process_hybrid_search', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId, lang: 'en' }],
+      data: [
+        { id: sampleId, version: sampleVersion, key: sampleId + ':' + sampleVersion, lang: 'en' },
+      ],
       page: 1,
       success: true,
       total: 1,
@@ -2949,7 +3034,7 @@ describe('process_hybrid_search', () => {
     errorSpy.mockRestore();
   });
 
-  it('returns the raw fallback result when no session is available for hybrid search', async () => {
+  it('returns a failure when no session is available for hybrid search', async () => {
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
 
     const result = await processesApi.process_hybrid_search(
@@ -2962,7 +3047,7 @@ describe('process_hybrid_search', () => {
       'all',
     );
 
-    expect(result).toEqual({});
+    expect(result).toEqual({ data: [], success: false });
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
   });
 });
@@ -4174,7 +4259,7 @@ describe('getProcessTablePgroongaSearch', () => {
     });
   });
 
-  it('falls back to id-only rows when zh pgroonga mapping throws', async () => {
+  it('retains exact identity when zh pgroonga mapping throws', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
     mockRpc.mockResolvedValueOnce({
@@ -4215,7 +4300,9 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId, lang: 'zh' }],
+      data: [
+        { id: sampleId, version: sampleVersion, key: sampleId + ':' + sampleVersion, lang: 'zh' },
+      ],
       page: 1,
       success: true,
       total: 1,
@@ -4223,7 +4310,7 @@ describe('getProcessTablePgroongaSearch', () => {
     errorSpy.mockRestore();
   });
 
-  it('falls back to id-only rows when en pgroonga mapping throws', async () => {
+  it('retains exact identity when en pgroonga mapping throws', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
     mockRpc.mockResolvedValueOnce({
@@ -4264,7 +4351,9 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId, lang: 'en' }],
+      data: [
+        { id: sampleId, version: sampleVersion, key: sampleId + ':' + sampleVersion, lang: 'en' },
+      ],
       page: 1,
       success: true,
       total: 1,
