@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next Issue #1002: consuming the database-owned organization contribution v3 RPC changes no Supabase environment, branch, OAuth callback, or database ownership boundary.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent UI changes preserve the real Supabase identity, password/email, grant, callback, and environment boundaries; no runtime preview bypass remains.'
 ---
 
 # Supabase Environment And Database Workflow

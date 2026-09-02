@@ -2,25 +2,59 @@ import { changeEmail, changePassword, getAccountProfile, setProfile } from '@/se
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import {
   BankOutlined,
+  CheckCircleOutlined,
   IdcardOutlined,
+  InfoCircleOutlined,
   LockOutlined,
   MailOutlined,
+  SafetyCertificateOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
-import { Flex, Form, Grid, Input, Spin, Tabs, theme } from 'antd';
-import { useEffect, useRef, useState, type CSSProperties, type FC } from 'react';
+import {
+  Avatar,
+  Flex,
+  Form,
+  Grid,
+  Input,
+  Progress,
+  Spin,
+  Steps,
+  Tabs,
+  Tag,
+  Typography,
+  theme,
+} from 'antd';
+import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import { formatAccountRole } from './roleMessage';
 import OAuthConnections from './OAuthConnections';
+import styles from './index.less';
 
 export const ACCOUNT_FORM_CONTAINER_STYLE: CSSProperties = {
   width: '100%',
-  maxWidth: 600,
+  maxWidth: 1000,
   minWidth: 0,
 };
 
 export const getAccountTabPlacement = (isMobile: boolean) => (isMobile ? 'top' : 'start');
+
+const AccountContentPanel: FC<{
+  children: ReactNode;
+  className?: string;
+  description: ReactNode;
+  title: ReactNode;
+}> = ({ children, className, description, title }) => (
+  <section className={[styles.contentPanel, className].filter(Boolean).join(' ')}>
+    <header className={styles.contentHeader}>
+      <h2 className={styles.contentTitle}>{title}</h2>
+      <p className={styles.contentDescription}>{description}</p>
+    </header>
+    <div className={styles.formSection} style={ACCOUNT_FORM_CONTAINER_STYLE}>
+      {children}
+    </div>
+  </section>
+);
 
 const Profile: FC = () => {
   const { message } = useAntdAppApi();
@@ -35,18 +69,53 @@ const Profile: FC = () => {
   const useBreakpoint = Grid?.useBreakpoint ?? (() => ({}));
   const screens = useBreakpoint();
   const isMobile = screens.md === false;
+  const profileName =
+    initData?.name?.trim() ||
+    initData?.email?.split('@')[0] ||
+    intl.formatMessage({
+      id: 'pages.account.profile.fallbackName',
+      defaultMessage: 'TianGong user',
+    });
+  const profileInitial = Array.from(profileName)[0]?.toUpperCase() ?? 'T';
 
   const onTabChange = (key: string) => setActiveTabKey(key);
 
   const renderBaseForm = () => (
-    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
+    <AccountContentPanel
+      description={
+        <FormattedMessage
+          id='pages.account.baseInfo.description'
+          defaultMessage='Complete your profile so teammates can recognize you more easily.'
+        />
+      }
+      title={<FormattedMessage id='pages.account.baseInfo' defaultMessage='Basic Information' />}
+    >
+      <div className={styles.profileSummary}>
+        <Avatar className={styles.profileAvatar} size={60}>
+          {profileInitial}
+        </Avatar>
+        <div className={styles.profileSummaryText}>
+          <Typography.Title className={styles.profileName} level={4}>
+            {profileName}
+          </Typography.Title>
+          <div className={styles.profileMeta}>
+            <Typography.Text type='secondary'>{initData?.email ?? ''}</Typography.Text>
+            {roleValue ? <Tag className={styles.roleTag}>{roleValue}</Tag> : null}
+          </div>
+        </div>
+      </div>
       <ProForm
         formRef={formRefEdit}
+        layout='vertical'
         submitter={{
           resetButtonProps: false,
-          render: (_, dom) => (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>{dom}</div>
-          ),
+          searchConfig: {
+            submitText: intl.formatMessage({
+              id: 'pages.account.profile.save',
+              defaultMessage: 'Save changes',
+            }),
+          },
+          render: (_, dom) => <div className={styles.submitRow}>{dom}</div>,
         }}
         onFinish={async (values) => {
           setSpinning(true);
@@ -87,77 +156,155 @@ const Profile: FC = () => {
           }
         }}
       >
-        <Form.Item
-          label={<FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />}
-          name={'email'}
-        >
-          <Input prefix={<MailOutlined />} disabled={true} />
-        </Form.Item>
-        <Form.Item
-          label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
-          name={'role'}
-        >
-          <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
-        </Form.Item>
-        <Form.Item
-          label={<FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />}
-          name={'name'}
-          tooltip={
-            <FormattedMessage
-              id='pages.account.profile.nickName.tooltip'
-              defaultMessage='The name you prefer to be called'
+        <div className={styles.profileFormGrid}>
+          <Form.Item
+            label={<FormattedMessage id='pages.account.profile.email' defaultMessage='Email' />}
+            name={'email'}
+          >
+            <Input prefix={<MailOutlined />} disabled={true} />
+          </Form.Item>
+          <Form.Item
+            label={<FormattedMessage id='pages.account.profile.role' defaultMessage='Role' />}
+            name={'role'}
+          >
+            <Input prefix={<IdcardOutlined />} value={roleValue} disabled={true} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage id='pages.account.profile.nickName' defaultMessage='Nickname' />
+            }
+            name={'name'}
+            tooltip={
+              <FormattedMessage
+                id='pages.account.profile.nickName.tooltip'
+                defaultMessage='The name you prefer to be called'
+              />
+            }
+          >
+            <Input prefix={<UserOutlined />} />
+          </Form.Item>
+          <Form.Item
+            label={
+              <FormattedMessage
+                id='pages.account.profile.organization'
+                defaultMessage='Organization'
+              />
+            }
+            name={'organization'}
+            tooltip={
+              <FormattedMessage
+                id='pages.account.profile.organization.tooltip'
+                defaultMessage='The organization or institution you belong to'
+              />
+            }
+            rules={[
+              {
+                max: 200,
+                message: (
+                  <FormattedMessage
+                    id='pages.account.profile.organization.maxLength'
+                    defaultMessage='Organization must not exceed 200 characters'
+                  />
+                ),
+              },
+            ]}
+          >
+            <Input
+              prefix={<BankOutlined />}
+              maxLength={200}
+              placeholder={intl.formatMessage({
+                id: 'pages.account.profile.organization.placeholder',
+                defaultMessage: 'Enter your organization',
+              })}
             />
-          }
-        >
-          <Input prefix={<UserOutlined />} />
-        </Form.Item>
-        <Form.Item
-          label={
-            <FormattedMessage
-              id='pages.account.profile.organization'
-              defaultMessage='Organization'
-            />
-          }
-          name={'organization'}
-          tooltip={
-            <FormattedMessage
-              id='pages.account.profile.organization.tooltip'
-              defaultMessage='The organization or institution you belong to'
-            />
-          }
-          rules={[
-            {
-              max: 200,
-              message: (
-                <FormattedMessage
-                  id='pages.account.profile.organization.maxLength'
-                  defaultMessage='Organization must not exceed 200 characters'
-                />
-              ),
-            },
-          ]}
-        >
-          <Input
-            prefix={<BankOutlined />}
-            maxLength={200}
-            placeholder={intl.formatMessage({
-              id: 'pages.account.profile.organization.placeholder',
-              defaultMessage: 'Enter your organization',
-            })}
-          />
-        </Form.Item>
+          </Form.Item>
+        </div>
       </ProForm>
-    </Flex>
+    </AccountContentPanel>
   );
 
+  const renderPasswordStrength = (value?: string) => {
+    const getStatus = () => {
+      if (value && value.length > 12) {
+        return {
+          color: token.colorSuccess,
+          label: intl.formatMessage({
+            id: 'pages.account.password.strength.strong',
+            defaultMessage: 'Strong',
+          }),
+          percent: 100,
+        };
+      }
+      if (value && value.length > 8) {
+        return {
+          color: token.colorWarning,
+          label: intl.formatMessage({
+            id: 'pages.account.password.strength.medium',
+            defaultMessage: 'Medium',
+          }),
+          percent: 67,
+        };
+      }
+      return {
+        color: token.colorError,
+        label: intl.formatMessage({
+          id: 'pages.account.password.strength.weak',
+          defaultMessage: 'Weak',
+        }),
+        percent: 34,
+      };
+    };
+    const status = getStatus();
+    return (
+      <div className={styles.passwordStrength} role='status' aria-live='polite'>
+        <Typography.Text type='secondary'>
+          <FormattedMessage
+            id='pages.account.password.strengthLabel'
+            defaultMessage='Password strength'
+          />
+        </Typography.Text>
+        <Progress
+          percent={status.percent}
+          showInfo={false}
+          size={[52, 4]}
+          steps={3}
+          strokeColor={status.color}
+        />
+        <Typography.Text style={{ color: status.color }}>{status.label}</Typography.Text>
+      </div>
+    );
+  };
+
   const renderChangePasswordForm = () => (
-    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
+    <AccountContentPanel
+      description={
+        <FormattedMessage
+          id='pages.account.password.description'
+          defaultMessage='Set a secure, memorable new password for your account.'
+        />
+      }
+      title={
+        <FormattedMessage id='pages.account.changePassword' defaultMessage='Change Password' />
+      }
+    >
       <ProForm
+        className={styles.passwordForm}
         formRef={formRefEdit}
+        layout='vertical'
         submitter={{
+          searchConfig: {
+            resetText: intl.formatMessage({
+              id: 'pages.account.action.reset',
+              defaultMessage: 'Reset',
+            }),
+            submitText: intl.formatMessage({
+              id: 'pages.account.password.submit',
+              defaultMessage: 'Update password',
+            }),
+          },
           render: (props, doms) => {
             return (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div className={`${styles.submitRow} ${styles.passwordSubmitRow}`}>
                 <Flex gap='middle'>{doms}</Flex>
               </div>
             );
@@ -211,322 +358,409 @@ const Profile: FC = () => {
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name='currentPassword'
-          label={
-            <FormattedMessage
-              id='pages.account.password.currentPassword'
-              defaultMessage='Current Password'
-            />
-          }
-          tooltip={
-            <FormattedMessage
-              id='pages.account.password.currentPassword.tooltip'
-              defaultMessage='Please enter your current account password to verify your identity.'
-            />
-          }
-          rules={[
-            {
-              required: true,
-              message: (
+        <div className={styles.passwordLayout}>
+          <div className={styles.passwordFormColumn}>
+            <Form.Item
+              name='currentPassword'
+              label={
                 <FormattedMessage
-                  id='pages.account.currentPassword.required'
-                  defaultMessage='Please input the current password!'
+                  id='pages.account.password.currentPassword'
+                  defaultMessage='Current Password'
                 />
-              ),
-            },
-          ]}
-          hasFeedback
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder={intl.formatMessage({
-              id: 'pages.account.currentPassword.placeholder',
-              defaultMessage: 'Current Password',
-            })}
-          />
-        </Form.Item>
-
-        <ProFormText.Password
-          name='newPassword'
-          label={
-            <FormattedMessage
-              id='pages.account.password.newPassword'
-              defaultMessage='New Password'
-            />
-          }
-          fieldProps={{
-            size: 'middle',
-            prefix: <LockOutlined />,
-            strengthText: (
-              <FormattedMessage
-                id='pages.account.newPassword.strengthText'
-                defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
+              }
+              tooltip={
+                <FormattedMessage
+                  id='pages.account.password.currentPassword.tooltip'
+                  defaultMessage='Please enter your current account password to verify your identity.'
+                />
+              }
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.currentPassword.required'
+                      defaultMessage='Please input the current password!'
+                    />
+                  ),
+                },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder={intl.formatMessage({
+                  id: 'pages.account.currentPassword.placeholder',
+                  defaultMessage: 'Current Password',
+                })}
               />
-            ),
-            statusRender: (value) => {
-              const getStatus = () => {
-                if (value && value.length > 12) {
-                  return 'ok';
-                }
-                if (value && value.length > 8) {
-                  return 'pass';
-                }
-                return 'poor';
-              };
-              const pwdStatus = getStatus();
-              if (pwdStatus === 'pass') {
-                return (
-                  <div style={{ color: token.colorWarning }}>
-                    <FormattedMessage
-                      id='pages.account.newPassword.strengthMedium'
-                      defaultMessage='Strength: Medium'
-                    />
-                  </div>
-                );
+            </Form.Item>
+
+            <ProFormText.Password
+              name='newPassword'
+              label={
+                <FormattedMessage
+                  id='pages.account.password.newPassword'
+                  defaultMessage='New Password'
+                />
               }
-              if (pwdStatus === 'ok') {
-                return (
-                  <div style={{ color: token.colorSuccess }}>
+              fieldProps={{
+                size: 'middle',
+                prefix: <LockOutlined />,
+              }}
+              placeholder={intl.formatMessage({
+                id: 'pages.account.newPassword.placeholder',
+                defaultMessage: 'New Password',
+              })}
+              rules={[
+                {
+                  required: true,
+                  message: (
                     <FormattedMessage
-                      id='pages.account.newPassword.strengthStrong'
-                      defaultMessage='Strength: Strong'
+                      id='pages.account.newPassword.required'
+                      defaultMessage='Please input the new password!'
                     />
-                  </div>
-                );
+                  ),
+                },
+                {
+                  pattern:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.newPassword.validation'
+                      defaultMessage='Password is invalid!'
+                    />
+                  ),
+                },
+                {
+                  validator: (_, value) => {
+                    const currentPassword = formRefEdit.current?.getFieldValue('currentPassword');
+                    if (value && value === currentPassword) {
+                      return Promise.reject(
+                        new Error(
+                          intl.formatMessage({
+                            id: 'pages.account.newPassword.sameAsOld',
+                            defaultMessage:
+                              'New password should be different from the current password.',
+                          }),
+                        ),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            />
+
+            <Form.Item
+              noStyle
+              shouldUpdate={(previous, current) => previous.newPassword !== current.newPassword}
+            >
+              {({ getFieldValue }) => renderPasswordStrength(getFieldValue('newPassword'))}
+            </Form.Item>
+
+            <Form.Item
+              name='confirmNewPassword'
+              label={
+                <FormattedMessage
+                  id='pages.account.password.confirmNewPassword'
+                  defaultMessage='Confirm New Password'
+                />
               }
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.confirmNewPassword.required'
+                      defaultMessage='Please input the new password again!'
+                    />
+                  ),
+                },
+                {
+                  validator: (_, value) => {
+                    if (!value || formRefEdit.current?.getFieldValue('newPassword') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: 'pages.account.passwordsDoNotMatch',
+                          defaultMessage: 'The two passwords that you entered do not match!',
+                        }),
+                      ),
+                    );
+                  },
+                },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder={intl.formatMessage({
+                  id: 'pages.account.confirmNewPassword.placeholder',
+                  defaultMessage: 'Confirm New Password',
+                })}
+              />
+            </Form.Item>
+          </div>
+
+          <aside className={styles.passwordGuide}>
+            <div className={styles.passwordGuideHeading}>
+              <SafetyCertificateOutlined className={styles.guideIcon} />
+              <Typography.Title level={5}>
+                <FormattedMessage
+                  id='pages.account.password.guideTitle'
+                  defaultMessage='Password tips'
+                />
+              </Typography.Title>
+            </div>
+            <ul className={styles.guideList}>
+              <li>
+                <CheckCircleOutlined />
+                <FormattedMessage
+                  id='pages.account.password.guide.length'
+                  defaultMessage='At least 8 characters'
+                />
+              </li>
+              <li>
+                <CheckCircleOutlined />
+                <FormattedMessage
+                  id='pages.account.password.guide.letters'
+                  defaultMessage='Include uppercase and lowercase letters'
+                />
+              </li>
+              <li>
+                <CheckCircleOutlined />
+                <FormattedMessage
+                  id='pages.account.password.guide.numberSymbol'
+                  defaultMessage='Include numbers and symbols'
+                />
+              </li>
+            </ul>
+          </aside>
+        </div>
+      </ProForm>
+    </AccountContentPanel>
+  );
+
+  const renderChangeEmailForm = () => (
+    <AccountContentPanel
+      className={styles.emailPanel}
+      description={
+        <FormattedMessage
+          id='pages.account.email.description'
+          defaultMessage='Enter a new email address and verify it to complete the change.'
+        />
+      }
+      title={<FormattedMessage id='pages.account.changeEmail' defaultMessage='Change Email' />}
+    >
+      <div className={styles.emailLayout}>
+        <ProForm
+          className={styles.emailForm}
+          formRef={formRefEdit}
+          layout='vertical'
+          submitter={{
+            searchConfig: {
+              resetText: intl.formatMessage({
+                id: 'pages.account.action.reset',
+                defaultMessage: 'Reset',
+              }),
+              submitText: intl.formatMessage({
+                id: 'pages.account.email.submit',
+                defaultMessage: 'Send verification email',
+              }),
+            },
+            render: (props, doms) => {
               return (
-                <div style={{ color: token.colorError }}>
-                  <FormattedMessage
-                    id='pages.account.newPassword.strengthWeak'
-                    defaultMessage='Strength: Weak'
-                  />
+                <div className={`${styles.submitRow} ${styles.emailSubmitRow}`}>
+                  <Flex gap='middle'>{doms}</Flex>
                 </div>
               );
             },
           }}
-          placeholder={intl.formatMessage({
-            id: 'pages.account.newPassword.placeholder',
-            defaultMessage: 'New Password',
-          })}
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id='pages.account.newPassword.required'
-                  defaultMessage='Please input the new password!'
-                />
-              ),
-            },
-            {
-              pattern:
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
-              message: (
-                <FormattedMessage
-                  id='pages.account.newPassword.validation'
-                  defaultMessage='Password is invalid!'
-                />
-              ),
-            },
-            {
-              validator: (_, value) => {
-                const currentPassword = formRefEdit.current?.getFieldValue('currentPassword');
-                if (value && value === currentPassword) {
-                  return Promise.reject(
-                    new Error(
-                      intl.formatMessage({
-                        id: 'pages.account.newPassword.sameAsOld',
-                        defaultMessage:
-                          'New password should be different from the current password.',
-                      }),
-                    ),
-                  );
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
-          hasFeedback
-        />
-
-        <Form.Item
-          name='confirmNewPassword'
-          label={
-            <FormattedMessage
-              id='pages.account.password.confirmNewPassword'
-              defaultMessage='Confirm New Password'
-            />
-          }
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id='pages.account.confirmNewPassword.required'
-                  defaultMessage='Please input the new password again!'
-                />
-              ),
-            },
-            {
-              validator: (_, value) => {
-                if (!value || formRefEdit.current?.getFieldValue('newPassword') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error(
-                    intl.formatMessage({
-                      id: 'pages.account.passwordsDoNotMatch',
-                      defaultMessage: 'The two passwords that you entered do not match!',
-                    }),
-                  ),
+          onFinish={async (value) => {
+            setSpinning(true);
+            try {
+              const msg = await changeEmail(value);
+              if (msg.status === 'ok') {
+                formRefEdit.current?.resetFields();
+                message.success(
+                  intl.formatMessage({
+                    id: 'pages.account.email.changed.success',
+                    defaultMessage:
+                      'Verification email sent successfully! Please update your email via the email link.',
+                  }),
                 );
-              },
-            },
-          ]}
-          hasFeedback
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder={intl.formatMessage({
-              id: 'pages.account.confirmNewPassword.placeholder',
-              defaultMessage: 'Confirm New Password',
-            })}
-          />
-        </Form.Item>
-      </ProForm>
-    </Flex>
-  );
-
-  const renderChangeEmailForm = () => (
-    <Flex gap='middle' vertical style={ACCOUNT_FORM_CONTAINER_STYLE}>
-      <ProForm
-        formRef={formRefEdit}
-        submitter={{
-          render: (props, doms) => {
-            return (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Flex gap='middle'>{doms}</Flex>
-              </div>
-            );
-          },
-        }}
-        onFinish={async (value) => {
-          setSpinning(true);
-          try {
-            const msg = await changeEmail(value);
-            if (msg.status === 'ok') {
-              formRefEdit.current?.resetFields();
-              message.success(
-                intl.formatMessage({
-                  id: 'pages.account.email.changed.success',
-                  defaultMessage:
-                    'Verification email sent successfully! Please update your email via the email link.',
-                }),
-              );
-            } else {
-              message.error(msg.message);
+              } else {
+                message.error(msg.message);
+              }
+            } catch (error) {
+              message.error('An error occurred while changing the email.');
+            } finally {
+              setSpinning(false);
             }
-          } catch (error) {
-            message.error('An error occurred while changing the email.');
-          } finally {
-            setSpinning(false);
-          }
-        }}
-      >
-        <Form.Item
-          name={'email'}
-          label={
-            <FormattedMessage
-              id='pages.account.email.currentEmail'
-              defaultMessage='Current Email'
-            />
-          }
-          initialValue={initData?.email}
-        >
-          <Input prefix={<MailOutlined />} disabled={true} />
-        </Form.Item>
-
-        <ProFormText
-          name='newEmail'
-          label={<FormattedMessage id='pages.account.newEmail' defaultMessage='New Email' />}
-          fieldProps={{
-            size: 'middle',
-            prefix: <MailOutlined />,
           }}
-          placeholder={intl.formatMessage({
-            id: 'pages.account.newEmail.placeholder',
-            defaultMessage: 'New Email',
-          })}
-          rules={[
-            {
-              type: 'email',
-              message: (
-                <FormattedMessage
-                  id='pages.account.newEmail.wrong-format'
-                  defaultMessage='The email format is incorrect!'
-                />
-              ),
-            },
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id='pages.account.newEmail.required'
-                  defaultMessage='Please input the new email!'
-                />
-              ),
-            },
-          ]}
-          hasFeedback
-        />
-
-        <Form.Item
-          name='confirmNewEmail'
-          label={
-            <FormattedMessage
-              id='pages.account.email.confirmNewEmail'
-              defaultMessage='Confirm New Email'
-            />
-          }
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id='pages.account.confirmNewEmail.required'
-                  defaultMessage='Please input the new email again!'
-                />
-              ),
-            },
-            {
-              validator: (_, value) => {
-                if (!value || formRefEdit.current?.getFieldValue('newEmail') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error(
-                    intl.formatMessage({
-                      id: 'pages.account.emailsDoNotMatch',
-                      defaultMessage: 'The two emails that you entered do not match!',
-                    }),
-                  ),
-                );
-              },
-            },
-          ]}
-          hasFeedback
         >
-          <Input
-            prefix={<MailOutlined />}
-            placeholder={intl.formatMessage({
-              id: 'pages.account.confirmNewEmail.placeholder',
-              defaultMessage: 'Confirm New Email',
-            })}
+          <div className={styles.emailFormColumn}>
+            <Form.Item name={'email'} initialValue={initData?.email} style={{ display: 'none' }}>
+              <Input disabled={true} />
+            </Form.Item>
+            <dl className={styles.emailCurrent}>
+              <dt>
+                <FormattedMessage
+                  id='pages.account.email.currentEmail'
+                  defaultMessage='Current Email'
+                />
+              </dt>
+              <dd>
+                <MailOutlined />
+                <span>{initData?.email}</span>
+              </dd>
+            </dl>
+
+            <ProFormText
+              name='newEmail'
+              label={<FormattedMessage id='pages.account.newEmail' defaultMessage='New Email' />}
+              fieldProps={{
+                size: 'middle',
+                prefix: <MailOutlined />,
+              }}
+              placeholder={intl.formatMessage({
+                id: 'pages.account.email.newAddress.placeholder',
+                defaultMessage: 'Enter your new email address',
+              })}
+              rules={[
+                {
+                  type: 'email',
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.newEmail.wrong-format'
+                      defaultMessage='The email format is incorrect!'
+                    />
+                  ),
+                },
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.newEmail.required'
+                      defaultMessage='Please input the new email!'
+                    />
+                  ),
+                },
+              ]}
+              hasFeedback
+            />
+
+            <Form.Item
+              name='confirmNewEmail'
+              label={
+                <FormattedMessage
+                  id='pages.account.email.confirmNewEmail'
+                  defaultMessage='Confirm New Email'
+                />
+              }
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id='pages.account.confirmNewEmail.required'
+                      defaultMessage='Please input the new email again!'
+                    />
+                  ),
+                },
+                {
+                  validator: (_, value) => {
+                    if (!value || formRefEdit.current?.getFieldValue('newEmail') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        intl.formatMessage({
+                          id: 'pages.account.emailsDoNotMatch',
+                          defaultMessage: 'The two emails that you entered do not match!',
+                        }),
+                      ),
+                    );
+                  },
+                },
+              ]}
+              hasFeedback
+            >
+              <Input
+                prefix={<MailOutlined />}
+                placeholder={intl.formatMessage({
+                  id: 'pages.account.email.confirmAddress.placeholder',
+                  defaultMessage: 'Enter your new email address again',
+                })}
+              />
+            </Form.Item>
+
+            <div className={styles.emailNote} role='note'>
+              <InfoCircleOutlined />
+              <span>
+                <FormattedMessage
+                  id='pages.account.email.currentLoginHint'
+                  defaultMessage='You can continue signing in with your current email until verification is complete.'
+                />
+              </span>
+            </div>
+          </div>
+        </ProForm>
+        <aside className={styles.emailGuide}>
+          <Typography.Title className={styles.emailGuideTitle} level={3}>
+            <FormattedMessage id='pages.account.email.guideTitle' defaultMessage='How it works' />
+          </Typography.Title>
+          <Steps
+            className={styles.emailSteps}
+            classNames={{
+              item: styles.emailStep,
+              itemTitle: styles.emailStepTitle,
+              itemContent: styles.emailStepContent,
+            }}
+            styles={{
+              itemContent: { color: token.colorTextSecondary },
+              itemRail: { borderColor: token.colorBorder },
+            }}
+            current={0}
+            orientation='vertical'
+            items={[
+              {
+                title: intl.formatMessage({
+                  id: 'pages.account.email.step.enter',
+                  defaultMessage: 'Enter new email',
+                }),
+                content: intl.formatMessage({
+                  id: 'pages.account.email.step.enterHint',
+                  defaultMessage: 'Make sure your email address is correct',
+                }),
+              },
+              {
+                title: intl.formatMessage({
+                  id: 'pages.account.email.step.verify',
+                  defaultMessage: 'Check verification email',
+                }),
+                content: intl.formatMessage({
+                  id: 'pages.account.email.step.verifyHint',
+                  defaultMessage: 'Open your new inbox and follow the verification instructions',
+                }),
+              },
+              {
+                title: intl.formatMessage({
+                  id: 'pages.account.email.step.complete',
+                  defaultMessage: 'Complete change',
+                }),
+                content: intl.formatMessage({
+                  id: 'pages.account.email.step.completeHint',
+                  defaultMessage: 'Once verified, sign in with your new email',
+                }),
+              },
+            ]}
+            size='small'
           />
-        </Form.Item>
-      </ProForm>
-    </Flex>
+        </aside>
+      </div>
+    </AccountContentPanel>
   );
 
   useEffect(() => {

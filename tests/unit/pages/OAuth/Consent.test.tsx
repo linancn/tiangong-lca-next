@@ -5,11 +5,12 @@ import {
   getVerifiedOAuthSubject,
   redirectToOAuthCallback,
 } from '@/services/auth';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const authorizationId = 'jteae32pgurfg3oqqppq2yravsyh4ezw';
 const mockReplace = jest.fn();
+const originalNodeEnv = process.env.NODE_ENV;
 let mockSearch = `?authorization_id=${authorizationId}`;
 
 jest.mock('umi', () => ({
@@ -66,12 +67,63 @@ const deferred = <T,>() => {
 describe('OAuth consent page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env.NODE_ENV = originalNodeEnv;
     mockSearch = `?authorization_id=${authorizationId}`;
     mockGetVerifiedOAuthSubject.mockResolvedValue('user-1');
     mockGetAuthorizationDetails.mockResolvedValue({ data: details, error: null } as any);
     mockRedirectToCallback.mockReturnValue(true);
     mockBuildLoginPath.mockReturnValue('/user/login?redirect=safe-relative-path');
   });
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it('does not revive mock data for an obsolete preview URL', async () => {
+    process.env.NODE_ENV = 'development';
+    mockSearch = '?authorization_id=mock-consent-preview&mockOAuthConsent=1';
+    mockGetAuthorizationDetails.mockResolvedValueOnce({
+      data: null,
+      error: new Error('authorization not found'),
+    } as any);
+    render(<OAuthConsentPage />);
+
+    expect(
+      await screen.findByText(
+        'This authorization request is invalid, expired, or no longer available.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Signed in as demo@example.com')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Allow connection/u })).not.toBeInTheDocument();
+    expect(mockGetVerifiedOAuthSubject).toHaveBeenCalledTimes(1);
+    expect(mockGetAuthorizationDetails).toHaveBeenCalledWith('mock-consent-preview');
+    expect(mockDecideAuthorization).not.toHaveBeenCalled();
+    expect(mockRedirectToCallback).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('ignores the obsolete preview flag on a real authorization request', async () => {
+    process.env.NODE_ENV = 'development';
+    mockSearch = `?authorization_id=${authorizationId}&mockOAuthConsent=1`;
+    render(<OAuthConsentPage />);
+    expect(await screen.findByText('Allow TianGong CLI to connect?')).toBeInTheDocument();
+    expect(mockGetAuthorizationDetails).toHaveBeenCalledWith(authorizationId);
+    expect(screen.queryByText('Demo preview · No real authorization')).not.toBeInTheDocument();
+  });
+
+  it.each(['development', 'production'])(
+    'requires authentication for obsolete preview URLs in %s',
+    async (environment) => {
+      process.env.NODE_ENV = environment;
+      mockSearch = '?authorization_id=mock-consent-preview&mockOAuthConsent=1';
+      mockGetVerifiedOAuthSubject.mockResolvedValueOnce(null);
+      render(<OAuthConsentPage />);
+      await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+      expect(mockGetVerifiedOAuthSubject).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText('Demo preview · No real authorization')).not.toBeInTheDocument();
+      expect(mockGetAuthorizationDetails).not.toHaveBeenCalled();
+    },
+  );
 
   it('fails closed without calling Supabase for a malformed authorization ID', async () => {
     mockSearch = '?authorization_id=javascript:alert(1)';
@@ -95,25 +147,50 @@ describe('OAuth consent page', () => {
     expect(mockGetAuthorizationDetails).not.toHaveBeenCalled();
   });
 
-  it('renders registered client details and requested identity scopes', async () => {
+  it('renders the client and permission descriptions without callback metadata', async () => {
     render(<OAuthConsentPage />);
 
     expect(await screen.findByText('Allow TianGong CLI to connect?')).toBeInTheDocument();
-    expect(screen.getByText('127.0.0.1:43821/callback')).toBeInTheDocument();
+    expect(screen.queryByText('127.0.0.1:43821/callback')).not.toBeInTheDocument();
+    expect(screen.queryByText('Registered callback')).not.toBeInTheDocument();
     expect(screen.getByText('Confirm your TianGong LCA identity')).toBeInTheDocument();
     expect(screen.getByText('Read your email address')).toBeInTheDocument();
     expect(screen.getByText('Read your basic profile')).toBeInTheDocument();
     expect(screen.getByText('Signed in as user@example.com')).toBeInTheDocument();
   });
 
-  it('renders phone and unknown scopes while safely falling back for a malformed display URI', async () => {
+  it('groups the account summary beneath the permission list without technical metadata', async () => {
+    render(<OAuthConsentPage />);
+    const context = await screen.findByRole('complementary', {
+      name: 'Signed in as user@example.com',
+    });
+    const permissions = screen.getByRole('region', { name: 'Requested identity permissions' });
+
+    expect(within(context).getByText('Signed in as user@example.com')).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Review the identity information this application is requesting/u),
+    ).not.toBeInTheDocument();
+    expect(within(context).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(permissions).getAllByRole('listitem')).toHaveLength(3);
+    expect(permissions).toContainElement(context);
+    expect(within(permissions).queryByText('openid')).not.toBeInTheDocument();
+    expect(within(permissions).queryByText('email')).not.toBeInTheDocument();
+    expect(within(permissions).queryByText('profile')).not.toBeInTheDocument();
+    expect(within(permissions).getAllByRole('button')).toHaveLength(2);
+    expect(
+      screen.getAllByText('You can revoke this connection later from Account → Connected apps.'),
+    ).toHaveLength(1);
+  });
+
+  it('keeps phone and unknown permission descriptions without displaying callback metadata', async () => {
     mockGetAuthorizationDetails.mockResolvedValueOnce({
       data: { ...details, redirect_uri: 'not-a-url', scope: 'phone custom_scope' },
       error: null,
     } as any);
     render(<OAuthConsentPage />);
 
-    expect(await screen.findByText('not-a-url')).toBeInTheDocument();
+    expect(await screen.findByText('Allow TianGong CLI to connect?')).toBeInTheDocument();
+    expect(screen.queryByText('not-a-url')).not.toBeInTheDocument();
     expect(screen.getByText('Read your phone number')).toBeInTheDocument();
     expect(screen.getByText('Request the custom_scope identity permission')).toBeInTheDocument();
   });

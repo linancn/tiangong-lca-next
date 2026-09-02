@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next Issue #1002: the existing dashboard service boundary maps database-owned v3 assigned and unassigned reviewer counts without adding a frontend data source or persistence layer.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent UI restructuring stays within existing page and service boundaries without new data sources, runtime mock fixtures, or business API changes.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

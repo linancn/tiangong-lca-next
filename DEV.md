@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: the organization dashboard contract update changes no bootstrap commands; focused tests, lint, build, Docpact, and managed push remain authoritative.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: UI, supporting tests, and locale artifact updates retain existing bootstrap and managed-push commands; no runtime mock preview setup is required.'
 ---
 
 # Development Bootstrap

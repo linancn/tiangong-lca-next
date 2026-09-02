@@ -28,6 +28,7 @@ const OAuthConnections = require('@/pages/Account/OAuthConnections').default;
 
 const mockListGrants = jest.mocked(listOAuthGrants);
 const mockRevokeGrant = jest.mocked(revokeOAuthGrant);
+const originalNodeEnv = process.env.NODE_ENV;
 
 const grant = {
   client: {
@@ -43,19 +44,68 @@ const grant = {
 describe('OAuthConnections', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env.NODE_ENV = originalNodeEnv;
+    window.history.replaceState({}, '', '/');
     mockListGrants.mockResolvedValue({ data: [grant], error: null } as any);
     mockRevokeGrant.mockResolvedValue({ data: {}, error: null } as any);
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+    window.history.replaceState({}, '', '/');
   });
 
   it('lists grants without exposing password-equivalent controls', async () => {
     render(<OAuthConnections />);
 
     expect(await screen.findByText('TianGong CLI')).toBeInTheDocument();
-    expect(screen.getByText('openid')).toBeInTheDocument();
-    expect(screen.getByText('email')).toBeInTheDocument();
+    expect(screen.queryByText(/^Permissions:/u)).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'code' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'appstore' })).not.toBeInTheDocument();
+    expect(screen.getByText(/^Authorized /u)).toBeInTheDocument();
+    expect(screen.getByText('1 connected applications')).toBeInTheDocument();
+    expect(screen.getByText('Connected')).toBeInTheDocument();
     expect(screen.queryByText(/API Key/u)).not.toBeInTheDocument();
     expect(screen.queryByText(/Legacy compatibility/u)).not.toBeInTheDocument();
   });
+
+  it.each(['/?mockOAuthConnections=1#/account', '/#/account?mockOAuthConnections=1'])(
+    'uses OAuth APIs even when an obsolete preview flag is present: %s',
+    async (url) => {
+      process.env.NODE_ENV = 'development';
+      window.history.pushState({}, '', url);
+      const user = userEvent.setup();
+      render(<OAuthConnections />);
+
+      expect(await screen.findByText('TianGong CLI')).toBeInTheDocument();
+      expect(screen.queryByText('LCA Data Studio')).not.toBeInTheDocument();
+      expect(screen.getByText('1 connected applications')).toBeInTheDocument();
+      expect(mockListGrants).toHaveBeenCalledTimes(1);
+
+      await user.click(screen.getAllByRole('button', { name: /Disconnect/u })[0]);
+      const confirmation = mockConfirm.mock.calls[0][0];
+      await act(async () => {
+        await confirmation.onOk();
+      });
+
+      expect(mockRevokeGrant).toHaveBeenCalledWith('client-1');
+      expect(screen.queryByText('TianGong CLI')).not.toBeInTheDocument();
+      expect(await screen.findByText('No applications are connected.')).toBeInTheDocument();
+    },
+  );
+
+  it.each([{ scopes: ['profile', 'offline_access', 'custom_scope', 'profile'] }, { scopes: [] }])(
+    'keeps application details without a permissions summary: $scopes',
+    async ({ scopes }) => {
+      mockListGrants.mockResolvedValueOnce({ data: [{ ...grant, scopes }], error: null } as any);
+      render(<OAuthConnections />);
+      expect(await screen.findByText('TianGong CLI')).toBeInTheDocument();
+      expect(screen.getByText('Connected')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Disconnect/u })).toBeInTheDocument();
+      expect(screen.queryByText(/^Permissions:/u)).not.toBeInTheDocument();
+      expect(screen.queryByText(/custom_scope|No additional permissions/u)).not.toBeInTheDocument();
+    },
+  );
 
   it('revokes the selected grant after explicit confirmation', async () => {
     const user = userEvent.setup();

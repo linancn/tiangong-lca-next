@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-02"
-lastReviewedCommit: "5dcc8248c2b587add2f10ba10405813722aea104"
-lastReviewedNote: 'Reviewed for Next Issue #1002: existing frontend data, dashboard UI, locale, service, and test routes cover the v3 organization reviewer-assignment metrics without changing ownership.'
+lastReviewedAt: '2026-09-02'
+lastReviewedCommit: '52f2d2b92c756c969442e6225ab84a344f5c8868'
+lastReviewedNote: 'Reviewed for Next #1009: existing Account, OAuth, locale, and test routes cover UI presentation, supporting regressions, and generated artifacts; ownership and runtime authorization boundaries are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: organization dashboard RPC mapping, locale, component, and coverage failures use existing fail-closed diagnostics.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent UI, form, and obsolete-preview-flag regressions use existing diagnostics; no runtime preview helper or troubleshooting workflow is added.'
 ---
 
 # Testing Troubleshooting
