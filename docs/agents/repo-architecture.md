@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
-lastReviewedNote: 'Reviewed for Next Issue #999: the frontend/service boundary maps nullable model_version and centralizes exact LifecycleModel ownership resolution without adding a relationship entity or lookup.'
+lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
+lastReviewedNote: 'Reviewed for Next Issue #1002: the existing dashboard service boundary maps database-owned v3 assigned and unassigned reviewer counts without adding a frontend data source or persistence layer.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

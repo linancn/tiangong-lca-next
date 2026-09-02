@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next Issue #999: Process rows retain modified-at-desc behavior while model navigation resolves the exact stored model_version or the legacy Process-version fallback, never latest Model.'
+lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
+lastReviewedNote: 'Reviewed for Next Issue #1002: the organization contribution dashboard consumes the database-owned v3 reviewer-assignment projection through existing service, locale, UI, and test boundaries; repository delivery rules remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
