@@ -1,164 +1,259 @@
-.page {
-  position: relative;
-  display: grid;
-  min-height: 100vh;
-  place-items: center;
-  overflow: hidden;
-  padding: 48px 20px;
-  background: linear-gradient(145deg, #eff8f5 0%, #f7f8fb 48%, #edf1f8 100%);
+.page,
+.page * {
+  box-sizing: border-box;
 }
 
-.backdrop {
-  position: absolute;
-  inset: -30%;
-  background:
-    radial-gradient(circle at 28% 32%, rgb(24 144 104 / 16%), transparent 24%),
-    radial-gradient(circle at 74% 68%, rgb(41 83 147 / 12%), transparent 28%);
-  filter: blur(8px);
+.page {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  place-items: center;
+  background: color-mix(in srgb, var(--consent-surface) 97%, var(--consent-primary));
+  color: var(--consent-text);
 }
 
 .card {
-  width: min(100%, 620px);
-  border: 1px solid rgb(15 55 45 / 8%);
-  border-radius: 24px;
-  box-shadow: 0 28px 90px rgb(22 48 63 / 14%);
+  width: min(100%, 800px);
+  overflow: hidden;
+  border: 1px solid var(--consent-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgb(42 23 48 / 5%);
+}
 
-  :global(.ant-card-body) {
-    padding: clamp(28px, 6vw, 52px);
-  }
+.cardBody {
+  padding: 0 !important;
+}
+
+.stateCard {
+  max-width: 620px;
+}
+
+.consentLayout {
+  padding: 28px 40px;
+}
+
+.header {
+  min-width: 0;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .brandMark {
-  display: grid;
-  width: 54px;
-  height: 54px;
-  margin-bottom: 28px;
-  color: #fff;
-  font-size: 26px;
-  background: linear-gradient(145deg, #087f5b, #145b72);
-  border-radius: 16px;
-  place-items: center;
-  box-shadow: 0 12px 24px rgb(8 127 91 / 22%);
-}
-
-.heading {
-  margin-bottom: 24px;
+  color: var(--consent-primary);
+  font-size: 28px;
+  line-height: 1;
 }
 
 .eyebrow {
-  display: block;
-  margin-bottom: 8px;
-  color: #087f5b;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  color: var(--consent-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.heading {
+  margin: 20px 0 0 !important;
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  overflow-wrap: anywhere;
+}
+
+.detailsPanel {
+  min-width: 0;
+  margin-top: 24px;
 }
 
 .clientRow {
   display: flex;
+  min-width: 0;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  background: rgb(8 127 91 / 5%);
-  border: 1px solid rgb(8 127 91 / 10%);
-  border-radius: 16px;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--consent-border);
 }
 
 .clientAvatar {
   flex: 0 0 auto;
-  color: #087f5b;
-  background: #dff5ec;
+  color: var(--consent-primary);
+  background: color-mix(in srgb, var(--consent-surface) 93%, var(--consent-primary));
+  border-radius: 14px;
 }
 
 .clientText {
-  display: flex;
-  flex: 1;
   min-width: 0;
-  flex-direction: column;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
 
-  :global(.ant-typography) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.clientName {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.permissionsTitle {
+  display: block;
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .scopeList {
-  display: grid;
+  overflow: hidden;
   padding: 0;
-  margin: 10px 0 0;
+  margin: 16px 0 0;
+  border: 1px solid var(--consent-border);
+  border-radius: 12px;
   list-style: none;
 }
 
 .scopeItem {
   display: flex;
+  min-height: 60px;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgb(15 55 45 / 8%);
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--consent-border);
 }
 
-.scopeText {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.scopeItem:last-child {
+  border-bottom: none;
 }
 
 .scopeCheck {
   display: grid;
-  width: 28px;
-  height: 28px;
-  color: #087f5b;
-  background: #e4f6ef;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  color: var(--consent-primary);
+  font-size: 18px;
+  background: color-mix(in srgb, var(--consent-surface) 92%, var(--consent-primary));
   border-radius: 50%;
   place-items: center;
 }
 
-.notice {
+.scopeLabel {
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.accountSummary {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
   margin-top: 20px;
+  background: color-mix(in srgb, var(--consent-surface) 97%, var(--consent-primary));
+  border-radius: 10px;
+}
+
+.accountAvatar {
+  color: var(--consent-muted);
+  background: color-mix(in srgb, var(--consent-surface) 88%, var(--consent-primary));
+}
+
+.accountDetails {
+  min-width: 0;
+}
+
+.accountText {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.revocationHint {
+  margin: 4px 0 0 !important;
+  color: var(--consent-muted) !important;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 28px;
+  margin-top: 20px;
+}
+
+.actionButton {
+  min-width: 112px;
+  height: 44px;
+  padding-inline: 24px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.actionButton:last-child {
+  min-width: 136px;
 }
 
 .loading {
   display: flex;
-  min-height: 280px;
+  min-height: 320px;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
+  padding: 48px;
 }
 
-.fullWidth {
+.errorState {
   width: 100%;
+  padding: 40px;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .page {
+    padding: 16px 12px;
     align-items: start;
-    padding: 18px 12px;
   }
 
-  .card {
-    border-radius: 18px;
+  .consentLayout {
+    padding: 28px 24px;
   }
 
-  .clientRow {
-    align-items: flex-start;
-    flex-wrap: wrap;
+  .heading {
+    font-size: 26px !important;
+  }
+
+  .scopeItem {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .accountSummary {
+    align-items: start;
+    gap: 12px;
+    padding: 16px 14px;
   }
 
   .actions {
-    flex-direction: column-reverse;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-    :global(.ant-btn) {
-      width: 100%;
-    }
+  .actions .actionButton {
+    min-width: 0;
+    height: auto;
+    min-height: 44px;
+    padding: 10px 12px;
+    white-space: normal;
+  }
+
+  .loading,
+  .errorState {
+    padding: 32px 24px;
   }
 }

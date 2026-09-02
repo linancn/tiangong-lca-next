@@ -76,18 +76,34 @@ function normalize_extension_name(name) {
   return name
 }
 
+function compatible_acl_line(line) {
+  # PG17 adds MAINTAIN; the pinned PG15 has no corresponding privilege.
+  # This is called only inside pg_dump ACL blocks, never routine bodies.
+  if (line ~ /^(GRANT|REVOKE) / && line ~ / ON TABLE /) {
+    if (line ~ /^(GRANT|REVOKE) MAINTAIN ON TABLE /) return ""
+    gsub(/,MAINTAIN/, "", line)
+    gsub(/MAINTAIN,/, "", line)
+  }
+  return line
+}
+
 function keep_block(name, obj_type, schema, ext_name) {
+  # This one Database-owned bridge is attached to a managed Auth table; keep
+  # its trigger only, never the Auth table, native routines, users or tokens.
+  if (schema == "auth" && obj_type == "TRIGGER" && name == "users trg_sync_auth_users_to_private_users") {
+    return 1
+  }
   if (schema == "auth" || schema == "cron" || schema == "extensions" || schema == "graphql" || schema == "graphql_public" || schema == "net" || schema == "pgbouncer" || schema == "pgsodium" || schema == "pgsodium_masks" || schema == "realtime" || schema == "storage" || schema == "supabase_functions" || schema == "supabase_migrations" || schema == "vault") {
     return 0
   }
 
-  if (schema == "public" || schema == "pgmq" || schema == "util") {
+  if (in_csv_set(schema, "api,private,public,util,archive,pgmq")) {
     return 1
   }
 
   if (schema == "-") {
     if (obj_type == "SCHEMA") {
-      return (name == "pgmq" || name == "util")
+      return in_csv_set(name, "api,private,util,archive,pgmq")
     }
 
     if (obj_type == "EXTENSION" || obj_type == "COMMENT") {
@@ -97,8 +113,9 @@ function keep_block(name, obj_type, schema, ext_name) {
       return in_csv_set(ext_name, "pgmq,vector,pgroonga,hstore,http,pgcrypto,uuid-ossp")
     }
 
-    if (obj_type == "ACL" && (name == "public" || name == "SCHEMA public")) {
-      return 1
+    if (obj_type == "ACL") {
+      sub(/^SCHEMA /, "", name)
+      return in_csv_set(name, "api,private,public,util,archive,pgmq")
     }
 
     return 0
@@ -159,7 +176,9 @@ END {
         if (i < line_count && lines[i] == "--" && index(lines[i+1], "-- Name: ") == 1) {
           break
         }
-        block_line = block_line lines[i] "\n"
+        body_line = lines[i]
+        if (meta_ok && meta_type == "ACL") body_line = compatible_acl_line(body_line)
+        block_line = block_line body_line "\n"
         i++
       }
       block_text[block_count] = block_line

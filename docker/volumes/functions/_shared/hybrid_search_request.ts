@@ -7,6 +7,7 @@ export class HybridSearchRequestError extends Error {
 
 export interface HybridSearchClientRequest {
   queryText: string;
+  versionScope: 'latest' | 'matched';
   rpcOptions: HybridSearchRpcOptions;
   visibilityOptions: HybridSearchVisibilityOptions;
 }
@@ -172,13 +173,26 @@ export function parseHybridSearchClientRequest(body: unknown): HybridSearchClien
   }
 
   const filterInput = body.filter_condition ?? body.filter;
+  const versionScope = body.version_scope ?? 'latest';
+  if (versionScope !== 'latest' && versionScope !== 'matched') {
+    throw new HybridSearchRequestError('version_scope must be latest or matched');
+  }
+  const matchCount = parsePositiveInteger(
+    body.match_count,
+    'match_count',
+    versionScope === 'matched' ? 200 : 20,
+  );
+  if (versionScope === 'matched' && matchCount !== 200) {
+    throw new HybridSearchRequestError('matched version search uses 200 candidates per branch');
+  }
 
   return {
     queryText,
+    versionScope,
     rpcOptions: {
       filter_condition: normalizeFilterCondition(filterInput),
       match_threshold: parseMatchThreshold(body.match_threshold),
-      match_count: parsePositiveInteger(body.match_count, 'match_count', 20),
+      match_count: matchCount,
       lexical_weight: parseNonNegativeNumber(body.lexical_weight, 'lexical_weight', 0.5),
       semantic_weight: parseNonNegativeNumber(body.semantic_weight, 'semantic_weight', 0.5),
       rrf_k: parsePositiveInteger(body.rrf_k, 'rrf_k', 10),

@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next #999: Process ownership regressions, regenerated locale artifacts, and the integrated review-submit loading assertion retain the single managed pre-push gate and 100% coverage enforcement.'
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
+lastReviewedNote: 'Reviewed for Next #1008: focused iteration and generated-mirror checkpoints preserve the existing one-full-gate-after-final-commit policy; no hook bypass or gate change was introduced.'
 ---
 
 # Pre-Push Gate Policy

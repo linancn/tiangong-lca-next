@@ -58,9 +58,7 @@ import {
 } from './data/schema';
 import {
   formatDashboardDate,
-  formatDashboardDateTime,
   formatDashboardNumber as formatNumber,
-  formatDashboardPercent,
   getCanonicalRuntimeLocale,
   getDashboardRegionLabel,
   getDashboardScreenLabel,
@@ -2461,18 +2459,14 @@ function OrganizationContributionRanking({
             {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.published' })}
           </span>
           <span role='columnheader'>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.reviewing' })}
-          </span>
-          <span role='columnheader'>
             {intl.formatMessage({
-              id: 'pages.home.nationalCarbon.organization.column.contributors',
+              id: 'pages.home.nationalCarbon.organization.column.assignedReviewer',
             })}
           </span>
           <span role='columnheader'>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.share' })}
-          </span>
-          <span role='columnheader'>
-            {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.latest' })}
+            {intl.formatMessage({
+              id: 'pages.home.nationalCarbon.organization.column.unassignedReviewer',
+            })}
           </span>
         </div>
         {scopeSnapshot.rankings.length === 0 ? (
@@ -2491,21 +2485,8 @@ function OrganizationContributionRanking({
                 </strong>
               </Tooltip>
               <span role='cell'>{formatNumber(ranking.publishedDatasetCount)}</span>
-              <span role='cell'>{formatNumber(ranking.reviewingDatasetCount)}</span>
-              <span role='cell'>{formatNumber(ranking.contributorCount)}</span>
-              <span role='cell'>
-                <b className={styles.organizationShareValue}>
-                  {formatDashboardPercent(ranking.contributionShare)}
-                </b>
-                <i className={styles.organizationShareTrack} aria-hidden='true'>
-                  <i style={{ width: `${ranking.contributionShare * 100}%` }} />
-                </i>
-              </span>
-              <span role='cell'>
-                {ranking.latestContributedAt
-                  ? formatDashboardDateTime(ranking.latestContributedAt)
-                  : '-'}
-              </span>
+              <span role='cell'>{formatNumber(ranking.assignedReviewerDatasetCount)}</span>
+              <span role='cell'>{formatNumber(ranking.unassignedReviewerDatasetCount)}</span>
             </div>
           ))
         )}

@@ -1,9 +1,10 @@
-import { authenticateRequest, AuthMethod } from './auth.ts';
+import { authenticateRequest, AuthMethod, type AuthResult } from './auth.ts';
 import { corsHeaders } from './cors.ts';
 import { extractEmbeddingVector } from './embedding_vector.ts';
 import { generateHybridSearchEmbedding, rewriteHybridSearchQuery } from './hybrid_search_kernel.ts';
 import {
   buildHybridFulltextQueryTerms,
+  buildBoundedHybridFulltextQueryTerms,
   sanitizeHybridQueryOutput,
   type HybridSearchQuery,
 } from './hybrid_query_utils.ts';
@@ -24,13 +25,11 @@ export interface HybridSearchRouteConfig {
   entityLabel: string;
   entityPlural: string;
   rpcName: string;
+  versionedRpcName?: string;
   forwardVisibilityContext?: boolean;
 }
 
-interface HybridSearchAuthResult {
-  isAuthenticated: boolean;
-  response?: Response;
-}
+type HybridSearchAuthResult = Pick<AuthResult, 'isAuthenticated' | 'principal' | 'response'>;
 
 export interface HybridSearchHandlerDependencies {
   authenticate: (request: Request) => Promise<HybridSearchAuthResult>;
@@ -100,15 +99,69 @@ export function createHybridSearchHandler(
         );
       }
 
-      const normalizedQuery = sanitizeHybridQueryOutput(
-        await dependencies.rewriteQuery(config, parsedRequest.queryText),
-        parsedRequest.queryText,
-      );
+      const versioned = parsedRequest.versionScope === 'matched';
+      if (versioned && !config.versionedRpcName) {
+        return jsonResponse(
+          { error: 'Matched version search is not supported by this route' },
+          400,
+        );
+      }
+      if (
+        versioned &&
+        (parsedRequest.rpcOptions.page_size > 100 ||
+          parsedRequest.rpcOptions.page_current > 400 ||
+          parsedRequest.rpcOptions.rrf_k > 1_000 ||
+          parsedRequest.rpcOptions.lexical_weight > 1 ||
+          parsedRequest.rpcOptions.semantic_weight > 1 ||
+          parsedRequest.rpcOptions.lexical_weight + parsedRequest.rpcOptions.semantic_weight <= 0)
+      ) {
+        return jsonResponse({ error: 'Invalid matched version search bounds' }, 400);
+      }
+      const rpcName = versioned ? config.versionedRpcName! : config.rpcName;
+      let rpcClientContext: HybridSearchRpcClientContext | undefined;
+      if (versioned) {
+        if (authResult.principal?.authMethod !== 'supabase_jwt') {
+          return jsonResponse(
+            {
+              error: 'Matched version search requires a verified Supabase JWT user context',
+              code: 'HYBRID_SEARCH_USER_CONTEXT_REQUIRED',
+            },
+            403,
+          );
+        }
+        try {
+          rpcClientContext = dependencies.createRpcClient(
+            request.headers.get('Authorization'),
+            parsedRequest.rpcOptions.data_source,
+          );
+        } catch (error) {
+          if (error instanceof HybridSearchRpcContextError) {
+            return jsonResponse({ error: error.message, code: error.code }, error.status);
+          }
+          throw error;
+        }
+        if (rpcClientContext.userContextKind !== 'jwt') {
+          return jsonResponse(
+            {
+              error: 'Matched version search requires a Supabase JWT user context',
+              code: 'HYBRID_SEARCH_USER_CONTEXT_REQUIRED',
+            },
+            403,
+          );
+        }
+      }
+      const rawRewrite = await dependencies.rewriteQuery(config, parsedRequest.queryText);
+      if (versioned && !rawRewrite.semantic_query_en?.trim()) {
+        throw new Error('OpenAI structured output missing semantic_query_en');
+      }
+      const normalizedQuery = sanitizeHybridQueryOutput(rawRewrite, parsedRequest.queryText);
       if (!normalizedQuery.semantic_query_en) {
         throw new Error('OpenAI structured output missing semantic_query_en');
       }
 
-      const queryTerms = buildHybridFulltextQueryTerms(normalizedQuery);
+      const queryTerms = versioned
+        ? buildBoundedHybridFulltextQueryTerms(normalizedQuery, parsedRequest.queryText)
+        : buildHybridFulltextQueryTerms(normalizedQuery);
       const embedding = extractEmbeddingVector(
         await dependencies.generateEmbedding(normalizedQuery.semantic_query_en),
       );
@@ -120,9 +173,8 @@ export function createHybridSearchHandler(
         config.forwardVisibilityContext ? parsedRequest.visibilityOptions : undefined,
       );
 
-      let rpcClientContext: HybridSearchRpcClientContext;
       try {
-        rpcClientContext = dependencies.createRpcClient(
+        rpcClientContext ??= dependencies.createRpcClient(
           request.headers.get('Authorization'),
           requestBody.data_source,
         );
@@ -146,7 +198,7 @@ export function createHybridSearchHandler(
       const rpcStartedAt = dependencies.now();
       dependencies.logger.log('[hybrid_search]', { ...logBase, stage: 'rpc_start' });
 
-      let { data, error } = await rpcClientContext.client.rpc(config.rpcName, requestBody);
+      let { data, error } = await rpcClientContext.client.rpc(rpcName, requestBody);
       let fallbackUsed = false;
       if (!error && Array.isArray(data) && data.length === 0 && requestBody.match_threshold > 0) {
         fallbackUsed = true;
@@ -157,7 +209,7 @@ export function createHybridSearchHandler(
           match_threshold: 0,
           duration_ms: dependencies.now() - rpcStartedAt,
         });
-        ({ data, error } = await rpcClientContext.client.rpc(config.rpcName, fallbackRequestBody));
+        ({ data, error } = await rpcClientContext.client.rpc(rpcName, fallbackRequestBody));
       }
 
       if (error) {
@@ -172,6 +224,29 @@ export function createHybridSearchHandler(
         return jsonResponse({ error: error.message }, 500);
       }
 
+      if (versioned) {
+        const keys = new Set<string>();
+        if (
+          !Array.isArray(data) ||
+          data.some((row) => {
+            if (
+              !row ||
+              typeof row !== 'object' ||
+              typeof row.id !== 'string' ||
+              !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(row.id) ||
+              typeof row.version !== 'string' ||
+              !/^\d{2}\.\d{2}\.\d{3}$/u.test(row.version)
+            )
+              return true;
+            const key = row.id + ':' + row.version;
+            if (keys.has(key)) return true;
+            keys.add(key);
+            return false;
+          })
+        ) {
+          throw new Error('Version search returned invalid exact identities');
+        }
+      }
       dependencies.logger.log('[hybrid_search]', {
         ...logBase,
         stage: 'rpc_success',
@@ -179,6 +254,7 @@ export function createHybridSearchHandler(
         result_count: Array.isArray(data) ? data.length : 0,
         fallback_used: fallbackUsed,
       });
+      if (versioned) return jsonResponse({ data, versionScope: 'matched' }, 200);
       return Array.isArray(data) && data.length > 0
         ? jsonResponse({ data }, 200)
         : jsonResponse([], 200);

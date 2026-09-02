@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next Issue #999: Process rows retain modified-at-desc behavior while model navigation resolves the exact stored model_version or the legacy Process-version fallback, never latest Model.'
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
+lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

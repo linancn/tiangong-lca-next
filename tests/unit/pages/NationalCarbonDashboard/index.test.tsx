@@ -26,10 +26,8 @@ const makeOrganizationScope = (
       organizationKey: 'institut exemple',
       organizationName: 'Institut Exemple',
       publishedDatasetCount,
-      reviewingDatasetCount: 2,
-      contributorCount: 3,
-      contributionShare: 0.5,
-      latestContributedAt: '2026-09-01T08:00:00+08:00',
+      assignedReviewerDatasetCount: 1,
+      unassignedReviewerDatasetCount: 1,
     },
   ],
 });
@@ -42,7 +40,7 @@ const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
 });
 
 const organizationContributionSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v2',
+  schemaVersion: 'national_carbon_organization_contribution_v3',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',
@@ -258,7 +256,13 @@ describe('NationalCarbonDashboard access guard', () => {
     render(<NationalCarbonDashboardPage />);
 
     expect(await screen.findByText('审核中数据')).toBeInTheDocument();
+    expect(screen.getByText('单位数据填报情况')).toBeInTheDocument();
+    expect(screen.getByText('已分配审核员')).toBeInTheDocument();
+    expect(screen.getByText('待分配审核员')).toBeInTheDocument();
     expect(screen.queryByText('待审核数据')).not.toBeInTheDocument();
+    expect(screen.queryByText('贡献者')).not.toBeInTheDocument();
+    expect(screen.queryByText('占比')).not.toBeInTheDocument();
+    expect(screen.queryByText('最近贡献')).not.toBeInTheDocument();
   });
 
   it('renders the enhanced empty state in both contribution panels', async () => {

@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next #999: the additive Process ownership projection and regenerated locale artifacts change no bootstrap commands; lint, test, build, managed push, and deterministic release remain authoritative.'
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
+lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
 ---
 
 # Development Bootstrap

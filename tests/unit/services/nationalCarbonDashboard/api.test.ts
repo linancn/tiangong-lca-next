@@ -32,10 +32,8 @@ const makeScope = (datasetScope: 'process' | 'model' | 'all', publishedDatasetCo
             organizationKey: 'example organization',
             organizationName: 'Example Organization',
             publishedDatasetCount,
-            reviewingDatasetCount: 2,
-            contributorCount: 1,
-            contributionShare: 1,
-            latestContributedAt: '2026-09-01T08:00:00+08:00',
+            assignedReviewerDatasetCount: 1,
+            unassignedReviewerDatasetCount: 1,
           },
         ]
       : [],
@@ -49,7 +47,7 @@ const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
 });
 
 const validSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v2',
+  schemaVersion: 'national_carbon_organization_contribution_v3',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',

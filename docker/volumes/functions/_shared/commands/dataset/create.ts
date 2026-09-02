@@ -27,7 +27,10 @@ export async function executeCreateCommand(
     targetTable: request.table,
     targetId: request.id,
     targetVersion: '',
-    payload: request.modelId ? { modelId: request.modelId } : {},
+    payload: {
+      ...(request.modelId ? { modelId: request.modelId } : {}),
+      ...(request.modelVersion ? { modelVersion: request.modelVersion } : {}),
+    },
   });
 
   const result = await repository.create(request, audit);

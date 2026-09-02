@@ -1,10 +1,11 @@
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { listOAuthGrants, revokeOAuthGrant } from '@/services/auth';
-import { ApiOutlined, DisconnectOutlined } from '@ant-design/icons';
+import { DisconnectOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import type { OAuthGrant } from '@supabase/supabase-js';
 import { useIntl } from '@umijs/max';
-import { Alert, Avatar, Button, Card, Empty, Flex, Space, Spin, Tag, Typography } from 'antd';
+import { Alert, Button, Card, Empty, Space, Spin, Tag, Typography } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
+import styles from './index.less';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -27,6 +28,7 @@ export default function OAuthConnections() {
   const loadGrants = useCallback(async () => {
     setLoading(true);
     setLoadFailed(false);
+
     const response = await listOAuthGrants();
     if (response.error || !response.data) {
       setLoadFailed(true);
@@ -87,98 +89,112 @@ export default function OAuthConnections() {
   };
 
   return (
-    <Flex gap='large' vertical style={{ width: '100%', maxWidth: 760, minWidth: 0 }}>
-      <Card>
-        <Space orientation='vertical' size='small' style={{ width: '100%' }}>
-          <Title level={4} style={{ margin: 0 }}>
+    <Card className={styles.contentCard}>
+      <Space className={styles.oauthContent} orientation='vertical' size='small'>
+        <header className={styles.contentHeader}>
+          <Title className={styles.contentTitle} level={3}>
             {intl.formatMessage({
               id: 'pages.account.oauth.connected.title',
               defaultMessage: 'Connected applications',
             })}
           </Title>
-          <Paragraph type='secondary'>
+          <Paragraph className={styles.contentDescription} type='secondary'>
             {intl.formatMessage({
-              id: 'pages.account.oauth.connected.description',
-              defaultMessage:
-                'These applications can act with the identity permissions you approved. Database access remains limited by client capabilities and your user permissions.',
+              id: 'pages.account.oauth.connected.summary',
+              defaultMessage: 'Review and manage applications that you have authorized.',
             })}
           </Paragraph>
+        </header>
 
-          {loadFailed ? (
-            <Alert
-              type='error'
-              showIcon
-              title={intl.formatMessage({
-                id: 'pages.account.oauth.loadError',
-                defaultMessage: 'Connected applications could not be loaded.',
-              })}
-              action={
-                <Button size='small' onClick={() => void loadGrants()}>
-                  {intl.formatMessage({ id: 'pages.account.oauth.retry', defaultMessage: 'Retry' })}
-                </Button>
-              }
-            />
-          ) : (
-            <Spin spinning={loading}>
-              {grants.length ? (
-                <ul style={{ padding: 0, margin: 0, listStyle: 'none' }}>
+        {loadFailed ? (
+          <Alert
+            type='error'
+            showIcon
+            title={intl.formatMessage({
+              id: 'pages.account.oauth.loadError',
+              defaultMessage: 'Connected applications could not be loaded.',
+            })}
+            action={
+              <Button size='small' onClick={() => void loadGrants()}>
+                {intl.formatMessage({ id: 'pages.account.oauth.retry', defaultMessage: 'Retry' })}
+              </Button>
+            }
+          />
+        ) : (
+          <Spin className={styles.oauthState} spinning={loading}>
+            {grants.length ? (
+              <>
+                <Text className={styles.connectionCount} type='secondary'>
+                  {intl.formatMessage(
+                    {
+                      id: 'pages.account.oauth.count',
+                      defaultMessage: '{count} connected applications',
+                    },
+                    { count: grants.length },
+                  )}
+                </Text>
+                <ul className={styles.connectionList}>
                   {grants.map((grant) => (
-                    <li
-                      key={grant.client.id}
-                      style={{
-                        padding: '16px 0',
-                        borderBottom: '1px solid rgba(5, 5, 5, 0.08)',
-                      }}
-                    >
-                      <Flex align='center' gap='middle' justify='space-between' wrap>
-                        <Flex align='flex-start' gap='middle' style={{ minWidth: 0 }}>
-                          <Avatar icon={<ApiOutlined />} />
-                          <Space orientation='vertical' size={6} style={{ minWidth: 0 }}>
-                            <Text strong>{grant.client.name}</Text>
-                            <Text type='secondary'>
-                              {intl.formatMessage(
-                                {
-                                  id: 'pages.account.oauth.grantedAt',
-                                  defaultMessage: 'Authorized {date}',
-                                },
-                                { date: formatGrantedAt(grant.granted_at, intl.locale) },
-                              )}
-                            </Text>
-                            <Space size={[4, 4]} wrap>
-                              {grant.scopes.map((scope) => (
-                                <Tag key={scope}>{scope}</Tag>
-                              ))}
-                            </Space>
-                          </Space>
-                        </Flex>
-                        <Button
-                          danger
-                          icon={<DisconnectOutlined />}
-                          type='text'
-                          onClick={() => confirmRevoke(grant)}
-                        >
-                          {intl.formatMessage({
-                            id: 'pages.account.oauth.disconnect',
-                            defaultMessage: 'Disconnect',
-                          })}
-                        </Button>
-                      </Flex>
+                    <li className={styles.connectionItem} key={grant.client.id}>
+                      <div className={styles.connectionSummary}>
+                        <Space orientation='vertical' size={4} style={{ minWidth: 0 }}>
+                          <Text className={styles.connectionName} strong>
+                            {grant.client.name}
+                          </Text>
+                          <Text type='secondary'>
+                            {intl.formatMessage(
+                              {
+                                id: 'pages.account.oauth.grantedAt',
+                                defaultMessage: 'Authorized {date}',
+                              },
+                              { date: formatGrantedAt(grant.granted_at, intl.locale) },
+                            )}
+                          </Text>
+                        </Space>
+                      </div>
+                      <Tag className={styles.connectionStatus} color='success'>
+                        {intl.formatMessage({
+                          id: 'pages.account.oauth.connectedStatus',
+                          defaultMessage: 'Connected',
+                        })}
+                      </Tag>
+                      <Button
+                        danger
+                        icon={<DisconnectOutlined />}
+                        onClick={() => confirmRevoke(grant)}
+                      >
+                        {intl.formatMessage({
+                          id: 'pages.account.oauth.disconnect',
+                          defaultMessage: 'Disconnect',
+                        })}
+                      </Button>
                     </li>
                   ))}
                 </ul>
-              ) : loading ? null : (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={intl.formatMessage({
-                    id: 'pages.account.oauth.empty',
-                    defaultMessage: 'No applications are connected.',
-                  })}
-                />
-              )}
-            </Spin>
-          )}
-        </Space>
-      </Card>
-    </Flex>
+                <div className={styles.connectionFooterNote}>
+                  <SafetyCertificateOutlined />
+                  <Text type='secondary'>
+                    {intl.formatMessage({
+                      id: 'pages.account.oauth.disconnectHint',
+                      defaultMessage:
+                        'The application will need your permission again the next time you connect.',
+                    })}
+                  </Text>
+                </div>
+              </>
+            ) : loading ? null : (
+              <Empty
+                className={styles.emptyState}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={intl.formatMessage({
+                  id: 'pages.account.oauth.empty',
+                  defaultMessage: 'No applications are connected.',
+                })}
+              />
+            )}
+          </Spin>
+        )}
+      </Space>
+    </Card>
   );
 }

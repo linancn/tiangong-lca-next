@@ -71,7 +71,7 @@ export const portalHybridFiltersSchema = z
     }
   });
 
-export const portalHybridSearchRequestSchema = z
+export const portalHybridSearchRequestV1Schema = z
   .object({
     schemaVersion: z.literal('portal.hybrid-search-request.v1'),
     kind: z.enum(['process', 'flow']),
@@ -90,6 +90,34 @@ export const portalHybridSearchRequestSchema = z
     }
   });
 
+const cursorSchema = z
+  .string()
+  .min(1)
+  .max(4_096)
+  .regex(/^[A-Za-z0-9_-]+$/u);
+export const portalHybridSearchRequestV2Schema = z
+  .object({
+    schemaVersion: z.literal('portal.hybrid-search-request.v2'),
+    kind: z.enum(['process', 'flow']),
+    query: portalHybridQuerySchema,
+    filters: portalHybridFiltersSchema,
+    limit: z.number().int().min(1).max(20),
+    cursor: cursorSchema.nullable(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.kind === 'flow' && value.filters.processSubtype !== undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'processSubtype is not valid for Flow search',
+        path: ['filters', 'processSubtype'],
+      });
+    }
+  });
+export const portalHybridSearchRequestSchema = z.union([
+  portalHybridSearchRequestV1Schema,
+  portalHybridSearchRequestV2Schema,
+]);
 export type PortalHybridSearchRequest = z.infer<typeof portalHybridSearchRequestSchema>;
 
 const uuidSchema = z.string().regex(UUID_PATTERN);
@@ -236,7 +264,7 @@ export const portalPublicHybridCandidateSchema = z
   })
   .strict();
 
-export const portalPublicHybridCandidatePageSchema = z
+export const portalPublicHybridCandidatePageV1Schema = z
   .object({
     schemaVersion: z.literal('portal.public-hybrid-candidate-page.v1'),
     kind: z.enum(['process', 'flow']),
@@ -266,8 +294,6 @@ export const portalPublicHybridCandidatePageSchema = z
     });
   });
 
-export type PortalPublicHybridCandidatePage = z.infer<typeof portalPublicHybridCandidatePageSchema>;
-
 const interpretationTextSchema = portalHybridQuerySchema;
 export const portalHybridInterpretationSchema = z
   .object({
@@ -296,7 +322,7 @@ export const portalHybridInterpretationSchema = z
 
 export type PortalHybridInterpretation = z.infer<typeof portalHybridInterpretationSchema>;
 
-export const portalHybridSearchPageSchema = z
+export const portalHybridSearchPageV1Schema = z
   .object({
     schemaVersion: z.literal('portal.hybrid-search-page.v1'),
     kind: z.enum(['process', 'flow']),
@@ -327,11 +353,156 @@ export const portalHybridSearchPageSchema = z
     });
   });
 
+export const portalPublicHybridMatchV2Schema = z
+  .object({
+    ...portalPublicHybridMatchSchema.shape,
+    algorithmVersion: z.literal('portal-hybrid-rank-v2'),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const lexical = value.evidence.lexicalRank;
+    const semantic = value.evidence.semanticRank;
+    if (
+      value.reasonCodes.includes('lexical_public_projection') !== (lexical !== null) ||
+      value.reasonCodes.includes('semantic_public_projection') !== (semantic !== null) ||
+      (lexical !== null && lexical > 200) ||
+      (semantic !== null && semantic > 200)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'bounded evidence must match actual branches',
+      });
+    }
+  });
+
+export const portalPublicHybridCandidateV2Schema = z
+  .object({
+    ...portalPublicHybridCandidateSchema.shape,
+    match: portalPublicHybridMatchV2Schema,
+  })
+  .strict();
+
+const versionGroupSchema = z
+  .object({
+    key: publicDatasetKeySchema,
+    matches: z
+      .array(
+        z
+          .object({
+            key: publicDatasetKeySchema,
+            match: portalPublicHybridMatchV2Schema,
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(400),
+  })
+  .strict();
+const versionPageShape = {
+  schemaVersion: z.literal('portal.public-hybrid-candidate-page.v2'),
+  kind: z.enum(['process', 'flow']),
+  queryFingerprint: lowerHexSha256Schema,
+  items: z.array(portalPublicHybridCandidateV2Schema).max(20),
+  candidateCount: z.number().int().min(0).max(400),
+  datasetCount: z.number().int().min(0).max(400),
+  versionGroups: z.array(versionGroupSchema).max(20),
+  nextCursor: cursorSchema.nullable(),
+};
+const versionPageBaseSchema = z.object(versionPageShape).strict();
+type VersionPageShape = Omit<z.infer<typeof versionPageBaseSchema>, 'schemaVersion'>;
+
+function validateVersionGroups(value: VersionPageShape, context: z.RefinementCtx): void {
+  const keyOf = (key: z.infer<typeof publicDatasetKeySchema>) =>
+    key.kind + ':' + key.id + '@' + key.version;
+  const fail = (message: string) => context.addIssue({ code: 'custom', message });
+  if (
+    value.items.length !== value.versionGroups.length ||
+    value.datasetCount > value.candidateCount ||
+    value.items.length > value.datasetCount ||
+    (value.candidateCount === 0 && (value.datasetCount !== 0 || value.nextCursor !== null))
+  )
+    fail('version-group envelope counts must agree');
+
+  const groups = new Set<string>();
+  const keys = new Set<string>();
+  let covered = 0;
+  value.versionGroups.forEach((group, index) => {
+    const item = value.items[index];
+    const first = group.matches[0];
+    if (
+      !item ||
+      !first ||
+      item.key.kind !== value.kind ||
+      keyOf(group.key) !== keyOf(item.key) ||
+      keyOf(first.key) !== keyOf(item.key) ||
+      JSON.stringify(first.match) !== JSON.stringify(item.match) ||
+      groups.has(group.key.id)
+    ) {
+      fail('representative must be the unique best matching version of its group');
+    }
+    groups.add(group.key.id);
+    const previousItem = value.items[index - 1];
+    if (
+      item &&
+      previousItem &&
+      (item.match.score > previousItem.match.score ||
+        (item.match.score === previousItem.match.score &&
+          (item.key.id < previousItem.key.id ||
+            (item.key.id === previousItem.key.id && item.key.version > previousItem.key.version))))
+    ) {
+      fail('representatives must be ordered by score descending, id ascending, version descending');
+    }
+    let previous: (typeof group.matches)[number] | undefined;
+    for (const match of group.matches) {
+      const key = keyOf(match.key);
+      if (
+        match.key.kind !== value.kind ||
+        match.key.id !== group.key.id ||
+        keys.has(key) ||
+        (previous &&
+          (match.match.score > previous.match.score ||
+            (match.match.score === previous.match.score &&
+              match.key.version > previous.key.version)))
+      ) {
+        fail('group matches must retain unique, ordered exact-version evidence');
+      }
+      keys.add(key);
+      covered += 1;
+      previous = match;
+    }
+  });
+  if (
+    covered > value.candidateCount ||
+    (value.datasetCount === value.items.length && covered !== value.candidateCount)
+  )
+    fail('version coverage must agree with the bounded candidate union');
+}
+
+export const portalPublicHybridCandidatePageV2Schema =
+  versionPageBaseSchema.superRefine(validateVersionGroups);
+export const portalPublicHybridCandidatePageSchema = z.union([
+  portalPublicHybridCandidatePageV1Schema,
+  portalPublicHybridCandidatePageV2Schema,
+]);
+export type PortalPublicHybridCandidatePage = z.infer<typeof portalPublicHybridCandidatePageSchema>;
+
+export const portalHybridSearchPageV2Schema = z
+  .object({
+    ...versionPageShape,
+    schemaVersion: z.literal('portal.hybrid-search-page.v2'),
+    interpretation: portalHybridInterpretationSchema,
+  })
+  .strict()
+  .superRefine(validateVersionGroups);
+export const portalHybridSearchPageSchema = z.union([
+  portalHybridSearchPageV1Schema,
+  portalHybridSearchPageV2Schema,
+]);
 export type PortalHybridSearchPage = z.infer<typeof portalHybridSearchPageSchema>;
 
 export const portalHybridModelCacheSchema = z
   .object({
-    schemaVersion: z.literal('portal.hybrid-model-cache.v1'),
+    schemaVersion: z.literal('portal.hybrid-model-cache.v2'),
     interpretation: portalHybridInterpretationSchema,
     queryTerms: z
       .array(interpretationTextSchema)

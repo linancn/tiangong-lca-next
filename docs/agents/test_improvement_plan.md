@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next #999: exact model-version, null fallback, navigation, listing, child-result, and review-submit loading cases close through the existing strategy without a new queue or browser matrix.'
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
+lastReviewedNote: 'Reviewed for Next #1008: version identity and acknowledgement cases use the maintained service-first strategy; no new testing platform or long-running observation was introduced.'
 ---
 
 # Testing Strategy

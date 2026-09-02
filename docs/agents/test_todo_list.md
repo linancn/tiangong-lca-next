@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next #999: exact model ownership, legacy fallback, and integrated review-submit loading paths are covered with no deferred testing queue.'
+lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
+lastReviewedNote: 'Reviewed for Next #1008: targeted matched-version and empty-page regressions are covered, with the final full push gate kept separate from the historical checked-in reference baseline.'
 ---
 
 # Testing Execution State

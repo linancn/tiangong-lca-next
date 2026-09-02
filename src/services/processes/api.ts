@@ -4,6 +4,7 @@ import {
   validateDatasetRuleVerification,
 } from '@/pages/Utils/review';
 import { getCurrentUser } from '@/services/auth';
+import { readMatchedHybridRows } from '@/services/general/hybridVersions';
 import {
   attachLangNormalizationMetadata,
   buildLangNormalizationMetadata,
@@ -205,7 +206,7 @@ function mapProcessSearchResultRows(
       };
     } catch (error) {
       console.error(error);
-      return { id: i.id, lang } as ProcessTable;
+      return { id: i.id, version: i.version, key: i.id + ':' + i.version, lang } as ProcessTable;
     }
   });
 }
@@ -1263,6 +1264,8 @@ export async function process_hybrid_search(
   let result: any = {};
   const bodyParams: { [key: string]: any } = {
     query: queryText,
+    version_scope: 'matched',
+    match_count: 200,
     filter_condition: filterCondition,
     data_source: dataSource,
     page_size: params.pageSize ?? 10,
@@ -1287,15 +1290,17 @@ export async function process_hybrid_search(
   if (result.error) {
     console.log('error', result.error);
   }
-  if (result.data?.data) {
-    if (result.data?.data.length === 0) {
+  const resultData = result.error ? null : readMatchedHybridRows(result.data);
+  if (resultData) {
+    const totalCount = normalizeProcessResultTotalCount(resultData, result.data);
+    if (resultData.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
+        page: params.current ?? 1,
+        total: totalCount,
       });
     }
-    const resultData = result.data.data;
-    const totalCount = normalizeProcessResultTotalCount(resultData, result.data);
 
     const locations: string[] = Array.from(
       new Set(
@@ -1320,7 +1325,7 @@ export async function process_hybrid_search(
     });
   }
 
-  return result;
+  return { ...result, data: [], success: false };
 }
 
 export async function getProcessDetailByIdAndVersion(

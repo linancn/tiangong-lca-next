@@ -16,6 +16,9 @@ const versionPattern = /^\d{2}\.\d{2}\.\d{3}$/;
 const datasetTableSchema = z.enum(DATASET_TABLES);
 const datasetIdSchema = z.string().uuid();
 const versionSchema = z.string().regex(versionPattern, 'version must be in 00.00.000 format');
+const modelVersionSchema = z
+  .string()
+  .regex(versionPattern, 'modelVersion must be in 00.00.000 format');
 const datasetIdTableSchema = z
   .object({
     table: datasetTableSchema,
@@ -33,6 +36,7 @@ export const saveDraftRequestSchema = datasetBaseRequestSchema
   .extend({
     jsonOrdered: z.unknown(),
     modelId: z.string().uuid().optional(),
+    modelVersion: modelVersionSchema.nullable().optional(),
     ruleVerification: z.boolean().nullable().optional(),
   })
   .strict();
@@ -41,6 +45,7 @@ export const createRequestSchema = datasetIdTableSchema
   .extend({
     jsonOrdered: z.unknown(),
     modelId: z.string().uuid().nullable().optional(),
+    modelVersion: modelVersionSchema.nullable().optional(),
     ruleVerification: z.boolean().nullable().optional(),
   })
   .strict();
@@ -50,6 +55,7 @@ export const createVersionRequestSchema = datasetIdTableSchema
     sourceVersion: versionSchema,
     jsonOrdered: z.unknown(),
     modelId: z.string().uuid().nullable().optional(),
+    modelVersion: modelVersionSchema.nullable().optional(),
     ruleVerification: z.boolean().nullable().optional(),
   })
   .strict();
