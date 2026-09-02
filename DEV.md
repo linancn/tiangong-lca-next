@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: the organization dashboard contract update changes no bootstrap commands; focused tests, lint, build, Docpact, and managed push remain authoritative.'
+lastReviewedCommit: 8298ff1b765761cdad8b8804bd7ba67a08fb54a9
+lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
 ---
 
 # Development Bootstrap
