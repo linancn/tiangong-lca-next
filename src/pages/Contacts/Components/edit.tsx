@@ -98,6 +98,7 @@ const ContactEdit: FC<Props> = ({
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefEdit = useRef<ProFormInstance | undefined>(undefined);
   const [spinning, setSpinning] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [initData, setInitData] = useState<FormContact>();
   const [fromData, setFromData] = useState<FormContact>();
   const [currentStateCode, setCurrentStateCode] = useState<number>();
@@ -724,19 +725,26 @@ const ContactEdit: FC<Props> = ({
         }
         size='90%'
         closable={false}
-        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
+        extra={
+          <Button
+            disabled={spinning || reviewSubmitting}
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={closeDrawer}
+          />
+        }
         mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <LoadingDisabledActionGroup loading={spinning || !initData}>
+          <LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>
             <Space size={'middle'} className={styles.footer_right}>
               <Button onClick={() => void handleCheckData()}>
                 <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
               </Button>
               {showSyncOpenDataButton && isReviewAdmin && (
                 <Button
-                  disabled={spinning || currentStateCode === 100}
+                  disabled={spinning || reviewSubmitting || currentStateCode === 100}
                   onClick={handleSyncToOpenData}
                 >
                   <FormattedMessage
@@ -749,8 +757,9 @@ const ContactEdit: FC<Props> = ({
                 table='contacts'
                 id={id}
                 version={version}
-                disabled={spinning || currentStateCode !== 0}
+                disabled={spinning || reviewSubmitting || currentStateCode !== 0}
                 beforeSubmit={() => handleCheckData({ actionFrom: 'review' })}
+                onSubmittingChange={setReviewSubmitting}
                 onSuccess={() => {
                   setCurrentStateCode(20);
                   actionRef?.current?.reload();
@@ -786,7 +795,7 @@ const ContactEdit: FC<Props> = ({
           </LoadingDisabledActionGroup>
         }
       >
-        <Spin spinning={spinning}>
+        <Spin spinning={spinning || reviewSubmitting}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}

@@ -705,46 +705,47 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       return { checkResult: false, unReview, problemNodes };
     };
 
-    const submitReview = async () => {
+    const submitReview = async (): Promise<boolean> => {
       setSpinning(true);
-      const currentModelDetail = modelDetailRef.current;
-      if (!currentModelDetail) {
-        message.error(
+      const fallbackErrorMessage = intl.formatMessage({
+        id: 'pages.lifecyclemodel.review.submitError',
+        defaultMessage: 'Submit review failed',
+      });
+
+      try {
+        const currentModelDetail = modelDetailRef.current;
+        if (!currentModelDetail) {
+          message.error(fallbackErrorMessage);
+          return false;
+        }
+
+        const result = await submitDatasetReview(
+          'lifecyclemodels',
+          currentModelDetail.id,
+          currentModelDetail.version,
+        );
+
+        if (result?.error) {
+          message.error(result.error.message || fallbackErrorMessage);
+          return false;
+        }
+
+        message.success(
           intl.formatMessage({
-            id: 'pages.lifecyclemodel.review.submitError',
-            defaultMessage: 'Submit review failed',
+            id: 'pages.process.review.submitSuccess',
+            defaultMessage: 'Review submitted successfully',
           }),
         );
-        setSpinning(false);
-        return;
-      }
-
-      const result = await submitDatasetReview(
-        'lifecyclemodels',
-        currentModelDetail.id,
-        currentModelDetail.version,
-      );
-
-      if (result?.error) {
+        setDrawerVisible(false);
+        return true;
+      } catch (error) {
         message.error(
-          result.error.message ||
-            intl.formatMessage({
-              id: 'pages.lifecyclemodel.review.submitError',
-              defaultMessage: 'Submit review failed',
-            }),
+          error instanceof Error && error.message ? error.message : fallbackErrorMessage,
         );
+        return false;
+      } finally {
         setSpinning(false);
-        return;
       }
-
-      message.success(
-        intl.formatMessage({
-          id: 'pages.process.review.submitSuccess',
-          defaultMessage: 'Review submitted successfully',
-        }),
-      );
-      setDrawerVisible(false);
-      setSpinning(false);
     };
 
     useImperativeHandle(ref, () => ({

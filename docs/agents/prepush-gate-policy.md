@@ -42,8 +42,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
 lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: source-mapped Jest 30 coverage, organization profile regressions, OAuth-only Account, and exact Edge mirror retain one full-gate owner and unchanged 100% enforcement.'
 ---
 

@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 046c505882ac28ae473a3318e2d4c94a9bf0541d
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
 lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
 related:
   - ../AGENTS.md
@@ -131,6 +131,8 @@ Process, Flow, Source, and Contact review submission use the same stable command
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
 Before calling that command, the Process editor validates the current saved record for TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. Process, Flow, Source, and Contact then recursively validate their existing reference chains through the same reference-access, rule-verification, and referenced-version checks. Any blocking reference-chain issue prevents submission and is shown through the review-specific validation surface. The submit action does not calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
+
+Every dataset editor keeps its drawer mounted and visibly busy for the complete save, validation, and review-command transaction. The editor disables close actions while that transaction is pending, reloads the owning list and closes only after the review command succeeds, and remains open after validation or submission failure so the user can inspect and retry the draft.
 
 Review Admin has a separate manual quality-diagnostic path:
 
