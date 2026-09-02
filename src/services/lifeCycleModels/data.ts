@@ -211,7 +211,7 @@ export type LifeCycleModelCheckDataOptions = {
 };
 
 export type LifeCycleModelToolbarEditInfoHandle<TRefData = unknown> = {
-  submitReview: (unReview: TRefData[]) => Promise<void>;
+  submitReview: (unReview: TRefData[]) => Promise<boolean>;
   handleCheckData: (
     from: LifeCycleModelCheckContext,
     nodes: LifeCycleModelGraphNode[],

@@ -1,6 +1,6 @@
 import DatasetSubmitReviewButton from '@/components/DatasetSubmitReviewButton';
 import { submitDatasetReviewApi } from '@/services/reviews/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const mockMessageError = jest.fn();
 const mockMessageSuccess = jest.fn();
@@ -26,13 +26,15 @@ jest.mock('antd', () => {
     Button: ({
       children,
       disabled,
+      loading,
       onClick,
     }: {
       children: import('react').ReactNode;
       disabled?: boolean;
+      loading?: boolean;
       onClick?: () => void;
     }) => (
-      <button type='button' disabled={disabled} onClick={onClick}>
+      <button type='button' aria-busy={loading} disabled={disabled} onClick={onClick}>
         {children}
       </button>
     ),
@@ -89,6 +91,45 @@ describe('DatasetSubmitReviewButton', () => {
     );
     expect(mockMessageSuccess).toHaveBeenCalledWith('Review submitted successfully');
     expect(onSuccess).toHaveBeenCalledWith({ review_id: 'review-id' });
+  });
+
+  it('reports submission state until the review request settles', async () => {
+    let resolveSubmit!: (value: unknown) => void;
+    const pendingSubmit = new Promise((resolve) => {
+      resolveSubmit = resolve;
+    });
+    const onSubmittingChange = jest.fn();
+    submitDatasetReviewApiMock.mockReturnValueOnce(pendingSubmit as never);
+
+    render(
+      <DatasetSubmitReviewButton
+        table='flows'
+        id='flow-id'
+        version='01.00.000'
+        beforeSubmit={jest.fn().mockResolvedValue(true)}
+        onSubmittingChange={onSubmittingChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() => expect(submitDatasetReviewApiMock).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'Submit Review' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(onSubmittingChange).toHaveBeenLastCalledWith(true);
+
+    await act(async () => {
+      resolveSubmit({ data: { review_id: 'review-id' }, error: null });
+      await pendingSubmit;
+    });
+
+    await waitFor(() => expect(onSubmittingChange).toHaveBeenLastCalledWith(false));
+    expect(screen.getByRole('button', { name: 'Submit Review' })).toHaveAttribute(
+      'aria-busy',
+      'false',
+    );
   });
 
   it('shows backend and fallback submission errors', async () => {

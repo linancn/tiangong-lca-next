@@ -1422,6 +1422,34 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
   });
 
+  it('does not reload or close while the review request is pending', async () => {
+    let resolveSubmit!: (value: unknown) => void;
+    const pendingSubmit = new Promise((resolve) => {
+      resolveSubmit = resolve;
+    });
+    mockSubmitDatasetReview.mockReturnValueOnce(pendingSubmit);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() => expect(mockSubmitDatasetReview).toHaveBeenCalled());
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(screen.getByTestId('spin')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
+    expect(setViewDrawerVisible).not.toHaveBeenCalledWith(false);
+
+    await act(async () => {
+      resolveSubmit({ data: [{ review: { id: 'review-1' } }], error: null });
+      await pendingSubmit;
+    });
+
+    await waitFor(() => expect(actionRef.current.reload).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole('dialog', { name: 'Edit process' })).not.toBeInTheDocument();
+  });
+
   it('blocks review submission when the recursive reference chain contains a missing reference', async () => {
     const missingRef = {
       '@refObjectId': 'missing-flow',
@@ -2453,7 +2481,7 @@ describe('ProcessEdit component', () => {
       expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
     );
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
-    expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
+    expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
   });
 });

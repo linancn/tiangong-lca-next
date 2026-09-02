@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 6ff84d2eeeaf5398cf72838f8f4952a56648c35c
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
 lastReviewedNote: 'Reviewed for Next Issue #991 after browser-navigation and organization metadata integration: OAuth grant management is the sole integration surface, Supabase Auth is the sole password/email owner, and environment/branch/callback/database boundaries remain unchanged.'
 ---
 

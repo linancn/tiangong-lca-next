@@ -91,6 +91,7 @@ describe('lifeCycleModels data shapes', () => {
     const handle: LifeCycleModelToolbarEditInfoHandle<string> = {
       submitReview: async (unReview) => {
         expect(unReview).toEqual(['ref-1']);
+        return true;
       },
       handleCheckData: async () => checkResult,
       updateReferenceDescription: async (formData) => {
@@ -101,7 +102,7 @@ describe('lifeCycleModels data shapes', () => {
     expect(submodel.type).toBe('secondary');
     expect(target.targetAmount).toBe('5');
     await expect(handle.handleCheckData('review', [], [])).resolves.toEqual(checkResult);
-    await expect(handle.submitReview(['ref-1'])).resolves.toBeUndefined();
+    await expect(handle.submitReview(['ref-1'])).resolves.toBe(true);
     await expect(handle.updateReferenceDescription({ id: 'model-1' })).resolves.toBeUndefined();
   });
 });

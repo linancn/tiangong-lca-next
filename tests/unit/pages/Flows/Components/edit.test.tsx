@@ -905,6 +905,58 @@ describe('FlowsEdit', () => {
     expect(mockSubmitDatasetReviewApi).not.toHaveBeenCalled();
   });
 
+  it('keeps the drawer busy until the review request settles', async () => {
+    let resolveSubmit!: (value: unknown) => void;
+    const pendingSubmit = new Promise((resolve) => {
+      resolveSubmit = resolve;
+    });
+    const actionRef = { current: { reload: jest.fn() } };
+    mockGetFlowDetail.mockResolvedValueOnce({
+      data: {
+        json: {
+          flowDataSet: {
+            flowInformation: {
+              dataSetInformation: {
+                name: { baseName: [{ '@xml:lang': 'en', '#text': 'Existing flow' }] },
+              },
+            },
+          },
+        },
+        stateCode: 0,
+        version: '1.0.0',
+      },
+    });
+    mockSubmitDatasetReviewApi.mockReturnValueOnce(pendingSubmit);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        actionRef={actionRef as any}
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() => expect(mockSubmitDatasetReviewApi).toHaveBeenCalled());
+    expect(screen.getByTestId('spinning')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveSubmit({ data: [{ review: { id: 'review-1' } }], error: null });
+      await pendingSubmit;
+    });
+
+    await waitFor(() => expect(actionRef.current.reload).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole('dialog', { name: /edit/i })).not.toBeInTheDocument();
+  });
+
   it('keeps flow data checks running when the background save fails', async () => {
     mockUpdateFlows.mockResolvedValueOnce({
       data: undefined,

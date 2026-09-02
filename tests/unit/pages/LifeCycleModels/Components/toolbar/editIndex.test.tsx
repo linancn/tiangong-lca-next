@@ -462,7 +462,7 @@ beforeEach(() => {
   mockUpdateEdge.mockReset();
   mockInitData.mockReset();
   mockToolbarHandleCheckData.mockReset().mockResolvedValue({ problemNodes: [] });
-  mockToolbarSubmitReview.mockReset().mockResolvedValue(undefined);
+  mockToolbarSubmitReview.mockReset().mockResolvedValue(true);
   mockToolbarUpdateReferenceDescription.mockReset().mockResolvedValue(undefined);
   mockUpdateNodeCb.mockReset().mockResolvedValue(undefined);
   mockSyncGraphData.mockReset();
@@ -1360,6 +1360,29 @@ describe('ToolbarEdit', () => {
     );
     expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]);
     expect(onSubmitReviewSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the outer editor open when review submission fails', async () => {
+    mockToolbarHandleCheckData.mockResolvedValue({
+      checkResult: true,
+      unReview: [],
+      problemNodes: [],
+    });
+    mockToolbarSubmitReview.mockResolvedValueOnce(false);
+    const onSubmitReviewSuccess = jest.fn();
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        drawerVisible={true}
+        onSubmitReviewSuccess={onSubmitReviewSuccess}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'send-icon' }));
+
+    await waitFor(() => expect(mockToolbarSubmitReview).toHaveBeenCalledWith([]));
+    expect(onSubmitReviewSuccess).not.toHaveBeenCalled();
   });
 
   it('falls back to empty review queues when validation omits them', async () => {
