@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 16a400f36fe47ad0ca24c97db99fe4a231e84f4a
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
 lastReviewedNote: 'Reviewed for Next Issue #999: 100% source-mapped proof covers exact model_version resolution, null fallback, independent Process behavior, child ownership, no-latest lookup, and the current review-submit loading guard.'
 related:
   - ../AGENTS.md

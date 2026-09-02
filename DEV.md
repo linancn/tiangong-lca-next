@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c462d01b3939c8ef7d81da938786ab63d2c45d87
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
 lastReviewedNote: 'Reviewed for Next #999: the additive Process ownership projection and regenerated locale artifacts change no bootstrap commands; lint, test, build, managed push, and deterministic release remain authoritative.'
 ---
 

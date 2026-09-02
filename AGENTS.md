@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
 lastReviewedNote: 'Reviewed for Next Issue #999: Process rows retain modified-at-desc behavior while model navigation resolves the exact stored model_version or the legacy Process-version fallback, never latest Model.'
 related:
   - .docpact/config.yaml

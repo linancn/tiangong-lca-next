@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-02"
-lastReviewedCommit: "16a400f36fe47ad0ca24c97db99fe4a231e84f4a"
+lastReviewedCommit: "a25e4ca0160477b949d70c06bf5c35c45a179f96"
 lastReviewedNote: 'Reviewed for Next Issue #999: frontend data, model navigation, Process listing, Edge mirror, tests, locale artifacts, and the integrated review-submit loading contract cover exact ownership with legacy fallback.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

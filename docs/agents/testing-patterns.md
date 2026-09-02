@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 16a400f36fe47ad0ca24c97db99fe4a231e84f4a
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
 lastReviewedNote: 'Reviewed for Next #999: exact-pair, null-fallback, independent-row, no-latest-lookup, and review-submit loading proof reuse existing service, page, and integration patterns.'
 ---
 
