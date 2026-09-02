@@ -168,8 +168,10 @@ describe('DatasetSubmitReviewButton', () => {
     await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('Submit review failed.'));
   });
 
-  it('shows an exception message when the review request rejects', async () => {
-    submitDatasetReviewApiMock.mockRejectedValueOnce(new Error('network failed'));
+  it('shows exception and fallback messages when the review request rejects', async () => {
+    submitDatasetReviewApiMock
+      .mockRejectedValueOnce(new Error('network failed'))
+      .mockRejectedValueOnce('network unavailable');
 
     render(
       <DatasetSubmitReviewButton
@@ -183,6 +185,10 @@ describe('DatasetSubmitReviewButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
 
     await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('network failed'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('Submit review failed.'));
   });
 
   it('honors the disabled state and supports an omitted success callback', async () => {
