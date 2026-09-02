@@ -14,6 +14,7 @@ import { message } from 'antd';
 import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
 const mockSetInitialState = jest.fn();
+const mockFormShouldUpdate = jest.fn();
 
 const mockIntl = {
   locale: 'en-US',
@@ -55,9 +56,12 @@ jest.mock('@umijs/max', () => ({
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   BankOutlined: () => <span data-testid='icon-bank' />,
+  CheckCircleOutlined: () => <span data-testid='icon-check' />,
+  SafetyCertificateOutlined: () => <span data-testid='icon-safety' />,
   IdcardOutlined: () => <span data-testid='icon-idcard' />,
   LockOutlined: () => <span data-testid='icon-lock' />,
   MailOutlined: () => <span data-testid='icon-mail' />,
+  InfoCircleOutlined: () => <span data-testid='icon-info' />,
   UserOutlined: () => <span data-testid='icon-user' />,
 }));
 
@@ -179,10 +183,17 @@ jest.mock('antd', () => {
     children,
     valuePropName = 'value',
     help,
+    extra,
     validateStatus,
+    initialValue,
+    style,
+    shouldUpdate,
   }: any) => {
     const context = React.useContext(FormContext);
     const fieldName = Array.isArray(name) ? name.join('.') : name;
+    if (typeof shouldUpdate === 'function') {
+      mockFormShouldUpdate(shouldUpdate);
+    }
 
     React.useEffect(() => {
       if (fieldName) {
@@ -192,6 +203,11 @@ jest.mock('antd', () => {
 
     const currentValue =
       fieldName !== undefined && fieldName !== null ? context?.values?.[fieldName] : undefined;
+    React.useEffect(() => {
+      if (fieldName && currentValue === undefined && initialValue !== undefined) {
+        context?.setFieldValue?.(fieldName, initialValue);
+      }
+    }, [context, fieldName, currentValue, initialValue]);
     const valueProps =
       currentValue !== undefined
         ? { [valuePropName]: currentValue }
@@ -221,16 +237,23 @@ jest.mock('antd', () => {
     const controlId = fieldName ? `form-field-${fieldName}` : undefined;
 
     return (
-      <div data-testid={`form-item-${fieldName ?? 'unnamed'}`} data-status={validateStatus ?? ''}>
+      <div
+        data-testid={`form-item-${fieldName ?? 'unnamed'}`}
+        data-status={validateStatus ?? ''}
+        style={style}
+      >
         {label ? <label htmlFor={controlId}>{toText(label)}</label> : null}
-        {React.isValidElement(children)
-          ? React.cloneElement(children, {
-              ...(controlId ? { id: controlId } : {}),
-              ...valueProps,
-              onChange: handleChange,
-            })
-          : children}
+        {typeof children === 'function'
+          ? children({ getFieldValue: (name: string) => context?.values?.[name] })
+          : React.isValidElement(children)
+            ? React.cloneElement(children, {
+                ...(controlId ? { id: controlId } : {}),
+                ...valueProps,
+                onChange: handleChange,
+              })
+            : children}
         {help ? <div>{toText(help)}</div> : null}
+        {extra ? <div>{toText(extra)}</div> : null}
       </div>
     );
   };
@@ -316,6 +339,27 @@ jest.mock('antd', () => {
     __esModule: true,
     App,
     ConfigProvider,
+    Alert: ({ title }: any) => <div role='note'>{title}</div>,
+    Avatar: ({ children }: any) => <span data-testid='profile-avatar'>{children}</span>,
+    Progress: ({ percent, steps, size }: any) => (
+      <progress value={percent} max={100} data-steps={steps} data-segment-width={size?.[0]} />
+    ),
+    Steps: ({ items, orientation, current }: any) => (
+      <ol data-testid='email-steps' data-orientation={orientation} data-current={current}>
+        {items.map((item: any) => (
+          <li key={item.title}>
+            {item.title}
+            <p>{item.content}</p>
+          </li>
+        ))}
+      </ol>
+    ),
+    Tag: ({ children }: any) => <span>{children}</span>,
+    Typography: {
+      Title: ({ children, level = 2 }: any) => React.createElement(`h${level}`, {}, children),
+      Text: ({ children }: any) => <span>{children}</span>,
+      Paragraph: ({ children }: any) => <p>{children}</p>,
+    },
     Flex,
     Form,
     Input,
@@ -450,7 +494,7 @@ describe('Account profile page (unit)', () => {
   it('uses shrinkable form containers and moves account tabs above compact content', () => {
     expect(ACCOUNT_FORM_CONTAINER_STYLE).toEqual({
       width: '100%',
-      maxWidth: 600,
+      maxWidth: 1000,
       minWidth: 0,
     });
     expect(getAccountTabPlacement(false)).toBe('start');
@@ -494,6 +538,7 @@ describe('Account profile page (unit)', () => {
 
     const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
     expect(nicknameField.value).toBe('Alice');
+    expect(screen.queryByText('This is the name other users will see.')).not.toBeInTheDocument();
 
     const organizationField = screen.getByLabelText('Organization') as HTMLInputElement;
     expect(organizationField.value).toBe('Tsinghua University');
@@ -504,7 +549,7 @@ describe('Account profile page (unit)', () => {
     await user.clear(organizationField);
     await user.type(organizationField, 'TianGong Initiative');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
@@ -540,7 +585,7 @@ describe('Account profile page (unit)', () => {
 
     const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
     await user.type(nicknameField, 'Fallback User');
-    await user.click(screen.getAllByRole('button', { name: /submit/i })[0]);
+    await user.click(screen.getAllByTestId('pro-form-submit')[0]);
 
     await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
     expect(mockSetProfile).toHaveBeenCalledWith(expect.objectContaining({ name: 'Fallback User' }));
@@ -610,7 +655,7 @@ describe('Account profile page (unit)', () => {
     await user.clear(nicknameField);
     await user.type(nicknameField, 'Alice Error');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() =>
@@ -639,7 +684,7 @@ describe('Account profile page (unit)', () => {
     await user.clear(nicknameField);
     await user.type(nicknameField, 'Alice Denied');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Update denied'));
@@ -663,7 +708,7 @@ describe('Account profile page (unit)', () => {
     await user.type(newPassword, 'Abcdefg2!');
     await user.type(confirmNewPassword, 'Abcdefg2!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     expect(mockChangePassword).toHaveBeenCalledWith(
@@ -697,7 +742,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Invalid password'));
@@ -721,7 +766,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('User not found'));
@@ -745,7 +790,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Password policy rejected'));
@@ -766,7 +811,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg2!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() =>
@@ -796,7 +841,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg1!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg1!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     expect(mockChangePassword).not.toHaveBeenCalled();
@@ -815,7 +860,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Password'), 'Abcdefg2!');
     await user.type(screen.getByLabelText('Confirm New Password'), 'Abcdefg3!');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     expect(mockChangePassword).not.toHaveBeenCalled();
@@ -833,13 +878,14 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
     await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     expect(mockChangeEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         newEmail: 'alice.next@example.com',
         confirmNewEmail: 'alice.next@example.com',
+        email: 'user@example.com',
       }),
     );
     expect(message.success).toHaveBeenCalledWith(
@@ -864,7 +910,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
     await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(message.error).toHaveBeenCalledWith('Email already exists'));
@@ -884,7 +930,7 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
     await user.type(screen.getByLabelText('Confirm New Email'), 'alice.next@example.com');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() =>
@@ -910,10 +956,58 @@ describe('Account profile page (unit)', () => {
     await user.type(screen.getByLabelText('New Email'), 'alice.next@example.com');
     await user.type(screen.getByLabelText('Confirm New Email'), 'alice.other@example.com');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     expect(mockChangeEmail).not.toHaveBeenCalled();
+  });
+
+  it('keeps an avatar initial when profile values and the fallback translation are empty', async () => {
+    const formatMessage = mockIntl.formatMessage;
+    const formatMessageSpy = jest
+      .spyOn(mockIntl, 'formatMessage')
+      .mockImplementation((descriptor, values) =>
+        descriptor.id === 'pages.account.profile.fallbackName'
+          ? ''
+          : formatMessage(descriptor, values),
+      );
+    mockGetAccountProfile.mockResolvedValueOnce({
+      id: 'user-1',
+      email: '',
+      name: '',
+      organization: '',
+      role: '',
+    });
+
+    try {
+      renderWithProviders(<Profile />);
+      await waitFor(() =>
+        expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false'),
+      );
+      expect(screen.getByTestId('profile-avatar')).toHaveTextContent(/^T$/);
+      expect(mockSetProfile).not.toHaveBeenCalled();
+    } finally {
+      formatMessageSpy.mockRestore();
+    }
+  });
+
+  it('refreshes password strength only when the new password changes', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+    await screen.findByRole('heading', { name: 'Alice' });
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+
+    const shouldUpdate = mockFormShouldUpdate.mock.lastCall[0];
+    expect(shouldUpdate({}, { newPassword: 'Abcdefg1!' })).toBe(true);
+    expect(shouldUpdate({ newPassword: 'Abcdefg1!' }, { newPassword: '' })).toBe(true);
+    expect(
+      shouldUpdate(
+        { newPassword: 'Abcdefg1!', oldPassword: 'old' },
+        { newPassword: 'Abcdefg1!', oldPassword: 'changed' },
+      ),
+    ).toBe(false);
+    expect(shouldUpdate({}, {})).toBe(false);
+    expect(mockChangePassword).not.toHaveBeenCalled();
   });
 
   it('renders password strength feedback in the password tab', async () => {
@@ -925,14 +1019,53 @@ describe('Account profile page (unit)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Change Password' }));
 
-    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Weak');
+    expect(screen.getByRole('status')).toHaveTextContent('Weak');
+    expect(screen.getByRole('status')).not.toHaveTextContent('Strength:');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('data-steps', '3');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('data-segment-width', '52');
 
     const newPassword = screen.getByLabelText('New Password');
     await user.type(newPassword, 'Abcdefg1!');
-    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Medium');
+    expect(screen.getByRole('status')).toHaveTextContent('Medium');
 
     await user.type(newPassword, 'More1!');
-    expect(screen.getByTestId('status-newPassword')).toHaveTextContent('Strength: Strong');
+    expect(screen.getByRole('status')).toHaveTextContent('Strong');
+  });
+
+  it('shows clear profile, password, and email guidance with specific action labels', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Profile />);
+    expect(await screen.findByRole('heading', { name: 'Alice' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+    expect(screen.getByRole('heading', { name: 'Password tips' })).toBeInTheDocument();
+    expect(
+      screen.queryByText('Avoid using the same password on other websites.'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('At least 8 characters')).toBeInTheDocument();
+    expect(screen.getByText('Include uppercase and lowercase letters')).toBeInTheDocument();
+    expect(screen.getByText('Include numbers and symbols')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update password' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Change Email' }));
+    expect(screen.getByText('Enter new email')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'How it works' })).toBeInTheDocument();
+    expect(screen.getByText('user@example.com')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Current Email')).not.toBeInTheDocument();
+    expect(screen.getByTestId('email-steps')).toHaveAttribute('data-orientation', 'vertical');
+    expect(screen.getByTestId('email-steps')).toHaveAttribute('data-current', '0');
+    expect(screen.getByText('Make sure your email address is correct')).toBeInTheDocument();
+    expect(
+      screen.getByText('Open your new inbox and follow the verification instructions'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Once verified, sign in with your new email')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter your new email address')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter your new email address again')).toBeInTheDocument();
+    expect(screen.getByText('Check verification email')).toBeInTheDocument();
+    expect(screen.getByText('Complete change')).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'You can continue signing in with your current email until verification is complete.',
+    );
+    expect(screen.getByRole('button', { name: 'Send verification email' })).toBeInTheDocument();
   });
 
   it('renders connected applications without password-equivalent controls', async () => {

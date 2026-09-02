@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: reviewer-assignment mapping and table-column proof reuse existing service and page test patterns.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent presentation tests retain service-boundary assertions and verify obsolete preview flags cannot bypass real authorization; mocks remain confined to normal test isolation.'
 ---
 
 # Testing Patterns Reference

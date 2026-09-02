@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next Issue #1002: the organization contribution dashboard consumes the database-owned v3 reviewer-assignment projection through existing service, locale, UI, and test boundaries; repository delivery rules remain unchanged.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and OAuth consent presentation changes preserve credential submission, validation, grant revocation, identity verification, and callback safety; runtime mock previews are absent.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: reviewer-assignment projection and dashboard presentation cases close through the existing strategy without a new queue or browser matrix.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent presentation regressions and obsolete-preview-flag tests use the existing strategy; runtime mock fixtures are absent and no new browser matrix is introduced.'
 ---
 
 # Testing Strategy

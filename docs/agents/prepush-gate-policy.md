@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: organization dashboard reviewer-assignment regressions retain the single managed pre-push gate and unchanged coverage enforcement.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and OAuth consent UI changes, supporting regression tests, documentation, and locale artifacts retain the single managed pre-push gate and unchanged coverage enforcement; no runtime mock preview remains.'
 ---
 
 # Pre-Push Gate Policy

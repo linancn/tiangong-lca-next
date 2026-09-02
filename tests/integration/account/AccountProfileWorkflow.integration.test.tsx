@@ -66,9 +66,12 @@ jest.mock('@umijs/max', () => ({
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   BankOutlined: () => <span data-testid='icon-bank' />,
+  CheckCircleOutlined: () => <span data-testid='icon-check' />,
+  SafetyCertificateOutlined: () => <span data-testid='icon-safety' />,
   IdcardOutlined: () => <span data-testid='icon-idcard' />,
   LockOutlined: () => <span data-testid='icon-lock' />,
   MailOutlined: () => <span data-testid='icon-mail' />,
+  InfoCircleOutlined: () => <span data-testid='icon-info' />,
   UserOutlined: () => <span data-testid='icon-user' />,
 }));
 
@@ -229,13 +232,15 @@ jest.mock('antd', () => {
     return (
       <div data-testid={`form-item-${fieldName ?? 'unnamed'}`} data-status={validateStatus ?? ''}>
         {label ? <label htmlFor={controlId}>{toText(label)}</label> : null}
-        {React.isValidElement(children)
-          ? React.cloneElement(children, {
-              ...(controlId ? { id: controlId } : {}),
-              ...valueProps,
-              onChange: handleChange,
-            })
-          : children}
+        {typeof children === 'function'
+          ? children({ getFieldValue: (name: string) => context?.values?.[name] })
+          : React.isValidElement(children)
+            ? React.cloneElement(children, {
+                ...(controlId ? { id: controlId } : {}),
+                ...valueProps,
+                onChange: handleChange,
+              })
+            : children}
         {help ? <div>{toText(help)}</div> : null}
       </div>
     );
@@ -322,6 +327,25 @@ jest.mock('antd', () => {
     __esModule: true,
     App,
     ConfigProvider,
+    Alert: ({ title }: any) => <div role='note'>{title}</div>,
+    Avatar: ({ children }: any) => <span>{children}</span>,
+    Progress: ({ percent }: any) => <progress value={percent} max={100} />,
+    Steps: ({ items, orientation, current }: any) => (
+      <ol data-testid='email-steps' data-orientation={orientation} data-current={current}>
+        {items.map((item: any) => (
+          <li key={item.title}>
+            {item.title}
+            <p>{item.content}</p>
+          </li>
+        ))}
+      </ol>
+    ),
+    Tag: ({ children }: any) => <span>{children}</span>,
+    Typography: {
+      Title: ({ children, level = 2 }: any) => React.createElement(`h${level}`, {}, children),
+      Text: ({ children }: any) => <span>{children}</span>,
+      Paragraph: ({ children }: any) => <p>{children}</p>,
+    },
     Flex,
     Form,
     Input,
@@ -477,7 +501,7 @@ describe('Account profile integration workflow', () => {
     await user.clear(organizationField);
     await user.type(organizationField, 'TianGong Initiative');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));
@@ -549,7 +573,7 @@ describe('Account profile integration workflow', () => {
     await user.type(screen.getByLabelText('Current Password'), 'OldP@ssword1');
     await user.type(screen.getByLabelText('New Password'), 'NewP@ssword1');
     await user.type(screen.getByLabelText('Confirm New Password'), 'NewP@ssword1');
-    await user.click(screen.getByRole('button', { name: 'submit' }));
+    await user.click(screen.getByTestId('pro-form-submit'));
 
     await waitFor(() =>
       expect(mockChangePassword).toHaveBeenCalledWith(
@@ -583,7 +607,7 @@ describe('Account profile integration workflow', () => {
     await user.click(screen.getByRole('button', { name: 'Change Email' }));
     await user.type(screen.getByLabelText('New Email'), 'next@example.com');
     await user.type(screen.getByLabelText('Confirm New Email'), 'next@example.com');
-    await user.click(screen.getByRole('button', { name: 'submit' }));
+    await user.click(screen.getByTestId('pro-form-submit'));
 
     await waitFor(() =>
       expect(mockChangeEmail).toHaveBeenCalledWith(
@@ -636,7 +660,7 @@ describe('Account profile integration workflow', () => {
     await user.clear(nicknameField);
     await user.type(nicknameField, 'Alice Wonder');
 
-    const submitButtons = screen.getAllByRole('button', { name: /submit/i });
+    const submitButtons = screen.getAllByTestId('pro-form-submit');
     await user.click(submitButtons[0]);
 
     await waitFor(() => expect(mockSetProfile).toHaveBeenCalledTimes(1));

@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: organization dashboard reviewer-assignment service and page paths are covered with no deferred testing queue.'
+lastReviewedCommit: 52f2d2b92c756c969442e6225ab84a344f5c8868
+lastReviewedNote: 'Reviewed for Next #1009: Account and consent UI assertions plus obsolete-preview-flag regressions accompany unchanged business handlers; runtime preview fixtures are absent and final gate results belong in the PR.'
 ---
 
 # Testing Execution State
