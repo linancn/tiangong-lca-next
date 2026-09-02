@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: organization dashboard RPC mapping, locale, component, and coverage failures use existing fail-closed diagnostics.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: malformed acknowledgements, mapping fallbacks and uncovered empty-result branches follow the existing focused-test recovery workflow.'
 ---
 
 # Testing Troubleshooting

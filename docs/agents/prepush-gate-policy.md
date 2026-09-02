@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: organization dashboard reviewer-assignment regressions retain the single managed pre-push gate and unchanged coverage enforcement.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: focused iteration and generated-mirror checkpoints preserve the existing one-full-gate-after-final-commit policy; no hook bypass or gate change was introduced.'
 ---
 
 # Pre-Push Gate Policy

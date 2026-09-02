@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next Issue #1002: the existing dashboard service boundary maps database-owned v3 assigned and unassigned reviewer counts without adding a frontend data source or persistence layer.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: app-side matched id/version validation is separated from Edge English rewriting and Database multilingual retrieval/visibility ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -102,6 +102,16 @@ Rules:
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
 - authenticated semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `pnpm start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Credential-free qualification instead compiles the fixed `.invalid` profile and installs the semantic backend simulator for both candidate readiness and test contexts, so it never contacts tracked-main or production. The test-only Supabase boundary remains under `tests/e2e/**`, uses a supplied user session only for authenticated mode, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
+
+### Version-aware Process/Flow Hybrid Search
+
+`src/services/general/hybridVersions.ts` validates the opt-in `versionScope: matched` acknowledgement and complete, unique `id/version` identities. Process/Flow services request `version_scope: matched` and `match_count: 200`; a missing acknowledgement, malformed identity, duplicate exact row, authentication failure or transport failure is not a successful empty search. A genuinely acknowledged empty page returns success with explicit paging/total metadata. Individual display-mapping failures preserve the validated exact key rather than dropping the whole page or substituting the latest version.
+
+Main Process/Flow tables and their existing pickers retain version-qualified row/selection keys. Detail and reference actions keep the returned version; the client does not collapse rows by ID or rerank by the number of versions.
+
+Edge owns rewrite -> normalized English `semantic_query_en` -> embedding. Database owns each bounded lexical/semantic recall, exact-version fusion/hydration and `tg/co/my/te` visibility. Original multilingual full-text input remains intact; English vector input does not restrict authored full-text languages. Portal's separate state-100/200 allowlist must not be copied over Next's authorized personal/team scopes.
+
+The self-hosted mirror remains generated from one exact canonical Edge tree and receipt. The single online-backend exception for this delivery is recorded in `supabase-branching.md` and workspace #963; normal environment selection and promotion policy are unchanged.
 
 ### TIDAS Package Export Task Identity
 

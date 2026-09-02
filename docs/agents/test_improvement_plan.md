@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: reviewer-assignment projection and dashboard presentation cases close through the existing strategy without a new queue or browser matrix.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: version identity and acknowledgement cases use the maintained service-first strategy; no new testing platform or long-running observation was introduced.'
 ---
 
 # Testing Strategy

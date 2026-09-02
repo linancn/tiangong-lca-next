@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next #1002: reviewer-assignment mapping and table-column proof reuse existing service and page test patterns.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: exact id/version and acknowledged-empty fixtures reuse existing typed service mocks and controlled focused coverage patterns.'
 ---
 
 # Testing Patterns Reference

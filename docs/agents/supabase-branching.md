@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
-lastReviewedNote: 'Reviewed for Next Issue #1002: consuming the database-owned organization contribution v3 RPC changes no Supabase environment, branch, OAuth callback, or database ownership boundary.'
+lastReviewedCommit: b8014b3f83139a2a0b2793963b875ef3eaf56652
+lastReviewedNote: 'Reviewed for Next #1008: the single user-authorized deployed-backend exception is source-pinned and does not change normal Dev selection, actor/team scope, promotion or root integration.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -91,6 +91,14 @@ Rules:
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
 
 ## Common Scenarios
+
+### Scoped online-backend exception: Next #1008
+
+The user explicitly approved a single exception for workspace #963: implement against the currently running Main backend before the normal candidate commits complete formal Git promotion. Database `470e66157fc0b363c3360ba952f75280cfa1ff73` (only two additive search migrations) and Edge `08b19d7b841395e5d16096ff5258d7ac405c9b6f` (three search functions) were deployed and read back; [the coordination evidence](https://github.com/tiangong-lca/workspace/issues/963#issuecomment-5508734216) records exact artifacts, ACLs, tests and rollback.
+
+This permits this delivery's exact generated mirror and consumer contract; it is not a standing waiver of the review/promote-first rule below. The shared Dev environment is not redirected to Production. Routine frontend merge/release still needs the matching backend contract in its selected environment; formal review, promotion and root integration remain tracked separately.
+
+The Process/Flow Hybrid services keep the current user JWT and data-source/state scope, request the fixed 200-candidate matched mode, and reject an old backend that does not acknowledge that contract. They do not retry silently against a latest-only API.
 
 | Scenario | Correct workflow |
 | --- | --- |
