@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
+lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
 lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: source-mapped Jest 30 coverage, organization profile regressions, OAuth-only Account, and exact Edge mirror retain one full-gate owner and unchanged 100% enforcement.'
 ---
 

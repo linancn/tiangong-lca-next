@@ -26,7 +26,7 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
+lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
 lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
 related:
   - ../AGENTS.md

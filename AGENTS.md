@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
+lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
 lastReviewedNote: 'Reviewed for Next Issue #991: Account exposes only OAuth Connected Applications and Supabase-owned profile credentials; compatibility and external account-bridge code is absent while the integrated Jest/browser, organization, delivery, and modified-at-desc Process contracts remain unchanged.'
 related:
   - .docpact/config.yaml

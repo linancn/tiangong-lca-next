@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
+lastReviewedCommit: 6276fff571ca4a61dd5ef09bdb5142dfdb1201c2
 lastReviewedNote: 'Reviewed for Next Issue #991 after Issues #982/#983: 100% source-mapped Jest proof covers organization profile behavior plus OAuth grant/account flows, asserts compatibility/account-bridge absence, and retains Supabase password/email coverage.'
 related:
   - ../AGENTS.md
