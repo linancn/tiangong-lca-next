@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
-lastReviewedNote: 'Reviewed for Next Issue #999: the additive nullable model_version projection changes no Supabase environment, branch, OAuth callback, or database ownership boundary.'
+lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
+lastReviewedNote: 'Reviewed for Next Issue #1002: consuming the database-owned organization contribution v3 RPC changes no Supabase environment, branch, OAuth callback, or database ownership boundary.'
 ---
 
 # Supabase Environment And Database Workflow

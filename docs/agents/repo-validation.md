@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next Issue #999: 100% source-mapped proof covers exact model_version resolution, null fallback, independent Process behavior, child ownership, no-latest lookup, and the current review-submit loading guard.'
+lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
+lastReviewedNote: 'Reviewed for Next Issue #1002: focused service and page proof covers the v3 reviewer-assignment projection, revised table columns, locale labels, and paired Database PR #595 dependency.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

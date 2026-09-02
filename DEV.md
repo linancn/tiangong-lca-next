@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
-lastReviewedNote: 'Reviewed for Next #999: the additive Process ownership projection and regenerated locale artifacts change no bootstrap commands; lint, test, build, managed push, and deterministic release remain authoritative.'
+lastReviewedCommit: 5dcc8248c2b587add2f10ba10405813722aea104
+lastReviewedNote: 'Reviewed for Next #1002: the organization dashboard contract update changes no bootstrap commands; focused tests, lint, build, Docpact, and managed push remain authoritative.'
 ---
 
 # Development Bootstrap
