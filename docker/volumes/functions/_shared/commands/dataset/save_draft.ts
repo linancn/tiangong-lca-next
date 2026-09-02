@@ -27,7 +27,10 @@ export async function executeSaveDraftCommand(
     targetTable: request.table,
     targetId: request.id,
     targetVersion: request.version,
-    payload: request.modelId ? { modelId: request.modelId } : {},
+    payload: {
+      ...(request.modelId ? { modelId: request.modelId } : {}),
+      ...(request.modelVersion ? { modelVersion: request.modelVersion } : {}),
+    },
   });
 
   const result = await repository.saveDraft(request, audit);

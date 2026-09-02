@@ -86,6 +86,7 @@ export function buildDatasetSaveDraftRpcArgs(
     p_version: request.version,
     p_json_ordered: request.jsonOrdered,
     p_model_id: request.modelId ?? null,
+    p_model_version: request.modelVersion ?? null,
     p_audit: audit,
     p_rule_verification: request.ruleVerification ?? null,
   };
@@ -100,6 +101,7 @@ export function buildDatasetCreateRpcArgs(
     p_id: request.id,
     p_json_ordered: request.jsonOrdered,
     p_model_id: request.modelId ?? null,
+    p_model_version: request.modelVersion ?? null,
     p_rule_verification: request.ruleVerification ?? null,
     p_audit: audit,
   };
@@ -115,6 +117,7 @@ export function buildDatasetCreateVersionRpcArgs(
     p_source_version: request.sourceVersion,
     p_json_ordered: request.jsonOrdered,
     p_model_id: request.modelId ?? null,
+    p_model_version: request.modelVersion ?? null,
     p_rule_verification: request.ruleVerification ?? null,
     p_audit: audit,
   };

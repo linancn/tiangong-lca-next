@@ -28,6 +28,20 @@ export function assertSaveDraftPolicy(
     );
   }
 
+  if (request.table !== 'processes' && request.modelVersion) {
+    return invalidInput(
+      'MODEL_VERSION_NOT_ALLOWED',
+      'modelVersion is only allowed for process dataset drafts',
+    );
+  }
+
+  if (request.modelVersion && !request.modelId) {
+    return invalidInput(
+      'MODEL_ID_REQUIRED_FOR_MODEL_VERSION',
+      'modelId is required when modelVersion is provided',
+    );
+  }
+
   return { ok: true };
 }
 
@@ -36,6 +50,20 @@ export function assertCreatePolicy(request: CreateRequest): { ok: true } | Datas
     return invalidInput(
       'MODEL_ID_NOT_ALLOWED',
       'modelId is only allowed for process dataset creates',
+    );
+  }
+
+  if (request.table !== 'processes' && request.modelVersion) {
+    return invalidInput(
+      'MODEL_VERSION_NOT_ALLOWED',
+      'modelVersion is only allowed for process dataset creates',
+    );
+  }
+
+  if (request.modelVersion && !request.modelId) {
+    return invalidInput(
+      'MODEL_ID_REQUIRED_FOR_MODEL_VERSION',
+      'modelId is required when modelVersion is provided',
     );
   }
 
@@ -49,6 +77,20 @@ export function assertCreateVersionPolicy(
     return invalidInput(
       'MODEL_ID_NOT_ALLOWED',
       'modelId is only allowed for process dataset version creates',
+    );
+  }
+
+  if (request.table !== 'processes' && request.modelVersion) {
+    return invalidInput(
+      'MODEL_VERSION_NOT_ALLOWED',
+      'modelVersion is only allowed for process dataset version creates',
+    );
+  }
+
+  if (request.modelVersion && !request.modelId) {
+    return invalidInput(
+      'MODEL_ID_REQUIRED_FOR_MODEL_VERSION',
+      'modelId is required when modelVersion is provided',
     );
   }
 

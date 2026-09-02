@@ -322,3 +322,18 @@ export function buildHybridFulltextQueryTerms(query: HybridSearchQuery): string[
     [...query.fulltext_query_zh, ...query.fulltext_query_en].flatMap(splitTopLevelOrTerms),
   );
 }
+
+/** Keep the authored query in every language without starving English aliases. */
+export function buildBoundedHybridFulltextQueryTerms(
+  query: HybridSearchQuery,
+  originalQuery: string,
+): string[] {
+  const english = uniqueTerms(query.fulltext_query_en.flatMap(splitTopLevelOrTerms));
+  const chinese = uniqueTerms(query.fulltext_query_zh.flatMap(splitTopLevelOrTerms));
+  const terms = [originalQuery.trim()];
+  for (let index = 0; index < Math.max(english.length, chinese.length); index += 1) {
+    if (english[index]) terms.push(english[index]);
+    if (chinese[index]) terms.push(chinese[index]);
+  }
+  return uniqueTerms(terms.filter((term) => term.length > 0)).slice(0, 12);
+}

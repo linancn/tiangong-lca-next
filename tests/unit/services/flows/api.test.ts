@@ -2209,6 +2209,48 @@ describe('getFlowTableUuidMentionSearch', () => {
 });
 
 describe('flow_hybrid_search', () => {
+  it('keeps the matched version reference property when its display name is unavailable', async () => {
+    const id = '11111111-1111-4111-8111-111111111111';
+    mockGenFlowName.mockReturnValueOnce(undefined);
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        versionScope: 'matched',
+        data: [
+          {
+            id,
+            version: '01.00.001',
+            total_count: 1,
+            json: {
+              flowDataSet: {
+                flowProperties: {
+                  flowProperty: {
+                    referenceToFlowPropertyDataSet: { '@refObjectId': 'matched-property' },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await flow_hybrid_search({}, 'en', 'tg', 'water', {});
+
+    expect(result).toMatchObject({
+      success: true,
+      data: [
+        {
+          id,
+          version: '01.00.001',
+          key: id + ':01.00.001',
+          name: '-',
+          refFlowPropertyId: 'matched-property',
+        },
+      ],
+    });
+  });
+
   it('retains two exact matched versions instead of collapsing their shared id', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: { session: { access_token: 'version-test-token' } },
