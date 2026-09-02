@@ -41,25 +41,27 @@ cd /path/to/tiangong-lca-next
 脚本从自身位置解析目标目录，因此可以从其他工作目录调用。同步会删除
 Edge 精确版本中不存在的镜像文件；提交前必须审查完整生成 diff。
 
-## 2) 同步 data.sql（远程 Supabase）
+## 2) 从已评审的 Database 空库重建生成 data.sql
 
 脚本：`docker/scripts/sync-migrations-to-data-sql.sh`
 
 要求：
 
-- 执行前在环境变量中提供 `REMOTE_DB_URL`
-- 连接串示例：
-  - `postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres?sslmode=require`
+- 只使用由已评审 `database-engine` 迁移重建的隔离本地空库，不加载业务 seed、Auth 用户、OAuth 客户端、任务或数据集，不能连接生产或共享 Dev。
+- `DATABASE_SOURCE_ROOT` 指向干净的 Database checkout，`DATABASE_SOURCE_COMMIT` 为已评审完整 SHA；脚本核对源码身份与数据库迁移头。
+- `REMOTE_DB_URL` 保留旧变量名，但只接受 `localhost`、`127.0.0.1`、`host.docker.internal`；容器客户端通常使用最后一个地址与隔离数据库端口。远端或无效连接串会在连接前被拒绝，且不会打印凭据。
 
 执行命令：
 
 ```bash
 cd /path/to/tiangong-lca-next
-REMOTE_DB_URL='postgresql://postgres:***@db.xxx.supabase.co:5432/postgres?sslmode=require' \
+DATABASE_SOURCE_ROOT=/path/to/database-engine \
+DATABASE_SOURCE_COMMIT=<reviewed-40-character-database-commit> \
+REMOTE_DB_URL='postgresql://postgres:<local-password>@host.docker.internal:54322/postgres' \
   ./docker/scripts/sync-migrations-to-data-sql.sh
 ```
 
-仅检查（不写文件）：
+仅检查（不写文件，保留相同源码环境变量）：
 
 ```bash
 ./docker/scripts/sync-migrations-to-data-sql.sh --check
@@ -67,11 +69,17 @@ REMOTE_DB_URL='postgresql://postgres:***@db.xxx.supabase.co:5432/postgres?sslmod
 
 脚本行为：
 
-- 使用 `pg_dump --schema-only` 拉取远程全量 schema dump
+- 核对源库只有迁移初始目录，并把精确 commit/迁移头记录进快照
+- 使用 `pg_dump --schema-only` 拉取本地完整 schema dump
 - 自动执行 `docker/desensitize_data.sql.sh` 脱敏
-- 再过滤成 TianGong 业务真正需要的对象（例如 `public`、`pgmq`、`util` 和必要业务扩展）
+- 保留 `api`、`private`、`public`、`util`、`archive`、`pgmq` 与必要业务扩展
+- 仅导出两个受约束的 Database 执行角色及其成员关系、OAuth pre-request 设置、九个允许的迁移静态目录与两个空队列注册；不复制任何用户、业务行或凭据目录
 - 去掉由 Supabase 底座负责的 schema/object（例如 `auth`、`extensions`、`graphql*`、`storage`、`supabase_functions`）以及明显的 PG17 dump 噪音（如 `\restrict`、`\unrestrict`、`SET transaction_timeout = 0;`）
 - 写入 `docker/volumes/db/init/data.sql`
+
+Docker 仍使用 PostgreSQL 15.8。过滤器只在表 ACL 块移除 PG17 的 `MAINTAIN` 权限标记，不授予替代权限，不修改函数体，保留权威源码的函数空白。Auth/Storage 自身迁移和 webhook 底座仍由已锁定的服务与初始化流程负责。
+
+此文件仅用于**全新安装初始化**，不是现有数据卷的升级脚本。已有安装应备份后走 Database 自身迁移流程，并在 `PGRST_DB_SCHEMAS` 中包含 `api`；不得暴露 `private`、`util` 或 `archive`。提交前运行两次生成（第二次 `--check`）、快照契约测试，并在隔离的锁定 Docker 数据库及正常 Auth 迁移上验证恢复。
 
 默认脱敏规则：
 
