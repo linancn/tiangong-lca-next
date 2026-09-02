@@ -514,7 +514,7 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
       // Arrange
       const mockSearchResults = [
         {
-          id: 'flow-1',
+          id: 'f1000000-0000-4000-8000-000000000001',
           version: '01.00.000',
           json: {
             flowDataSet: {
@@ -551,7 +551,7 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
       });
 
       mockFunctionsInvoke.mockResolvedValue({
-        data: { data: mockSearchResults, count: 1 },
+        data: { versionScope: 'matched', data: mockSearchResults, count: 1 },
         error: null,
       });
 
@@ -565,13 +565,7 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
       mockClassificationToString.mockReturnValue('能源');
 
       // Act
-      const result = await flow_hybrid_search(
-        { current: 1, pageSize: 10 },
-        'zh',
-        'team-1',
-        '电力',
-        {},
-      );
+      const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'zh', 'tg', '电力', {});
 
       // Assert - Cache functions called
       expect(mockGetCachedLocationData).toHaveBeenCalledWith('zh', ['CN']);

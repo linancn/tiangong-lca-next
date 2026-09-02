@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
-const EXPECTED_EDGE_COMMIT = 'f40ec4174856322c20175474cc747f432f34b63f';
+const EXPECTED_EDGE_COMMIT = '08b19d7b841395e5d16096ff5258d7ac405c9b6f';
 const NON_CORE_RELATIONS = ['roles', 'teams', 'users', 'comments', 'reviews'];
 
 function sourceFiles(directory: string): string[] {
