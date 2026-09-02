@@ -74,8 +74,8 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "0be7ae54a8afde68b44c1ec6c7d7a15e74d8bc5f6b23e273ebf6f1fdfabc2529",
-    "qualityDigest": "52a730a8ea90d1b1b49c1de3ace702baaac0bc66bfe5c1f477b1d2b5c8724638",
+    "contextDigest": "635c915bc7b196c6a482615afc3bf8a777a7a38317e74c706fabac0b4983138a",
+    "qualityDigest": "1675e136b3470929354dce873621e276a83e3d0afa6aeeee44a1bd27a8fdb555",
     "correctionLedgerDigest": "fcda3136886694c111258daee7f51b6bf0f29e3333ed7e582d7fcc349f0b4c74",
     "routeViewCoverageDigest": "5fced6d5c7a704c0b14c0b8d422a25c9e1ca9454e0524ec0d88b036c88b3de57",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
@@ -121,5 +121,5 @@
       "ownerIssue": "#867"
     }
   ],
-  "activationDigest": "45927df6fde3a0751825f8e77e9d0397a3711d396645860838fb21a9d20f8395"
+  "activationDigest": "2124808ea072e2e8c2e498a8892b00e624669bcc2cab946c1d40bd4fb455660b"
 }
