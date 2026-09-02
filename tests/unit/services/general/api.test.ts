@@ -2564,6 +2564,8 @@ describe('Edge Cases and Error Handling', () => {
         'common:generalComment': [{ '@xml:lang': 'en', '#text': 'General comment' }],
         modified_at: '2024-05-01T10:00:00Z',
         team_id: 'team-process',
+        model_id: 'model-process',
+        model_version: '01.01.021',
       } as any;
 
       const builder = createQueryBuilder({ data: [processRecord], error: null, count: 1 });
@@ -2595,6 +2597,8 @@ describe('Edge Cases and Error Handling', () => {
         classification: 'Process Class EN',
         location: 'North East US',
         version: '02.00.000',
+        modelId: 'model-process',
+        modelVersion: '01.01.021',
       });
 
       mockJsonToList.mockImplementation(() => []);

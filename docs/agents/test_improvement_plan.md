@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next #991 after Issues #982/#983: browser, continuation, jsdom, coverage, profile-service, OAuth/account, and exact-mirror findings close through the existing strategy without a new queue or browser matrix.'
+lastReviewedCommit: 16a400f36fe47ad0ca24c97db99fe4a231e84f4a
+lastReviewedNote: 'Reviewed for Next #999: exact model-version, null fallback, navigation, listing, child-result, and review-submit loading cases close through the existing strategy without a new queue or browser matrix.'
 ---
 
 # Testing Strategy

@@ -10,8 +10,17 @@ export type ProcessTable = VersionedDataRow & {
   referenceYear: string;
   location: string;
   modelId: string;
+  modelVersion?: string | null;
   typeOfDataSet: string;
 };
+
+export const toProcessModelVersionField = (
+  modelVersion: string | null | undefined,
+): Pick<ProcessTable, 'modelVersion'> => (modelVersion === undefined ? {} : { modelVersion });
+
+export const resolveProcessModelVersion = (
+  process: Pick<ProcessTable, 'version' | 'modelVersion'>,
+): string => process.modelVersion?.trim() || process.version;
 
 export type ProcessImportItem = {
   processDataSet: Process['processDataSet'];

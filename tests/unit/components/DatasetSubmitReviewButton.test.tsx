@@ -168,6 +168,29 @@ describe('DatasetSubmitReviewButton', () => {
     await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('Submit review failed.'));
   });
 
+  it('shows exception and fallback messages when the review request rejects', async () => {
+    submitDatasetReviewApiMock
+      .mockRejectedValueOnce(new Error('network failed'))
+      .mockRejectedValueOnce('network unavailable');
+
+    render(
+      <DatasetSubmitReviewButton
+        table='sources'
+        id='source-id'
+        version='01.00.000'
+        beforeSubmit={jest.fn().mockResolvedValue(true)}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('network failed'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Review' }));
+
+    await waitFor(() => expect(mockMessageError).toHaveBeenCalledWith('Submit review failed.'));
+  });
+
   it('honors the disabled state and supports an omitted success callback', async () => {
     const beforeSubmit = jest.fn().mockResolvedValue(true);
     submitDatasetReviewApiMock.mockResolvedValue({ data: null, error: null } as never);

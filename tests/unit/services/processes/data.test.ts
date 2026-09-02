@@ -10,6 +10,7 @@ import type {
   ProcessReviewScopeItem,
   ProcessTable,
 } from '@/services/processes/data';
+import { resolveProcessModelVersion, toProcessModelVersionField } from '@/services/processes/data';
 
 describe('processes data shapes', () => {
   it('supports process table rows and exchange table rows used by process pages', () => {
@@ -26,6 +27,7 @@ describe('processes data shapes', () => {
       modifiedAt: new Date('2026-03-13T00:00:00Z'),
       teamId: 'team-1',
       modelId: 'model-1',
+      modelVersion: '01.01.021',
       typeOfDataSet: 'Unit process, single operation',
     };
     const exchange: ProcessExchangeTable = {
@@ -48,6 +50,12 @@ describe('processes data shapes', () => {
     };
 
     expect(process.typeOfDataSet).toContain('Unit process');
+    expect(resolveProcessModelVersion(process)).toBe('01.01.021');
+    expect(resolveProcessModelVersion({ ...process, modelVersion: null })).toBe('01.00.000');
+    expect(resolveProcessModelVersion({ ...process, modelVersion: '   ' })).toBe('01.00.000');
+    expect(toProcessModelVersionField(undefined)).toEqual({});
+    expect(toProcessModelVersionField(null)).toEqual({ modelVersion: null });
+    expect(toProcessModelVersionField('01.01.021')).toEqual({ modelVersion: '01.01.021' });
     expect(exchange.referenceToFlowDataSetId).toBe('flow-1');
   });
 
