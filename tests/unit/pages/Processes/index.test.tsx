@@ -952,6 +952,7 @@ describe('ProcessesPage', () => {
           location: 'EU',
           modifiedAt: '2024-02-01T00:00:00Z',
           modelId: 'model-2',
+          modelVersion: '01.01.021',
           teamId: '',
         },
       ],
@@ -964,7 +965,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: /contribute-action/i }));
 
     await waitFor(() =>
-      expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-2', '2.0.0'),
+      expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-2', '01.01.021'),
     );
     expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'model-failed' });
     expect(message.success).not.toHaveBeenCalled();

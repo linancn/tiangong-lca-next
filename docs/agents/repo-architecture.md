@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 046c505882ac28ae473a3318e2d4c94a9bf0541d
-lastReviewedNote: 'Reviewed for Next Issue #991 after the Jest/browser and organization UI integrations: Account uses OAuth grant list/revoke and Supabase credentials only, all compatibility/account-bridge callers are removed, and the stable frontend/service map remains intact.'
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: c89d9e2e89481236724eb3ebd144e57fdd84714b
+lastReviewedNote: 'Reviewed for Next Issue #999: the frontend/service boundary maps nullable model_version and centralizes exact LifecycleModel ownership resolution without adding a relationship entity or lookup.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -92,6 +92,7 @@ Rules:
 - LCIA result transport state and calculation-evidence trust state are separate: a failed or pending result query renders its own state and cannot be reinterpreted as missing or mismatched evidence; only a successfully returned numerical result enters the fail-closed evidence validator
 - Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned actor-draft mode for its personal branch, requiring owner `state_code=0` rows regardless of team/review workflow metadata, then merges that result with public state-100 rows. Database migrations own the `search_text` lexical source and its PGroonga index
+- Process list rows carry nullable `model_version` alongside `model_id`. LifecycleModel actions resolve the exact owner version as `model_version ?? process.version`; null remains the legacy same-version fallback, while an explicit version must never be replaced with the latest LifecycleModel revision. LifecycleModel result submodels are queried with each submodel reference's own Process version rather than the parent Model version
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `pnpm reference-data:check`
@@ -131,6 +132,8 @@ Process, Flow, Source, and Contact review submission use the same stable command
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_submit_review`
 
 Before calling that command, the Process editor validates the current saved record for TIDAS SDK validity, at least one exchange, and exactly one quantitative reference. Process, Flow, Source, and Contact then recursively validate their existing reference chains through the same reference-access, rule-verification, and referenced-version checks. Any blocking reference-chain issue prevents submission and is shown through the review-specific validation surface. The submit action does not calculate the full matrix, inspect Worker jobs, or require completeness or numerical-stability evidence. Database remains authoritative for authentication, workflow state, target identity, idempotency, and transactional invariants.
+
+Every dataset editor keeps its drawer mounted and visibly busy for the complete save, validation, and review-command transaction. The editor disables close actions while that transaction is pending, reloads the owning list and closes only after the review command succeeds, and remains open after validation or submission failure so the user can inspect and retry the draft.
 
 Review Admin has a separate manual quality-diagnostic path:
 

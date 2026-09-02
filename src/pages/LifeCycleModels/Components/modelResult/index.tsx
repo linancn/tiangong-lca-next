@@ -180,7 +180,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
               subProductRequestEpochRef,
               () =>
                 getProcessesByIdAndVersion(
-                  subProducts.map((e) => ({ id: e.id, version: modelVersion })),
+                  subProducts.map((e) => ({ id: e.id, version: e.version })),
                   params.contentLanguage,
                 ),
             );

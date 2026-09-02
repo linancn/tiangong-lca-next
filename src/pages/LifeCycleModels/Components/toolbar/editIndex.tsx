@@ -1702,8 +1702,10 @@ const ToolbarEdit: FC<Props> = ({
     setProblemNodes(reviewResult?.problemNodes ?? []);
 
     if (checkResult && saveResult.saveSucceeded) {
-      await editInfoRef.current?.submitReview(unReview);
-      onSubmitReviewSuccess();
+      const submitSucceeded = await editInfoRef.current?.submitReview(unReview);
+      if (submitSucceeded) {
+        onSubmitReviewSuccess();
+      }
     }
     setSpinning(false);
   };

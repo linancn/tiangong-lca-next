@@ -18,6 +18,7 @@ import {
   normalizeLangPayloadBeforeSave,
 } from '../general/util';
 import { getILCDLocationByValues } from '../locations/api';
+import { toProcessModelVersionField } from '../processes/data';
 import { genProcessName } from '../processes/util';
 import {
   CANONICAL_CONTENT_LANGUAGE,
@@ -1514,6 +1515,7 @@ export async function getAllVersions(
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
                 modelId: i?.model_id,
+                ...toProcessModelVersionField(i?.model_version),
                 stateCode: i?.state_code,
               };
             } catch (e) {

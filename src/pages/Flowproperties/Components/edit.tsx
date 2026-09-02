@@ -106,6 +106,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [initData, setInitData] = useState<FormFlowProperty & { id?: string }>();
   const [detailStateCode, setDetailStateCode] = useState<number>();
   const [spinning, setSpinning] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
@@ -561,12 +562,19 @@ const FlowpropertiesEdit: FC<Props> = ({
         }
         size='90%'
         closable={false}
-        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
+        extra={
+          <Button
+            disabled={spinning || reviewSubmitting}
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={closeDrawer}
+          />
+        }
         mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <LoadingDisabledActionGroup loading={spinning || !initData}>
+          <LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>
             <Space size={'middle'} className={styles.footer_right}>
               <Button onClick={() => void handleCheckData()}>
                 <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
@@ -575,8 +583,9 @@ const FlowpropertiesEdit: FC<Props> = ({
                 table='flowproperties'
                 id={id}
                 version={version}
-                disabled={spinning || detailStateCode !== 0}
+                disabled={spinning || reviewSubmitting || detailStateCode !== 0}
                 beforeSubmit={() => handleCheckData()}
+                onSubmittingChange={setReviewSubmitting}
                 onSuccess={() => {
                   setDetailStateCode(20);
                   actionRef?.current?.reload();
@@ -614,7 +623,7 @@ const FlowpropertiesEdit: FC<Props> = ({
           </LoadingDisabledActionGroup>
         }
       >
-        <Spin spinning={spinning}>
+        <Spin spinning={spinning || reviewSubmitting}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}

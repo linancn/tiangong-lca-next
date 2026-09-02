@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7a6df6d3dcb0b05f33848ef6906c5f549f5a505a
-lastReviewedNote: 'Reviewed for Next Issue #991: Account exposes only OAuth Connected Applications and Supabase-owned profile credentials; compatibility and external account-bridge code is absent while the integrated Jest/browser, organization, delivery, and modified-at-desc Process contracts remain unchanged.'
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: a25e4ca0160477b949d70c06bf5c35c45a179f96
+lastReviewedNote: 'Reviewed for Next Issue #999: Process rows retain modified-at-desc behavior while model navigation resolves the exact stored model_version or the legacy Process-version fallback, never latest Model.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

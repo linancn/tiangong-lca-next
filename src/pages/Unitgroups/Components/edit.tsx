@@ -92,6 +92,7 @@ const UnitGroupEdit: FC<Props> = ({
   const [detailStateCode, setDetailStateCode] = useState<number>();
   const [unitDataSource, setUnitDataSource] = useState<UnitItem[]>([]);
   const [spinning, setSpinning] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [sdkValidationDetails, setSdkValidationDetails] = useState<ValidationIssueSdkDetail[]>([]);
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
@@ -609,13 +610,18 @@ const UnitGroupEdit: FC<Props> = ({
         size='90%'
         closable={false}
         extra={
-          <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer}></Button>
+          <Button
+            disabled={spinning || reviewSubmitting}
+            icon={<CloseOutlined />}
+            style={{ border: 0 }}
+            onClick={closeDrawer}
+          ></Button>
         }
         mask={{ closable: false }}
         open={drawerVisible}
         onClose={closeDrawer}
         footer={
-          <LoadingDisabledActionGroup loading={spinning || !initData}>
+          <LoadingDisabledActionGroup loading={spinning || reviewSubmitting || !initData}>
             <Space size={'middle'} className={styles.footer_right}>
               <Button onClick={() => void handleCheckData()}>
                 <FormattedMessage id='pages.button.check' defaultMessage='Data Check' />
@@ -624,8 +630,9 @@ const UnitGroupEdit: FC<Props> = ({
                 table='unitgroups'
                 id={id}
                 version={version}
-                disabled={spinning || detailStateCode !== 0}
+                disabled={spinning || reviewSubmitting || detailStateCode !== 0}
                 beforeSubmit={() => handleCheckData()}
+                onSubmittingChange={setReviewSubmitting}
                 onSuccess={() => {
                   setDetailStateCode(20);
                   actionRef?.current?.reload();
@@ -664,7 +671,7 @@ const UnitGroupEdit: FC<Props> = ({
           </LoadingDisabledActionGroup>
         }
       >
-        <Spin spinning={spinning}>
+        <Spin spinning={spinning || reviewSubmitting}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}
