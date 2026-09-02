@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 7d01dc8ab297bd11d36eeb0d5e5b813cfdf35303
+lastReviewedAt: 2026-09-02
+lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
 lastReviewedNote: 'Reviewed while integrating Next Issues #982 and #983: bootstrap/proof commands cover the upgraded Jest/Umi/Electron/Playwright stack, while account organization keeps existing startup, Supabase Auth, and environment workflows.'
 ---
 
