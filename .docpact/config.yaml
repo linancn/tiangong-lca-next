@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-03"
-lastReviewedCommit: "b3aa7905f3a867bf47091b58654bed9d6a9afd69"
+lastReviewedCommit: "a437188f3457ef03436c74a4ced69e4687b4d069"
 lastReviewedNote: 'Reviewed for Next #1015: scoped Account and OAuth card styling remains covered by existing frontend and OAuth routes; no ownership, routing, baseline or waiver rule changed.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

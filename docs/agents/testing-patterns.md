@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: exact id/version and acknowledged-empty fixtures reuse existing typed service mocks and controlled focused coverage patterns.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: a437188f3457ef03436c74a4ced69e4687b4d069
+lastReviewedNote: 'Reviewed for Next #1015: existing locale audit and artifact-idempotence tests cover regenerated source bindings; catalog messages, runtime fixtures and test assertions are unchanged.'
 ---
 
 # Testing Patterns Reference

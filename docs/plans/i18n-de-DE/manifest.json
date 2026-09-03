@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "d7bbd13462295aa509de3c9c40828c4e6d258f5b87076e2b70253747383977f1",
+    "auditedInputDigest": "57dedb604181392c31936a30f71614f0c14416b3b88687a4b4579bb706c875d9",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -24624,7 +24624,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 808,
+          "line": 809,
           "column": 14,
           "symbol": "Profile",
           "defaultMessage": "Account Profile",
@@ -24645,7 +24645,7 @@
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 808,
+              "line": 809,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -36266,7 +36266,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 818,
+          "line": 819,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Basic Information",
@@ -36287,7 +36287,7 @@
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 818,
+              "line": 819,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -36447,7 +36447,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 834,
+          "line": 835,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Change Email",
@@ -36468,7 +36468,7 @@
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 834,
+              "line": 835,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -36545,7 +36545,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 826,
+          "line": 827,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Change Password",
@@ -36566,7 +36566,7 @@
             },
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 826,
+              "line": 827,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -41527,7 +41527,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 842,
+          "line": 843,
           "column": 22,
           "symbol": "Profile",
           "defaultMessage": "Connected apps",
@@ -41542,7 +41542,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 842,
+              "line": 843,
               "column": 22,
               "kind": "formatMessage"
             }

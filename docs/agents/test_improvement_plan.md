@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: version identity and acknowledgement cases use the maintained service-first strategy; no new testing platform or long-running observation was introduced.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: a437188f3457ef03436c74a4ced69e4687b4d069
+lastReviewedNote: 'Reviewed for Next #1015: deterministic locale artifact refresh supports the existing UI regression and full-coverage strategy without new test infrastructure or business behavior.'
 ---
 
 # Testing Strategy

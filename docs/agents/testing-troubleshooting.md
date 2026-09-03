@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: malformed acknowledgements, mapping fallbacks and uncovered empty-result branches follow the existing focused-test recovery workflow.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: a437188f3457ef03436c74a4ced69e4687b4d069
+lastReviewedNote: 'Reviewed for Next #1015: diagnosed stale locale digests and callsite locations are regenerated rather than weakening tests, coverage or pre-push enforcement.'
 ---
 
 # Testing Troubleshooting
