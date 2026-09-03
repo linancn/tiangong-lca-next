@@ -15,14 +15,12 @@ import {
   organizationContributionSnapshotSchema,
 } from '@/services/nationalCarbonDashboard/api';
 
-const makeScope = (datasetScope: 'process' | 'model' | 'all', publishedDatasetCount: number) => ({
-  datasetScope,
-  metric: 'latest_published_dataset_count',
+const makeProcessStatistics = (publishedDatasetCount: number) => ({
   summary: {
     organizationCount: publishedDatasetCount > 0 ? 1 : 0,
     publishedDatasetCount,
     pendingReviewDatasetCount: 2,
-    publishedLast30DaysCount: 1,
+    reviewerCount: 2,
   },
   rankings:
     publishedDatasetCount > 0
@@ -39,31 +37,34 @@ const makeScope = (datasetScope: 'process' | 'model' | 'all', publishedDatasetCo
       : [],
 });
 
-const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
+const dailyActivityDays = Array.from({ length: 366 }, (_, index) => {
   const date = new Date(Date.UTC(2025, 8, 1 + index)).toISOString().slice(0, 10);
   const processCount = index === 0 ? 1 : 0;
-  const modelCount = index === 365 ? 2 : 0;
-  return { allCount: processCount + modelCount, date, modelCount, processCount };
+  return { date, processCount };
 });
 
 const validSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v3',
+  schemaVersion: 'national_carbon_organization_contribution_v5',
+  datasetScope: 'process',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',
-  defaultScope: 'all',
-  dailyCreation: {
-    metric: 'dataset_version_created_count',
-    deduplicationKey: ['datasetType', 'datasetId', 'version'],
+  dailyActivity: {
+    metric: 'dataset_version_activity_count',
+    deduplicationKey: ['datasetType', 'datasetId', 'version', 'date'],
     timezone: 'Asia/Shanghai',
     startDate: '2025-09-01',
     endDate: '2026-09-01',
-    days: dailyCreationDays,
+    days: dailyActivityDays,
   },
-  scopes: {
-    process: makeScope('process', 3),
-    model: makeScope('model', 2),
-    all: makeScope('all', 5),
+  ...makeProcessStatistics(3),
+  organizations: makeProcessStatistics(3).rankings,
+  regions: {
+    metric: 'latest_open_process_count',
+    totalProcessCount: 3,
+    items: [{ locationCode: 'CN', processCount: 1 }],
+    globalProcessCount: 1,
+    unassignedProcessCount: 1,
   },
 };
 
@@ -122,9 +123,9 @@ describe('nationalCarbonDashboard organization contribution service', () => {
     });
   });
 
-  it('rejects malformed or incomplete three-scope snapshots', async () => {
+  it('rejects legacy multi-scope snapshots', async () => {
     mockRpc.mockResolvedValueOnce({
-      data: { ...validSnapshot, scopes: { process: validSnapshot.scopes.process } },
+      data: { ...validSnapshot, schemaVersion: 'national_carbon_organization_contribution_v3' },
       error: null,
     });
 
@@ -134,21 +135,69 @@ describe('nationalCarbonDashboard organization contribution service', () => {
     expect(organizationContributionSnapshotSchema.safeParse(validSnapshot).success).toBe(true);
   });
 
+  it('accepts all organizations independently of the chart limit and rejects truncation', () => {
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        schemaVersion: 'national_carbon_organization_contribution_v4',
+      }).success,
+    ).toBe(false);
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        dailyActivity: { ...validSnapshot.dailyActivity, metric: 'dataset_version_created_count' },
+      }).success,
+    ).toBe(false);
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        dailyActivity: {
+          ...validSnapshot.dailyActivity,
+          deduplicationKey: ['datasetType', 'datasetId', 'version'],
+        },
+      }).success,
+    ).toBe(false);
+    const organizations = Array.from({ length: 63 }, (_, index) => ({
+      ...validSnapshot.organizations[0],
+      rank: index + 1,
+      organizationKey: `unit-${index}`,
+      organizationName: `Unit ${index}`,
+    }));
+    const complete = {
+      ...validSnapshot,
+      organizations,
+      summary: { ...validSnapshot.summary, organizationCount: 63 },
+    };
+    expect(organizationContributionSnapshotSchema.safeParse(complete).success).toBe(true);
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...complete,
+        organizations: organizations.slice(0, 10),
+      }).success,
+    ).toBe(false);
+    expect(
+      organizationContributionSnapshotSchema.safeParse({
+        ...validSnapshot,
+        regions: { ...validSnapshot.regions, totalProcessCount: 4 },
+      }).success,
+    ).toBe(false);
+  });
+
   it('rejects inconsistent or non-consecutive daily version counts', () => {
     const inconsistent = {
       ...validSnapshot,
-      dailyCreation: {
-        ...validSnapshot.dailyCreation,
-        days: validSnapshot.dailyCreation.days.map((day, index) =>
+      dailyActivity: {
+        ...validSnapshot.dailyActivity,
+        days: validSnapshot.dailyActivity.days.map((day, index) =>
           index === 10 ? { ...day, allCount: 9 } : day,
         ),
       },
     };
     const nonConsecutive = {
       ...validSnapshot,
-      dailyCreation: {
-        ...validSnapshot.dailyCreation,
-        days: validSnapshot.dailyCreation.days.map((day, index) =>
+      dailyActivity: {
+        ...validSnapshot.dailyActivity,
+        days: validSnapshot.dailyActivity.days.map((day, index) =>
           index === 10 ? { ...day, date: '2025-09-12' } : day,
         ),
       },
@@ -161,15 +210,15 @@ describe('nationalCarbonDashboard organization contribution service', () => {
   it('rejects daily version ranges whose boundary dates do not match their day series', () => {
     const mismatchedStart = {
       ...validSnapshot,
-      dailyCreation: {
-        ...validSnapshot.dailyCreation,
+      dailyActivity: {
+        ...validSnapshot.dailyActivity,
         startDate: '2025-08-31',
       },
     };
     const mismatchedEnd = {
       ...validSnapshot,
-      dailyCreation: {
-        ...validSnapshot.dailyCreation,
+      dailyActivity: {
+        ...validSnapshot.dailyActivity,
         endDate: '2026-09-02',
       },
     };

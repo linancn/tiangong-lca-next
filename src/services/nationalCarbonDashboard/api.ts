@@ -1,51 +1,41 @@
 import { supabase } from '@/services/supabase';
 import { z } from 'zod';
 
-export const organizationContributionDatasetScopes = ['process', 'model', 'all'] as const;
-
-export type OrganizationContributionDatasetScope =
-  (typeof organizationContributionDatasetScopes)[number];
-
 const nonnegativeInteger = z.number().int().nonnegative();
 const isoCalendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-const dailyCreationDaySchema = z
+const dailyActivityDaySchema = z
   .object({
     date: isoCalendarDate,
     processCount: nonnegativeInteger,
-    modelCount: nonnegativeInteger,
-    allCount: nonnegativeInteger,
   })
-  .strict()
-  .refine((day) => day.allCount === day.processCount + day.modelCount, {
-    message: 'allCount must equal processCount + modelCount',
-    path: ['allCount'],
-  });
+  .strict();
 
-const dailyCreationSchema = z
+const dailyActivitySchema = z
   .object({
-    metric: z.literal('dataset_version_created_count'),
+    metric: z.literal('dataset_version_activity_count'),
     deduplicationKey: z.tuple([
       z.literal('datasetType'),
       z.literal('datasetId'),
       z.literal('version'),
+      z.literal('date'),
     ]),
     timezone: z.literal('Asia/Shanghai'),
     startDate: isoCalendarDate,
     endDate: isoCalendarDate,
-    days: z.array(dailyCreationDaySchema).min(365).max(371),
+    days: z.array(dailyActivityDaySchema).min(365).max(371),
   })
   .strict()
-  .superRefine((dailyCreation, context) => {
-    const { days } = dailyCreation;
-    if (days[0]?.date !== dailyCreation.startDate) {
+  .superRefine((dailyActivity, context) => {
+    const { days } = dailyActivity;
+    if (days[0]?.date !== dailyActivity.startDate) {
       context.addIssue({
         code: 'custom',
         message: 'days must start at startDate',
         path: ['days', 0, 'date'],
       });
     }
-    if (days[days.length - 1]?.date !== dailyCreation.endDate) {
+    if (days[days.length - 1]?.date !== dailyActivity.endDate) {
       context.addIssue({
         code: 'custom',
         message: 'days must end at endDate',
@@ -77,46 +67,67 @@ const organizationContributionRankingSchema = z
   })
   .strict();
 
-const makeScopeSchema = (datasetScope: OrganizationContributionDatasetScope) =>
-  z
-    .object({
-      datasetScope: z.literal(datasetScope),
-      metric: z.literal('latest_published_dataset_count'),
-      summary: z
-        .object({
-          organizationCount: nonnegativeInteger,
-          publishedDatasetCount: nonnegativeInteger,
-          pendingReviewDatasetCount: nonnegativeInteger,
-          publishedLast30DaysCount: nonnegativeInteger,
-        })
-        .strict(),
-      rankings: z.array(organizationContributionRankingSchema).max(50),
-    })
-    .strict();
-
 export const organizationContributionSnapshotSchema = z
   .object({
-    schemaVersion: z.literal('national_carbon_organization_contribution_v3'),
+    schemaVersion: z.literal('national_carbon_organization_contribution_v5'),
+    datasetScope: z.literal('process'),
     attributionMode: z.literal('current_user_profile'),
     generatedAt: z.iso.datetime({ offset: true }),
     dataAsOf: z.iso.datetime({ offset: true }),
-    defaultScope: z.literal('all'),
-    dailyCreation: dailyCreationSchema,
-    scopes: z
+    dailyActivity: dailyActivitySchema,
+    summary: z
       .object({
-        process: makeScopeSchema('process'),
-        model: makeScopeSchema('model'),
-        all: makeScopeSchema('all'),
+        organizationCount: nonnegativeInteger,
+        publishedDatasetCount: nonnegativeInteger,
+        pendingReviewDatasetCount: nonnegativeInteger,
+        reviewerCount: nonnegativeInteger,
+      })
+      .strict(),
+    rankings: z.array(organizationContributionRankingSchema).max(50),
+    organizations: z.array(organizationContributionRankingSchema),
+    regions: z
+      .object({
+        metric: z.literal('latest_open_process_count'),
+        totalProcessCount: nonnegativeInteger,
+        items: z.array(
+          z
+            .object({
+              locationCode: z.string().trim().min(1),
+              processCount: nonnegativeInteger,
+            })
+            .strict(),
+        ),
+        globalProcessCount: nonnegativeInteger,
+        unassignedProcessCount: nonnegativeInteger,
       })
       .strict(),
   })
-  .strict();
+  .strict()
+  .superRefine((snapshot, context) => {
+    if (snapshot.organizations.length !== snapshot.summary.organizationCount) {
+      context.addIssue({
+        code: 'custom',
+        message: 'All organizations must be returned',
+        path: ['organizations'],
+      });
+    }
+    const { regions } = snapshot;
+    const regionTotal =
+      regions.items.reduce((sum, item) => sum + item.processCount, 0) +
+      regions.globalProcessCount +
+      regions.unassignedProcessCount;
+    if (regionTotal !== regions.totalProcessCount) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Regional counts must reconcile',
+        path: ['regions'],
+      });
+    }
+  });
 
 export type OrganizationContributionSnapshot = z.infer<
   typeof organizationContributionSnapshotSchema
 >;
-export type OrganizationContributionScopeSnapshot =
-  OrganizationContributionSnapshot['scopes'][OrganizationContributionDatasetScope];
 
 export type OrganizationContributionErrorCode =
   | 'AUTH_REQUIRED'

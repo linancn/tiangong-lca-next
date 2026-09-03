@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: targeted matched-version and empty-page regressions are covered, with the final full push gate kept separate from the historical checked-in reference baseline.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
+lastReviewedNote: 'Reviewed for Next #1014: process-only dashboard and v5 daily activity consumer retain current-branch delivery, strict RPC validation, localized labels and focused service/component proof; no gate, backend-authority or historical coverage baseline changes.'
 ---
 
 # Testing Execution State
