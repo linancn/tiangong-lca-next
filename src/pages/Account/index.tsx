@@ -805,6 +805,7 @@ const Profile: FC = () => {
 
   return (
     <PageContainer
+      className={styles.accountPage}
       title={<FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />}
     >
       <Spin spinning={spinning}>

@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: exact-version, malformed acknowledgement, empty-result paging, display fallback and generated-mirror proof are recorded; final full qualification remains owned by the controlled push hook.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
+lastReviewedNote: 'Reviewed for Next #1015: existing frontend proof requirements cover the scoped card styling; focused regression and rendered-style checks supplement, not replace, the controlled push gate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
-lastReviewedNote: 'Reviewed for Next #1008: app-side matched id/version validation is separated from Edge English rewriting and Database multilingual retrieval/visibility ownership.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
+lastReviewedNote: 'Reviewed for Next #1015: page-local card radii and backgrounds preserve the Account/OAuth component-service boundary, existing theme ownership and real authorization flow.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
