@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: focused iteration and generated-mirror checkpoints preserve the existing one-full-gate-after-final-commit policy; no hook bypass or gate change was introduced.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
+lastReviewedNote: 'Reviewed for Next #1014: process-only dashboard and v5 daily activity consumer retain current-branch delivery, strict RPC validation, localized labels and focused service/component proof; no gate, backend-authority or historical coverage baseline changes.'
 ---
 
 # Pre-Push Gate Policy

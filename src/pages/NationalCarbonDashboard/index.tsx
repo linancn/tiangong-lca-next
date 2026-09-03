@@ -1,29 +1,24 @@
 import AccessDenied from '@/components/AccessDenied';
 import {
   getOrganizationContributionSnapshot,
-  organizationContributionDatasetScopes,
-  type OrganizationContributionDatasetScope,
   type OrganizationContributionError,
-  type OrganizationContributionScopeSnapshot,
   type OrganizationContributionSnapshot,
 } from '@/services/nationalCarbonDashboard/api';
+import { getILCDLocationByValues } from '@/services/locations/api';
 import {
   getRouteViewStateVariantIds,
   resolveRouteViewState,
 } from '@/services/general/routeViewState';
 import {
-  ApartmentOutlined,
-  AppstoreOutlined,
   DatabaseOutlined,
   FileDoneOutlined,
   Loading3QuartersOutlined,
-  ProfileOutlined,
   RadarChartOutlined,
   ReloadOutlined,
-  RiseOutlined,
+  UserSwitchOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
+import { Button, Pagination, Tooltip } from 'antd';
 import { useIntl, useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
@@ -520,9 +515,14 @@ function ScreenNavigator({
   const intl = useIntl();
   const activeScreenInfo = screens.find((screen) => screen.key === activeScreen) ?? screens[0];
   const activeScreenLabel = getDashboardScreenLabel(intl, activeScreenInfo.key);
-  const [position, setPosition] = useState<FloatingNavigatorPosition>(
-    getInitialFloatingNavigatorPosition,
-  );
+  const [position, setPosition] = useState<FloatingNavigatorPosition>(() => {
+    const initial = getInitialFloatingNavigatorPosition();
+    // Keep a user's saved drag position, but avoid covering the heatmap on first visit.
+    return activeScreen === 'organization_contribution' &&
+      initial === floatingNavigatorDefaultPosition
+      ? { x: initial.x - 12, y: dashboardStageHeight - 310 - floatingNavigatorOrbSize - 18 }
+      : initial;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const positionRef = useRef(position);
@@ -2380,23 +2380,18 @@ function OrganizationContributionLoadingState() {
 }
 
 function OrganizationContributionChart({
-  scope,
   scopeSnapshot,
 }: {
-  scope: OrganizationContributionDatasetScope;
-  scopeSnapshot: OrganizationContributionScopeSnapshot;
+  scopeSnapshot: OrganizationContributionSnapshot;
 }) {
   const intl = useIntl();
   const maximum = Math.max(
     1,
     ...scopeSnapshot.rankings.map((ranking) => ranking.publishedDatasetCount),
   );
-  const metricLabel =
-    scope === 'process'
-      ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.process' })
-      : scope === 'model'
-        ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.model' })
-        : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.metric.all' });
+  const metricLabel = intl.formatMessage({
+    id: 'pages.home.nationalCarbon.organization.metric.process',
+  });
 
   return (
     <article className={styles.organizationPanel}>
@@ -2438,16 +2433,29 @@ function OrganizationContributionChart({
 function OrganizationContributionRanking({
   scopeSnapshot,
 }: {
-  scopeSnapshot: OrganizationContributionScopeSnapshot;
+  scopeSnapshot: OrganizationContributionSnapshot;
 }) {
   const intl = useIntl();
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const pageCount = Math.max(1, Math.ceil(scopeSnapshot.organizations.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  useEffect(() => setPage((previous) => Math.min(previous, pageCount)), [pageCount]);
+  const rows = scopeSnapshot.organizations.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   return (
     <article className={`${styles.organizationPanel} ${styles.organizationRankingPanel}`}>
       <div className={styles.organizationPanelHeader}>
         <h2>{intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.ranking' })}</h2>
       </div>
-      <div className={styles.organizationTable} role='table'>
+      <div
+        className={styles.organizationTable}
+        role='table'
+        aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.ranking' })}
+      >
         <div className={styles.organizationTableHeader} role='row'>
           <span role='columnheader'>
             {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.column.rank' })}
@@ -2469,10 +2477,10 @@ function OrganizationContributionRanking({
             })}
           </span>
         </div>
-        {scopeSnapshot.rankings.length === 0 ? (
+        {rows.length === 0 ? (
           <OrganizationContributionEmptyState />
         ) : (
-          scopeSnapshot.rankings.map((ranking) => (
+          rows.map((ranking) => (
             <div className={styles.organizationTableRow} key={ranking.organizationKey} role='row'>
               <span role='cell'>
                 <b className={styles.organizationTableRank} data-rank={ranking.rank}>
@@ -2491,28 +2499,145 @@ function OrganizationContributionRanking({
           ))
         )}
       </div>
+      <div className={styles.organizationPagination}>
+        <Pagination
+          size='small'
+          current={currentPage}
+          pageSize={pageSize}
+          total={scopeSnapshot.organizations.length}
+          onChange={setPage}
+          showSizeChanger={false}
+          hideOnSinglePage
+        />
+      </div>
     </article>
   );
 }
 
-function OrganizationDailyCreationHeatmap({
-  activeScope,
-  dailyCreation,
+function OrganizationRegionDistribution({
+  regions,
 }: {
-  activeScope: OrganizationContributionDatasetScope;
-  dailyCreation: OrganizationContributionSnapshot['dailyCreation'];
+  regions: OrganizationContributionSnapshot['regions'];
 }) {
   const intl = useIntl();
   const locale = getCanonicalRuntimeLocale();
-  const getCount = useCallback(
-    (day: (typeof dailyCreation.days)[number]) => {
-      if (activeScope === 'process') return day.processCount;
-      if (activeScope === 'model') return day.modelCount;
-      return day.allCount;
-    },
-    [activeScope],
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [labelsUnavailable, setLabelsUnavailable] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setLabels({});
+    setLabelsUnavailable(false);
+    if (regions.items.length) {
+      void getILCDLocationByValues(
+        locale,
+        regions.items.map((item) => item.locationCode),
+      )
+        .then((result) => {
+          if (!active) return;
+          setLabelsUnavailable(!result.success);
+          setLabels(
+            Object.fromEntries(
+              result.data.flatMap((item) =>
+                typeof item['@value'] === 'string' && typeof item['#text'] === 'string'
+                  ? [[item['@value'], item['#text']]]
+                  : [],
+              ),
+            ),
+          );
+        })
+        .catch(() => {
+          if (active) setLabelsUnavailable(true);
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [locale, regions.items]);
+  const maximum = Math.max(1, ...regions.items.map((item) => item.processCount));
+  return (
+    <article
+      className={`${styles.organizationPanel} ${styles.organizationRegionPanel}`}
+      data-testid='organization-regions'
+    >
+      <div className={styles.organizationPanelHeader}>
+        <h2>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.regions.title' })}
+        </h2>
+        <span>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.regions.metric' })}
+        </span>
+      </div>
+      {regions.totalProcessCount === 0 ? (
+        <OrganizationContributionEmptyState />
+      ) : (
+        <>
+          <div className={styles.organizationRegionList} role='list'>
+            {regions.items.map((region) => (
+              <div
+                className={styles.organizationRegionRow}
+                role='listitem'
+                key={region.locationCode}
+              >
+                <Tooltip
+                  title={`${labels[region.locationCode] ?? region.locationCode} (${region.locationCode})`}
+                >
+                  <div className={styles.organizationRegionName}>
+                    <strong>{labels[region.locationCode] ?? region.locationCode}</strong>
+                    {labels[region.locationCode] ? <span>{region.locationCode}</span> : null}
+                  </div>
+                </Tooltip>
+                <div className={styles.organizationBarTrack}>
+                  <div
+                    className={styles.organizationBarFill}
+                    style={{ width: `${(region.processCount / maximum) * 100}%` }}
+                  />
+                </div>
+                <strong>{formatNumber(region.processCount)}</strong>
+              </div>
+            ))}
+          </div>
+          <div className={styles.organizationRegionTotals}>
+            <div>
+              <span>
+                {intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.organization.regions.global',
+                })}
+              </span>
+              <strong>{formatNumber(regions.globalProcessCount)}</strong>
+            </div>
+            <div>
+              <span>
+                {intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.organization.regions.unassigned',
+                })}
+              </span>
+              <strong>{formatNumber(regions.unassignedProcessCount)}</strong>
+            </div>
+          </div>
+          {labelsUnavailable ? (
+            <span className={styles.organizationRegionNotice}>
+              {intl.formatMessage({
+                id: 'pages.home.nationalCarbon.organization.regions.labelsUnavailable',
+              })}
+            </span>
+          ) : null}
+        </>
+      )}
+    </article>
   );
-  const counts = useMemo(() => dailyCreation.days.map(getCount), [dailyCreation.days, getCount]);
+}
+
+function OrganizationDailyActivityHeatmap({
+  dailyActivity,
+}: {
+  dailyActivity: OrganizationContributionSnapshot['dailyActivity'];
+}) {
+  const intl = useIntl();
+  const locale = getCanonicalRuntimeLocale();
+  const counts = useMemo(
+    () => dailyActivity.days.map((day) => day.processCount),
+    [dailyActivity.days],
+  );
   const total = useMemo(() => counts.reduce((sum, count) => sum + count, 0), [counts]);
   const activeDays = useMemo(() => counts.filter((count) => count > 0).length, [counts]);
   const peak = useMemo(() => Math.max(0, ...counts), [counts]);
@@ -2537,7 +2662,7 @@ function OrganizationDailyCreationHeatmap({
   const monthLabels = useMemo(() => {
     let previousMonth = -1;
     return Array.from({ length: 53 }, (_, weekIndex) => {
-      const weekDays = dailyCreation.days.slice(weekIndex * 7, weekIndex * 7 + 7);
+      const weekDays = dailyActivity.days.slice(weekIndex * 7, weekIndex * 7 + 7);
       const labelDay =
         weekDays.find((day) => new Date(`${day.date}T00:00:00Z`).getUTCDate() <= 7) ?? weekDays[0];
       if (!labelDay) return '';
@@ -2547,7 +2672,7 @@ function OrganizationDailyCreationHeatmap({
       previousMonth = month;
       return monthFormatter.format(date);
     });
-  }, [dailyCreation.days, monthFormatter]);
+  }, [dailyActivity.days, monthFormatter]);
   const weekdayLabels = useMemo(
     () =>
       [0, 2, 4].map((offset) => weekdayFormatter.format(new Date(Date.UTC(2024, 0, 1 + offset)))),
@@ -2557,7 +2682,7 @@ function OrganizationDailyCreationHeatmap({
   return (
     <article
       className={`${styles.organizationPanel} ${styles.organizationDailyCreationPanel}`}
-      data-testid='organization-daily-creation'
+      data-testid='organization-daily-activity'
     >
       <div className={styles.organizationDailyCreationHeader}>
         <div>
@@ -2567,7 +2692,7 @@ function OrganizationDailyCreationHeatmap({
           <span>
             {intl.formatMessage(
               { id: 'pages.home.nationalCarbon.organization.daily.range' },
-              { startDate: dailyCreation.startDate, endDate: dailyCreation.endDate },
+              { startDate: dailyActivity.startDate, endDate: dailyActivity.endDate },
             )}
           </span>
         </div>
@@ -2620,8 +2745,8 @@ function OrganizationDailyCreationHeatmap({
             ))}
           </div>
           <div className={styles.organizationHeatmapGrid} role='img'>
-            {dailyCreation.days.map((day) => {
-              const count = getCount(day);
+            {dailyActivity.days.map((day) => {
+              const count = day.processCount;
               const level =
                 count === 0 || peak === 0
                   ? 0
@@ -2637,24 +2762,7 @@ function OrganizationDailyCreationHeatmap({
                   title={
                     <div className={styles.organizationHeatmapTooltip}>
                       <strong>{formattedDate}</strong>
-                      <span>
-                        {intl.formatMessage({
-                          id: 'pages.home.nationalCarbon.organization.scope.process',
-                        })}
-                        <b>{formatNumber(day.processCount)}</b>
-                      </span>
-                      <span>
-                        {intl.formatMessage({
-                          id: 'pages.home.nationalCarbon.organization.scope.model',
-                        })}
-                        <b>{formatNumber(day.modelCount)}</b>
-                      </span>
-                      <span>
-                        {intl.formatMessage({
-                          id: 'pages.home.nationalCarbon.organization.scope.all',
-                        })}
-                        <b>{formatNumber(day.allCount)}</b>
-                      </span>
+                      <span>{ariaLabel}</span>
                     </div>
                   }
                 >
@@ -2675,14 +2783,10 @@ function OrganizationDailyCreationHeatmap({
 }
 
 function OrganizationContributionScreen({
-  activeScope,
   activeScreen,
-  onChangeScope,
   onChangeScreen,
 }: {
-  activeScope: OrganizationContributionDatasetScope;
   activeScreen: ScreenKey;
-  onChangeScope: (scope: OrganizationContributionDatasetScope) => void;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
   const intl = useIntl();
@@ -2726,41 +2830,10 @@ function OrganizationContributionScreen({
     };
   }, [loadSnapshot]);
 
-  const scopeSnapshot = snapshot?.scopes[activeScope];
-  const activeScopeIndex = organizationContributionDatasetScopes.indexOf(activeScope);
-  const nextScope =
-    organizationContributionDatasetScopes[
-      (activeScopeIndex + 1) % organizationContributionDatasetScopes.length
-    ];
-  const activeScopeLabel =
-    activeScope === 'process'
-      ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.process' })
-      : activeScope === 'model'
-        ? intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.model' })
-        : intl.formatMessage({ id: 'pages.home.nationalCarbon.organization.scope.all' });
-  const activeScopeIcon =
-    activeScope === 'process' ? (
-      <ProfileOutlined />
-    ) : activeScope === 'model' ? (
-      <ApartmentOutlined />
-    ) : (
-      <AppstoreOutlined />
-    );
+  const scopeSnapshot = snapshot;
 
   return (
     <section className={`${styles.screenPanel} ${styles.organizationContributionScreen}`}>
-      <Tooltip placement='bottom' title={activeScopeLabel}>
-        <button
-          aria-label={activeScopeLabel}
-          className={styles.organizationScopeToggle}
-          data-scope={activeScope}
-          onClick={() => onChangeScope(nextScope)}
-          type='button'
-        >
-          {activeScopeIcon}
-        </button>
-      </Tooltip>
-
       {loadStatus === 'loading' && !snapshot ? <OrganizationContributionLoadingState /> : null}
 
       {loadStatus === 'error' && !snapshot ? (
@@ -2803,23 +2876,21 @@ function OrganizationContributionScreen({
               value={scopeSnapshot.summary.pendingReviewDatasetCount}
             />
             <OrganizationContributionMetricCard
-              icon={<RiseOutlined />}
+              icon={<UserSwitchOutlined />}
               label={intl.formatMessage({
-                id: 'pages.home.nationalCarbon.organization.kpi.last30Days',
+                id: 'pages.home.nationalCarbon.organization.kpi.reviewers',
               })}
               tone='gold'
-              value={scopeSnapshot.summary.publishedLast30DaysCount}
+              value={scopeSnapshot.summary.reviewerCount}
             />
           </div>
 
           <div className={styles.organizationMainGrid}>
-            <OrganizationContributionChart scope={activeScope} scopeSnapshot={scopeSnapshot} />
+            <OrganizationContributionChart scopeSnapshot={scopeSnapshot} />
             <OrganizationContributionRanking scopeSnapshot={scopeSnapshot} />
+            <OrganizationRegionDistribution regions={scopeSnapshot.regions} />
           </div>
-          <OrganizationDailyCreationHeatmap
-            activeScope={activeScope}
-            dailyCreation={snapshot.dailyCreation}
-          />
+          <OrganizationDailyActivityHeatmap dailyActivity={scopeSnapshot.dailyActivity} />
         </>
       ) : null}
       <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
@@ -2846,8 +2917,6 @@ function FlowTopologyScreen({
 
 export function NationalCarbonDashboardContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenKey>(() => getInitialScreen());
-  const [organizationContributionScope, setOrganizationContributionScope] =
-    useState<OrganizationContributionDatasetScope>('all');
   const rootRef = useRef<HTMLDivElement | null>(null);
   const activeIndex = screens.findIndex((screen) => screen.key === activeScreen);
   const autoplayEnabled = useMemo(() => getAutoplayEnabled(), []);
@@ -2954,9 +3023,7 @@ export function NationalCarbonDashboardContent() {
         )}
         {activeScreen === 'organization_contribution' && (
           <OrganizationContributionScreen
-            activeScope={organizationContributionScope}
             activeScreen={activeScreen}
-            onChangeScope={setOrganizationContributionScope}
             onChangeScreen={setActiveScreen}
           />
         )}
