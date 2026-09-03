@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: exact-version Hybrid consumption and its source-pinned online-backend exception remain within existing service, generated-mirror and controlled-push boundaries; no new ownership or workflow authority is introduced.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: Account and Team theme-default UI sizing remains page-local and preserves authorization, data behavior and dev delivery boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: version identity and acknowledgement cases use the maintained service-first strategy; no new testing platform or long-running observation was introduced.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: the existing focused Account and Team coverage protects the UI-only default-sizing change without new test infrastructure or strategy changes.'
 ---
 
 # Testing Strategy

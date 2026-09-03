@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: focused iteration and generated-mirror checkpoints preserve the existing one-full-gate-after-final-commit policy; no hook bypass or gate change was introduced.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: generated locale artifacts were refreshed for Account callsite movement; pre-push scope, thresholds and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

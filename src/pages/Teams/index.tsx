@@ -38,7 +38,19 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, history, useIntl, useLocation } from '@umijs/max';
-import { Button, Flex, Form, Grid, Spin, Switch, Tabs, theme, Tooltip, Upload } from 'antd';
+import {
+  Button,
+  Flex,
+  Form,
+  Grid,
+  Spin,
+  Switch,
+  Tabs,
+  theme,
+  Tooltip,
+  Typography,
+  Upload,
+} from 'antd';
 import { Children, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
@@ -418,12 +430,12 @@ const Team = () => {
           }}
         >
           <section className='team-info-card team-info-card-basic'>
-            <div className='team-info-section-title'>
+            <Typography.Title className='team-info-section-title' level={5}>
               <FormattedMessage
                 id='pages.team.info.section.basic'
                 defaultMessage='Basic Information'
               />
-            </div>
+            </Typography.Title>
             <div className='team-info-basic-grid'>
               <div className='team-info-basic-fields'>
                 <Form.Item
@@ -499,12 +511,12 @@ const Team = () => {
           </section>
 
           <section className='team-info-card'>
-            <div className='team-info-section-title'>
+            <Typography.Title className='team-info-section-title' level={5}>
               <FormattedMessage
                 id='pages.team.info.section.visibility'
                 defaultMessage='Team visibility and display'
               />
-            </div>
+            </Typography.Title>
             <div className='team-switch-grid'>
               <Form.Item
                 className='team-switch-item'
@@ -569,9 +581,9 @@ const Team = () => {
           </section>
 
           <section className='team-info-card team-logo-card'>
-            <div className='team-info-section-title'>
+            <Typography.Title className='team-info-section-title' level={5}>
               <FormattedMessage id='pages.team.info.section.logo' defaultMessage='Team Logo' />
-            </div>
+            </Typography.Title>
             <div className='team-logo-grid'>
               <Form.Item
                 className='team-logo-form-item'
@@ -1051,7 +1063,7 @@ const Team = () => {
       <Tabs
         activeKey={activeTabKey}
         className='team-page-tabs'
-        classNames={{ body: 'team-page-tabs-body', item: 'team-page-tabs-item' }}
+        classNames={{ item: 'team-page-tabs-item' }}
         onChange={onTabChange}
         tabPlacement={screens.lg === false ? 'top' : 'start'}
         items={tabs}

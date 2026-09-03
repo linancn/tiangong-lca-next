@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: exact id/version and acknowledged-empty fixtures reuse existing typed service mocks and controlled focused coverage patterns.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: the Account unit assertion now verifies the absence of a custom progress width, while existing component and integration patterns remain sufficient.'
 ---
 
 # Testing Patterns Reference

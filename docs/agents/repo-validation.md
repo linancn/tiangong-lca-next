@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: f9ccdce9f18212c442d42416e60e4b1cc7c4ea69
-lastReviewedNote: 'Reviewed for Next #1008: exact-version, malformed acknowledgement, empty-result paging, display fallback and generated-mirror proof are recorded; final full qualification remains owned by the controlled push hook.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: focused Account and Team regression tests, computed-style inspection, locale checks and production build cover the theme-default UI sizing change; controlled push-gate policy is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

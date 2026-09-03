@@ -1,89 +1,65 @@
+.accountPage {
+  background: var(--ant-color-bg-layout, #f5f5f5);
+}
+
+:global(.ant-pro-layout):has(.accountPage) :global(.ant-pro-layout-bg-list) {
+  background: var(--ant-color-bg-layout, #f5f5f5);
+}
+
 .contentCard,
 .contentPanel {
   width: min(1080px, 100%);
-  min-height: 560px;
   overflow: hidden;
   border: 1px solid var(--ant-color-border-secondary, #e9e5eb);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgb(42 23 48 / 6%);
+  border-radius: 8px;
 }
 
 .contentPanel {
-  padding: 34px 40px 38px;
+  padding: var(--ant-padding-lg, 24px);
   background: var(--ant-color-bg-container, #fff);
 }
 
-.contentCard {
-  :global(.ant-card-body) {
-    padding: 34px 40px 30px;
-  }
-}
-
 .contentHeader {
-  margin-bottom: 30px;
-  padding-bottom: 24px;
+  margin-bottom: var(--ant-margin-lg, 24px);
+  padding-bottom: var(--ant-padding, 16px);
   border-bottom: 1px solid var(--ant-color-border-secondary, #f0edf1);
 }
 
 .contentTitle {
   margin: 0 !important;
   color: var(--ant-color-text, #262329) !important;
-  font-size: 24px !important;
-  font-weight: 600 !important;
-  line-height: 1.35 !important;
 }
 
 .contentDescription,
 .emailPanel .contentDescription {
   max-width: 760px;
-  margin: 8px 0 0 !important;
+  margin: var(--ant-margin-xs, 8px) 0 0 !important;
   color: var(--ant-color-text-secondary, #8b818e) !important;
-  font-size: 14px;
-  line-height: 1.7;
 }
 
 .formSection {
-  :global(.ant-form-item) {
-    margin-bottom: 24px;
-  }
-
   :global(.ant-form-item-label > label) {
     color: var(--ant-color-text, #3d3841);
-    font-weight: 500;
   }
 
-  :global(.ant-input),
-  :global(.ant-input-affix-wrapper) {
-    min-height: 44px;
-    border-radius: 8px;
-  }
-
-  :global(.ant-input-affix-wrapper > .ant-input) {
-    min-height: auto;
-  }
-
-  :global(.ant-input-prefix) {
-    margin-inline-end: 10px;
-    color: var(--ant-color-text-secondary, #8b818e);
-  }
-
-  :global(.ant-form-item-extra) {
-    padding-top: 4px;
-    color: var(--ant-color-text-secondary, #8b818e);
+  :global(input:enabled:is(:-webkit-autofill, :autofill)) {
+    // Browser autofill owns background/color; theme the visible fill without disabling it.
+    box-shadow: 0 0 0 1000px var(--ant-color-bg-container, #fff) inset;
+    -webkit-text-fill-color: var(--ant-color-text, #262329);
+    caret-color: var(--ant-color-text, #262329);
   }
 }
 
 .profileSummary {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 30px;
+  gap: var(--ant-margin, 16px);
+  margin-bottom: var(--ant-margin-lg, 24px);
 }
 
 .profileAvatar {
   flex: 0 0 auto;
   color: #fff;
-  font-size: 24px;
   background: var(--ant-color-primary, #6b2a7b);
   box-shadow: 0 6px 16px rgb(107 42 123 / 18%);
 }
@@ -96,13 +72,13 @@
 .profileName {
   margin: 0 0 5px !important;
   color: var(--ant-color-text, #262329) !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
 }
 
 .profileMeta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ant-margin-sm, 12px);
   min-width: 0;
 }
 
@@ -121,18 +97,13 @@
 .profileFormGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 32px;
+  column-gap: var(--ant-margin-lg, 24px);
 }
 
 .passwordForm {
-  --account-password-guide-width: 36.5%;
-  --account-password-column-gap: 40px;
-
-  padding-top: 8px;
-
-  :global(.ant-form-item) {
-    margin-bottom: 36px;
-  }
+  --account-password-column-gap: var(--ant-margin-lg, 24px);
+  // Match the email layout's 1.38:1 columns, excluding the shared column gap.
+  --account-password-guide-width: calc((100% - var(--account-password-column-gap)) / 2.38);
 }
 
 .passwordLayout {
@@ -151,9 +122,8 @@
   grid-template-columns: auto minmax(72px, 210px) auto;
   justify-content: start;
   align-items: center;
-  gap: 12px;
-  margin: -18px 0 40px;
-  font-size: 13px;
+  gap: var(--ant-margin-sm, 12px);
+  margin: 0 0 var(--ant-margin-lg, 24px);
 
   :global(.ant-progress) {
     width: 100%;
@@ -176,7 +146,7 @@
 
 .passwordGuide {
   min-width: 0;
-  padding: 12px 0 20px 44px;
+  padding-inline-start: var(--ant-padding-lg, 24px);
   color: var(--ant-color-text);
   border-inline-start: 1px solid var(--ant-color-border-secondary);
 }
@@ -184,12 +154,8 @@
 .passwordGuideHeading {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
-
-  .guideIcon {
-    font-size: 28px;
-  }
+  gap: var(--ant-margin-xs, 8px);
+  margin-bottom: var(--ant-margin-lg, 24px);
 
   :global(h5.ant-typography) {
     margin: 0;
@@ -205,36 +171,33 @@
 
 .guideIcon {
   color: var(--ant-color-primary, #6b2a7b);
-  font-size: 24px;
 }
 
 .guideList {
   display: grid;
-  gap: 20px;
+  gap: var(--ant-margin, 16px);
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 16px;
 }
 
 .guideList li {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  line-height: 1.5;
+  gap: var(--ant-margin-xs, 8px);
 }
 
 .guideList li > :first-child {
-  margin-top: 3px;
+  flex: 0 0 auto;
+  height: 1lh;
   color: var(--ant-color-primary, #6b2a7b);
-  font-size: 18px;
+  line-height: inherit;
 }
 
 .emailLayout {
   display: grid;
   grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
-  gap: 48px;
-  padding-top: 8px;
+  gap: var(--ant-margin-lg, 24px);
 }
 
 .emailForm,
@@ -242,117 +205,68 @@
   min-width: 0;
 }
 
-.emailForm {
-  :global(.ant-form-item) {
-    margin-bottom: 40px;
-  }
-
-  :global(.ant-form-item-label > label) {
-    font-size: 16px;
-  }
-
-  :global(.ant-input-affix-wrapper) {
-    min-height: 48px;
-  }
-
-  :global(.ant-input) {
-    font-size: 16px;
-  }
-}
-
 .emailCurrent {
-  margin: 0 0 40px;
+  margin: 0 0 var(--ant-margin-lg, 24px);
 
   dt {
     color: var(--ant-color-text-secondary);
-    font-size: 15px;
-    line-height: 1.6;
   }
 
   dd {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    margin: 12px 0 0;
-    font-size: 16px;
-    line-height: 1.5;
+    gap: var(--ant-margin-xs, 8px);
+    margin: var(--ant-margin-xs, 8px) 0 0;
     overflow-wrap: anywhere;
   }
 
   :global(.anticon) {
     flex: 0 0 auto;
-    margin-top: 3px;
+    height: 1lh;
     color: var(--ant-color-text-secondary);
-    font-size: 18px;
+    line-height: inherit;
   }
 }
 
 .emailNote {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--ant-margin-sm, 12px);
+  margin-bottom: var(--ant-margin-lg, 24px);
   color: var(--ant-color-text-secondary);
-  font-size: 15px;
-  line-height: 1.7;
 
   :global(.anticon) {
     flex: 0 0 auto;
-    margin-top: 4px;
-    font-size: 16px;
+    height: 1lh;
+    line-height: inherit;
   }
 }
 
 .emailGuide {
   min-width: 0;
-  padding: 8px 0 0 48px;
+  padding-inline-start: var(--ant-padding-lg, 24px);
   border-inline-start: 1px solid var(--ant-color-border-secondary);
 }
 
 .emailGuideTitle {
-  margin: 0 0 30px !important;
-  font-size: 20px !important;
+  margin: 0 0 var(--ant-margin-lg, 24px) !important;
   font-weight: 600 !important;
-  line-height: 1.5 !important;
-}
-
-.emailSteps .emailStep {
-  min-height: 116px;
 }
 
 .emailSteps .emailStepTitle {
   color: var(--ant-color-text);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
 }
 
 .emailSteps .emailStepContent {
-  padding-top: 10px;
+  padding-top: var(--ant-padding-xs, 8px);
   color: var(--ant-color-text-secondary);
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 12px;
 }
 
 .submitRow {
   display: flex;
   justify-content: flex-end;
-  padding-top: 12px;
-
-  :global(.ant-btn) {
-    min-width: 112px;
-    height: 42px;
-    border-radius: 8px;
-  }
-}
-
-.emailSubmitRow {
-  padding-top: 40px;
-
-  :global(.ant-btn) {
-    min-width: 120px;
-    height: 46px;
-    padding-inline: 24px;
-    font-size: 16px;
-  }
 }
 
 .oauthContent {
@@ -361,17 +275,16 @@
 
 .oauthState {
   display: block;
-  min-height: 350px;
 }
 
 .connectionCount {
   display: block;
-  margin: 2px 0 18px;
+  margin: 0 0 var(--ant-margin, 16px);
 }
 
 .connectionList {
   display: grid;
-  gap: 16px;
+  gap: var(--ant-margin, 16px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -381,10 +294,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 18px;
-  padding: 20px;
+  gap: var(--ant-margin, 16px);
+  padding: var(--ant-padding, 16px);
   border: 1px solid var(--ant-color-border-secondary, #ebe7ed);
-  border-radius: 10px;
+  border-radius: var(--ant-border-radius-lg, 8px);
   background: var(--ant-color-bg-container, #fff);
   transition:
     border-color 160ms ease,
@@ -394,51 +307,42 @@
     border-color: var(--ant-color-primary-border, #d9c7de);
     box-shadow: 0 6px 16px rgb(42 23 48 / 5%);
   }
-
-  :global(.ant-btn) {
-    min-height: 40px;
-    border-radius: 8px;
-  }
 }
 
 .connectionSummary {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--ant-margin-xs, 8px);
   min-width: 0;
 }
 
 .connectionName {
   display: block;
   overflow: hidden;
-  font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .connectionStatus {
   margin: 0;
-  border-radius: 999px;
   justify-self: start;
 }
 
 .connectionFooterNote {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 24px;
-  padding-top: 20px;
+  gap: var(--ant-margin-xs, 8px);
+  margin-top: var(--ant-margin-lg, 24px);
+  padding-top: var(--ant-padding, 16px);
   border-top: 1px solid var(--ant-color-border-secondary, #f0edf1);
 }
 
 .connectionFooterNote > :first-child {
   color: var(--ant-color-primary, #6b2a7b);
-  font-size: 18px;
 }
 
 .emptyState {
   display: flex;
-  min-height: 320px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -451,26 +355,22 @@
 @media (max-width: 1399px) {
   .emailLayout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
+    gap: var(--ant-margin-lg, 24px);
   }
 
   .emailGuide {
-    padding: 28px 0 0;
+    padding: var(--ant-padding-lg, 24px) 0 0;
     border-inline-start: 0;
     border-top: 1px solid var(--ant-color-border-secondary);
   }
 
-  .emailSteps .emailStep {
-    min-height: 92px;
-  }
-
   .passwordLayout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    gap: var(--ant-margin-lg, 24px);
   }
 
   .passwordGuide {
-    padding: 24px 0 12px;
+    padding: var(--ant-padding-lg, 24px) 0 var(--ant-padding-sm, 12px);
     border-inline-start: 0;
     border-top: 1px solid var(--ant-color-border-secondary);
   }
@@ -481,45 +381,14 @@
 }
 
 @media (max-width: 767px) {
-  .emailSubmitRow :global(.ant-btn) {
-    min-width: 0;
-    padding-inline: 12px;
-    font-size: 14px;
-  }
-
-  .contentCard,
-  .contentPanel {
-    min-height: 0;
-  }
-
-  .contentPanel {
-    padding: 24px 20px 26px;
-  }
-
-  .contentCard {
-    :global(.ant-card-body) {
-      padding: 24px 20px 26px;
-    }
-  }
-
-  .contentHeader {
-    margin-bottom: 24px;
-    padding-bottom: 18px;
-  }
-
-  .contentTitle {
-    font-size: 21px !important;
-  }
-
   .profileSummary {
     align-items: flex-start;
-    margin-bottom: 26px;
   }
 
   .profileMeta {
     align-items: flex-start;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--ant-margin-xs, 8px);
   }
 
   .profileFormGrid {
@@ -527,12 +396,12 @@
   }
 
   .passwordGuide {
-    margin-bottom: 8px;
+    margin-bottom: var(--ant-margin-xs, 8px);
   }
 
   .passwordStrength {
     grid-template-columns: auto minmax(40px, 1fr) auto;
-    gap: 8px;
+    gap: var(--ant-margin-xs, 8px);
   }
 
   .submitRow {
@@ -548,7 +417,7 @@
 
   .connectionItem {
     grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    gap: var(--ant-margin, 16px);
   }
 
   .connectionItem :global(.ant-btn) {

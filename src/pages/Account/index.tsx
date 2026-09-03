@@ -47,8 +47,12 @@ const AccountContentPanel: FC<{
 }> = ({ children, className, description, title }) => (
   <section className={[styles.contentPanel, className].filter(Boolean).join(' ')}>
     <header className={styles.contentHeader}>
-      <h2 className={styles.contentTitle}>{title}</h2>
-      <p className={styles.contentDescription}>{description}</p>
+      <Typography.Title className={styles.contentTitle} level={3}>
+        {title}
+      </Typography.Title>
+      <Typography.Paragraph className={styles.contentDescription} type='secondary'>
+        {description}
+      </Typography.Paragraph>
     </header>
     <div className={styles.formSection} style={ACCOUNT_FORM_CONTAINER_STYLE}>
       {children}
@@ -91,9 +95,7 @@ const Profile: FC = () => {
       title={<FormattedMessage id='pages.account.baseInfo' defaultMessage='Basic Information' />}
     >
       <div className={styles.profileSummary}>
-        <Avatar className={styles.profileAvatar} size={60}>
-          {profileInitial}
-        </Avatar>
+        <Avatar className={styles.profileAvatar}>{profileInitial}</Avatar>
         <div className={styles.profileSummaryText}>
           <Typography.Title className={styles.profileName} level={4}>
             {profileName}
@@ -263,13 +265,7 @@ const Profile: FC = () => {
             defaultMessage='Password strength'
           />
         </Typography.Text>
-        <Progress
-          percent={status.percent}
-          showInfo={false}
-          size={[52, 4]}
-          steps={3}
-          strokeColor={status.color}
-        />
+        <Progress percent={status.percent} showInfo={false} steps={3} strokeColor={status.color} />
         <Typography.Text style={{ color: status.color }}>{status.label}</Typography.Text>
       </div>
     );
@@ -404,7 +400,6 @@ const Profile: FC = () => {
                 />
               }
               fieldProps={{
-                size: 'middle',
                 prefix: <LockOutlined />,
               }}
               placeholder={intl.formatMessage({
@@ -571,7 +566,7 @@ const Profile: FC = () => {
             },
             render: (props, doms) => {
               return (
-                <div className={`${styles.submitRow} ${styles.emailSubmitRow}`}>
+                <div className={styles.submitRow}>
                   <Flex gap='middle'>{doms}</Flex>
                 </div>
               );
@@ -621,7 +616,6 @@ const Profile: FC = () => {
               name='newEmail'
               label={<FormattedMessage id='pages.account.newEmail' defaultMessage='New Email' />}
               fieldProps={{
-                size: 'middle',
                 prefix: <MailOutlined />,
               }}
               placeholder={intl.formatMessage({
@@ -708,7 +702,7 @@ const Profile: FC = () => {
           </div>
         </ProForm>
         <aside className={styles.emailGuide}>
-          <Typography.Title className={styles.emailGuideTitle} level={3}>
+          <Typography.Title className={styles.emailGuideTitle} level={5}>
             <FormattedMessage id='pages.account.email.guideTitle' defaultMessage='How it works' />
           </Typography.Title>
           <Steps
@@ -756,7 +750,6 @@ const Profile: FC = () => {
                 }),
               },
             ]}
-            size='small'
           />
         </aside>
       </div>
@@ -805,6 +798,7 @@ const Profile: FC = () => {
 
   return (
     <PageContainer
+      className={styles.accountPage}
       title={<FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />}
     >
       <Spin spinning={spinning}>

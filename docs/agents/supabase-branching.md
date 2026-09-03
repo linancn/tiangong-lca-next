@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: 3b3b9e0caa0dd3784171e1176910935b9d8cb499
-lastReviewedNote: 'Reviewed for Next #1008: the single user-authorized deployed-backend exception is source-pinned and does not change normal Dev selection, actor/team scope, promotion or root integration.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedNote: 'Reviewed for Next #1020: the temporary connected-app preview and fixtures are removed at the user request. List and disconnect always use the existing shared OAuth services, including when obsolete preview parameters remain in the URL; UI styling and authorization boundaries are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
