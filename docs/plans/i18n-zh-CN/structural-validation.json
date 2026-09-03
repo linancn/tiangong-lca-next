@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8574c5d7fc74a55637eb7f5d07bad6d2f4d8594714594f25cc245e5b7598a2e3",
+    "auditedInputDigest": "9faebb324eab9ea2b00907d24611f94546114f71160b9d695d234c13a7e9ffe8",
     "validatedMessageCount": 3322,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1507,
     "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
     "catalogDigest": "baa30718c9ca5e7f44104cfef19da6208c86631508b1a11c9b164a72bf3108e9",
-    "dossierDigest": "a5e11a9941bac0c36dddc666c2749ea5de4bfbc1e2079c3d0536474e9b78625c",
+    "dossierDigest": "f731f5ed26b5e2b79bd8bb87140f0b160973e45ccfa8b812be7642f3cc557178",
     "typedContentDossierDigest": "cc1ab81573e1759a7288791dd3f6cd3faee25736c2e1ccf61f2cc3378bf1971f",
-    "routeEvidenceDigest": "df9409d88a16e3d95563d63ca393154905cf62b0b81b9aa0a30df6c3558664ea",
+    "routeEvidenceDigest": "4294a6d5067b177730d9bf97d22afbac1698ac15affe69d348b42393e1ff1ef0",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "e11cff8827c56fa95979f98e855a66017eafa6ae5821c8193f5d7334bf95a11f",
         "highRiskMessageCount": 1507,
         "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
-        "dossierDigest": "a5e11a9941bac0c36dddc666c2749ea5de4bfbc1e2079c3d0536474e9b78625c",
+        "dossierDigest": "f731f5ed26b5e2b79bd8bb87140f0b160973e45ccfa8b812be7642f3cc557178",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "458bc03a20e5c27308f1c4a3fee54d6fe587a4f93559ebe47d981d2354be3d20"
+  "validationDigest": "872b4529a04fda29586b6d2a311868b5081196ba071ba9221b6201cfc58b07f3"
 }
