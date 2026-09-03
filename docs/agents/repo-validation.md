@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
 lastReviewedNote: 'Reviewed for Next #1015: existing frontend proof requirements cover the scoped card styling; focused regression and rendered-style checks supplement, not replace, the controlled push gate. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
 related:
   - ../AGENTS.md

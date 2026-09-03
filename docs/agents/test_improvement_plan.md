@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
 lastReviewedNote: 'Reviewed for Next #1015: deterministic locale artifact refresh supports the existing UI regression and full-coverage strategy without new test infrastructure or business behavior. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
 ---
 

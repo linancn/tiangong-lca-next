@@ -41,7 +41,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
 lastReviewedNote: 'Reviewed for Next #1015: locale artifact drift caused by the Account className is repaired through canonical generators; current run evidence stays in the Issue and does not rewrite the historical baseline. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
 ---
 
