@@ -452,6 +452,10 @@ jest.mock('antd', () => {
     Switch,
     Tabs,
     Tooltip,
+    Typography: {
+      Title: ({ children, level = 1, className }: any) =>
+        React.createElement(`h${level}`, { className }, children),
+    },
     Upload,
     message,
     theme,

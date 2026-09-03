@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: the team-page browser-navigation test boundary does not change submission admission, Review Admin diagnostics, or review-state transitions.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedNote: 'Reviewed for Next #1020: Team information spacing and component-size cleanup does not change submission admission, Review Admin diagnostics or review-state transitions.'
 ---
 
 # Audit Status Reference
