@@ -387,8 +387,8 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Tabs = ({ items = [], activeKey, onChange, tabPlacement }: any) => (
-    <div data-testid='tabs' data-tab-position={tabPlacement}>
+  const Tabs = ({ items = [], activeKey, onChange, tabPlacement, classNames }: any) => (
+    <div data-testid='tabs' data-tab-position={tabPlacement} data-body-class={classNames?.body}>
       {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
@@ -445,6 +445,10 @@ jest.mock('antd', () => {
     Switch,
     Tabs,
     Tooltip,
+    Typography: {
+      Title: ({ children, level = 1, className }: any) =>
+        React.createElement(`h${level}`, { className }, children),
+    },
     Upload,
     message,
     theme,
@@ -678,6 +682,21 @@ describe('Team page validations', () => {
     renderWithProviders(<Team />);
 
     expect(screen.getByTestId('tabs')).toHaveAttribute('data-tab-position', 'top');
+  });
+
+  it('uses consistent section headings without adding another tab body inset', () => {
+    setWindowLocation('?action=create');
+
+    renderWithProviders(<Team />);
+
+    expect(
+      screen.getByRole('heading', { name: 'Basic Information', level: 5 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Team visibility and display', level: 5 }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Team Logo', level: 5 })).toBeInTheDocument();
+    expect(screen.getByTestId('tabs')).not.toHaveAttribute('data-body-class');
   });
 
   it('prevents submission when rank requires logos but none are provided', async () => {

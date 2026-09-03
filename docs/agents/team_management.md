@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: 25d257d72593740432b7b051e8a52b8d476b028d
-lastReviewedNote: 'Reviewed for Next Issue #982: explicit team-create reload testing does not change role authority, team membership, or the Review Admin-only quality diagnostic.'
+lastReviewedAt: 2026-09-03
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedNote: 'Reviewed for Next #1020: Team information form styling now follows theme defaults without changing role authority, membership behavior or Review Admin diagnostics.'
 ---
 
 # Team Management Reference

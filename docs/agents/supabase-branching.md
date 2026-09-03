@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
-lastReviewedNote: 'Reviewed for Next #1015: card styling changes no Supabase client, environment selection, session check, authorization decision or callback behavior; temporary preview data is removed. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
+lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedNote: 'Reviewed for Next #1020: the temporary connected-app preview and fixtures are removed at the user request. List and disconnect always use the existing shared OAuth services, including when obsolete preview parameters remain in the URL; UI styling and authorization boundaries are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

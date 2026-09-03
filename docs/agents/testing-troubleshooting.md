@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1015: diagnosed stale locale digests and callsite locations are regenerated rather than weakening tests, coverage or pre-push enforcement. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: the obsolete 52px progress-width expectation was updated to the intended theme-default contract; troubleshooting and gate recovery guidance remain unchanged.'
 ---
 
 # Testing Troubleshooting

@@ -1,12 +1,8 @@
-.team-page-tabs-body {
-  padding-left: 24px;
-}
-
 .team-page-tabs-item {
-  padding: 12px 24px 12px 0;
+  padding: var(--ant-padding-sm, 12px) var(--ant-padding-lg, 24px) var(--ant-padding-sm, 12px) 0;
 
   & + & {
-    margin-top: 16px;
+    margin-top: var(--ant-margin, 16px);
   }
 }
 
@@ -15,22 +11,18 @@
 }
 
 .team-info-card {
-  margin-bottom: 16px;
-  padding: 24px 28px;
+  margin-bottom: var(--ant-margin, 16px);
+  padding: var(--ant-padding-lg, 24px);
   background: var(--ant-color-bg-container);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 8px;
-  box-shadow: var(--ant-box-shadow-tertiary);
+  border-radius: var(--ant-border-radius-lg, 8px);
 }
 
-.team-info-section-title {
+.team-info-card .team-info-section-title {
   position: relative;
-  margin-bottom: 20px;
+  margin: 0 0 var(--ant-margin, 16px);
   padding-left: 14px;
   color: var(--ant-color-text);
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
   overflow-wrap: anywhere;
   white-space: normal;
 
@@ -58,13 +50,9 @@
 
 .team-lang-field {
   & + & {
-    margin-top: 20px;
-    padding-top: 20px;
+    margin-top: var(--ant-margin, 16px);
+    padding-top: var(--ant-padding, 16px);
     border-top: 1px solid var(--ant-color-border-secondary);
-  }
-
-  .lang-text-item-row {
-    max-width: 620px;
   }
 
   .team-form-item {
@@ -80,18 +68,18 @@
 
 .team-switch-item {
   margin-bottom: 0;
-  padding-right: 44px;
+  padding-right: var(--ant-padding-lg, 24px);
 
   & + & {
     padding-right: 0;
-    padding-left: 44px;
+    padding-left: var(--ant-padding-lg, 24px);
     border-left: 1px solid var(--ant-color-border-secondary);
   }
 
   .team-form-item-row {
     display: grid;
     grid-template-columns: minmax(0, max-content) auto;
-    gap: 16px;
+    gap: var(--ant-margin, 16px);
     align-items: center;
   }
 
@@ -122,52 +110,39 @@
 
 .team-logo-form-item {
   margin-bottom: 0;
-  padding-right: 44px;
+  padding-right: var(--ant-padding-lg, 24px);
 
   & + & {
     padding-right: 0;
-    padding-left: 44px;
+    padding-left: var(--ant-padding-lg, 24px);
     border-left: 1px solid var(--ant-color-border-secondary);
   }
 
   .team-form-item-label {
-    padding-bottom: 8px;
+    padding-bottom: var(--ant-padding-xs, 8px);
   }
 
   .team-form-item-label > label {
     color: var(--ant-color-text);
     font-weight: 500;
   }
-
-  .team-logo-upload-root,
-  .team-logo-upload-list,
-  .team-logo-upload-item,
-  .team-logo-upload-trigger {
-    width: 168px !important;
-    height: 168px !important;
-  }
 }
 
 .team-logo-upload {
-  width: 168px;
-
   .team-logo-upload-trigger {
     background: var(--ant-color-fill-alter) !important;
     border-color: var(--ant-color-primary-border) !important;
     border-style: dashed !important;
-    border-radius: 12px !important;
   }
 
   .team-logo-upload-plus {
     color: var(--ant-color-text);
-    font-size: 30px;
   }
 
   .team-logo-upload-item {
     padding: 0 !important;
     overflow: hidden;
     border-color: var(--ant-color-border) !important;
-    border-radius: 6px !important;
 
     &::before {
       background: transparent !important;
@@ -195,8 +170,6 @@
     }
 
     .team-logo-action-icon {
-      margin: 0 12px;
-      font-size: 20px;
       filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.6));
     }
 
@@ -229,32 +202,26 @@
 
 .team-logo-helper {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--ant-margin-xs, 8px);
   align-items: center;
   width: min(100%, 680px);
-  margin-top: 18px;
-  padding: 8px 12px;
+  margin-top: var(--ant-margin, 16px);
+  padding: var(--ant-padding-xs, 8px) var(--ant-padding-sm, 12px);
   color: var(--ant-color-text-secondary);
   background: var(--ant-color-fill-alter);
   border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 6px;
+  border-radius: var(--ant-border-radius, 6px);
 }
 
 .team-info-submitter {
   display: flex;
   justify-content: flex-end;
-  margin-top: 24px;
-
-  button {
-    min-width: 120px;
-  }
+  margin-top: var(--ant-margin-lg, 24px);
 }
 
 @media (max-width: 960px) {
-  .team-page-tabs {
-    .team-page-tabs-body {
-      padding-left: 0;
-    }
+  .team-lang-field .lang-text-item-row {
+    row-gap: var(--ant-margin-xs, 8px) !important;
   }
 
   .team-info-basic-grid,
@@ -265,6 +232,7 @@
 
   .team-switch-item,
   .team-switch-item + .team-switch-item,
+  .team-logo-form-item,
   .team-logo-form-item + .team-logo-form-item {
     padding-right: 0;
     padding-left: 0;
@@ -273,6 +241,6 @@
 
   .team-switch-item + .team-switch-item,
   .team-logo-form-item + .team-logo-form-item {
-    margin-top: 20px;
+    margin-top: var(--ant-margin, 16px);
   }
 }

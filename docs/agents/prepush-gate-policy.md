@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1015: stale locale artifacts discovered by the full gate are regenerated before the final checked push; gate scope, thresholds and bypass policy remain unchanged. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
+lastReviewedNote: 'Reviewed for Next #1020: generated locale artifacts were refreshed for Account callsite movement; pre-push scope, thresholds and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
