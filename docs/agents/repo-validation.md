@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
 lastReviewedNote: 'Reviewed for Next #1020: focused Account and Team regression tests, computed-style inspection, locale checks and production build cover the theme-default UI sizing change; controlled push-gate policy is unchanged.'
 related:
   - ../AGENTS.md

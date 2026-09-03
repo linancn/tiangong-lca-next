@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
+lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
 lastReviewedNote: 'Reviewed for Next #1020: the existing focused Account and Team coverage protects the UI-only default-sizing change without new test infrastructure or strategy changes.'
 ---
 
