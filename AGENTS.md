@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
-lastReviewedNote: 'Reviewed for Next #1015: 8px main cards and scoped page backgrounds preserve existing frontend ownership, authorization and dev delivery boundaries; temporary mock code is absent.'
+lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
+lastReviewedNote: 'Reviewed for Next #1015: 8px main cards and scoped page backgrounds preserve existing frontend ownership, authorization and dev delivery boundaries; temporary mock code is absent. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

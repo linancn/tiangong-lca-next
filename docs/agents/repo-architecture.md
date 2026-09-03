@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: b3aa7905f3a867bf47091b58654bed9d6a9afd69
-lastReviewedNote: 'Reviewed for Next #1015: page-local card radii and backgrounds preserve the Account/OAuth component-service boundary, existing theme ownership and real authorization flow.'
+lastReviewedCommit: 821c671cdf41dbd54e338525fec511ad97ab317a
+lastReviewedNote: 'Reviewed for Next #1015: page-local card radii and backgrounds preserve the Account/OAuth component-service boundary, existing theme ownership and real authorization flow. Reconciled with dev 821c671c: upstream #1014 process-only dashboard, v5 daily activity and architecture text are preserved; locale artifacts are regenerated for the combined source.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -114,6 +114,12 @@ Edge owns rewrite -> normalized English `semantic_query_en` -> embedding. Databa
 The self-hosted mirror remains generated from one exact canonical Edge tree and receipt. The single online-backend exception for this delivery is recorded in `supabase-branching.md` and workspace #963; normal environment selection and promotion policy are unchanged.
 
 The companion self-hosted `data.sql` is a generated fresh-install artifact, not schema truth or an in-place upgrade. Its sync helper requires a reviewed Database commit and an isolated migration-only local rebuild, preserves all five application schemas plus queue metadata, and copies only constrained executor/extension grants, the Database-owned Auth synchronization trigger, OAuth pre-request configuration and allowlisted bootstrap catalogs. It never copies Auth users, OAuth registrations or business datasets. PostgreSQL 15 compatibility filtering removes only unsupported PG17 ACL syntax, not function bodies; the normal pinned Auth/Storage services still own managed-schema migrations. See `docker/README.md` for the source and restore procedure.
+
+### National Carbon Organization Screen
+
+The fifth screen uses the process-only v5 snapshot decoded and cached by `src/services/nationalCarbonDashboard/api.ts`. It has no dataset-scope switch and does not derive or request LifecycleModel metrics. Its four cards show registered units, organization-attributed published/reviewing processes, and platform review experts. The middle row contains a Top 10 unit chart, the full unit reporting table, and regional open-process distribution. The table slices the returned `organizations` array into ten-row client pages; page changes never trigger RPCs. Review-only and zero-data units remain in this table, not the Top 10 chart.
+
+Region counts come from the database and include open processes without a unit. Names use the existing locale-aware location service; unknown codes remain visible, and a name-resource failure shows a diagnostic plus codes, not an empty dataset result. Global and unspecified locations have separate summary rows. The daily heatmap is labelled “每日数据动态” (Daily data activity) and consumes only `dailyActivity` / `dataset_version_activity_count`, with the existing square-cell layout. Database counts each retained Process version on its creation and latest-modification dates in Asia/Shanghai, once per version/day. The yearly total sums those version-days; it is not a count of unique versions or all edit operations. NULL dates contribute nothing, deletions remove counts, and later edits replace the previous modification date. The service rejects older creation-only snapshots rather than mislabelling them. Database-engine owns deduplication, state predicates, reviewer-role membership, and current-profile attribution.
 
 ### TIDAS Package Export Task Identity
 

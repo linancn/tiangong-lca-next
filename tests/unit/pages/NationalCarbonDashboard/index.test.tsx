@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 import NationalCarbonDashboardPage, {
   canViewNationalCarbonDashboard,
@@ -8,17 +8,12 @@ let mockInitialState: { currentUser?: { access?: string } } | undefined;
 let mockLocale = 'fr-FR';
 const mockGetOrganizationContributionSnapshot = jest.fn();
 
-const makeOrganizationScope = (
-  datasetScope: 'process' | 'model' | 'all',
-  publishedDatasetCount: number,
-) => ({
-  datasetScope,
-  metric: 'latest_published_dataset_count',
+const makeOrganizationStatistics = (publishedDatasetCount: number) => ({
   summary: {
     organizationCount: 1,
     publishedDatasetCount,
     pendingReviewDatasetCount: 2,
-    publishedLast30DaysCount: 1,
+    reviewerCount: 7,
   },
   rankings: [
     {
@@ -32,31 +27,37 @@ const makeOrganizationScope = (
   ],
 });
 
-const dailyCreationDays = Array.from({ length: 366 }, (_, index) => {
+const dailyActivityDays = Array.from({ length: 366 }, (_, index) => {
   const date = new Date(Date.UTC(2025, 8, 1 + index)).toISOString().slice(0, 10);
   const processCount = index === 0 ? 3 : 0;
-  const modelCount = index === 365 ? 2 : 0;
-  return { allCount: processCount + modelCount, date, modelCount, processCount };
+  return { date, processCount };
 });
 
 const organizationContributionSnapshot = {
-  schemaVersion: 'national_carbon_organization_contribution_v3',
+  schemaVersion: 'national_carbon_organization_contribution_v5',
+  datasetScope: 'process',
   attributionMode: 'current_user_profile',
   generatedAt: '2026-09-01T09:00:00+08:00',
   dataAsOf: '2026-09-01T08:00:00+08:00',
-  defaultScope: 'all',
-  dailyCreation: {
-    metric: 'dataset_version_created_count',
-    deduplicationKey: ['datasetType', 'datasetId', 'version'],
+  dailyActivity: {
+    metric: 'dataset_version_activity_count',
+    deduplicationKey: ['datasetType', 'datasetId', 'version', 'date'],
     timezone: 'Asia/Shanghai',
     startDate: '2025-09-01',
     endDate: '2026-09-01',
-    days: dailyCreationDays,
+    days: dailyActivityDays,
   },
-  scopes: {
-    process: makeOrganizationScope('process', 3),
-    model: makeOrganizationScope('model', 2),
-    all: makeOrganizationScope('all', 5),
+  ...makeOrganizationStatistics(3),
+  organizations: makeOrganizationStatistics(3).rankings,
+  regions: {
+    metric: 'latest_open_process_count',
+    totalProcessCount: 5,
+    items: [
+      { locationCode: 'CN', processCount: 2 },
+      { locationCode: 'UNKNOWN', processCount: 1 },
+    ],
+    globalProcessCount: 1,
+    unassignedProcessCount: 1,
   },
 };
 
@@ -95,11 +96,16 @@ jest.mock('@umijs/max', () => ({
 
 jest.mock('@/services/nationalCarbonDashboard/api', () => {
   return {
-    organizationContributionDatasetScopes: ['process', 'model', 'all'],
     getOrganizationContributionSnapshot: (...args: unknown[]) =>
       mockGetOrganizationContributionSnapshot(...args),
   };
 });
+
+jest.mock('@/services/locations/api', () => ({
+  getILCDLocationByValues: jest
+    .fn()
+    .mockResolvedValue({ success: true, data: [{ '@value': 'CN', '#text': 'Chine' }] }),
+}));
 
 jest.mock('pixi.js', () => {
   const createGraphics = () => {
@@ -198,7 +204,7 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(container.textContent).not.toMatch(/[\u3400-\u9fff]/u);
   });
 
-  it('renders organization contributions and switches the local scope without another RPC', async () => {
+  it('renders only process statistics with regions and review experts, without a scope toggle', async () => {
     mockInitialState = { currentUser: { access: 'admin' } };
     window.location.hash =
       '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
@@ -206,38 +212,21 @@ describe('NationalCarbonDashboard access guard', () => {
     render(<NationalCarbonDashboardPage />);
 
     expect((await screen.findAllByText('Institut Exemple')).length).toBe(2);
-    expect(screen.getByText('Création quotidienne de données')).toBeInTheDocument();
-    expect(screen.getByTestId('organization-daily-creation')).toBeInTheDocument();
-    expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('5');
-    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
+    expect(screen.getByText('Activité quotidienne des données')).toBeInTheDocument();
+    expect(screen.getByTestId('organization-daily-activity')).toBeInTheDocument();
+    expect(screen.getByText('Activité sur un an').nextSibling).toHaveTextContent('3');
+    expect(screen.queryByText('Création quotidienne de données')).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/3 versions de processus créées ou mises à jour pour la dernière fois/),
+    ).toHaveAttribute('data-count', '3');
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
 
-    const scopeButton = screen.getByRole('button', { name: 'Tout' });
-    expect(scopeButton).toHaveAttribute('data-scope', 'all');
-    expect(scopeButton.querySelector('[data-icon="appstore"]')).toBeInTheDocument();
-
-    fireEvent.click(scopeButton);
-    await waitFor(() => expect(screen.getAllByText('3').length).toBeGreaterThan(0));
-    expect(scopeButton).toHaveAccessibleName('Processus');
-    expect(scopeButton).toHaveAttribute('data-scope', 'process');
-    expect(scopeButton.querySelector('[data-icon="profile"]')).toBeInTheDocument();
-    expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('3');
-
-    fireEvent.click(scopeButton);
-    await waitFor(() =>
-      expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('2'),
-    );
-    expect(scopeButton).toHaveAccessibleName('Modèles');
-    expect(scopeButton).toHaveAttribute('data-scope', 'model');
-    expect(scopeButton.querySelector('[data-icon="apartment"]')).toBeInTheDocument();
-
-    fireEvent.click(scopeButton);
-    await waitFor(() =>
-      expect(screen.getByText('Créées sur un an').nextSibling).toHaveTextContent('5'),
-    );
-    expect(scopeButton).toHaveAccessibleName('Tout');
-    expect(scopeButton).toHaveAttribute('data-scope', 'all');
-    expect(scopeButton.querySelector('[data-icon="appstore"]')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Tout' })).not.toBeInTheDocument();
+    expect(screen.getByText('Experts évaluateurs').nextSibling).toHaveTextContent('7');
+    expect(await screen.findByText('Chine')).toBeInTheDocument();
+    expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+    expect(screen.getByText('Monde (GLO)')).toBeInTheDocument();
+    expect(screen.getByText('Lieu non renseigné')).toBeInTheDocument();
     expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText(/Vue actuelle : 05 Contribution/)).toBeInTheDocument();
     expect(screen.queryByText('Progression de la base TianGong')).not.toBeInTheDocument();
@@ -245,6 +234,33 @@ describe('NationalCarbonDashboard access guard', () => {
     expect(
       screen.queryByRole('button', { name: 'Actualiser les données' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('paginates all organizations locally, including review-only and zero-data organizations', async () => {
+    mockInitialState = { currentUser: { access: 'admin' } };
+    window.location.hash =
+      '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
+    const organizations = Array.from({ length: 23 }, (_, index) => ({
+      ...organizationContributionSnapshot.organizations[0],
+      rank: index + 1,
+      organizationKey: `unit-${index}`,
+      organizationName: `Unit ${index + 1}`,
+      publishedDatasetCount: index > 9 ? 0 : 3,
+    }));
+    mockGetOrganizationContributionSnapshot.mockResolvedValueOnce({
+      ...organizationContributionSnapshot,
+      organizations,
+    });
+    render(<NationalCarbonDashboardPage />);
+    const table = await screen.findByRole('table');
+    expect(within(table).getByText('Unit 10')).toBeInTheDocument();
+    expect(within(table).queryByText('Unit 11')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTitle('2'));
+    expect(within(table).getByText('Unit 11')).toBeInTheDocument();
+    expect(within(table).queryByText('Unit 1')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTitle('3'));
+    expect(within(table).getByText('Unit 23')).toBeInTheDocument();
+    expect(mockGetOrganizationContributionSnapshot).toHaveBeenCalledTimes(1);
   });
 
   it('uses the reviewing-data label in Chinese', async () => {
@@ -271,23 +287,22 @@ describe('NationalCarbonDashboard access guard', () => {
       '#/dashboard/national-carbon?screen=organization_contribution&autoplay=0';
     mockGetOrganizationContributionSnapshot.mockResolvedValueOnce({
       ...organizationContributionSnapshot,
-      scopes: Object.fromEntries(
-        Object.entries(organizationContributionSnapshot.scopes).map(([scope, snapshot]) => [
-          scope,
-          {
-            ...snapshot,
-            rankings: [],
-            summary: { ...snapshot.summary, organizationCount: 0 },
-          },
-        ]),
-      ),
+      rankings: [],
+      organizations: [],
+      regions: {
+        ...organizationContributionSnapshot.regions,
+        totalProcessCount: 0,
+        items: [],
+        globalProcessCount: 0,
+        unassignedProcessCount: 0,
+      },
     });
 
     render(<NationalCarbonDashboardPage />);
 
-    expect(await screen.findAllByTestId('organization-empty-state')).toHaveLength(2);
-    expect(screen.getAllByRole('status')).toHaveLength(2);
-    expect(screen.getAllByText('Aucune donnée')).toHaveLength(2);
+    expect(await screen.findAllByTestId('organization-empty-state')).toHaveLength(3);
+    expect(screen.getAllByRole('status')).toHaveLength(3);
+    expect(screen.getAllByText('Aucune donnée')).toHaveLength(3);
   });
 
   it('renders the enhanced organization loading state', () => {
