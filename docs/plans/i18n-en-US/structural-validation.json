@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "9faebb324eab9ea2b00907d24611f94546114f71160b9d695d234c13a7e9ffe8",
+    "auditedInputDigest": "2553f5c8bfcdaac8140a474a888463f4e87aadbd989b35ff3282c27034c827e7",
     "validatedMessageCount": 3322,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1507,
     "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
     "catalogDigest": "e712a87e78e9934accc0b9fecc82b829914a606b3f13c8c0d620d5fa4a77de13",
-    "dossierDigest": "033d00aed8af3c67645079021e36d568fe19d3c1e314f3d2e0e3889ccb666130",
+    "dossierDigest": "81eca636199da59f9c1462fd1bc96a2455001f1ba177d8074d2a82d9a725746a",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "4294a6d5067b177730d9bf97d22afbac1698ac15affe69d348b42393e1ff1ef0",
+    "routeEvidenceDigest": "404c3f4ce5f4c164a8d11b6999da96087af5d6a40bdc8096b521aafa63edc2d5",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "e11cff8827c56fa95979f98e855a66017eafa6ae5821c8193f5d7334bf95a11f",
         "highRiskMessageCount": 1507,
         "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
-        "dossierDigest": "033d00aed8af3c67645079021e36d568fe19d3c1e314f3d2e0e3889ccb666130",
+        "dossierDigest": "81eca636199da59f9c1462fd1bc96a2455001f1ba177d8074d2a82d9a725746a",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "1a3249a1fd7d42efb63a7ee4feb3727eef289a175ba9283e493e4919b1a7483f"
+  "validationDigest": "7d391e68a7a8348dd3afbb1c678b0779287842928fed8da5ebcb192fbfc13f39"
 }

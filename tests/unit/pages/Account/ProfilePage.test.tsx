@@ -1022,7 +1022,7 @@ describe('Account profile page (unit)', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Weak');
     expect(screen.getByRole('status')).not.toHaveTextContent('Strength:');
     expect(screen.getByRole('progressbar')).toHaveAttribute('data-steps', '3');
-    expect(screen.getByRole('progressbar')).toHaveAttribute('data-segment-width', '52');
+    expect(screen.getByRole('progressbar')).not.toHaveAttribute('data-segment-width');
 
     const newPassword = screen.getByLabelText('New Password');
     await user.type(newPassword, 'Abcdefg1!');
@@ -1038,7 +1038,7 @@ describe('Account profile page (unit)', () => {
     expect(await screen.findByRole('heading', { name: 'Alice' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Change Password' }));
-    expect(screen.getByRole('heading', { name: 'Password tips' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Password tips', level: 5 })).toBeInTheDocument();
     expect(
       screen.queryByText('Avoid using the same password on other websites.'),
     ).not.toBeInTheDocument();
@@ -1048,7 +1048,7 @@ describe('Account profile page (unit)', () => {
     expect(screen.getByRole('button', { name: 'Update password' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Change Email' }));
     expect(screen.getByText('Enter new email')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'How it works' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'How it works', level: 5 })).toBeInTheDocument();
     expect(screen.getByText('user@example.com')).toBeInTheDocument();
     expect(screen.queryByLabelText('Current Email')).not.toBeInTheDocument();
     expect(screen.getByTestId('email-steps')).toHaveAttribute('data-orientation', 'vertical');
