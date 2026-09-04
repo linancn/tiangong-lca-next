@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: page-local Account and Team sizing cleanup preserves component-service boundaries, theme ownership and existing authorization flows.'
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the 2026-09-03 dependency refresh: Umi 4.7.12 and Electron 44.1.1 preserve the existing SPA, service and packaging boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -36,7 +36,7 @@ related:
 
 ## Repo Shape
 
-This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProComponents 3 generation, with service-first data access, an Electron `44.1.0` packaging surface, cache-backed static resources, and strict validation gates.
+This repo is a Umi `4.7.12` React 19 SPA on one native Ant Design `6.6.2` / ProComponents 3 generation, with service-first data access, an Electron `44.1.1` packaging surface, cache-backed static resources, and strict validation gates.
 
 ## Stable Path Map
 

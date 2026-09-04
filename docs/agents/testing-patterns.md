@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: the Account unit assertion now verifies the absence of a custom progress width, while existing component and integration patterns remain sufficient.'
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the 2026-09-03 dependency refresh: existing package, integration and full-gate patterns remain sufficient for the patch-level dependency and toolchain updates.'
 ---
 
 # Testing Patterns Reference

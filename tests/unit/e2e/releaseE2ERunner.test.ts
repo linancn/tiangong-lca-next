@@ -135,9 +135,9 @@ describe('release E2E controller contracts', () => {
     const current = controller.loadEnvironmentContractFromWorkingTree();
     expect(current.contract).toMatchObject({
       nodeImage:
-        'node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df',
+        'node:24.20.0-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e',
       nodeMajor: 24,
-      nodeVersion: '24.19.0',
+      nodeVersion: '24.20.0',
     });
 
     const root = makeTemporaryDirectory();
@@ -145,7 +145,7 @@ describe('release E2E controller contracts', () => {
     fs.mkdirSync(path.dirname(environmentPath), { recursive: true });
     fs.writeFileSync(
       environmentPath,
-      `${JSON.stringify({ ...current.contract, nodeImage: 'node:24.19.0-bookworm-slim' })}\n`,
+      `${JSON.stringify({ ...current.contract, nodeImage: 'node:24.20.0-bookworm-slim' })}\n`,
     );
     expect(() => controller.loadEnvironmentContractFromWorkingTree(root)).toThrow(
       'unsupported or unpinned',
@@ -215,7 +215,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.24.0',
+        packageManager: 'pnpm@11.25.0',
         version: '1.0.0',
       })}\n`,
     );
@@ -230,8 +230,8 @@ describe('release E2E controller contracts', () => {
         schemaVersion: 1,
         playwrightVersion: '1.62.1',
         nodeMajor: 24,
-        nodeImage: `node:24.19.0-bookworm-slim@sha256:${'2'.repeat(64)}`,
-        nodeVersion: '24.19.0',
+        nodeImage: `node:24.20.0-bookworm-slim@sha256:${'2'.repeat(64)}`,
+        nodeVersion: '24.20.0',
         playwrightImage: `image@sha256:${'1'.repeat(64)}`,
       })}\n`,
     );
@@ -257,7 +257,7 @@ describe('release E2E controller contracts', () => {
       'package.json',
       `${JSON.stringify({
         name: 'proof-fixture',
-        packageManager: 'pnpm@11.24.0',
+        packageManager: 'pnpm@11.25.0',
         version: '1.0.1',
       })}\n`,
     );
