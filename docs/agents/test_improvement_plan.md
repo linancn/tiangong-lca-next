@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
 lastReviewedNote: 'Reviewed for Next #1023: focused pure-helper, component, and service tests cover graph hydration and safe persistence without changing test infrastructure or strategy.'
 ---
 
