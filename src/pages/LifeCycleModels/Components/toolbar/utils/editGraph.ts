@@ -2,6 +2,7 @@ import { getContentGraphTextWidthDivisor } from '@/services/general/contentLangu
 import { getLangText } from '@/services/general/util';
 import type {
   LifeCycleModelEditorFormState,
+  LifeCycleModelGraphData,
   LifeCycleModelGraphEdge,
   LifeCycleModelGraphNode,
   LifeCycleModelPortItem,
@@ -41,6 +42,11 @@ type ToolbarNodeHydrationContext = ToolbarToolContext & {
 
 type GraphNodeLike = Pick<LifeCycleModelGraphNode, 'id' | 'selected'>;
 type GraphEdgeLike = Pick<LifeCycleModelGraphEdge, 'id' | 'selected' | 'source' | 'target'>;
+
+export type EditorGraphHydrationBaseline = {
+  storedGraph: LifeCycleModelGraphData;
+  hydratedGraph: LifeCycleModelGraphData;
+};
 
 const getNodeWidth = (
   node: Pick<LifeCycleModelGraphNode, 'size' | 'width'> | undefined,
@@ -547,6 +553,151 @@ export const buildSavePayload = (
       nodes,
       edges,
     },
+  };
+};
+
+const ABSENT_GRAPH_VALUE = Symbol('absent-graph-value');
+type GraphValue = unknown | typeof ABSENT_GRAPH_VALUE;
+
+const isSameGraphValue = (left: GraphValue, right: GraphValue) => {
+  if (left === ABSENT_GRAPH_VALUE || right === ABSENT_GRAPH_VALUE) {
+    return left === right;
+  }
+  return JSON.stringify(left) === JSON.stringify(right);
+};
+
+const isGraphRecord = (value: GraphValue): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const hasOwnGraphValue = (value: Record<string, unknown>, key: string) =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+/**
+ * Three-way reconciliation for editor hydration:
+ * - stored: the persisted graph before editor/display hydration
+ * - hydrated: the graph initially shown to the editor
+ * - current: the graph at save time
+ *
+ * Values that still match the hydrated baseline are restored to their stored
+ * representation. Values changed by the user remain current.
+ */
+const reconcileHydratedGraphValue = (
+  current: GraphValue,
+  stored: GraphValue,
+  hydrated: GraphValue,
+): GraphValue => {
+  if (isSameGraphValue(stored, hydrated)) {
+    return current;
+  }
+  if (isSameGraphValue(current, hydrated)) {
+    return stored;
+  }
+  if (!isGraphRecord(current) || !isGraphRecord(hydrated)) {
+    return current;
+  }
+
+  const storedRecord = isGraphRecord(stored) ? stored : {};
+  const next = { ...current };
+  const keys = new Set([
+    ...Object.keys(current),
+    ...Object.keys(storedRecord),
+    ...Object.keys(hydrated),
+  ]);
+
+  keys.forEach((key) => {
+    const nextValue = reconcileHydratedGraphValue(
+      hasOwnGraphValue(current, key) ? current[key] : ABSENT_GRAPH_VALUE,
+      hasOwnGraphValue(storedRecord, key) ? storedRecord[key] : ABSENT_GRAPH_VALUE,
+      hasOwnGraphValue(hydrated, key) ? hydrated[key] : ABSENT_GRAPH_VALUE,
+    );
+    if (nextValue === ABSENT_GRAPH_VALUE) {
+      delete next[key];
+    } else {
+      next[key] = nextValue;
+    }
+  });
+
+  return next;
+};
+
+const sanitizeStoredNode = (node: LifeCycleModelGraphNode) => {
+  const { selected, ...persistedNode } = node;
+  void selected;
+  return persistedNode;
+};
+
+const sanitizeStoredEdge = (edge: LifeCycleModelGraphEdge) => {
+  const { selected, ...persistedEdge } = edge;
+  void selected;
+  if (!edge.target) {
+    return persistedEdge;
+  }
+
+  const { x, y, ...target } = edge.target;
+  void x;
+  void y;
+  return { ...persistedEdge, target };
+};
+
+export const reconcileHydratedEditorGraphForPersistence = (
+  currentGraph: LifeCycleModelGraphData,
+  baseline: EditorGraphHydrationBaseline,
+): LifeCycleModelGraphData => {
+  const storedNodesById = new Map(
+    baseline.storedGraph.nodes
+      .filter((node) => typeof node.id === 'string')
+      .map((node) => [node.id as string, sanitizeStoredNode(node)]),
+  );
+  const hydratedNodesById = new Map(
+    baseline.hydratedGraph.nodes
+      .filter((node) => typeof node.id === 'string')
+      .map((node) => [node.id as string, node]),
+  );
+  const storedEdgesById = new Map(
+    baseline.storedGraph.edges
+      .filter((edge) => typeof edge.id === 'string')
+      .map((edge) => [edge.id as string, sanitizeStoredEdge(edge)]),
+  );
+  const hydratedEdgesById = new Map(
+    baseline.hydratedGraph.edges
+      .filter((edge) => typeof edge.id === 'string')
+      .map((edge) => [edge.id as string, edge]),
+  );
+
+  return {
+    nodes: currentGraph.nodes.map((node, index) => {
+      const storedNode =
+        typeof node.id === 'string'
+          ? storedNodesById.get(node.id)
+          : baseline.storedGraph.nodes[index]
+            ? sanitizeStoredNode(baseline.storedGraph.nodes[index])
+            : undefined;
+      const hydratedNode =
+        typeof node.id === 'string'
+          ? hydratedNodesById.get(node.id)
+          : baseline.hydratedGraph.nodes[index];
+      if (!storedNode || !hydratedNode) {
+        return node;
+      }
+      return reconcileHydratedGraphValue(node, storedNode, hydratedNode) as LifeCycleModelGraphNode;
+    }),
+    edges: currentGraph.edges.map((edge, index) => {
+      const storedEdge =
+        typeof edge.id === 'string'
+          ? storedEdgesById.get(edge.id)
+          : baseline.storedGraph.edges[index]
+            ? sanitizeStoredEdge(baseline.storedGraph.edges[index])
+            : undefined;
+      const hydratedEdge =
+        typeof edge.id === 'string'
+          ? hydratedEdgesById.get(edge.id)
+          : baseline.hydratedGraph.edges[index];
+      if (!storedEdge || !hydratedEdge) {
+        return edge;
+      }
+
+      return reconcileHydratedGraphValue(edge, storedEdge, hydratedEdge) as LifeCycleModelGraphEdge;
+    }),
   };
 };
 

@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: focused Account and Team suites remain green after removing custom component sizing; no coverage queue or historical baseline update is required.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
+lastReviewedNote: 'Reviewed for Next #1023: the changed graph compatibility sources retain full source-mapped coverage; no coverage queue or historical baseline update is required.'
 ---
 
 # Testing Execution State

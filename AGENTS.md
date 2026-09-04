@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: Account and Team theme-default UI sizing remains page-local and preserves authorization, data behavior and dev delivery boundaries.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
+lastReviewedNote: 'Reviewed for Next #1023: exact-version LifecycleModel edit hydration stays page-and-service local and preserves authorization, repository ownership, and dev delivery boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

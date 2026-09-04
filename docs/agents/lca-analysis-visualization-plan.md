@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next Issue #901: removing an unreachable Task Center diagnostic guard and covering retained diagnostic fallbacks does not change calculation, analysis, or contribution-path contracts.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: edit-mode graph hydration and persistence reconciliation do not change the proposed LCA analysis or visualization contract.'
 ---
 
 # LCA Analysis And Visualization Plan

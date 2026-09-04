@@ -35,6 +35,7 @@ import {
 import { getProcessDetailByIdsAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
 import type {
+  LifeCycleModelGraphData,
   LifeCycleModelJsonTg,
   LifeCycleModelMutationResult,
   LifeCycleModelPersistencePlan,
@@ -64,6 +65,10 @@ type LifeCycleModelSearchOrderBy = {
   key: 'common:class' | 'baseName';
   lang?: SupportedContentLanguage;
   order: 'asc' | 'desc';
+};
+
+type LifeCycleModelMutationOptions = NormalizeLangPayloadForSaveOptions & {
+  persistenceGraph?: LifeCycleModelGraphData;
 };
 
 function normalizeLifeCycleModelTotalCount(row?: LifeCycleModelListRpcRow): number {
@@ -358,7 +363,7 @@ async function applyReferenceAwareRuleVerification(
 
 export async function createLifeCycleModel(
   data: any,
-  options?: NormalizeLangPayloadForSaveOptions,
+  options?: LifeCycleModelMutationOptions,
   createVersionOptions?: { sourceVersion: string },
 ): Promise<LifeCycleModelMutationResult> {
   const serializationResult = serializeLifeCycleModelForMutation(data.id, data);
@@ -391,14 +396,15 @@ export async function createLifeCycleModel(
     normalizedLifeCycleModelJsonOrdered,
     [],
   );
+  const persistenceGraph = options?.persistenceGraph ?? data?.model;
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
     langIntent: options?.intent,
     mode: 'create',
     modelId: data.id,
     lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
-    nodes: data?.model?.nodes ?? [],
-    edges: data?.model?.edges ?? [],
+    nodes: persistenceGraph?.nodes ?? [],
+    edges: persistenceGraph?.edges ?? [],
     up2DownEdges,
     lifeCycleModelProcesses,
   });
@@ -425,7 +431,7 @@ export async function createLifeCycleModel(
 
 export async function updateLifeCycleModel(
   data: any,
-  options?: NormalizeLangPayloadForSaveOptions,
+  options?: LifeCycleModelMutationOptions,
 ): Promise<LifeCycleModelMutationResult> {
   const serializationResult = serializeLifeCycleModelForMutation(data.id, data);
   if (!serializationResult.success) {
@@ -489,6 +495,7 @@ export async function updateLifeCycleModel(
     data.version,
   );
   const oldProcesses = oldProcessesResult?.data ?? [];
+  const persistenceGraph = options?.persistenceGraph ?? data?.model;
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
     langIntent: options?.intent,
@@ -496,8 +503,8 @@ export async function updateLifeCycleModel(
     modelId: data.id,
     version: data.version,
     lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
-    nodes: data?.model?.nodes ?? [],
-    edges: data?.model?.edges ?? [],
+    nodes: persistenceGraph?.nodes ?? [],
+    edges: persistenceGraph?.edges ?? [],
     up2DownEdges,
     lifeCycleModelProcesses,
     oldSubmodels,

@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: Account and Team theme-default sizing uses the existing local bootstrap, focused validation and controlled dev workflow without new preview or environment switches.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
+lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit compatibility uses the existing Node/pnpm bootstrap, serial focused tests, and controlled dev delivery workflow without new environment switches.'
 ---
 
 # Development Bootstrap

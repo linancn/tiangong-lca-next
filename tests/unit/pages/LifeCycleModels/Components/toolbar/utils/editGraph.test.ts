@@ -9,6 +9,7 @@ import {
   hydrateEditorEdges,
   hydrateEditorNodes,
   normalizePastedReferenceCells,
+  reconcileHydratedEditorGraphForPersistence,
   resolveDeleteSelection,
 } from '@/pages/LifeCycleModels/Components/toolbar/utils/editGraph';
 import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
@@ -828,6 +829,277 @@ describe('toolbar/utils/editGraph', () => {
       id: 'model-1',
       version: '1.0',
     });
+  });
+
+  it('restores untouched compatibility and editor hydration before persistence', () => {
+    const storedGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          selected: true,
+          size: { width: 350, height: 80 },
+          data: { id: 'process-a', version: '01.00.000' },
+        },
+        {
+          height: 80,
+          data: { id: 'process-b', version: '01.00.000' },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          selected: true,
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b', x: 10, y: 20 },
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-a' } } },
+        },
+        {
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-b' } } },
+        },
+      ],
+    } as any;
+    const hydratedGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          selected: false,
+          size: { width: 350, height: 100 },
+          attrs: { body: { stroke: '#1677ff' } },
+          tools: [{ id: 'ref' }],
+          data: {
+            id: 'process-a',
+            version: '01.00.000',
+            index: '0',
+            label: [{ '@xml:lang': 'en', '#text': 'Process A' }],
+            quantitativeReference: '1',
+          },
+          ports: {
+            groups: { groupOutput: {} },
+            items: [
+              {
+                id: 'OUTPUT:flow-a',
+                group: 'groupOutput',
+                attrs: { text: { text: 'Flow A' } },
+                data: { flowId: 'flow-a' },
+              },
+            ],
+          },
+        },
+        {
+          selected: false,
+          height: 100,
+          attrs: { body: { stroke: '#1677ff' } },
+          tools: [{ id: 'nonRef' }],
+          data: {
+            id: 'process-b',
+            version: '01.00.000',
+            index: '1',
+            label: [{ '@xml:lang': 'en', '#text': 'Process B' }],
+            quantitativeReference: '0',
+          },
+          ports: { groups: { groupInput: {} }, items: [] },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          selected: false,
+          source: { cell: 'node-a', port: 'OUTPUT:flow-a' },
+          target: { cell: 'node-b', port: 'INPUT:flow-a' },
+          attrs: { line: { stroke: '#1677ff' } },
+          labels: ['calculated-label'],
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-a' } } },
+        },
+        {
+          selected: false,
+          source: {},
+          target: {},
+          attrs: { line: { stroke: '#1677ff' } },
+          labels: ['calculated-label'],
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-b' } } },
+        },
+      ],
+    } as any;
+    const currentGraph = buildSavePayload(
+      {} as any,
+      hydratedGraph.nodes,
+      hydratedGraph.edges,
+    ).model;
+    const originalStored = JSON.parse(JSON.stringify(storedGraph));
+    const originalHydrated = JSON.parse(JSON.stringify(hydratedGraph));
+    const originalCurrent = JSON.parse(JSON.stringify(currentGraph));
+
+    expect(
+      reconcileHydratedEditorGraphForPersistence(currentGraph, {
+        storedGraph,
+        hydratedGraph,
+      }),
+    ).toEqual({
+      nodes: [
+        {
+          id: 'node-a',
+          size: { width: 350, height: 80 },
+          data: { id: 'process-a', version: '01.00.000' },
+        },
+        {
+          height: 80,
+          data: { id: 'process-b', version: '01.00.000' },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-a' } } },
+        },
+        {
+          data: { connection: { outputExchange: { '@flowUUID': 'flow-b' } } },
+        },
+      ],
+    });
+    expect(storedGraph).toEqual(originalStored);
+    expect(hydratedGraph).toEqual(originalHydrated);
+    expect(currentGraph).toEqual(originalCurrent);
+  });
+
+  it('keeps intentional graph edits and graph cells added after hydration', () => {
+    const storedGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          size: { width: 350, height: 80 },
+          data: { id: 'process-a', version: '01.00.000' },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+        },
+      ],
+    } as any;
+    const hydratedGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          selected: false,
+          size: { width: 350, height: 100 },
+          attrs: { body: { stroke: '#1677ff' } },
+          tools: [{ id: 'ref' }],
+          data: {
+            id: 'process-a',
+            version: '01.00.000',
+            index: '0',
+            label: 'Hydrated name',
+            quantitativeReference: '1',
+          },
+          ports: {
+            items: [
+              {
+                id: 'OUTPUT:flow-a',
+                group: 'groupOutput',
+                data: { flowId: 'flow-a' },
+              },
+            ],
+          },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          selected: false,
+          source: { cell: 'node-a', port: 'OUTPUT:flow-a' },
+          target: { cell: 'node-b', port: 'INPUT:flow-a' },
+          attrs: { line: { stroke: '#1677ff' } },
+          labels: ['calculated-label'],
+        },
+      ],
+    } as any;
+    const currentGraph = {
+      nodes: [
+        {
+          ...hydratedGraph.nodes[0],
+          selected: undefined,
+          x: 420,
+          size: { width: 350, height: 140 },
+          data: {
+            ...hydratedGraph.nodes[0].data,
+            index: '0',
+            label: 'Renamed process',
+            quantitativeReference: '0',
+          },
+          ports: {
+            items: [
+              ...hydratedGraph.nodes[0].ports.items,
+              {
+                id: 'INPUT:flow-b',
+                group: 'groupInput',
+                data: { flowId: 'flow-b' },
+              },
+            ],
+          },
+        },
+        {
+          id: 'node-new',
+          data: { id: 'process-new', version: '01.00.000', index: '1' },
+        },
+        {
+          data: { id: 'process-new-without-cell-id', version: '01.00.000', index: '2' },
+        },
+      ],
+      edges: [
+        {
+          ...hydratedGraph.edges[0],
+          selected: undefined,
+          source: { cell: 'node-a', port: 'OUTPUT:manual-flow' },
+        },
+        {
+          id: 'edge-new',
+          source: { cell: 'node-new' },
+          target: { cell: 'node-a' },
+        },
+        {
+          source: { cell: 'node-new' },
+          target: { cell: 'node-a' },
+        },
+      ],
+    } as any;
+
+    const result = reconcileHydratedEditorGraphForPersistence(currentGraph, {
+      storedGraph,
+      hydratedGraph,
+    });
+
+    expect(result.nodes[0]).toEqual(
+      expect.objectContaining({
+        id: 'node-a',
+        x: 420,
+        size: { width: 350, height: 140 },
+        data: expect.objectContaining({
+          label: 'Renamed process',
+          quantitativeReference: '0',
+        }),
+        ports: expect.objectContaining({
+          items: expect.arrayContaining([expect.objectContaining({ id: 'INPUT:flow-b' })]),
+        }),
+      }),
+    );
+    expect(result.nodes[0]).not.toHaveProperty('attrs');
+    expect(result.nodes[0]).not.toHaveProperty('tools');
+    expect(result.nodes[1]).toBe(currentGraph.nodes[1]);
+    expect(result.nodes[2]).toBe(currentGraph.nodes[2]);
+    expect(result.edges[0]).toEqual(
+      expect.objectContaining({
+        source: { cell: 'node-a', port: 'OUTPUT:manual-flow' },
+        target: { cell: 'node-b' },
+      }),
+    );
+    expect(result.edges[0]).not.toHaveProperty('attrs');
+    expect(result.edges[0]).not.toHaveProperty('labels');
+    expect(result.edges[1]).toBe(currentGraph.edges[1]);
+    expect(result.edges[2]).toBe(currentGraph.edges[2]);
   });
 
   it('covers fallback branches for missing optional data in helper transforms', () => {

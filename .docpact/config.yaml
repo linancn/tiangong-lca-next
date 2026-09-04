@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-03"
-lastReviewedCommit: "eee53ce4626a3f0acb308a275a4025abb21cade8"
-lastReviewedNote: 'Reviewed for Next #1020: Account and Team information surfaces now use Ant Design theme-default typography, control sizing and spacing, while content panels size naturally; no ownership, routing, baseline or waiver rule changed.'
+lastReviewedAt: "2026-09-04"
+lastReviewedCommit: "9a73d8037a4557a0b34d084c0435c26045531721"
+lastReviewedNote: 'Reviewed for Next #1023: edit-mode LifecycleModel graph compatibility remains within the existing frontend, service, and test ownership rules; no routing, baseline, or waiver rule changed.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

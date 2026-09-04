@@ -39,9 +39,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: the obsolete 52px progress-width expectation was updated to the intended theme-default contract; troubleshooting and gate recovery guidance remain unchanged.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
+lastReviewedNote: 'Reviewed for Next #1023: targeted serial Jest runs resolved compatibility-test mocks and closed new branch coverage; troubleshooting and gate recovery guidance remain unchanged.'
 ---
 
 # Testing Troubleshooting
