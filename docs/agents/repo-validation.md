@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: focused Account and Team regression tests, computed-style inspection, locale checks and production build cover the theme-default UI sizing change; controlled push-gate policy is unchanged.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: focused helper, component, compatibility, and API tests plus lint, full coverage, and production build prove edit hydration and persistence safety; validation policy is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

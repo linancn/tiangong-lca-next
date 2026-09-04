@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: generated locale artifacts were refreshed for Account callsite movement; pre-push scope, thresholds and bypass policy remain unchanged.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: focused graph compatibility tests and full-coverage proof use the existing controlled pre-push gate; trigger and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

@@ -19,6 +19,9 @@ const mockGetProcessesByIdAndVersion = jest.fn().mockResolvedValue({ data: [] })
 const mockGetImportedId = jest.fn().mockReturnValue(undefined);
 const mockIsSupabaseDuplicateKeyError = jest.fn().mockReturnValue(false);
 const mockGetLangText = jest.fn().mockReturnValue('Flow Name');
+const mockJsonToList = jest.fn((value: any) =>
+  Array.isArray(value) ? value : value ? [value] : [],
+);
 const mockFormatDateTime = jest.fn(() => '2024-01-01 00:00');
 const mockGetUserTeamId = jest.fn().mockResolvedValue('team-1');
 const mockGetUserId = jest.fn().mockResolvedValue('user-1');
@@ -425,6 +428,7 @@ jest.mock('@/services/general/util', () => ({
   getImportedId: (...args: any[]) => mockGetImportedId(...args),
   isSupabaseDuplicateKeyError: (...args: any[]) => mockIsSupabaseDuplicateKeyError(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
+  jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -479,6 +483,9 @@ beforeEach(() => {
   mockGetImportedId.mockReset().mockReturnValue(undefined);
   mockIsSupabaseDuplicateKeyError.mockReset().mockReturnValue(false);
   mockGetLangText.mockReset().mockReturnValue('Flow Name');
+  mockJsonToList
+    .mockReset()
+    .mockImplementation((value: any) => (Array.isArray(value) ? value : value ? [value] : []));
   mockFormatDateTime.mockReset().mockReturnValue('2024-01-01 00:00');
   mockGetUserTeamId.mockReset().mockResolvedValue('team-1');
   mockGetUserId.mockReset().mockResolvedValue('user-1');
@@ -665,7 +672,12 @@ describe('ToolbarEdit', () => {
     render(<ToolbarEdit {...baseProps} drawerVisible={true} {...props} />);
 
     expect(screen.getByTestId('spin')).toBeInTheDocument();
-    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith('model-1', '1.0'));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelDetail).toHaveBeenCalledWith(
+        props.id ?? baseProps.id,
+        props.version ?? baseProps.version,
+      ),
+    );
     await waitFor(() => expect(screen.queryByTestId('spin')).not.toBeInTheDocument());
   };
 
@@ -2206,7 +2218,12 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-1',
         }),
-        undefined,
+        expect.objectContaining({
+          persistenceGraph: expect.objectContaining({
+            nodes: expect.any(Array),
+            edges: expect.any(Array),
+          }),
+        }),
         { sourceVersion: '1.0' },
       ),
     );
@@ -2682,6 +2699,162 @@ describe('ToolbarEdit', () => {
         }),
       ),
     );
+  });
+
+  it('hydrates lightweight saved graphs for editing without persisting runtime-only fields', async () => {
+    const storedJsonTg = {
+      xflow: {
+        nodes: [
+          { id: '0', data: { id: 'process-a', version: '01.00.000' } },
+          { id: '1', data: { id: 'process-b', version: '01.00.021' } },
+        ],
+        edges: [
+          {
+            id: 'edge-a',
+            source: { cell: '0' },
+            target: { cell: '1' },
+            data: {
+              connection: {
+                outputExchange: {
+                  '@flowUUID': 'flow-a',
+                  downstreamProcess: { '@flowUUID': 'flow-a' },
+                },
+              },
+            },
+          },
+        ],
+      },
+      submodels: [],
+    };
+    const storedJsonTgSnapshot = JSON.parse(JSON.stringify(storedJsonTg));
+    const lifeCycleModelDataSet = {
+      lifeCycleModelInformation: {
+        quantitativeReference: {
+          referenceToReferenceProcess: '0',
+        },
+      },
+    };
+    const processDetails = [
+      {
+        id: 'process-a',
+        version: '01.00.000',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              },
+            },
+            exchanges: {
+              exchange: {
+                exchangeDirection: 'OUTPUT',
+                quantitativeReference: true,
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-a',
+                  '@version': '01.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Output flow A' }],
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        id: 'process-b',
+        version: '01.00.021',
+        json: {
+          processDataSet: {
+            processInformation: {
+              dataSetInformation: {
+                name: [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              },
+            },
+            exchanges: {
+              exchange: {
+                exchangeDirection: 'INPUT',
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-a',
+                  '@version': '01.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Input flow A' }],
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+    mockGetLifeCycleModelDetail.mockResolvedValueOnce({
+      success: true,
+      data: {
+        version: '01.00.000',
+        json: { lifeCycleModelDataSet },
+        json_tg: storedJsonTg,
+      },
+    });
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({ data: processDetails });
+    mockGenLifeCycleModelData.mockImplementationOnce((jsonTg: any) => jsonTg.xflow);
+
+    await renderVisibleToolbarEdit({ version: '01.00.000' });
+
+    expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledWith([
+      { id: 'process-a', version: '01.00.000' },
+      { id: 'process-b', version: '01.00.021' },
+    ]);
+    const initializedGraph = mockInitData.mock.calls.at(-1)?.[0];
+    expect(initializedGraph).toEqual(
+      expect.objectContaining({
+        nodes: [
+          expect.objectContaining({
+            id: '0',
+            height: 80,
+            data: expect.objectContaining({
+              label: [{ '@xml:lang': 'en', '#text': 'Process A' }],
+              quantitativeReference: '1',
+            }),
+            ports: expect.objectContaining({
+              items: [expect.objectContaining({ id: 'OUTPUT:flow-a' })],
+            }),
+            tools: expect.arrayContaining([expect.objectContaining({ id: 'ref' })]),
+          }),
+          expect.objectContaining({
+            id: '1',
+            height: 80,
+            data: expect.objectContaining({
+              label: [{ '@xml:lang': 'en', '#text': 'Process B' }],
+              quantitativeReference: '0',
+            }),
+            ports: expect.objectContaining({
+              items: [expect.objectContaining({ id: 'INPUT:flow-a' })],
+            }),
+            tools: expect.arrayContaining([expect.objectContaining({ id: 'nonRef' })]),
+          }),
+        ],
+        edges: [
+          expect.objectContaining({
+            id: 'edge-a',
+            source: { cell: '0', port: 'OUTPUT:flow-a' },
+            target: { cell: '1', port: 'INPUT:flow-a' },
+          }),
+        ],
+      }),
+    );
+    expect(storedJsonTg).toEqual(storedJsonTgSnapshot);
+
+    mockGraph.getNodes.mockReturnValue(initializedGraph.nodes);
+    mockGraph.getEdges.mockReturnValue(initializedGraph.edges);
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() => expect(mockUpdateLifeCycleModel).toHaveBeenCalled());
+    const [runtimePayload, mutationOptions] = mockUpdateLifeCycleModel.mock.calls.at(-1);
+    expect(runtimePayload.model.nodes[0]).toEqual(
+      expect.objectContaining({
+        data: expect.objectContaining({ quantitativeReference: '1' }),
+        ports: expect.objectContaining({
+          items: [expect.objectContaining({ id: 'OUTPUT:flow-a' })],
+        }),
+      }),
+    );
+    expect(mutationOptions.persistenceGraph).toEqual(storedJsonTg.xflow);
   });
 
   it('renders process-view actions for non-owned process instances', async () => {

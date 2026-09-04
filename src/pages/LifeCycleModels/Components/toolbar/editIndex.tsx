@@ -36,11 +36,16 @@ import {
   getLifeCycleModelPortFlowVersion,
 } from '@/services/lifeCycleModels/util';
 import {
+  getLifeCycleModelGraphProcessReferences,
+  normalizeLifeCycleModelGraphForDisplay,
+} from '@/services/lifeCycleModels/viewCompatibility';
+import {
   getProcessDetail,
   getProcessDetailByIdAndVersion,
   getProcessesByIdAndVersion,
 } from '@/services/processes/api';
 import type {
+  ProcessDetailByVersionItem,
   ProcessDetailByVersionResponse,
   ProcessDetailResponse,
 } from '@/services/processes/data';
@@ -78,9 +83,11 @@ import {
   buildProcessNodesFromDetails,
   buildSavePayload,
   buildUpdatedNodeReferencePayload,
+  type EditorGraphHydrationBaseline,
   hydrateEditorEdges,
   hydrateEditorNodes,
   normalizePastedReferenceCells,
+  reconcileHydratedEditorGraphForPersistence,
   resolveDeleteSelection,
 } from './utils/editGraph';
 import {
@@ -219,6 +226,7 @@ const ToolbarEdit: FC<Props> = ({
   const importedId = getImportedId(importData?.[0]);
 
   const editInfoRef = useRef<ToolbarEditInfoHandle>(null);
+  const editorGraphHydrationBaselineRef = useRef<EditorGraphHydrationBaseline | null>(null);
   const resizeToolRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     setThisAction(action);
@@ -897,6 +905,12 @@ const ToolbarEdit: FC<Props> = ({
         : (edges as LifeCycleModelGraphEdge[]);
 
       const newData = buildSavePayload(infoData, currentNodes, currentEdges);
+      const persistenceGraph = editorGraphHydrationBaselineRef.current
+        ? reconcileHydratedEditorGraphForPersistence(
+            newData.model ?? { nodes: [], edges: [] },
+            editorGraphHydrationBaselineRef.current,
+          )
+        : undefined;
       const fallbackValidationVersion =
         (newData?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] as
           string | undefined) ??
@@ -1007,13 +1021,19 @@ const ToolbarEdit: FC<Props> = ({
           return toSaveMutationError(error);
         }
       };
-      const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
+      const mutationOptions =
+        options?.langIntent || persistenceGraph
+          ? {
+              ...(options?.langIntent ? { intent: options.langIntent } : {}),
+              ...(persistenceGraph ? { persistenceGraph } : {}),
+            }
+          : undefined;
 
       if (thisAction === 'edit') {
         const lifecycleModelPayload = { ...newData, id: thisId, version: thisVersion };
         const result = await runMutation(() =>
-          langOptions
-            ? updateLifeCycleModel(lifecycleModelPayload, langOptions)
+          mutationOptions
+            ? updateLifeCycleModel(lifecycleModelPayload, mutationOptions)
             : updateLifeCycleModel(lifecycleModelPayload),
         );
         if (result.ok) {
@@ -1033,6 +1053,12 @@ const ToolbarEdit: FC<Props> = ({
           setThisId(savedModelId);
           setThisVersion(savedVersion);
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
+          if (persistenceGraph && editorGraphHydrationBaselineRef.current) {
+            editorGraphHydrationBaselineRef.current = {
+              storedGraph: persistenceGraph,
+              hydratedGraph: newData.model ?? { nodes: [], edges: [] },
+            };
+          }
 
           const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
             []) as LifeCycleModelGraphEdge[];
@@ -1075,10 +1101,14 @@ const ToolbarEdit: FC<Props> = ({
           actionType === 'createVersion' ? { sourceVersion: thisVersion } : undefined;
         const result = await runMutation(() => {
           if (createVersionOptions) {
-            return createLifeCycleModel(lifecycleModelPayload, langOptions, createVersionOptions);
+            return createLifeCycleModel(
+              lifecycleModelPayload,
+              mutationOptions,
+              createVersionOptions,
+            );
           }
-          return langOptions
-            ? createLifeCycleModel(lifecycleModelPayload, langOptions)
+          return mutationOptions
+            ? createLifeCycleModel(lifecycleModelPayload, mutationOptions)
             : createLifeCycleModel(lifecycleModelPayload);
         });
         if (result.ok) {
@@ -1099,6 +1129,12 @@ const ToolbarEdit: FC<Props> = ({
           setThisVersion(savedVersion);
           setInfoData(nextPayload);
           setJsonTg(savedLifeCycleModel?.json_tg ?? {});
+          if (persistenceGraph && editorGraphHydrationBaselineRef.current) {
+            editorGraphHydrationBaselineRef.current = {
+              storedGraph: persistenceGraph,
+              hydratedGraph: newData.model ?? { nodes: [], edges: [] },
+            };
+          }
 
           const savedEdges = (savedLifeCycleModel?.json_tg?.xflow?.edges ??
             []) as LifeCycleModelGraphEdge[];
@@ -1410,24 +1446,29 @@ const ToolbarEdit: FC<Props> = ({
     [],
   );
 
-  const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
-    const userId = await getUserId();
-    setUserId(userId);
-    const params: { id: string; version: string }[] = [];
-    jsonTg?.xflow?.nodes?.forEach((node) => {
-      const nodeId = node?.data?.id;
-      const nodeVersion = node?.data?.version;
-      if (nodeId && nodeVersion) {
-        params.push({
-          id: nodeId,
-          version: nodeVersion,
-        });
-      }
-    });
-    if (params.length > 0) {
-      const procresses = await getProcessesByIdAndVersion(params);
-      setProcessInstances((procresses.data ?? []) as LifeCycleModelProcessInstance[]);
-    }
+  const getEditorProcessData = async (
+    jsonTg: LifeCycleModelJsonTg,
+  ): Promise<ProcessDetailByVersionItem[]> => {
+    const params = getLifeCycleModelGraphProcessReferences(jsonTg);
+    const [nextUserId, processInstancesResult, processDetailsResult] = await Promise.all([
+      getUserId(),
+      params.length > 0
+        ? getProcessesByIdAndVersion(params).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] }),
+      params.length > 0
+        ? getProcessDetailByIdAndVersion(params).catch(() => ({ data: [] }))
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    setUserId(nextUserId);
+    setProcessInstances(
+      (Array.isArray(processInstancesResult.data)
+        ? processInstancesResult.data
+        : []) as LifeCycleModelProcessInstance[],
+    );
+    return (
+      Array.isArray(processDetailsResult.data) ? processDetailsResult.data : []
+    ) as ProcessDetailByVersionItem[];
   };
 
   useEffect(() => {
@@ -1439,12 +1480,14 @@ const ToolbarEdit: FC<Props> = ({
       setProblemNodes([]);
       setSdkProblemProcessInstanceIds([]);
       setJsonTg({});
+      editorGraphHydrationBaselineRef.current = null;
       modelData({ nodes: [], edges: [] });
       resetGraphCommandState();
       return;
     }
 
     if (importData && importData.length > 0) {
+      editorGraphHydrationBaselineRef.current = null;
       const formData = genLifeCycleModelInfoFromData(importData[0].lifeCycleModelDataSet);
       setInfoData(formData);
       const model = genLifeCycleModelData(importData[0]?.json_tg ?? {}, lang);
@@ -1475,54 +1518,71 @@ const ToolbarEdit: FC<Props> = ({
     if (id !== '') {
       setIsSave(false);
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result: LifeCycleModelDetailResponse) => {
-        if (!result.success) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.lifecyclemodel.notPublic',
-              defaultMessage: 'Model is not public',
-            }),
+      void getLifeCycleModelDetail(id, version)
+        .then(async (result: LifeCycleModelDetailResponse) => {
+          if (!result.success) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.lifecyclemodel.notPublic',
+                defaultMessage: 'Model is not public',
+              }),
+            );
+            return;
+          }
+          const fromData = genLifeCycleModelInfoFromData(
+            result.data?.json?.lifeCycleModelDataSet ?? {},
           );
-          return;
-        }
-        const fromData = genLifeCycleModelInfoFromData(
-          result.data?.json?.lifeCycleModelDataSet ?? {},
-        );
-        setJsonTg(result.data?.json_tg ?? {});
+          const storedJsonTg = result.data?.json_tg ?? {};
+          setJsonTg(storedJsonTg);
 
-        if (actionType === 'createVersion' && newVersion) {
-          fromData.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
-            newVersion;
-        }
-        setInfoData({ ...fromData, id: thisId, version: thisVersion });
-        const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        const initNodes = hydrateEditorNodes({
-          nodes: model?.nodes ?? [],
-          refTool,
-          nonRefTool,
-          inputFlowTool,
-          outputFlowTool,
-          token,
-          lang,
-          nodeTemplateWidth,
-          nodeAttrs,
-          portsGroups: ports.groups,
-        });
-        const initEdges = hydrateEditorEdges(model?.edges ?? [], token, edgeLabelText);
-        await modelData({
-          nodes: initNodes,
-          edges: initEdges,
-        });
-
-        setNodeCount(initNodes.length);
-        resetGraphCommandState();
-        getProcessInstances(result.data?.json_tg ?? {})
-          .then(() => {})
-          .finally(() => {
-            setSpinning(false);
+          if (actionType === 'createVersion' && newVersion) {
+            fromData.administrativeInformation.publicationAndOwnership['common:dataSetVersion'] =
+              newVersion;
+          }
+          setInfoData({ ...fromData, id: thisId, version: thisVersion });
+          const processDetails = await getEditorProcessData(storedJsonTg);
+          const editorJsonTg = normalizeLifeCycleModelGraphForDisplay({
+            jsonTg: storedJsonTg,
+            lifeCycleModelDataSet: result.data?.json?.lifeCycleModelDataSet,
+            processDetails,
           });
-      });
+          const model = genLifeCycleModelData(editorJsonTg, lang);
+          const initNodes = hydrateEditorNodes({
+            nodes: model?.nodes ?? [],
+            refTool,
+            nonRefTool,
+            inputFlowTool,
+            outputFlowTool,
+            token,
+            lang,
+            nodeTemplateWidth,
+            nodeAttrs,
+            portsGroups: ports.groups,
+          });
+          const initEdges = hydrateEditorEdges(model?.edges ?? [], token, edgeLabelText);
+          editorGraphHydrationBaselineRef.current = {
+            storedGraph: {
+              nodes: storedJsonTg.xflow?.nodes ?? [],
+              edges: storedJsonTg.xflow?.edges ?? [],
+            },
+            hydratedGraph: {
+              nodes: initNodes,
+              edges: initEdges,
+            },
+          };
+          await modelData({
+            nodes: initNodes,
+            edges: initEdges,
+          });
+
+          setNodeCount(initNodes.length);
+          resetGraphCommandState();
+        })
+        .finally(() => {
+          setSpinning(false);
+        });
     } else {
+      editorGraphHydrationBaselineRef.current = null;
       const currentDateTime = formatDateTime(new Date());
       setInfoData(
         buildEmptyCreateInfoData({
