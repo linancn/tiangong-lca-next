@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
-lastReviewedNote: 'Reviewed for Next Issue #991: the correction ledger now records intentional baseline-message retirement without mutating frozen historical evidence or retaining dead runtime copy.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the dependency refresh: Node 24.20.0 and pnpm 11.25.0 remain aligned across local, CI and isolated E2E runtimes; locale behavior, manual browser qualification and production-write authorization are unchanged, so no body change is required.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

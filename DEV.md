@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: Account and Team theme-default sizing uses the existing local bootstrap, focused validation and controlled dev workflow without new preview or environment switches.'
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the 2026-09-03 dependency refresh: local bootstrap now uses exact Node 24.20.0 and pnpm 11.25.0; the install, start and validation workflow is otherwise unchanged.'
 ---
 
 # Development Bootstrap
@@ -65,8 +65,8 @@ lastReviewedNote: 'Reviewed for Next #1020: Account and Team theme-default sizin
 
 ## Prerequisites
 
-- Node.js `24.19.0`
-- Corepack with the repository-pinned `pnpm` `11.24.0`
+- Node.js `24.20.0`
+- Corepack with the repository-pinned `pnpm` `11.25.0`
 - local shell configured so `nvm install` and `nvm use` honor `.nvmrc`
 
 ## Bootstrap
@@ -171,17 +171,17 @@ The repository has one TypeScript track: the direct `typescript` dependency is e
 
 The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.2.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced` plus its normalized failure envelope; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
 
-Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
+Both application and release-E2E Node container sources retain exact Node `24.20.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 
-Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs pin pnpm `11.24.0` and Node `24.19.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
+Every owned GitHub Actions pnpm bootstrap uses the repository-reviewed, peeled executable `pnpm/setup` v2.0.2 commit SHA, while its inputs pin pnpm `11.25.0` and Node `24.20.0`. Preserve the readable version comment, but never replace the commit SHA with an annotated-tag object or moving major tag.
 
 `pnpm lint` runs Oxlint, Prettier verification, and the native TypeScript 7 web typecheck. Oxlint owns unused and deprecated API correctness; the repo-local `tiangong/no-invalid-this` plugin preserves the legacy strict-context rule that Oxlint does not yet provide natively. Prettier owns formatting only and does not organize imports.
 
 The qualified production bundle remains Umi's current Webpack path followed by the repo-owned TypeScript checks. Do not enable the optional Umi/Mako `forkTSChecker` path until its dependencies are proved compatible with TypeScript 7; the TypeScript 7 package's CommonJS root intentionally does not expose the legacy JavaScript Compiler API that this optional path currently expects.
 
-The UI dependency track is exact-pinned to React/React DOM `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`. Umi `4.7.9` supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
+The UI dependency track is exact-pinned to React/React DOM `19.2.8`, antd `6.6.2`, icons `6.3.4`, and ProComponents `3.1.14-6`. Umi `4.7.12` supplies the single global ConfigProvider and App; `src/app.tsx` owns initial/dynamic theme synchronization, while `src/contexts/AntdAppContext.tsx` registers its feedback API for non-component callers. Do not restore antd 5 render patches, split ProComponents packages, static `message`/`Modal`/`notification` calls, or legacy component-member APIs. `skipLibCheck: true` remains only because the exact ProComponents prerelease still publishes invalid external declaration references; web source remains strict and must pass `pnpm tsc`.
 
-The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@jest/test-sequencer` `30.5.0`, `@testing-library/jest-dom` `7.0.1`, Electron `44.1.0`, and `npm-check-updates` `23.1.0`. Jest 30 proof must preserve the explicit test inventory and slow-first sequencer, Electron publication remains on the four supported 64-bit targets, and the package manifest's canonical GitHub repository metadata must remain available to electron-builder from both normal checkouts and Git worktrees.
+The reviewed test and packaging majors are Jest / `jest-environment-jsdom` / `@jest/test-sequencer` `30.5.1`, `@testing-library/jest-dom` `7.0.1`, Electron `44.1.1`, and `npm-check-updates` `23.1.0`. Jest 30 proof must preserve the explicit test inventory and slow-first sequencer, Electron publication remains on the four supported 64-bit targets, and the package manifest's canonical GitHub repository metadata must remain available to electron-builder from both normal checkouts and Git worktrees.
 
 `pnpm test` still discovers and executes the complete Jest inventory. The repository sequencer starts the three known process-heavy suites first, while preserving Jest's normal ordering within the remaining group. The pre-push receipt contract builds one reusable seed and gives every test its own copied repository and bare remote; never share mutable Git state between cases.
 
@@ -269,7 +269,7 @@ Both release commands default to read-only planning when `--apply` is omitted. `
 - run `pnpm test:api:smoke <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - ordinary local pushes run the Husky pre-push hook, which runs `pnpm docpact:gate` first and `pnpm prepush:gate` last; main-semantic pushes additionally run static `release:preflight`. No-update and raw deletion-only pushes skip gates, normal exact-branch `HEAD` refspecs are accepted, and every other ineligible checked ref shape fails before Docpact/full tests. Only the deterministic release commands may select the exact release-candidate or immutable-promotion profile, which validates its generated branch/state/path identity and runs Docpact plus static preflight without the full gate
 - exact marker-bound Release PRs targeting `dev` run the reusable clean-runner non-browser Release Gate: static contracts plus the complete Jest gate. Promotion PRs targeting `main` and normal version-changing post-merge publication verify the resulting exact proof and unchanged-tree merge chain. A marked unchanged-version main hotfix runs one exact-head clean-runner static/full gate instead; none of these paths run or require browser E2E
-- the hook keeps an already-active exact Node.js 24.19.0 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24.19.0` only when the active Node is absent or has another version
+- the hook keeps an already-active exact Node.js 24.20.0 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24.20.0` only when the active Node is absent or has another version
 - treat `pnpm prepush:gate` as the authoritative local test gate
 - during normal delivery, use `pnpm push:checked <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local evidence and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does

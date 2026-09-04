@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const repositoryRoot = path.resolve(__dirname, '../../..');
 const pinnedPnpmSetup = 'uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2';
-const expectedPnpmVersion = '11.24.0';
+const expectedPnpmVersion = '11.25.0';
 
 function read(relativePath: string): string {
   return fs.readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
@@ -30,40 +30,40 @@ describe('pnpm package-manager contract', () => {
       .map((fileName) => ({ fileName, source: read(`.github/workflows/${fileName}`) }));
 
     expect(packageJson.packageManager).toBe(`pnpm@${expectedPnpmVersion}`);
-    expect(packageJson.engines).toEqual({ node: '24.19.0', pnpm: expectedPnpmVersion });
-    expect(read('.nvmrc').trim()).toBe('24.19.0');
-    expect(applicationDockerfile).toMatch(/^FROM node:24\.19\.0-alpine@sha256:[a-f0-9]{64}$/mu);
+    expect(packageJson.engines).toEqual({ node: '24.20.0', pnpm: expectedPnpmVersion });
+    expect(read('.nvmrc').trim()).toBe('24.20.0');
+    expect(applicationDockerfile).toMatch(/^FROM node:24\.20\.0-alpine@sha256:[a-f0-9]{64}$/mu);
     expect(applicationDockerfile).toContain(`pnpm@${expectedPnpmVersion}`);
     expect(e2eDockerfile).toMatch(
-      /^ARG NODE_IMAGE=node:24\.19\.0-bookworm-slim@sha256:[a-f0-9]{64}$/mu,
+      /^ARG NODE_IMAGE=node:24\.20\.0-bookworm-slim@sha256:[a-f0-9]{64}$/mu,
     );
     expect(e2eDockerfile).toContain(`pnpm@${expectedPnpmVersion}`);
     expect(e2eEnvironment).toMatchObject({
       nodeImage:
-        'node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df',
+        'node:24.20.0-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e',
       nodeMajor: 24,
-      nodeVersion: '24.19.0',
+      nodeVersion: '24.20.0',
     });
     expect(e2eDockerfile).toContain(`ARG NODE_IMAGE=${e2eEnvironment.nodeImage}`);
     for (const workflow of workflows) {
       expect(workflow).toEqual({
         fileName: workflow.fileName,
         source: expect.not.stringMatching(
-          /11\.(?:22|23)\.0|node@24(?:\s|$)|node-version:\s*24(?:\s|$)/mu,
+          /11\.(?:22|23|24)\.0|node@24(?:\s|$)|node-version:\s*24(?:\s|$)/mu,
         ),
       });
     }
     for (const workflow of workflows.filter(({ source }) => source.includes('uses: pnpm/setup@'))) {
       expect(workflow.source).toContain(pinnedPnpmSetup);
       expect(workflow.source).toContain(`version: ${expectedPnpmVersion}`);
-      expect(workflow.source).toContain('runtime: node@24.19.0');
+      expect(workflow.source).toContain('runtime: node@24.20.0');
     }
     for (const workflow of workflows.filter(({ source }) =>
       source.includes('uses: actions/setup-node@'),
     )) {
-      expect(workflow.source).toContain('node-version: 24.19.0');
+      expect(workflow.source).toContain('node-version: 24.20.0');
     }
-    expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^30.5.0');
+    expect(packageJson.devDependencies['@jest/test-sequencer']).toBe('^30.5.1');
     expect(JSON.parse(read('.ncurc.json')).reject).toContain('@types/node');
     expect(fs.existsSync(path.join(repositoryRoot, 'pnpm-lock.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(repositoryRoot, 'package-lock.json'))).toBe(false);
@@ -120,8 +120,8 @@ describe('pnpm package-manager contract', () => {
     });
     expect(packageJson.devDependencies).toMatchObject({
       '@types/react': '19.2.18',
-      '@types/react-dom': '19.2.5',
-      '@umijs/max': '4.7.9',
+      '@types/react-dom': '19.2.7',
+      '@umijs/max': '4.7.12',
       '@umijs/max-plugin-openapi': '2.0.3',
       '@umijs/request-record': '1.1.4',
     });
@@ -142,12 +142,12 @@ describe('pnpm package-manager contract', () => {
     const firstPartySources = trackedRuntimeSources();
 
     expect(devDependencies).toMatchObject({
-      '@jest/test-sequencer': '^30.5.0',
+      '@jest/test-sequencer': '^30.5.1',
       '@testing-library/jest-dom': '^7.0.1',
       '@types/jest': '^30.0.0',
-      electron: '^44.1.0',
-      jest: '^30.5.0',
-      'jest-environment-jsdom': '^30.5.0',
+      electron: '^44.1.1',
+      jest: '^30.5.1',
+      'jest-environment-jsdom': '^30.5.1',
       'npm-check-updates': '^23.1.0',
     });
     expect(packageJson.scripts.ncu).toBe('ncu');

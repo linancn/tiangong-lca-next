@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: the temporary connected-app preview and fixtures are removed at the user request. List and disconnect always use the existing shared OAuth services, including when obsolete preview parameters remain in the URL; UI styling and authorization boundaries are unchanged.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the dependency refresh: Node 24.20.0, pnpm 11.25.0 and Supabase JS 2.114.0 preserve environment selection, shared-client ownership and the existing authentication and data-write boundaries; no body change is required.'
 ---
 
 # Supabase Environment And Database Workflow

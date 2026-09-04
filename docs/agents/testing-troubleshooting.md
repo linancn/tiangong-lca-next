@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: the obsolete 52px progress-width expectation was updated to the intended theme-default contract; troubleshooting and gate recovery guidance remain unchanged.'
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the 2026-09-03 dependency refresh: Node 24.20.0 replaces the previous hook baseline; the same NVM fallback and serial Umi recovery guidance applies.'
 ---
 
 # Testing Troubleshooting
@@ -153,7 +153,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | managed push transport fails after both gates pass | `push:checked` activated the ignored exact-intent receipt and the remote may or may not have accepted the commit | run argument-free `pnpm push:retry`; it succeeds idempotently when the exact SHA already arrived and otherwise retries only while the remote and all bound inputs remain unchanged |
 | checked push reports an ineligible ref update | the source is not the current exact branch/`HEAD`, the destination is not a branch, or more than one update was requested | correct the refspec shown by the command; the helper must reject this shape before Docpact/full tests, and an ordinary raw deletion-only push intentionally skips those gates |
 | raw push fails after its hook passed but no receipt exists | only `push:checked` can bind the original push intent and activate bounded recovery after a failed transport | run a fresh `pnpm push:checked <normal-git-push-args>` so its ordinary hook re-establishes evidence; never use `--no-verify` or `HUSKY=0` manually |
-| every hook-driven receipt test exits before either fake gate on GitHub Ubuntu | the hook forced NVM even though `setup-node` had already activated exact Node 24.19.0 outside NVM | verify the active exact version first, use it when already 24.19.0, and consult NVM only as a fallback |
+| every hook-driven receipt test exits before either fake gate on GitHub Ubuntu | the hook forced NVM even though `setup-node` had already activated exact Node 24.20.0 outside NVM | verify the active exact version first, use it when already 24.20.0, and consult NVM only as a fallback |
 
 ## Open-Handle Playbook
 

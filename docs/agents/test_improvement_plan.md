@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-03
-lastReviewedCommit: eee53ce4626a3f0acb308a275a4025abb21cade8
-lastReviewedNote: 'Reviewed for Next #1020: the existing focused Account and Team coverage protects the UI-only default-sizing change without new test infrastructure or strategy changes.'
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for the 2026-09-03 dependency refresh: the existing package-manager contracts and full gate cover the new exact toolchain without changing the testing strategy.'
 ---
 
 # Testing Strategy
@@ -56,7 +56,7 @@ lastReviewedNote: 'Reviewed for Next #1020: the existing focused Account and Tea
 
 - current strategy is maintenance, not expansion for its own sake
 - full closure already exists; the job is to preserve it while the codebase changes
-- dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.24.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
+- dependency installation is a governed proof input: the repository pins Node `24.20.0`, pnpm `11.25.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
 - CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v2.0.2 commit SHA rather than an annotated-tag object or movable major tag
 - the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed `0.2.0` package and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
