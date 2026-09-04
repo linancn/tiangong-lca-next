@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
 lastReviewedNote: 'Reviewed for Next #1023: focused graph compatibility tests and full-coverage proof use the existing controlled pre-push gate; trigger and bypass policy remain unchanged.'
 ---
 
