@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: the temporary connected-app preview and fixtures are removed at the user request. List and disconnect always use the existing shared OAuth services, including when obsolete preview parameters remain in the URL; UI styling and authorization boundaries are unchanged.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration uses existing Process read services and the established bundle mutation path; database, Edge, authentication, and environment ownership are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow

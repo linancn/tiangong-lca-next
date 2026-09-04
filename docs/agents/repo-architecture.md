@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: page-local Account and Team sizing cleanup preserves component-service boundaries, theme ownership and existing authorization flows.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration reuses the view compatibility service and separates calculation state from persistence state without changing layer ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -93,6 +93,7 @@ Rules:
 - Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - Process keyword searches use the indexed `search_processes` RPC and pass explicit escaped query terms without app-side field filtering. The `public_plus_owner_draft` calculation picker enables the database-owned actor-draft mode for its personal branch, requiring owner `state_code=0` rows regardless of team/review workflow metadata, then merges that result with public state-100 rows. Database migrations own the `search_text` lexical source and its PGroonga index
 - Process list rows carry nullable `model_version` alongside `model_id`. LifecycleModel actions resolve the exact owner version as `model_version ?? process.version`; null remains the legacy same-version fallback, while an explicit version must never be replaced with the latest LifecycleModel revision. LifecycleModel result submodels are queried with each submodel reference's own Process version rather than the parent Model version
+- LifecycleModel view and edit surfaces hydrate lightweight `json_tg.xflow` nodes from each referenced Process's exact ID and version through the shared compatibility normalizer. The editor calculates and validates against that hydrated graph, but save planning reconciles untouched compatibility and editor-only fields back to the stored graph representation; explicit graph edits remain persistent
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `pnpm reference-data:check`

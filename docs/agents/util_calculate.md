@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-09-02
-lastReviewedCommit: d1b17a476945c9aee00d2106ba44c0f72ce5e5a2
-lastReviewedNote: 'Reviewed for Next Issue #901: removing an unreachable Task Center diagnostic guard and covering retained diagnostic fallbacks does not change calculation, analysis, or contribution-path contracts.'
+lastReviewedAt: 2026-09-04
+lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
+lastReviewedNote: 'Reviewed for Next #1023: calculations consume the hydrated editor graph while persistence receives a separately reconciled graph; calculation and allocation algorithms are unchanged.'
 ---
 
 # Lifecycle Model Calculation Reference
@@ -111,6 +111,7 @@ lastReviewedNote: 'Reviewed for Next Issue #901: removing an unreachable Task Ce
 - primary-group reference exchange is aligned to `modelTargetAmount`
 - root `refScalingFactor` falls back to `1` when the model target amount or reference mean amount is zero or missing
 - old submodels are reused only when `nodeId`, `processId`, `allocatedExchangeFlowId`, and `allocatedExchangeDirection` all match
+- edit-mode compatibility may hydrate lightweight graph nodes and ports from exact-version Process details before calling `genLifeCycleModelProcesses`; persistence planning receives a separately reconciled graph so untouched display-only hydration is not written into `json_tg`
 - generated subproduct names emit one localized prefix and bracket wrapper for every content-language registry row whose authoring capability is enabled; a new authoring language must add its reviewed `generatedContent.subproductPrefix` in that registry instead of adding language-specific branches here
 - persistence-plan helpers that prepare ordered datasets for validation or review must stay schema-compatible with these calculation-facing structures even when they do not execute allocation logic
 

@@ -1178,6 +1178,66 @@ describe('createLifeCycleModel', () => {
     expect(result).toEqual(edgePayload);
   });
 
+  it('uses the hydrated graph for calculation and the reconciled graph for create persistence', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    const runtimeGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          data: { id: sampleProcessId, version: sampleVersion, quantitativeReference: '1' },
+          ports: { items: [{ id: 'OUTPUT:flow-a' }] },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a', port: 'OUTPUT:flow-a' },
+          target: { cell: 'node-b', port: 'INPUT:flow-a' },
+        },
+      ],
+    };
+    const persistenceGraph = {
+      nodes: [{ id: 'node-a', data: { id: sampleProcessId, version: sampleVersion } }],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+        },
+      ],
+    };
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      { id: sampleModelId, model: runtimeGraph },
+      { persistenceGraph },
+    );
+
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+      sampleModelId,
+      runtimeGraph.nodes,
+      rawJson,
+      [],
+    );
+    expect(mockFunctionsInvoke.mock.calls[0][1].body.parent.jsonTg.xflow).toEqual({
+      nodes: persistenceGraph.nodes,
+      edges: [
+        expect.objectContaining({
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+        }),
+      ],
+    });
+    expect(result).toEqual(edgePayload);
+  });
+
   it('passes allocateVersion metadata when creating a lifecycle model version', async () => {
     const rawJson = buildLifecycleModelJsonOrdered();
     const edgePayload = buildSaveResult({
@@ -1554,6 +1614,73 @@ describe('updateLifeCycleModel', () => {
         jsonOrdered: rawJson,
       },
       processMutations: [],
+    });
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('uses the hydrated graph for calculation and the reconciled graph for update persistence', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    const runtimeGraph = {
+      nodes: [
+        {
+          id: 'node-a',
+          data: { id: sampleProcessId, version: sampleVersion, quantitativeReference: '1' },
+          ports: { items: [{ id: 'OUTPUT:flow-a' }] },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a', port: 'OUTPUT:flow-a' },
+          target: { cell: 'node-b', port: 'INPUT:flow-a' },
+        },
+      ],
+    };
+    const persistenceGraph = {
+      nodes: [{ id: 'node-a', data: { id: sampleProcessId, version: sampleVersion } }],
+      edges: [
+        {
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+        },
+      ],
+    };
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: [] }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({ data: [] });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel(
+      { id: sampleModelId, version: sampleVersion, model: runtimeGraph },
+      { persistenceGraph },
+    );
+
+    expect(mockGenLifeCycleModelProcesses).toHaveBeenCalledWith(
+      sampleModelId,
+      runtimeGraph.nodes,
+      rawJson,
+      [],
+    );
+    expect(mockFunctionsInvoke.mock.calls[0][1].body.parent.jsonTg.xflow).toEqual({
+      nodes: persistenceGraph.nodes,
+      edges: [
+        expect.objectContaining({
+          id: 'edge-a',
+          source: { cell: 'node-a' },
+          target: { cell: 'node-b' },
+        }),
+      ],
     });
     expect(result).toEqual(edgePayload);
   });
