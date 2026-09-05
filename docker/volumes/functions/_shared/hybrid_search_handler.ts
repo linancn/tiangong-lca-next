@@ -3,10 +3,10 @@ import { corsHeaders } from './cors.ts';
 import { extractEmbeddingVector } from './embedding_vector.ts';
 import { generateHybridSearchEmbedding, rewriteHybridSearchQuery } from './hybrid_search_kernel.ts';
 import {
-  buildHybridFulltextQueryTerms,
   buildBoundedHybridFulltextQueryTerms,
-  sanitizeHybridQueryOutput,
+  buildHybridFulltextQueryTerms,
   type HybridSearchQuery,
+  sanitizeHybridQueryOutput,
 } from './hybrid_query_utils.ts';
 import {
   buildHybridSearchRpcRequest,
@@ -14,8 +14,8 @@ import {
 } from './hybrid_search_request.ts';
 import {
   createHybridSearchRpcClient,
-  HybridSearchRpcContextError,
   type HybridSearchRpcClientContext,
+  HybridSearchRpcContextError,
 } from './hybrid_search_rpc_context.ts';
 import { supabaseAuthClient } from './supabase_client.ts';
 
@@ -27,6 +27,9 @@ export interface HybridSearchRouteConfig {
   rpcName: string;
   versionedRpcName?: string;
   forwardVisibilityContext?: boolean;
+  forwardProcessTypeFilter?: boolean;
+  requireSelectedTeamContext?: boolean;
+  rpcOwnsThresholdFallback?: boolean;
 }
 
 type HybridSearchAuthResult = Pick<AuthResult, 'isAuthenticated' | 'principal' | 'response'>;
@@ -74,6 +77,47 @@ function errorCode(error: unknown): string {
   return 'HYBRID_SEARCH_FAILED';
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+const VALID_FLOW_TYPES = new Set(['Elementary flow', 'Product flow', 'Waste flow', 'Other flow']);
+
+function hasInvalidMatchedFlowFilter(filter: Record<string, unknown>): boolean {
+  if ('flowType' in filter) {
+    if (typeof filter.flowType !== 'string') return true;
+    const flowTypes = filter.flowType
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (
+      flowTypes.length === 0 ||
+      flowTypes.length > VALID_FLOW_TYPES.size ||
+      flowTypes.some((value) => !VALID_FLOW_TYPES.has(value))
+    ) {
+      return true;
+    }
+  }
+  if (
+    'asInput' in filter &&
+    typeof filter.asInput !== 'boolean' &&
+    filter.asInput !== 'true' &&
+    filter.asInput !== 'false'
+  ) {
+    return true;
+  }
+  if (!('classification' in filter)) return false;
+  if (!Array.isArray(filter.classification) || filter.classification.length > 50) return true;
+  return filter.classification.some(
+    (item) =>
+      !isRecord(item) ||
+      (item.scope !== 'classification' && item.scope !== 'elementary') ||
+      typeof item.code !== 'string' ||
+      !item.code.trim() ||
+      item.code.length > 200,
+  );
+}
+
 export function createHybridSearchHandler(
   config: HybridSearchRouteConfig,
   dependencyOverrides: Partial<HybridSearchHandlerDependencies> = {},
@@ -81,8 +125,11 @@ export function createHybridSearchHandler(
   const dependencies = { ...DEFAULT_DEPENDENCIES, ...dependencyOverrides };
 
   return async (request: Request): Promise<Response> => {
-    if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+    if (request.method === 'OPTIONS') {
+      return new Response('ok', { headers: corsHeaders });
+    }
 
+    const handlerStartedAt = dependencies.now();
     try {
       const authResult = await dependencies.authenticate(request);
       if (!authResult.isAuthenticated) {
@@ -94,7 +141,9 @@ export function createHybridSearchHandler(
         parsedRequest = parseHybridSearchClientRequest(await request.json());
       } catch (error) {
         return jsonResponse(
-          { error: error instanceof Error ? error.message : 'Invalid request body' },
+          {
+            error: error instanceof Error ? error.message : 'Invalid request body',
+          },
           400,
         );
       }
@@ -116,6 +165,33 @@ export function createHybridSearchHandler(
           parsedRequest.rpcOptions.lexical_weight + parsedRequest.rpcOptions.semantic_weight <= 0)
       ) {
         return jsonResponse({ error: 'Invalid matched version search bounds' }, 400);
+      }
+      if (
+        versioned &&
+        config.requireSelectedTeamContext &&
+        parsedRequest.rpcOptions.data_source === 'te' &&
+        !parsedRequest.visibilityOptions.team_id_filter
+      ) {
+        return jsonResponse(
+          {
+            error: 'team_id is required for selected-team search',
+          },
+          400,
+        );
+      }
+      if (
+        versioned &&
+        config.entityKind === 'flow' &&
+        parsedRequest.entityFilterOptions.type_of_data_set_filter !== null
+      ) {
+        return jsonResponse({ error: 'Process dataset type is not supported by Flow search' }, 400);
+      }
+      if (
+        versioned &&
+        config.entityKind === 'flow' &&
+        hasInvalidMatchedFlowFilter(parsedRequest.rpcOptions.filter_condition)
+      ) {
+        return jsonResponse({ error: 'Invalid matched Flow filter contract' }, 400);
       }
       const rpcName = versioned ? config.versionedRpcName! : config.rpcName;
       let rpcClientContext: HybridSearchRpcClientContext | undefined;
@@ -150,6 +226,7 @@ export function createHybridSearchHandler(
           );
         }
       }
+      const rewriteStartedAt = dependencies.now();
       const rawRewrite = await dependencies.rewriteQuery(config, parsedRequest.queryText);
       if (versioned && !rawRewrite.semantic_query_en?.trim()) {
         throw new Error('OpenAI structured output missing semantic_query_en');
@@ -159,18 +236,36 @@ export function createHybridSearchHandler(
         throw new Error('OpenAI structured output missing semantic_query_en');
       }
 
+      dependencies.logger.log('[hybrid_search]', {
+        function: config.functionName,
+        entity_kind: config.entityKind,
+        stage: 'rewrite_success',
+        duration_ms: dependencies.now() - rewriteStartedAt,
+        query_length: parsedRequest.queryText.length,
+        semantic_query_length: normalizedQuery.semantic_query_en.length,
+      });
+
       const queryTerms = versioned
         ? buildBoundedHybridFulltextQueryTerms(normalizedQuery, parsedRequest.queryText)
         : buildHybridFulltextQueryTerms(normalizedQuery);
+      const embeddingStartedAt = dependencies.now();
       const embedding = extractEmbeddingVector(
         await dependencies.generateEmbedding(normalizedQuery.semantic_query_en),
       );
+      dependencies.logger.log('[hybrid_search]', {
+        function: config.functionName,
+        entity_kind: config.entityKind,
+        stage: 'embedding_success',
+        duration_ms: dependencies.now() - embeddingStartedAt,
+        embedding_dimensions: embedding.length,
+      });
       const requestBody = buildHybridSearchRpcRequest(
         parsedRequest.queryText,
         queryTerms,
         `[${embedding.join(',')}]`,
         parsedRequest.rpcOptions,
         config.forwardVisibilityContext ? parsedRequest.visibilityOptions : undefined,
+        config.forwardProcessTypeFilter ? parsedRequest.entityFilterOptions : undefined,
       );
 
       try {
@@ -196,11 +291,20 @@ export function createHybridSearchHandler(
         user_context_kind: rpcClientContext.userContextKind,
       };
       const rpcStartedAt = dependencies.now();
-      dependencies.logger.log('[hybrid_search]', { ...logBase, stage: 'rpc_start' });
+      dependencies.logger.log('[hybrid_search]', {
+        ...logBase,
+        stage: 'rpc_start',
+      });
 
       let { data, error } = await rpcClientContext.client.rpc(rpcName, requestBody);
       let fallbackUsed = false;
-      if (!error && Array.isArray(data) && data.length === 0 && requestBody.match_threshold > 0) {
+      if (
+        !config.rpcOwnsThresholdFallback &&
+        !error &&
+        Array.isArray(data) &&
+        data.length === 0 &&
+        requestBody.match_threshold > 0
+      ) {
         fallbackUsed = true;
         const fallbackRequestBody = { ...requestBody, match_threshold: 0 };
         dependencies.logger.log('[hybrid_search]', {
@@ -236,8 +340,9 @@ export function createHybridSearchHandler(
               !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(row.id) ||
               typeof row.version !== 'string' ||
               !/^\d{2}\.\d{2}\.\d{3}$/u.test(row.version)
-            )
+            ) {
               return true;
+            }
             const key = row.id + ':' + row.version;
             if (keys.has(key)) return true;
             keys.add(key);
@@ -251,10 +356,27 @@ export function createHybridSearchHandler(
         ...logBase,
         stage: 'rpc_success',
         duration_ms: dependencies.now() - rpcStartedAt,
+        complete_duration_ms: dependencies.now() - handlerStartedAt,
         result_count: Array.isArray(data) ? data.length : 0,
         fallback_used: fallbackUsed,
+        database_fallback_used:
+          Array.isArray(data) &&
+          data.some(
+            (row) =>
+              row && typeof row === 'object' && Reflect.get(row, 'semantic_fallback_used') === true,
+          ),
+        semantic_route:
+          Array.isArray(data) && data[0] && typeof data[0] === 'object'
+            ? Reflect.get(data[0], 'semantic_route')
+            : undefined,
+        semantic_candidate_population:
+          Array.isArray(data) && data[0] && typeof data[0] === 'object'
+            ? Reflect.get(data[0], 'semantic_candidate_population')
+            : undefined,
       });
-      if (versioned) return jsonResponse({ data, versionScope: 'matched' }, 200);
+      if (versioned) {
+        return jsonResponse({ data, versionScope: 'matched' }, 200);
+      }
       return Array.isArray(data) && data.length > 0
         ? jsonResponse({ data }, 200)
         : jsonResponse([], 200);

@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 589205148348ee78f8fa21878d18829f4e5a9439
-lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
+lastReviewedCommit: 96e5c1ae6fdf6e1f524f38fe7d7aecb494706c71
+lastReviewedNote: 'Reviewed for Next #1035: pair reviewed Edge/Database artifacts and preserve constrained roles, effective memberships, default ACLs and usable empty queue storage. Owner boundaries, dependencies, ordinary full push gate and immutable release proof rules remain unchanged.'
 ---
 
 # Testing Troubleshooting

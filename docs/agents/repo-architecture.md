@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
-lastReviewedNote: 'Reviewed for Next #1028: the version-aware Process/Flow section now records canonical filter forwarding, public institution team preservation, and selected-team fail-closed behavior without changing layer ownership.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 96e5c1ae6fdf6e1f524f38fe7d7aecb494706c71
+lastReviewedNote: 'Reviewed for Next #1035: pair reviewed Edge/Database artifacts and preserve constrained roles, effective memberships, default ACLs and usable empty queue storage. Owner boundaries, dependencies, ordinary full push gate and immutable release proof rules remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -206,3 +206,5 @@ Next owns read orchestration, release dataset identity display, directional LCI/
 - `docker/volumes/functions/**` is a generated exact-Edge-revision mirror, not a primary edit surface; refresh it only through the delete-aware helper and retain its source receipt
 - app-side data access does not belong outside `src/services/**`
 - a merged child PR does not finish workspace delivery
+
+The self-hosted snapshot tools keep the generated Edge tree and Database initializer paired. `docker/scripts/export-snapshot-bootstrap.sql` projects constrained roles and source ACL boundaries; `export-snapshot-queue-bootstrap.sql` recreates extension-owned empty queue storage and the Database-owned visibility fence after schema restoration. Runtime/backend semantics remain in their owning repositories.

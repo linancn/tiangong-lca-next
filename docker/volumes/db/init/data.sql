@@ -1,11 +1,14 @@
--- Database source: 470e66157fc0b363c3360ba952f75280cfa1ff73
--- Migration head: 20260902151000
+-- Database source: e9888c9385356ee6df66c2910a99e29f9fa7e08c
+-- Migration head: 20260905170004
 CREATE ROLE api_internal_executor NOLOGIN INHERIT NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOSUPERUSER;
+CREATE ROLE next_public_search_executor NOLOGIN NOINHERIT NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOSUPERUSER;
 CREATE ROLE portal_public_executor NOLOGIN NOINHERIT NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOSUPERUSER;
-GRANT api_internal_executor TO postgres WITH ADMIN OPTION;
 GRANT authenticated TO api_internal_executor;
-GRANT portal_public_executor TO postgres WITH ADMIN OPTION;
+GRANT USAGE ON SCHEMA extensions TO next_public_search_executor;
 GRANT USAGE ON SCHEMA extensions TO portal_public_executor;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM PUBLIC, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON SEQUENCES FROM PUBLIC, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM PUBLIC, anon, authenticated, service_role;
 ALTER ROLE authenticator SET pgrst.db_pre_request = 'api.oauth_client_pre_request';
 --
 -- TianGong LCA filtered schema snapshot
@@ -19,7 +22,7 @@ ALTER ROLE authenticator SET pgrst.db_pre_request = 'api.oauth_client_pre_reques
 
 
 -- Dumped from database version 17.6
--- Dumped by pg_dump version 17.6
+-- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -17572,6 +17575,206 @@ $$;
 ALTER FUNCTION api.hybrid_search_flow_versions_v1(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[]) OWNER TO api_internal_executor;
 
 --
+-- Name: hybrid_search_flow_versions_v2(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[], integer, uuid); Type: FUNCTION; Schema: api; Owner: api_internal_executor
+--
+
+CREATE FUNCTION api.hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb DEFAULT '{}'::jsonb, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 200, lexical_weight double precision DEFAULT 0.5, semantic_weight double precision DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1, query_terms text[] DEFAULT NULL::text[], state_code_filter integer DEFAULT NULL::integer, team_id_filter uuid DEFAULT NULL::uuid) RETURNS TABLE(id uuid, "json" jsonb, version character, modified_at timestamp with time zone, team_id uuid, total_count bigint, semantic_route text, semantic_candidate_population integer, semantic_fallback_used boolean)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $$
+declare
+  v_source text := coalesce(nullif(pg_catalog.lower(pg_catalog.btrim(data_source)), ''), 'tg');
+  v_actor uuid := private.dataset_search_effective_user_id('');
+  v_filter jsonb := coalesce(filter_condition, '{}'::jsonb);
+  v_residual jsonb;
+  v_flow_types text[] := '{}'::text[];
+  v_as_input boolean := false;
+  v_classification jsonb := '[]'::jsonb;
+  v_classification_codes text[] := '{}'::text[];
+  v_elementary_codes text[] := '{}'::text[];
+  v_query_embedding extensions.vector(1024);
+begin
+  if v_source not in ('tg', 'co', 'my', 'te')
+     or query_text is null or pg_catalog.btrim(query_text) = ''
+     or match_count is distinct from 200
+     or page_size is null or page_size not between 1 and 100
+     or page_current is null or page_current not between 1 and 400
+     or match_threshold is null or match_threshold not between 0 and 1
+     or lexical_weight is null or lexical_weight not between 0 and 1
+     or semantic_weight is null or semantic_weight not between 0 and 1
+     or lexical_weight + semantic_weight <= 0
+     or rrf_k is null or rrf_k not between 1 and 1000
+     or pg_catalog.jsonb_typeof(v_filter) is distinct from 'object'
+     or state_code_filter < 0 then
+    raise exception using errcode = '22023', message = 'invalid Next Flow Hybrid V2 request';
+  end if;
+
+  if v_filter ? 'flowType' then
+    if pg_catalog.jsonb_typeof(v_filter -> 'flowType') <> 'string' then
+      raise exception using errcode = '22023', message = 'invalid Next Flow Hybrid V2 request';
+    end if;
+    select coalesce(pg_catalog.array_agg(value order by value), '{}'::text[])
+    into v_flow_types
+    from (
+      select distinct nullif(pg_catalog.btrim(item), '') as value
+      from pg_catalog.regexp_split_to_table(v_filter ->> 'flowType', ',') as item
+    ) as values
+    where value is not null;
+    if pg_catalog.cardinality(v_flow_types) = 0 or exists (
+      select 1 from pg_catalog.unnest(v_flow_types) as value
+      where value not in ('Elementary flow', 'Product flow', 'Waste flow', 'Other flow')
+    ) then
+      raise exception using errcode = '22023', message = 'invalid Next Flow Hybrid V2 request';
+    end if;
+  end if;
+
+  if v_filter ? 'asInput' then
+    if pg_catalog.jsonb_typeof(v_filter -> 'asInput') = 'boolean'
+       or (
+         pg_catalog.jsonb_typeof(v_filter -> 'asInput') = 'string'
+         and pg_catalog.lower(v_filter ->> 'asInput') in ('true', 'false')
+       ) then
+      v_as_input := (v_filter ->> 'asInput')::boolean;
+    else
+      raise exception using errcode = '22023', message = 'invalid Next Flow Hybrid V2 request';
+    end if;
+  end if;
+
+  if v_filter ? 'classification' then
+    if pg_catalog.jsonb_typeof(v_filter -> 'classification') <> 'array'
+       or pg_catalog.jsonb_array_length(v_filter -> 'classification') > 50
+       or exists (
+         select 1
+         from pg_catalog.jsonb_array_elements(v_filter -> 'classification') as selected(item)
+         where pg_catalog.jsonb_typeof(selected.item) <> 'object'
+           or selected.item ->> 'scope' not in ('classification', 'elementary')
+           or nullif(pg_catalog.btrim(selected.item ->> 'code'), '') is null
+           or pg_catalog.length(selected.item ->> 'code') > 200
+       ) then
+      raise exception using errcode = '22023', message = 'invalid Next Flow Hybrid V2 request';
+    end if;
+    v_classification := v_filter -> 'classification';
+    select
+      coalesce(pg_catalog.array_agg(distinct pg_catalog.btrim(selected.item ->> 'code'))
+        filter (where selected.item ->> 'scope' = 'classification'), '{}'::text[]),
+      coalesce(pg_catalog.array_agg(distinct pg_catalog.btrim(selected.item ->> 'code'))
+        filter (where selected.item ->> 'scope' = 'elementary'), '{}'::text[])
+    into v_classification_codes, v_elementary_codes
+    from pg_catalog.jsonb_array_elements(v_classification) as selected(item);
+  end if;
+
+  v_residual := v_filter - 'flowType' - 'asInput' - 'classification';
+
+  if v_source in ('my', 'te') and v_actor is null then return; end if;
+  if v_source = 'te' and (
+    team_id_filter is null
+    or not private.dataset_search_can_read_team_filter(team_id_filter, v_actor)
+  ) then
+    return;
+  end if;
+  if (v_source = 'tg' and state_code_filter is not null and state_code_filter <> 100)
+     or (v_source = 'co' and state_code_filter is not null and state_code_filter <> 200) then
+    return;
+  end if;
+
+  v_query_embedding := query_embedding::extensions.vector(1024);
+
+  return query
+  with fused as materialized (
+    select candidate.*
+    from private.next_hybrid_version_keys_v2(
+      'flow', query_text, query_terms, v_query_embedding,
+      v_residual, null, v_flow_types, v_as_input,
+      v_classification_codes, v_elementary_codes, match_threshold,
+      lexical_weight, semantic_weight, rrf_k, v_source,
+      state_code_filter, team_id_filter
+    ) as candidate
+  ), hydrated as materialized (
+    select
+      source.id,
+      source.json,
+      source.version,
+      source.modified_at,
+      source.team_id,
+      fused.score,
+      fused.semantic_route,
+      fused.semantic_candidate_population,
+      fused.semantic_fallback_used
+    from fused
+    join public.flows as source
+      on source.id = fused.id
+     and source.version::text = fused.version
+    where (
+        (v_source = 'tg' and source.state_code = 100
+          and (team_id_filter is null or source.team_id = team_id_filter))
+        or (v_source = 'co' and source.state_code = 200
+          and (team_id_filter is null or source.team_id = team_id_filter))
+        or (v_source = 'my' and source.user_id = v_actor
+          and (state_code_filter is null or source.state_code = state_code_filter))
+        or (v_source = 'te' and source.team_id = team_id_filter
+          and (state_code_filter is null or source.state_code = state_code_filter)
+          and private.dataset_search_can_read_team_filter(team_id_filter, v_actor))
+      )
+      and (v_residual = '{}'::jsonb or source.json @> v_residual)
+      and (
+        pg_catalog.cardinality(v_flow_types) = 0
+        or source.json #>> '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}' = any(v_flow_types)
+      )
+      and (
+        not v_as_input
+        or not (
+          source.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'::jsonb
+        )
+      )
+      and (
+        (
+          pg_catalog.cardinality(v_classification_codes) = 0
+          and pg_catalog.cardinality(v_elementary_codes) = 0
+        )
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+          '@classId'
+        ) && v_classification_codes
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+          '@catId'
+        ) && v_elementary_codes
+      )
+  ), counted as (
+    select hydrated.*, pg_catalog.count(*) over()::bigint as total_count
+    from hydrated
+  )
+  select
+    rows.id,
+    rows.json,
+    rows.version,
+    rows.modified_at,
+    rows.team_id,
+    rows.total_count,
+    rows.semantic_route,
+    rows.semantic_candidate_population,
+    rows.semantic_fallback_used
+  from counted as rows
+  order by rows.score desc, rows.id, rows.version desc
+  limit page_size offset (page_current - 1) * page_size;
+end;
+$$;
+
+
+ALTER FUNCTION api.hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid) OWNER TO api_internal_executor;
+
+--
+-- Name: FUNCTION hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid); Type: COMMENT; Schema: api; Owner: api_internal_executor
+--
+
+COMMENT ON FUNCTION api.hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid) IS 'Authenticated exact-version Next Flow Hybrid V2 with canonical classification/type/state/team filters, bounded exact routing, strict HNSW fallback, and single-call threshold fallback.';
+
+
+--
 -- Name: hybrid_search_flowproperties(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[], integer, uuid); Type: FUNCTION; Schema: api; Owner: api_internal_executor
 --
 
@@ -17859,6 +18062,137 @@ $$;
 
 
 ALTER FUNCTION api.hybrid_search_process_versions_v1(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[]) OWNER TO api_internal_executor;
+
+--
+-- Name: hybrid_search_process_versions_v2(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[], integer, uuid, text); Type: FUNCTION; Schema: api; Owner: api_internal_executor
+--
+
+CREATE FUNCTION api.hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb DEFAULT '{}'::jsonb, match_threshold double precision DEFAULT 0.5, match_count integer DEFAULT 200, lexical_weight double precision DEFAULT 0.5, semantic_weight double precision DEFAULT 0.5, rrf_k integer DEFAULT 10, data_source text DEFAULT 'tg'::text, page_size integer DEFAULT 10, page_current integer DEFAULT 1, query_terms text[] DEFAULT NULL::text[], state_code_filter integer DEFAULT NULL::integer, team_id_filter uuid DEFAULT NULL::uuid, type_of_data_set_filter text DEFAULT NULL::text) RETURNS TABLE(id uuid, "json" jsonb, version character, modified_at timestamp with time zone, model_id uuid, model_version character, team_id uuid, total_count bigint, semantic_route text, semantic_candidate_population integer, semantic_fallback_used boolean)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $$
+declare
+  v_source text := coalesce(nullif(pg_catalog.lower(pg_catalog.btrim(data_source)), ''), 'tg');
+  v_actor uuid := private.dataset_search_effective_user_id('');
+  v_process_type text := nullif(pg_catalog.btrim(type_of_data_set_filter), '');
+  v_query_embedding extensions.vector(1024);
+begin
+  if v_process_type = 'all' then v_process_type := null; end if;
+  if v_source not in ('tg', 'co', 'my', 'te')
+     or query_text is null or pg_catalog.btrim(query_text) = ''
+     or match_count is distinct from 200
+     or page_size is null or page_size not between 1 and 100
+     or page_current is null or page_current not between 1 and 400
+     or match_threshold is null or match_threshold not between 0 and 1
+     or lexical_weight is null or lexical_weight not between 0 and 1
+     or semantic_weight is null or semantic_weight not between 0 and 1
+     or lexical_weight + semantic_weight <= 0
+     or rrf_k is null or rrf_k not between 1 and 1000
+     or pg_catalog.jsonb_typeof(filter_condition) is distinct from 'object'
+     or state_code_filter < 0
+     or (
+       v_process_type is not null
+       and v_process_type not in (
+         'Unit process, single operation',
+         'Unit process, black box',
+         'LCI result',
+         'Partly terminated system',
+         'Avoided product system'
+       )
+     ) then
+    raise exception using errcode = '22023', message = 'invalid Next Process Hybrid V2 request';
+  end if;
+  if v_source in ('my', 'te') and v_actor is null then return; end if;
+  if v_source = 'te' and (
+    team_id_filter is null
+    or not private.dataset_search_can_read_team_filter(team_id_filter, v_actor)
+  ) then
+    return;
+  end if;
+  if (v_source = 'tg' and state_code_filter is not null and state_code_filter <> 100)
+     or (v_source = 'co' and state_code_filter is not null and state_code_filter <> 200) then
+    return;
+  end if;
+
+  v_query_embedding := query_embedding::extensions.vector(1024);
+
+  return query
+  with fused as materialized (
+    select candidate.*
+    from private.next_hybrid_version_keys_v2(
+      'process', query_text, query_terms, v_query_embedding,
+      filter_condition, v_process_type, '{}'::text[], false,
+      '{}'::text[], '{}'::text[], match_threshold, lexical_weight,
+      semantic_weight, rrf_k, v_source, state_code_filter, team_id_filter
+    ) as candidate
+  ), hydrated as materialized (
+    select
+      source.id,
+      source.json,
+      source.version,
+      source.modified_at,
+      source.model_id,
+      source.model_version,
+      source.team_id,
+      fused.score,
+      fused.semantic_route,
+      fused.semantic_candidate_population,
+      fused.semantic_fallback_used
+    from fused
+    join public.processes as source
+      on source.id = fused.id
+     and source.version::text = fused.version
+    where (
+        (v_source = 'tg' and source.state_code = 100
+          and (team_id_filter is null or source.team_id = team_id_filter))
+        or (v_source = 'co' and source.state_code = 200
+          and (team_id_filter is null or source.team_id = team_id_filter))
+        or (v_source = 'my' and source.user_id = v_actor
+          and (state_code_filter is null or source.state_code = state_code_filter))
+        or (v_source = 'te' and source.team_id = team_id_filter
+          and (state_code_filter is null or source.state_code = state_code_filter)
+          and private.dataset_search_can_read_team_filter(team_id_filter, v_actor))
+      )
+      and (filter_condition = '{}'::jsonb or source.json @> filter_condition)
+      and (
+        v_process_type is null
+        or source.json #>> '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}' = v_process_type
+      )
+  ), counted as (
+    select hydrated.*, pg_catalog.count(*) over()::bigint as total_count
+    from hydrated
+  )
+  select
+    rows.id,
+    rows.json,
+    rows.version,
+    rows.modified_at,
+    rows.model_id,
+    rows.model_version,
+    rows.team_id,
+    rows.total_count,
+    rows.semantic_route,
+    rows.semantic_candidate_population,
+    rows.semantic_fallback_used
+  from counted as rows
+  order by rows.score desc, rows.id, rows.version desc
+  limit page_size offset (page_current - 1) * page_size;
+end;
+$$;
+
+
+ALTER FUNCTION api.hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text) OWNER TO api_internal_executor;
+
+--
+-- Name: FUNCTION hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text); Type: COMMENT; Schema: api; Owner: api_internal_executor
+--
+
+COMMENT ON FUNCTION api.hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text) IS 'Authenticated exact-version Next Process Hybrid V2 with canonical type/state/team filters, bounded exact routing, strict HNSW fallback, and single-call threshold fallback.';
+
 
 --
 -- Name: hybrid_search_processes(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[]); Type: FUNCTION; Schema: api; Owner: api_internal_executor
@@ -21806,429 +22140,174 @@ declare
   v_result jsonb;
 begin
   if v_actor is null then
-    raise exception using
-      errcode = '28000',
-      message = 'AUTH_REQUIRED';
+    raise exception using errcode = '28000', message = 'AUTH_REQUIRED';
   end if;
-
   if not api.cmd_membership_is_system_manager(v_actor) then
-    raise exception using
-      errcode = '42501',
-      message = 'SYSTEM_MANAGER_REQUIRED';
+    raise exception using errcode = '42501', message = 'SYSTEM_MANAGER_REQUIRED';
   end if;
-
   if p_limit is null or p_limit < 1 or p_limit > 50 then
-    raise exception using
-      errcode = '22023',
-      message = 'INVALID_LIMIT';
+    raise exception using errcode = '22023', message = 'INVALID_LIMIT';
   end if;
 
   with
-  daily_date_bounds as materialized (
+  date_bounds as materialized (
     select
-      (
-        pg_catalog.date_trunc(
-          'week',
-          pg_catalog.timezone('Asia/Shanghai', pg_catalog.statement_timestamp())
-        )::date - 364
-      ) as start_date,
-      pg_catalog.timezone(
-        'Asia/Shanghai',
-        pg_catalog.statement_timestamp()
-      )::date as end_date
+      pg_catalog.date_trunc('week', pg_catalog.timezone('Asia/Shanghai',
+        pg_catalog.statement_timestamp()))::date - 364 as start_date,
+      pg_catalog.timezone('Asia/Shanghai', pg_catalog.statement_timestamp())::date as end_date
   ),
-  daily_time_bounds as materialized (
-    select
-      bounds.start_date,
-      bounds.end_date,
-      pg_catalog.timezone(
-        'Asia/Shanghai',
-        bounds.start_date::timestamp without time zone
-      ) as start_at,
-      pg_catalog.timezone(
-        'Asia/Shanghai',
-        (bounds.end_date + 1)::timestamp without time zone
-      ) as end_at
-    from daily_date_bounds as bounds
+  daily_counts as (
+    -- Each branch uses its existing timestamp B-tree and aggregates before UNION ALL.
+    -- The (id, version) primary key makes each branch unique per version/day.
+    -- Excluding same-local-day modifications makes the branches disjoint without
+    -- sorting/hashing the entire version identity set. NULL creation dates are safe.
+    select day, pg_catalog.sum(process_count)::bigint as process_count
+    from (
+      select pg_catalog.timezone('Asia/Shanghai', p.created_at)::date as day,
+        pg_catalog.count(*)::bigint as process_count
+      from public.processes p cross join date_bounds b
+      where p.created_at >= pg_catalog.timezone('Asia/Shanghai', b.start_date::timestamp)
+        and p.created_at < pg_catalog.timezone('Asia/Shanghai', (b.end_date + 1)::timestamp)
+      group by 1
+      union all
+      select pg_catalog.timezone('Asia/Shanghai', p.modified_at)::date as day,
+        pg_catalog.count(*)::bigint as process_count
+      from public.processes p cross join date_bounds b
+      where p.modified_at >= pg_catalog.timezone('Asia/Shanghai', b.start_date::timestamp)
+        and p.modified_at < pg_catalog.timezone('Asia/Shanghai', (b.end_date + 1)::timestamp)
+        and pg_catalog.timezone('Asia/Shanghai', p.modified_at)::date
+          is distinct from pg_catalog.timezone('Asia/Shanghai', p.created_at)::date
+      group by 1
+    ) activity
+    group by day
   ),
-  daily_version_facts as materialized (
-    select
-      'process'::text as dataset_kind,
-      pg_catalog.timezone('Asia/Shanghai', process_row.created_at)::date as created_date
-    from public.processes as process_row
-    cross join daily_time_bounds as bounds
-    where process_row.created_at >= bounds.start_at
-      and process_row.created_at < bounds.end_at
-    union all
-    select
-      'model'::text as dataset_kind,
-      pg_catalog.timezone('Asia/Shanghai', model_row.created_at)::date as created_date
-    from public.lifecyclemodels as model_row
-    cross join daily_time_bounds as bounds
-    where model_row.created_at >= bounds.start_at
-      and model_row.created_at < bounds.end_at
-  ),
-  daily_version_counts as materialized (
-    select
-      fact.created_date,
-      pg_catalog.count(*) filter (where fact.dataset_kind = 'process')::bigint
-        as process_count,
-      pg_catalog.count(*) filter (where fact.dataset_kind = 'model')::bigint
-        as model_count,
-      pg_catalog.count(*)::bigint as all_count
-    from daily_version_facts as fact
-    group by fact.created_date
-  ),
-  daily_creation_payload as materialized (
+  daily_payload as (
     select pg_catalog.jsonb_build_object(
-      'metric', 'dataset_version_created_count',
-      'deduplicationKey', pg_catalog.jsonb_build_array('datasetType', 'datasetId', 'version'),
-      'timezone', 'Asia/Shanghai',
-      'startDate', bounds.start_date,
-      'endDate', bounds.end_date,
-      'days', coalesce(
-        pg_catalog.jsonb_agg(
-          pg_catalog.jsonb_build_object(
-            'date', series.created_date,
-            'processCount', coalesce(counts.process_count, 0::bigint),
-            'modelCount', coalesce(counts.model_count, 0::bigint),
-            'allCount', coalesce(counts.all_count, 0::bigint)
-          )
-          order by series.created_date
-        ),
-        '[]'::jsonb
-      )
+      'metric', 'dataset_version_activity_count',
+      'deduplicationKey', pg_catalog.jsonb_build_array('datasetType', 'datasetId', 'version', 'date'),
+      'timezone', 'Asia/Shanghai', 'startDate', b.start_date, 'endDate', b.end_date,
+      'days', pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
+        'date', d.day::date, 'processCount', coalesce(c.process_count, 0)
+      ) order by d.day)
     ) as payload
-    from daily_time_bounds as bounds
-    cross join lateral pg_catalog.generate_series(
-      bounds.start_date::timestamp without time zone,
-      bounds.end_date::timestamp without time zone,
-      interval '1 day'
-    ) as generated(created_at)
-    cross join lateral (
-      select generated.created_at::date as created_date
-    ) as series
-    left join daily_version_counts as counts using (created_date)
-    group by bounds.start_date, bounds.end_date
+    from date_bounds b
+    cross join lateral pg_catalog.generate_series(b.start_date::timestamp,
+      b.end_date::timestamp, interval '1 day') as d(day)
+    left join daily_counts c on c.day = d.day::date
+    group by b.start_date, b.end_date
   ),
-  latest_published_process as materialized (
-    select distinct on (process_row.id)
-      'process'::text as dataset_kind,
-      process_row.id as dataset_id,
-      process_row.user_id,
-      process_row.modified_at
-    from public.processes as process_row
-    where process_row.state_code = 100
-    order by
-      process_row.id,
-      process_row.version desc,
-      process_row.modified_at desc
+  published_keys as materialized (
+    -- Select IDs/versions first, then read geography only for the winning open version.
+    select distinct on (p.id) p.id, p.version, p.user_id, p.modified_at
+    from public.processes p where p.state_code = 100
+    order by p.id, p.version desc, p.modified_at desc
   ),
-  latest_current_process as materialized (
-    select distinct on (process_row.id)
-      'process'::text as dataset_kind,
-      process_row.id as dataset_id,
-      pg_catalog.btrim(process_row.version::text) as dataset_version,
-      process_row.user_id,
-      process_row.state_code,
-      process_row.modified_at
-    from public.processes as process_row
-    order by
-      process_row.id,
-      process_row.version desc,
-      process_row.modified_at desc
+  latest_current as materialized (
+    select distinct on (p.id) p.id, p.version, p.user_id, p.state_code, p.modified_at
+    from public.processes p
+    order by p.id, p.version desc, p.modified_at desc
   ),
-  latest_published_model as materialized (
-    select distinct on (model_row.id)
-      'model'::text as dataset_kind,
-      model_row.id as dataset_id,
-      model_row.user_id,
-      model_row.modified_at
-    from public.lifecyclemodels as model_row
-    where model_row.state_code = 100
-    order by
-      model_row.id,
-      model_row.version desc,
-      model_row.modified_at desc
-  ),
-  latest_current_model as materialized (
-    select distinct on (model_row.id)
-      'model'::text as dataset_kind,
-      model_row.id as dataset_id,
-      pg_catalog.btrim(model_row.version::text) as dataset_version,
-      model_row.user_id,
-      model_row.state_code,
-      model_row.modified_at
-    from public.lifecyclemodels as model_row
-    order by
-      model_row.id,
-      model_row.version desc,
-      model_row.modified_at desc
-  ),
-  published_facts as materialized (
-    select * from latest_published_process
-    union all
-    select * from latest_published_model
-  ),
-  pending_review_facts as materialized (
-    select
-      latest_row.dataset_kind,
-      latest_row.dataset_id,
-      latest_row.dataset_version,
-      latest_row.user_id,
-      case when active_review.state_code = 1 then 1 else 0 end::integer
-        as assigned_reviewer_count,
-      case when active_review.state_code = 1 then 0 else 1 end::integer
-        as unassigned_reviewer_count,
-      latest_row.modified_at
-    from latest_current_process as latest_row
+  pending as materialized (
+    select p.user_id, p.modified_at,
+      case when r.state_code = 1 then 1 else 0 end as assigned_count,
+      case when r.state_code = 1 then 0 else 1 end as unassigned_count
+    from latest_current p
     left join lateral (
-      select review_row.state_code
-      from private.reviews as review_row
-      where review_row.review_kind = 'root'
-        and review_row.target_table = 'processes'
-        and review_row.data_id = latest_row.dataset_id
-        and review_row.data_version = latest_row.dataset_version::character(9)
-        and review_row.state_code in (0, 1)
-      order by review_row.state_code desc, review_row.modified_at desc, review_row.id
+      select review.state_code from private.reviews review
+      where review.review_kind = 'root' and review.target_table = 'processes'
+        and review.data_id = p.id and review.data_version = p.version
+        and review.state_code in (0, 1)
+      order by review.state_code desc, review.modified_at desc, review.id
       limit 1
-    ) as active_review on true
-    where latest_row.state_code = 20
+    ) r on true
+    where p.state_code = 20
+  ),
+  profile_names as materialized (
+    select u.id as user_id,
+      nullif(pg_catalog.regexp_replace(pg_catalog.btrim(u.raw_user_meta_data ->> 'organization'),
+        '[[:space:]]+', ' ', 'g'), '') as organization_name
+    from private.users u
+    where pg_catalog.jsonb_typeof(u.raw_user_meta_data -> 'organization') = 'string'
+  ),
+  profiles as materialized (
+    select user_id, organization_name, pg_catalog.lower(organization_name) as organization_key
+    from profile_names where organization_name is not null
+  ),
+  catalog as (
+    select organization_key, pg_catalog.min(organization_name collate "C") as organization_name
+    from profiles group by organization_key
+  ),
+  facts as materialized (
+    select user_id, modified_at, 1 as published_count, 0 as assigned_count, 0 as unassigned_count
+    from published_keys
     union all
-    select
-      latest_row.dataset_kind,
-      latest_row.dataset_id,
-      latest_row.dataset_version,
-      latest_row.user_id,
-      case when active_review.state_code = 1 then 1 else 0 end::integer
-        as assigned_reviewer_count,
-      case when active_review.state_code = 1 then 0 else 1 end::integer
-        as unassigned_reviewer_count,
-      latest_row.modified_at
-    from latest_current_model as latest_row
-    left join lateral (
-      select review_row.state_code
-      from private.reviews as review_row
-      where review_row.review_kind = 'root'
-        and review_row.target_table = 'lifecyclemodels'
-        and review_row.data_id = latest_row.dataset_id
-        and review_row.data_version = latest_row.dataset_version::character(9)
-        and review_row.state_code in (0, 1)
-      order by review_row.state_code desc, review_row.modified_at desc, review_row.id
-      limit 1
-    ) as active_review on true
-    where latest_row.state_code = 20
+    select user_id, modified_at, 0, assigned_count, unassigned_count from pending
   ),
-  user_organization_names as materialized (
-    select
-      profile.id as user_id,
-      nullif(
-        pg_catalog.regexp_replace(
-          pg_catalog.btrim(profile.raw_user_meta_data ->> 'organization'),
-          '[[:space:]]+',
-          ' ',
-          'g'
-        ),
-        ''
-      ) as organization_name
-    from private.users as profile
-    where pg_catalog.jsonb_typeof(profile.raw_user_meta_data -> 'organization') = 'string'
+  aggregates as (
+    select p.organization_key, pg_catalog.sum(f.published_count)::bigint as published_count,
+      pg_catalog.sum(f.assigned_count)::bigint as assigned_count,
+      pg_catalog.sum(f.unassigned_count)::bigint as unassigned_count
+    from facts f join profiles p using (user_id)
+    group by p.organization_key
   ),
-  user_organizations as materialized (
-    select
-      named.user_id,
-      pg_catalog.lower(named.organization_name) as organization_key,
-      named.organization_name
-    from user_organization_names as named
+  organizations as materialized (
+    select pg_catalog.row_number() over (order by coalesce(a.published_count, 0) desc,
+      c.organization_name collate "C", c.organization_key collate "C")::integer as rank,
+      c.organization_key, c.organization_name,
+      coalesce(a.published_count, 0)::bigint as published_count,
+      coalesce(a.assigned_count, 0)::bigint as assigned_count,
+      coalesce(a.unassigned_count, 0)::bigint as unassigned_count
+    from catalog c left join aggregates a using (organization_key)
   ),
-  organization_catalog as materialized (
-    select distinct organization.organization_key
-    from user_organizations as organization
-    where organization.organization_key is not null
+  organization_rows as materialized (
+    select rank, published_count, pg_catalog.jsonb_build_object(
+      'rank', rank, 'organizationKey', organization_key, 'organizationName', organization_name,
+      'publishedDatasetCount', published_count,
+      'assignedReviewerDatasetCount', assigned_count,
+      'unassignedReviewerDatasetCount', unassigned_count
+    ) as payload from organizations
   ),
-  organization_summary as materialized (
-    select pg_catalog.count(*)::bigint as organization_count
-    from organization_catalog
+  locations as (
+    select case when pg_catalog.json_typeof(location.value) = 'string'
+      then nullif(pg_catalog.upper(pg_catalog.btrim(location.value #>> '{}')), '')
+      else null end as location_code
+    from published_keys k join public.processes p on p.id = k.id and p.version = k.version
+    cross join lateral (select p.json_ordered #>
+      '{processDataSet,processInformation,geography,locationOfOperationSupplyOrProduction,@location}'
+      as value) location
   ),
-  contribution_facts as (
-    select
-      published.dataset_kind,
-      published.dataset_id,
-      published.user_id,
-      organization.organization_key,
-      organization.organization_name,
-      1::integer as published_count,
-      0::integer as assigned_reviewer_count,
-      0::integer as unassigned_reviewer_count,
-      published.modified_at
-    from published_facts as published
-    left join user_organizations as organization using (user_id)
-    union all
-    select
-      pending.dataset_kind,
-      pending.dataset_id,
-      pending.user_id,
-      organization.organization_key,
-      organization.organization_name,
-      0::integer as published_count,
-      pending.assigned_reviewer_count,
-      pending.unassigned_reviewer_count,
-      pending.modified_at
-    from pending_review_facts as pending
-    left join user_organizations as organization using (user_id)
-  ),
-  scoped_facts as materialized (
-    select
-      scope.dataset_scope,
-      fact.dataset_kind,
-      fact.dataset_id,
-      fact.user_id,
-      fact.organization_key,
-      fact.organization_name,
-      fact.published_count,
-      fact.assigned_reviewer_count,
-      fact.unassigned_reviewer_count,
-      fact.modified_at
-    from contribution_facts as fact
-    cross join lateral (
-      values (fact.dataset_kind), ('all'::text)
-    ) as scope(dataset_scope)
-  ),
-  scope_catalog(dataset_scope) as (
-    values ('process'::text), ('model'::text), ('all'::text)
-  ),
-  scope_summary_values as materialized (
-    select
-      scope.dataset_scope,
-      organization_summary.organization_count,
-      coalesce(
-        pg_catalog.sum(fact.published_count)
-          filter (where fact.organization_key is not null),
-        0::bigint
-      )::bigint
-        as published_dataset_count,
-      coalesce(
-        pg_catalog.sum(
-          fact.assigned_reviewer_count + fact.unassigned_reviewer_count
-        )
-          filter (where fact.organization_key is not null),
-        0::bigint
-      )::bigint
-        as pending_review_dataset_count,
-      coalesce(
-        pg_catalog.sum(fact.published_count)
-          filter (
-            where fact.organization_key is not null
-              and fact.modified_at >= pg_catalog.statement_timestamp() - interval '30 days'
-          ),
-        0::bigint
-      )::bigint as published_last_30_days_count
-    from scope_catalog as scope
-    cross join organization_summary
-    left join scoped_facts as fact on fact.dataset_scope = scope.dataset_scope
-    group by scope.dataset_scope, organization_summary.organization_count
-  ),
-  scope_organization_aggregate as materialized (
-    select
-      fact.dataset_scope,
-      fact.organization_key,
-      pg_catalog.min(fact.organization_name collate "C") as organization_name,
-      pg_catalog.sum(fact.published_count)::bigint as published_dataset_count,
-      pg_catalog.sum(fact.assigned_reviewer_count)::bigint
-        as assigned_reviewer_dataset_count,
-      pg_catalog.sum(fact.unassigned_reviewer_count)::bigint
-        as unassigned_reviewer_dataset_count
-    from scoped_facts as fact
-    where fact.organization_key is not null
-    group by fact.dataset_scope, fact.organization_key
-  ),
-  scope_ranked as (
-    select
-      aggregate.dataset_scope,
-      pg_catalog.row_number() over (
-        partition by aggregate.dataset_scope
-        order by
-          aggregate.published_dataset_count desc,
-          aggregate.organization_name collate "C" asc,
-          aggregate.organization_key collate "C" asc
-      )::integer as rank,
-      aggregate.organization_key,
-      aggregate.organization_name,
-      aggregate.published_dataset_count,
-      aggregate.assigned_reviewer_dataset_count,
-      aggregate.unassigned_reviewer_dataset_count
-    from scope_organization_aggregate as aggregate
-    where aggregate.published_dataset_count > 0
-  ),
-  scope_ranked_limited as materialized (
-    select *
-    from scope_ranked
-    where rank <= p_limit
-  ),
-  scope_payloads as materialized (
-    select
-      summary.dataset_scope,
-      pg_catalog.jsonb_build_object(
-        'datasetScope', summary.dataset_scope,
-        'metric', 'latest_published_dataset_count',
-        'summary', pg_catalog.jsonb_build_object(
-          'organizationCount', summary.organization_count,
-          'publishedDatasetCount', summary.published_dataset_count,
-          'pendingReviewDatasetCount', summary.pending_review_dataset_count,
-          'publishedLast30DaysCount', summary.published_last_30_days_count
-        ),
-        'rankings', coalesce(
-          (
-            select pg_catalog.jsonb_agg(
-              pg_catalog.jsonb_build_object(
-                'rank', ranked.rank,
-                'organizationKey', ranked.organization_key,
-                'organizationName', ranked.organization_name,
-                'publishedDatasetCount', ranked.published_dataset_count,
-                'assignedReviewerDatasetCount', ranked.assigned_reviewer_dataset_count,
-                'unassignedReviewerDatasetCount', ranked.unassigned_reviewer_dataset_count
-              )
-              order by ranked.rank
-            )
-            from scope_ranked_limited as ranked
-            where ranked.dataset_scope = summary.dataset_scope
-          ),
-          '[]'::jsonb
-        )
-      ) as payload
-    from scope_summary_values as summary
-  ),
-  snapshot_metadata as (
-    select coalesce(
-      pg_catalog.max(fact.modified_at),
-      pg_catalog.statement_timestamp()
-    ) as data_as_of
-    from contribution_facts as fact
+  regions as materialized (
+    select location_code, pg_catalog.count(*)::bigint as process_count
+    from locations group by location_code
   )
   select pg_catalog.jsonb_build_object(
-    'schemaVersion', 'national_carbon_organization_contribution_v3',
-    'attributionMode', 'current_user_profile',
+    'schemaVersion', 'national_carbon_organization_contribution_v5',
+    'datasetScope', 'process', 'attributionMode', 'current_user_profile',
     'generatedAt', pg_catalog.statement_timestamp(),
-    'dataAsOf', metadata.data_as_of,
-    'defaultScope', 'all',
-    'dailyCreation', (
-      select payload from daily_creation_payload
+    'dataAsOf', coalesce((select pg_catalog.max(modified_at) from facts), pg_catalog.statement_timestamp()),
+    'summary', pg_catalog.jsonb_build_object(
+      'organizationCount', (select pg_catalog.count(*) from organizations),
+      'publishedDatasetCount', (select coalesce(pg_catalog.sum(published_count), 0) from organizations),
+      'pendingReviewDatasetCount', (select coalesce(pg_catalog.sum(assigned_count + unassigned_count), 0) from organizations),
+      'reviewerCount', (select pg_catalog.count(distinct r.user_id) from private.roles r
+        where r.team_id = '00000000-0000-0000-0000-000000000000'::uuid and r.role = 'review-member')
     ),
-    'scopes', pg_catalog.jsonb_build_object(
-      'process', (
-        select payload from scope_payloads where dataset_scope = 'process'
-      ),
-      'model', (
-        select payload from scope_payloads where dataset_scope = 'model'
-      ),
-      'all', (
-        select payload from scope_payloads where dataset_scope = 'all'
-      )
-    )
-  )
-  into v_result
-  from snapshot_metadata as metadata;
-
+    'rankings', coalesce((select pg_catalog.jsonb_agg(payload order by rank)
+      from organization_rows where published_count > 0 and rank <= p_limit), '[]'::jsonb),
+    'organizations', coalesce((select pg_catalog.jsonb_agg(payload order by rank)
+      from organization_rows), '[]'::jsonb),
+    'regions', pg_catalog.jsonb_build_object(
+      'metric', 'latest_open_process_count',
+      'totalProcessCount', (select pg_catalog.count(*) from published_keys),
+      'items', coalesce((select pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
+        'locationCode', location_code, 'processCount', process_count
+      ) order by process_count desc, location_code collate "C") from regions
+        where location_code is not null and location_code <> 'GLO'), '[]'::jsonb),
+      'globalProcessCount', coalesce((select process_count from regions where location_code = 'GLO'), 0),
+      'unassignedProcessCount', coalesce((select process_count from regions where location_code is null), 0)
+    ),
+    'dailyActivity', (select payload from daily_payload)
+  ) into v_result;
   return v_result;
 end;
 $$;
@@ -45432,6 +45511,878 @@ $$;
 ALTER FUNCTION private.lifecyclemodels_sync_jsonb_version() OWNER TO postgres;
 
 --
+-- Name: next_actor_lexical_version_candidates_v2(text, text, text[], jsonb, text, text[], boolean, text[], text[], text, integer, uuid); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.next_actor_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, score double precision)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $_$
+declare
+  v_actor uuid := private.dataset_search_effective_user_id('');
+  v_table_name text;
+  v_scope_sql text;
+  v_filter_sql text;
+  v_terms text[];
+  v_exact uuid;
+  v_residual jsonb := coalesce(p_residual_filter, '{}'::jsonb);
+  v_flow_types text[] := coalesce(p_flow_types, '{}'::text[]);
+  v_classification_codes text[] := coalesce(p_classification_codes, '{}'::text[]);
+  v_elementary_codes text[] := coalesce(p_elementary_codes, '{}'::text[]);
+  v_sql text;
+begin
+  if p_kind not in ('process', 'flow')
+     or p_data_source not in ('my', 'te')
+     or p_state_code < 0 then
+    raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+  end if;
+  if v_actor is null then return; end if;
+  if p_data_source = 'te' and (
+    p_team_id is null
+    or not private.dataset_search_can_read_team_filter(p_team_id, v_actor)
+  ) then
+    return;
+  end if;
+
+  v_table_name := case p_kind when 'process' then 'processes' else 'flows' end;
+  v_scope_sql := case p_data_source
+    when 'my' then 'source.user_id = $1 and ($3::integer is null or source.state_code = $3)'
+    else 'source.team_id = $2 and ($3::integer is null or source.state_code = $3)'
+  end;
+  v_terms := private.pgroonga_escape_query_terms(p_terms);
+  if coalesce(pg_catalog.cardinality(v_terms), 0) = 0 then
+    v_terms := private.pgroonga_escape_query_terms(array[p_query]);
+  end if;
+  if coalesce(pg_catalog.cardinality(v_terms), 0) = 0 then return; end if;
+  if pg_catalog.btrim(coalesce(p_query, '')) ~*
+     '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    v_exact := pg_catalog.btrim(p_query)::uuid;
+  end if;
+
+  if p_kind = 'process' then
+    v_filter_sql := v_scope_sql || $sql$
+      and ($4::jsonb = '{}'::jsonb or source.json @> $4)
+      and (
+        $5::text is null
+        or source.json #>> '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}' = $5
+      )
+    $sql$;
+  else
+    v_filter_sql := v_scope_sql || $sql$
+      and ($4::jsonb = '{}'::jsonb or source.json @> $4)
+      and (
+        pg_catalog.cardinality($6::text[]) = 0
+        or source.json #>> '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}' = any($6)
+      )
+      and (
+        not coalesce($7::boolean, false)
+        or not (
+          source.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'::jsonb
+        )
+      )
+      and (
+        (
+          pg_catalog.cardinality($8::text[]) = 0
+          and pg_catalog.cardinality($9::text[]) = 0
+        )
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+          '@classId'
+        ) && $8
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+          '@catId'
+        ) && $9
+      )
+    $sql$;
+  end if;
+
+  v_sql := pg_catalog.format($query$
+    with matched as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.modified_at,
+        case when $11::uuid is not null then 1::double precision
+          else extensions.pgroonga_score(source.tableoid, source.ctid)::double precision
+        end as search_score
+      from public.%I as source
+      where %s
+        and (
+          ($11::uuid is not null and source.id = $11)
+          or ($11::uuid is null and source.search_text operator(extensions.&@~|) $10::text[])
+        )
+      order by search_score desc, source.modified_at desc,
+        source.id, source.version desc
+      limit 200
+    )
+    select
+      pg_catalog.row_number() over (
+        order by matched.search_score desc, matched.modified_at desc,
+          matched.id, matched.version desc
+      )::bigint,
+      matched.id,
+      matched.version,
+      matched.search_score
+    from matched
+    order by matched.search_score desc, matched.modified_at desc,
+      matched.id, matched.version desc
+  $query$, v_table_name, v_filter_sql);
+
+  return query execute v_sql
+    using v_actor, p_team_id, p_state_code, v_residual, p_process_type,
+      v_flow_types, p_as_input, v_classification_codes,
+      v_elementary_codes, v_terms, v_exact;
+end;
+$_$;
+
+
+ALTER FUNCTION private.next_actor_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) OWNER TO api_internal_executor;
+
+--
+-- Name: next_actor_semantic_version_candidates_v2(text, extensions.vector, jsonb, text, text[], boolean, text[], text[], text, integer, uuid); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.next_actor_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, distance double precision, semantic_route text, candidate_population integer)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET "hnsw.iterative_scan" TO 'strict_order'
+    SET "hnsw.ef_search" TO '200'
+    SET "hnsw.max_scan_tuples" TO '20000'
+    SET "hnsw.scan_mem_multiplier" TO '2'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $_$
+declare
+  v_exact_cutover constant integer := 2000;
+  v_actor uuid := private.dataset_search_effective_user_id('');
+  v_table_name text;
+  v_scope_sql text;
+  v_filter_sql text;
+  v_candidate_ids uuid[];
+  v_candidate_versions text[];
+  v_candidate_count integer := 0;
+  v_residual jsonb := coalesce(p_residual_filter, '{}'::jsonb);
+  v_flow_types text[] := coalesce(p_flow_types, '{}'::text[]);
+  v_classification_codes text[] := coalesce(p_classification_codes, '{}'::text[]);
+  v_elementary_codes text[] := coalesce(p_elementary_codes, '{}'::text[]);
+  v_sql text;
+begin
+  if p_kind not in ('process', 'flow')
+     or p_data_source not in ('my', 'te')
+     or p_query_embedding is null
+     or extensions.vector_dims(p_query_embedding) <> 1024
+     or pg_catalog.jsonb_typeof(v_residual) is distinct from 'object'
+     or p_state_code < 0 then
+    raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+  end if;
+  if v_actor is null then return; end if;
+  if p_data_source = 'te' and (
+    p_team_id is null
+    or not private.dataset_search_can_read_team_filter(p_team_id, v_actor)
+  ) then
+    return;
+  end if;
+
+  v_table_name := case p_kind when 'process' then 'processes' else 'flows' end;
+  v_scope_sql := case p_data_source
+    when 'my' then 'source.user_id = $1 and ($3::integer is null or source.state_code = $3)'
+    else 'source.team_id = $2 and ($3::integer is null or source.state_code = $3)'
+  end;
+
+  if p_kind = 'process' then
+    v_filter_sql := v_scope_sql || $sql$
+      and source.embedding_ft is not null
+      and ($4::jsonb = '{}'::jsonb or source.json @> $4)
+      and (
+        $5::text is null
+        or source.json #>> '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}' = $5
+      )
+    $sql$;
+  else
+    v_filter_sql := v_scope_sql || $sql$
+      and source.embedding_ft is not null
+      and ($4::jsonb = '{}'::jsonb or source.json @> $4)
+      and (
+        pg_catalog.cardinality($6::text[]) = 0
+        or source.json #>> '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}' = any($6)
+      )
+      and (
+        not coalesce($7::boolean, false)
+        or not (
+          source.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'::jsonb
+        )
+      )
+      and (
+        (
+          pg_catalog.cardinality($8::text[]) = 0
+          and pg_catalog.cardinality($9::text[]) = 0
+        )
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+          '@classId'
+        ) && $8
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+          '@catId'
+        ) && $9
+      )
+    $sql$;
+  end if;
+
+  v_sql := pg_catalog.format($query$
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    from (
+      select source.id, source.version::text as version
+      from public.%I as source
+      where %s
+      limit $10
+    ) as candidate
+  $query$, v_table_name, v_filter_sql);
+
+  execute v_sql
+    into v_candidate_ids, v_candidate_versions
+    using v_actor, p_team_id, p_state_code, v_residual, p_process_type,
+      v_flow_types, p_as_input, v_classification_codes,
+      v_elementary_codes, v_exact_cutover + 1;
+  v_candidate_count := coalesce(pg_catalog.cardinality(v_candidate_ids), 0);
+
+  if v_candidate_count <= v_exact_cutover then
+    v_sql := pg_catalog.format($query$
+      with candidate_keys as materialized (
+        select
+          ($11::uuid[])[ordinal] as id,
+          ($12::text[])[ordinal] as version
+        from pg_catalog.generate_subscripts($11::uuid[], 1) as key(ordinal)
+      ), nearest as materialized (
+        select
+          source.id,
+          source.version::text as version,
+          source.embedding_ft operator(extensions.<=>) $13::extensions.vector as distance
+        from candidate_keys as candidate
+        join public.%I as source
+          on source.id = candidate.id
+         and source.version::text = candidate.version
+        where %s
+        order by
+          (source.embedding_ft operator(extensions.<=>) $13::extensions.vector)
+            + 0::double precision,
+          source.id,
+          source.version::text desc
+        limit 200
+      )
+      select
+        pg_catalog.row_number() over (
+          order by nearest.distance + 0::double precision,
+            nearest.id, nearest.version desc
+        )::bigint,
+        nearest.id,
+        nearest.version,
+        nearest.distance,
+        'exact'::text,
+        $14::integer
+      from nearest
+      order by nearest.distance + 0::double precision,
+        nearest.id, nearest.version desc
+    $query$, v_table_name, v_filter_sql);
+
+    return query execute v_sql
+      using v_actor, p_team_id, p_state_code, v_residual, p_process_type,
+        v_flow_types, p_as_input, v_classification_codes,
+        v_elementary_codes, v_exact_cutover + 1,
+        v_candidate_ids, v_candidate_versions, p_query_embedding,
+        v_candidate_count;
+    return;
+  end if;
+
+  v_sql := pg_catalog.format($query$
+    with nearest as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.embedding_ft operator(extensions.<=>) $11::extensions.vector as distance
+      from public.%I as source
+      where %s
+      order by source.embedding_ft operator(extensions.<=>) $11::extensions.vector
+      limit 200
+    )
+    select
+      pg_catalog.row_number() over (
+        order by nearest.distance + 0::double precision,
+          nearest.id, nearest.version desc
+      )::bigint,
+      nearest.id,
+      nearest.version,
+      nearest.distance,
+      'hnsw'::text,
+      $12::integer
+    from nearest
+    order by nearest.distance + 0::double precision,
+      nearest.id, nearest.version desc
+  $query$, v_table_name, v_filter_sql);
+
+  return query execute v_sql
+    using v_actor, p_team_id, p_state_code, v_residual, p_process_type,
+      v_flow_types, p_as_input, v_classification_codes,
+      v_elementary_codes, v_exact_cutover + 1,
+      p_query_embedding, v_candidate_count;
+end;
+$_$;
+
+
+ALTER FUNCTION private.next_actor_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) OWNER TO api_internal_executor;
+
+--
+-- Name: next_hybrid_json_codes_v2(jsonb, text); Type: FUNCTION; Schema: private; Owner: postgres
+--
+
+CREATE FUNCTION private.next_hybrid_json_codes_v2(p_value jsonb, p_attribute text) RETURNS text[]
+    LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE
+    SET search_path TO ''
+    AS $$
+  select coalesce(
+    pg_catalog.array_agg(code.value order by code.value),
+    '{}'::text[]
+  )
+  from (
+    select distinct nullif(pg_catalog.btrim(item.value ->> p_attribute), '') as value
+    from pg_catalog.jsonb_array_elements(
+      private.dataset_alias_jsonb_array_v1(p_value)
+    ) as item(value)
+  ) as code
+  where code.value is not null;
+$$;
+
+
+ALTER FUNCTION private.next_hybrid_json_codes_v2(p_value jsonb, p_attribute text) OWNER TO postgres;
+
+--
+-- Name: next_hybrid_version_keys_v2(text, text, text[], extensions.vector, jsonb, text, text[], boolean, text[], text[], double precision, double precision, double precision, integer, text, integer, uuid); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.next_hybrid_version_keys_v2(p_kind text, p_query_text text, p_query_terms text[], p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_match_threshold double precision, p_lexical_weight double precision, p_semantic_weight double precision, p_rrf_k integer, p_data_source text, p_state_code integer, p_team_id uuid) RETURNS TABLE(id uuid, version text, score double precision, semantic_route text, semantic_candidate_population integer, semantic_fallback_used boolean)
+    LANGUAGE sql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    AS $$
+  with lexical as materialized (
+    select candidate.*
+    from private.next_lexical_version_candidates_v2(
+      p_kind, p_query_text, p_query_terms, p_residual_filter,
+      p_process_type, p_flow_types, p_as_input, p_classification_codes,
+      p_elementary_codes, p_data_source, p_state_code, p_team_id
+    ) as candidate
+    where p_lexical_weight > 0
+  ), semantic_raw as materialized (
+    select candidate.*
+    from private.next_semantic_version_candidates_v2(
+      p_kind, p_query_embedding, p_residual_filter, p_process_type,
+      p_flow_types, p_as_input, p_classification_codes, p_elementary_codes,
+      p_data_source, p_state_code, p_team_id
+    ) as candidate
+    where p_semantic_weight > 0
+  ), semantic_primary as materialized (
+    select candidate.*
+    from semantic_raw as candidate
+    where candidate.distance < 1 - p_match_threshold
+  ), semantic_meta as (
+    select
+      max(candidate.semantic_route) as semantic_route,
+      max(candidate.candidate_population) as candidate_population
+    from semantic_raw as candidate
+  ), primary_fused as materialized (
+    select
+      coalesce(lexical.id, semantic.id) as id,
+      coalesce(lexical.version, semantic.version) as version,
+      coalesce(p_lexical_weight / (p_rrf_k + lexical.rank), 0::double precision)
+        + coalesce(p_semantic_weight / (p_rrf_k + semantic.rank), 0::double precision)
+          as score
+    from lexical
+    full outer join semantic_primary as semantic
+      on semantic.id = lexical.id
+     and semantic.version = lexical.version
+  ), fallback_fused as materialized (
+    select
+      coalesce(lexical.id, semantic.id) as id,
+      coalesce(lexical.version, semantic.version) as version,
+      coalesce(p_lexical_weight / (p_rrf_k + lexical.rank), 0::double precision)
+        + coalesce(p_semantic_weight / (p_rrf_k + semantic.rank), 0::double precision)
+          as score
+    from lexical
+    full outer join semantic_raw as semantic
+      on semantic.id = lexical.id
+     and semantic.version = lexical.version
+    where not exists (select 1 from primary_fused)
+  ), selected as (
+    select primary_fused.*, false as fallback_used from primary_fused
+    union all
+    select fallback_fused.*, true as fallback_used from fallback_fused
+  )
+  select
+    selected.id,
+    selected.version,
+    selected.score,
+    semantic_meta.semantic_route,
+    semantic_meta.candidate_population,
+    selected.fallback_used
+  from selected
+  cross join semantic_meta
+  order by selected.score desc, selected.id, selected.version desc;
+$$;
+
+
+ALTER FUNCTION private.next_hybrid_version_keys_v2(p_kind text, p_query_text text, p_query_terms text[], p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_match_threshold double precision, p_lexical_weight double precision, p_semantic_weight double precision, p_rrf_k integer, p_data_source text, p_state_code integer, p_team_id uuid) OWNER TO api_internal_executor;
+
+--
+-- Name: next_lexical_version_candidates_v2(text, text, text[], jsonb, text, text[], boolean, text[], text[], text, integer, uuid); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.next_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, score double precision)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    AS $$
+begin
+  if p_data_source in ('tg', 'co') then
+    return query
+    select candidate.*
+    from private.next_public_lexical_version_candidates_v2(
+      p_kind, p_query, p_terms, p_residual_filter, p_process_type,
+      p_flow_types, p_as_input, p_classification_codes, p_elementary_codes,
+      p_data_source, p_team_id
+    ) as candidate;
+    return;
+  end if;
+
+  if p_data_source in ('my', 'te') then
+    return query
+    select candidate.*
+    from private.next_actor_lexical_version_candidates_v2(
+      p_kind, p_query, p_terms, p_residual_filter, p_process_type,
+      p_flow_types, p_as_input, p_classification_codes, p_elementary_codes,
+      p_data_source, p_state_code, p_team_id
+    ) as candidate;
+    return;
+  end if;
+
+  raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+end;
+$$;
+
+
+ALTER FUNCTION private.next_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) OWNER TO api_internal_executor;
+
+--
+-- Name: next_public_lexical_version_candidates_v2(text, text, text[], jsonb, text, text[], boolean, text[], text[], text, uuid); Type: FUNCTION; Schema: private; Owner: next_public_search_executor
+--
+
+CREATE FUNCTION private.next_public_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, score double precision)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $_$
+declare
+  v_state_code integer;
+  v_table_name text;
+  v_filter_sql text;
+  v_terms text[];
+  v_exact uuid;
+  v_residual jsonb := coalesce(p_residual_filter, '{}'::jsonb);
+  v_flow_types text[] := coalesce(p_flow_types, '{}'::text[]);
+  v_classification_codes text[] := coalesce(p_classification_codes, '{}'::text[]);
+  v_elementary_codes text[] := coalesce(p_elementary_codes, '{}'::text[]);
+  v_sql text;
+begin
+  if p_kind not in ('process', 'flow') or p_data_source not in ('tg', 'co') then
+    raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+  end if;
+  v_state_code := case p_data_source when 'tg' then 100 else 200 end;
+  v_table_name := case p_kind when 'process' then 'processes' else 'flows' end;
+  v_terms := private.pgroonga_escape_query_terms(p_terms);
+  if coalesce(pg_catalog.cardinality(v_terms), 0) = 0 then
+    v_terms := private.pgroonga_escape_query_terms(array[p_query]);
+  end if;
+  if coalesce(pg_catalog.cardinality(v_terms), 0) = 0 then return; end if;
+  if pg_catalog.btrim(coalesce(p_query, '')) ~*
+     '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    v_exact := pg_catalog.btrim(p_query)::uuid;
+  end if;
+
+  if p_kind = 'process' then
+    v_filter_sql := $sql$
+      source.state_code = $1
+      and ($2::uuid is null or source.team_id = $2)
+      and ($3::jsonb = '{}'::jsonb or source.json @> $3)
+      and (
+        $4::text is null
+        or source.json #>> '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}' = $4
+      )
+    $sql$;
+  else
+    v_filter_sql := $sql$
+      source.state_code = $1
+      and ($2::uuid is null or source.team_id = $2)
+      and ($3::jsonb = '{}'::jsonb or source.json @> $3)
+      and (
+        pg_catalog.cardinality($5::text[]) = 0
+        or source.json #>> '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}' = any($5)
+      )
+      and (
+        not coalesce($6::boolean, false)
+        or not (
+          source.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'::jsonb
+        )
+      )
+      and (
+        (
+          pg_catalog.cardinality($7::text[]) = 0
+          and pg_catalog.cardinality($8::text[]) = 0
+        )
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+          '@classId'
+        ) && $7
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+          '@catId'
+        ) && $8
+      )
+    $sql$;
+  end if;
+
+  v_sql := pg_catalog.format($query$
+    with matched as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.modified_at,
+        case when $10::uuid is not null then 1::double precision
+          else extensions.pgroonga_score(source.tableoid, source.ctid)::double precision
+        end as search_score
+      from public.%I as source
+      where %s
+        and (
+          ($10::uuid is not null and source.id = $10)
+          or ($10::uuid is null and source.search_text operator(extensions.&@~|) $9::text[])
+        )
+      order by search_score desc, source.modified_at desc,
+        source.id, source.version desc
+      limit 200
+    )
+    select
+      pg_catalog.row_number() over (
+        order by matched.search_score desc, matched.modified_at desc,
+          matched.id, matched.version desc
+      )::bigint,
+      matched.id,
+      matched.version,
+      matched.search_score
+    from matched
+    order by matched.search_score desc, matched.modified_at desc,
+      matched.id, matched.version desc
+  $query$, v_table_name, v_filter_sql);
+
+  return query execute v_sql
+    using v_state_code, p_team_id, v_residual, p_process_type,
+      v_flow_types, p_as_input, v_classification_codes,
+      v_elementary_codes, v_terms, v_exact;
+end;
+$_$;
+
+
+ALTER FUNCTION private.next_public_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) OWNER TO next_public_search_executor;
+
+--
+-- Name: next_public_semantic_version_candidates_v2(text, extensions.vector, jsonb, text, text[], boolean, text[], text[], text, uuid); Type: FUNCTION; Schema: private; Owner: next_public_search_executor
+--
+
+CREATE FUNCTION private.next_public_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, distance double precision, semantic_route text, candidate_population integer)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    SET plan_cache_mode TO 'force_custom_plan'
+    SET "hnsw.iterative_scan" TO 'strict_order'
+    SET "hnsw.ef_search" TO '200'
+    SET "hnsw.max_scan_tuples" TO '20000'
+    SET "hnsw.scan_mem_multiplier" TO '2'
+    SET jit TO 'off'
+    SET row_security TO 'on'
+    AS $_$
+declare
+  v_exact_cutover constant integer := 2000;
+  v_state_code integer;
+  v_table_name text;
+  v_filter_sql text;
+  v_exact_filter_sql text;
+  v_projection_filter_sql text;
+  v_candidate_ids uuid[];
+  v_candidate_versions text[];
+  v_candidate_count integer := 0;
+  v_indexed_probe boolean;
+  v_route_population integer;
+  v_residual jsonb := coalesce(p_residual_filter, '{}'::jsonb);
+  v_flow_types text[] := coalesce(p_flow_types, '{}'::text[]);
+  v_classification_codes text[] := coalesce(p_classification_codes, '{}'::text[]);
+  v_elementary_codes text[] := coalesce(p_elementary_codes, '{}'::text[]);
+  v_sql text;
+begin
+  if p_kind not in ('process', 'flow')
+     or p_data_source not in ('tg', 'co')
+     or p_query_embedding is null
+     or extensions.vector_dims(p_query_embedding) <> 1024
+     or pg_catalog.jsonb_typeof(v_residual) is distinct from 'object' then
+    raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+  end if;
+
+  v_state_code := case p_data_source when 'tg' then 100 else 200 end;
+  v_table_name := case p_kind when 'process' then 'processes' else 'flows' end;
+  -- Typed public filters are already projected transactionally into the
+  -- candidate sidecar.  Rechecking those JSON paths here made every exact
+  -- Flow request pay the large dynamic-planning cost again.  Keep only the
+  -- source-of-truth boundary and filters that are intentionally not projected.
+  v_exact_filter_sql := $sql$
+    source.embedding_ft is not null
+    and source.state_code = $1
+    and ($2::uuid is null or source.team_id = $2)
+    and ($3::jsonb = '{}'::jsonb or source.json @> $3)
+  $sql$;
+
+  if p_kind = 'process' then
+    v_filter_sql := $sql$
+      source.embedding_ft is not null
+      and source.state_code = $1
+      and ($2::uuid is null or source.team_id = $2)
+      and ($3::jsonb = '{}'::jsonb or source.json @> $3)
+      and (
+        $4::text is null
+        or source.json #>> '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}' = $4
+      )
+    $sql$;
+    v_projection_filter_sql := $sql$
+      candidate.dataset_kind = 'process'
+      and candidate.state_code = $1
+      and ($2::uuid is null or candidate.team_id = $2)
+      and ($4::text is null or candidate.dataset_type = $4)
+    $sql$;
+    v_indexed_probe := p_team_id is not null or p_process_type is not null;
+  else
+    v_filter_sql := $sql$
+      source.embedding_ft is not null
+      and source.state_code = $1
+      and ($2::uuid is null or source.team_id = $2)
+      and ($3::jsonb = '{}'::jsonb or source.json @> $3)
+      and (
+        pg_catalog.cardinality($5::text[]) = 0
+        or source.json #>> '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}' = any($5)
+      )
+      and (
+        not coalesce($6::boolean, false)
+        or not (
+          source.json @> '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}'::jsonb
+        )
+      )
+      and (
+        (
+          pg_catalog.cardinality($7::text[]) = 0
+          and pg_catalog.cardinality($8::text[]) = 0
+        )
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+          '@classId'
+        ) && $7
+        or private.next_hybrid_json_codes_v2(
+          source.json #> '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+          '@catId'
+        ) && $8
+      )
+    $sql$;
+    v_projection_filter_sql := $sql$
+      candidate.dataset_kind = 'flow'
+      and candidate.state_code = $1
+      and ($2::uuid is null or candidate.team_id = $2)
+      and (
+        pg_catalog.cardinality($5::text[]) = 0
+        or candidate.dataset_type = any($5)
+      )
+      and (not coalesce($6::boolean, false) or not candidate.is_emission)
+      and (
+        (
+          pg_catalog.cardinality($7::text[]) = 0
+          and pg_catalog.cardinality($8::text[]) = 0
+        )
+        or candidate.classification_codes && $7
+        or candidate.elementary_codes && $8
+      )
+    $sql$;
+    v_indexed_probe := p_team_id is not null
+      or pg_catalog.cardinality(v_flow_types) > 0
+      or coalesce(p_as_input, false)
+      or pg_catalog.cardinality(v_classification_codes) > 0
+      or pg_catalog.cardinality(v_elementary_codes) > 0;
+  end if;
+
+  if v_indexed_probe then
+    v_sql := pg_catalog.format($query$
+      select
+        pg_catalog.array_agg(candidate.id),
+        pg_catalog.array_agg(candidate.version)
+      from (
+        select candidate.id, candidate.version
+        from private.next_hybrid_public_candidates_v2 as candidate
+        where %s
+        limit $9
+      ) as candidate
+    $query$, v_projection_filter_sql);
+
+    execute v_sql
+      into v_candidate_ids, v_candidate_versions
+      using v_state_code, p_team_id, v_residual, p_process_type,
+        v_flow_types, p_as_input, v_classification_codes,
+        v_elementary_codes, v_exact_cutover + 1;
+    v_candidate_count := coalesce(pg_catalog.cardinality(v_candidate_ids), 0);
+  end if;
+
+  if v_indexed_probe and v_candidate_count <= v_exact_cutover then
+    if v_candidate_count = 0 then
+      return;
+    end if;
+
+    v_sql := pg_catalog.format($query$
+      with candidate_keys as materialized (
+        select
+          ($10::uuid[])[ordinal] as id,
+          ($11::text[])[ordinal] as version
+        from pg_catalog.generate_subscripts($10::uuid[], 1) as key(ordinal)
+      ), nearest as materialized (
+        select
+          source.id,
+          source.version::text as version,
+          source.embedding_ft operator(extensions.<=>) $12::extensions.vector as distance
+        from candidate_keys as candidate
+        join public.%I as source
+          on source.id = candidate.id
+         and source.version::text = candidate.version
+        where %s
+        order by
+          (source.embedding_ft operator(extensions.<=>) $12::extensions.vector)
+            + 0::double precision,
+          source.id,
+          source.version::text desc
+        limit 200
+      )
+      select
+        pg_catalog.row_number() over (
+          order by nearest.distance + 0::double precision,
+            nearest.id, nearest.version desc
+        )::bigint,
+        nearest.id,
+        nearest.version,
+        nearest.distance,
+        'exact'::text,
+        $13::integer
+      from nearest
+      order by nearest.distance + 0::double precision,
+        nearest.id, nearest.version desc
+    $query$, v_table_name, v_exact_filter_sql);
+
+    return query execute v_sql
+      using v_state_code, p_team_id, v_residual, p_process_type,
+        v_flow_types, p_as_input, v_classification_codes,
+        v_elementary_codes, v_exact_cutover + 1,
+        v_candidate_ids, v_candidate_versions, p_query_embedding,
+        v_candidate_count;
+    return;
+  end if;
+
+  v_route_population := case when v_indexed_probe then v_candidate_count else null end;
+  v_sql := pg_catalog.format($query$
+    with nearest as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.embedding_ft operator(extensions.<=>) $10::extensions.vector as distance
+      from public.%I as source
+      where %s
+      order by source.embedding_ft operator(extensions.<=>) $10::extensions.vector
+      limit 200
+    )
+    select
+      pg_catalog.row_number() over (
+        order by nearest.distance + 0::double precision,
+          nearest.id, nearest.version desc
+      )::bigint,
+      nearest.id,
+      nearest.version,
+      nearest.distance,
+      'hnsw'::text,
+      $11::integer
+    from nearest
+    order by nearest.distance + 0::double precision,
+      nearest.id, nearest.version desc
+  $query$, v_table_name, v_filter_sql);
+
+  return query execute v_sql
+    using v_state_code, p_team_id, v_residual, p_process_type,
+      v_flow_types, p_as_input, v_classification_codes,
+      v_elementary_codes, v_exact_cutover + 1,
+      p_query_embedding, v_route_population;
+end;
+$_$;
+
+
+ALTER FUNCTION private.next_public_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) OWNER TO next_public_search_executor;
+
+--
+-- Name: next_semantic_version_candidates_v2(text, extensions.vector, jsonb, text, text[], boolean, text[], text[], text, integer, uuid); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.next_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) RETURNS TABLE(rank bigint, id uuid, version text, distance double precision, semantic_route text, candidate_population integer)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER PARALLEL RESTRICTED
+    SET search_path TO ''
+    SET statement_timeout TO '60s'
+    AS $$
+begin
+  if p_data_source in ('tg', 'co') then
+    return query
+    select candidate.*
+    from private.next_public_semantic_version_candidates_v2(
+      p_kind, p_query_embedding, p_residual_filter, p_process_type,
+      p_flow_types, p_as_input, p_classification_codes, p_elementary_codes,
+      p_data_source, p_team_id
+    ) as candidate;
+    return;
+  end if;
+
+  if p_data_source in ('my', 'te') then
+    return query
+    select candidate.*
+    from private.next_actor_semantic_version_candidates_v2(
+      p_kind, p_query_embedding, p_residual_filter, p_process_type,
+      p_flow_types, p_as_input, p_classification_codes, p_elementary_codes,
+      p_data_source, p_state_code, p_team_id
+    ) as candidate;
+    return;
+  end if;
+
+  raise exception using errcode = '22023', message = 'invalid Next Hybrid V2 request';
+end;
+$$;
+
+
+ALTER FUNCTION private.next_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) OWNER TO api_internal_executor;
+
+--
 -- Name: oauth_client_has_capability(text); Type: FUNCTION; Schema: private; Owner: postgres
 --
 
@@ -50540,7 +51491,7 @@ $$;
 ALTER FUNCTION private.portal_projection_semantic_flow_v1(p_query_embedding extensions.vector) OWNER TO api_internal_executor;
 
 --
--- Name: portal_projection_semantic_flow_v2(extensions.vector, jsonb); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+-- Name: portal_projection_semantic_flow_v2(extensions.vector, jsonb); Type: FUNCTION; Schema: private; Owner: portal_public_executor
 --
 
 CREATE FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) RETURNS TABLE(id uuid, version text, semantic_distance double precision)
@@ -50555,10 +51506,132 @@ CREATE FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding ext
     SET jit TO 'off'
     SET row_security TO 'on'
     AS $$
+declare
+  v_exact_cutover constant integer := 2000;
+  v_candidate_ids uuid[];
+  v_candidate_versions text[];
+  v_candidate_count integer;
+  v_indexed_probe boolean := false;
 begin
-  if p_query_embedding is null or extensions.vector_dims(p_query_embedding) <> 1024 then
-    raise exception using errcode = '22023', message = 'invalid portal request';
+  if p_query_embedding is null
+     or extensions.vector_dims(p_query_embedding) <> 1024 then
+    raise exception using
+      errcode = '22023',
+      message = 'invalid portal request';
   end if;
+
+  -- Geography and access level are exact, normalized facts in the
+  -- transactionally synchronized facet child.  Additional filters remain a
+  -- final canonical card recheck, so this key set is a safe candidate
+  -- superset for combined filter requests.
+  if (p_filters ? 'geography') and (p_filters ? 'accessLevel') then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'flow'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_geography = p_filters ->> 'geography'
+        and facet.facet_access_level = p_filters ->> 'accessLevel'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  elsif p_filters ? 'geography' then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'flow'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_geography = p_filters ->> 'geography'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  elsif p_filters ? 'accessLevel' then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'flow'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_access_level = p_filters ->> 'accessLevel'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  end if;
+
+  v_candidate_count := coalesce(
+    pg_catalog.cardinality(v_candidate_ids),
+    0
+  );
+
+  if v_indexed_probe
+     and v_candidate_count <= v_exact_cutover then
+    return query
+    with candidate_keys as materialized (
+      select
+        v_candidate_ids[key.ordinal] as id,
+        v_candidate_versions[key.ordinal] as version
+      from pg_catalog.generate_subscripts(
+        v_candidate_ids,
+        1
+      ) as key(ordinal)
+    ), nearest as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.embedding_ft operator(extensions.<=>) p_query_embedding
+          as distance
+      from candidate_keys as candidate
+      join public.flows as source
+        on source.id = candidate.id
+       and source.version::text = candidate.version
+      join private.portal_catalog_search_rows_v1 as projection
+        on projection.dataset_kind = 'flow'
+       and projection.id = candidate.id
+       and projection.version = candidate.version
+      where source.state_code in (100, 200)
+        and source.embedding_ft is not null
+        and projection.state_code in (100, 200)
+        and private.portal_card_matches_filters_v2(
+          projection.card,
+          p_filters
+        )
+      -- The no-op addition deliberately prevents the global HNSW index from
+      -- satisfying this ORDER BY.  Only the bounded exact-key rows are scored.
+      order by
+        (
+          source.embedding_ft operator(extensions.<=>) p_query_embedding
+        ) + 0::double precision,
+        source.id,
+        source.version::text desc
+      limit 200
+    )
+    select nearest.id, nearest.version, nearest.distance
+    from nearest
+    where nearest.distance >= 0::double precision
+      and nearest.distance <= 0.5::double precision
+    order by
+      nearest.distance + 0::double precision,
+      nearest.id,
+      nearest.version desc;
+    return;
+  end if;
+
+  -- Unfiltered, unsupported-filter-only, and broad indexed-filter requests
+  -- retain the predecessor HNSW path byte-for-byte.
   return query
   with nearest as materialized (
     select source.id, source.version::text as version,
@@ -50586,7 +51659,14 @@ end;
 $$;
 
 
-ALTER FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) OWNER TO api_internal_executor;
+ALTER FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) OWNER TO portal_public_executor;
+
+--
+-- Name: FUNCTION portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: COMMENT; Schema: private; Owner: portal_public_executor
+--
+
+COMMENT ON FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) IS 'Returns at most 200 exact public Flow versions under portal_public_executor RLS: exact distance over at most 2000 indexed geography/access candidates, otherwise strict iterative HNSW.';
+
 
 --
 -- Name: portal_projection_semantic_process_exact_v1(extensions.vector); Type: FUNCTION; Schema: private; Owner: api_internal_executor
@@ -50830,7 +51910,7 @@ $$;
 ALTER FUNCTION private.portal_projection_semantic_process_v1(p_query_embedding extensions.vector) OWNER TO api_internal_executor;
 
 --
--- Name: portal_projection_semantic_process_v2(extensions.vector, jsonb); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+-- Name: portal_projection_semantic_process_v2(extensions.vector, jsonb); Type: FUNCTION; Schema: private; Owner: portal_public_executor
 --
 
 CREATE FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) RETURNS TABLE(id uuid, version text, semantic_distance double precision)
@@ -50845,10 +51925,132 @@ CREATE FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding 
     SET jit TO 'off'
     SET row_security TO 'on'
     AS $$
+declare
+  v_exact_cutover constant integer := 2000;
+  v_candidate_ids uuid[];
+  v_candidate_versions text[];
+  v_candidate_count integer;
+  v_indexed_probe boolean := false;
 begin
-  if p_query_embedding is null or extensions.vector_dims(p_query_embedding) <> 1024 then
-    raise exception using errcode = '22023', message = 'invalid portal request';
+  if p_query_embedding is null
+     or extensions.vector_dims(p_query_embedding) <> 1024 then
+    raise exception using
+      errcode = '22023',
+      message = 'invalid portal request';
   end if;
+
+  -- Geography and access level are exact, normalized facts in the
+  -- transactionally synchronized facet child.  Additional filters remain a
+  -- final canonical card recheck, so this key set is a safe candidate
+  -- superset for combined filter requests.
+  if (p_filters ? 'geography') and (p_filters ? 'accessLevel') then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'process'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_geography = p_filters ->> 'geography'
+        and facet.facet_access_level = p_filters ->> 'accessLevel'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  elsif p_filters ? 'geography' then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'process'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_geography = p_filters ->> 'geography'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  elsif p_filters ? 'accessLevel' then
+    v_indexed_probe := true;
+    select
+      pg_catalog.array_agg(candidate.id),
+      pg_catalog.array_agg(candidate.version)
+    into v_candidate_ids, v_candidate_versions
+    from (
+      select facet.id, facet.version
+      from private.portal_catalog_facet_rows_v1 as facet
+      where facet.dataset_kind = 'process'
+        and facet.state_code in (100, 200)
+        and facet.facet_contract_version = 1
+        and facet.facet_access_level = p_filters ->> 'accessLevel'
+      limit v_exact_cutover + 1
+    ) as candidate;
+  end if;
+
+  v_candidate_count := coalesce(
+    pg_catalog.cardinality(v_candidate_ids),
+    0
+  );
+
+  if v_indexed_probe
+     and v_candidate_count <= v_exact_cutover then
+    return query
+    with candidate_keys as materialized (
+      select
+        v_candidate_ids[key.ordinal] as id,
+        v_candidate_versions[key.ordinal] as version
+      from pg_catalog.generate_subscripts(
+        v_candidate_ids,
+        1
+      ) as key(ordinal)
+    ), nearest as materialized (
+      select
+        source.id,
+        source.version::text as version,
+        source.embedding_ft operator(extensions.<=>) p_query_embedding
+          as distance
+      from candidate_keys as candidate
+      join public.processes as source
+        on source.id = candidate.id
+       and source.version::text = candidate.version
+      join private.portal_catalog_search_rows_v1 as projection
+        on projection.dataset_kind = 'process'
+       and projection.id = candidate.id
+       and projection.version = candidate.version
+      where source.state_code in (100, 200)
+        and source.embedding_ft is not null
+        and projection.state_code in (100, 200)
+        and private.portal_card_matches_filters_v2(
+          projection.card,
+          p_filters
+        )
+      -- The no-op addition deliberately prevents the global HNSW index from
+      -- satisfying this ORDER BY.  Only the bounded exact-key rows are scored.
+      order by
+        (
+          source.embedding_ft operator(extensions.<=>) p_query_embedding
+        ) + 0::double precision,
+        source.id,
+        source.version::text desc
+      limit 200
+    )
+    select nearest.id, nearest.version, nearest.distance
+    from nearest
+    where nearest.distance >= 0::double precision
+      and nearest.distance <= 0.5::double precision
+    order by
+      nearest.distance + 0::double precision,
+      nearest.id,
+      nearest.version desc;
+    return;
+  end if;
+
+  -- Unfiltered, unsupported-filter-only, and broad indexed-filter requests
+  -- retain the predecessor HNSW path byte-for-byte.
   return query
   with nearest as materialized (
     select source.id, source.version::text as version,
@@ -50876,7 +52078,14 @@ end;
 $$;
 
 
-ALTER FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) OWNER TO api_internal_executor;
+ALTER FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) OWNER TO portal_public_executor;
+
+--
+-- Name: FUNCTION portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: COMMENT; Schema: private; Owner: portal_public_executor
+--
+
+COMMENT ON FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) IS 'Returns at most 200 exact public Process versions under portal_public_executor RLS: exact distance over at most 2000 indexed geography/access candidates, otherwise strict iterative HNSW.';
+
 
 --
 -- Name: portal_public_hybrid_card_v1(text, integer, jsonb); Type: FUNCTION; Schema: private; Owner: portal_public_executor
@@ -61282,6 +62491,132 @@ END;$$;
 
 
 ALTER FUNCTION private.sync_json_to_jsonb() OWNER TO postgres;
+
+--
+-- Name: sync_next_hybrid_public_flow_candidate_v2(); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.sync_next_hybrid_public_flow_candidate_v2() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    SET row_security TO 'on'
+    AS $$
+begin
+  if tg_op = 'DELETE' then
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'flow'
+      and candidate.id = old.id
+      and candidate.version = old.version::text;
+    return null;
+  end if;
+
+  if tg_op = 'UPDATE'
+     and (old.id, old.version::text) is distinct from (new.id, new.version::text) then
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'flow'
+      and candidate.id = old.id
+      and candidate.version = old.version::text;
+  end if;
+
+  if new.state_code in (100, 200) and new.embedding_ft is not null then
+    insert into private.next_hybrid_public_candidates_v2(
+      dataset_kind, id, version, state_code, team_id, dataset_type,
+      is_emission, classification_codes, elementary_codes, source_modified_at
+    ) values (
+      'flow', new.id, new.version::text, new.state_code, new.team_id,
+      new.json #>>
+        '{flowDataSet,modellingAndValidation,LCIMethod,typeOfDataSet}',
+      new.json @>
+        '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text":"Emissions","@level":"0"}]}}}}}}',
+      coalesce(private.next_hybrid_json_codes_v2(
+        new.json #>
+          '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:classification,common:class}',
+        '@classId'
+      ), '{}'),
+      coalesce(private.next_hybrid_json_codes_v2(
+        new.json #>
+          '{flowDataSet,flowInformation,dataSetInformation,classificationInformation,common:elementaryFlowCategorization,common:category}',
+        '@catId'
+      ), '{}'),
+      new.modified_at
+    )
+    on conflict(dataset_kind, id, version) do update set
+      state_code = excluded.state_code,
+      team_id = excluded.team_id,
+      dataset_type = excluded.dataset_type,
+      is_emission = excluded.is_emission,
+      classification_codes = excluded.classification_codes,
+      elementary_codes = excluded.elementary_codes,
+      source_modified_at = excluded.source_modified_at;
+  else
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'flow'
+      and candidate.id = new.id
+      and candidate.version = new.version::text;
+  end if;
+  return null;
+end;
+$$;
+
+
+ALTER FUNCTION private.sync_next_hybrid_public_flow_candidate_v2() OWNER TO api_internal_executor;
+
+--
+-- Name: sync_next_hybrid_public_process_candidate_v2(); Type: FUNCTION; Schema: private; Owner: api_internal_executor
+--
+
+CREATE FUNCTION private.sync_next_hybrid_public_process_candidate_v2() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    SET row_security TO 'on'
+    AS $$
+begin
+  if tg_op = 'DELETE' then
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'process'
+      and candidate.id = old.id
+      and candidate.version = old.version::text;
+    return null;
+  end if;
+
+  if tg_op = 'UPDATE'
+     and (old.id, old.version::text) is distinct from (new.id, new.version::text) then
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'process'
+      and candidate.id = old.id
+      and candidate.version = old.version::text;
+  end if;
+
+  if new.state_code in (100, 200) and new.embedding_ft is not null then
+    insert into private.next_hybrid_public_candidates_v2(
+      dataset_kind, id, version, state_code, team_id, dataset_type,
+      is_emission, classification_codes, elementary_codes, source_modified_at
+    ) values (
+      'process', new.id, new.version::text, new.state_code, new.team_id,
+      new.json #>>
+        '{processDataSet,modellingAndValidation,LCIMethodAndAllocation,typeOfDataSet}',
+      false, '{}', '{}', new.modified_at
+    )
+    on conflict(dataset_kind, id, version) do update set
+      state_code = excluded.state_code,
+      team_id = excluded.team_id,
+      dataset_type = excluded.dataset_type,
+      is_emission = excluded.is_emission,
+      classification_codes = excluded.classification_codes,
+      elementary_codes = excluded.elementary_codes,
+      source_modified_at = excluded.source_modified_at;
+  else
+    delete from private.next_hybrid_public_candidates_v2 as candidate
+    where candidate.dataset_kind = 'process'
+      and candidate.id = new.id
+      and candidate.version = new.version::text;
+  end if;
+  return null;
+end;
+$$;
+
+
+ALTER FUNCTION private.sync_next_hybrid_public_process_candidate_v2() OWNER TO api_internal_executor;
 
 --
 -- Name: sync_portal_catalog_character_row_v1(); Type: FUNCTION; Schema: private; Owner: api_internal_executor
@@ -72075,6 +73410,35 @@ COMMENT ON COLUMN private.lcia_scope_closure_scan_executions.numerical_snapshot_
 
 
 --
+-- Name: next_hybrid_public_candidates_v2; Type: TABLE; Schema: private; Owner: api_internal_executor
+--
+
+CREATE TABLE private.next_hybrid_public_candidates_v2 (
+    dataset_kind text NOT NULL,
+    id uuid NOT NULL,
+    version text NOT NULL,
+    state_code integer NOT NULL,
+    team_id uuid,
+    dataset_type text,
+    is_emission boolean NOT NULL,
+    classification_codes text[] DEFAULT '{}'::text[] NOT NULL,
+    elementary_codes text[] DEFAULT '{}'::text[] NOT NULL,
+    source_modified_at timestamp with time zone NOT NULL,
+    CONSTRAINT next_hybrid_public_candidates_v2_dataset_kind_check CHECK ((dataset_kind = ANY (ARRAY['process'::text, 'flow'::text]))),
+    CONSTRAINT next_hybrid_public_candidates_v2_state_code_check CHECK ((state_code = ANY (ARRAY[100, 200])))
+);
+
+
+ALTER TABLE private.next_hybrid_public_candidates_v2 OWNER TO api_internal_executor;
+
+--
+-- Name: TABLE next_hybrid_public_candidates_v2; Type: COMMENT; Schema: private; Owner: api_internal_executor
+--
+
+COMMENT ON TABLE private.next_hybrid_public_candidates_v2 IS 'Internal public-state search-key projection for bounded Next Hybrid V2 candidate discovery; source RLS and full canonical filters are rechecked during final source hydration.';
+
+
+--
 -- Name: notifications; Type: TABLE; Schema: private; Owner: postgres
 --
 
@@ -74393,6 +75757,14 @@ ALTER TABLE ONLY private.lcia_scope_closure_scan_executions
 
 
 --
+-- Name: next_hybrid_public_candidates_v2 next_hybrid_public_candidates_v2_pkey; Type: CONSTRAINT; Schema: private; Owner: api_internal_executor
+--
+
+ALTER TABLE ONLY private.next_hybrid_public_candidates_v2
+    ADD CONSTRAINT next_hybrid_public_candidates_v2_pkey PRIMARY KEY (dataset_kind, id, version);
+
+
+--
 -- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: private; Owner: postgres
 --
 
@@ -75836,6 +77208,41 @@ CREATE INDEX lcia_scope_closure_scan_executions_status_idx ON private.lcia_scope
 
 
 --
+-- Name: next_hybrid_public_candidate_classification_v2_idx; Type: INDEX; Schema: private; Owner: api_internal_executor
+--
+
+CREATE INDEX next_hybrid_public_candidate_classification_v2_idx ON private.next_hybrid_public_candidates_v2 USING gin (classification_codes);
+
+
+--
+-- Name: next_hybrid_public_candidate_elementary_v2_idx; Type: INDEX; Schema: private; Owner: api_internal_executor
+--
+
+CREATE INDEX next_hybrid_public_candidate_elementary_v2_idx ON private.next_hybrid_public_candidates_v2 USING gin (elementary_codes);
+
+
+--
+-- Name: next_hybrid_public_candidate_emission_v2_idx; Type: INDEX; Schema: private; Owner: api_internal_executor
+--
+
+CREATE INDEX next_hybrid_public_candidate_emission_v2_idx ON private.next_hybrid_public_candidates_v2 USING btree (is_emission, dataset_kind, state_code, team_id, id, version);
+
+
+--
+-- Name: next_hybrid_public_candidate_team_v2_idx; Type: INDEX; Schema: private; Owner: api_internal_executor
+--
+
+CREATE INDEX next_hybrid_public_candidate_team_v2_idx ON private.next_hybrid_public_candidates_v2 USING btree (dataset_kind, state_code, team_id, id, version);
+
+
+--
+-- Name: next_hybrid_public_candidate_type_v2_idx; Type: INDEX; Schema: private; Owner: api_internal_executor
+--
+
+CREATE INDEX next_hybrid_public_candidate_type_v2_idx ON private.next_hybrid_public_candidates_v2 USING btree (dataset_type, dataset_kind, state_code, team_id, id, version);
+
+
+--
 -- Name: notifications_recipient_sender_type_dataset_uq; Type: INDEX; Schema: private; Owner: postgres
 --
 
@@ -75861,6 +77268,62 @@ CREATE INDEX notifications_sender_user_id_idx ON private.notifications USING btr
 --
 
 CREATE INDEX portal_catalog_character_rows_latest_v1_idx ON private.portal_catalog_character_rows_v1 USING btree (dataset_kind, id, version DESC, modified_at DESC, state_code DESC);
+
+
+--
+-- Name: portal_catalog_facet_flow_access_level_v1_idx; Type: INDEX; Schema: private; Owner: postgres
+--
+
+CREATE INDEX portal_catalog_facet_flow_access_level_v1_idx ON private.portal_catalog_facet_rows_v1 USING btree (facet_access_level) INCLUDE (id, version) WHERE ((dataset_kind = 'flow'::text) AND (state_code = ANY (ARRAY[100, 200])) AND (facet_contract_version = 1));
+
+
+--
+-- Name: INDEX portal_catalog_facet_flow_access_level_v1_idx; Type: COMMENT; Schema: private; Owner: postgres
+--
+
+COMMENT ON INDEX private.portal_catalog_facet_flow_access_level_v1_idx IS 'Exact Flow id/version candidates for bounded Portal semantic access-level routing.';
+
+
+--
+-- Name: portal_catalog_facet_flow_geography_v1_idx; Type: INDEX; Schema: private; Owner: postgres
+--
+
+CREATE INDEX portal_catalog_facet_flow_geography_v1_idx ON private.portal_catalog_facet_rows_v1 USING btree (facet_geography) INCLUDE (id, version) WHERE ((dataset_kind = 'flow'::text) AND (state_code = ANY (ARRAY[100, 200])) AND (facet_contract_version = 1));
+
+
+--
+-- Name: INDEX portal_catalog_facet_flow_geography_v1_idx; Type: COMMENT; Schema: private; Owner: postgres
+--
+
+COMMENT ON INDEX private.portal_catalog_facet_flow_geography_v1_idx IS 'Exact Flow id/version candidates for bounded Portal semantic geography routing.';
+
+
+--
+-- Name: portal_catalog_facet_process_access_level_v1_idx; Type: INDEX; Schema: private; Owner: postgres
+--
+
+CREATE INDEX portal_catalog_facet_process_access_level_v1_idx ON private.portal_catalog_facet_rows_v1 USING btree (facet_access_level) INCLUDE (id, version) WHERE ((dataset_kind = 'process'::text) AND (state_code = ANY (ARRAY[100, 200])) AND (facet_contract_version = 1));
+
+
+--
+-- Name: INDEX portal_catalog_facet_process_access_level_v1_idx; Type: COMMENT; Schema: private; Owner: postgres
+--
+
+COMMENT ON INDEX private.portal_catalog_facet_process_access_level_v1_idx IS 'Exact Process id/version candidates for bounded Portal semantic access-level routing.';
+
+
+--
+-- Name: portal_catalog_facet_process_geography_v1_idx; Type: INDEX; Schema: private; Owner: postgres
+--
+
+CREATE INDEX portal_catalog_facet_process_geography_v1_idx ON private.portal_catalog_facet_rows_v1 USING btree (facet_geography) INCLUDE (id, version) WHERE ((dataset_kind = 'process'::text) AND (state_code = ANY (ARRAY[100, 200])) AND (facet_contract_version = 1));
+
+
+--
+-- Name: INDEX portal_catalog_facet_process_geography_v1_idx; Type: COMMENT; Schema: private; Owner: postgres
+--
+
+COMMENT ON INDEX private.portal_catalog_facet_process_geography_v1_idx IS 'Exact Process id/version candidates for bounded Portal semantic geography routing.';
 
 
 --
@@ -77957,6 +79420,20 @@ CREATE TRIGGER unitgroups_set_modified_at_trigger BEFORE UPDATE OF "json", json_
 
 
 --
+-- Name: flows zz_next_hybrid_public_flow_candidate_v2; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER zz_next_hybrid_public_flow_candidate_v2 AFTER INSERT OR DELETE OR UPDATE OF id, version, state_code, team_id, "json", embedding_ft, modified_at ON public.flows FOR EACH ROW EXECUTE FUNCTION private.sync_next_hybrid_public_flow_candidate_v2();
+
+
+--
+-- Name: processes zz_next_hybrid_public_process_candidate_v2; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER zz_next_hybrid_public_process_candidate_v2 AFTER INSERT OR DELETE OR UPDATE OF id, version, state_code, team_id, "json", embedding_ft, modified_at ON public.processes FOR EACH ROW EXECUTE FUNCTION private.sync_next_hybrid_public_process_candidate_v2();
+
+
+--
 -- Name: dataset_flow_identity_capture_mapping_guards dataset_flow_identity_capture_mappings_immutable; Type: TRIGGER; Schema: util; Owner: postgres
 --
 
@@ -79766,6 +81243,20 @@ ALTER TABLE public.lciamethods ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lifecyclemodels ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: flows next_public_search_executor_select_flows_v2; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY next_public_search_executor_select_flows_v2 ON public.flows FOR SELECT TO next_public_search_executor USING ((state_code = ANY (ARRAY[100, 200])));
+
+
+--
+-- Name: processes next_public_search_executor_select_processes_v2; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY next_public_search_executor_select_processes_v2 ON public.processes FOR SELECT TO next_public_search_executor USING ((state_code = ANY (ARRAY[100, 200])));
+
+
+--
 -- Name: contacts oauth_client_select_capability_guard; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -79960,6 +81451,7 @@ GRANT USAGE ON SCHEMA api TO authenticated;
 GRANT USAGE ON SCHEMA api TO service_role;
 GRANT USAGE ON SCHEMA api TO api_internal_executor;
 GRANT USAGE ON SCHEMA api TO portal_public_executor;
+GRANT USAGE ON SCHEMA api TO next_public_search_executor;
 
 
 --
@@ -79976,6 +81468,7 @@ GRANT USAGE ON SCHEMA archive TO service_role;
 GRANT USAGE ON SCHEMA private TO service_role;
 GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT USAGE ON SCHEMA private TO portal_public_executor;
+GRANT USAGE ON SCHEMA private TO next_public_search_executor;
 
 
 --
@@ -79988,6 +81481,7 @@ GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT USAGE ON SCHEMA public TO service_role;
 GRANT USAGE ON SCHEMA public TO api_internal_executor;
 GRANT USAGE ON SCHEMA public TO portal_public_executor;
+GRANT USAGE ON SCHEMA public TO next_public_search_executor;
 
 
 --
@@ -80915,10 +82409,25 @@ GRANT SELECT ON TABLE public.flows TO api_internal_executor;
 
 
 --
+-- Name: COLUMN flows.tableoid; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(tableoid) ON TABLE public.flows TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN flows.ctid; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(ctid) ON TABLE public.flows TO next_public_search_executor;
+
+
+--
 -- Name: COLUMN flows.id; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT SELECT(id) ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT(id) ON TABLE public.flows TO next_public_search_executor;
 
 
 --
@@ -80926,6 +82435,7 @@ GRANT SELECT(id) ON TABLE public.flows TO portal_public_executor;
 --
 
 GRANT SELECT("json") ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT("json") ON TABLE public.flows TO next_public_search_executor;
 
 
 --
@@ -80933,6 +82443,7 @@ GRANT SELECT("json") ON TABLE public.flows TO portal_public_executor;
 --
 
 GRANT SELECT(state_code) ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT(state_code) ON TABLE public.flows TO next_public_search_executor;
 
 
 --
@@ -80940,6 +82451,7 @@ GRANT SELECT(state_code) ON TABLE public.flows TO portal_public_executor;
 --
 
 GRANT SELECT(version) ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT(version) ON TABLE public.flows TO next_public_search_executor;
 
 
 --
@@ -80947,6 +82459,29 @@ GRANT SELECT(version) ON TABLE public.flows TO portal_public_executor;
 --
 
 GRANT SELECT(modified_at) ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT(modified_at) ON TABLE public.flows TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN flows.team_id; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(team_id) ON TABLE public.flows TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN flows.embedding_ft; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(embedding_ft) ON TABLE public.flows TO portal_public_executor;
+GRANT SELECT(embedding_ft) ON TABLE public.flows TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN flows.search_text; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(search_text) ON TABLE public.flows TO next_public_search_executor;
 
 
 --
@@ -81170,6 +82705,14 @@ GRANT ALL ON FUNCTION api.hybrid_search_flow_versions_v1(query_text text, query_
 
 
 --
+-- Name: FUNCTION hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid); Type: ACL; Schema: api; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION api.hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION api.hybrid_search_flow_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid) TO authenticated;
+
+
+--
 -- Name: FUNCTION hybrid_search_flowproperties(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid); Type: ACL; Schema: api; Owner: api_internal_executor
 --
 
@@ -81230,6 +82773,14 @@ GRANT ALL ON FUNCTION api.hybrid_search_lifecyclemodels_v2(query_text text, quer
 REVOKE ALL ON FUNCTION api.hybrid_search_process_versions_v1(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[]) FROM PUBLIC;
 GRANT ALL ON FUNCTION api.hybrid_search_process_versions_v1(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[]) TO anon;
 GRANT ALL ON FUNCTION api.hybrid_search_process_versions_v1(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[]) TO authenticated;
+
+
+--
+-- Name: FUNCTION hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text); Type: ACL; Schema: api; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION api.hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text) FROM PUBLIC;
+GRANT ALL ON FUNCTION api.hybrid_search_process_versions_v2(query_text text, query_embedding text, filter_condition jsonb, match_threshold double precision, match_count integer, lexical_weight double precision, semantic_weight double precision, rrf_k integer, data_source text, page_size integer, page_current integer, query_terms text[], state_code_filter integer, team_id_filter uuid, type_of_data_set_filter text) TO authenticated;
 
 
 --
@@ -81745,10 +83296,25 @@ GRANT SELECT ON TABLE public.processes TO api_internal_executor;
 
 
 --
+-- Name: COLUMN processes.tableoid; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(tableoid) ON TABLE public.processes TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN processes.ctid; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(ctid) ON TABLE public.processes TO next_public_search_executor;
+
+
+--
 -- Name: COLUMN processes.id; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT SELECT(id) ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT(id) ON TABLE public.processes TO next_public_search_executor;
 
 
 --
@@ -81756,6 +83322,7 @@ GRANT SELECT(id) ON TABLE public.processes TO portal_public_executor;
 --
 
 GRANT SELECT("json") ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT("json") ON TABLE public.processes TO next_public_search_executor;
 
 
 --
@@ -81763,6 +83330,7 @@ GRANT SELECT("json") ON TABLE public.processes TO portal_public_executor;
 --
 
 GRANT SELECT(state_code) ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT(state_code) ON TABLE public.processes TO next_public_search_executor;
 
 
 --
@@ -81770,6 +83338,7 @@ GRANT SELECT(state_code) ON TABLE public.processes TO portal_public_executor;
 --
 
 GRANT SELECT(version) ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT(version) ON TABLE public.processes TO next_public_search_executor;
 
 
 --
@@ -81777,6 +83346,29 @@ GRANT SELECT(version) ON TABLE public.processes TO portal_public_executor;
 --
 
 GRANT SELECT(modified_at) ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT(modified_at) ON TABLE public.processes TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN processes.team_id; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(team_id) ON TABLE public.processes TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN processes.embedding_ft; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(embedding_ft) ON TABLE public.processes TO portal_public_executor;
+GRANT SELECT(embedding_ft) ON TABLE public.processes TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN processes.search_text; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT SELECT(search_text) ON TABLE public.processes TO next_public_search_executor;
 
 
 --
@@ -83024,6 +84616,7 @@ GRANT ALL ON FUNCTION private.dataset_alias_js_object_key_sort_key_v1(p_value te
 REVOKE ALL ON FUNCTION private.dataset_alias_jsonb_array_v1(p_value jsonb) FROM PUBLIC;
 GRANT ALL ON FUNCTION private.dataset_alias_jsonb_array_v1(p_value jsonb) TO service_role;
 GRANT ALL ON FUNCTION private.dataset_alias_jsonb_array_v1(p_value jsonb) TO api_internal_executor;
+GRANT ALL ON FUNCTION private.dataset_alias_jsonb_array_v1(p_value jsonb) TO next_public_search_executor;
 
 
 --
@@ -83748,6 +85341,66 @@ GRANT ALL ON FUNCTION private.lifecyclemodels_sync_jsonb_version() TO api_intern
 
 
 --
+-- Name: FUNCTION next_actor_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_actor_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION next_actor_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_actor_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION next_hybrid_json_codes_v2(p_value jsonb, p_attribute text); Type: ACL; Schema: private; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION private.next_hybrid_json_codes_v2(p_value jsonb, p_attribute text) FROM PUBLIC;
+GRANT ALL ON FUNCTION private.next_hybrid_json_codes_v2(p_value jsonb, p_attribute text) TO api_internal_executor;
+GRANT ALL ON FUNCTION private.next_hybrid_json_codes_v2(p_value jsonb, p_attribute text) TO next_public_search_executor;
+
+
+--
+-- Name: FUNCTION next_hybrid_version_keys_v2(p_kind text, p_query_text text, p_query_terms text[], p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_match_threshold double precision, p_lexical_weight double precision, p_semantic_weight double precision, p_rrf_k integer, p_data_source text, p_state_code integer, p_team_id uuid); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_hybrid_version_keys_v2(p_kind text, p_query_text text, p_query_terms text[], p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_match_threshold double precision, p_lexical_weight double precision, p_semantic_weight double precision, p_rrf_k integer, p_data_source text, p_state_code integer, p_team_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION next_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION next_public_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid); Type: ACL; Schema: private; Owner: next_public_search_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_public_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION private.next_public_lexical_version_candidates_v2(p_kind text, p_query text, p_terms text[], p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) TO api_internal_executor;
+
+
+--
+-- Name: FUNCTION next_public_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid); Type: ACL; Schema: private; Owner: next_public_search_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_public_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION private.next_public_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_team_id uuid) TO api_internal_executor;
+
+
+--
+-- Name: FUNCTION next_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.next_semantic_version_candidates_v2(p_kind text, p_query_embedding extensions.vector, p_residual_filter jsonb, p_process_type text, p_flow_types text[], p_as_input boolean, p_classification_codes text[], p_elementary_codes text[], p_data_source text, p_state_code integer, p_team_id uuid) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION oauth_client_has_capability(p_capability_id text); Type: ACL; Schema: private; Owner: postgres
 --
 
@@ -83762,6 +85415,7 @@ GRANT ALL ON FUNCTION private.oauth_client_has_capability(p_capability_id text) 
 REVOKE ALL ON FUNCTION private.pgroonga_escape_query_terms(query_terms text[]) FROM PUBLIC;
 GRANT ALL ON FUNCTION private.pgroonga_escape_query_terms(query_terms text[]) TO service_role;
 GRANT ALL ON FUNCTION private.pgroonga_escape_query_terms(query_terms text[]) TO api_internal_executor;
+GRANT ALL ON FUNCTION private.pgroonga_escape_query_terms(query_terms text[]) TO next_public_search_executor;
 
 
 --
@@ -84260,11 +85914,11 @@ REVOKE ALL ON FUNCTION private.portal_projection_semantic_flow_v1(p_query_embedd
 
 
 --
--- Name: FUNCTION portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: ACL; Schema: private; Owner: api_internal_executor
+-- Name: FUNCTION portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: ACL; Schema: private; Owner: portal_public_executor
 --
 
 REVOKE ALL ON FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) FROM PUBLIC;
-GRANT ALL ON FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) TO portal_public_executor;
+GRANT ALL ON FUNCTION private.portal_projection_semantic_flow_v2(p_query_embedding extensions.vector, p_filters jsonb) TO api_internal_executor;
 
 
 --
@@ -84282,11 +85936,11 @@ REVOKE ALL ON FUNCTION private.portal_projection_semantic_process_v1(p_query_emb
 
 
 --
--- Name: FUNCTION portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: ACL; Schema: private; Owner: api_internal_executor
+-- Name: FUNCTION portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb); Type: ACL; Schema: private; Owner: portal_public_executor
 --
 
 REVOKE ALL ON FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) FROM PUBLIC;
-GRANT ALL ON FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) TO portal_public_executor;
+GRANT ALL ON FUNCTION private.portal_projection_semantic_process_v2(p_query_embedding extensions.vector, p_filters jsonb) TO api_internal_executor;
 
 
 --
@@ -85044,6 +86698,20 @@ REVOKE ALL ON FUNCTION private.sync_auth_users_to_private_users() FROM PUBLIC;
 REVOKE ALL ON FUNCTION private.sync_json_to_jsonb() FROM PUBLIC;
 GRANT ALL ON FUNCTION private.sync_json_to_jsonb() TO service_role;
 GRANT ALL ON FUNCTION private.sync_json_to_jsonb() TO api_internal_executor;
+
+
+--
+-- Name: FUNCTION sync_next_hybrid_public_flow_candidate_v2(); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.sync_next_hybrid_public_flow_candidate_v2() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION sync_next_hybrid_public_process_candidate_v2(); Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+REVOKE ALL ON FUNCTION private.sync_next_hybrid_public_process_candidate_v2() FROM PUBLIC;
 
 
 --
@@ -85939,6 +87607,76 @@ GRANT SELECT ON TABLE private.lcia_scope_closure_scan_executions TO api_internal
 
 
 --
+-- Name: COLUMN next_hybrid_public_candidates_v2.dataset_kind; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(dataset_kind) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.id; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(id) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.version; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(version) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.state_code; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(state_code) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.team_id; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(team_id) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.dataset_type; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(dataset_type) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.is_emission; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(is_emission) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.classification_codes; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(classification_codes) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.elementary_codes; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(elementary_codes) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
+-- Name: COLUMN next_hybrid_public_candidates_v2.source_modified_at; Type: ACL; Schema: private; Owner: api_internal_executor
+--
+
+GRANT SELECT(source_modified_at) ON TABLE private.next_hybrid_public_candidates_v2 TO next_public_search_executor;
+
+
+--
 -- Name: TABLE notifications; Type: ACL; Schema: private; Owner: postgres
 --
 
@@ -86669,6 +88407,13 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 
 
 --
+-- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: -; Owner: postgres
+--
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE ALL ON FUNCTIONS FROM PUBLIC;
+
+
+--
 -- TianGong LCA filtered schema snapshot
 -- Generated from a remote Supabase schema dump.
 -- Base Supabase-managed schemas/objects are intentionally excluded.
@@ -86680,7 +88425,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON T
 
 
 -- Dumped from database version 17.6
--- Dumped by pg_dump version 17.6
+-- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -86816,15 +88561,14 @@ INSERT INTO private.api_capability_grants (routine_identity, capability_id, allo
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_worker_enqueue_job(text, jsonb, text, text, uuid, text, uuid, text, uuid, text, text, text, integer, text, timestamp with time zone, text, integer, timestamp with time zone, jsonb, uuid, uuid)', 'EDGE-WJOB-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_worker_list_jobs(uuid, text, uuid, text[], text, integer, boolean)', 'EDGE-WJOB-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_worker_read_job(uuid, boolean)', 'EDGE-WJOB-01', false, false, true);
-INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_lca_latest_all_unit_result(uuid, uuid)', 'EDGE-LCA-01', false, false, true);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_export_enqueue(uuid, text, jsonb, text, jsonb, uuid, text)', 'EDGE-PKG-01', false, false, true);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_import_prepare(uuid, uuid, uuid, text, text, text, text)', 'EDGE-PKG-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_lca_snapshot_candidates(text, uuid, jsonb, integer)', 'EDGE-LCA-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_lca_snapshot_build_enqueue(text, jsonb, uuid, text, uuid, uuid, jsonb, text)', 'EDGE-LCA-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_lca_cached_job_enqueue(text, uuid, text, jsonb, text, uuid, jsonb, text, uuid, text, text)', 'EDGE-LCA-01', false, false, true);
-INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_export_enqueue(uuid, text, jsonb, text, jsonb, uuid, text)', 'EDGE-PKG-01', false, false, true);
-INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.get_current_lca_release()', 'EDGE-REL-01', true, true, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.cmd_lifecycle_model_bundle_save(jsonb)', 'EDGE-BUNDLE-01', false, true, false);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.cmd_lifecycle_model_bundle_delete(uuid, text)', 'EDGE-BUNDLE-01', false, true, false);
-INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_import_prepare(uuid, uuid, uuid, text, text, text, text)', 'EDGE-PKG-01', false, false, true);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_lca_latest_all_unit_result(uuid, uuid)', 'EDGE-LCA-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_import_enqueue(uuid, uuid, uuid, text, bigint, text, text)', 'EDGE-PKG-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_tidas_package_read(uuid, uuid)', 'EDGE-PKG-01', false, false, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.svc_membership_is_review_admin(uuid)', 'EDGE-LIFECYCLE-BUNDLE-01', false, false, true);
@@ -86834,6 +88578,7 @@ INSERT INTO private.api_capability_grants (routine_identity, capability_id, allo
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.policy_roles_select(uuid, text)', 'NX-CORE-01', false, true, false);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.policy_review_can_read(uuid, uuid)', 'NX-REV-01', false, true, false);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.assert_lca_release_manager()', 'EDGE-REL-01', false, true, false);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.get_current_lca_release()', 'EDGE-REL-01', true, true, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.get_current_lca_release_process(uuid, text)', 'EDGE-REL-01', true, true, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.get_lca_release_artifact_download(uuid)', 'EDGE-REL-01', false, true, true);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.get_lca_release_run(uuid)', 'EDGE-REL-01', false, true, true);
@@ -86897,13 +88642,15 @@ INSERT INTO private.api_capability_grants (routine_identity, capability_id, allo
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.portal_facets_v2(text, text, jsonb)', 'PORTAL-CATALOG-01', true, true, false);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.hybrid_search_process_versions_v1(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[])', 'NX-CORE-02', true, true, false);
 INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.hybrid_search_flow_versions_v1(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[])', 'NX-CORE-02', true, true, false);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.hybrid_search_process_versions_v2(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[], integer, uuid, text)', 'NX-CORE-02', false, true, false);
+INSERT INTO private.api_capability_grants (routine_identity, capability_id, allow_anon, allow_authenticated, allow_service_role) VALUES ('api.hybrid_search_flow_versions_v2(text, text, jsonb, double precision, integer, double precision, double precision, integer, text, integer, integer, text[], integer, uuid)', 'NX-CORE-02', false, true, false);
 
 
 --
 -- Data for Name: lcia_scope_closure_config; Type: TABLE DATA; Schema: private; Owner: postgres
 --
 
-INSERT INTO private.lcia_scope_closure_config (singleton, expected_validator_scanner_fingerprint, require_certificate_for_builds, updated_at) VALUES (true, 'scope-closure-validator-scanner.v1+cutoff-readiness-r4', false, '2026-09-02 10:31:22.076893+00');
+INSERT INTO private.lcia_scope_closure_config (singleton, expected_validator_scanner_fingerprint, require_certificate_for_builds, updated_at) VALUES (true, 'scope-closure-validator-scanner.v1+cutoff-readiness-r4', false, '2026-09-05 20:11:51.170986+00');
 
 
 --
@@ -86970,43 +88717,43 @@ INSERT INTO private.portal_catalog_projection_contract_v1 (contract_version, man
 -- Data for Name: worker_job_kinds; Type: TABLE DATA; Schema: private; Owner: postgres
 --
 
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review_submit.gate', 'calculator', 'review_submit_gate', 'user', 100, 3, 900, 'review_submit.gate.request.v1', 'review_submit.gate.result.v1', true, 'Review-submit numeric-stability verification gate', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_one', 'calculator', 'solver', 'user', 0, 3, 900, 'lca.solve_one.request.v1', 'lca.solve.result.v1', true, 'Single demand LCA solve', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_batch', 'calculator', 'solver', 'user', 0, 3, 1800, 'lca.solve_batch.request.v1', 'lca.solve.result.v1', true, 'Batch LCA solve', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_all_unit', 'calculator', 'solver', 'user', 0, 3, 3600, 'lca.solve_all_unit.request.v1', 'lca.solve.result.v1', true, 'All-unit LCA solve', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.build_snapshot', 'calculator', 'solver', 'user', 10, 3, 3600, 'lca.build_snapshot.request.v1', 'lca.snapshot.result.v1', true, 'Build or rebuild an LCA network snapshot', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.contribution_path', 'calculator', 'solver', 'user', 0, 3, 1800, 'lca.contribution_path.request.v1', 'lca.contribution_path.result.v1', true, 'Contribution path analysis', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.snapshot_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'lca.snapshot_gc.request.v1', 'lca.snapshot_gc.result.v1', false, 'Snapshot artifact retention and garbage collection', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.result_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'lca.result_gc.request.v1', 'lca.result_gc.result.v1', false, 'LCA result artifact and metadata retention', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.package_artifact_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'tidas.package_artifact_gc.request.v1', 'tidas.package_artifact_gc.result.v1', false, 'TIDAS package artifact retention', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.export_package', 'calculator', 'package', 'user', 0, 3, 1800, 'tidas.export_package.request.v1', 'tidas.export_package.result.v1', true, 'TIDAS package export', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.import_package', 'calculator', 'package', 'user', 0, 3, 1800, 'tidas.import_package.request.v1', 'tidas.import_package.result.v1', true, 'TIDAS package import', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.256882+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.factorization_prepare', 'calculator', 'solver', 'operator', 0, 2, 3600, 'lca.factorization_prepare.request.v1', 'lca.factorization_prepare.result.v1', false, 'Prepare or refresh solver factorization artifacts', '2026-09-02 10:31:18.256882+00', '2026-09-02 10:31:18.336593+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review_submit.submit', 'calculator', 'review_submit', 'user', 100, 1, 900, 'review_submit.submit.request.v1', 'review_submit.submit.result.v1', true, 'Root review-submit coordinator job; child gate execution uses review_submit.gate', '2026-09-02 10:31:18.34625+00', '2026-09-02 10:31:18.34625+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('national_carbon.process_flow_graph_cache_build', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'national_carbon.process_flow_graph_cache_build.request.v1', 'national_carbon.process_flow_graph_cache_build.result.v1', false, 'Build national carbon process-flow graph cache through the maintenance worker', '2026-09-02 10:31:18.6903+00', '2026-09-02 10:31:18.6903+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lcia.scope_closure_check', 'calculator', 'solver', 'operator', 10, 3, 3600, 'lcia.scope_closure_check.request.v1', 'lcia.scope_closure_check.result.v1', false, 'Builds an immutable LCIA scope-closure certificate and report.', '2026-09-02 10:31:19.754407+00', '2026-09-02 10:31:19.754407+00', 'data_product', 'global', 'data_product.lcia_scope_closure_check.v1');
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lcia_result.package_build', 'calculator', 'solver', 'operator', 0, 3, 3600, 'lcia_result.package_build.request.v2', 'lcia_result.package_build.result.v1', false, 'Builds an immutable LCIA result package from a published-only data-product snapshot and pinned/copied result artifacts.', '2026-09-02 10:31:18.72092+00', '2026-09-02 10:31:19.923692+00', 'data_product', 'global', 'data_product.lcia_result_package_build.v1');
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review.quality_diagnostic', 'calculator', 'review_quality', 'operator', 20, 3, 3600, 'review.quality_diagnostic.request.v1', 'review.quality_diagnostic.report.v1', false, 'Manual Review Admin diagnostic for pending-review completeness and numerical evaluability.', '2026-09-02 10:31:22.010883+00', '2026-09-02 10:31:22.010883+00', NULL, NULL, NULL);
-INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('ai.tidas_suggestion', 'calculator', 'ai', 'user', 0, 3, 900, 'ai.tidas_suggestion.request.v1', 'ai.tidas_suggestion.result.v1', false, 'Advisory TIDAS Process or Flow improvement handled by the reusable AI worker.', '2026-09-02 10:31:22.149751+00', '2026-09-02 10:31:22.149751+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review_submit.gate', 'calculator', 'review_submit_gate', 'user', 100, 3, 900, 'review_submit.gate.request.v1', 'review_submit.gate.result.v1', true, 'Review-submit numeric-stability verification gate', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_one', 'calculator', 'solver', 'user', 0, 3, 900, 'lca.solve_one.request.v1', 'lca.solve.result.v1', true, 'Single demand LCA solve', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_batch', 'calculator', 'solver', 'user', 0, 3, 1800, 'lca.solve_batch.request.v1', 'lca.solve.result.v1', true, 'Batch LCA solve', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.solve_all_unit', 'calculator', 'solver', 'user', 0, 3, 3600, 'lca.solve_all_unit.request.v1', 'lca.solve.result.v1', true, 'All-unit LCA solve', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.build_snapshot', 'calculator', 'solver', 'user', 10, 3, 3600, 'lca.build_snapshot.request.v1', 'lca.snapshot.result.v1', true, 'Build or rebuild an LCA network snapshot', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.contribution_path', 'calculator', 'solver', 'user', 0, 3, 1800, 'lca.contribution_path.request.v1', 'lca.contribution_path.result.v1', true, 'Contribution path analysis', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.snapshot_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'lca.snapshot_gc.request.v1', 'lca.snapshot_gc.result.v1', false, 'Snapshot artifact retention and garbage collection', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.result_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'lca.result_gc.request.v1', 'lca.result_gc.result.v1', false, 'LCA result artifact and metadata retention', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.package_artifact_gc', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'tidas.package_artifact_gc.request.v1', 'tidas.package_artifact_gc.result.v1', false, 'TIDAS package artifact retention', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.export_package', 'calculator', 'package', 'user', 0, 3, 1800, 'tidas.export_package.request.v1', 'tidas.export_package.result.v1', true, 'TIDAS package export', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('tidas.import_package', 'calculator', 'package', 'user', 0, 3, 1800, 'tidas.import_package.request.v1', 'tidas.import_package.result.v1', true, 'TIDAS package import', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.729885+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lca.factorization_prepare', 'calculator', 'solver', 'operator', 0, 2, 3600, 'lca.factorization_prepare.request.v1', 'lca.factorization_prepare.result.v1', false, 'Prepare or refresh solver factorization artifacts', '2026-09-05 20:11:47.729885+00', '2026-09-05 20:11:47.791545+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review_submit.submit', 'calculator', 'review_submit', 'user', 100, 1, 900, 'review_submit.submit.request.v1', 'review_submit.submit.result.v1', true, 'Root review-submit coordinator job; child gate execution uses review_submit.gate', '2026-09-05 20:11:47.801218+00', '2026-09-05 20:11:47.801218+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('national_carbon.process_flow_graph_cache_build', 'calculator', 'maintenance', 'operator', 0, 1, 3600, 'national_carbon.process_flow_graph_cache_build.request.v1', 'national_carbon.process_flow_graph_cache_build.result.v1', false, 'Build national carbon process-flow graph cache through the maintenance worker', '2026-09-05 20:11:48.128912+00', '2026-09-05 20:11:48.128912+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lcia.scope_closure_check', 'calculator', 'solver', 'operator', 10, 3, 3600, 'lcia.scope_closure_check.request.v1', 'lcia.scope_closure_check.result.v1', false, 'Builds an immutable LCIA scope-closure certificate and report.', '2026-09-05 20:11:49.071558+00', '2026-09-05 20:11:49.071558+00', 'data_product', 'global', 'data_product.lcia_scope_closure_check.v1');
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('lcia_result.package_build', 'calculator', 'solver', 'operator', 0, 3, 3600, 'lcia_result.package_build.request.v2', 'lcia_result.package_build.result.v1', false, 'Builds an immutable LCIA result package from a published-only data-product snapshot and pinned/copied result artifacts.', '2026-09-05 20:11:48.158627+00', '2026-09-05 20:11:49.186055+00', 'data_product', 'global', 'data_product.lcia_result_package_build.v1');
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('review.quality_diagnostic', 'calculator', 'review_quality', 'operator', 20, 3, 3600, 'review.quality_diagnostic.request.v1', 'review.quality_diagnostic.report.v1', false, 'Manual Review Admin diagnostic for pending-review completeness and numerical evaluability.', '2026-09-05 20:11:51.110373+00', '2026-09-05 20:11:51.110373+00', NULL, NULL, NULL);
+INSERT INTO private.worker_job_kinds (job_kind, worker_runtime, worker_queue, default_visibility, default_priority, default_max_attempts, default_lease_seconds, payload_schema_version, result_schema_version, user_visible, description, created_at, updated_at, task_center_category, task_center_surface, presenter_key) VALUES ('ai.tidas_suggestion', 'calculator', 'ai', 'user', 0, 3, 900, 'ai.tidas_suggestion.request.v1', 'ai.tidas_suggestion.result.v1', false, 'Advisory TIDAS Process or Flow improvement handled by the reusable AI worker.', '2026-09-05 20:11:51.228767+00', '2026-09-05 20:11:51.228767+00', NULL, NULL, NULL);
 
 
 --
 -- Data for Name: app_runtime_config; Type: TABLE DATA; Schema: util; Owner: postgres
 --
 
-INSERT INTO util.app_runtime_config (config_key, config_value, updated_at) VALUES ('tiangong-lca-next.production.system-status', '{"phase": "normal", "reason": null, "releaseId": null, "schemaVersion": 1, "targetVersion": null, "estimatedEndAt": null}', '2026-09-02 10:31:22.041292+00');
+INSERT INTO util.app_runtime_config (config_key, config_value, updated_at) VALUES ('tiangong-lca-next.production.system-status', '{"phase": "normal", "reason": null, "releaseId": null, "schemaVersion": 1, "targetVersion": null, "estimatedEndAt": null}', '2026-09-05 20:11:51.136293+00');
 
 
 --
 -- Data for Name: embedding_queue_policy; Type: TABLE DATA; Schema: util; Owner: postgres
 --
 
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (1, '*', '*', '*', '*', 'normal', 10, 20, 300, '2026-09-02 10:31:17.752778+00', '2026-09-02 10:31:17.752778+00');
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (2, 'public', 'flows', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-02 10:31:17.752778+00', '2026-09-02 10:31:17.752778+00');
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (3, 'public', 'contacts', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-02 10:31:20.032941+00', '2026-09-02 10:31:20.032941+00');
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (4, 'public', 'flowproperties', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-02 10:31:20.032941+00', '2026-09-02 10:31:20.032941+00');
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (5, 'public', 'sources', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-02 10:31:20.032941+00', '2026-09-02 10:31:20.032941+00');
-INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (6, 'public', 'unitgroups', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-02 10:31:20.032941+00', '2026-09-02 10:31:20.032941+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (1, '*', '*', '*', '*', 'normal', 10, 20, 300, '2026-09-05 20:11:47.287915+00', '2026-09-05 20:11:47.287915+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (2, 'public', 'flows', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-05 20:11:47.287915+00', '2026-09-05 20:11:47.287915+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (3, 'public', 'contacts', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-05 20:11:49.27517+00', '2026-09-05 20:11:49.27517+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (4, 'public', 'flowproperties', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-05 20:11:49.27517+00', '2026-09-05 20:11:49.27517+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (5, 'public', 'sources', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-05 20:11:49.27517+00', '2026-09-05 20:11:49.27517+00');
+INSERT INTO util.embedding_queue_policy (id, scope_schema, scope_table, scope_edge_function, scope_embedding_column, mode, max_in_flight, max_read_count, retry_backoff_seconds, created_at, updated_at) VALUES (6, 'public', 'unitgroups', 'embedding_ft', 'embedding_ft', 'normal', 2, 20, 300, '2026-09-05 20:11:49.27517+00', '2026-09-05 20:11:49.27517+00');
 
 
 --
@@ -87021,5 +88768,8 @@ SELECT pg_catalog.setval('util.embedding_queue_policy_id_seq', 6, true);
 --
 
 
-INSERT INTO pgmq.meta SELECT (json_populate_record(NULL::pgmq.meta, '{"queue_name":"dataset_extraction_jobs","is_partitioned":false,"is_unlogged":false,"created_at":"2026-09-02T10:31:17.788319+00:00"}')).*;
-INSERT INTO pgmq.meta SELECT (json_populate_record(NULL::pgmq.meta, '{"queue_name":"embedding_jobs","is_partitioned":false,"is_unlogged":false,"created_at":"2026-09-02T10:31:17.811661+00:00"}')).*;
+SET ROLE postgres;
+SELECT pgmq.create('dataset_extraction_jobs');
+SELECT pgmq.create('embedding_jobs');
+RESET ROLE;
+CREATE TRIGGER dataset_derivative_rebuild_embedding_visibility_fence BEFORE UPDATE OF vt ON pgmq.q_embedding_jobs FOR EACH ROW EXECUTE FUNCTION util.guard_dataset_derivative_rebuild_embedding_visibility();

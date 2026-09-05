@@ -37,9 +37,24 @@ begin
     raise exception 'Snapshot source must contain no Auth users';
   end if;
   if (select count(*) from pg_catalog.pg_roles
-      where rolname in ('api_internal_executor', 'portal_public_executor')
-        and not (rolsuper or rolcanlogin or rolbypassrls or rolcreatedb or rolcreaterole or rolreplication)) <> 2 then
-    raise exception 'Expected two constrained Database executor roles';
+      where rolname in ('api_internal_executor', 'portal_public_executor', 'next_public_search_executor')
+        and rolinherit = (rolname = 'api_internal_executor')
+        and not (rolsuper or rolcanlogin or rolbypassrls or rolcreatedb or rolcreaterole or rolreplication)) <> 3 then
+    raise exception 'Expected three constrained Database executor roles';
+  end if;
+  -- PG15 has no per-membership INHERIT/SET flags. Never widen a PG17
+  -- administrative-only creator grant into an effective runtime membership.
+  if exists (
+    select from pg_catalog.pg_auth_members membership
+    join pg_catalog.pg_roles role on role.oid = membership.roleid
+    join pg_catalog.pg_roles member on member.oid = membership.member
+    where ((role.rolname in ('api_internal_executor', 'portal_public_executor', 'next_public_search_executor')
+            and member.rolname = 'postgres')
+           or (role.rolname = 'authenticated' and member.rolname = 'api_internal_executor'))
+      and coalesce((pg_catalog.to_jsonb(membership)->>'inherit_option')::boolean, true)
+          is distinct from coalesce((pg_catalog.to_jsonb(membership)->>'set_option')::boolean, true)
+  ) then
+    raise exception 'Executor membership flags cannot be represented safely on PostgreSQL 15';
   end if;
   if not exists (
     select from pg_catalog.pg_db_role_setting settings
@@ -57,7 +72,7 @@ select format(
   rolname, case when rolinherit then 'INHERIT' else 'NOINHERIT' end
 )
 from pg_catalog.pg_roles
-where rolname in ('api_internal_executor', 'portal_public_executor')
+where rolname in ('api_internal_executor', 'portal_public_executor', 'next_public_search_executor')
 order by rolname;
 
 select format('GRANT %I TO %I%s;', role.rolname, member.rolname,
@@ -65,13 +80,15 @@ select format('GRANT %I TO %I%s;', role.rolname, member.rolname,
 from pg_catalog.pg_auth_members membership
 join pg_catalog.pg_roles role on role.oid = membership.roleid
 join pg_catalog.pg_roles member on member.oid = membership.member
-where (role.rolname in ('api_internal_executor', 'portal_public_executor')
-       and member.rolname = 'postgres')
-   or (role.rolname = 'authenticated' and member.rolname = 'api_internal_executor')
+where ((role.rolname in ('api_internal_executor', 'portal_public_executor', 'next_public_search_executor')
+        and member.rolname = 'postgres')
+       or (role.rolname = 'authenticated' and member.rolname = 'api_internal_executor'))
+  and coalesce((pg_catalog.to_jsonb(membership)->>'inherit_option')::boolean, true)
+  and coalesce((pg_catalog.to_jsonb(membership)->>'set_option')::boolean, true)
 order by role.rolname, member.rolname;
 
--- Managed schema definitions stay with Supabase, but our NOINHERIT Portal
--- executor still needs its canonical explicit USAGE grant on extensions.
+-- Managed schema definitions stay with Supabase, but NOINHERIT public
+-- executors still need their canonical explicit USAGE grants on extensions.
 select format('GRANT %s ON SCHEMA %I TO %I%s;',
   acl.privilege_type, namespace.nspname, role.rolname,
   case when acl.is_grantable then ' WITH GRANT OPTION' else '' end)
@@ -79,8 +96,14 @@ from pg_catalog.pg_namespace namespace
 cross join lateral aclexplode(namespace.nspacl) acl
 join pg_catalog.pg_roles role on role.oid = acl.grantee
 where namespace.nspname = 'extensions'
-  and role.rolname in ('api_internal_executor', 'portal_public_executor')
+  and role.rolname in ('api_internal_executor', 'portal_public_executor', 'next_public_search_executor')
 order by namespace.nspname, role.rolname, acl.privilege_type;
+
+-- The pinned Supabase base grants broad public-schema defaults. pg_dump only
+-- adds desired ACL entries; clear those base defaults before its exact grants.
+select 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES FROM PUBLIC, anon, authenticated, service_role;';
+select 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON SEQUENCES FROM PUBLIC, anon, authenticated, service_role;';
+select 'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM PUBLIC, anon, authenticated, service_role;';
 
 select format('ALTER ROLE authenticator SET pgrst.db_pre_request = %L;',
   substring(setting from length('pgrst.db_pre_request=') + 1))

@@ -70,11 +70,15 @@ What the script does:
 - Pull a full schema-only dump with `pg_dump --schema-only`
 - Run `docker/desensitize_data.sql.sh` automatically
 - Keep `api`, `private`, `public`, `util`, `archive`, `pgmq`, and required business extensions
-- Export only the two constrained Database executor roles, their reviewed memberships, the OAuth pre-request setting, the exact Database-owned Auth-to-private-user synchronization trigger, nine allowlisted migration-owned catalogs, and the two empty queue registrations; no user/business rows or credential catalogs are copied
+- Export the three constrained Database executor roles, their effective reviewed memberships, the OAuth pre-request setting, the exact Database-owned Auth-to-private-user synchronization trigger and nine allowlisted migration-owned catalogs; no user/business rows or credential catalogs are copied
+- Recreate the two reviewed logged queues through `pgmq.create` as their `postgres` owner, then restore the Database-owned embedding visibility fence. Copying `pgmq.meta` rows alone does not create the extension-owned queue/archive tables
+- Preserve the global `postgres` default-function ACL that revokes PUBLIC execution and clear the base image's broader public-schema defaults before restoring the reviewed grants. PG17 administrative-only creator memberships are omitted instead of becoming effective PG15 memberships; mixed INHERIT/SET flags fail before export
 - Remove Supabase base-managed schemas/objects (for example `auth`, `extensions`, `graphql*`, `storage`, `supabase_functions`) and obvious PG17 dump noise such as `\restrict`, `\unrestrict`, and `SET transaction_timeout = 0;`
 - Write the filtered result to `docker/volumes/db/init/data.sql`
 
 The Docker image remains PostgreSQL 15.8. The filter removes only PG17's unsupported `MAINTAIN` token from table ACL blocks; it grants no replacement privilege and leaves function bodies unchanged. Existing canonical function-body whitespace is preserved. Supabase-managed Auth/Storage migrations and webhook setup remain owned by their existing pinned services/base initialization, not this snapshot.
+
+The current pair is Edge `3f1748588a186465b00eb9056f1d8dc3d8843e80` and Database `e9888c9385356ee6df66c2910a99e29f9fa7e08c` (migration head `20260905170004`). Both Hybrid entrypoints forward visibility/selected-team context to their V2 RPCs; Process also forwards the dataset-type filter. The snapshot contract checks that pairing and the three executor roles.
 
 This is a **fresh-install initializer**, not an upgrade script for an existing database volume. Existing installs must apply Database-owned migrations through their operator workflow, retain backups, and include `api` in `PGRST_DB_SCHEMAS`; never expose `private`, `util`, or `archive`. Run the generator twice (`--check` on the second run), the snapshot contract test, and an isolated restore against the pinned Docker database plus its normal Auth migrations before updating the committed artifact.
 

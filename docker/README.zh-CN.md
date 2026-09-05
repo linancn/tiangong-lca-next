@@ -73,11 +73,15 @@ REMOTE_DB_URL='postgresql://postgres:<local-password>@host.docker.internal:54322
 - 使用 `pg_dump --schema-only` 拉取本地完整 schema dump
 - 自动执行 `docker/desensitize_data.sql.sh` 脱敏
 - 保留 `api`、`private`、`public`、`util`、`archive`、`pgmq` 与必要业务扩展
-- 仅导出两个受约束的 Database 执行角色及其成员关系、OAuth pre-request 设置、Database 自有的 Auth 到私有用户表同步触发器、九个允许的迁移静态目录与两个空队列注册；不复制任何用户、业务行或凭据目录
+- 导出三个受约束的 Database 执行角色及有效成员关系、OAuth pre-request 设置、Database 自有的 Auth 到私有用户表同步触发器与九个允许的迁移静态目录；不复制任何用户、业务行或凭据目录
+- 由 `postgres` 通过 `pgmq.create` 重建两个已审核的持久化队列，再恢复 Database 自有的 embedding 可见性 fence；仅复制 `pgmq.meta` 不能创建扩展拥有的队列与归档表
+- 保留撤销 PUBLIC 函数执行权的全局默认 ACL，并在恢复源码授权前清除底座更宽的 public-schema 默认授权；PG17 的仅管理创建者成员关系不会转换为 PG15 运行权限，无法安全表达的 INHERIT/SET 组合在导出前失败
 - 去掉由 Supabase 底座负责的 schema/object（例如 `auth`、`extensions`、`graphql*`、`storage`、`supabase_functions`）以及明显的 PG17 dump 噪音（如 `\restrict`、`\unrestrict`、`SET transaction_timeout = 0;`）
 - 写入 `docker/volumes/db/init/data.sql`
 
 Docker 仍使用 PostgreSQL 15.8。过滤器只在表 ACL 块移除 PG17 的 `MAINTAIN` 权限标记，不授予替代权限，不修改函数体，保留权威源码的函数空白。Auth/Storage 自身迁移和 webhook 底座仍由已锁定的服务与初始化流程负责。
+
+当前配对为 Edge `3f1748588a186465b00eb9056f1d8dc3d8843e80` 与 Database `e9888c9385356ee6df66c2910a99e29f9fa7e08c`（迁移头 `20260905170004`）。两个 Hybrid 入口向 V2 RPC 转发可见性与选定团队上下文，Process 还转发数据集类型；快照契约同时检查配对与三个执行角色。
 
 此文件仅用于**全新安装初始化**，不是现有数据卷的升级脚本。已有安装应备份后走 Database 自身迁移流程，并在 `PGRST_DB_SCHEMAS` 中包含 `api`；不得暴露 `private`、`util` 或 `archive`。提交前运行两次生成（第二次 `--check`）、快照契约测试，并在隔离的锁定 Docker 数据库及正常 Auth 迁移上验证恢复。
 
