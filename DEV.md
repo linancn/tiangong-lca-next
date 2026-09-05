@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
-lastReviewedNote: 'Reviewed for Next #1028: Process/Flow matched Hybrid service changes use the existing Node/pnpm bootstrap, focused serial tests, and paired Dev delivery workflow without new commands or environment switches.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 1531c51676617f8a606c2fdc2897239809fc8dfb
+lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
 ---
 
 # Development Bootstrap
