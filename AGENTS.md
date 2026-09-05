@@ -16,6 +16,7 @@ whenToUpdate:
   - when the current documentation system becomes redundant or ambiguous
 checkPaths:
   - AGENTS.md
+  - plan.md
   - DEV.md
   - README.md
   - README_CN.md
@@ -83,6 +84,7 @@ Required principles:
 | Document | Owns | Does not own |
 | --- | --- | --- |
 | `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, hard boundaries | deep implementation details, large reference material |
+| `plan.md` | current hosted Supabase and GitHub Pages rebuild status, milestones, decisions, blockers, and next action | stable repo-wide rules, schema truth, or general validation policy |
 | `DEV.md` | local bootstrap and the shortest repeatable work loop | repo contract, branch policy, proof matrix |
 | `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, governed-doc inventory | prose explanations and narrative summaries |
 | `docs/agents/repo-validation.md` | minimum proof by change type and PR validation note shape | bootstrap, business logic details |
@@ -112,8 +114,9 @@ Read in this order:
 
 1. `AGENTS.md`
 2. `.docpact/config.yaml`
-3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
-4. the narrow source doc that owns the current subject
+3. `plan.md` when working on this fork's hosted Supabase and GitHub Pages rebuild
+4. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
+5. the narrow source doc that owns the current subject
 
 Do not start from additional governed source docs, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
@@ -232,6 +235,7 @@ Use the role table in this file as the update map.
 - if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
 - if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
 - if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
+- for every work session on this fork's hosted Supabase and GitHub Pages rebuild, read `plan.md` before changing files; update it before handoff when progress, decisions, blockers, validation, or the next action changed, and commit and push each plan update with the related work or as its own documentation commit
 - if a document is governed but not in the default first-load surface, route to it on demand instead of duplicating its rules into `AGENTS.md` or `DEV.md`
 - do not copy the same rule into multiple docs just to make it easier to find
 
