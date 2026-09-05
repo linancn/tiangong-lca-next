@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
-lastReviewedNote: 'Reviewed for Next #1028: the changed Process/Flow service and page paths remain covered by focused suites; no coverage queue or historical reference-baseline update is required.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 1531c51676617f8a606c2fdc2897239809fc8dfb
+lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
 ---
 
 # Testing Execution State

@@ -52,7 +52,6 @@ minimumReleaseAgeExclude:
   - '@umijs/utils@4.7.9'
   - '@umijs/zod2ts@4.7.9'
   - '@utoo/pack-darwin-arm64@1.5.13'
-  - '@utoo/pack-darwin-x64@1.5.13'
   - '@utoo/pack-linux-arm64-gnu@1.5.13'
   - '@utoo/pack-linux-arm64-musl@1.5.13'
   - '@utoo/pack-linux-x64-gnu@1.5.13'

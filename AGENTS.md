@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
-lastReviewedNote: 'Reviewed for Next #1028: matched Process/Flow Hybrid requests forward canonical filters and team context without moving authorization, adaptive retrieval, or fallback ownership out of Edge and Database.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 1531c51676617f8a606c2fdc2897239809fc8dfb
+lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
