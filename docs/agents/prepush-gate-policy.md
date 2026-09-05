@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: focused graph compatibility tests and full-coverage proof use the existing controlled pre-push gate; trigger and bypass policy remain unchanged.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: focused Flow/Process API proof and final full-gate ownership use the existing controlled pre-push path; trigger and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

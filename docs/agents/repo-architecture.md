@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration reuses the view compatibility service and separates calculation state from persistence state without changing layer ownership.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: the version-aware Process/Flow section now records canonical filter forwarding, public institution team preservation, and selected-team fail-closed behavior without changing layer ownership.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -106,7 +106,7 @@ Rules:
 
 ### Version-aware Process/Flow Hybrid Search
 
-`src/services/general/hybridVersions.ts` validates the opt-in `versionScope: matched` acknowledgement and complete, unique `id/version` identities. Process/Flow services request `version_scope: matched` and `match_count: 200`; a missing acknowledgement, malformed identity, duplicate exact row, authentication failure or transport failure is not a successful empty search. A genuinely acknowledged empty page returns success with explicit paging/total metadata. Individual display-mapping failures preserve the validated exact key rather than dropping the whole page or substituting the latest version.
+`src/services/general/hybridVersions.ts` validates the opt-in `versionScope: matched` acknowledgement and complete, unique `id/version` identities. Process/Flow services request `version_scope: matched` and `match_count: 200`; Process forwards its selected dataset type, while Flow forwards normalized type, input-direction, and classification filters. Public `tg`/`co` views preserve an optional institution `tid`; selected-team `te` views resolve the current user's team and return a genuine empty result before Edge invocation when no team is available. Next forwards these bounds but never decides membership or visibility. A missing acknowledgement, malformed identity, duplicate exact row, authentication failure or transport failure is not a successful empty search. A genuinely acknowledged empty page returns success with explicit paging/total metadata. Individual display-mapping failures preserve the validated exact key rather than dropping the whole page or substituting the latest version.
 
 Main Process/Flow tables and their existing pickers retain version-qualified row/selection keys. Detail and reference actions keep the returned version; the client does not collapse rows by ID or rerank by the number of versions.
 

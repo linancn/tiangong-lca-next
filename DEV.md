@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit compatibility uses the existing Node/pnpm bootstrap, serial focused tests, and controlled dev delivery workflow without new environment switches.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: Process/Flow matched Hybrid service changes use the existing Node/pnpm bootstrap, focused serial tests, and paired Dev delivery workflow without new commands or environment switches.'
 ---
 
 # Development Bootstrap

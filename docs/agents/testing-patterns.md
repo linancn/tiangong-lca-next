@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: immutable three-way graph reconciliation, edit-load behavior, and service-boundary tests fit the existing pure-helper, component, and API patterns.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: async team resolution, request normalization, public-team preservation, and fail-closed cases fit the existing service/API testing patterns.'
 ---
 
 # Testing Patterns Reference

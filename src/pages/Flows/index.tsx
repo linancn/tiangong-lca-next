@@ -631,6 +631,7 @@ const TableList: FC = () => {
                       currentKeyWord,
                       searchFilters,
                       currentStateCode,
+                      tid ?? '',
                     ),
                   );
                 }

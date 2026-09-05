@@ -687,6 +687,7 @@ describe('FlowsPage', () => {
         'steel',
         { flowType: '' },
         '20',
+        'team-1',
       ),
     );
   });
@@ -880,7 +881,7 @@ describe('FlowsPage', () => {
     );
   });
 
-  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+  it('uses an empty team id for both search modes when the route omits tid', async () => {
     mockLocation = {
       pathname: '/mydata/flows',
       search: '',
@@ -903,6 +904,21 @@ describe('FlowsPage', () => {
         { flowType: '' },
         'all',
         undefined,
+        '',
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+
+    await waitFor(() =>
+      expect(mockFlowHybridSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        { flowType: '' },
+        'all',
         '',
       ),
     );

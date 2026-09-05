@@ -2345,9 +2345,15 @@ describe('flow_hybrid_search', () => {
       data: [{ '@value': 'GLO', '#text': 'Global' }],
     });
 
-    const result = await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'nitrogen', {
-      flowType: '',
-    });
+    const result = await flow_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'nitrogen',
+      { flowType: '', classification: [] },
+      undefined,
+      '11111111-1111-4111-8111-111111111111',
+    );
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith(
       'flow_hybrid_search',
@@ -2356,10 +2362,11 @@ describe('flow_hybrid_search', () => {
           version_scope: 'matched',
           match_count: 200,
           query: 'nitrogen',
-          filter_condition: { flowType: '' },
+          filter_condition: {},
           data_source: 'tg',
           page_size: 10,
           page_current: 1,
+          team_id: '11111111-1111-4111-8111-111111111111',
         },
         headers: { Authorization: 'Bearer token' },
         region: FunctionRegion.UsEast1,
@@ -2487,14 +2494,23 @@ describe('flow_hybrid_search', () => {
   });
 
   it('passes classification filters to hybrid search function', async () => {
+    mockGetTeamIdByUserId.mockResolvedValue('11111111-1111-4111-8111-111111111111');
     mockFunctionsInvoke.mockResolvedValue({
       data: { versionScope: 'matched', data: [], total_count: 0 },
     });
 
-    await flow_hybrid_search({ current: 1, pageSize: 10 }, 'en', 'tg', 'steam', {
-      flowType: 'Product flow',
-      classification: [{ scope: 'classification', code: '01' }],
-    });
+    await flow_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'te',
+      'steam',
+      {
+        flowType: 'Product flow',
+        classification: [{ scope: 'classification', code: '01' }],
+      },
+      20,
+      '11111111-1111-4111-8111-111111111111',
+    );
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith(
       'flow_hybrid_search',
@@ -2507,10 +2523,47 @@ describe('flow_hybrid_search', () => {
             flowType: 'Product flow',
             classification: [{ scope: 'classification', code: '01' }],
           },
-          data_source: 'tg',
+          data_source: 'te',
           page_size: 10,
           page_current: 1,
+          state_code: 20,
+          team_id: '11111111-1111-4111-8111-111111111111',
         },
+      }),
+    );
+  });
+
+  it('does not broaden team Hybrid search when no selected team is available', async () => {
+    const result = await flow_hybrid_search({ current: 2, pageSize: 10 }, 'en', 'te', 'steam', {});
+    const defaultPageResult = await flow_hybrid_search({}, 'en', 'te', 'steam', {});
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], page: 2, success: true, total: 0 });
+    expect(defaultPageResult).toEqual({ data: [], page: 1, success: true, total: 0 });
+  });
+
+  it('preserves the selected public institution team in Hybrid search', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { versionScope: 'matched', data: [], total_count: 0 },
+    });
+
+    await flow_hybrid_search(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'steam',
+      {},
+      undefined,
+      '11111111-1111-4111-8111-111111111111',
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'flow_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          data_source: 'tg',
+          team_id: '11111111-1111-4111-8111-111111111111',
+        }),
       }),
     );
   });

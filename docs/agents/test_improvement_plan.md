@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: focused pure-helper, component, and service tests cover graph hydration and safe persistence without changing test infrastructure or strategy.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: request-shape, team resolution, fail-closed, and exact-version API cases fit the existing service-unit strategy without changing test infrastructure.'
 ---
 
 # Testing Strategy
