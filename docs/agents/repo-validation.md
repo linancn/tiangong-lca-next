@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 1531c51676617f8a606c2fdc2897239809fc8dfb
+lastReviewedCommit: 589205148348ee78f8fa21878d18829f4e5a9439
 lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
 related:
   - ../AGENTS.md
