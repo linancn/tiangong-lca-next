@@ -25,8 +25,8 @@ checkPaths:
   - .env
   - .env.development
 lastReviewedAt: 2026-09-05
-lastReviewedCommit: 7210e700dec938743620a2ff3e1b3948eb3ed16f
-lastReviewedNote: 'Created the living plan from the initial fork, hosted Supabase, and GitHub Pages assessment.'
+lastReviewedCommit: 2da5a1d3148d0bb284e660d1705d5cf7aeab5b2e
+lastReviewedNote: 'Recorded the living plan on the fork dev branch and made plan maintenance persistent.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -62,8 +62,8 @@ Overall state: planning and baseline assessment
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Documentation changes pending commit | Current checkout is on `dev` |
-| Daily branch | In progress | Local `dev` exists; the first push is pending |
+| Working tree | Clean before this status update | Current checkout tracks `origin/dev` |
+| Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Blocked | Required `24.19.0`; observed `24.14.0` |
 | pnpm | Blocked in current managed workspace | Required `11.24.0`; pnpm could not create its tool directory under the managed home path |
 | Local application baseline | Pending | Install and startup have not completed with the exact toolchain |
@@ -75,7 +75,7 @@ Overall state: planning and baseline assessment
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: push `dev`, establish the exact Node/pnpm baseline, install dependencies, and record the untouched application's startup errors.
+Current next action: establish the exact Node/pnpm baseline, install dependencies, and record the untouched application's startup errors.
 
 ## Decisions
 
@@ -93,7 +93,7 @@ Current next action: push `dev`, establish the exact Node/pnpm baseline, install
 - [x] Configure the upstream remote.
 - [x] Confirm the initial working tree is clean.
 - [x] Create local `dev` from the current fork `main`.
-- [ ] Push `dev` to the fork and set its upstream tracking branch.
+- [x] Push `dev` to the fork and set its upstream tracking branch.
 - [ ] Install and select Node `24.19.0`.
 - [ ] Install and verify pnpm `11.24.0`.
 - [ ] Run `pnpm install --frozen-lockfile`.
@@ -264,3 +264,4 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Created this living plan and registered its maintenance rule in the repository contract.
 - Recorded the requirement to commit and push every plan update.
 - Created local `dev` from the fork's current `main`.
+- Committed the living plan as `2da5a1d3` and pushed `dev` to the fork with upstream tracking.
