@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration uses existing Process read services and the established bundle mutation path; database, Edge, authentication, and environment ownership are unchanged.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: matched Hybrid requests now carry canonical entity/team bounds to paired Edge and Database V2 contracts; authentication, environment selection, and promotion order are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -100,7 +100,7 @@ This permits this delivery's exact generated mirror and consumer contract; it is
 
 Release follow-up: the Edge authentication/order corrections at `5d0dd0078a438513d8d2484d2c211def7a0d0cda` are included in Main merge `cb2b34210366bdc1f7ca93a23863d6b2a9931c02` and deployed to Dev/Main before this consumer release. The mirror now pins that reviewed source. Its paired `data.sql` is generated only from the exact Database migration rebuild described in `docker/README.md`; it includes the API/private/archive boundaries and static capability catalogs needed by those functions, without copying production data. Existing self-hosted database volumes must use Database-owned migrations, not replay the fresh-install snapshot.
 
-The Process/Flow Hybrid services keep the current user JWT and data-source/state scope, request the fixed 200-candidate matched mode, and reject an old backend that does not acknowledge that contract. They do not retry silently against a latest-only API.
+The Process/Flow Hybrid services keep the current user JWT and data-source/state scope, request the fixed 200-candidate matched mode, and reject an old backend that does not acknowledge that contract. Process forwards the selected dataset type; Flow forwards only normalized type, input-direction, and classification filters. Public `tg`/`co` views preserve an optional institution team, while `te` resolves the current user's team and fails closed to an acknowledged empty result when none is available. Next does not authorize those filters and does not retry silently against a latest-only API; Edge validates the request and `database-engine` owns visibility, adaptive exact/HNSW routing, and threshold fallback.
 
 | Scenario | Correct workflow |
 | --- | --- |

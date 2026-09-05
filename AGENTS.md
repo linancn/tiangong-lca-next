@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: exact-version LifecycleModel edit hydration stays page-and-service local and preserves authorization, repository ownership, and dev delivery boundaries.'
+lastReviewedAt: 2026-09-05
+lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
+lastReviewedNote: 'Reviewed for Next #1028: matched Process/Flow Hybrid requests forward canonical filters and team context without moving authorization, adaptive retrieval, or fallback ownership out of Edge and Database.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

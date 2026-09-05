@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-04"
-lastReviewedCommit: "9a73d8037a4557a0b34d084c0435c26045531721"
-lastReviewedNote: 'Reviewed for Next #1023: edit-mode LifecycleModel graph compatibility remains within the existing frontend, service, and test ownership rules; no routing, baseline, or waiver rule changed.'
+lastReviewedAt: "2026-09-05"
+lastReviewedCommit: "3af7c363c0144a5fe6f186b2e99348339eb8ac1b"
+lastReviewedNote: 'Reviewed for Next #1028: Process/Flow matched Hybrid filter and team forwarding remains within existing page, service, test, Edge, and Database ownership routes; no baseline or waiver rule changed.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -1260,7 +1260,17 @@ export async function process_hybrid_search(
   filterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
+  tid: string | [] = [],
 ) {
+  const teamId = await getProcessTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return {
+      data: [],
+      success: true,
+      page: params.current ?? 1,
+      total: 0,
+    };
+  }
   let result: any = {};
   const bodyParams: { [key: string]: any } = {
     query: queryText,
@@ -1276,6 +1286,9 @@ export async function process_hybrid_search(
   }
   if (typeOfDataSet && typeOfDataSet !== 'all') {
     bodyParams['type_of_data_set'] = typeOfDataSet;
+  }
+  if (teamId) {
+    bodyParams['team_id'] = teamId;
   }
   const session = await supabase.auth.getSession();
   if (session.data.session) {
