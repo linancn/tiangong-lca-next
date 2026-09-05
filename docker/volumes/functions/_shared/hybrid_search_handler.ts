@@ -29,6 +29,7 @@ export interface HybridSearchRouteConfig {
   forwardVisibilityContext?: boolean;
   forwardProcessTypeFilter?: boolean;
   requireSelectedTeamContext?: boolean;
+  /** Applies to matched-version RPCs; legacy requests retain Edge fallback. */
   rpcOwnsThresholdFallback?: boolean;
 }
 
@@ -259,13 +260,17 @@ export function createHybridSearchHandler(
         duration_ms: dependencies.now() - embeddingStartedAt,
         embedding_dimensions: embedding.length,
       });
+      const forwardVisibilityContext =
+        config.forwardVisibilityContext && (versioned || !config.versionedRpcName);
       const requestBody = buildHybridSearchRpcRequest(
         parsedRequest.queryText,
         queryTerms,
         `[${embedding.join(',')}]`,
         parsedRequest.rpcOptions,
-        config.forwardVisibilityContext ? parsedRequest.visibilityOptions : undefined,
-        config.forwardProcessTypeFilter ? parsedRequest.entityFilterOptions : undefined,
+        forwardVisibilityContext ? parsedRequest.visibilityOptions : undefined,
+        versioned && config.forwardProcessTypeFilter
+          ? parsedRequest.entityFilterOptions
+          : undefined,
       );
 
       try {
@@ -299,7 +304,7 @@ export function createHybridSearchHandler(
       let { data, error } = await rpcClientContext.client.rpc(rpcName, requestBody);
       let fallbackUsed = false;
       if (
-        !config.rpcOwnsThresholdFallback &&
+        !(versioned && config.rpcOwnsThresholdFallback) &&
         !error &&
         Array.isArray(data) &&
         data.length === 0 &&

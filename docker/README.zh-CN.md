@@ -81,7 +81,7 @@ REMOTE_DB_URL='postgresql://postgres:<local-password>@host.docker.internal:54322
 
 Docker 仍使用 PostgreSQL 15.8。过滤器只在表 ACL 块移除 PG17 的 `MAINTAIN` 权限标记，不授予替代权限，不修改函数体，保留权威源码的函数空白。Auth/Storage 自身迁移和 webhook 底座仍由已锁定的服务与初始化流程负责。
 
-当前配对为 Edge `3f1748588a186465b00eb9056f1d8dc3d8843e80` 与 Database `e9888c9385356ee6df66c2910a99e29f9fa7e08c`（迁移头 `20260905170004`）。两个 Hybrid 入口向 V2 RPC 转发可见性与选定团队上下文，Process 还转发数据集类型；快照契约同时检查配对与三个执行角色。
+当前配对为 Edge `ceff9c4893e6fa9ab2b6e163c57b9d6428cbde37` 与 Database `e9888c9385356ee6df66c2910a99e29f9fa7e08c`（迁移头 `20260905170004`）。两个 Hybrid 入口向 V2 RPC 转发可见性与选定团队上下文，Process 还转发数据集类型；省略模式或显式 `latest` 的 Process/Flow 请求保留旧 RPC 参数与 Edge 阈值重试，`matched` 模式继续由 V2 数据库 RPC 回退。快照契约同时检查配对与三个执行角色。
 
 此文件仅用于**全新安装初始化**，不是现有数据卷的升级脚本。已有安装应备份后走 Database 自身迁移流程，并在 `PGRST_DB_SCHEMAS` 中包含 `api`；不得暴露 `private`、`util` 或 `archive`。提交前运行两次生成（第二次 `--check`）、快照契约测试，并在隔离的锁定 Docker 数据库及正常 Auth 迁移上验证恢复。
 

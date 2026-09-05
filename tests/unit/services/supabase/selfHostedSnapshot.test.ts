@@ -6,7 +6,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const SNAPSHOT = path.join(ROOT, 'docker/volumes/db/init/data.sql');
 const SOURCE_COMMIT = 'e9888c9385356ee6df66c2910a99e29f9fa7e08c';
-const EDGE_COMMIT = '3f1748588a186465b00eb9056f1d8dc3d8843e80';
+const EDGE_COMMIT = 'ceff9c4893e6fa9ab2b6e163c57b9d6428cbde37';
 
 describe('self-hosted Database snapshot compatibility', () => {
   const sql = fs.readFileSync(SNAPSHOT, 'utf8');

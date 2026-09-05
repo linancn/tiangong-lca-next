@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 96e5c1ae6fdf6e1f524f38fe7d7aecb494706c71
-lastReviewedNote: 'Reviewed for Next #1035: pair reviewed Edge/Database artifacts and preserve constrained roles, effective memberships, default ACLs and usable empty queue storage. Owner boundaries, dependencies, ordinary full push gate and immutable release proof rules remain unchanged.'
+lastReviewedCommit: ff0dc9524c17053a7eab7f3715e54df7d4e7a20e
+lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
