@@ -26,7 +26,7 @@ checkPaths:
   - .env.development
 lastReviewedAt: 2026-09-06
 lastReviewedCommit: e435f1e82c3a9389f7c3fd50ecaad3f3059e2295
-lastReviewedNote: 'Recorded the user-supplied PRISM and Future of LCA naming plus the three unapproved palette directions derived from the reviewed UI reference.'
+lastReviewedNote: 'Recorded the delegated Measured Indigo selection and the logo-generation plan requirement that currently blocks the favicon and shipped branding work.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -69,8 +69,9 @@ Overall state: Milestone 0 complete; Milestone 1 brand identity selection is in 
 | Local application baseline | Complete | Frozen install, lint, dev startup, and Chromium inspection passed; only the recorded development warnings remain |
 | Plan log delivery | Complete for Milestone 0 | The third controlled push completed the full gate and delivered the baseline/log commits to `origin/dev` |
 | Organization and product naming | Confirmed | Organization: `PRISM`; product: `Future of LCA` |
-| Color system | Awaiting user selection | Three original dark-workspace directions are ready: Prism Signal, Measured Indigo, and Living Spectrum |
-| Logo, favicon, and support contact | Pending | These inputs remain unresolved and will be handled after palette selection |
+| Color system | Selected | Measured Indigo: `#08111F`, `#142033`, `#F5F7FA`, `#6366F1`, `#22D3EE`, and `#F59E0B` |
+| Logo and favicon | Blocked | The required Recraft V4.1 vector workflow rejected both submission attempts because the connected generation account requires a Basic plan or higher |
+| Support contact | Selected | Use the fork repository's GitHub Issues surface until the owner supplies a verified support mailbox; do not publish an invented email address |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
 | Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
@@ -79,7 +80,7 @@ Overall state: Milestone 0 complete; Milestone 1 brand identity selection is in 
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: select one of the three prepared Milestone 1 palette directions and identify any colors that need revision.
+Current next action: enable Basic-plan access for the required Recraft V4.1 vector workflow, then generate and select the PRISM symbol before deriving the favicon and changing shipped branding surfaces.
 
 ## Decisions
 
@@ -92,6 +93,8 @@ Current next action: select one of the three prepared Milestone 1 palette direct
 7. Use the official GitHub Pages artifact workflow rather than adapting the canonical EdgeOne release workflow.
 8. Use `PRISM` as the organization name and `Future of LCA` as the product name.
 9. Treat `calvinw/product-graph-editor` as UI inspiration only: retain its dark technical workspace character without copying its logo, composition, artwork, or distinctive devices.
+10. Use the Measured Indigo palette for the identity: `#08111F` background, `#142033` surface, `#F5F7FA` text, `#6366F1` primary, `#22D3EE` accent, and `#F59E0B` support.
+11. Use the fork repository's GitHub Issues surface as the initial support contact instead of inventing an unverified support mailbox.
 
 ## Milestone 0: Fork Baseline
 
@@ -254,6 +257,15 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-06 — Milestone 1 delegated palette and logo attempt
+
+- Interpreted the user's instruction to make the remaining choices as explicit auto/no-question authorization for the identity workflow.
+- Selected and persisted Measured Indigo as the identity palette: background `#08111F`, surface `#142033`, text `#F5F7FA`, primary `#6366F1`, accent `#22D3EE`, and support `#F59E0B`.
+- Chose the fork repository's GitHub Issues surface as the initial support contact so the application does not publish an invented or unverified mailbox.
+- Prepared three original vector-symbol directions for PRISM: a calibrated-band `P`, a shared-datum refractive plane, and a stepped evidence trace. Each avoids the reviewed reference's logo and distinctive devices.
+- Submitted the required three-candidate Recraft V4.1 vector batch twice, as required by the brand-asset workflow's retry policy. Both attempts failed before generation with `Requires basic plan or higher.` No logo candidate or favicon was produced, and no shipped branding file changed.
+- The next action is to enable Basic-plan access for that required vector workflow, then generate the three marks, select the strongest under the delegated auto/no-question authority, derive the favicon, and continue the shipped-branding replacement.
 
 ### 2026-09-06 — Milestone 1 identity intake and palette review
 
