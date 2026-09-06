@@ -683,6 +683,7 @@ describe('ProcessesPage', () => {
         {},
         '20',
         'gate to gate',
+        'team-1',
       ),
     );
   });

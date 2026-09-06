@@ -56,6 +56,7 @@ PG_IMAGE="${PG_IMAGE:-postgres:17}"
 DESENSITIZE_SCRIPT="${DESENSITIZE_SCRIPT:-${REPO_ROOT}/docker/desensitize_data.sql.sh}"
 FILTER_SCRIPT="${FILTER_SCRIPT:-${REPO_ROOT}/docker/scripts/filter-data-sql.sh}"
 BOOTSTRAP_SCRIPT="${SCRIPT_DIR}/export-snapshot-bootstrap.sql"
+QUEUE_BOOTSTRAP_SCRIPT="${SCRIPT_DIR}/export-snapshot-queue-bootstrap.sql"
 SOURCE_ROOT="${DATABASE_SOURCE_ROOT:-}"
 SOURCE_COMMIT="${DATABASE_SOURCE_COMMIT:-}"
 
@@ -85,6 +86,13 @@ if [[ ! -f "${FILTER_SCRIPT}" ]]; then
   echo "[sync-db] filter script not found: ${FILTER_SCRIPT}" >&2
   exit 1
 fi
+
+for bootstrap_script in "${BOOTSTRAP_SCRIPT}" "${QUEUE_BOOTSTRAP_SCRIPT}"; do
+  if [[ ! -f "${bootstrap_script}" ]]; then
+    echo "[sync-db] snapshot bootstrap script not found: ${bootstrap_script}" >&2
+    exit 1
+  fi
+done
 
 if [[ -z "${REMOTE_DB_URL}" ]]; then
   REMOTE_DB_URL="$(bash "${DESENSITIZE_SCRIPT}" --print-remote-db-url)"
@@ -176,15 +184,14 @@ docker run --rm "${PG_IMAGE}" pg_dump --data-only --column-inserts \
   --dbname="${REMOTE_DB_URL}" "${CATALOG_ARGS[@]}" > "${CATALOG_FILE}"
 bash "${DESENSITIZE_SCRIPT}" --input "${CATALOG_FILE}" --in-place --no-backup --strict --quiet
 bash "${FILTER_SCRIPT}" --input "${CATALOG_FILE}" --output "${TMP_DIR}/filtered-catalogs.sql"
-# pg_dump excludes this extension-owned table even with an explicit --table.
-# Queue names/configuration belong to migrations; queue messages stay absent.
-docker run --rm "${PG_IMAGE}" psql --dbname="${REMOTE_DB_URL}" -X -A -t -v ON_ERROR_STOP=1 \
-  -c "select format('INSERT INTO pgmq.meta SELECT (json_populate_record(NULL::pgmq.meta, %L)).*;', row_to_json(meta)::text) from pgmq.meta meta order by queue_name" \
-  > "${TMP_DIR}/queue-catalog.sql"
+# pg_dump omits extension-owned queue storage and its attached application
+# trigger. Metadata-only INSERTs cannot create usable queues on a fresh host.
+docker run --rm -i "${PG_IMAGE}" psql --dbname="${REMOTE_DB_URL}" -X -q -A -t -v ON_ERROR_STOP=1 \
+  < "${QUEUE_BOOTSTRAP_SCRIPT}" > "${TMP_DIR}/queue-bootstrap.sql"
 
 {
   printf '%s\n' "-- Database source: ${SOURCE_COMMIT}" "-- Migration head: ${EXPECTED_HEAD}"
-  cat "${BOOTSTRAP_FILE}" "${FILTERED_DUMP_FILE}" "${TMP_DIR}/filtered-catalogs.sql" "${TMP_DIR}/queue-catalog.sql"
+  cat "${BOOTSTRAP_FILE}" "${FILTERED_DUMP_FILE}" "${TMP_DIR}/filtered-catalogs.sql" "${TMP_DIR}/queue-bootstrap.sql"
 } > "${COMBINED_FILE}"
 
 if cmp -s "${DATA_SQL}" "${COMBINED_FILE}"; then

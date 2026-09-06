@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: exact-version LifecycleModel edit hydration stays page-and-service local and preserves authorization, repository ownership, and dev delivery boundaries.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 32758423c199da08cf1a9c26c5e2dba5be6c8f69
+lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

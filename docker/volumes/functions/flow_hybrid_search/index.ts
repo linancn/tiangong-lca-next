@@ -9,6 +9,9 @@ Deno.serve(
     entityLabel: 'Flow',
     entityPlural: 'flows',
     rpcName: 'hybrid_search_flows',
-    versionedRpcName: 'hybrid_search_flow_versions_v1',
+    versionedRpcName: 'hybrid_search_flow_versions_v2',
+    forwardVisibilityContext: true,
+    requireSelectedTeamContext: true,
+    rpcOwnsThresholdFallback: true,
   }),
 );

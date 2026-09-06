@@ -701,19 +701,39 @@ export async function flow_hybrid_search(
   query: string,
   filter: FlowSearchFilters,
   stateCode?: string | number,
+  tid: string | [] = [],
 ): Promise<{ data: FlowTable[]; success: boolean; total?: number; page?: number }> {
+  const teamId = await getFlowTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return {
+      data: [],
+      success: true,
+      page: params.current ?? 1,
+      total: 0,
+    };
+  }
+  const filterCondition: FlowSearchFilters = { ...filter };
+  if (!filterCondition.flowType?.trim()) {
+    delete filterCondition.flowType;
+  }
+  if (filterCondition.classification?.length === 0) {
+    delete filterCondition.classification;
+  }
   let result: any = {};
   const bodyParams: Record<string, any> = {
     query,
     version_scope: 'matched',
     match_count: 200,
-    filter_condition: filter,
+    filter_condition: filterCondition,
     data_source: dataSource,
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
   };
   if (typeof stateCode === 'number') {
     bodyParams.state_code = stateCode;
+  }
+  if (teamId) {
+    bodyParams.team_id = teamId;
   }
   const session = await supabase.auth.getSession();
   if (session.data.session) {

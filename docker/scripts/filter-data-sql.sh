@@ -87,7 +87,7 @@ function compatible_acl_line(line) {
   return line
 }
 
-function keep_block(name, obj_type, schema, ext_name) {
+function keep_block(name, obj_type, schema, owner, ext_name) {
   # This one Database-owned bridge is attached to a managed Auth table; keep
   # its trigger only, never the Auth table, native routines, users or tokens.
   if (schema == "auth" && obj_type == "TRIGGER" && name == "users trg_sync_auth_users_to_private_users") {
@@ -102,6 +102,11 @@ function keep_block(name, obj_type, schema, ext_name) {
   }
 
   if (schema == "-") {
+    # The Database cutover closes PUBLIC execute for future postgres-owned
+    # functions globally; dropping this block reopens that default on restore.
+    if (obj_type == "DEFAULT ACL") {
+      return owner == "postgres" && name == "DEFAULT PRIVILEGES FOR FUNCTIONS"
+    }
     if (obj_type == "SCHEMA") {
       return in_csv_set(name, "api,private,util,archive,pgmq")
     }
@@ -139,6 +144,8 @@ function parse_meta(header_line,   tmp, parts, n) {
   sub(/^Type: /, "", meta_type)
   meta_schema = parts[3]
   sub(/^Schema: /, "", meta_schema)
+  meta_owner = parts[4]
+  sub(/^Owner: /, "", meta_owner)
   meta_ok = 1
 }
 
@@ -166,7 +173,7 @@ END {
 
       parse_meta(lines[i+1])
       if (meta_ok) {
-        block_keep[block_count] = keep_block(meta_name, meta_type, meta_schema)
+        block_keep[block_count] = keep_block(meta_name, meta_type, meta_schema, meta_owner)
       } else {
         block_keep[block_count] = 1
       }

@@ -2546,6 +2546,7 @@ describe('process_hybrid_search', () => {
       {},
       undefined,
       'all',
+      '22222222-2222-4222-8222-222222222222',
     );
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
@@ -2558,6 +2559,7 @@ describe('process_hybrid_search', () => {
         data_source: 'tg',
         page_size: 5,
         page_current: 3,
+        team_id: '22222222-2222-4222-8222-222222222222',
       },
       region: FunctionRegion.UsEast1,
     });
@@ -2602,15 +2604,17 @@ describe('process_hybrid_search', () => {
       error: { message: 'hybrid failed' },
       data: { versionScope: 'matched', data: [] },
     });
+    mockGetTeamIdByUserId.mockResolvedValueOnce('22222222-2222-4222-8222-222222222222');
 
     const result = await processesApi.process_hybrid_search(
       { current: 1, pageSize: 10 },
       'en',
-      'my',
+      'te',
       'steel',
       { status: 'active' },
       300,
-      'foreground',
+      'LCI result',
+      '22222222-2222-4222-8222-222222222222',
     );
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
@@ -2620,17 +2624,33 @@ describe('process_hybrid_search', () => {
         match_count: 200,
         query: 'steel',
         filter_condition: { status: 'active' },
-        data_source: 'my',
+        data_source: 'te',
         page_size: 10,
         page_current: 1,
         state_code: 300,
-        type_of_data_set: 'foreground',
+        type_of_data_set: 'LCI result',
+        team_id: '22222222-2222-4222-8222-222222222222',
       },
       region: FunctionRegion.UsEast1,
     });
     expect(logSpy).toHaveBeenCalledWith('error', { message: 'hybrid failed' });
     expect(result).toEqual({ error: { message: 'hybrid failed' }, data: [], success: false });
     logSpy.mockRestore();
+  });
+
+  it('does not broaden team Hybrid search when no selected team is available', async () => {
+    const result = await processesApi.process_hybrid_search(
+      { current: 2, pageSize: 10 },
+      'en',
+      'te',
+      'steel',
+      {},
+    );
+    const defaultPageResult = await processesApi.process_hybrid_search({}, 'en', 'te', 'steel', {});
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({ data: [], page: 2, success: true, total: 0 });
+    expect(defaultPageResult).toEqual({ data: [], page: 1, success: true, total: 0 });
   });
 
   it('maps zh hybrid rows with location translation and fallback fields', async () => {

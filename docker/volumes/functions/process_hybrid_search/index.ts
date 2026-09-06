@@ -9,6 +9,10 @@ Deno.serve(
     entityLabel: 'Process',
     entityPlural: 'processes',
     rpcName: 'hybrid_search_processes',
-    versionedRpcName: 'hybrid_search_process_versions_v1',
+    versionedRpcName: 'hybrid_search_process_versions_v2',
+    forwardVisibilityContext: true,
+    forwardProcessTypeFilter: true,
+    requireSelectedTeamContext: true,
+    rpcOwnsThresholdFallback: true,
   }),
 );

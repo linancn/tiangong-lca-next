@@ -810,6 +810,7 @@ const TableList: FC = () => {
                         {},
                         requestedStateCode,
                         requestedTypeOfDataSet,
+                        requestedTeamId,
                       ),
                     );
                   }
