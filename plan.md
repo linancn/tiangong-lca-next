@@ -25,8 +25,8 @@ checkPaths:
   - .env
   - .env.development
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 9abdcb6189f8d60fb30a2393d2792c7046e1be58
-lastReviewedNote: 'Completed the exact-toolchain baseline and delivered the logged governance commits through the full controlled dev push gate.'
+lastReviewedCommit: e435f1e82c3a9389f7c3fd50ecaad3f3059e2295
+lastReviewedNote: 'Recorded the user-supplied PRISM and Future of LCA naming plus the three unapproved palette directions derived from the reviewed UI reference.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -56,7 +56,7 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-06
 
-Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
+Overall state: Milestone 0 complete; Milestone 1 brand identity selection is in progress
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
@@ -68,6 +68,9 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
 | Local application baseline | Complete | Frozen install, lint, dev startup, and Chromium inspection passed; only the recorded development warnings remain |
 | Plan log delivery | Complete for Milestone 0 | The third controlled push completed the full gate and delivered the baseline/log commits to `origin/dev` |
+| Organization and product naming | Confirmed | Organization: `PRISM`; product: `Future of LCA` |
+| Color system | Awaiting user selection | Three original dark-workspace directions are ready: Prism Signal, Measured Indigo, and Living Spectrum |
+| Logo, favicon, and support contact | Pending | These inputs remain unresolved and will be handled after palette selection |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
 | Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
@@ -76,7 +79,7 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: confirm the Milestone 1 product name, organization name, colors, logos, favicon, and support contact.
+Current next action: select one of the three prepared Milestone 1 palette directions and identify any colors that need revision.
 
 ## Decisions
 
@@ -87,6 +90,8 @@ Current next action: confirm the Milestone 1 product name, organization name, co
 5. Keep database migrations in the owning `database-engine` repository and Edge Function runtime changes in `tiangong-lca-edge-functions`.
 6. Never expose a service-role key, database password, Supabase access token, or other server credential to the frontend or Pages build.
 7. Use the official GitHub Pages artifact workflow rather than adapting the canonical EdgeOne release workflow.
+8. Use `PRISM` as the organization name and `Future of LCA` as the product name.
+9. Treat `calvinw/product-graph-editor` as UI inspiration only: retain its dark technical workspace character without copying its logo, composition, artwork, or distinctive devices.
 
 ## Milestone 0: Fork Baseline
 
@@ -249,6 +254,15 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-06 — Milestone 1 identity intake and palette review
+
+- Confirmed the user-supplied identity naming: organization `PRISM`, product `Future of LCA`.
+- Reviewed `calvinw/product-graph-editor` at commit `6a0f16506a00bb2ff29133447bd17e2476866fd7` as a non-authoritative UI reference. Its source-declared visual signals are a graphite workspace, violet/indigo interaction color, sky-blue graph accents, restrained status colors, thin borders, compact technical typography, and low-radius raised surfaces.
+- Kept the reference's existing PRISM assets, logo, page composition, artwork, and distinctive devices out of this fork's identity direction; the reference controls general character only.
+- Prepared three original, still-unapproved palette directions: Prism Signal (`#0B0D10`, `#111318`, `#F4F4F5`, `#8B5CF6`, `#38BDF8`, `#22C55E`), Measured Indigo (`#08111F`, `#142033`, `#F5F7FA`, `#6366F1`, `#22D3EE`, `#F59E0B`), and Living Spectrum (`#07110F`, `#12211D`, `#EFF8F4`, `#A78BFA`, `#2DD4BF`, `#4ADE80`).
+- Rendered each direction as a deterministic 1200-by-900 palette board with an editable HTML companion. No palette has been selected or persisted as approved, and no shipped frontend file has changed.
+- Deferred logo, favicon, and support-contact decisions until the palette review advances. The next action is the user's palette selection or requested color revision.
 
 ### 2026-09-06 — Exact toolchain and untouched application baseline
 
