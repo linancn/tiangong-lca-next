@@ -265,6 +265,8 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Installed Docpact `0.1.9` with an isolated current Rust toolchain after the host's Cargo `1.75.0` could not compile Rust 2024 edition packages. The first docs-only lint then exposed that governed `plan.md` had no matching rule trigger.
 - Added the missing self-contained `next-hosted-rebuild-plan-contract` rule in `.docpact/config.yaml`; it keeps future plan sessions covered without forcing status facts into stable repo documents. Reviewed `AGENTS.md` and `DEV.md`; their contract and bootstrap content remain unchanged.
 - Validated the documentation change with strict Docpact config validation, Docpact enforce-mode lint over all four changed files, Prettier, and `git diff --check`; all passed after formatting the machine-readable config.
+- The first controlled `pnpm push:checked origin dev` attempt passed Docpact, LCIA cache verification, reference-data validation, lint, and all 47 pre-push receipt tests. Its coverage run completed 442 of 443 suites and all 5,974 executed assertions, but the operating environment sent `SIGTERM` to the Jest worker assigned to `tests/unit/i18n/localeDeliveryContracts.test.ts`; the hook correctly blocked the push, so no remote update occurred.
+- Re-ran `tests/unit/i18n/localeDeliveryContracts.test.ts` alone with the exact Node toolchain, the repository Jest configuration, and `--runInBand`; all 18 tests passed in 186 seconds. This isolates the first gate failure to a transient worker termination rather than a test assertion or product defect.
 - Completed Milestone 0. Milestone 1 is waiting for the fork's brand identity inputs before shipped frontend changes begin.
 
 ### 2026-09-05 — Initial assessment
