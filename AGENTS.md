@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: ff0dc9524c17053a7eab7f3715e54df7d4e7a20e
+lastReviewedCommit: 32758423c199da08cf1a9c26c5e2dba5be6c8f69
 lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
 related:
   - .docpact/config.yaml
