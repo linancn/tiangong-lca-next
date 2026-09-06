@@ -62,11 +62,12 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Clean before this status update | Current checkout tracks `origin/dev` |
+| Working tree | Local documentation commits pending delivery | Current checkout tracks `origin/dev`; controlled pushes are blocked by the recorded concurrent locale-audit process termination |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
 | Local application baseline | Complete | Frozen install, lint, dev startup, and Chromium inspection passed; only the recorded development warnings remain |
+| Plan log delivery | Blocked in the current container | Two controlled pushes reached the full coverage stage; the process-heavy locale-delivery suite passes alone but a nested audit process is terminated during the required two-worker coverage run |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
 | Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
@@ -75,7 +76,7 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: confirm the Milestone 1 product name, organization name, colors, logos, favicon, and support contact.
+Current next action: rerun the controlled `dev` push in an environment where the required two-worker coverage gate can complete the process-heavy locale-delivery contract without external process termination.
 
 ## Decisions
 
@@ -267,6 +268,8 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Validated the documentation change with strict Docpact config validation, Docpact enforce-mode lint over all four changed files, Prettier, and `git diff --check`; all passed after formatting the machine-readable config.
 - The first controlled `pnpm push:checked origin dev` attempt passed Docpact, LCIA cache verification, reference-data validation, lint, and all 47 pre-push receipt tests. Its coverage run completed 442 of 443 suites and all 5,974 executed assertions, but the operating environment sent `SIGTERM` to the Jest worker assigned to `tests/unit/i18n/localeDeliveryContracts.test.ts`; the hook correctly blocked the push, so no remote update occurred.
 - Re-ran `tests/unit/i18n/localeDeliveryContracts.test.ts` alone with the exact Node toolchain, the repository Jest configuration, and `--runInBand`; all 18 tests passed in 186 seconds. This isolates the first gate failure to a transient worker termination rather than a test assertion or product defect.
+- The second controlled push again passed Docpact, LCIA cache verification, reference-data validation, lint, and all 47 receipt tests. Its required two-worker coverage run completed 442 of 443 suites: 5,991 tests passed and one failed when the locale artifact idempotence test's nested shared-audit process terminated with a null exit status. The other 17 locale-delivery tests passed, and the hook again prevented any remote update.
+- Checked the container cgroup immediately after the repeated failure: it recorded zero `oom`, `oom_kill`, or memory-limit events, and the kernel log is unavailable inside the container. The evidence therefore supports external process termination under concurrent coverage load but does not establish an OOM cause. A third identical retry was not attempted.
 - Completed Milestone 0. Milestone 1 is waiting for the fork's brand identity inputs before shipped frontend changes begin.
 
 ### 2026-09-05 — Initial assessment
