@@ -9,6 +9,7 @@ import {
   sha256Hex,
 } from '@/services/general/browserResourceCache';
 import { getReferenceRuntimeAssetCacheIdentity } from '../referenceResources/manifest';
+import { withAppBasePath } from '@/utils/appBasePath';
 
 const CACHE_KEY = 'location_cache_manifest';
 const CACHE_DB_NAME = 'location_cache_db';
@@ -90,7 +91,7 @@ export const getCachedLocationFileData = async <T>(filename: string): Promise<T 
 
 const cacheAndDecompressLocationFileOnce = async (filename: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/locations/${filename}`);
+    const response = await fetch(withAppBasePath(`/locations/${filename}`));
     if (!response.ok) {
       console.warn(`Location source file not found: ${filename}`);
       return false;

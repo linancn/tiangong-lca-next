@@ -6,6 +6,7 @@ const BRANDING_ENV_KEYS = [
   'APP_LIGHT_LOGO',
   'APP_DARK_LOGO',
   'APP_FAVICON',
+  'APP_BASE_PATH',
 ] as const;
 
 const clearBrandingEnv = () => {
@@ -96,5 +97,15 @@ describe('branding config (config/branding.ts)', () => {
     expect(getBrandTheme(undefined).colorPrimary).toBe('#101010');
     expect(getBrandTheme(true).colorPrimary).toBe('#202020');
     expect(getBrandTheme(true).navTheme).toBe('realDark');
+  });
+
+  it('prefixes default static branding assets with the application base path', () => {
+    process.env.APP_BASE_PATH = '/tiangong-lca-next-practice/';
+
+    const { lightBrandTheme, darkBrandTheme, favicon } = require('../../../config/branding');
+
+    expect(lightBrandTheme.logo).toBe('/tiangong-lca-next-practice/logo.svg');
+    expect(darkBrandTheme.logo).toBe('/tiangong-lca-next-practice/logo_dark.svg');
+    expect(favicon).toBe('/tiangong-lca-next-practice/favicon.ico');
   });
 });

@@ -5,6 +5,7 @@ import {
   type OrganizationContributionSnapshot,
 } from '@/services/nationalCarbonDashboard/api';
 import { getILCDLocationByValues } from '@/services/locations/api';
+import { withAppBasePath } from '@/utils/appBasePath';
 import {
   getRouteViewStateVariantIds,
   resolveRouteViewState,
@@ -269,7 +270,7 @@ function loadChinaMapData(): Promise<ChinaMapData> {
   }
 
   if (!chinaMapDataRequest) {
-    chinaMapDataRequest = fetch('/maps/china-province-100000-full.geojson')
+    chinaMapDataRequest = fetch(withAppBasePath('/maps/china-province-100000-full.geojson'))
       .then((response) => response.json())
       .then((data: ChinaMapData) => {
         chinaMapDataCache = data;

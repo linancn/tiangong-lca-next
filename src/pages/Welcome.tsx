@@ -11,6 +11,7 @@ import {
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
+import { withAppBasePath } from '@/utils/appBasePath';
 import {
   ApartmentOutlined,
   BranchesOutlined,
@@ -448,9 +449,11 @@ const Welcome: React.FC = () => {
     },
     hasTidasDocumentationFallback ? { language: tidasDocumentationLocale!.nativeLabel } : undefined,
   );
-  const tidasImageSrc = isDarkMode
-    ? localeDefinition.assets.welcomeTidas.dark
-    : localeDefinition.assets.welcomeTidas.light;
+  const tidasImageSrc = withAppBasePath(
+    isDarkMode
+      ? localeDefinition.assets.welcomeTidas.dark
+      : localeDefinition.assets.welcomeTidas.light,
+  );
   const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
   const WELCOME_RADIUS = 8;

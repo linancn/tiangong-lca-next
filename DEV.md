@@ -41,10 +41,11 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
+  - .github/workflows/github-pages.yml
   - .nvmrc
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 4198b8fec58a8ee781f4ad46b8489e499a060557
-lastReviewedNote: 'Reviewed while adding Docpact coverage for plan.md; bootstrap commands and the default work loop remain unchanged.'
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Added the exact project-path production-build command used to validate the fork GitHub Pages bundle; the default local work loop remains unchanged.'
 ---
 
 # Development Bootstrap
@@ -161,6 +162,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | validate the historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `pnpm i18n:de:pilot` |
 | build | `pnpm build` |
+| build the fork GitHub Pages project path | `APP_BASE_PATH=/tiangong-lca-next-practice/ APP_RUNTIME_CONFIG_ENABLED=false pnpm build` |
 | local full test gate | `pnpm prepush:gate` |
 | compact agent/CI full gate with complete retained logs | `pnpm prepush:gate:agent` |
 | final managed push | `pnpm push:checked <normal-git-push-args>` |

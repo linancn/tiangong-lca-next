@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration uses existing Process read services and the established bundle mutation path; database, Edge, authentication, and environment ownership are unchanged.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Documented the fork GitHub Pages build-time browser configuration and callback base path; database, Edge, and secret ownership remain unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -64,6 +64,7 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - explicit `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` values supplied by the build environment override repository env-file defaults. For `REACT_APP_ENV=dev`, a runtime value that exactly equals the selected main-file default is treated as Umi's preloaded `.env` value and replaced by the corresponding `.env.development*` value; a distinct per-key runtime value remains explicit. Selected files otherwise remain fallback configuration, not an immutable deployment target
+- the fork GitHub Pages workflow receives `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` only from repository variables, fails before build when either is absent, sets `APP_BASE_PATH=/tiangong-lca-next-practice/`, and sets `APP_RUNTIME_CONFIG_ENABLED=false` until the hosted `api.qry_system_status()` contract exists. Password-recovery callbacks therefore return to the project path rather than the origin root
 - closed semantic qualification builds with `REACT_APP_ENV=qualification` and `docker/e2e/qualification.env`; this fixed `.invalid` target is intercepted completely and is never a production or deployable backend identity
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - OAuth consent and grant management use the shared Supabase client under `src/services/auth/oauth.ts`. Next owns the `/oauth/consent` bridge/page, the bounded byte-preserved opaque authorization-handle boundary, getClaims-based session check, safe callback navigation, and user grant list/revoke presentation. Connected Applications contains no API-key history or compatibility provisioning action, and account password/email changes use only Supabase Auth with no Cognito bridge. `database-engine` owns OAuth server configuration and client-capability enforcement; environment operators register separate exact redirect URIs and client IDs for Dev and production

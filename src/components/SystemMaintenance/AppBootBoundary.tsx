@@ -1,4 +1,5 @@
 import { replaceBrowserLocation } from '@/utils/browserNavigation';
+import { appBasePath, withAppBasePath } from '@/utils/appBasePath';
 import type { ReactNode } from 'react';
 import { Component, useEffect } from 'react';
 
@@ -12,13 +13,14 @@ declare global {
 export function getStaticFallbackUrl(
   reason: string,
   location: Pick<Location, 'href' | 'protocol'> = window.location,
+  basePath: string = appBasePath,
 ): string {
   if (location.protocol === 'file:') {
     const url = new URL('./maintenance.html', location.href);
     url.searchParams.set('reason', reason);
     return url.toString();
   }
-  return `/maintenance.html?reason=${encodeURIComponent(reason)}`;
+  return `${withAppBasePath('/maintenance.html', basePath)}?reason=${encodeURIComponent(reason)}`;
 }
 
 export function AppBootMarker({ children }: { children: ReactNode }) {

@@ -25,8 +25,8 @@ checkPaths:
   - .env
   - .env.development
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: e435f1e82c3a9389f7c3fd50ecaad3f3059e2295
-lastReviewedNote: 'Recorded the delegated Measured Indigo selection and the logo-generation plan requirement that currently blocks the favicon and shipped branding work.'
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Recorded the decision to defer custom visual assets and the completed GitHub Pages project-path implementation, workflow, tests, and local browser proof.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -56,7 +56,7 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-06
 
-Overall state: Milestone 0 complete; Milestone 1 brand identity selection is in progress
+Overall state: Milestone 0 and GitHub Pages compatibility complete; custom visual assets deferred; hosted configuration and live deployment remain pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
@@ -70,17 +70,17 @@ Overall state: Milestone 0 complete; Milestone 1 brand identity selection is in 
 | Plan log delivery | Complete for Milestone 0 | The third controlled push completed the full gate and delivered the baseline/log commits to `origin/dev` |
 | Organization and product naming | Confirmed | Organization: `PRISM`; product: `Future of LCA` |
 | Color system | Selected | Measured Indigo: `#08111F`, `#142033`, `#F5F7FA`, `#6366F1`, `#22D3EE`, and `#F59E0B` |
-| Logo and favicon | Blocked | The required Recraft V4.1 vector workflow rejected both submission attempts because the connected generation account requires a Basic plan or higher |
+| Logo and favicon | Deferred | The user chose to skip paid custom-asset design; keep the current assets only as a temporary development placeholder and do not treat them as approved PRISM identity |
 | Support contact | Selected | Use the fork repository's GitHub Issues surface until the owner supplies a verified support mailbox; do not publish an invented email address |
 | Hash routing | Present | `config/config.ts` already uses hash history |
-| GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
-| Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
+| GitHub Pages base path | Complete | `APP_BASE_PATH` drives Umi, shell/static assets, maintenance fallback, external links, and Auth callbacks; the exact project-path bundle passed a local browser smoke with zero same-origin failures |
+| Custom domain | Complete for project Pages | Removed `public/CNAME`; the fork will use `catiehe.github.io/tiangong-lca-next-practice/` unless an owned domain is deliberately configured later |
 | Hosted Supabase Auth | Pending | Client exists; new project URL, publishable key, and redirect configuration are required |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
+| GitHub Pages workflow | Implemented, not deployed | Fork-specific `github-pages.yml` builds `main` with the exact toolchain, requires hosted Supabase repository variables, uploads `dist`, and deploys through the `github-pages` environment; repository settings and live proof remain pending |
 
-Current next action: enable Basic-plan access for the required Recraft V4.1 vector workflow, then generate and select the PRISM symbol before deriving the favicon and changing shipped branding surfaces.
+Current next action: create the hosted Supabase development project, then configure its public URL and publishable key as GitHub repository variables so the Pages workflow can deploy without falling back to the upstream backend.
 
 ## Decisions
 
@@ -95,6 +95,8 @@ Current next action: enable Basic-plan access for the required Recraft V4.1 vect
 9. Treat `calvinw/product-graph-editor` as UI inspiration only: retain its dark technical workspace character without copying its logo, composition, artwork, or distinctive devices.
 10. Use the Measured Indigo palette for the identity: `#08111F` background, `#142033` surface, `#F5F7FA` text, `#6366F1` primary, `#22D3EE` accent, and `#F59E0B` support.
 11. Use the fork repository's GitHub Issues surface as the initial support contact instead of inventing an unverified support mailbox.
+12. Defer custom logo and favicon design instead of purchasing a Recraft plan; visual assets are not a prerequisite for the hosted foundation work.
+13. Deploy the public fork from `main` at `/tiangong-lca-next-practice/`; use repository variables for hosted Supabase browser configuration and fail the workflow when either value is missing.
 
 ## Milestone 0: Fork Baseline
 
@@ -126,7 +128,8 @@ Exit criteria: the exact toolchain works, the untouched app starts or has a repr
 
 ## Milestone 1: Branded Auth-Only Application
 
-- [ ] Choose the product name, organization name, colors, logos, favicon, and support contact.
+- [x] Choose the product name, organization name, colors, and support contact.
+- [ ] Replace the temporary development logo and favicon only if custom visual design is resumed later.
 - [ ] Replace branding configuration, package metadata, Electron metadata, icons, and relevant localized strings.
 - [ ] Review legal and privacy content separately; do not present upstream organization details as the fork owner's details.
 - [ ] Add centralized capability flags.
@@ -138,14 +141,14 @@ Exit criteria: the application clearly identifies the fork, unavailable features
 
 ## Milestone 2: GitHub Pages Compatibility
 
-- [ ] Define an environment-driven application base path.
-- [ ] Set the production base to `/tiangong-lca-next-practice/`.
-- [ ] Make Umi `publicPath` use the selected base.
-- [ ] Fix the loading script, logo, favicon, manifest, service-worker, and other root-relative asset references.
-- [ ] Make external and Auth callback URLs preserve the project base path.
-- [ ] Confirm hash URLs work when opened and refreshed directly.
-- [ ] Remove `public/CNAME` for project Pages, or replace it only after configuring an owned custom domain in GitHub.
-- [ ] Test the production bundle from the same subpath used by Pages.
+- [x] Define an environment-driven application base path.
+- [x] Set the production base to `/tiangong-lca-next-practice/`.
+- [x] Make Umi `publicPath` use the selected base.
+- [x] Fix the loading script, logo, favicon, manifest, service-worker, and other root-relative asset references.
+- [x] Make external and Auth callback URLs preserve the project base path.
+- [x] Confirm hash URLs work when opened and refreshed directly.
+- [x] Remove `public/CNAME` for project Pages, or replace it only after configuring an owned custom domain in GitHub.
+- [x] Test the production bundle from the same subpath used by Pages.
 
 Exit criteria: the complete static shell loads at the project Pages URL with no root-path 404s, and Auth callbacks return to the same application base.
 
@@ -170,14 +173,14 @@ Exit criteria: Auth works locally and on GitHub Pages without privileged credent
 
 ## Milestone 4: GitHub Pages Deployment
 
-- [ ] Add a fork-specific Pages workflow.
-- [ ] Use Node `24.19.0` and pnpm `11.24.0`.
-- [ ] Install with `pnpm install --frozen-lockfile`.
-- [ ] Pass the hosted Supabase URL, publishable key, base path, and temporary runtime-config flag at build time.
-- [ ] Run the appropriate static validation and production build.
-- [ ] Upload `dist` with `actions/upload-pages-artifact`.
-- [ ] Deploy through `actions/deploy-pages` with the `github-pages` environment.
-- [ ] Configure `pages: write` and `id-token: write` permissions.
+- [x] Add a fork-specific Pages workflow.
+- [x] Use Node `24.19.0` and pnpm `11.24.0`.
+- [x] Install with `pnpm install --frozen-lockfile`.
+- [x] Wire the hosted Supabase URL, publishable key, base path, and temporary runtime-config flag into the build environment.
+- [x] Run the appropriate static validation and production build.
+- [x] Upload `dist` with `actions/upload-pages-artifact`.
+- [x] Deploy through `actions/deploy-pages` with the `github-pages` environment.
+- [x] Configure `pages: write` and `id-token: write` permissions.
 - [ ] Enable GitHub Actions as the Pages publishing source in repository settings.
 - [ ] Verify the deployed URL and Auth flow in a fresh browser session.
 
@@ -257,6 +260,16 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-06 — GitHub Pages project-path foundation
+
+- Accepted the user's decision to skip paid custom-asset design. Logo and favicon work is deferred; the current upstream visuals are temporary development placeholders, not approved PRISM identity.
+- Added one validated `APP_BASE_PATH` owner and applied it to Umi `publicPath`, generated shell assets, branding defaults, legal links, TIDAS illustrations, classification/location/LCIA reads, map reads, maintenance fallbacks, external hash URLs, and password-recovery callbacks.
+- Removed the upstream `public/CNAME` so a project Pages deployment cannot claim `lca.tiangong.earth`; made the standalone OAuth bridge script relative and the service-worker navigation fallback scope-relative.
+- Added `.github/workflows/github-pages.yml` for `main` with Node `24.19.0`, pnpm `11.24.0`, frozen install, static preflight, project-path build, official Pages artifact upload/deploy actions, required Pages/OIDC permissions, and fail-closed hosted Supabase repository-variable checks.
+- Added focused application-base and workflow contracts and updated affected tests. The serial focused run passed 12 suites and 250 tests.
+- Built with `APP_BASE_PATH=/tiangong-lca-next-practice/ APP_RUNTIME_CONFIG_ENABLED=false pnpm build`; Webpack completed successfully. Served `dist` at that exact subpath and opened the hash login route in fresh Chromium: the application mounted, favicon and signup legal links retained the base, and there were zero same-origin 4xx responses, failed requests, or console errors.
+- Live deployment was not attempted because the hosted Supabase development project, GitHub repository variables, and Pages publishing source are not configured. The next action is to create that hosted project and configure only its public browser URL and publishable key.
 
 ### 2026-09-06 — Milestone 1 delegated palette and logo attempt
 

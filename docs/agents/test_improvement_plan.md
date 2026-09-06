@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: focused pure-helper, component, and service tests cover graph hydration and safe persistence without changing test infrastructure or strategy.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Reviewed for focused project-path and Pages workflow contracts; test infrastructure, strategy, and reopen conditions remain unchanged.'
 ---
 
 # Testing Strategy

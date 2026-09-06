@@ -17,6 +17,7 @@ import { Footer } from '@/components';
 import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { resolveSafeLoginRedirect } from '@/services/general/publicRoutePolicy';
+import { withAppBasePath } from '@/utils/appBasePath';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -211,7 +212,7 @@ const Login: React.FC = () => {
   });
   const termsOfServiceLink = (
     <TypographyLink
-      href='/terms_of_use.html'
+      href={withAppBasePath('/terms_of_use.html')}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
@@ -222,7 +223,7 @@ const Login: React.FC = () => {
   );
   const privacyPolicyLink = (
     <TypographyLink
-      href='/privacy_notice.html'
+      href={withAppBasePath('/privacy_notice.html')}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'

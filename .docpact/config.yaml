@@ -389,6 +389,8 @@ routing:
         - tests/data-workflows/unit/**
         - tests/data-workflows/workflows/**
 
+# Reviewed 2026-09-06 for the fork's environment-driven GitHub Pages base path;
+# existing ownership, testing, localization, and OAuth rule boundaries remain unchanged.
 # Reviewed 2026-04-28 for unified dataset SDK validation adapters, shared
 # localized validation helpers, and full-coverage gate collection updates.
 docInventory:
@@ -617,6 +619,8 @@ rules:
       - path: src/style/**
         kind: app-runtime
       - path: src/typings.d.ts
+        kind: app-runtime
+      - path: src/utils/appBasePath.ts
         kind: app-runtime
       - path: src/utils/appUrl.ts
         kind: app-runtime

@@ -83,4 +83,17 @@ describe('AppBootBoundary', () => {
       }),
     ).toBe('file:///Applications/TianGong/resources/app/maintenance.html?reason=boot-timeout');
   });
+
+  it('keeps the web fallback inside a project base path', () => {
+    expect(
+      getStaticFallbackUrl(
+        'render failure',
+        {
+          href: 'https://example.test/tiangong-lca-next-practice/#/welcome',
+          protocol: 'https:',
+        },
+        '/tiangong-lca-next-practice/',
+      ),
+    ).toBe('/tiangong-lca-next-practice/maintenance.html?reason=render%20failure');
+  });
 });

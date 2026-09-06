@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: focused graph compatibility tests and full-coverage proof use the existing controlled pre-push gate; trigger and bypass policy remain unchanged.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Reviewed for the fork GitHub Pages workflow and its focused contract tests; protected-branch trigger, receipt, and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
