@@ -25,8 +25,8 @@ checkPaths:
   - .env
   - .env.development
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 4198b8fec58a8ee781f4ad46b8489e499a060557
-lastReviewedNote: 'Completed the exact-toolchain and untouched-application baseline, including browser-visible, console, and network evidence.'
+lastReviewedCommit: 9abdcb6189f8d60fb30a2393d2792c7046e1be58
+lastReviewedNote: 'Completed the exact-toolchain baseline and delivered the logged governance commits through the full controlled dev push gate.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -62,12 +62,12 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Local documentation commits pending delivery | Current checkout tracks `origin/dev`; controlled pushes are blocked by the recorded concurrent locale-audit process termination |
+| Working tree | Clean after controlled delivery | Local `dev` and `origin/dev` both point to the delivered baseline commits |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
 | Local application baseline | Complete | Frozen install, lint, dev startup, and Chromium inspection passed; only the recorded development warnings remain |
-| Plan log delivery | Blocked in the current container | Two controlled pushes reached the full coverage stage; the process-heavy locale-delivery suite passes alone but a nested audit process is terminated during the required two-worker coverage run |
+| Plan log delivery | Complete for Milestone 0 | The third controlled push completed the full gate and delivered the baseline/log commits to `origin/dev` |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
 | Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
@@ -76,7 +76,7 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: identify the additional process-heavy suite that must run alongside locale delivery to reproduce the concurrent audit termination, using bounded two-worker diagnostics before changing test scheduling.
+Current next action: confirm the Milestone 1 product name, organization name, colors, logos, favicon, and support contact.
 
 ## Decisions
 
@@ -271,6 +271,7 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The second controlled push again passed Docpact, LCIA cache verification, reference-data validation, lint, and all 47 receipt tests. Its required two-worker coverage run completed 442 of 443 suites: 5,991 tests passed and one failed when the locale artifact idempotence test's nested shared-audit process terminated with a null exit status. The other 17 locale-delivery tests passed, and the hook again prevented any remote update.
 - Checked the container cgroup immediately after the repeated failure: it recorded zero `oom`, `oom_kill`, or memory-limit events, and the kernel log is unavailable inside the container. The evidence therefore supports external process termination under concurrent coverage load but does not establish an OOM cause. A third identical retry was not attempted.
 - Phase 1 diagnostic: ran `tests/unit/i18n/localeDeliveryContracts.test.ts` together with `tests/unit/locales.test.ts` under two Jest workers and no coverage; both suites passed, 30 tests total, in 205 seconds. The direct pair is therefore not sufficient to reproduce the failure.
+- The third controlled `pnpm push:checked origin dev` passed Docpact, LCIA cache verification, reference-data validation, lint/typecheck, all 47 receipt tests, and the full coverage gate. All 443 suites passed, including locale delivery; the final report verified 484/484 tracked source files at 100/100/100/100. The hook then delivered `9abdcb61` to `origin/dev`.
 - Completed Milestone 0. Milestone 1 is waiting for the fork's brand identity inputs before shipped frontend changes begin.
 
 ### 2026-09-05 — Initial assessment
