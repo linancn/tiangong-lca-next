@@ -24,9 +24,9 @@ checkPaths:
   - .github/workflows/**
   - .env
   - .env.development
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 2da5a1d3148d0bb284e660d1705d5cf7aeab5b2e
-lastReviewedNote: 'Recorded the living plan on the fork dev branch and made plan maintenance persistent.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 4198b8fec58a8ee781f4ad46b8489e499a060557
+lastReviewedNote: 'Completed the exact-toolchain and untouched-application baseline, including browser-visible, console, and network evidence.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -54,9 +54,9 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 ## Current Status
 
-Last updated: 2026-09-05
+Last updated: 2026-09-06
 
-Overall state: planning and baseline assessment
+Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
@@ -64,9 +64,9 @@ Overall state: planning and baseline assessment
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
 | Working tree | Clean before this status update | Current checkout tracks `origin/dev` |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
-| Node | Blocked | Required `24.19.0`; observed `24.14.0` |
-| pnpm | Blocked in current managed workspace | Required `11.24.0`; pnpm could not create its tool directory under the managed home path |
-| Local application baseline | Pending | Install and startup have not completed with the exact toolchain |
+| Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
+| pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
+| Local application baseline | Complete | Frozen install, lint, dev startup, and Chromium inspection passed; only the recorded development warnings remain |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Pending | `publicPath`, public assets, and auth callback URLs assume the origin root |
 | Custom domain | Requires decision | `public/CNAME` still points to `lca.tiangong.earth` |
@@ -75,7 +75,7 @@ Overall state: planning and baseline assessment
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: establish the exact Node/pnpm baseline, install dependencies, and record the untouched application's startup errors.
+Current next action: confirm the Milestone 1 product name, organization name, colors, logos, favicon, and support contact.
 
 ## Decisions
 
@@ -94,11 +94,11 @@ Current next action: establish the exact Node/pnpm baseline, install dependencie
 - [x] Confirm the initial working tree is clean.
 - [x] Create local `dev` from the current fork `main`.
 - [x] Push `dev` to the fork and set its upstream tracking branch.
-- [ ] Install and select Node `24.19.0`.
-- [ ] Install and verify pnpm `11.24.0`.
-- [ ] Run `pnpm install --frozen-lockfile`.
-- [ ] Run `pnpm lint` before application changes.
-- [ ] Run `pnpm start` and record terminal, browser-console, network, and visible UI failures.
+- [x] Install and select Node `24.19.0`.
+- [x] Install and verify pnpm `11.24.0`.
+- [x] Run `pnpm install --frozen-lockfile`.
+- [x] Run `pnpm lint` before application changes.
+- [x] Run `pnpm start` and record terminal, browser-console, network, and visible UI failures.
 
 Expected commands:
 
@@ -248,6 +248,24 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-06 — Exact toolchain and untouched application baseline
+
+- Kept this Activity Log as the single persistent rebuild work log; future sessions must append their progress, decisions, blockers, validation, and next action here before handoff.
+- Downloaded the official Linux x64 Node `24.19.0` archive into temporary workspace state and verified it against Node's published SHA-256 manifest before use. The managed shell still has no `nvm`, so repository commands used the exact verified binary through an explicit `PATH`.
+- Verified pnpm `11.24.0` under Node `24.19.0`.
+- Ran `pnpm install --frozen-lockfile` successfully. The 2,068-entry lockfile passed the repository supply-chain policy, 1,820 packages installed, postinstall completed, and `pnpm ignored-builds` reported no automatically ignored builds.
+- Ran `pnpm lint` successfully: Oxlint, Prettier, and the TypeScript `7.0.2` web typecheck all passed.
+- Started the untouched application with `pnpm start`; Umi `4.7.9` listened at `http://localhost:8000` and Webpack completed without an application startup error.
+- Installed the repository-pinned Playwright Chromium and its container runtime libraries after the first browser launch identified the missing `libatk-1.0.so.0` host dependency.
+- Loaded the application in a fresh headless Chromium context. The visible result was the TianGong LCA login page with login, signup, remember-me, and password-recovery controls; no visible error was present.
+- Recorded zero failed requests and zero HTTP responses at status 400 or higher during the baseline observation window.
+- Recorded three browser-console development warnings that generated code contains `async/await` while the configured target may not support it. The terminal also reported an outdated `caniuse-lite` database; neither warning prevented rendering.
+- Stopped the development server after capture. No tracked application file changed during baseline setup or inspection.
+- Installed Docpact `0.1.9` with an isolated current Rust toolchain after the host's Cargo `1.75.0` could not compile Rust 2024 edition packages. The first docs-only lint then exposed that governed `plan.md` had no matching rule trigger.
+- Added the missing self-contained `next-hosted-rebuild-plan-contract` rule in `.docpact/config.yaml`; it keeps future plan sessions covered without forcing status facts into stable repo documents. Reviewed `AGENTS.md` and `DEV.md`; their contract and bootstrap content remain unchanged.
+- Validated the documentation change with strict Docpact config validation, Docpact enforce-mode lint over all four changed files, Prettier, and `git diff --check`; all passed after formatting the machine-readable config.
+- Completed Milestone 0. Milestone 1 is waiting for the fork's brand identity inputs before shipped frontend changes begin.
 
 ### 2026-09-05 — Initial assessment
 

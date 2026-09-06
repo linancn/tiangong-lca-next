@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit compatibility uses the existing Node/pnpm bootstrap, serial focused tests, and controlled dev delivery workflow without new environment switches.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: 4198b8fec58a8ee781f4ad46b8489e499a060557
+lastReviewedNote: 'Reviewed while adding Docpact coverage for plan.md; bootstrap commands and the default work loop remain unchanged.'
 ---
 
 # Development Bootstrap

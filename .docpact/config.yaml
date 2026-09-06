@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-04"
-lastReviewedCommit: "9a73d8037a4557a0b34d084c0435c26045531721"
-lastReviewedNote: 'Reviewed for Next #1023: edit-mode LifecycleModel graph compatibility remains within the existing frontend, service, and test ownership rules; no routing, baseline, or waiver rule changed.'
+lastReviewedAt: '2026-09-06'
+lastReviewedCommit: '4198b8fec58a8ee781f4ad46b8489e499a060557'
+lastReviewedNote: 'Added the missing self-contained rule for the governed hosted-rebuild plan so required session logs are covered without forcing unrelated document updates.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -474,6 +474,16 @@ rules:
       - path: DEV.md
         mode: review_or_update
     reason: Repo entry guidance, machine-readable routing, and bootstrap docs must stay aligned.
+  - id: next-hosted-rebuild-plan-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: plan.md
+        kind: active-rebuild-plan
+    requiredDocs:
+      - path: plan.md
+        mode: review_or_update
+    reason: Every hosted Supabase and GitHub Pages rebuild session must keep its status, evidence, blockers, and one next action current without duplicating those facts into stable repo docs.
   - id: next-readme-and-landing-contract
     scope: repo
     repo: next
