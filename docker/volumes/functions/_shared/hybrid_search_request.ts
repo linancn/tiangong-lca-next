@@ -10,6 +10,7 @@ export interface HybridSearchClientRequest {
   versionScope: 'latest' | 'matched';
   rpcOptions: HybridSearchRpcOptions;
   visibilityOptions: HybridSearchVisibilityOptions;
+  entityFilterOptions: HybridSearchEntityFilterOptions;
 }
 
 export interface HybridSearchRpcOptions {
@@ -35,10 +36,22 @@ export interface HybridSearchVisibilityOptions {
   team_id_filter: string | null;
 }
 
+export interface HybridSearchEntityFilterOptions {
+  type_of_data_set_filter: string | null;
+}
+
 export type HybridSearchRpcPayload = HybridSearchRpcRequest &
-  Partial<HybridSearchVisibilityOptions>;
+  Partial<HybridSearchVisibilityOptions> &
+  Partial<HybridSearchEntityFilterOptions>;
 
 const VALID_DATA_SOURCES = new Set(['tg', 'co', 'my', 'te']);
+const VALID_PROCESS_TYPES = new Set([
+  'Unit process, single operation',
+  'Unit process, black box',
+  'LCI result',
+  'Partly terminated system',
+  'Avoided product system',
+]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -125,6 +138,18 @@ function parseNullableTeamId(value: unknown): string | null {
   return teamId;
 }
 
+function parseNullableProcessType(value: unknown): string | null {
+  if (value === undefined || value === null || value === '' || value === 'all') {
+    return null;
+  }
+
+  const processType = typeof value === 'string' ? value.trim() : '';
+  if (!VALID_PROCESS_TYPES.has(processType)) {
+    throw new HybridSearchRequestError('type_of_data_set is not a supported Process dataset type');
+  }
+  return processType;
+}
+
 function normalizeFilterCondition(value: unknown): Record<string, unknown> {
   if (value === undefined || value === null || value === '') {
     return {};
@@ -204,6 +229,9 @@ export function parseHybridSearchClientRequest(body: unknown): HybridSearchClien
       state_code_filter: parseNullableStateCode(body.state_code),
       team_id_filter: parseNullableTeamId(body.team_id),
     },
+    entityFilterOptions: {
+      type_of_data_set_filter: parseNullableProcessType(body.type_of_data_set),
+    },
   };
 }
 
@@ -213,6 +241,7 @@ export function buildHybridSearchRpcRequest(
   queryEmbedding: string,
   options: HybridSearchRpcOptions,
   visibilityOptions?: HybridSearchVisibilityOptions,
+  entityFilterOptions?: HybridSearchEntityFilterOptions,
 ): HybridSearchRpcPayload {
   const request: HybridSearchRpcRequest = {
     query_text: queryText,
@@ -220,5 +249,9 @@ export function buildHybridSearchRpcRequest(
     query_embedding: queryEmbedding,
     ...options,
   };
-  return visibilityOptions ? { ...request, ...visibilityOptions } : request;
+  return {
+    ...request,
+    ...(visibilityOptions ?? {}),
+    ...(entityFilterOptions ?? {}),
+  };
 }

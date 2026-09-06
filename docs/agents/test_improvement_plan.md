@@ -44,8 +44,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-06
-lastReviewedCommit: 589205148348ee78f8fa21878d18829f4e5a9439
-lastReviewedNote: 'Reviewed for Next #1030 / workspace #980 W11: remove only the owned macOS Intel Utoo age exception. Frozen dependencies, native UI/toolchain generation, coverage and release proof contracts remain unchanged; normal delivery keeps the hook-owned full gate.'
+lastReviewedCommit: ff0dc9524c17053a7eab7f3715e54df7d4e7a20e
+lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
 ---
 
 # Testing Strategy

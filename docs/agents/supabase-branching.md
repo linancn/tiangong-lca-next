@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-05
-lastReviewedCommit: 3af7c363c0144a5fe6f186b2e99348339eb8ac1b
-lastReviewedNote: 'Reviewed for Next #1028: matched Hybrid requests now carry canonical entity/team bounds to paired Edge and Database V2 contracts; authentication, environment selection, and promotion order are unchanged.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: ff0dc9524c17053a7eab7f3715e54df7d4e7a20e
+lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -98,7 +98,9 @@ The user explicitly approved a single exception for workspace #963: implement ag
 
 This permits this delivery's exact generated mirror and consumer contract; it is not a standing waiver of the review/promote-first rule below. The shared Dev environment is not redirected to Production. Routine frontend merge/release still needs the matching backend contract in its selected environment; formal review, promotion and root integration remain tracked separately.
 
-Release follow-up: the Edge authentication/order corrections at `5d0dd0078a438513d8d2484d2c211def7a0d0cda` are included in Main merge `cb2b34210366bdc1f7ca93a23863d6b2a9931c02` and deployed to Dev/Main before this consumer release. The mirror now pins that reviewed source. Its paired `data.sql` is generated only from the exact Database migration rebuild described in `docker/README.md`; it includes the API/private/archive boundaries and static capability catalogs needed by those functions, without copying production data. Existing self-hosted database volumes must use Database-owned migrations, not replay the fresh-install snapshot.
+Release follow-up: the Edge authentication/order corrections at `5d0dd0078a438513d8d2484d2c211def7a0d0cda` are included in Main merge `cb2b34210366bdc1f7ca93a23863d6b2a9931c02` and deployed to Dev/Main before this consumer release. That release pinned the reviewed source. The paired `data.sql` is generated only from the exact Database migration rebuild described in `docker/README.md`; it includes the API/private/archive boundaries and static capability catalogs needed by those functions, without copying production data. Existing self-hosted database volumes must use Database-owned migrations, not replay the fresh-install snapshot.
+
+Current self-hosted pairing for Next #1035 uses reviewed Edge `ceff9c4893e6fa9ab2b6e163c57b9d6428cbde37` and Database `e9888c9385356ee6df66c2910a99e29f9fa7e08c` (migration head `20260905170004`). Matched V2 entrypoints forward visibility/team and Process-type context; omitted/latest requests retain legacy RPC arguments and Edge fallback as qualified by Edge #407/PR408 and #409/PR410, integrated through workspace #1021/#1022 / PR1023. The generated initializer preserves three constrained executors, the source default-function ACL, fresh queue storage and its Database-owned fence; it does not translate PG17 administrative-only memberships into PG15 runtime membership. The generator and pinned PG15/Auth restore procedure are owned by `docker/README.md`. Existing volumes still use Database migrations.
 
 The Process/Flow Hybrid services keep the current user JWT and data-source/state scope, request the fixed 200-candidate matched mode, and reject an old backend that does not acknowledge that contract. Process forwards the selected dataset type; Flow forwards only normalized type, input-direction, and classification filters. Public `tg`/`co` views preserve an optional institution team, while `te` resolves the current user's team and fails closed to an acknowledged empty result when none is available. Next does not authorize those filters and does not retry silently against a latest-only API; Edge validates the request and `database-engine` owns visibility, adaptive exact/HNSW routing, and threshold fallback.
 
