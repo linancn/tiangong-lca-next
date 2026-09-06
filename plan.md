@@ -76,7 +76,7 @@ Overall state: Milestone 0 complete; Milestone 1 brand decisions are next
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
 | GitHub Pages workflow | Pending | Existing workflows target the canonical release system and EdgeOne |
 
-Current next action: rerun the controlled `dev` push in an environment where the required two-worker coverage gate can complete the process-heavy locale-delivery contract without external process termination.
+Current next action: identify the additional process-heavy suite that must run alongside locale delivery to reproduce the concurrent audit termination, using bounded two-worker diagnostics before changing test scheduling.
 
 ## Decisions
 
@@ -270,6 +270,7 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Re-ran `tests/unit/i18n/localeDeliveryContracts.test.ts` alone with the exact Node toolchain, the repository Jest configuration, and `--runInBand`; all 18 tests passed in 186 seconds. This isolates the first gate failure to a transient worker termination rather than a test assertion or product defect.
 - The second controlled push again passed Docpact, LCIA cache verification, reference-data validation, lint, and all 47 receipt tests. Its required two-worker coverage run completed 442 of 443 suites: 5,991 tests passed and one failed when the locale artifact idempotence test's nested shared-audit process terminated with a null exit status. The other 17 locale-delivery tests passed, and the hook again prevented any remote update.
 - Checked the container cgroup immediately after the repeated failure: it recorded zero `oom`, `oom_kill`, or memory-limit events, and the kernel log is unavailable inside the container. The evidence therefore supports external process termination under concurrent coverage load but does not establish an OOM cause. A third identical retry was not attempted.
+- Phase 1 diagnostic: ran `tests/unit/i18n/localeDeliveryContracts.test.ts` together with `tests/unit/locales.test.ts` under two Jest workers and no coverage; both suites passed, 30 tests total, in 205 seconds. The direct pair is therefore not sufficient to reproduce the failure.
 - Completed Milestone 0. Milestone 1 is waiting for the fork's brand identity inputs before shipped frontend changes begin.
 
 ### 2026-09-05 — Initial assessment
