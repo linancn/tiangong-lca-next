@@ -278,6 +278,7 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 
 - The corrective protected push completed all 446 test suites but stopped at the final full-coverage assertion: 100% statements/functions/lines and 99.94% branches, with only the build-time `auth-only` branches in the app shell, avatar menu, Welcome, and Account files uncovered by the default full-profile Jest run.
 - Marked those build-profile boundaries explicitly; the Pages auth-only build remains the proof for the alternate branch while the default full application retains its existing test coverage contract.
+- Regenerated the locale artifacts once more after those source annotations changed the audited-input digest; the next commit includes the refreshed manifests required by the locale audit.
 - The next action is one final protected push for this coverage-only correction, then promotion to `main`.
 
 ### 2026-09-07 — Hosted Auth redirect configuration

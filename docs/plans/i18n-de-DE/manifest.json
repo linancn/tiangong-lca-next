@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "791183a704b79b2da52f13cf4d4ebef4c3bd1ea1eb7beb805ffbf7ca9b701dce",
+    "auditedInputDigest": "74e1aa0d3c2184e17c5e844f131b6d187d501ad0135271cb77a20b0edbaee461",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -1301,7 +1301,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 260,
+          "line": 268,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Navigation Mode",
@@ -1310,7 +1310,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 462,
+          "line": 470,
           "column": 9,
           "symbol": "layout",
           "defaultMessage": "Navigation Mode",
@@ -1323,8 +1323,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 260, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 462, "column": 9, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 268, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 470, "column": 9, "kind": "formatMessage" }
           ]
         }
       ]
@@ -1448,7 +1448,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 402,
+          "line": 410,
           "column": 102,
           "symbol": "layout",
           "defaultMessage": "Page style setting",
@@ -1457,7 +1457,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 405,
+          "line": 413,
           "column": 99,
           "symbol": "layout",
           "defaultMessage": "Page style setting",
@@ -1470,8 +1470,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 402, "column": 102, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 405, "column": 99, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 410, "column": 102, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 413, "column": 99, "kind": "formatMessage" }
           ]
         }
       ]
@@ -3896,7 +3896,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 402,
+          "line": 410,
           "column": 30,
           "symbol": "layout",
           "defaultMessage": "Close",
@@ -3909,7 +3909,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 402, "column": 30, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 410, "column": 30, "kind": "formatMessage" }
           ]
         }
       ]
@@ -4564,7 +4564,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 405,
+          "line": 413,
           "column": 29,
           "symbol": "layout",
           "defaultMessage": "Open",
@@ -4577,7 +4577,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 405, "column": 29, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 413, "column": 29, "kind": "formatMessage" }
           ]
         }
       ]
@@ -11988,7 +11988,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 327,
+          "line": 330,
           "column": 16,
           "symbol": "AvatarDropdown",
           "defaultMessage": "All Teams",
@@ -12015,7 +12015,7 @@
             },
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 327,
+              "line": 330,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -13828,7 +13828,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 365,
+          "line": 373,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13841,7 +13841,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 365, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 373, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -24336,7 +24336,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 334,
+          "line": 342,
           "column": 33,
           "symbol": "layout",
           "defaultMessage": "Account Center",
@@ -24349,7 +24349,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 334, "column": 33, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 342, "column": 33, "kind": "formatMessage" }
           ]
         }
       ]
@@ -24414,7 +24414,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 298,
+          "line": 301,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Logout",
@@ -24429,7 +24429,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 298,
+              "line": 301,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -24615,7 +24615,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 263,
+          "line": 265,
           "column": 14,
           "symbol": "menuItems",
           "defaultMessage": "Account Profile",
@@ -24639,7 +24639,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 263,
+              "line": 265,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -24713,7 +24713,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 288,
+          "line": 291,
           "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "Review Management",
@@ -24728,7 +24728,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 288,
+              "line": 291,
               "column": 20,
               "kind": "FormattedMessage"
             }
@@ -24855,7 +24855,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 270,
+          "line": 272,
           "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "My Team",
@@ -24888,7 +24888,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 270,
+              "line": 272,
               "column": 20,
               "kind": "FormattedMessage"
             },
@@ -25759,7 +25759,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 288,
+          "line": 296,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25768,7 +25768,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 295,
+          "line": 303,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -25781,8 +25781,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 288, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 295, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 296, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 303, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25906,7 +25906,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 308,
+          "line": 316,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25915,7 +25915,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 315,
+          "line": 323,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -25928,8 +25928,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 308, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 315, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 316, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 323, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -27798,7 +27798,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 279,
+          "line": 282,
           "column": 20,
           "symbol": "menuItems",
           "defaultMessage": "System Management",
@@ -27831,7 +27831,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 279,
+              "line": 282,
               "column": 20,
               "kind": "FormattedMessage"
             },
@@ -41527,7 +41527,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Account/index.tsx",
-          "line": 839,
+          "line": 840,
           "column": 28,
           "symbol": "Profile",
           "defaultMessage": "Connected apps",
@@ -41542,7 +41542,7 @@
           "locations": [
             {
               "path": "src/pages/Account/index.tsx",
-              "line": 839,
+              "line": 840,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -60821,7 +60821,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 845,
+          "line": 849,
           "column": 11,
           "symbol": "Welcome",
           "defaultMessage": "Data Ecosystem (A-Z Order)",
@@ -60836,7 +60836,7 @@
           "locations": [
             {
               "path": "src/pages/Welcome.tsx",
-              "line": 845,
+              "line": 849,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -140775,7 +140775,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 200,
+          "line": 204,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -265041,7 +265041,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 878,
+          "line": 882,
           "column": 16,
           "symbol": "Welcome",
           "defaultMessage": "No data teams are available yet.",
@@ -265054,7 +265054,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 878, "column": 16, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 882, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -265119,7 +265119,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 859,
+          "line": 863,
           "column": 18,
           "symbol": "Welcome",
           "defaultMessage": "Data teams could not be loaded.",
@@ -265132,7 +265132,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 859, "column": 18, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 863, "column": 18, "kind": "formatMessage" }
           ]
         }
       ]
@@ -265197,7 +265197,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 865,
+          "line": 869,
           "column": 18,
           "symbol": "Welcome",
           "defaultMessage": "Try again",
@@ -265210,7 +265210,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 865, "column": 18, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 869, "column": 18, "kind": "formatMessage" }
           ]
         }
       ]
@@ -266576,7 +266576,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Welcome.tsx",
-          "line": 981,
+          "line": 985,
           "column": 16,
           "symbol": "Welcome",
           "defaultMessage": "Diagram language: {language}",
@@ -266589,7 +266589,7 @@
           "argumentSignature": [{ "name": "language", "type": "simple" }],
           "placeholders": ["language"],
           "locations": [
-            { "path": "src/pages/Welcome.tsx", "line": 981, "column": 16, "kind": "formatMessage" }
+            { "path": "src/pages/Welcome.tsx", "line": 985, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -271541,7 +271541,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 148,
+          "line": 150,
           "column": 22,
           "symbol": "confirmModal",
           "defaultMessage": "You can create a team or join an existing team.",
@@ -271556,7 +271556,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 148,
+              "line": 150,
               "column": 22,
               "kind": "formatMessage"
             }
@@ -271624,7 +271624,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 187,
+          "line": 189,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "Create Team",
@@ -271639,7 +271639,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 187,
+              "line": 189,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -271707,7 +271707,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 162,
+          "line": 164,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "Join Team",
@@ -271722,7 +271722,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 162,
+              "line": 164,
               "column": 20,
               "kind": "formatMessage"
             }
@@ -271790,7 +271790,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/AvatarDropdown.tsx",
-          "line": 144,
+          "line": 146,
           "column": 20,
           "symbol": "confirmModal",
           "defaultMessage": "You are not in any team",
@@ -271805,7 +271805,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/AvatarDropdown.tsx",
-              "line": 144,
+              "line": 146,
               "column": 20,
               "kind": "formatMessage"
             }
