@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
 lastReviewedNote: 'Added focused GitHub Pages base-path, static-asset, Auth callback, workflow-shape, project-subpath build, and browser-smoke proof; the broader validation policy is unchanged.'
 related:
   - ../AGENTS.md

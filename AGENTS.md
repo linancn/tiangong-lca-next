@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
 lastReviewedNote: 'Reviewed while adding the fork GitHub Pages base-path contract; branch, ownership, and delivery boundaries remain unchanged.'
 related:
   - .docpact/config.yaml

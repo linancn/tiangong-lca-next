@@ -44,7 +44,7 @@ checkPaths:
   - .github/workflows/github-pages.yml
   - .nvmrc
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
 lastReviewedNote: 'Added the exact project-path production-build command used to validate the fork GitHub Pages bundle; the default local work loop remains unchanged.'
 ---
 

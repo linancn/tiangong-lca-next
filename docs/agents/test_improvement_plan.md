@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
 lastReviewedNote: 'Reviewed for focused project-path and Pages workflow contracts; test infrastructure, strategy, and reopen conditions remain unchanged.'
 ---
 
