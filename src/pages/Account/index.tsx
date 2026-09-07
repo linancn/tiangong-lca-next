@@ -832,7 +832,6 @@ const Profile: FC = () => {
               }),
               children: renderChangeEmailForm(),
             },
-            /* istanbul ignore next */
             ...(appCapabilities.oauthApplications
               ? [
                   {
@@ -844,7 +843,7 @@ const Profile: FC = () => {
                     children: <OAuthConnections />,
                   },
                 ]
-              : []),
+              : /* istanbul ignore next */ []),
           ]}
         ></Tabs>
       </Spin>
