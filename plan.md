@@ -56,13 +56,13 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-07
 
-Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, protected delivery, and the v0.1.0 `main` promotion are complete; first deployment recovery remains pending
+Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, protected delivery, the v0.1.0 `main` promotion, and the first public deployment are complete; live Auth-flow validation remains pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Complete and delivered | The final coverage-boundary and locale-artifact commits passed the complete protected gate and reached `origin/dev` at `93cf783b` |
+| Working tree | Final deployment evidence pending `dev` delivery | The successful main hotfix is fast-forwarded locally into `dev`; this final plan evidence requires one protected `dev` push |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
@@ -79,9 +79,9 @@ Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability bou
 | Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | First deployment recovery in progress | The v0.1.0 candidate reached `main`, but run `34085061232` failed because the shallow checkout omitted the pinned locale-audit baseline commit; the recovery hotfix fetches full history before static readiness |
+| GitHub Pages workflow | Complete | Recovery run `34088487137` passed hosted-variable checks, full-history static readiness, the project-path production build, artifact upload, and Pages deployment; the public URL and all five HTML-linked static assets return HTTP 200 |
 
-Current next action: deliver the full-history Pages checkout as an exact Issue #1 direct-main hotfix, then verify the successful deployment and public project-path URL.
+Current next action: verify signup, confirmation, login, refresh, logout, password recovery, and invalid/expired recovery behavior on the deployed site in a fresh browser session without privileged credentials.
 
 ## Decisions
 
@@ -268,7 +268,9 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Release PR #2 passed its exact non-browser gate and proof before merging to `dev` as `596103cb4dfe36a6054b295d2c037751e9d2486f`; promotion PR #3 passed proof and Gitleaks checks before merging to `main` as `a41efed19e77d5f4a6c911bc1dfa7f7a10616a98`.
 - Pages run `34085061232` accepted both hosted Supabase browser variables and installed dependencies, then failed static readiness because the default shallow checkout did not contain pinned locale-audit baseline commit `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`.
 - The bounded recovery sets `fetch-depth: 0` on the Pages checkout so the existing static release contract can resolve its governed historical baseline; no application runtime or package version changes.
-- The next action is an exact Issue #1 direct-main hotfix, followed by deployment and public URL verification.
+- Direct-main hotfix PR #4 passed its exact-head full gate and Gitleaks checks, then merged as `3288ed18dea4575d01029d7ad105c6b4c051ad37` without changing package version `0.1.0`.
+- Pages recovery run `34088487137` passed static readiness, built the project-path bundle, uploaded the artifact, and deployed successfully. The public page, favicon, CSS, loading script, preload helper, and application bundle all returned HTTP 200 under `/tiangong-lca-next-practice/`; the HTML contained no root-relative asset outside that project path.
+- The next action is fresh-browser validation of the complete hosted Auth flow; no production user mutation was performed in this deployment session.
 
 ### 2026-09-07 — Protected `dev` delivery complete
 
