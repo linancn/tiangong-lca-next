@@ -141,13 +141,15 @@ export async function getInitialState(): Promise<{
         return null;
       }
       // Coverage for the auth-only build variant is provided by the Pages build contract.
-      /* istanbul ignore next */
-      bindTidasPackageTaskCenterOwner(appCapabilities.calculations ? msg.userid : null);
+      bindTidasPackageTaskCenterOwner(
+        appCapabilities.calculations ? msg.userid : /* istanbul ignore next */ null,
+      );
       return {
         ...msg,
         // Coverage for the auth-only build variant is provided by the Pages build contract.
-        /* istanbul ignore next */
-        access: appCapabilities.systemRoles ? await getSystemAccess() : undefined,
+        access: appCapabilities.systemRoles
+          ? await getSystemAccess()
+          : /* istanbul ignore next */ undefined,
       };
     } catch (error) {
       bindTidasPackageTaskCenterOwner(null);
@@ -203,8 +205,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     getLocalizedAppTitle(locale) ??
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
   const canViewDashboard =
+    /* istanbul ignore next */
     appCapabilities.productData && initialState?.currentUser?.access === 'admin';
   const canViewDataProcessing =
+    /* istanbul ignore next */
     appCapabilities.productData && initialState?.currentUser?.access === 'data_product_manager';
   const maintenanceActive = isSystemMaintenanceActive(initialState?.systemStatus);
   const handleClickFunction = () => {
@@ -241,26 +245,24 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         return publicActions;
       }
 
-      // Coverage for the auth-only build variant is provided by the Pages build contract.
-      /* istanbul ignore next */
       const actions = appCapabilities.productData
         ? [
             <LCIACacheMonitor key='LCIACacheMonitor' />,
             <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
             <LocationCacheMonitor key='LocaltionCacheMonitor' />,
-            /* istanbul ignore next */
             ...(appCapabilities.importExport
               ? [
                   <ImportTidasPackage key='ImportTidasPackage' />,
                   <ExportTidasPackage key='ExportTidasPackage' />,
                 ]
-              : []),
-            /* istanbul ignore next */
-            ...(appCapabilities.calculations ? [<LcaTaskCenter key='LcaTaskCenter' />] : []),
+              : /* istanbul ignore next */ []),
+            ...(appCapabilities.calculations
+              ? [<LcaTaskCenter key='LcaTaskCenter' />]
+              : /* istanbul ignore next */ []),
             <Notification key='Notification' />,
             ...publicActions,
           ]
-        : publicActions;
+        : /* istanbul ignore next */ publicActions;
 
       if (headerProps.isMobile) {
         actions.unshift(

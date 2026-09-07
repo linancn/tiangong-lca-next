@@ -151,7 +151,10 @@ const Welcome: React.FC = () => {
   }, [activeViewFromLocation]);
 
   useEffect(() => {
-    if (!appCapabilities.productData || activeWelcomeView !== 'carbonFootprintGuide') {
+    if (
+      /* istanbul ignore next */ !appCapabilities.productData ||
+      activeWelcomeView !== 'carbonFootprintGuide'
+    ) {
       setCarbonFootprintGuideVideoUrl('');
       setCarbonFootprintGuideVideoStatus('idle');
       return undefined;
@@ -267,7 +270,7 @@ const Welcome: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!appCapabilities.teams || activeWelcomeView !== 'overview') {
+    if (/* istanbul ignore next */ !appCapabilities.teams || activeWelcomeView !== 'overview') {
       return;
     }
     if (isDataModalOpen) {
@@ -694,7 +697,6 @@ const Welcome: React.FC = () => {
   const renderOverview = () => (
     <>
       {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
-      {/* istanbul ignore next */}
       {appCapabilities.productData ? (
         <Row gutter={[16, 16]} wrap>
           {metrics.map((metric) => (
@@ -757,7 +759,7 @@ const Welcome: React.FC = () => {
             </Col>
           ))}
         </Row>
-      ) : null}
+      ) : /* istanbul ignore next */ null}
 
       <Card
         className={styles.welcome_card}
@@ -780,7 +782,6 @@ const Welcome: React.FC = () => {
               {tidasTitle}
             </Button>
             {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
-            {/* istanbul ignore next */}
             {appCapabilities.productData ? (
               <>
                 <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
@@ -788,7 +789,7 @@ const Welcome: React.FC = () => {
                   {currentGuideContent.entryLabel}
                 </Button>
               </>
-            ) : null}
+            ) : /* istanbul ignore next */ null}
           </Space>
         </Space>
       </Card>
@@ -832,6 +833,7 @@ const Welcome: React.FC = () => {
   return (
     <PageContainer title={false} childrenContentStyle={{ padding: '16px 24px 24px' }}>
       <Space orientation='vertical' size={24} className={styles.welcome_content}>
+        {/* istanbul ignore next */}
         {appCapabilities.productData && activeWelcomeView === 'carbonFootprintGuide'
           ? renderCarbonFootprintGuide()
           : renderOverview()}

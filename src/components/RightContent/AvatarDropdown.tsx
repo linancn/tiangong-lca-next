@@ -85,8 +85,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
 
   useEffect(() => {
     // Coverage for the auth-only build variant is provided by the Pages build contract.
-    /* istanbul ignore next */
-    if (appCapabilities.systemRoles || appCapabilities.review) {
+    /* istanbul ignore else */
+    if (
+      /* istanbul ignore next */ appCapabilities.systemRoles ||
+      /* istanbul ignore next */ appCapabilities.review
+    ) {
       void getMenuUserRoles();
     }
   }, []);
@@ -272,8 +275,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
             label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
           },
         ]
-      : []),
-    /* istanbul ignore next */
+      : /* istanbul ignore next */ []),
     ...(appCapabilities.systemRoles && canViewSystemManagement
       ? [
           {
@@ -282,7 +284,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
             label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
           },
         ]
-      : []),
+      : /* istanbul ignore next */ []),
     ...(appCapabilities.review && canViewReviewManagement
       ? [
           {
