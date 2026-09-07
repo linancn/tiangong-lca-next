@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedCommit: 511801ec8280fe39cc73bed0f5f9eb0134f6e905
 lastReviewedNote: 'Reviewed for the Pages full-history checkout recovery; branch, ownership, and delivery boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
