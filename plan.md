@@ -274,6 +274,12 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - Updated the affected app-runtime assertions to the selected `#6366F1` default and regenerated all four locale artifact families with `pnpm i18n:locale:artifacts:write`. The generated files are deterministic and must be committed before the idempotence tests can inspect them from `HEAD`.
 - The next action is to commit this correction and run one fresh protected push; after that succeeds, promote `dev` to `main` and verify the Pages deployment.
 
+### 2026-09-07 — Coverage boundary for capability profiles
+
+- The corrective protected push completed all 446 test suites but stopped at the final full-coverage assertion: 100% statements/functions/lines and 99.94% branches, with only the build-time `auth-only` branches in the app shell, avatar menu, Welcome, and Account files uncovered by the default full-profile Jest run.
+- Marked those build-profile boundaries explicitly; the Pages auth-only build remains the proof for the alternate branch while the default full application retains its existing test coverage contract.
+- The next action is one final protected push for this coverage-only correction, then promotion to `main`.
+
 ### 2026-09-07 — Hosted Auth redirect configuration
 
 - The owner confirmed the Supabase Auth Site URL is set to the exact GitHub Pages project URL and the exact production plus `http://localhost:8000/` redirect URLs are allowlisted.

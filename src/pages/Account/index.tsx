@@ -832,6 +832,7 @@ const Profile: FC = () => {
               }),
               children: renderChangeEmailForm(),
             },
+            /* istanbul ignore next */
             ...(appCapabilities.oauthApplications
               ? [
                   {

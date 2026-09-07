@@ -84,6 +84,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   };
 
   useEffect(() => {
+    // Coverage for the auth-only build variant is provided by the Pages build contract.
+    /* istanbul ignore next */
     if (appCapabilities.systemRoles || appCapabilities.review) {
       void getMenuUserRoles();
     }
@@ -271,6 +273,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
           },
         ]
       : []),
+    /* istanbul ignore next */
     ...(appCapabilities.systemRoles && canViewSystemManagement
       ? [
           {

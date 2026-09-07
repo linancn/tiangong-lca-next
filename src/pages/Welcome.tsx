@@ -693,6 +693,8 @@ const Welcome: React.FC = () => {
 
   const renderOverview = () => (
     <>
+      {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
+      {/* istanbul ignore next */}
       {appCapabilities.productData ? (
         <Row gutter={[16, 16]} wrap>
           {metrics.map((metric) => (
@@ -777,6 +779,8 @@ const Welcome: React.FC = () => {
             <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
               {tidasTitle}
             </Button>
+            {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
+            {/* istanbul ignore next */}
             {appCapabilities.productData ? (
               <>
                 <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>

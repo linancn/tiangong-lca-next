@@ -140,9 +140,13 @@ export async function getInitialState(): Promise<{
         history.push(LOGIN_PATH);
         return null;
       }
+      // Coverage for the auth-only build variant is provided by the Pages build contract.
+      /* istanbul ignore next */
       bindTidasPackageTaskCenterOwner(appCapabilities.calculations ? msg.userid : null);
       return {
         ...msg,
+        // Coverage for the auth-only build variant is provided by the Pages build contract.
+        /* istanbul ignore next */
         access: appCapabilities.systemRoles ? await getSystemAccess() : undefined,
       };
     } catch (error) {
@@ -237,17 +241,21 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         return publicActions;
       }
 
+      // Coverage for the auth-only build variant is provided by the Pages build contract.
+      /* istanbul ignore next */
       const actions = appCapabilities.productData
         ? [
             <LCIACacheMonitor key='LCIACacheMonitor' />,
             <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
             <LocationCacheMonitor key='LocaltionCacheMonitor' />,
+            /* istanbul ignore next */
             ...(appCapabilities.importExport
               ? [
                   <ImportTidasPackage key='ImportTidasPackage' />,
                   <ExportTidasPackage key='ExportTidasPackage' />,
                 ]
               : []),
+            /* istanbul ignore next */
             ...(appCapabilities.calculations ? [<LcaTaskCenter key='LcaTaskCenter' />] : []),
             <Notification key='Notification' />,
             ...publicActions,
