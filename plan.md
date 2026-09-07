@@ -56,7 +56,7 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-07
 
-Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, and protected `dev` delivery are complete; governed release and live deployment remain pending
+Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, protected delivery, and the v0.1.0 `main` promotion are complete; first deployment recovery remains pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
@@ -79,9 +79,9 @@ Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability bou
 | Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Enabled, candidate delivered to `dev` | GitHub reports workflow-based Pages at the target URL; the validated candidate is on `origin/dev` and requires the governed version Release PR plus immutable promotion to `main` before the first deployment |
+| GitHub Pages workflow | First deployment recovery in progress | The v0.1.0 candidate reached `main`, but run `34085061232` failed because the shallow checkout omitted the pinned locale-audit baseline commit; the recovery hotfix fetches full history before static readiness |
 
-Current next action: enable Issues on the fork so the required owning release Issue can be created, deliver this plan checkpoint to `dev`, then run the governed version Release PR and immutable `dev`-to-`main` promotion so the first Pages workflow can run.
+Current next action: deliver the full-history Pages checkout as an exact Issue #1 direct-main hotfix, then verify the successful deployment and public project-path URL.
 
 ## Decisions
 
@@ -261,6 +261,14 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-07 — First Pages deployment recovery
+
+- Enabled Issues and created fork Issue #1 to own the first Pages release.
+- Release PR #2 passed its exact non-browser gate and proof before merging to `dev` as `596103cb4dfe36a6054b295d2c037751e9d2486f`; promotion PR #3 passed proof and Gitleaks checks before merging to `main` as `a41efed19e77d5f4a6c911bc1dfa7f7a10616a98`.
+- Pages run `34085061232` accepted both hosted Supabase browser variables and installed dependencies, then failed static readiness because the default shallow checkout did not contain pinned locale-audit baseline commit `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`.
+- The bounded recovery sets `fetch-depth: 0` on the Pages checkout so the existing static release contract can resolve its governed historical baseline; no application runtime or package version changes.
+- The next action is an exact Issue #1 direct-main hotfix, followed by deployment and public URL verification.
 
 ### 2026-09-07 — Protected `dev` delivery complete
 

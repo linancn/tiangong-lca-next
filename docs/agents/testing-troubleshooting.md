@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
-lastReviewedNote: 'Reviewed after the focused GitHub Pages compatibility suites passed serially; troubleshooting and gate recovery guidance remain unchanged.'
+lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedNote: 'Reviewed for the Pages shallow-checkout failure and full-history recovery; the general troubleshooting path remains unchanged.'
 ---
 
 # Testing Troubleshooting

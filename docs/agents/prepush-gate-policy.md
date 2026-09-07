@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
-lastReviewedNote: 'Reviewed for the fork GitHub Pages workflow and its focused contract tests; protected-branch trigger, receipt, and bypass policy remain unchanged.'
+lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedNote: 'Reviewed for the Pages full-history checkout recovery; protected-branch trigger, receipt, and bypass policy remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

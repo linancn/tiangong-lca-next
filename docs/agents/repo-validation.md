@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
-lastReviewedNote: 'Added focused GitHub Pages base-path, static-asset, Auth callback, workflow-shape, project-subpath build, and browser-smoke proof; the broader validation policy is unchanged.'
+lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedNote: 'Required a full-history Pages checkout so static readiness can resolve the pinned locale-audit baseline; the broader validation policy is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -181,7 +181,7 @@ For active German, do not reinterpret or delete the inherited Issue #601/#602/#6
 
 If a coverage change excludes framework-heavy wrapper files from `collectCoverageFrom`, document why those files are excluded and re-check the affected save, validation, navigation, and highlighting flows with focused tests before relying on `pnpm prepush:gate`.
 
-The fork-specific `.github/workflows/github-pages.yml` follows the deployment-only validation boundary: parse and format the workflow locally, validate its embedded shell, and do not invoke a live Pages deployment without the repository environment.
+The fork-specific `.github/workflows/github-pages.yml` follows the deployment-only validation boundary: check out full history so pinned audit baselines resolve, parse and format the workflow locally, validate its embedded shell, and do not invoke a live Pages deployment without the repository environment.
 
 ## Minimum PR Validation Note
 

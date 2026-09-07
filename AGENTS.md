@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
-lastReviewedNote: 'Reviewed while adding the fork GitHub Pages base-path contract; branch, ownership, and delivery boundaries remain unchanged.'
+lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedNote: 'Reviewed for the Pages full-history checkout recovery; branch, ownership, and delivery boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

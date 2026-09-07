@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-07
-lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
-lastReviewedNote: 'Reviewed for the added application-base and Pages workflow contract suites; no coverage queue or checked-in historical baseline update is required.'
+lastReviewedCommit: a41efed19e77d5f4a6c911bc1dfa7f7a10616a98
+lastReviewedNote: 'Reviewed for the Pages full-history checkout recovery; no coverage queue or checked-in historical baseline update is required.'
 ---
 
 # Testing Execution State
