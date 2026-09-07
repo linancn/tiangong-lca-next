@@ -26,7 +26,7 @@ checkPaths:
   - .env.development
 lastReviewedAt: 2026-09-07
 lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
-lastReviewedNote: 'Recorded the decision to defer custom visual assets and the completed GitHub Pages project-path implementation, workflow, tests, and local browser proof.'
+lastReviewedNote: 'Recorded the corrected hosted Supabase project selection and the tracked frontend-configuration delivery required before the next Pages deployment.'
 related:
   - AGENTS.md
   - .docpact/config.yaml
@@ -56,13 +56,13 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-07
 
-Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, protected delivery, the v0.1.0 `main` promotion, and the first public deployment are complete; live Auth-flow validation remains pending
+Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, protected delivery, the v0.1.0 `main` promotion, and the first public deployment are complete; the selected hosted Supabase project is corrected locally and requires protected delivery before Auth is revalidated
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Final deployment evidence pending `dev` delivery | The successful main hotfix is fast-forwarded locally into `dev`; this final plan evidence requires one protected `dev` push |
+| Working tree | Hosted-project correction pending protected delivery | The tracked main and development browser configuration now selects `kplaicsrhwzddqnujqim`; no database migration has run |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
@@ -76,12 +76,12 @@ Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability bou
 | GitHub Pages base path | Complete | `APP_BASE_PATH` drives Umi, shell/static assets, maintenance fallback, external links, and Auth callbacks; the exact project-path bundle passed a local browser smoke with zero same-origin failures |
 | Auth-only capability boundary | Complete | Pages selects the centralized `auth-only` profile; its build emits only Welcome, login/recovery, Account, and authenticated fallback routes and skips backend-dependent startup/menu actions |
 | Custom domain | Complete for project Pages | Removed `public/CNAME`; the fork will use `catiehe.github.io/tiangong-lca-next-practice/` unless an owned domain is deliberately configured later |
-| Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
+| Hosted Supabase Auth | Correct project selected; redeploy and live revalidation pending | The owner confirmed `kplaicsrhwzddqnujqim` as the fork project. GitHub repository variables now select it, and the tracked `.env` plus `.env.development` browser configuration is aligned locally; the current deployed artifact still embeds the superseded project until this change reaches `main` |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Complete | Recovery run `34088487137` passed hosted-variable checks, full-history static readiness, the project-path production build, artifact upload, and Pages deployment; the public URL and all five HTML-linked static assets return HTTP 200 |
+| GitHub Pages workflow | Infrastructure complete; corrected target pending release | Run `34127668319` proved the updated GitHub variable reached the build environment, but Umi used the tracked main `.env` value and emitted the superseded project. The tracked source is now aligned with the selected project and must pass the protected release path before another deployment |
 
-Current next action: verify signup, confirmation, login, refresh, logout, password recovery, and invalid/expired recovery behavior on the deployed site in a fresh browser session without privileged credentials.
+Current next action: deliver the tracked `kplaicsrhwzddqnujqim` frontend configuration through `dev -> main`, redeploy Pages, verify the emitted bundle target, then repeat the fresh-browser Auth smoke against that project.
 
 ## Decisions
 
@@ -261,6 +261,13 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-07 — Hosted Supabase target correction
+
+- The owner confirmed `kplaicsrhwzddqnujqim` as the hosted project for this fork; the Supabase CLI account can see that project as active and healthy.
+- GitHub Pages run `34127668319` received the corrected `SUPABASE_URL` repository variable and completed successfully, but artifact inspection proved that Umi still emitted the superseded tracked `.env` target.
+- The fork's tracked `.env` and `.env.development` browser configuration now selects the confirmed hosted project and its publishable key. No secret or service-role credential was added, and no database migration or remote database mutation was performed.
+- The next action is protected delivery of this configuration to `main`, followed by Pages artifact verification and a fresh Auth smoke on the corrected project.
 
 ### 2026-09-07 — First Pages deployment recovery
 
