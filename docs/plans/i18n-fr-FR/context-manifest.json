@@ -5,8 +5,8 @@
     "repository": "linancn/tiangong-lca-next",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "719bc23626cd3f60498a34e204baa70143087617d15189859d4970d9532410c9",
-    "auditedInputDigest": "b343cd7235661fe597e28957ea14cd2167a3bd923568ef87a3581bfcb0ab2b8b"
+    "sourceManifestDigest": "aefbd1356655286c450d1a821d8953b868258c592a3d8cf620d9b5d2d4e25aec",
+    "auditedInputDigest": "fb3efb4c0cfc96d77233ca28b4d671dd4e12f3620e1d4d6e778a1bbcd4be9d94"
   },
   "inventory": {
     "sourceMessageCount": 3322,
@@ -47,7 +47,7 @@
     "messageCount": 3322,
     "completeCount": 3322,
     "blockedCount": 0,
-    "dossierDigest": "70c54b1e072b4c34701a75e95dace48e6e9a26cb5b777ab093e669e6524d5f9c",
+    "dossierDigest": "852d8ba98ab0727465032226dfe6f49eea3fed5307d1de5168df36300552aa79",
     "catalogDigest": "9a118ae3bddcdfb951bf4b15ea37c504af4c037943cfdcd0670f0efe1c0d5e09",
     "moduleCount": 32,
     "moduleDigest": "3b4f2df2201d552cc6e09b75bcebf64a30ac3511d401d79c50d4eb6e806195d3",
@@ -138,14 +138,14 @@
         "focusedVariantCount": 8
       },
       "sourceFileCount": 37,
-      "sourceEvidenceDigest": "75c5e1d12f84230dc46f1333a5179df137da88b4718bd049f970f7519d930711",
+      "sourceEvidenceDigest": "10146cfe4141762e7fc07d803d7c859062da9d59121ab863d0145ee91f3ebe6c",
       "rowEvidence": [
         {
           "executableAssertionId": "rv.root.redirect-to-welcome",
           "route": "/",
           "viewState": "redirect-to-welcome",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "f12fe6665a651f74d7e0dfeca68b7b51d22f9d1e390cf3f9b62aabf9dc12c554",
+          "sourceDigest": "b0f1d45bd4e7bb33018f3b15e0374e4355bf3abce0e120bd59bce6fb51526838",
           "focusedTestDigest": "2db96025ec564871cc9ebdfbd9e106b0cd6d0907f7f765574cc56a93122a4c24",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "d4754f0ac91aaabda0250ca6a0977f131654b0900d1b14b36a4c840aa42f6825",
@@ -172,7 +172,7 @@
           "route": "/welcome",
           "viewState": "overview",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "734d05f6ad9962de57bb6aa279ca8b1eb585deab0097745d615a9ad538ffce25",
+          "sourceDigest": "bbce6f7d2b7262c32b1e8c5785a5ea950cef2d377364453f42f75999b22297d8",
           "focusedTestDigest": "5565e087364aeec68560016fed1de6dde3d6033b550a7b42578133ffdb6a94da",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "811949b6e0dccca1b6aa510e63afebb8839888cf24907b1dc2bae6a1755bf3d3",
@@ -199,7 +199,7 @@
           "route": "/welcome?view=carbon-footprint",
           "viewState": "carbon-footprint-guide",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "734d05f6ad9962de57bb6aa279ca8b1eb585deab0097745d615a9ad538ffce25",
+          "sourceDigest": "bbce6f7d2b7262c32b1e8c5785a5ea950cef2d377364453f42f75999b22297d8",
           "focusedTestDigest": "5b5148760307f23e143c255ac0e71c63cef7b29498da1ded43e06e01659cb9c9",
           "plannedBrowserAssertionCount": 3,
           "plannedBrowserAssertionDigest": "7dce46b0e253c9000c52c96a89b772057bc78fbf5d13a1db1094e52d13b71be3",
@@ -244,7 +244,7 @@
           "route": "/user/login",
           "viewState": "login-and-register",
           "requiredEvidenceScope": "internal-localization",
-          "sourceDigest": "9e5a411463d3c50fd4a20e8b4ef51708319e2273fefe789514b0145e96623715",
+          "sourceDigest": "6a28ce133de770360a670221b8b7c997c818ce2ca900f6f1237537d015416965",
           "focusedTestDigest": "40919acca5002617ba781e013f8bee7c55d700ee77d2545f9526227369b6dc16",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "5598e3ac5fb06b788671b7f7e67b5643b4f0057c5c9deef1fe99da6152ed7fc7",
@@ -255,8 +255,6 @@
           "navigationTargets": [
             "/dashboard/national-carbon",
             "/data-processing",
-            "/privacy_notice.html",
-            "/terms_of_use.html",
             "/umi/plugin/openapi",
             "/user/login/password_forgot",
             "/user/login/password_reset"
@@ -319,7 +317,7 @@
           "route": "/dashboard/national-carbon",
           "viewState": "national-carbon-dashboard",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "7ee0b65694dc9bf56ebcfee27dda14429496cd5d9be00e767fc721fb921c7e54",
+          "sourceDigest": "a3ad5ccd64e353f0aa1c80dc822ea77e7488f6315656e9a9f207302f7b038a3e",
           "focusedTestDigest": "a9701484e790cadd384d76ab6fede9da2bd124646a264926d8c48cd5e2547504",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "95b95698b9168443cacad5913312e98989fb251f09feee48fbaf5f7203c57587",
@@ -351,7 +349,7 @@
           "route": "/terms_of_use.html",
           "viewState": "static-legal-English-fallback",
           "requiredEvidenceScope": "declared-fallback-observed",
-          "sourceDigest": "c23a99077dca16ab2f85da734a6c610a4917e8ad39d0f1a840ba8a8335e599dd",
+          "sourceDigest": "13c224d4926c35507c86590804c595e2f2e51e67b5820ebb91199afd317c1e39",
           "focusedTestDigest": "1983fdb49731eca7f82de31522855a580ada27f4002f8ab85723759eaf4dcb23",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "6f506207dd06ed5d9e9557d43a4bd7bbde8ec6f6d7288901db0b06a119bee742",
@@ -359,11 +357,7 @@
           "derivedMessageDigest": "8522074536aabd55a846d02cf3be1dac80125f7c9c60ff35a83ffba6df8bee8e",
           "stateSignals": ["dark", "error", "loading", "success"],
           "queryParameters": [],
-          "navigationTargets": [
-            "/privacy_notice.html",
-            "/terms_of_use.html",
-            "/user/login/password_forgot"
-          ],
+          "navigationTargets": ["/user/login/password_forgot"],
           "interactionKinds": ["alert", "tabs"],
           "acceptedTechnicalLiteralCount": 0,
           "unownedVisibleLiteralCount": 0
@@ -373,7 +367,7 @@
           "route": "/privacy_notice.html",
           "viewState": "static-legal-English-fallback",
           "requiredEvidenceScope": "declared-fallback-observed",
-          "sourceDigest": "c180b07e89eb1129f09a6636cb8cc3c557c35f4940e304901b72b0e6e71fa01a",
+          "sourceDigest": "86cadf48dfc3d86629212178c36475641256d981c233659b16942ffd175159b1",
           "focusedTestDigest": "1983fdb49731eca7f82de31522855a580ada27f4002f8ab85723759eaf4dcb23",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "d96cb2fb0f267c9b2a696b57a6631946440f273ada6ba434fd6a712d421392aa",
@@ -381,11 +375,7 @@
           "derivedMessageDigest": "8522074536aabd55a846d02cf3be1dac80125f7c9c60ff35a83ffba6df8bee8e",
           "stateSignals": ["dark", "error", "loading", "success"],
           "queryParameters": [],
-          "navigationTargets": [
-            "/privacy_notice.html",
-            "/terms_of_use.html",
-            "/user/login/password_forgot"
-          ],
+          "navigationTargets": ["/user/login/password_forgot"],
           "interactionKinds": ["alert", "tabs"],
           "acceptedTechnicalLiteralCount": 0,
           "unownedVisibleLiteralCount": 0
@@ -491,7 +481,7 @@
           "route": "/user",
           "viewState": "anonymous-login-flow-redirect",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "8afe75f5ea1f7941fa771863d0b0ce51483667af55f6eeb9c06010c7c353ef1f",
+          "sourceDigest": "f9af36ee696c0970799af5f022af7dcf36ad99c82566700086ecd2d2578b1a4a",
           "focusedTestDigest": "f6611d408ccba799d8bd56b634278c6556a968231c347ee35dbeb56a1ced85ba",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "fa3d071fd4587fe3268363862cefa76bdda4d401a53baa71807a18279ee6a971",
@@ -499,11 +489,7 @@
           "derivedMessageDigest": "8522074536aabd55a846d02cf3be1dac80125f7c9c60ff35a83ffba6df8bee8e",
           "stateSignals": ["dark", "error", "loading", "success"],
           "queryParameters": [],
-          "navigationTargets": [
-            "/privacy_notice.html",
-            "/terms_of_use.html",
-            "/user/login/password_forgot"
-          ],
+          "navigationTargets": ["/user/login/password_forgot"],
           "interactionKinds": ["alert", "tabs"],
           "acceptedTechnicalLiteralCount": 0,
           "unownedVisibleLiteralCount": 0
@@ -1071,7 +1057,7 @@
           "route": "/data-processing",
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "e88340f422300a6ac90939d9788cac459dcf46c1801b9db5cc3408835febfefa",
+          "sourceDigest": "f6334f34b1a7ac491129af0a8b79ec19bbb54adedd56161af3486466fb18633e",
           "focusedTestDigest": "0522e4df43f8cd6b02c5b63c856a49368a5e173da09b9c3f9107f6c27020399e",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
@@ -1126,7 +1112,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "404c3f4ce5f4c164a8d11b6999da96087af5d6a40bdc8096b521aafa63edc2d5",
+      "rowEvidenceDigest": "115f152d5b16251a20269a894a9d39007c667b48854e0ec26930361e1ba2faf9",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1150,5 +1136,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "b18107e2668e0dd0823a17d05e3b562bd838dcd2e3f04644f5b001a16ba2349b"
+  "contextDigest": "05fdaf19da11d5a339234ab2b8a38da6e3bc5d94d9f899ea2d387aabf808d745"
 }

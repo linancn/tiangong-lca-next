@@ -261,6 +261,13 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 
 ## Activity Log
 
+### 2026-09-07 — Project-path gate closure
+
+- The first protected `dev` push correctly stopped before transport: the complete gate found stale registry-derived locale artifacts and a service-worker unit fixture that did not define the real `registration.scope` contract.
+- Regenerated every locale artifact through `pnpm i18n:locale:artifacts:write`; no language payload or locale capability changed.
+- Extended the service-worker contract to prove both root scope and `/tiangong-lca-next-practice/` project scope navigation fallbacks.
+- Re-ran the three previously failing suites serially: 3 suites and 34 tests passed. The next repository action is a fresh protected push; after it succeeds, the product next action remains creating the hosted Supabase development project and configuring its two public GitHub repository variables.
+
 ### 2026-09-06 — GitHub Pages project-path foundation
 
 - Accepted the user's decision to skip paid custom-asset design. Logo and favicon work is deferred; the current upstream visuals are temporary development placeholders, not approved PRISM identity.
