@@ -56,13 +56,13 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-07
 
-Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, and hosted configuration are complete; protected delivery and live deployment remain pending
+Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, hosted configuration, and protected `dev` delivery are complete; governed release and live deployment remain pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Validation fix pending delivery | Locale artifacts and branding assertions were regenerated after the first full gate; the working tree needs one corrective commit and a fresh protected push |
+| Working tree | Complete and delivered | The final coverage-boundary and locale-artifact commits passed the complete protected gate and reached `origin/dev` at `93cf783b` |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
@@ -79,9 +79,9 @@ Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability bou
 | Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Enabled, candidate not delivered to `main` | GitHub reports workflow-based Pages at the target URL; the fork workflow and application changes are committed locally but require the corrective protected `dev` push and governed delivery to `main` before the first deployment |
+| GitHub Pages workflow | Enabled, candidate delivered to `dev` | GitHub reports workflow-based Pages at the target URL; the validated candidate is on `origin/dev` and requires the governed version Release PR plus immutable promotion to `main` before the first deployment |
 
-Current next action: commit the regenerated locale artifacts, corrected branding assertions, and this status update; run the managed protected `dev` push, then promote the eligible candidate to `main` so the first Pages workflow can run.
+Current next action: enable Issues on the fork so the required owning release Issue can be created, deliver this plan checkpoint to `dev`, then run the governed version Release PR and immutable `dev`-to-`main` promotion so the first Pages workflow can run.
 
 ## Decisions
 
@@ -261,6 +261,13 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-07 — Protected `dev` delivery complete
+
+- The final managed `pnpm push:checked origin dev` passed LCIA cache verification, governed reference-data checks, lint, TypeScript, the isolated pre-push receipt suite, the complete two-worker coverage run, and the full-coverage assertion.
+- The validated candidate reached `origin/dev` at `93cf783ba5373e958a9364c6c6d1ab367a992799`; the working tree was clean after transport.
+- Release preparation found that the fork has Issues disabled. The active GitHub integration can push and reports repository Admin permission but receives HTTP 403 when changing the Issues setting, so the owner must enable Issues before the required owning release Issue and governed Release PR can be created.
+- The next action is to deliver this plan checkpoint, create the owning Issue as soon as Issues are enabled, then run `release:to-dev` and `release:promote-dev-to-main` for the first Pages deployment.
 
 ### 2026-09-07 — GitHub Pages owner configuration
 
