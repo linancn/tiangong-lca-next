@@ -304,7 +304,7 @@ describe('app runtime config', () => {
         Button: { primaryShadow: 'none' },
         Divider: { colorSplit: '#abcdef', orientationMargin: 0 },
       },
-      token: { borderRadius: 12, colorPrimary: '#5C246A' },
+      token: { borderRadius: 12, colorPrimary: '#6366F1' },
     });
   });
 
@@ -343,7 +343,7 @@ describe('app runtime config', () => {
     expect(state.isDarkMode).toBe(true);
     expect(state.settings).toMatchObject({
       navTheme: 'realDark',
-      colorPrimary: '#9e3ffd',
+      colorPrimary: '#6366F1',
       logo: '/logo_dark.svg',
     });
   });
@@ -749,7 +749,7 @@ describe('app runtime config', () => {
     expect(nextState.isDarkMode).toBe(true);
     expect(nextState.settings).toMatchObject({
       navTheme: 'realDark',
-      colorPrimary: '#9e3ffd',
+      colorPrimary: '#6366F1',
       logo: '/logo_dark.svg',
     });
     expect(window.localStorage.getItem('isDarkMode')).toBe('true');
@@ -898,7 +898,7 @@ describe('app runtime config', () => {
       initialState: {
         currentUser: { name: 'Alice' },
         isDarkMode: true,
-        settings: { navTheme: 'realDark', colorPrimary: '#9e3ffd' },
+        settings: { navTheme: 'realDark', colorPrimary: '#6366F1' },
       },
       setInitialState,
     });

@@ -56,13 +56,13 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 Last updated: 2026-09-07
 
-Overall state: Milestone 0, GitHub Pages compatibility, and the auth-only capability boundary are complete; branding replacement, hosted configuration, and live deployment remain pending
+Overall state: Milestone 0, GitHub Pages compatibility, auth-only capability boundary, base branding, and hosted configuration are complete; protected delivery and live deployment remain pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
 | Fork checkout | Complete | `origin` is `catiehe/tiangong-lca-next-practice` |
 | Upstream remote | Complete | `upstream` is `linancn/tiangong-lca-next` |
-| Working tree | Clean after controlled delivery | Local `dev` and `origin/dev` both point to the delivered baseline commits |
+| Working tree | Validation fix pending delivery | Locale artifacts and branding assertions were regenerated after the first full gate; the working tree needs one corrective commit and a fresh protected push |
 | Daily branch | Complete | Local `dev` exists and tracks `origin/dev` |
 | Node | Complete for the current managed workspace | Selected checksum-verified official Node `24.19.0`; the managed shell has no `nvm`, so commands use the explicit verified toolchain path |
 | pnpm | Complete | Repository-pinned pnpm `11.24.0` runs under Node `24.19.0` |
@@ -79,9 +79,9 @@ Overall state: Milestone 0, GitHub Pages compatibility, and the auth-only capabi
 | Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Enabled, candidate not delivered to `main` | GitHub reports workflow-based Pages at the target URL; the fork workflow and application changes remain in the local `dev` worktree and require governed delivery to `main` before the first deployment |
+| GitHub Pages workflow | Enabled, candidate not delivered to `main` | GitHub reports workflow-based Pages at the target URL; the fork workflow and application changes are committed locally but require the corrective protected `dev` push and governed delivery to `main` before the first deployment |
 
-Current next action: commit the completed auth-only/branding candidate, run the managed protected `dev` push, then promote the eligible candidate to `main` so the first Pages workflow can run.
+Current next action: commit the regenerated locale artifacts, corrected branding assertions, and this status update; run the managed protected `dev` push, then promote the eligible candidate to `main` so the first Pages workflow can run.
 
 ## Decisions
 
@@ -267,6 +267,12 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The owner confirmed both public Supabase repository variables were added. The workspace integration still receives HTTP 403 when listing Actions variables, so their names/values cannot be independently read back here.
 - GitHub's Pages API now confirms `build_type=workflow`, source branch `main`, and `https://catiehe.github.io/tiangong-lca-next-practice/` as the site URL.
 - No workflow can deploy the current candidate yet: remote `main` remains at `7210e700`, remote `dev` remains at `c87beefc`, and the auth-only/branding work is still an uncommitted local `dev` worktree. The next action is governed commit, protected push, and eligible promotion to `main`.
+
+### 2026-09-07 — First full gate correction
+
+- The first full protected push ran 446 suites: 443 passed and 3 failed. The failures were stale branding assertions plus locale-artifact consistency checks; no runtime or build failure was found.
+- Updated the affected app-runtime assertions to the selected `#6366F1` default and regenerated all four locale artifact families with `pnpm i18n:locale:artifacts:write`. The generated files are deterministic and must be committed before the idempotence tests can inspect them from `HEAD`.
+- The next action is to commit this correction and run one fresh protected push; after that succeeds, promote `dev` to `main` and verify the Pages deployment.
 
 ### 2026-09-07 — Hosted Auth redirect configuration
 
