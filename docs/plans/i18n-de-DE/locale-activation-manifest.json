@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "a01e36011d995b38665d4f008996b60f795e32a667f55d69498a512c9d7cd5ac"
+    "sourceManifestDigest": "2397fd12e82c21af12aa905832cdd2857105f5629ed27f76568818e7ab48f1f3"
   },
   "registry": {
     "canonicalLocale": "de-DE",
@@ -78,8 +78,8 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "eb67ddfcf850a1f1d27d002d317d5a53fd704de664af719ad66639a99cabb362",
-    "qualityDigest": "c80fb69ace43b437cf7bd331a71416ed310b2e40c7f46373f1b8adc56b63ac83",
+    "contextDigest": "93f2f53049c504df88a5522582708df649c09bf93ececae266039f8169c7c2b9",
+    "qualityDigest": "380a8dff3ad3e6498ee8afd9cf25157a3fc94fd630e322f72252abd171bbc62c",
     "correctionLedgerDigest": "fcda3136886694c111258daee7f51b6bf0f29e3333ed7e582d7fcc349f0b4c74",
     "routeViewCoverageDigest": "5fced6d5c7a704c0b14c0b8d422a25c9e1ca9454e0524ec0d88b036c88b3de57",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
@@ -125,5 +125,5 @@
       "ownerIssue": "#867"
     }
   ],
-  "activationDigest": "a6573144e855e7e0020d8c46344d472e617cef17b171f5945eafe91fd3e6e2b4"
+  "activationDigest": "643a72ff91852a6b2302ec8d9b47d57f90c0cff23870cbc6de4ea38432ca43b0"
 }
