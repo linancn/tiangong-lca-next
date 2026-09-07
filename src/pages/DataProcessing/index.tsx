@@ -39,6 +39,7 @@ import {
 import { toCanonicalLciaMethodId } from '@/services/lciaMethods/evidence';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { taskProgressPercent, type TaskSummaryV2 } from '@/services/taskCenter/types';
+import { withAppBasePath } from '@/utils/appBasePath';
 import {
   ArrowRightOutlined,
   CheckCircleOutlined,
@@ -927,7 +928,7 @@ const DataProcessing = () => {
 
     const loadImpactCategories = async () => {
       try {
-        const response = await fetch('/lciamethods/list.json');
+        const response = await fetch(withAppBasePath('/lciamethods/list.json'));
         if (!response.ok) {
           throw new Error('LCIA method list request failed');
         }

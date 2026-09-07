@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit hydration reuses the view compatibility service and separates calculation state from persistence state without changing layer ownership.'
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
+lastReviewedNote: 'Added the fork GitHub Pages base-path and deployment surfaces; existing runtime, service, OAuth, and static-resource ownership remains unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -42,7 +42,7 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 
 | Path group | Role |
 | --- | --- |
-| `config/routes.ts` | route tree and route-family entrypoints |
+| `config/routes.ts`, `config/appCapabilities.ts` | route tree, route-family entrypoints, and the build-time `full` / `auth-only` application capability boundary |
 | `config/config.ts` | Umi runtime config |
 | `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
 | `config/supabaseEnv.ts` | frontend env selection; standard Dev replaces Umi-preloaded values that exactly match main-file defaults with `.env.development*`, distinct explicit build values retain priority, and qualification selects a fixed non-production profile |
@@ -57,7 +57,9 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/browserNavigation.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, explicit navigation side-effect boundaries, and support utilities |
+| `src/utils/appBasePath.ts` | normalized build-time application base path shared by Umi configuration, shell assets, static-resource readers, maintenance fallbacks, and external/Auth URLs |
 | `public/**` | generated or reviewed static resource bundles consumed by the app, including the EdgeOne OAuth path rewrite and no-store hash-history consent bridge |
+| `.github/workflows/github-pages.yml` | fork-only GitHub Pages build and artifact deployment from `main`; it requires hosted Supabase browser variables and never owns backend secrets or schema |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, deterministic closed-simulator backend profile, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `scripts/qualification/**`, `playwright.closure-download.config.ts`, `tests/browser/**` | test-only exact-commit scope-closure Next adapter and loopback browser contract accepted by the Worker provider aggregator |
@@ -77,6 +79,7 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
+- the `full` application capability profile remains the default for existing deployments. The fork Pages workflow selects `auth-only`, which emits only Welcome, login/recovery, Account, and authenticated fallback routes; skips system-role startup reads; and does not mount product-data caches, import/export, calculation/task, notification, Team, Review, administration, data-processing, or OAuth-application surfaces
 - `src/utils/browserNavigation.ts` owns the thin `Location.assign`/`reload`/`replace` side-effect boundary. Runtime callers always pass the real `window.location`; tests pass an explicit mock `Location` or mock this module and must not redefine jsdom's global `window` or `location`
 - Account Basic Information reads current profile metadata through `supabase.auth.getUser()` and writes `display_name` plus the optional, trimmed, 200-character `organization` string through `supabase.auth.updateUser()`. The page may refresh the session after a successful write, but organization remains descriptive profile data and must never control frontend access or backend authorization
 - Account Connected Applications lists and revokes Supabase OAuth grants only. It contains no API-key history, password reauthentication form, Cognito provisioning action, or Cognito password/email synchronization helper; Supabase Auth is the sole account identity and credential owner
@@ -96,6 +99,7 @@ Rules:
 - LifecycleModel view and edit surfaces hydrate lightweight `json_tg.xflow` nodes from each referenced Process's exact ID and version through the shared compatibility normalizer. The editor calculates and validates against that hydrated graph, but save planning reconciles untouched compatibility and editor-only fields back to the stored graph representation; explicit graph edits remain persistent
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
+- project-hosted static URLs use `APP_BASE_PATH` through `src/utils/appBasePath.ts`; an absolute origin-root asset reference is not valid for a GitHub Pages project deployment. `src/utils/appUrl.ts` applies the same base to off-app hash URLs and password callbacks
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `pnpm reference-data:check`
 - cache monitors live near runtime setup, not inside feature pages
 - documentation capture is an evidence adapter, not application runtime or semantic E2E: it uses a fresh browser context, never persists storage state, blocks non-auth mutations, and may write only below caller-declared documentation asset roots

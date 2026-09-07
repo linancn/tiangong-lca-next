@@ -1,4 +1,5 @@
-import routes from '../../../config/routes';
+import routes, { filterRoutesForCapabilities } from '../../../config/routes';
+import { resolveAppCapabilities } from '../../../config/appCapabilities';
 
 describe('route access config', () => {
   it('protects the national carbon dashboard with admin access', () => {
@@ -77,5 +78,17 @@ describe('route access config', () => {
         (route) => 'wrappers' in route && route.wrappers?.includes('@/wrappers/LoginFlowGuard'),
       ),
     ).toBe(true);
+  });
+
+  it('keeps only the authenticated shell routes in the auth-only profile', () => {
+    const authOnlyRoutes = filterRoutesForCapabilities(routes, resolveAppCapabilities('auth-only'));
+
+    expect(authOnlyRoutes.map((route) => route.path)).toEqual([
+      '/account',
+      '/user',
+      '/welcome',
+      '/',
+      '*',
+    ]);
   });
 });

@@ -1,4 +1,5 @@
 import { favicon } from './branding';
+import { appCapabilities } from './appCapabilities';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
@@ -6,6 +7,7 @@ import {
   DEFAULT_BROWSER_APP_LOCALE,
   LOCALE_REGISTRY,
 } from '../src/services/general/localeRegistry';
+import { appBasePath, withAppBasePath } from '../src/utils/appBasePath';
 import proxy from './proxy';
 import routes from './routes';
 import { applySupabaseFrontendEnv } from './supabaseEnv';
@@ -131,7 +133,7 @@ export default defineConfig({
    * @name <head> 中额外的 script
    * @description 配置 <head> 中额外的 script
    */
-  headScripts: [{ src: '/scripts/loading.js', async: true }],
+  headScripts: [{ src: withAppBasePath('/scripts/loading.js'), async: true }],
   // process.env.NODE_ENV === 'production'
   //   ? [{ src: './scripts/loading.js', async: true }]
   //   : [{ src: '/scripts/loading.js', async: true }],
@@ -162,8 +164,7 @@ export default defineConfig({
   favicons: [favicon],
   esbuildMinifyIIFE: true,
   requestRecord: {},
-  // publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
-  publicPath: '/',
+  publicPath: appBasePath,
   history: { type: 'hash' },
   // history: { type: 'memory' },
   // history: { type: 'browser' },
@@ -175,7 +176,9 @@ export default defineConfig({
     'process.env.APP_LIGHT_LOGO': process.env.APP_LIGHT_LOGO,
     'process.env.APP_DARK_LOGO': process.env.APP_DARK_LOGO,
     'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
+    'process.env.APP_BASE_PATH': appBasePath,
     'process.env.APP_RUNTIME_CONFIG_ENABLED': process.env.APP_RUNTIME_CONFIG_ENABLED,
+    'process.env.APP_CAPABILITY_PROFILE': appCapabilities.profile,
     ...localeEnvironmentDefines,
   },
 });

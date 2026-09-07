@@ -15,6 +15,7 @@ import type { ProcessExchangeData } from '@/services/processes/data';
 import { buildStaticCalculationFailure, calculateStaticLcia } from './calculation';
 import { LciaFlowFactorMap, LciaMethodListData, LCIAResultTable } from './data';
 import { computeLciaSha256, STATIC_LCIA_CACHE_MANIFEST, toLciaArtifactLocatorId } from './evidence';
+import { withAppBasePath } from '@/utils/appBasePath';
 
 // Enhanced LCIA Cache Management with Decompression
 const CACHE_KEY = 'lcia_methods_cache_manifest';
@@ -105,7 +106,7 @@ export const cacheAndDecompressMethod = async (filename: string): Promise<boolea
     }
 
     // Download the file
-    const response = await fetch(`/lciamethods/${filename}`);
+    const response = await fetch(withAppBasePath(`/lciamethods/${filename}`));
     if (!response.ok) {
       console.warn(`⚠️ File not found: ${filename}`);
       return false;

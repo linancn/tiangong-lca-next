@@ -1,4 +1,5 @@
 import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCache/objects';
+import { withAppBasePath } from '@/utils/appBasePath';
 import { geoContains, type GeoProjection } from 'd3-geo';
 import type {
   Feature,
@@ -35,8 +36,8 @@ const processFlowGraphSchemaVersion = 'process_flow_graph_v2';
 const processFlowGraphGeoMapViewSchemaVersion = 'process_flow_graph_geo_map_view_v2';
 const chinaInsetMapPathCode = '100000_JD';
 const localGeoMapAssetPaths: Record<ProcessFlowGraphMapScope, string> = {
-  china: '/maps/china-province-100000-full.geojson',
-  world: '/maps/world-map-units-50m.geojson',
+  china: withAppBasePath('/maps/china-province-100000-full.geojson'),
+  world: withAppBasePath('/maps/world-map-units-50m.geojson'),
 };
 const chinaGeoBounds = {
   latMax: 54,

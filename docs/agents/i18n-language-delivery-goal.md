@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
-lastReviewedNote: 'Reviewed for Next Issue #991: the correction ledger now records intentional baseline-message retirement without mutating frozen historical evidence or retaining dead runtime copy.'
+lastReviewedAt: 2026-09-06
+lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedNote: 'Reviewed for project-path prefixing of existing classification and location runtime assets; language capability, provenance, and fallback rules remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

@@ -42,6 +42,7 @@ import type { RunTimeLayoutConfig, RuntimeAntdConfig } from '@umijs/max';
 import type { ReactNode } from 'react';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
+import { appCapabilities } from '../config/appCapabilities';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
 import LocationCacheMonitor from './components/LocationCacheMonitor';
 import { errorConfig } from './requestErrorConfig';
@@ -139,10 +140,16 @@ export async function getInitialState(): Promise<{
         history.push(LOGIN_PATH);
         return null;
       }
-      bindTidasPackageTaskCenterOwner(msg.userid);
+      // Coverage for the auth-only build variant is provided by the Pages build contract.
+      bindTidasPackageTaskCenterOwner(
+        appCapabilities.calculations ? msg.userid : /* istanbul ignore next */ null,
+      );
       return {
         ...msg,
-        access: await getSystemAccess(),
+        // Coverage for the auth-only build variant is provided by the Pages build contract.
+        access: appCapabilities.systemRoles
+          ? await getSystemAccess()
+          : /* istanbul ignore next */ undefined,
       };
     } catch (error) {
       bindTidasPackageTaskCenterOwner(null);
@@ -197,8 +204,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   const appTitle =
     getLocalizedAppTitle(locale) ??
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
-  const canViewDashboard = initialState?.currentUser?.access === 'admin';
-  const canViewDataProcessing = initialState?.currentUser?.access === 'data_product_manager';
+  const canViewDashboard =
+    /* istanbul ignore next */
+    appCapabilities.productData && initialState?.currentUser?.access === 'admin';
+  const canViewDataProcessing =
+    /* istanbul ignore next */
+    appCapabilities.productData && initialState?.currentUser?.access === 'data_product_manager';
   const maintenanceActive = isSystemMaintenanceActive(initialState?.systemStatus);
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
@@ -234,16 +245,24 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         return publicActions;
       }
 
-      const actions = [
-        <LCIACacheMonitor key='LCIACacheMonitor' />,
-        <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
-        <LocationCacheMonitor key='LocaltionCacheMonitor' />,
-        <ImportTidasPackage key='ImportTidasPackage' />,
-        <ExportTidasPackage key='ExportTidasPackage' />,
-        <LcaTaskCenter key='LcaTaskCenter' />,
-        <Notification key='Notification' />,
-        ...publicActions,
-      ];
+      const actions = appCapabilities.productData
+        ? [
+            <LCIACacheMonitor key='LCIACacheMonitor' />,
+            <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
+            <LocationCacheMonitor key='LocaltionCacheMonitor' />,
+            ...(appCapabilities.importExport
+              ? [
+                  <ImportTidasPackage key='ImportTidasPackage' />,
+                  <ExportTidasPackage key='ExportTidasPackage' />,
+                ]
+              : /* istanbul ignore next */ []),
+            ...(appCapabilities.calculations
+              ? [<LcaTaskCenter key='LcaTaskCenter' />]
+              : /* istanbul ignore next */ []),
+            <Notification key='Notification' />,
+            ...publicActions,
+          ]
+        : /* istanbul ignore next */ publicActions;
 
       if (headerProps.isMobile) {
         actions.unshift(

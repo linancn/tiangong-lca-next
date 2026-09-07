@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-04"
-lastReviewedCommit: "9a73d8037a4557a0b34d084c0435c26045531721"
-lastReviewedNote: 'Reviewed for Next #1023: edit-mode LifecycleModel graph compatibility remains within the existing frontend, service, and test ownership rules; no routing, baseline, or waiver rule changed.'
+lastReviewedAt: "2026-09-07"
+lastReviewedCommit: "9731db41793fd773ddb596b7314b9fa8e7870db2"
+lastReviewedNote: 'Added the missing self-contained rule for the governed hosted-rebuild plan so required session logs are covered without forcing unrelated document updates.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -35,6 +35,7 @@ ownership:
       paths:
         include:
           - AGENTS.md
+          - plan.md
           - DEV.md
           - README.md
           - README_CN.md
@@ -91,6 +92,7 @@ ownership:
 coverage:
   include:
     - AGENTS.md
+    - plan.md
     - DEV.md
     - README.md
     - README_CN.md
@@ -266,6 +268,7 @@ routing:
     repo-docs:
       paths:
         - AGENTS.md
+        - plan.md
         - DEV.md
         - README.md
         - README_CN.md
@@ -386,11 +389,14 @@ routing:
         - tests/data-workflows/unit/**
         - tests/data-workflows/workflows/**
 
+# Reviewed 2026-09-06 for the fork's environment-driven GitHub Pages base path;
+# existing ownership, testing, localization, and OAuth rule boundaries remain unchanged.
 # Reviewed 2026-04-28 for unified dataset SDK validation adapters, shared
 # localized validation helpers, and full-coverage gate collection updates.
 docInventory:
   include:
     - AGENTS.md
+    - plan.md
     - DEV.md
     - README.md
     - README_CN.md
@@ -470,6 +476,16 @@ rules:
       - path: DEV.md
         mode: review_or_update
     reason: Repo entry guidance, machine-readable routing, and bootstrap docs must stay aligned.
+  - id: next-hosted-rebuild-plan-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: plan.md
+        kind: active-rebuild-plan
+    requiredDocs:
+      - path: plan.md
+        mode: review_or_update
+    reason: Every hosted Supabase and GitHub Pages rebuild session must keep its status, evidence, blockers, and one next action current without duplicating those facts into stable repo docs.
   - id: next-readme-and-landing-contract
     scope: repo
     repo: next
@@ -564,6 +580,8 @@ rules:
     scope: repo
     repo: next
     triggers:
+      - path: config/appCapabilities.ts
+        kind: app-config
       - path: config/routes.ts
         kind: route-tree
       - path: config/config.ts
@@ -603,6 +621,8 @@ rules:
       - path: src/style/**
         kind: app-runtime
       - path: src/typings.d.ts
+        kind: app-runtime
+      - path: src/utils/appBasePath.ts
         kind: app-runtime
       - path: src/utils/appUrl.ts
         kind: app-runtime

@@ -23,11 +23,25 @@ describe('appUrl helpers', () => {
     expect(buildExternalUrl('/user/login/password_reset', 'https://demo.example/')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
+    expect(buildExternalUrl('/welcome')).toBe('http://localhost:8000/#/welcome');
   });
 
   it('builds an auth callback without a hash-history fragment', () => {
     expect(buildAuthCallbackUrl('https://demo.example///')).toBe('https://demo.example/');
     expect(buildAuthCallbackUrl()).toBe('http://localhost:8000/');
+  });
+
+  it('preserves a project base in external routes and auth callbacks', () => {
+    expect(
+      buildExternalUrl(
+        '/user/login/password_reset',
+        'https://demo.example',
+        '/tiangong-lca-next-practice/',
+      ),
+    ).toBe('https://demo.example/tiangong-lca-next-practice/#/user/login/password_reset');
+    expect(buildAuthCallbackUrl('https://demo.example', '/tiangong-lca-next-practice/')).toBe(
+      'https://demo.example/tiangong-lca-next-practice/',
+    );
   });
 
   it('normalizes already-hashed route input before building absolute URLs', () => {

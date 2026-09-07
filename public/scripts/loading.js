@@ -4,10 +4,7 @@
  */
  (function () {
   const getStaticFallbackUrl = function () {
-    if (window.location.protocol === 'file:') {
-      return new URL('./maintenance.html?reason=boot-timeout', window.location.href).toString();
-    }
-    return '/maintenance.html?reason=boot-timeout';
+    return new URL('./maintenance.html?reason=boot-timeout', window.location.href).toString();
   };
 
   if (!window.__TIANGONG_APP_MOUNTED__) {

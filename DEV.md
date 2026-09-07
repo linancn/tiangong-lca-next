@@ -41,10 +41,11 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
+  - .github/workflows/github-pages.yml
   - .nvmrc
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: LifecycleModel edit compatibility uses the existing Node/pnpm bootstrap, serial focused tests, and controlled dev delivery workflow without new environment switches.'
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
+lastReviewedNote: 'Added the exact project-path production-build command used to validate the fork GitHub Pages bundle; the default local work loop remains unchanged.'
 ---
 
 # Development Bootstrap
@@ -161,6 +162,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | validate the historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `pnpm i18n:de:pilot` |
 | build | `pnpm build` |
+| build the fork GitHub Pages auth-only project path | `APP_BASE_PATH=/tiangong-lca-next-practice/ APP_CAPABILITY_PROFILE=auth-only APP_RUNTIME_CONFIG_ENABLED=false pnpm build` |
 | local full test gate | `pnpm prepush:gate` |
 | compact agent/CI full gate with complete retained logs | `pnpm prepush:gate:agent` |
 | final managed push | `pnpm push:checked <normal-git-push-args>` |

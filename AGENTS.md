@@ -16,6 +16,7 @@ whenToUpdate:
   - when the current documentation system becomes redundant or ambiguous
 checkPaths:
   - AGENTS.md
+  - plan.md
   - DEV.md
   - README.md
   - README_CN.md
@@ -32,6 +33,7 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - config/docs-capture/**
+  - config/appCapabilities.ts
   - scripts/e2e/**
   - scripts/release/**
   - scripts/qualification/**
@@ -45,9 +47,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: exact-version LifecycleModel edit hydration stays page-and-service local and preserves authorization, repository ownership, and dev delivery boundaries.'
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
+lastReviewedNote: 'Reviewed while adding the fork GitHub Pages base-path contract; branch, ownership, and delivery boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -83,6 +85,7 @@ Required principles:
 | Document | Owns | Does not own |
 | --- | --- | --- |
 | `AGENTS.md` | repo contract, documentation principles, branch and delivery rules, hard boundaries | deep implementation details, large reference material |
+| `plan.md` | current hosted Supabase and GitHub Pages rebuild status, milestones, decisions, blockers, and next action | stable repo-wide rules, schema truth, or general validation policy |
 | `DEV.md` | local bootstrap and the shortest repeatable work loop | repo contract, branch policy, proof matrix |
 | `.docpact/config.yaml` | machine-readable repo facts, routing intents, lint rules, governed-doc inventory | prose explanations and narrative summaries |
 | `docs/agents/repo-validation.md` | minimum proof by change type and PR validation note shape | bootstrap, business logic details |
@@ -112,8 +115,9 @@ Read in this order:
 
 1. `AGENTS.md`
 2. `.docpact/config.yaml`
-3. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
-4. the narrow source doc that owns the current subject
+3. `plan.md` when working on this fork's hosted Supabase and GitHub Pages rebuild
+4. `docs/agents/repo-validation.md` or `docs/agents/repo-architecture.md`
+5. the narrow source doc that owns the current subject
 
 Do not start from additional governed source docs, proposal docs, or README-level material unless the core contract surface is insufficient for the current task.
 
@@ -184,6 +188,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - app-side Supabase and API access belongs only in `src/services/**`
 - Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; Account → Connected apps is the sole integration surface, with no API-key history or compatibility provisioning action
 - startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
+- application capabilities default to the complete `full` profile; the fork Pages workflow selects the centralized `auth-only` profile so only Welcome, Supabase Auth, bounded Account, logout, and authenticated fallback surfaces ship while database/Edge-dependent product routes and startup actions remain disabled
+- project-hosted builds set one normalized `APP_BASE_PATH`; Umi chunks, shell assets, static data, legal pages, maintenance fallback, and external/Auth callback URLs must all remain inside that path. The fork Pages workflow builds `/tiangong-lca-next-practice/` from `main`, requires repository-variable hosted Supabase browser configuration, and keeps runtime-config loading disabled until the hosted system-status RPC exists
 
 ## Ownership Boundaries
 
@@ -232,6 +238,7 @@ Use the role table in this file as the update map.
 - if a machine-readable repo fact or governed-doc rule changes, update `.docpact/config.yaml` in the same change
 - if a human-readable repo contract, branch rule, or hard boundary changes, update `AGENTS.md`
 - if bootstrap, proof, architecture, or narrow workflow guidance changes, update only the document that owns that subject
+- for every work session on this fork's hosted Supabase and GitHub Pages rebuild, read `plan.md` before changing files; update it before handoff when progress, decisions, blockers, validation, or the next action changed, and commit and push each plan update with the related work or as its own documentation commit
 - if a document is governed but not in the default first-load surface, route to it on demand instead of duplicating its rules into `AGENTS.md` or `DEV.md`
 - do not copy the same rule into multiple docs just to make it easier to find
 

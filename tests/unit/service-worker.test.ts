@@ -48,6 +48,7 @@ describe('service worker bootstrap', () => {
       configurable: true,
       value: {
         __precacheManifest: [{ url: '/runtime.js' }],
+        registration: { scope: 'https://example.test/' },
         skipWaiting: mockSkipWaiting,
       },
     });
@@ -108,6 +109,16 @@ describe('service worker bootstrap', () => {
       mockRegisterRoute.mock.calls.every(([, strategy]) => strategy === networkFirstResult),
     ).toBe(true);
     expect(globalThis.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
+  });
+
+  it('keeps the navigation fallback inside the service worker project scope', () => {
+    globalThis.self.registration.scope = 'https://example.test/tiangong-lca-next-practice/';
+
+    loadServiceWorker();
+
+    expect(mockRegisterNavigationRoute).toHaveBeenCalledWith(
+      '/tiangong-lca-next-practice/index.html',
+    );
   });
 
   it('replies after skip-waiting succeeds and ignores unrelated messages', async () => {

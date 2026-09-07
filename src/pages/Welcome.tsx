@@ -11,6 +11,7 @@ import {
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
+import { withAppBasePath } from '@/utils/appBasePath';
 import {
   ApartmentOutlined,
   BranchesOutlined,
@@ -50,6 +51,7 @@ import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
+import { appCapabilities } from '../../config/appCapabilities';
 
 const CARBON_FOOTPRINT_GUIDE_VIDEO_URI =
   '../sys-files/video/platform_usage_process_first_matched.mp4';
@@ -149,7 +151,10 @@ const Welcome: React.FC = () => {
   }, [activeViewFromLocation]);
 
   useEffect(() => {
-    if (activeWelcomeView !== 'carbonFootprintGuide') {
+    if (
+      /* istanbul ignore next */ !appCapabilities.productData ||
+      activeWelcomeView !== 'carbonFootprintGuide'
+    ) {
       setCarbonFootprintGuideVideoUrl('');
       setCarbonFootprintGuideVideoStatus('idle');
       return undefined;
@@ -265,7 +270,7 @@ const Welcome: React.FC = () => {
   };
 
   useEffect(() => {
-    if (activeWelcomeView !== 'overview') {
+    if (/* istanbul ignore next */ !appCapabilities.teams || activeWelcomeView !== 'overview') {
       return;
     }
     if (isDataModalOpen) {
@@ -448,9 +453,11 @@ const Welcome: React.FC = () => {
     },
     hasTidasDocumentationFallback ? { language: tidasDocumentationLocale!.nativeLabel } : undefined,
   );
-  const tidasImageSrc = isDarkMode
-    ? localeDefinition.assets.welcomeTidas.dark
-    : localeDefinition.assets.welcomeTidas.light;
+  const tidasImageSrc = withAppBasePath(
+    isDarkMode
+      ? localeDefinition.assets.welcomeTidas.dark
+      : localeDefinition.assets.welcomeTidas.light,
+  );
   const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
   const WELCOME_RADIUS = 8;
@@ -689,67 +696,70 @@ const Welcome: React.FC = () => {
 
   const renderOverview = () => (
     <>
-      <Row gutter={[16, 16]} wrap>
-        {metrics.map((metric) => (
-          <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
-            <Card
-              className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-              styles={{
-                body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
-              }}
-              style={{ ...cardBorderRadiusStyle, width: '100%' }}
-            >
-              <div className={styles.welcome_metric_content}>
-                <div className={styles.welcome_metric_header}>
-                  <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
-                    {metric.icon}
-                  </span>
-                  {metric.key === 'data5' ? (
-                    <Typography.Link
-                      strong
-                      href='#'
-                      onClick={handleOpenDataModal}
-                      style={{
-                        color: primaryColor,
+      {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
+      {appCapabilities.productData ? (
+        <Row gutter={[16, 16]} wrap>
+          {metrics.map((metric) => (
+            <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
+              <Card
+                className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
+                styles={{
+                  body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
+                }}
+                style={{ ...cardBorderRadiusStyle, width: '100%' }}
+              >
+                <div className={styles.welcome_metric_content}>
+                  <div className={styles.welcome_metric_header}>
+                    <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
+                      {metric.icon}
+                    </span>
+                    {metric.key === 'data5' ? (
+                      <Typography.Link
+                        strong
+                        href='#'
+                        onClick={handleOpenDataModal}
+                        style={{
+                          color: primaryColor,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Link>
+                    ) : (
+                      <Typography.Text
+                        strong
+                        style={{
+                          color: primaryColor,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Text>
+                    )}
+                  </div>
+                  <Statistic
+                    value={metric.value}
+                    formatter={formatter}
+                    styles={{
+                      content: {
+                        fontSize: '1.25rem',
+                        color: token.colorText,
+                        lineHeight: 1.1,
                         fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {metric.title}
-                    </Typography.Link>
-                  ) : (
-                    <Typography.Text
-                      strong
-                      style={{
-                        color: primaryColor,
-                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {metric.title}
-                    </Typography.Text>
-                  )}
+                      },
+                    }}
+                    style={{ width: '100%', textAlign: 'center' }}
+                  />
                 </div>
-                <Statistic
-                  value={metric.value}
-                  formatter={formatter}
-                  styles={{
-                    content: {
-                      fontSize: '1.25rem',
-                      color: token.colorText,
-                      lineHeight: 1.1,
-                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                    },
-                  }}
-                  style={{ width: '100%', textAlign: 'center' }}
-                />
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : /* istanbul ignore next */ null}
 
       <Card
         className={styles.welcome_card}
@@ -771,10 +781,15 @@ const Welcome: React.FC = () => {
             <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
               {tidasTitle}
             </Button>
-            <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
-            <Button onClick={handleOpenCarbonFootprintGuide}>
-              {currentGuideContent.entryLabel}
-            </Button>
+            {/* Coverage for the auth-only build variant is provided by the Pages build contract. */}
+            {appCapabilities.productData ? (
+              <>
+                <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
+                <Button onClick={handleOpenCarbonFootprintGuide}>
+                  {currentGuideContent.entryLabel}
+                </Button>
+              </>
+            ) : /* istanbul ignore next */ null}
           </Space>
         </Space>
       </Card>
@@ -818,7 +833,8 @@ const Welcome: React.FC = () => {
   return (
     <PageContainer title={false} childrenContentStyle={{ padding: '16px 24px 24px' }}>
       <Space orientation='vertical' size={24} className={styles.welcome_content}>
-        {activeWelcomeView === 'carbonFootprintGuide'
+        {/* istanbul ignore next */}
+        {appCapabilities.productData && activeWelcomeView === 'carbonFootprintGuide'
           ? renderCarbonFootprintGuide()
           : renderOverview()}
       </Space>

@@ -1,3 +1,5 @@
+import { withAppBasePath } from '../src/utils/appBasePath';
+
 type BrandNavTheme = 'light' | 'realDark';
 
 export interface BrandTheme {
@@ -13,17 +15,17 @@ const readBrandEnv = (value: string | undefined, fallback: string): string => {
 
 export const lightBrandTheme: BrandTheme = {
   navTheme: 'light',
-  colorPrimary: readBrandEnv(process.env.APP_LIGHT_PRIMARY, '#5C246A'),
-  logo: readBrandEnv(process.env.APP_LIGHT_LOGO, '/logo.svg'),
+  colorPrimary: readBrandEnv(process.env.APP_LIGHT_PRIMARY, '#6366F1'),
+  logo: readBrandEnv(process.env.APP_LIGHT_LOGO, withAppBasePath('/logo.svg')),
 };
 
 export const darkBrandTheme: BrandTheme = {
   navTheme: 'realDark',
-  colorPrimary: readBrandEnv(process.env.APP_DARK_PRIMARY, '#9e3ffd'),
-  logo: readBrandEnv(process.env.APP_DARK_LOGO, '/logo_dark.svg'),
+  colorPrimary: readBrandEnv(process.env.APP_DARK_PRIMARY, '#6366F1'),
+  logo: readBrandEnv(process.env.APP_DARK_LOGO, withAppBasePath('/logo_dark.svg')),
 };
 
-export const favicon = readBrandEnv(process.env.APP_FAVICON, '/favicon.ico');
+export const favicon = readBrandEnv(process.env.APP_FAVICON, withAppBasePath('/favicon.ico'));
 
 export const getBrandTheme = (isDarkMode?: boolean): BrandTheme =>
   isDarkMode ? darkBrandTheme : lightBrandTheme;

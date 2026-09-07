@@ -18,6 +18,7 @@ import {
   getResolvedReferenceDataTypeName,
   resolveReferenceResource,
 } from '../referenceResources/resolver';
+import { withAppBasePath } from '@/utils/appBasePath';
 
 const CACHE_KEY = 'classification_cache_manifest';
 const CACHE_DB_NAME = 'classification_cache_db';
@@ -168,7 +169,7 @@ export const getCachedClassificationFileData = async <T>(filename: string): Prom
 
 const cacheAndDecompressClassificationFileOnce = async (filename: string): Promise<boolean> => {
   try {
-    const response = await fetch(`/classifications/${filename}`);
+    const response = await fetch(withAppBasePath(`/classifications/${filename}`));
     if (!response.ok) {
       console.warn(`Classification source file not found: ${filename}`);
       return false;

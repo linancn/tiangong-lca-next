@@ -16,6 +16,7 @@ import { Button, Modal, Spin, theme } from 'antd';
 import type { MenuProps } from 'antd';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
+import { appCapabilities } from '../../../config/appCapabilities';
 import AllTeams from '../AllTeams';
 import HeaderDropdown from '../HeaderDropdown';
 
@@ -83,8 +84,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   };
 
   useEffect(() => {
-    // getUserRole();
-    getMenuUserRoles();
+    // Coverage for the auth-only build variant is provided by the Pages build contract.
+    /* istanbul ignore else */
+    if (
+      /* istanbul ignore next */ appCapabilities.systemRoles ||
+      /* istanbul ignore next */ appCapabilities.review
+    ) {
+      void getMenuUserRoles();
+    }
   }, []);
   /**
    * Logout and save the current URL
@@ -260,12 +267,16 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       icon: <UserOutlined />,
       label: <FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />,
     },
-    {
-      key: 'team',
-      icon: <TeamOutlined />,
-      label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
-    },
-    ...(canViewSystemManagement
+    ...(appCapabilities.teams
+      ? [
+          {
+            key: 'team',
+            icon: <TeamOutlined />,
+            label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
+          },
+        ]
+      : /* istanbul ignore next */ []),
+    ...(appCapabilities.systemRoles && canViewSystemManagement
       ? [
           {
             key: 'system',
@@ -273,8 +284,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
             label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
           },
         ]
-      : []),
-    ...(canViewReviewManagement
+      : /* istanbul ignore next */ []),
+    ...(appCapabilities.review && canViewReviewManagement
       ? [
           {
             key: 'review',

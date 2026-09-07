@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 9a73d8037a4557a0b34d084c0435c26045531721
-lastReviewedNote: 'Reviewed for Next #1023: the changed graph compatibility sources retain full source-mapped coverage; no coverage queue or historical baseline update is required.'
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: 9731db41793fd773ddb596b7314b9fa8e7870db2
+lastReviewedNote: 'Reviewed for the added application-base and Pages workflow contract suites; no coverage queue or checked-in historical baseline update is required.'
 ---
 
 # Testing Execution State
