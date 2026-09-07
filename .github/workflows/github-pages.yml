@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_BASE_PATH: /tiangong-lca-next-practice/
+      APP_CAPABILITY_PROFILE: auth-only
       APP_RUNTIME_CONFIG_ENABLED: 'false'
       REACT_APP_ENV: main
       SUPABASE_URL: ${{ vars.SUPABASE_URL }}

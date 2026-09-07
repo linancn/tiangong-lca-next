@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
 lastReviewedNote: 'Added the fork GitHub Pages base-path and deployment surfaces; existing runtime, service, OAuth, and static-resource ownership remains unchanged.'
 related:
   - ../AGENTS.md
@@ -42,7 +42,7 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 
 | Path group | Role |
 | --- | --- |
-| `config/routes.ts` | route tree and route-family entrypoints |
+| `config/routes.ts`, `config/appCapabilities.ts` | route tree, route-family entrypoints, and the build-time `full` / `auth-only` application capability boundary |
 | `config/config.ts` | Umi runtime config |
 | `config/defaultSettings.ts`, `config/branding.ts`, `config/proxy.ts`, `config/oneapi.json` | app-shell defaults, branding, dev proxy, and support config |
 | `config/supabaseEnv.ts` | frontend env selection; standard Dev replaces Umi-preloaded values that exactly match main-file defaults with `.env.development*`, distinct explicit build values retain priority, and qualification selects a fixed non-production profile |
@@ -79,6 +79,7 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
+- the `full` application capability profile remains the default for existing deployments. The fork Pages workflow selects `auth-only`, which emits only Welcome, login/recovery, Account, and authenticated fallback routes; skips system-role startup reads; and does not mount product-data caches, import/export, calculation/task, notification, Team, Review, administration, data-processing, or OAuth-application surfaces
 - `src/utils/browserNavigation.ts` owns the thin `Location.assign`/`reload`/`replace` side-effect boundary. Runtime callers always pass the real `window.location`; tests pass an explicit mock `Location` or mock this module and must not redefine jsdom's global `window` or `location`
 - Account Basic Information reads current profile metadata through `supabase.auth.getUser()` and writes `display_name` plus the optional, trimmed, 200-character `organization` string through `supabase.auth.updateUser()`. The page may refresh the session after a successful write, but organization remains descriptive profile data and must never control frontend access or backend authorization
 - Account Connected Applications lists and revokes Supabase OAuth grants only. It contains no API-key history, password reauthentication form, Cognito provisioning action, or Cognito password/email synchronization helper; Supabase Auth is the sole account identity and credential owner

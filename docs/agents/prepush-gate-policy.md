@@ -42,8 +42,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
 lastReviewedNote: 'Reviewed for the fork GitHub Pages workflow and its focused contract tests; protected-branch trigger, receipt, and bypass policy remain unchanged.'
 ---
 

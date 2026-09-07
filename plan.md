@@ -24,8 +24,8 @@ checkPaths:
   - .github/workflows/**
   - .env
   - .env.development
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
 lastReviewedNote: 'Recorded the decision to defer custom visual assets and the completed GitHub Pages project-path implementation, workflow, tests, and local browser proof.'
 related:
   - AGENTS.md
@@ -54,9 +54,9 @@ Every work session on this rebuild must read this plan before making changes. Up
 
 ## Current Status
 
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 
-Overall state: Milestone 0 and GitHub Pages compatibility complete; custom visual assets deferred; hosted configuration and live deployment remain pending
+Overall state: Milestone 0, GitHub Pages compatibility, and the auth-only capability boundary are complete; branding replacement, hosted configuration, and live deployment remain pending
 
 | Area | State | Evidence or blocker |
 | --- | --- | --- |
@@ -74,13 +74,14 @@ Overall state: Milestone 0 and GitHub Pages compatibility complete; custom visua
 | Support contact | Selected | Use the fork repository's GitHub Issues surface until the owner supplies a verified support mailbox; do not publish an invented email address |
 | Hash routing | Present | `config/config.ts` already uses hash history |
 | GitHub Pages base path | Complete | `APP_BASE_PATH` drives Umi, shell/static assets, maintenance fallback, external links, and Auth callbacks; the exact project-path bundle passed a local browser smoke with zero same-origin failures |
+| Auth-only capability boundary | Complete | Pages selects the centralized `auth-only` profile; its build emits only Welcome, login/recovery, Account, and authenticated fallback routes and skips backend-dependent startup/menu actions |
 | Custom domain | Complete for project Pages | Removed `public/CNAME`; the fork will use `catiehe.github.io/tiangong-lca-next-practice/` unless an owned domain is deliberately configured later |
-| Hosted Supabase Auth | Pending | Client exists; new project URL, publishable key, and redirect configuration are required |
+| Hosted Supabase Auth | Public configuration ready; live flow pending | Development Auth health returned HTTP 200; email signup and confirmation are enabled; production/local redirects and the two GitHub repository variables are owner-configured, though the workspace token cannot read back variable names |
 | Hosted database | Pending | Schema and migrations belong to the separate `database-engine` repository |
 | Edge Functions | Pending | Runtime source belongs to `tiangong-lca-edge-functions` |
-| GitHub Pages workflow | Implemented, not deployed | Fork-specific `github-pages.yml` builds `main` with the exact toolchain, requires hosted Supabase repository variables, uploads `dist`, and deploys through the `github-pages` environment; repository settings and live proof remain pending |
+| GitHub Pages workflow | Enabled, candidate not delivered to `main` | GitHub reports workflow-based Pages at the target URL; the fork workflow and application changes remain in the local `dev` worktree and require governed delivery to `main` before the first deployment |
 
-Current next action: create the hosted Supabase development project, then configure its public URL and publishable key as GitHub repository variables so the Pages workflow can deploy without falling back to the upstream backend.
+Current next action: commit the completed auth-only/branding candidate, run the managed protected `dev` push, then promote the eligible candidate to `main` so the first Pages workflow can run.
 
 ## Decisions
 
@@ -132,10 +133,10 @@ Exit criteria: the exact toolchain works, the untouched app starts or has a repr
 - [ ] Replace the temporary development logo and favicon only if custom visual design is resumed later.
 - [ ] Replace branding configuration, package metadata, Electron metadata, icons, and relevant localized strings.
 - [ ] Review legal and privacy content separately; do not present upstream organization details as the fork owner's details.
-- [ ] Add centralized capability flags.
-- [ ] Keep Welcome, login, signup, recovery, logout, and the bounded account surface enabled.
-- [ ] Hide or clearly disable data, team, review, import/export, Edge, and calculation features.
-- [ ] Set `APP_RUNTIME_CONFIG_ENABLED=false` until `api.qry_system_status()` exists in the hosted database.
+- [x] Add centralized capability flags.
+- [x] Keep Welcome, login, signup, recovery, logout, and the bounded account surface enabled.
+- [x] Hide or clearly disable data, team, review, import/export, Edge, and calculation features.
+- [x] Set `APP_RUNTIME_CONFIG_ENABLED=false` until `api.qry_system_status()` exists in the hosted database.
 
 Exit criteria: the application clearly identifies the fork, unavailable features do not issue failing backend requests, and the auth-only route set builds successfully.
 
@@ -154,11 +155,11 @@ Exit criteria: the complete static shell loads at the project Pages URL with no 
 
 ## Milestone 3: Hosted Supabase Development Auth
 
-- [ ] Create one hosted Supabase development project.
-- [ ] Record its project reference outside committed frontend configuration.
-- [ ] Configure the frontend with only `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`.
-- [ ] Set the Supabase Auth Site URL to the exact GitHub Pages application URL.
-- [ ] Add exact localhost and production redirect URLs.
+- [x] Create one hosted Supabase development project.
+- [x] Record its project reference outside committed frontend configuration.
+- [x] Configure the frontend with only `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`.
+- [x] Set the Supabase Auth Site URL to the exact GitHub Pages application URL.
+- [x] Add exact localhost and production redirect URLs.
 - [ ] Decide whether email/password, magic link, and signup confirmation are enabled.
 - [ ] Configure SMTP before depending on production email delivery.
 - [ ] Test signup, confirmation if enabled, login, refresh, logout, password recovery, and invalid/expired recovery links.
@@ -181,7 +182,7 @@ Exit criteria: Auth works locally and on GitHub Pages without privileged credent
 - [x] Upload `dist` with `actions/upload-pages-artifact`.
 - [x] Deploy through `actions/deploy-pages` with the `github-pages` environment.
 - [x] Configure `pages: write` and `id-token: write` permissions.
-- [ ] Enable GitHub Actions as the Pages publishing source in repository settings.
+- [x] Enable GitHub Actions as the Pages publishing source in repository settings.
 - [ ] Verify the deployed URL and Auth flow in a fresh browser session.
 
 Reference: [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
@@ -260,6 +261,40 @@ Exit criteria: production is reproducible from source-controlled contracts, cont
 - The tracked `.env` files contain browser configuration. They must never be expanded to contain privileged credentials.
 
 ## Activity Log
+
+### 2026-09-07 — GitHub Pages owner configuration
+
+- The owner confirmed both public Supabase repository variables were added. The workspace integration still receives HTTP 403 when listing Actions variables, so their names/values cannot be independently read back here.
+- GitHub's Pages API now confirms `build_type=workflow`, source branch `main`, and `https://catiehe.github.io/tiangong-lca-next-practice/` as the site URL.
+- No workflow can deploy the current candidate yet: remote `main` remains at `7210e700`, remote `dev` remains at `c87beefc`, and the auth-only/branding work is still an uncommitted local `dev` worktree. The next action is governed commit, protected push, and eligible promotion to `main`.
+
+### 2026-09-07 — Hosted Auth redirect configuration
+
+- The owner confirmed the Supabase Auth Site URL is set to the exact GitHub Pages project URL and the exact production plus `http://localhost:8000/` redirect URLs are allowlisted.
+- No test email or user mutation was performed. The next action is adding the two public GitHub Actions repository variables and selecting GitHub Actions as the Pages source.
+
+### 2026-09-07 — Hosted Supabase public configuration intake
+
+- Accepted only the hosted development Project URL and `sb_publishable_...` browser key; no database password, secret/service-role key, Supabase access token, or committed frontend configuration was requested or stored.
+- Verified the hosted Auth health endpoint with the publishable key (HTTP 200). The public Auth settings report email signup enabled, email confirmation required, and phone login disabled.
+- Tried to create `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` as GitHub repository variables without printing their values. GitHub rejected both writes with HTTP 403 because the workspace integration token lacks Actions-variable permission; no repository variable changed.
+- The next action is the owner's manual GitHub variable/Pages configuration plus exact Supabase Auth Site and redirect URLs; after that, the existing delivery work can advance to `main` and trigger Pages.
+
+### 2026-09-07 — Runtime identity defaults
+
+- Replaced the app-shell product-title fallback with `Future of LCA`, the login-subtitle fallback with `PRISM`, and both light/dark primary-color defaults with the selected Measured Indigo `#6366F1`.
+- Supported locales now receive those identity defaults when no locale-specific build override is supplied; existing explicit environment overrides remain supported.
+- Kept this slice intentionally narrow: localized descriptive copy, package/Electron metadata, legal ownership, and the deferred logo/favicon remain pending. The next action remains the owner-authenticated hosted Supabase project and GitHub Pages configuration.
+
+### 2026-09-07 — Auth-only application capability boundary
+
+- Rechecked the exact external next action. The workspace has no Supabase CLI or Supabase credential, the available GitHub integration token cannot access Actions variables or Pages settings, the Pages site is not enabled, and the workflow is not yet present on default branch `main`; no hosted resource or repository setting was changed.
+- Added one build-time application capability owner with `full` as the compatibility default and `auth-only` as the fork Pages profile. Unknown profile values fail back to the existing full application instead of silently producing a partial deployment.
+- Applied `auth-only` to route generation, authenticated startup, header actions, the avatar menu, Account connected applications, and Welcome. The profile keeps Welcome, login/recovery, Account, logout, and authenticated fallback routes while removing data, Team, Review, administration, dashboard, data-processing, and OAuth-consent routes; it also skips role RPCs, cache monitors, import/export, task/calculation, notification, Team, and signed-storage/team Welcome requests.
+- Updated the Pages workflow to select `APP_CAPABILITY_PROFILE=auth-only` while retaining `APP_RUNTIME_CONFIG_ENABLED=false`.
+- Restored the repository-pinned Node `24.19.0` in the resumed container and used pnpm `11.24.0`. The focused run passed 7 suites and 113 tests; `pnpm lint` passed Oxlint, Prettier, and TypeScript `7.0.2`.
+- Built the exact Pages variant with `APP_BASE_PATH=/tiangong-lca-next-practice/ APP_CAPABILITY_PROFILE=auth-only APP_RUNTIME_CONFIG_ENABLED=false pnpm build`; Webpack completed successfully. Its generated route table and emitted async chunks contained only Account, login/recovery, Welcome, authenticated 404, and their wrappers.
+- The next action remains creating the hosted Supabase development project, then configuring its public URL and publishable key as GitHub repository variables with an owner-authorized GitHub credential and enabling GitHub Actions as the Pages source.
 
 ### 2026-09-07 — Project-path gate closure
 

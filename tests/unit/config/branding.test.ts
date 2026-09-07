@@ -31,12 +31,12 @@ describe('branding config (config/branding.ts)', () => {
 
     expect(lightBrandTheme).toEqual({
       navTheme: 'light',
-      colorPrimary: '#5C246A',
+      colorPrimary: '#6366F1',
       logo: '/logo.svg',
     });
     expect(darkBrandTheme).toEqual({
       navTheme: 'realDark',
-      colorPrimary: '#9e3ffd',
+      colorPrimary: '#6366F1',
       logo: '/logo_dark.svg',
     });
   });
@@ -61,7 +61,7 @@ describe('branding config (config/branding.ts)', () => {
 
     const { lightBrandTheme, darkBrandTheme } = require('../../../config/branding');
 
-    expect(lightBrandTheme.colorPrimary).toBe('#5C246A');
+    expect(lightBrandTheme.colorPrimary).toBe('#6366F1');
     expect(darkBrandTheme.logo).toBe('/logo_dark.svg');
   });
 

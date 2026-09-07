@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-09-06'
-lastReviewedCommit: '4198b8fec58a8ee781f4ad46b8489e499a060557'
+lastReviewedAt: '2026-09-07'
+lastReviewedCommit: 'c87beefcbda03ff11395d3de7a713b19b67b58b5'
 lastReviewedNote: 'Added the missing self-contained rule for the governed hosted-rebuild plan so required session logs are covered without forcing unrelated document updates.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
@@ -580,6 +580,8 @@ rules:
     scope: repo
     repo: next
     triggers:
+      - path: config/appCapabilities.ts
+        kind: app-config
       - path: config/routes.ts
         kind: route-tree
       - path: config/config.ts

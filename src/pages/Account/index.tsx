@@ -30,6 +30,7 @@ import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNod
 import { formatAccountRole } from './roleMessage';
 import OAuthConnections from './OAuthConnections';
 import styles from './index.less';
+import { appCapabilities } from '../../../config/appCapabilities';
 
 export const ACCOUNT_FORM_CONTAINER_STYLE: CSSProperties = {
   width: '100%',
@@ -831,14 +832,18 @@ const Profile: FC = () => {
               }),
               children: renderChangeEmailForm(),
             },
-            {
-              key: 'oauthConnections',
-              label: intl.formatMessage({
-                id: 'pages.account.oauth.tab',
-                defaultMessage: 'Connected apps',
-              }),
-              children: <OAuthConnections />,
-            },
+            ...(appCapabilities.oauthApplications
+              ? [
+                  {
+                    key: 'oauthConnections',
+                    label: intl.formatMessage({
+                      id: 'pages.account.oauth.tab',
+                      defaultMessage: 'Connected apps',
+                    }),
+                    children: <OAuthConnections />,
+                  },
+                ]
+              : []),
           ]}
         ></Tabs>
       </Spin>

@@ -1,4 +1,5 @@
 import { favicon } from './branding';
+import { appCapabilities } from './appCapabilities';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
@@ -177,6 +178,7 @@ export default defineConfig({
     'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
     'process.env.APP_BASE_PATH': appBasePath,
     'process.env.APP_RUNTIME_CONFIG_ENABLED': process.env.APP_RUNTIME_CONFIG_ENABLED,
+    'process.env.APP_CAPABILITY_PROFILE': appCapabilities.profile,
     ...localeEnvironmentDefines,
   },
 });

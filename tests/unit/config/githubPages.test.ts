@@ -9,6 +9,7 @@ describe('fork GitHub Pages contract', () => {
     const workflow = fs.readFileSync(workflowPath, 'utf8');
 
     expect(workflow).toContain('APP_BASE_PATH: /tiangong-lca-next-practice/');
+    expect(workflow).toContain('APP_CAPABILITY_PROFILE: auth-only');
     expect(workflow).toContain("if: github.ref == 'refs/heads/main'");
     expect(workflow).toContain("APP_RUNTIME_CONFIG_ENABLED: 'false'");
     expect(workflow).toContain('SUPABASE_URL: ${{ vars.SUPABASE_URL }}');

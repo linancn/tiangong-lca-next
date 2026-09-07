@@ -33,6 +33,7 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - config/docs-capture/**
+  - config/appCapabilities.ts
   - scripts/e2e/**
   - scripts/release/**
   - scripts/qualification/**
@@ -46,8 +47,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: ab6cda0f4c126c3c9d1398b37c1453eed7705518
+lastReviewedAt: 2026-09-07
+lastReviewedCommit: c87beefcbda03ff11395d3de7a713b19b67b58b5
 lastReviewedNote: 'Reviewed while adding the fork GitHub Pages base-path contract; branch, ownership, and delivery boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
@@ -187,6 +188,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - app-side Supabase and API access belongs only in `src/services/**`
 - Supabase OAuth consent enters at `/oauth/consent`, crosses the reviewed EdgeOne-to-hash bridge with one bounded RFC3986-unreserved opaque `authorization_id` preserved byte-for-byte while dot-only path segments are rejected, verifies identity with `getClaims()`, and accepts callback URLs only from Supabase authorization responses over HTTPS or loopback HTTP; Account → Connected apps is the sole integration surface, with no API-key history or compatibility provisioning action
 - startup runtime-config loading is enabled by default; set the build-time `APP_RUNTIME_CONFIG_ENABLED=false` only when the system-status RPC must be bypassed and normal startup forced
+- application capabilities default to the complete `full` profile; the fork Pages workflow selects the centralized `auth-only` profile so only Welcome, Supabase Auth, bounded Account, logout, and authenticated fallback surfaces ship while database/Edge-dependent product routes and startup actions remain disabled
 - project-hosted builds set one normalized `APP_BASE_PATH`; Umi chunks, shell assets, static data, legal pages, maintenance fallback, and external/Auth callback URLs must all remain inside that path. The fork Pages workflow builds `/tiangong-lca-next-practice/` from `main`, requires repository-variable hosted Supabase browser configuration, and keeps runtime-config loading disabled until the hosted system-status RPC exists
 
 ## Ownership Boundaries

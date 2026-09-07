@@ -16,6 +16,7 @@ import { Button, Modal, Spin, theme } from 'antd';
 import type { MenuProps } from 'antd';
 import { flushSync } from 'react-dom';
 import { FormattedMessage } from 'umi';
+import { appCapabilities } from '../../../config/appCapabilities';
 import AllTeams from '../AllTeams';
 import HeaderDropdown from '../HeaderDropdown';
 
@@ -83,8 +84,9 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
   };
 
   useEffect(() => {
-    // getUserRole();
-    getMenuUserRoles();
+    if (appCapabilities.systemRoles || appCapabilities.review) {
+      void getMenuUserRoles();
+    }
   }, []);
   /**
    * Logout and save the current URL
@@ -260,12 +262,16 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
       icon: <UserOutlined />,
       label: <FormattedMessage id='menu.account.profile' defaultMessage='Account Profile' />,
     },
-    {
-      key: 'team',
-      icon: <TeamOutlined />,
-      label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
-    },
-    ...(canViewSystemManagement
+    ...(appCapabilities.teams
+      ? [
+          {
+            key: 'team',
+            icon: <TeamOutlined />,
+            label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
+          },
+        ]
+      : []),
+    ...(appCapabilities.systemRoles && canViewSystemManagement
       ? [
           {
             key: 'system',
@@ -274,7 +280,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
           },
         ]
       : []),
-    ...(canViewReviewManagement
+    ...(appCapabilities.review && canViewReviewManagement
       ? [
           {
             key: 'review',

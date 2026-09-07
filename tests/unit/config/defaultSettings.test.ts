@@ -38,7 +38,20 @@ describe('default settings config (config/defaultSettings.ts)', () => {
 
     expect(settings.layout).toBe('mix');
     expect(settings.title).toBe(defaultAppTitle);
-    expect(defaultLoginSubtitle).toBe("World's Largest Open LCA Data Platform");
+    expect(defaultAppTitle).toBe('Future of LCA');
+    expect(defaultLoginSubtitle).toBe('PRISM');
+  });
+
+  it('uses the PRISM product identity for supported locales without env overrides', () => {
+    const {
+      getLocalizedAppTitle,
+      getLocalizedLoginSubtitle,
+    } = require('../../../config/defaultSettings');
+
+    expect(getLocalizedAppTitle('en-US')).toBe('Future of LCA');
+    expect(getLocalizedAppTitle('zh-CN')).toBe('Future of LCA');
+    expect(getLocalizedLoginSubtitle('de-DE')).toBe('PRISM');
+    expect(getLocalizedLoginSubtitle('fr-FR')).toBe('PRISM');
   });
 
   it('reads APP_LAYOUT from env when value is supported', () => {

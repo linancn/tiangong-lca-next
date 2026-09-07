@@ -7,8 +7,8 @@ import {
 import { lightBrandTheme } from './branding';
 
 const DEFAULT_LAYOUT = 'mix';
-const DEFAULT_TITLE = 'TianGong LCA Data Platform';
-const DEFAULT_LOGIN_SUBTITLE = "World's Largest Open LCA Data Platform";
+const DEFAULT_TITLE = 'Future of LCA';
+const DEFAULT_LOGIN_SUBTITLE = 'PRISM';
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
 
 type AppLayout = (typeof APP_LAYOUT_OPTIONS)[number];
@@ -58,10 +58,14 @@ const loginSubtitleEnvValues = Object.fromEntries(
 ) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
 export const getLocalizedAppTitle = (locale?: string): string | undefined =>
-  getLocalizedEnvValue(locale, appTitleEnvValues);
+  normalizeLocale(locale)
+    ? (getLocalizedEnvValue(locale, appTitleEnvValues) ?? DEFAULT_TITLE)
+    : undefined;
 
 export const getLocalizedLoginSubtitle = (locale?: string): string | undefined =>
-  getLocalizedEnvValue(locale, loginSubtitleEnvValues);
+  normalizeLocale(locale)
+    ? (getLocalizedEnvValue(locale, loginSubtitleEnvValues) ?? DEFAULT_LOGIN_SUBTITLE)
+    : undefined;
 
 export const defaultAppTitle = DEFAULT_TITLE;
 export const defaultLoginSubtitle = DEFAULT_LOGIN_SUBTITLE;
