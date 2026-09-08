@@ -38,7 +38,7 @@ permissions:
 jobs:
   release-gate:
     name: Release Gate
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Check out Git repository
@@ -97,7 +97,7 @@ jobs:
   release-proof:
     name: Aggregate Exact Release Proof
     needs: release-gate
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Check out exact candidate

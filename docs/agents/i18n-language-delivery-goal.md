@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-09-01
-lastReviewedCommit: f92522afb8bdcd7681d004d5792e108528ec86a9
-lastReviewedNote: 'Reviewed for Next Issue #991: the correction ledger now records intentional baseline-message retirement without mutating frozen historical evidence or retaining dead runtime copy.'
+lastReviewedAt: 2026-09-08
+lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedNote: 'Reviewed for Next #1040: CodeBuild runner routing retains workflow steps, release proof, native platform coverage and semantic Docker qualification; AWS owns runner resources and admission.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

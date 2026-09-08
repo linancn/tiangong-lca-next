@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: 32758423c199da08cf1a9c26c5e2dba5be6c8f69
-lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
+lastReviewedAt: 2026-09-08
+lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedNote: 'Reviewed for Next #1040: CodeBuild runner routing retains workflow steps, release proof, native platform coverage and semantic Docker qualification; AWS owns runner resources and admission.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -193,3 +193,9 @@ Every PR note for this repo must state:
 4. whether `pnpm prepush:gate` ran
 5. whether any required proof lives in another repo
 6. for semantic localization E2E, which browser/trust boundary ran and, for an authenticated run, the non-secret `created/cleaned/leaked` counts
+
+## CodeBuild migration qualification
+
+Non-macOS workflows route to repository-scoped ephemeral CodeBuild projects; macOS ARM64 remains GitHub-hosted. The Linux, ARM64 and Windows Electron entries retain their existing commands and architecture matrix. Semantic E2E uses the dedicated privileged Docker project. Runner labels bind the GitHub run ID and attempt; no hosted Linux/Windows fallback is configured.
+
+Before merging the runner migration, record an exact candidate's full local push gate and remote evidence for workflow checkout/toolchain/artifacts, Linux/ARM/Windows native packaging, semantic Docker execution, cancellation and CodeBuild build IDs. Keep release proof, production reference-data gates, permissions and secrets intact. Do not trigger a production deployment or publish a release merely to test runner setup. AWS resource configuration and admission belong to tiangong-aws; Next owns executable workflows and proof.

@@ -29,7 +29,7 @@ concurrency:
 jobs:
   release-context:
     name: Release Context
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       release_base: ${{ steps.release.outputs.release_base }}
       release_head: ${{ steps.release.outputs.release_head }}
@@ -188,7 +188,7 @@ jobs:
       - release-context
       - release-gate
     if: ${{ always() && needs.release-context.outputs.should_release == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Require the dev candidate proof or an explicit recovery full gate
@@ -231,7 +231,7 @@ jobs:
       - release-qualified
     if: >-
       ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Check out exact release candidate
@@ -288,7 +288,7 @@ jobs:
       - release-tag
     if: >-
       ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       release_id: ${{ steps.release.outputs.release_id }}
 
@@ -362,7 +362,7 @@ jobs:
       - release-tag
     if: >-
       ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-tag.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     env:
       EDGEONE_OUTPUT_DIR: dist
       EDGEONE_PROJECT_NAME: tiangong-lca-next-upload
@@ -431,19 +431,22 @@ jobs:
       - release-tag
     if: >-
       ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-qualified.result == 'success' && needs.release-draft.result == 'success' && needs.release-tag.result == 'success' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'macos-latest' && matrix.os || format('codebuild-tiangong-ci-next-{0}-{1}-{2}', matrix.executor, github.run_id, github.run_attempt) }}
 
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             arch: x64
+            executor: linux
           - os: windows-latest
             arch: x64
+            executor: windows
           - os: macos-latest
             arch: arm64
           - os: ubuntu-24.04-arm
             arch: arm64
+            executor: arm
 
     steps:
       - name: Check out Git repository
@@ -478,7 +481,7 @@ jobs:
       - release
     if: >-
       ${{ !cancelled() && needs.release-context.result == 'success' && needs.release-context.outputs.should_release == 'true' && needs.release-draft.result == 'success' && needs.release.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Verify release identity and assets

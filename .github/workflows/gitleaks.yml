@@ -2,16 +2,16 @@ name: Gitleaks Security Scan
 
 on:
   push:
-    branches: [ main, master, dev*, ]  # Triggered on push to main and development branches
+    branches: [main, master, dev*] # Triggered on push to main and development branches
   pull_request:
-    branches: [ main, master ]        # Triggered on PR to main branches
+    branches: [main, master] # Triggered on PR to main branches
   schedule:
-    - cron: '0 0 * * 0'              # Scan every Sunday at UTC 00:00
+    - cron: '0 0 * * 0' # Scan every Sunday at UTC 00:00
 
 jobs:
   scan:
     name: Gitleaks Security Scan
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

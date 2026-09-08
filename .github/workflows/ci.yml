@@ -7,7 +7,7 @@ jobs:
   build-and-deploy:
     name: Build and Deploy Web App
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     env:
       EDGEONE_OUTPUT_DIR: dist
       EDGEONE_PROJECT_NAME: tiangong-lca-next-upload

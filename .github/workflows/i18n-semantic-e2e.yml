@@ -19,7 +19,7 @@ concurrency:
 jobs:
   semantic-qualification:
     name: Manual Hermetic Semantic Qualification
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-docker-${{ github.run_id }}-${{ github.run_attempt }}
     timeout-minutes: 90
 
     steps:

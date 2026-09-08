@@ -25,7 +25,7 @@ jobs:
     name: Release Candidate Context
     if: >-
       github.event.pull_request.base.ref == 'dev' && contains(github.event.pull_request.body || '', 'tiangong-next-release-automation:v2')
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       release_base: ${{ steps.context.outputs.release_base }}
       candidate_base: ${{ steps.context.outputs.candidate_base }}
@@ -65,7 +65,7 @@ jobs:
   main-candidate:
     name: Main Candidate / Release Gate
     if: github.event.pull_request.base.ref == 'main'
-    runs-on: ubuntu-latest
+    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Check out exact main candidate
