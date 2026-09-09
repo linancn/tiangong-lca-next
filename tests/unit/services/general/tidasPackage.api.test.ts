@@ -1939,7 +1939,8 @@ describe('general/api TIDAS package helpers', () => {
       );
       expect(mockUploadToSignedUrl).toHaveBeenCalledTimes(available ? 1 : 0);
       expect(mockFunctionsInvoke).toHaveBeenCalledTimes(available ? 2 : 1);
-      const lastBody = mockFunctionsInvoke.mock.calls.at(-1)?.[1]?.body;
+      const lastBody =
+        mockFunctionsInvoke.mock.calls[mockFunctionsInvoke.mock.calls.length - 1]?.[1]?.body;
       expect(lastBody?.import_policy).toBe(available ? 'root_closure_v2' : undefined);
       expect(lastBody?.artifact_sha256).toBe(available ? '0a1bff' : undefined);
     },
