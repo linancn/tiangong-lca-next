@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "dee9e5b000abe533e62da62e32a11f261c8806713163e075aa91c5f891aafec3",
+    "auditedInputDigest": "c55fe4e4ed2796ec18939146e923791f61e4553ad053096a7f64b9f7661ae951",
     "validatedMessageCount": 3322,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1507,
     "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
     "catalogDigest": "e712a87e78e9934accc0b9fecc82b829914a606b3f13c8c0d620d5fa4a77de13",
-    "dossierDigest": "0c212e5ea00a3c6326c483197a1e438b5890d3c4a86992ddfa16626efa6ed1f7",
+    "dossierDigest": "5bea7c574519ad8f3a8032a682ac09297466c37522807e633d8a864873725e88",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "a1276518ef87d395fb274a02c43c1878c9f43554b9f1dc2ea7bf4d6933fe6ea6",
+    "routeEvidenceDigest": "1bba3ef4dbbe2189d7669ae0e4df91ebf08ac8b37f7b7d51c61385ef0b90150e",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "e11cff8827c56fa95979f98e855a66017eafa6ae5821c8193f5d7334bf95a11f",
         "highRiskMessageCount": 1507,
         "highRiskMessageDigest": "37ae9bf80782335d1d0edf20bae122396e2fc524271954d6608a7f2caf3dfacd",
-        "dossierDigest": "0c212e5ea00a3c6326c483197a1e438b5890d3c4a86992ddfa16626efa6ed1f7",
+        "dossierDigest": "5bea7c574519ad8f3a8032a682ac09297466c37522807e633d8a864873725e88",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "4cba4b1c64fad628aa57567178cc4033b3a07226c088de00dcfaadd206346912"
+  "validationDigest": "de8c0392754c2d4ca2e0cae9136af4f2034bd9a5c1390731c43bc2759a9424be"
 }
