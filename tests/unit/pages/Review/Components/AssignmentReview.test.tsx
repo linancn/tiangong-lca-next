@@ -9,9 +9,10 @@ import AssignmentReview, {
 } from '@/pages/Review/Components/AssignmentReview';
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '../../../../helpers/testUtils';
+import { act, render, screen, waitFor } from '../../../../helpers/testUtils';
 
 let mockLocale = 'en-US';
+let mockMainTableProps: any;
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
@@ -209,9 +210,22 @@ jest.mock('antd', () => {
 
   const Search = ({ placeholder, onSearch }: any) => (
     <div>
-      <input data-testid='search-input' placeholder={placeholder} />
-      <button type='button' onClick={() => onSearch?.('keyword', {}, { source: 'manual' })}>
+      <input data-testid='search-input' placeholder={placeholder} defaultValue='keyword' />
+      <button
+        type='button'
+        onClick={() =>
+          onSearch?.(
+            (globalThis.document.querySelector('[data-testid=search-input]') as HTMLInputElement)
+              .value,
+            {},
+            { source: 'manual' },
+          )
+        }
+      >
         trigger-search
+      </button>
+      <button type='button' onClick={() => onSearch?.('', {}, { source: 'clear' })}>
+        clear-search
       </button>
     </div>
   );
@@ -226,6 +240,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Alert: ({ title }: any) => <div role='alert'>{title}</div>,
     Button,
     Card,
     Col,
@@ -242,6 +257,8 @@ jest.mock('antd', () => {
 });
 
 const MockProTable = ({
+  dataSource,
+  params,
   request,
   actionRef,
   rowSelection,
@@ -253,6 +270,7 @@ const MockProTable = ({
   tableAlertOptionRender,
   pagination,
 }: any) => {
+  mockMainTableProps = { request, params };
   const React = require('react');
   const [rows, setRows] = React.useState<any[]>([]);
   const requestRef = React.useRef(request);
@@ -264,19 +282,19 @@ const MockProTable = ({
   React.useEffect(() => {
     const reload = jest.fn(async () => {
       const result = await requestRef.current?.(
-        { pageSize: pagination?.pageSize ?? 50, current: 1 },
+        { ...params, pageSize: pagination?.pageSize ?? 50, current: 1 },
         {},
       );
-      setRows(result?.data ?? []);
+      if (result?.success !== false) setRows(result?.data ?? []);
       return result;
     });
 
     if (actionRefRef.current) {
-      actionRefRef.current.current = { reload };
+      actionRefRef.current.current = { reload, setPageInfo: jest.fn() };
     }
 
     reload();
-  }, []);
+  }, [JSON.stringify(params)]);
 
   tableAlertRender?.({
     intl: {
@@ -302,7 +320,7 @@ const MockProTable = ({
           onCleanSelected: () => rowSelection?.onChange?.([]),
         })}
       </div>
-      {rows.map((row) => (
+      {(dataSource ?? rows).map((row) => (
         <div key={row.id} data-testid={`row-${row.id}`}>
           {columns.map((column: any, index: number) => (
             <div key={index}>
@@ -2251,8 +2269,180 @@ describe('AssignmentReview', () => {
       />,
     );
 
-    await waitFor(() => expect(errorSpy).toHaveBeenCalledWith(expect.any(Error)));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('component.request.failed'),
+    );
     expect(screen.queryByTestId('row-review-2')).not.toBeInTheDocument();
     errorSpy.mockRestore();
   });
+  it.each([
+    ['unassigned', 'review-admin'],
+    ['assigned', 'review-admin'],
+    ['admin-rejected', 'review-admin'],
+    ['pending', 'review-member'],
+    ['reviewed', 'review-member'],
+    ['reviewer-rejected', 'review-member'],
+  ] as const)('searches, repeats and clears %s', async (tableType, role) => {
+    const actionRef: any = { current: {} };
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'actor', role }}
+        tableType={tableType}
+        actionRef={actionRef}
+      />,
+    );
+    const api =
+      role === 'review-admin'
+        ? mockGetReviewsTableDataOfReviewAdmin
+        : mockGetReviewsTableDataOfReviewMember;
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
+    const input = screen.getByTestId('search-input');
+    await userEvent.clear(input);
+    await userEvent.type(input, '变压器');
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(2));
+    expect(api.mock.calls.at(-1).at(-1)).toEqual({ displayMode: 'all', query: '变压器' });
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(3));
+    await userEvent.click(screen.getByRole('button', { name: 'clear-search' }));
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(4));
+    expect(api.mock.calls.at(-1)).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ query: '变压器' })]),
+    );
+  });
+
+  it('shows a query failure separately from an empty result and clears it after retry', async () => {
+    mockGetReviewsTableDataOfReviewAdmin.mockResolvedValueOnce({
+      data: [],
+      success: false,
+      total: 0,
+    });
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: {} }}
+      />,
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('component.request.failed');
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('does not let an older request replace the latest searched rows', async () => {
+    let resolveOld!: (value: any) => void;
+    mockGetReviewsTableDataOfReviewAdmin.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: {} }}
+      />,
+    );
+    await waitFor(() => expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledTimes(1));
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+    await screen.findByTestId('row-review-1');
+    await act(async () => {
+      resolveOld({ success: true, data: [{ id: 'stale-review' }], total: 1 });
+    });
+    expect(screen.queryByTestId('row-stale-review')).not.toBeInTheDocument();
+    expect(screen.getByTestId('row-review-1')).toBeInTheDocument();
+  });
+  it('preserves the searched scope for paging and sorting and rejects an obsolete scheduled request', async () => {
+    render(
+      <AssignmentReview
+        userData={{ user_id: 'admin', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={{ current: {} }}
+      />,
+    );
+    await screen.findByTestId('row-review-1');
+    const oldProps = mockMainTableProps;
+    await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+    await waitFor(() => expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledTimes(2));
+    let staleResult: any;
+    await act(async () => {
+      staleResult = await oldProps.request({ ...oldProps.params, current: 2, pageSize: 50 }, {});
+    });
+    expect(staleResult.success).toBe(false);
+    expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      await mockMainTableProps.request(
+        { ...mockMainTableProps.params, current: 2, pageSize: 20 },
+        { createdAt: 'ascend' },
+      );
+    });
+    expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenLastCalledWith(
+      { current: 2, pageSize: 20 },
+      { createdAt: 'ascend' },
+      'unassigned',
+      'en',
+      { displayMode: 'all', query: 'keyword' },
+    );
+    await act(async () => {
+      await mockMainTableProps.request({}, {});
+    });
+    expect(mockGetReviewsTableDataOfReviewAdmin.mock.calls.at(-1)[0]).toEqual({
+      current: 1,
+      pageSize: 50,
+    });
+  });
+
+  it.each(['resolve', 'reject'])(
+    'ignores an old reference %s while the searched root is selected again',
+    async (outcome) => {
+      let resolveOld: any;
+      let rejectOld: any;
+      let resolveNew: any;
+      mockGetRootReviewReferenceProgress
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve, reject) => {
+              resolveOld = resolve;
+              rejectOld = reject;
+            }),
+        )
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveNew = resolve;
+            }),
+        );
+      render(
+        <AssignmentReview
+          userData={{ user_id: 'admin', role: 'review-admin' }}
+          tableType='unassigned'
+          actionRef={{ current: {} }}
+        />,
+      );
+      await userEvent.click(await screen.findByRole('button', { name: 'select-review-1' }));
+      await waitFor(() => expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledTimes(1));
+      await userEvent.click(screen.getByRole('button', { name: 'trigger-search' }));
+      await waitFor(() => expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledTimes(2));
+      await userEvent.click(screen.getByRole('button', { name: 'select-review-1' }));
+      await waitFor(() => expect(mockGetRootReviewReferenceProgress).toHaveBeenCalledTimes(2));
+      await act(async () => {
+        if (outcome === 'resolve')
+          resolveOld({ data: [{ reference_review_id: 'old-reference' }], error: null });
+        else rejectOld(new Error('old reference failed'));
+      });
+      expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'true');
+      expect(screen.getByTestId('select-reviewer')).not.toHaveTextContent('old-reference');
+      await act(async () => {
+        resolveNew({
+          data: [{ reference_review_id: 'new-reference', state_code: 0 }],
+          error: null,
+        });
+      });
+      await waitFor(() =>
+        expect(screen.getByTestId('select-reviewer')).toHaveTextContent('new-reference'),
+      );
+      expect(screen.getByTestId('select-reviewer')).toHaveAttribute('data-disabled', 'false');
+    },
+  );
 });

@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: Team information form styling now follows theme defaults without changing role authority, membership behavior or Review Admin diagnostics.'
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
 ---
 
 # Team Management Reference

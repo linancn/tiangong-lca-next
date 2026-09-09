@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-06
-lastReviewedCommit: ff0dc9524c17053a7eab7f3715e54df7d4e7a20e
-lastReviewedNote: 'Reviewed for Next #1035 after Edge #407/#409 and root #1021/#1022: import exact Edge main ceff9c4 with legacy RPC/fallback compatibility; Database e988 snapshot and restore proof remain unchanged. Both pin contracts advance together; the normal committed push owns fresh full-gate proof.'
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -166,7 +166,7 @@ The diagnostic is visible only to `review-admin`, starts only after an explicit 
 
 All seven dataset edit surfaces expose one `Submit Review` label and submit without completeness or numerical-stability Gate evidence. Process performs its current-record checks above, while Process, Flow, Source, and Contact perform the recursive reference-chain checks above. The browser never chooses Root versus Reference: Database resolves that from the exact target and current rejected-reference relations.
 
-Review Management consumes the central review projection. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
+Review Management consumes the central v4 review projection with keyword search over the exact dataset version's existing search_text. Search/clear/repeat refreshes use ProTable parameters, reset selection and expansion, and reject stale responses; failures display the shared localized request error. Its top-level pagination contains every matching Root and Reference as an independent row; Database owns tab membership, display-mode and exact target-type filtering, ordering, total count, and bounded pagination over that flat set. Display mode selects model/process rows, all other types, or all rows; combining it with a data type uses intersection semantics. The UI resets to page one and clears incompatible type/selection state when a filter changes, and top-level pages default to 50 rows. Only Process and Lifecycle Model Root rows can expand, and their relationship child table remains unfiltered and renders current References matching the same tab. Readable rows retain their own actions, so a Reference does not depend on a parent Root being present in the current page.
 
 Batch selection is one Root/Reference selection model. A top-level Reference can be selected directly. Selecting an expandable Process or Lifecycle Model Root loads and auto-selects its current-tab References, deduplicates a Reference shared by multiple Roots, preserves independently selected References, and disables submission while child loading is incomplete or failed. Selecting another Root type does not issue a child query. Removing a Root removes only the References that are no longer selected manually or through another Root. Simple Root and Reference reviews expose only approve/reject actions; Review Member approval has no opinion field and rejection requires a reason. Reviewer outcomes are advice, so the UI must not infer the Admin result from their votes.
 
