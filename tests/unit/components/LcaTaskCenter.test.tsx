@@ -16,6 +16,12 @@ const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
 const mockRefreshDataProductTasks = jest.fn();
 const mockSubscribeDataProductTasks = jest.fn(() => jest.fn());
 
+jest.mock('@/components/ImportTidasPackage/ImportResult', () => ({
+  __esModule: true,
+  default: ({ jobId }: { jobId: string }) => <div data-testid='import-result'>{jobId}</div>,
+  importOutcomeLabel: (value: string) => value,
+}));
+
 jest.mock('@/components/ClosureTaskDetail', () => ({
   __esModule: true,
   default: ({ canDownloadReport, closureCheckId, refreshSignal }: any) => (
@@ -699,6 +705,7 @@ describe('LcaTaskCenter', () => {
       {
         id: 'pkg-import-filter',
         kind: 'tidas_package_import',
+        importOutcome: 'partial',
         state: 'running',
         phase: 'queued',
         filename: 'package.zip',
@@ -864,6 +871,7 @@ describe('LcaTaskCenter', () => {
         id: 'pkg-import-running',
         sequence: 5.7,
         kind: 'tidas_package_import',
+        importOutcome: 'success',
         state: 'running',
         phase: 'import_package',
         message: 'importing package data',

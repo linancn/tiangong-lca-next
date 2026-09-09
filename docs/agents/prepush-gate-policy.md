@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedAt: '2026-09-09'
+lastReviewedCommit: '61d2323d8cb477ae881496aad9edb43aee0b3073'
+lastReviewedNote: 'Next #1046: reviewed import-only Task Center changes and focused async/report regressions. Calculation/analysis behavior, bootstrap, protected gate and recorded coverage baseline remain unchanged; full delivery proof stays in the Issue/PR.'
 ---
 
 # Pre-Push Gate Policy

@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: calculations consume the hydrated editor graph while persistence receives a separately reconciled graph; calculation and allocation algorithms are unchanged.'
+lastReviewedAt: '2026-09-09'
+lastReviewedCommit: '61d2323d8cb477ae881496aad9edb43aee0b3073'
+lastReviewedNote: 'Next #1046: reviewed import-only Task Center changes and focused async/report regressions. Calculation/analysis behavior, bootstrap, protected gate and recorded coverage baseline remain unchanged; full delivery proof stays in the Issue/PR.'
 ---
 
 # Lifecycle Model Calculation Reference

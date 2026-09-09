@@ -2,6 +2,7 @@ import {
   downloadReadyTidasPackageExportApi,
   getTidasPackageJobApi,
   queueExportTidasPackageApi,
+  queueImportTidasPackageApi,
   type ExportTidasPackageRequest,
   type ExportTidasPackageResponse,
   type TidasPackageJobResponse,
@@ -13,6 +14,8 @@ import {
   type WorkerJobResult,
   type WorkerJobStatus,
 } from '@/services/workerJobs/api';
+
+export type TidasImportOutcome = 'success' | 'partial' | 'none' | 'interrupted';
 
 export type TidasPackageTaskState = 'running' | 'completed' | 'failed';
 export type TidasPackageTaskPhase =
@@ -41,6 +44,8 @@ export type TidasPackageBackgroundTask = {
   rootCount: number;
   filename?: string;
   error?: string;
+  importOutcome?: TidasImportOutcome;
+  importSummary?: Record<string, number>;
 };
 
 type PersistedTaskStore = {
@@ -336,6 +341,8 @@ function normalizeTask(raw: unknown, fallbackSequence: number): TidasPackageBack
     rootCount?: unknown;
     filename?: unknown;
     error?: unknown;
+    importOutcome?: unknown;
+    importSummary?: unknown;
   };
 
   const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : null;
@@ -371,6 +378,19 @@ function normalizeTask(raw: unknown, fallbackSequence: number): TidasPackageBack
         : 0,
     filename: typeof item.filename === 'string' ? item.filename : undefined,
     error: typeof item.error === 'string' ? item.error : undefined,
+    importOutcome:
+      typeof item.importOutcome === 'string' &&
+      ['success', 'partial', 'none', 'interrupted'].includes(item.importOutcome)
+        ? (item.importOutcome as TidasImportOutcome)
+        : undefined,
+    importSummary:
+      item.importSummary && typeof item.importSummary === 'object'
+        ? Object.fromEntries(
+            Object.entries(item.importSummary).filter(
+              ([, value]) => typeof value === 'number' && Number.isFinite(value) && value >= 0,
+            ),
+          )
+        : undefined,
   };
 }
 
@@ -707,17 +727,27 @@ function applyJobToActiveTask(
   const phase = phaseFromJob(job);
   const isCompleted = phase === 'completed';
   const isFailed = phase === 'failed';
+  const metadata = job.artifacts_by_kind.import_report?.metadata;
+  const importOutcome = ['success', 'partial', 'none', 'interrupted'].includes(metadata?.outcome)
+    ? (metadata?.outcome as TidasImportOutcome)
+    : undefined;
+  const importSummary = metadata?.summary ?? job.import_progress;
 
   upsertTask(
     taskId,
     {
       phase,
+      ...(current?.kind === 'tidas_package_import' ? { importOutcome, importSummary } : {}),
       state: isCompleted ? 'completed' : isFailed ? 'failed' : 'running',
       message: messageFromJob(job, current?.request),
       jobId: job.job_id,
       scope: job.scope,
       rootCount:
-        typeof job.root_count === 'number' && Number.isFinite(job.root_count) ? job.root_count : 0,
+        current?.kind === 'tidas_package_import' && typeof importSummary?.root_count === 'number'
+          ? importSummary.root_count
+          : typeof job.root_count === 'number' && Number.isFinite(job.root_count)
+            ? job.root_count
+            : 0,
       filename: filenameFromJob(job, current?.request),
       error: isFailed
         ? (current?.error ??
@@ -774,9 +804,12 @@ async function pollActiveTask(taskId: string, jobId: string, generation: number)
           upsertTask(
             taskId,
             {
-              phase: 'failed',
-              state: 'failed',
-              message: 'Export task failed',
+              phase: task.kind === 'tidas_package_import' ? task.phase : 'failed',
+              state: task.kind === 'tidas_package_import' ? 'running' : 'failed',
+              message:
+                task.kind === 'tidas_package_import'
+                  ? 'Import status unavailable; refresh Task Center'
+                  : 'Export task failed',
               error: normalizeTidasPackageExportErrorMessage(
                 error?.message,
                 'Failed to load TIDAS package job status',
@@ -816,9 +849,15 @@ async function pollActiveTask(taskId: string, jobId: string, generation: number)
     upsertTask(
       taskId,
       {
-        phase: 'failed',
-        state: 'failed',
-        message: 'Export task timed out',
+        phase:
+          tasks.find((task) => task.id === taskId)?.kind === 'tidas_package_import'
+            ? 'import_package'
+            : 'failed',
+        state:
+          tasks.find((task) => task.id === taskId)?.kind === 'tidas_package_import'
+            ? 'running'
+            : 'failed',
+        message: 'Package status polling paused; refresh Task Center',
         error: 'tidas_package_export_timeout',
       },
       generation,
@@ -937,6 +976,15 @@ export async function refreshTidasPackageTasksFromWorkerJobs(): Promise<
   }
 
   setTasks(merged, generation);
+  for (const task of tasks.filter((item) => item.kind === 'tidas_package_import' && item.jobId)) {
+    if (!isActiveGeneration(generation)) break;
+    try {
+      const result = await getTidasPackageJobApi(task.jobId!);
+      if (result.data?.ok) applyJobToTask(task.id, result.data, generation);
+    } catch {
+      /* Keep backend state and allow a later refresh. */
+    }
+  }
   const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
   if (maxSequence > taskSequence) {
     taskSequence = maxSequence;
@@ -1022,6 +1070,45 @@ export function submitTidasPackageExportTask(
   setTasks([task, ...tasks], generation);
   void runExportTask(task.id, request, generation);
   return task;
+}
+
+/** Upload and enqueue only. Closing the dialog does not cancel backend work. */
+export async function submitTidasPackageImportTask(
+  file: File,
+  onImported?: () => void,
+): Promise<void> {
+  if (!taskOwnerId) throw new Error('TIDAS package task center requires an authenticated user');
+  const generation = taskGeneration;
+  const queued = await queueImportTidasPackageApi(file, 'root_closure_v2');
+  if (queued.error || !queued.data?.ok) throw queued.error ?? new Error('Import enqueue failed');
+  if (!isActiveGeneration(generation)) return;
+  const createdAt = nowIso();
+  const sequence = nextTaskSequence();
+  const task: TidasPackageBackgroundTask = {
+    id: queued.data.worker_job_id ?? makeTaskId(sequence),
+    sequence,
+    kind: 'tidas_package_import',
+    state: 'running',
+    phase: 'queued',
+    message: 'Import task queued',
+    createdAt,
+    updatedAt: createdAt,
+    workerJobId: queued.data.worker_job_id ?? undefined,
+    jobId: queued.data.job_id,
+    rootCount: 0,
+    filename: file.name,
+  };
+  setTasks([task, ...tasks], generation);
+  void pollTask(task.id, queued.data.job_id, generation)
+    .then(() => {
+      if (!isActiveGeneration(generation)) return;
+      const completed = tasks.find((item) => item.id === task.id);
+      if ((completed?.importSummary?.imported_count ?? 0) > 0) {
+        window.dispatchEvent(new Event('tidas-package-imported'));
+        onImported?.();
+      }
+    })
+    .catch(() => undefined);
 }
 
 export async function downloadTidasPackageExportTask(

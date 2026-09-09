@@ -1,3 +1,6 @@
+import TidasImportResult, {
+  importOutcomeLabel,
+} from '@/components/ImportTidasPackage/ImportResult';
 import ClosureTaskDetail from '@/components/ClosureTaskDetail';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
@@ -108,7 +111,11 @@ function useDataProductTaskSummaries(): TaskSummaryV2[] {
 function statusTag(
   state: 'running' | 'completed' | 'failed',
   intl: IntlShapeLike,
+  importOutcome?: TidasPackageBackgroundTask['importOutcome'],
 ): React.ReactNode {
+  if (importOutcome && importOutcome !== 'success') {
+    return <Tag color='warning'>{importOutcomeLabel(importOutcome, intl)}</Tag>;
+  }
   if (state === 'completed') {
     return (
       <Tag color='success' icon={<CheckCircleOutlined />}>
@@ -870,6 +877,8 @@ function taskProgressStrokeColor(
   item: TaskCenterItem,
   token: ReturnType<typeof theme.useToken>['token'],
 ): string {
+  if (item.kind === 'package' && item.task.importOutcome && item.task.importOutcome !== 'success')
+    return token.colorWarning;
   if (item.task.state === 'completed') {
     return token.colorSuccess;
   }
@@ -1218,6 +1227,7 @@ function packageBusinessDetail(
           },
         ]}
       />
+      {isImport && task.jobId && <TidasImportResult jobId={task.jobId} />}
       {singleRoot && (
         <DetailSection
           title={intl.formatMessage({
@@ -1758,7 +1768,11 @@ const LcaTaskCenter: React.FC = () => {
                           <Typography.Text strong style={{ fontSize: 14 }}>
                             {taskTitle(item, intl)}
                           </Typography.Text>
-                          {statusTag(item.task.state, intl)}
+                          {statusTag(
+                            item.task.state,
+                            intl,
+                            item.kind === 'package' ? item.task.importOutcome : undefined,
+                          )}
                           <Popover
                             trigger='click'
                             placement='bottomLeft'
