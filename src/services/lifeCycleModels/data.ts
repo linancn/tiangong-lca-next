@@ -335,6 +335,23 @@ export type LifeCycleModelLangNormalizationMetadata = {
   langTranslatedPaths?: string[];
 };
 
+/**
+ * zh-CN: 浏览器本地矩阵计算的附加信息（内部运行时类型，不进入持久化 schema）。
+ * en-US: Additions from the local matrix calculation (internal runtime types,
+ * not persisted).
+ */
+export type LifeCycleModelCalculationMetadata = {
+  calculationIssues?: Array<{
+    code: string;
+    instanceIndex?: string;
+    nodeId?: string;
+    flowId?: string;
+    exchangeInternalId?: string;
+    edgeId?: string;
+  }>;
+  calculationNotice?: 'LCIA_INCOMPLETE';
+};
+
 export type LifeCycleModelMutationResult =
   | ({
       ok: true;
@@ -342,10 +359,12 @@ export type LifeCycleModelMutationResult =
       version: string;
       lifecycleModel?: LifeCycleModelMutationRecord;
       warnings?: string[];
-    } & LifeCycleModelLangNormalizationMetadata)
+    } & LifeCycleModelLangNormalizationMetadata &
+      LifeCycleModelCalculationMetadata)
   | ({
       ok: false;
       code: string;
       message: string;
       details?: unknown;
-    } & LifeCycleModelLangNormalizationMetadata);
+    } & LifeCycleModelLangNormalizationMetadata &
+      LifeCycleModelCalculationMetadata);

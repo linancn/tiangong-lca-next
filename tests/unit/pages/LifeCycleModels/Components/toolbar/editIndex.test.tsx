@@ -84,6 +84,7 @@ jest.mock('antd', () => {
   );
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
+  const Modal = ({ children }: any) => <div data-testid='calculation-modal'>{children}</div>;
   const message = {
     success: jest.fn(),
     error: jest.fn(),
@@ -91,8 +92,12 @@ jest.mock('antd', () => {
     warning: jest.fn(),
     loading: jest.fn(),
   };
+  const modal = {
+    error: jest.fn(),
+    destroyAll: jest.fn(),
+  };
 
-  const App = { useApp: () => ({ message }) };
+  const App = { useApp: () => ({ message, modal }) };
   const theme = {
     useToken: () => ({
       token: {
@@ -112,8 +117,10 @@ jest.mock('antd', () => {
     Tooltip,
     Space,
     Spin,
+    Modal,
     App,
     message,
+    modal,
     theme,
   };
 });
@@ -912,8 +919,7 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
     expect(mockToolbarUpdateReferenceDescription).toHaveBeenCalled();
     expect(mockUpdateNodeCb).toHaveBeenCalledWith({
@@ -1160,8 +1166,7 @@ describe('ToolbarEdit', () => {
               }),
             ]),
           }),
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'saved-edit-edge',
@@ -1195,8 +1200,7 @@ describe('ToolbarEdit', () => {
             nodes: [{ id: 'store-node', data: { label: 'Store Node', index: '0' } }],
             edges: [{ id: 'store-edge' }],
           },
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
   });
 
@@ -2152,8 +2156,7 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'saved-edge',
@@ -2223,9 +2226,9 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
+          hasModelChanged: expect.any(Function),
         }),
-        { sourceVersion: '1.0' },
-      ),
+        { sourceVersion: '1.0' }),
     );
     expect(mockUpdateEdge).not.toHaveBeenCalledWith(
       expect.anything(),
@@ -2263,8 +2266,7 @@ describe('ToolbarEdit', () => {
       expect(mockCreateLifeCycleModel).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'uuid-123',
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
@@ -2274,8 +2276,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'created-fallback',
           version: '5.0',
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
   });
 
@@ -2400,8 +2401,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-1',
           version: '1.0',
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
@@ -2412,8 +2412,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-fallback',
           version: '9.9',
-        }),
-      ),
+        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
     );
   });
 

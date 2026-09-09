@@ -539,7 +539,7 @@ describe('deleteLifeCycleModel', () => {
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'session lookup failed',
     });
   });
@@ -572,7 +572,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toMatchObject({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'network down',
     });
   });
@@ -725,7 +725,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_REJECTED',
       message: 'Plain text failure',
       details: { status: 500 },
     });
@@ -741,7 +741,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_REJECTED',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });
@@ -818,7 +818,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_REJECTED',
       message: 'Unexpected lifecycle bundle failure',
       details: {
         message: 'Unexpected lifecycle bundle failure',
@@ -827,20 +827,20 @@ describe('deleteLifeCycleModel', () => {
     });
   });
 
-  it('returns a generic function error when the bundle endpoint response is missing', async () => {
+  it('reports unknown save status when the bundle endpoint response is missing', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce(undefined);
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: undefined,
     });
   });
 
-  it('returns INVALID_RESPONSE when the bundle endpoint returns malformed data', async () => {
+  it('reports save rejected when the bundle endpoint returns malformed data', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce({
       data: { unexpected: true },
       error: null,
@@ -850,33 +850,33 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'INVALID_RESPONSE',
+      code: 'SAVE_REJECTED',
       message: 'Lifecycle model bundle endpoint returned an invalid response',
       details: { unexpected: true },
     });
   });
 
-  it('falls back to the generic bundle error message when an invoke rejection has no message', async () => {
+  it('reports unknown save status when an invoke rejection has no message', async () => {
     mockFunctionsInvoke.mockRejectedValueOnce({});
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });
   });
 
-  it('falls back to the generic bundle error message when session lookup rejects without a message', async () => {
+  it('reports unknown save status when session lookup rejects without a message', async () => {
     mockAuthGetSession.mockRejectedValueOnce({});
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });

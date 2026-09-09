@@ -150,6 +150,7 @@
     "dayjs": "^1.11.23",
     "gsap": "^3.15.0",
     "jsondiffpatch": "^0.7.6",
+    "ml-matrix": "^6.15.0",
     "pixi.js": "^8.20.1",
     "react": "19.2.8",
     "react-countup": "^6.5.3",

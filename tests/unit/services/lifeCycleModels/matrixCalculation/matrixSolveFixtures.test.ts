@@ -1,0 +1,890 @@
+/**
+ * Golden numeric fixtures for the matrix calculation pipeline
+ * (compile → solve → assemble, exercised through runMatrixCalculation).
+ *
+ * zh-CN: 数值黄金案例。编译系数正确性与数值求解正确性分离验收：
+ *  - 普通链（非 1 参考量倍率换算）；
+ *  - 一个输出供应两个下游（需求累加）；
+ *  - 两节点循环 A=[[0,0.1],[0.2,0]], y=(1,0) → (50/49, 10/49)；
+ *  - 自回用 20% x=1.25；100% 不可解；120% 代数解为负；
+ *  - 多产品旧式份额 P=2/Q=1、共同负荷 10、份额 60/40 → 单位产品负荷 3/4；
+ *  - 标准 exchange-target allocation、零份额、无效份额；
+ *  - 多产品模型内部连接、部分外供、主副结果与原实例倍率映射；
+ *  - 同源 Process 多实例、流版本不匹配、低数量级、未连接边界。
+ */
+
+import { runMatrixCalculation } from '@/services/lifeCycleModels/matrixCalculation/matrixWorker';
+import type {
+  MatrixCalculationPayload,
+  MatrixExchangePayload,
+} from '@/services/lifeCycleModels/matrixCalculation/types';
+
+const exchange = (
+  internalId: string,
+  direction: 'INPUT' | 'OUTPUT',
+  flowId: string,
+  amount: number,
+  extra: Partial<MatrixExchangePayload> = {},
+): MatrixExchangePayload => ({
+  internalId,
+  direction,
+  flowId,
+  amount,
+  ...extra,
+});
+
+const expectCloseTo = (actual: number, expected: number, precision = 9): void => {
+  expect(actual).toBeCloseTo(expected, precision);
+};
+
+const okResult = (payload: MatrixCalculationPayload) => {
+  const response = runMatrixCalculation({ type: 'calculate', runId: 'fixture', payload });
+  if (!response.ok) {
+    throw new Error(`fixture unexpectedly failed: ${response.error.code}`);
+  }
+  return response.result;
+};
+
+const failCode = (payload: MatrixCalculationPayload): string => {
+  const response = runMatrixCalculation({ type: 'calculate', runId: 'fixture', payload });
+  if (response.ok) {
+    throw new Error('fixture unexpectedly succeeded');
+  }
+  return response.error.code;
+};
+
+describe('matrix calculation golden fixtures', () => {
+  it('solves a plain chain with non-1 reference amounts (multiplier conversion)', () => {
+    // P0: ref F0 (5) consumes F1 (2); P1: ref F1 (3) consumes raw (7)
+    // target 10 on P0 → x0=2, x1=4/3; multipliers 2 and 4/3
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeA',
+      targetAmount: 10,
+      instances: [
+        {
+          instanceIndex: 'nodeA',
+          processId: 'procA',
+          processVersion: '1',
+          process: {
+            id: 'procA',
+            version: '1',
+            refExchangeInternalId: 'exA_out',
+            exchanges: [
+              exchange('exA_in', 'INPUT', 'flow-F1', 2),
+              exchange('exA_out', 'OUTPUT', 'flow-F0', 5),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_out',
+            exchanges: [
+              exchange('exB_out', 'OUTPUT', 'flow-F1', 3),
+              exchange('exB_in', 'INPUT', 'flow-raw', 7),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeB->nodeA:flow-F1',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+
+    expect(result.instanceMultipliers.nodeA).toBeCloseTo(2, 9);
+    expect(result.instanceMultipliers.nodeB).toBeCloseTo(4 / 3, 9);
+
+    const primary = result.groups.find((group) => group.type === 'primary');
+    expect(primary).toBeDefined();
+    const byFlow = new Map(
+      primary!.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-F0')!.amount, 10);
+    expect(byFlow.get('OUTPUT:flow-F0')!.quantitativeReference).toBe(true);
+    // 普通链：P1 的原料 7 × 4/3 = 28/3；单一产出无分配 → 全额归属
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -(28 / 3), 9);
+
+    // 内部流被消去，不重复进入外部清单
+    expect(byFlow.has('INPUT:flow-F1')).toBe(false);
+    expect(byFlow.has('OUTPUT:flow-F1')).toBe(false);
+  });
+
+  it('accumulates demand when one output supplies two downstream inputs (fan-out)', () => {
+    // P0（参考，目标 3）消耗 F1(1) 与 F3(3)；P1 的 F1 同时供应 P0 与 P2；
+    // P2 由其输出 F3 供 P0 而成为需求驱动 → P1 需求 = 1·3 + 2·9 = 21
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeP0',
+      targetAmount: 3,
+      instances: [
+        {
+          instanceIndex: 'nodeP0',
+          processId: 'p0',
+          processVersion: '1',
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'ex0_out',
+            exchanges: [
+              exchange('ex0_out', 'OUTPUT', 'flow-F0', 1),
+              exchange('ex0_in_f1', 'INPUT', 'flow-F1', 1),
+              exchange('ex0_in_f3', 'INPUT', 'flow-F3', 3),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeP2',
+          processId: 'p2',
+          processVersion: '1',
+          process: {
+            id: 'p2',
+            version: '1',
+            refExchangeInternalId: 'ex2_out',
+            exchanges: [
+              exchange('ex2_out', 'OUTPUT', 'flow-F3', 1),
+              exchange('ex2_in', 'INPUT', 'flow-F1', 2),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeP2',
+              downstreamIndex: 'nodeP0',
+              outputFlowId: 'flow-F3',
+              inputFlowId: 'flow-F3',
+              edgeId: 'nodeP2->nodeP0:flow-F3',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeP1',
+          processId: 'p1',
+          processVersion: '1',
+          process: {
+            id: 'p1',
+            version: '1',
+            refExchangeInternalId: 'ex1_out',
+            exchanges: [
+              exchange('ex1_out', 'OUTPUT', 'flow-F1', 1),
+              exchange('ex1_in', 'INPUT', 'flow-raw', 1),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeP1',
+              downstreamIndex: 'nodeP0',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeP1->nodeP0:flow-F1',
+            },
+            {
+              upstreamIndex: 'nodeP1',
+              downstreamIndex: 'nodeP2',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeP1->nodeP2:flow-F1',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.nodeP0).toBeCloseTo(3, 9);
+    // P2 需求驱动：x = 3 单位 P0 × 3 F3/单位 = 9
+    expect(result.instanceMultipliers.nodeP2).toBeCloseTo(9, 9);
+    // 需求正确累加：x_P1 = 1·3 + 2·9 = 21
+    expect(result.instanceMultipliers.nodeP1).toBeCloseTo(21, 9);
+    expect(result.edgeAmounts['nodeP1->nodeP0:flow-F1']).toBeCloseTo(3, 9);
+    expect(result.edgeAmounts['nodeP1->nodeP2:flow-F1']).toBeCloseTo(18, 9);
+  });
+
+  it('solves the two-node loop A=[[0,0.1],[0.2,0]], y=(1,0) exactly', () => {
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'n0',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'n0',
+          processId: 'p0',
+          processVersion: '1',
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-F0', 1),
+              exchange('i0', 'INPUT', 'flow-F1', 0.2),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n0',
+              downstreamIndex: 'n1',
+              outputFlowId: 'flow-F0',
+              inputFlowId: 'flow-F0',
+              edgeId: 'n0->n1:flow-F0',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'n1',
+          processId: 'p1',
+          processVersion: '1',
+          process: {
+            id: 'p1',
+            version: '1',
+            refExchangeInternalId: 'e1',
+            exchanges: [
+              exchange('e1', 'OUTPUT', 'flow-F1', 1),
+              exchange('i1', 'INPUT', 'flow-F0', 0.1),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n1',
+              downstreamIndex: 'n0',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'n1->n0:flow-F1',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.n0).toBeCloseTo(50 / 49, 9);
+    expect(result.instanceMultipliers.n1).toBeCloseTo(10 / 49, 9);
+  });
+
+  it('solves 20% self-reuse at x=1.25, flags 100% as unsolvable and 120% as negative', () => {
+    const buildSelfLoopPayload = (inputAmount: number): MatrixCalculationPayload => ({
+      refInstanceIndex: 'n0',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'n0',
+          processId: 'p0',
+          processVersion: '1',
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-F0', 1),
+              exchange('i0', 'INPUT', 'flow-F0', inputAmount),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n0',
+              downstreamIndex: 'n0',
+              outputFlowId: 'flow-F0',
+              inputFlowId: 'flow-F0',
+              edgeId: 'n0->n0:flow-F0',
+            },
+          ],
+        },
+      ],
+    });
+
+    const solved = okResult(buildSelfLoopPayload(0.2));
+    expect(solved.instanceMultipliers.n0).toBeCloseTo(1.25, 9);
+
+    expect(failCode(buildSelfLoopPayload(1))).toBe('MODEL_NOT_SOLVABLE');
+    expect(failCode(buildSelfLoopPayload(1.2))).toBe('NEGATIVE_ACTIVITY');
+  });
+
+  it('attributes legacy uniform shares P=2/Q=1 with load 10 and 60/40 to unit loads 3/4', () => {
+    const multiProductInstance = {
+      instanceIndex: 'nPQ',
+      processId: 'pq',
+      processVersion: '1',
+      process: {
+        id: 'pq',
+        version: '1',
+        refExchangeInternalId: 'exP',
+        exchanges: [
+          exchange('exP', 'OUTPUT', 'flow-P', 2, {
+            allocations: { allocation: { '@allocatedFraction': '60%' } },
+          }),
+          exchange('exQ', 'OUTPUT', 'flow-Q', 1, {
+            allocations: { allocation: { '@allocatedFraction': '40%' } },
+          }),
+          exchange('exL', 'INPUT', 'flow-L', 10),
+        ],
+      },
+      connections: [
+        {
+          upstreamIndex: 'nPQ',
+          downstreamIndex: 'nE',
+          outputFlowId: 'flow-Q',
+          inputFlowId: 'flow-Q',
+          edgeId: 'nPQ->nE:flow-Q',
+        },
+      ],
+    };
+
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nPQ',
+      targetAmount: 2,
+      instances: [
+        multiProductInstance,
+        {
+          instanceIndex: 'nE',
+          processId: 'pe',
+          processVersion: '1',
+          process: {
+            id: 'pe',
+            version: '1',
+            refExchangeInternalId: 'exE',
+            exchanges: [
+              exchange('exE_in', 'INPUT', 'flow-Q', 1),
+              exchange('exE', 'OUTPUT', 'flow-E', 1),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+
+    // 原实例倍率 = 1（P 参考视图 2 / 参考量 2）；死端 E 倍率 = 1
+    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nE).toBeCloseTo(1, 9);
+
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    // 单位产品负荷 3：2 单位 P → 共同负荷 10×0.6/2×2 = 6
+    expectCloseTo(byFlow.get('INPUT:flow-L')!.amount, -6, 9);
+    expectCloseTo(byFlow.get('OUTPUT:flow-P')!.amount, 2, 9);
+    expect(byFlow.get('OUTPUT:flow-P')!.quantitativeReference).toBe(true);
+
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    // 单位产品负荷 4：Q 视图 1 单位 → 10×0.4/1×1 = 4
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-L')!.amount, -4, 9);
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-E')!.amount, 1, 9);
+    expect(secondaryByFlow.get('OUTPUT:flow-E')!.quantitativeReference).toBe(true);
+  });
+
+  it('selects standard exchange-target allocation items per target product and treats sparse zeros as zero', () => {
+    const standardInstance = (lFractions: Array<[string, number]> | null) => ({
+      instanceIndex: 'nPQ',
+      processId: 'pq',
+      processVersion: '1',
+      process: {
+        id: 'pq',
+        version: '1',
+        refExchangeInternalId: 'exP',
+        exchanges: [
+          exchange('exP', 'OUTPUT', 'flow-P', 2),
+          exchange('exQ', 'OUTPUT', 'flow-Q', 1),
+          exchange(
+            'exL',
+            'INPUT',
+            'flow-L',
+            10,
+            lFractions
+              ? {
+                  allocations: {
+                    allocation: lFractions.map(([target, fraction]) => ({
+                      '@internalReferenceToCoProduct': target,
+                      '@allocatedFraction': `${fraction * 100}`,
+                    })),
+                  },
+                }
+              : {},
+          ),
+        ],
+      },
+      connections: [
+        {
+          upstreamIndex: 'nPQ',
+          downstreamIndex: 'nE',
+          outputFlowId: 'flow-Q',
+          inputFlowId: 'flow-Q',
+          edgeId: 'nPQ->nE:flow-Q',
+        },
+      ],
+    });
+
+    const downstream = {
+      instanceIndex: 'nE',
+      processId: 'pe',
+      processVersion: '1',
+      process: {
+        id: 'pe',
+        version: '1',
+        refExchangeInternalId: 'exE',
+        exchanges: [
+          exchange('exE_in', 'INPUT', 'flow-Q', 1),
+          exchange('exE', 'OUTPUT', 'flow-E', 1),
+        ],
+      },
+      connections: [],
+    };
+
+    // 目标数组：exL 60% → P、40% → Q
+    const result = okResult({
+      refInstanceIndex: 'nPQ',
+      targetAmount: 2,
+      instances: [
+        standardInstance([
+          ['exP', 0.6],
+          ['exQ', 0.4],
+        ]),
+        downstream,
+      ],
+    });
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('INPUT:flow-L')!.amount, -6, 9);
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-L')!.amount, -4, 9);
+
+    // 稀疏零：exL 只分配给 P → Q 视图负荷为 0
+    const sparseResult = okResult({
+      refInstanceIndex: 'nPQ',
+      targetAmount: 2,
+      instances: [standardInstance([['exP', 1]]), downstream],
+    });
+    const sparseSecondary = sparseResult.groups.find((group) => group.type === 'secondary')!;
+    expect(sparseSecondary.exchanges.find((entry) => entry.flowId === 'flow-L')).toBeUndefined();
+
+    // 不闭合：60+30 ≠ 100 → INVALID_ALLOCATION
+    expect(
+      failCode({
+        refInstanceIndex: 'nPQ',
+        targetAmount: 2,
+        instances: [
+          standardInstance([
+            ['exP', 0.6],
+            ['exQ', 0.3],
+          ]),
+          downstream,
+        ],
+      }),
+    ).toBe('INVALID_ALLOCATION');
+  });
+
+  it('maps multi-product internal connection, partial external supply and instance multipliers (A←B→C)', () => {
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeA',
+      targetAmount: 10,
+      instances: [
+        {
+          instanceIndex: 'nodeA',
+          processId: 'procA',
+          processVersion: '1',
+          process: {
+            id: 'procA',
+            version: '1',
+            refExchangeInternalId: 'exA_out',
+            exchanges: [
+              exchange('exA_in', 'INPUT', 'flow-B-to-A', 2),
+              exchange('exA_out', 'OUTPUT', 'flow-A-final', 5),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_out_toA',
+            exchanges: [
+              exchange('exB_out_toA', 'OUTPUT', 'flow-B-to-A', 3, {
+                allocations: { allocation: { '@allocatedFraction': '60%' } },
+              }),
+              exchange('exB_out_toC', 'OUTPUT', 'flow-B-to-C', 4, {
+                allocations: { allocation: { '@allocatedFraction': '40%' } },
+              }),
+              exchange('exB_in', 'INPUT', 'flow-raw', 7),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-B-to-A',
+              inputFlowId: 'flow-B-to-A',
+              edgeId: 'nodeB->nodeA:flow-B-to-A',
+            },
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeC',
+              outputFlowId: 'flow-B-to-C',
+              inputFlowId: 'flow-B-to-C',
+              edgeId: 'nodeB->nodeC:flow-B-to-C',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeC',
+          processId: 'procC',
+          processVersion: '1',
+          process: {
+            id: 'procC',
+            version: '1',
+            refExchangeInternalId: 'exC_out',
+            exchanges: [
+              exchange('exC_in', 'INPUT', 'flow-B-to-C', 1),
+              exchange('exC_out', 'OUTPUT', 'flow-C-final', 1),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+
+    // 原实例倍率映射：A 2、B 4/3、C 16/3（与手算一致，视图间经联动保持一致）
+    expect(result.instanceMultipliers.nodeA).toBeCloseTo(2, 9);
+    expect(result.instanceMultipliers.nodeB).toBeCloseTo(4 / 3, 9);
+    expect(result.instanceMultipliers.nodeC).toBeCloseTo(16 / 3, 9);
+
+    expect(result.edgeAmounts['nodeB->nodeA:flow-B-to-A']).toBeCloseTo(4, 9);
+    expect(result.edgeAmounts['nodeB->nodeC:flow-B-to-C']).toBeCloseTo(16 / 3, 9);
+
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-A-final')!.amount, 10, 9);
+    expect(byFlow.get('OUTPUT:flow-A-final')!.quantitativeReference).toBe(true);
+    // B 的 A 产品归因原料：7 × 0.6 / 3 × 4 = 5.6
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -5.6, 9);
+    expect(byFlow.has('OUTPUT:flow-C-final')).toBe(false);
+
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-C-final')!.amount, 16 / 3, 9);
+    expect(secondaryByFlow.get('OUTPUT:flow-C-final')!.quantitativeReference).toBe(true);
+    // B 的 C 产品归因原料：7 × 0.4 / 4 × 16/3 = 3.7333…
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-raw')!.amount, -(28 / 3) * 0.4, 9);
+    expect(secondary.refProcesses).toEqual(
+      expect.arrayContaining([
+        { id: 'procB', version: '1' },
+        { id: 'procC', version: '1' },
+      ]),
+    );
+  });
+
+  it('keeps same-source process instances independent and flags version-incompatible flows', () => {
+    const sharedProcess = {
+      id: 'procB',
+      version: '1',
+      refExchangeInternalId: 'exB_out',
+      exchanges: [
+        exchange('exB_out', 'OUTPUT', 'flow-F1', 3),
+        exchange('exB_in', 'INPUT', 'flow-raw', 7),
+      ],
+    };
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeA',
+      targetAmount: 3,
+      instances: [
+        {
+          instanceIndex: 'nodeA',
+          processId: 'procA',
+          processVersion: '1',
+          process: {
+            id: 'procA',
+            version: '1',
+            refExchangeInternalId: 'exA_out',
+            exchanges: [
+              exchange('exA_out', 'OUTPUT', 'flow-F0', 1),
+              exchange('exA_in_f1', 'INPUT', 'flow-F1', 1),
+              exchange('exA_in_f2', 'INPUT', 'flow-F2', 1),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeB1',
+          processId: 'procB',
+          processVersion: '1',
+          process: sharedProcess,
+          connections: [
+            {
+              upstreamIndex: 'nodeB1',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeB1->nodeA:flow-F1',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeB2',
+          processId: 'procB',
+          processVersion: '1',
+          process: sharedProcess,
+          connections: [
+            {
+              upstreamIndex: 'nodeB2',
+              downstreamIndex: 'nodeP2',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeB2->nodeP2:flow-F1',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeP2',
+          processId: 'procP2',
+          processVersion: '1',
+          process: {
+            id: 'procP2',
+            version: '1',
+            refExchangeInternalId: 'exP2_out',
+            exchanges: [
+              exchange('exP2_out', 'OUTPUT', 'flow-F2', 1),
+              exchange('exP2_in', 'INPUT', 'flow-F1', 1),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeP2',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-F2',
+              inputFlowId: 'flow-F2',
+              edgeId: 'nodeP2->nodeA:flow-F2',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    // 同源 Process 的两个实例保持独立：各自按需求求解，不合并倍率
+    // nodeA 目标 3：F1 需求 3（B1）+ F2 需求 3（P2）→ B2 = 3
+    expect(result.instanceMultipliers.nodeA).toBeCloseTo(3, 9);
+    expect(result.instanceMultipliers.nodeB1).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nodeB2).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nodeP2).toBeCloseTo(3, 9);
+
+    // 同一 Flow UUID 不同版本 → INCOMPATIBLE_FLOW
+    const versionMismatch: MatrixCalculationPayload = {
+      ...payload,
+      instances: payload.instances.map((instance) =>
+        instance.instanceIndex === 'nodeB1'
+          ? {
+              ...instance,
+              connections: [
+                {
+                  ...instance.connections[0],
+                  outputFlowVersion: '1',
+                  inputFlowVersion: '2',
+                },
+              ],
+            }
+          : instance,
+      ),
+    };
+    const response = runMatrixCalculation({
+      type: 'calculate',
+      runId: 'fixture',
+      payload: versionMismatch,
+    });
+    expect(response.ok).toBe(false);
+    expect(response.error.code).toBe('INCOMPATIBLE_FLOW');
+  });
+
+  it('keeps low-magnitude data accurate and preserves unconnected boundary flows', () => {
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'n0',
+      targetAmount: 1e-6,
+      instances: [
+        {
+          instanceIndex: 'n0',
+          processId: 'p0',
+          processVersion: '1',
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-F0', 1e-6, {
+                allocations: { allocation: { '@allocatedFraction': '99%' } },
+              }),
+              exchange('i0', 'INPUT', 'flow-F1', 2e-8),
+              exchange('u0', 'OUTPUT', 'flow-U', 3e-9, {
+                allocations: { allocation: { '@allocatedFraction': '1%' } },
+              }),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'n1',
+          processId: 'p1',
+          processVersion: '1',
+          process: {
+            id: 'p1',
+            version: '1',
+            refExchangeInternalId: 'e1',
+            exchanges: [
+              exchange('e1', 'OUTPUT', 'flow-F1', 1e-8),
+              exchange('i1', 'INPUT', 'flow-raw', 5e-8),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n1',
+              downstreamIndex: 'n0',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'n1->n0:flow-F1',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.n0).toBeCloseTo(1, 9);
+    // n0 的输入按参考视图份额 0.99 归属：x_n1 = 2e-8 × 0.99 / 1e-8 = 1.98
+    expect(result.instanceMultipliers.n1).toBeCloseTo(1.98, 9);
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-F0')!.amount, 1e-6, 12);
+    // 已连接输入在组内抵消，不进入外部清单
+    expect(byFlow.has('INPUT:flow-F1')).toBe(false);
+    // n1 的未连接原料按其活动量归属保留：5e-8 × 1.98 = 9.9e-8
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -9.9e-8, 15);
+    // 未连接输出（无视图）按参考产出视图的归属份额保留：3e-9 × 0.99
+    expectCloseTo(byFlow.get('OUTPUT:flow-U')!.amount, 3e-9 * 0.99, 15);
+  });
+
+  it('rejects legacy models where one input has multiple providers instead of silently picking one', () => {
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeA',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'nodeA',
+          processId: 'procA',
+          processVersion: '1',
+          process: {
+            id: 'procA',
+            version: '1',
+            refExchangeInternalId: 'exA_out',
+            exchanges: [
+              exchange('exA_out', 'OUTPUT', 'flow-F0', 1),
+              exchange('exA_in', 'INPUT', 'flow-F1', 1),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_out',
+            exchanges: [exchange('exB_out', 'OUTPUT', 'flow-F1', 1)],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeB->nodeA:flow-F1',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeD',
+          processId: 'procD',
+          processVersion: '1',
+          process: {
+            id: 'procD',
+            version: '1',
+            refExchangeInternalId: 'exD_out',
+            exchanges: [exchange('exD_out', 'OUTPUT', 'flow-F1', 1)],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeD',
+              downstreamIndex: 'nodeA',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'nodeD->nodeA:flow-F1',
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(failCode(payload)).toBe('MULTIPLE_PROVIDERS');
+  });
+
+  it('validates reference, target amount and empty model inputs', () => {
+    expect(failCode({ refInstanceIndex: 'nodeX', targetAmount: 1, instances: [] })).toBe(
+      'EMPTY_MODEL',
+    );
+
+    const baseInstance = {
+      instanceIndex: 'nodeA',
+      processId: 'procA',
+      processVersion: '1',
+      process: {
+        id: 'procA',
+        version: '1',
+        refExchangeInternalId: 'exA_out',
+        exchanges: [exchange('exA_out', 'OUTPUT', 'flow-F0', 1)],
+      },
+      connections: [],
+    };
+
+    expect(
+      failCode({ refInstanceIndex: 'nodeMissing', targetAmount: 1, instances: [baseInstance] }),
+    ).toBe('INVALID_REFERENCE');
+    expect(
+      failCode({ refInstanceIndex: 'nodeA', targetAmount: 0, instances: [baseInstance] }),
+    ).toBe('INVALID_TARGET_AMOUNT');
+    expect(
+      failCode({
+        refInstanceIndex: 'nodeA',
+        targetAmount: Number.POSITIVE_INFINITY,
+        instances: [baseInstance],
+      }),
+    ).toBe('INVALID_TARGET_AMOUNT');
+  });
+});
