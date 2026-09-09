@@ -172,6 +172,8 @@ CATALOG_TABLES=(
   private.oauth_relation_capability_grants
   private.portal_catalog_facet_contract_v1
   private.portal_catalog_projection_contract_v1
+  private.portal_catalog_projection_contract_v2
+  private.portal_names_backfill_v2
   private.worker_job_kinds
   util.app_runtime_config
   util.embedding_queue_policy

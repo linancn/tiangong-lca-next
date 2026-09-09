@@ -20,6 +20,8 @@ begin
         'private.oauth_relation_capability_grants',
         'private.portal_catalog_facet_contract_v1',
         'private.portal_catalog_projection_contract_v1',
+        'private.portal_catalog_projection_contract_v2',
+        'private.portal_names_backfill_v2',
         'private.worker_job_kinds',
         'util.app_runtime_config',
         'util.embedding_queue_policy',
@@ -33,6 +35,11 @@ begin
         target.nspname, target.relname;
     end if;
   end loop;
+  -- Only empty-rebuild migration receipts are eligible; never export live counts.
+  if (select count(*) from private.portal_names_backfill_v2) <> 4
+     or exists (select from private.portal_names_backfill_v2 where process_count <> 0 or shard not between 0 and 3) then
+    raise exception 'Snapshot source must contain only four empty Portal migration shards';
+  end if;
   if exists (select from auth.users) then
     raise exception 'Snapshot source must contain no Auth users';
   end if;

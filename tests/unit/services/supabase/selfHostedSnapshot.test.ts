@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const SNAPSHOT = path.join(ROOT, 'docker/volumes/db/init/data.sql');
-const SOURCE_COMMIT = 'e9888c9385356ee6df66c2910a99e29f9fa7e08c';
+const SOURCE_COMMIT = 'fc743392d4ce256b5de1f6409a8ab7e90ec30614';
 const EDGE_COMMIT = 'ceff9c4893e6fa9ab2b6e163c57b9d6428cbde37';
 
 describe('self-hosted Database snapshot compatibility', () => {
@@ -14,7 +14,7 @@ describe('self-hosted Database snapshot compatibility', () => {
   it('pins the canonical Database source and preserves the complete application schema boundary', () => {
     const sourceHeader = sql.split('\n').slice(0, 2).join('\n');
     expect(sourceHeader).toContain(`-- Database source: ${SOURCE_COMMIT}`);
-    expect(sourceHeader).toContain('-- Migration head: 20260905170004');
+    expect(sourceHeader).toContain('-- Migration head: 20260909120000');
     for (const schema of ['api', 'private', 'util', 'archive', 'pgmq']) {
       expect(sql).toContain(`CREATE SCHEMA ${schema};`);
     }
@@ -71,6 +71,23 @@ describe('self-hosted Database snapshot compatibility', () => {
     expect(sql).toContain('CREATE FUNCTION api.portal_hybrid_search_v2(');
   });
 
+  it('ships both query-aware Review queues and only empty migration shard receipts', () => {
+    for (const actor of ['admin', 'member']) {
+      const signature = sql.match(
+        new RegExp(`CREATE FUNCTION api\\.qry_review_get_${actor}_queue_items_v4\\(([^\\n]+)\\)`),
+      );
+      expect(signature?.[1]).toContain('p_query text');
+    }
+    const guard = fs.readFileSync(
+      path.join(ROOT, 'docker/scripts/export-snapshot-bootstrap.sql'),
+      'utf8',
+    );
+    expect(guard).toContain('process_count <> 0');
+    expect(guard).toContain('shard not between 0 and 3');
+    expect(guard).toContain('from private.portal_names_backfill_v2) <> 4');
+    expect([...sql.matchAll(/^INSERT INTO private.portal_names_backfill_v2 /gmu)]).toHaveLength(4);
+  });
+
   it('restores constrained executors and the Database-owned OAuth pre-request boundary', () => {
     const roleBootstrap = sql.split('\n').slice(0, 30).join('\n');
     expect(roleBootstrap).toContain(
@@ -120,12 +137,14 @@ describe('self-hosted Database snapshot compatibility', () => {
       'private.oauth_relation_capability_grants',
       'private.portal_catalog_facet_contract_v1',
       'private.portal_catalog_projection_contract_v1',
+      'private.portal_catalog_projection_contract_v2',
+      'private.portal_names_backfill_v2',
       'private.worker_job_kinds',
       'util.app_runtime_config',
       'util.embedding_queue_policy',
     ]);
     expect(targets.filter((target) => target === 'private.api_capability_grants')).toHaveLength(
-      202,
+      204,
     );
     expect(targets.filter((target) => target === 'pgmq.meta')).toHaveLength(0);
     for (const queue of ['dataset_extraction_jobs', 'embedding_jobs']) {

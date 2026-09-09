@@ -17,6 +17,7 @@ import { isCurrentAssignedReviewerCommentState } from './util';
 export type ReviewSubmitDatasetTable = TidasPackageRootTable;
 export type ReviewDisplayMode = 'model_process' | 'other' | 'all';
 export type ReviewQueueFilters = {
+  query?: string;
   displayMode?: ReviewDisplayMode;
   targetTable?: ReviewSubmitDatasetTable;
 };
@@ -595,8 +596,9 @@ export async function getReviewsTableDataOfReviewMember(
 
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
-  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items_v3', {
+  const { data, error } = await supabase.rpc('qry_review_get_member_queue_items_v4', {
     p_status: type,
+    p_query: filters.query ?? null,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 50,
     p_sort_by: sortBy,
@@ -606,7 +608,10 @@ export async function getReviewsTableDataOfReviewMember(
   });
 
   const rows = (data ?? []) as ReviewMemberQueueRpcRow[];
-  if (error || rows.length === 0) {
+  if (error) {
+    return { data: [], success: false, total: 0, error };
+  }
+  if (rows.length === 0) {
     return Promise.resolve({
       data: [],
       success: true,
@@ -650,8 +655,9 @@ export async function getReviewsTableDataOfReviewAdmin(
 ) {
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
-  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items_v3', {
+  const { data, error } = await supabase.rpc('qry_review_get_admin_queue_items_v4', {
     p_status: type,
+    p_query: filters.query ?? null,
     p_page: params.current ?? 1,
     p_page_size: params.pageSize ?? 50,
     p_sort_by: sortBy,
@@ -661,7 +667,10 @@ export async function getReviewsTableDataOfReviewAdmin(
   });
 
   const rows = (data ?? []) as ReviewAdminQueueRpcRow[];
-  if (error || rows.length === 0) {
+  if (error) {
+    return { data: [], success: false, total: 0, error };
+  }
+  if (rows.length === 0) {
     return Promise.resolve({
       data: [],
       success: true,
