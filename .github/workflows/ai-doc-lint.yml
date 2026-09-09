@@ -3,6 +3,23 @@ name: ai-doc-lint
 on:
   workflow_dispatch:
     inputs:
+      provider:
+        description: Manual comparison provider.
+        type: choice
+        default: codebuild
+        options: [codebuild, hosted]
+      cache_enabled:
+        description: Cache the pnpm store; disable for the no-cache comparison.
+        type: boolean
+        default: true
+      cache_epoch:
+        description: Provider-specific experiment namespace; reuse for warm samples.
+        type: string
+        default: ''
+      ref:
+        description: Optional exact candidate SHA for controlled comparison.
+        type: string
+        default: ''
       base_ref:
         description: Base ref for the manual docpact comparison.
         required: false
@@ -13,23 +30,34 @@ permissions:
 
 jobs:
   ai-doc-lint:
-    runs-on: codebuild-tiangong-ci-next-linux-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ inputs.provider == 'hosted' && 'ubuntu-latest' || format('codebuild-tiangong-ci-next-linux-{0}-{1}', github.run_id, github.run_attempt) }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
 
       - name: Fetch branches
         run: git fetch --force origin '+refs/heads/*:refs/remotes/origin/*'
+
+      - name: Bind comparison cache namespace
+        if: inputs.cache_epoch != ''
+        env:
+          EXPECTED_SHA: ${{ inputs.ref }}
+          BENCHMARK_PROVIDER: ${{ inputs.provider }}
+          CACHE_EPOCH: ${{ inputs.cache_epoch }}
+        run: >-
+          node -e "const fs=require('node:fs'),cp=require('node:child_process'); const sha=process.env.EXPECTED_SHA; if(!/^[0-9a-f]{40}$/.test(sha)||cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==sha) throw Error('Exact candidate mismatch'); fs.mkdirSync('.local/test-logs',{recursive:true}); fs.writeFileSync('.local/test-logs/ci-benchmark-cache-key',Buffer.concat([fs.readFileSync('pnpm-lock.yaml'),Buffer.from(JSON.stringify({provider:process.env.BENCHMARK_PROVIDER,epoch:process.env.CACHE_EPOCH}))]));"
 
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
           version: 11.24.0
           runtime: node@24.19.0
-          cache: true
+          cache: ${{ inputs.cache_enabled }}
+          cache-dependency-path: ${{ inputs.cache_epoch != '' && '.local/test-logs/ci-benchmark-cache-key' || 'pnpm-lock.yaml' }}
           install: false
 
       - name: Install dependencies

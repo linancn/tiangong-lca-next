@@ -39,8 +39,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-08
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 86a5075e35e01f6e2aa6137a8510afa1b68a7f22
 lastReviewedNote: 'Reviewed for Next #1040: CodeBuild runner routing retains workflow steps, release proof, native platform coverage and semantic Docker qualification; AWS owns runner resources and admission.'
 ---
 

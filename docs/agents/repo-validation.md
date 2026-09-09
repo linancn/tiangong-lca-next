@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-08
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 86a5075e35e01f6e2aa6137a8510afa1b68a7f22
 lastReviewedNote: 'Reviewed for Next #1040: CodeBuild runner routing retains workflow steps, release proof, native platform coverage and semantic Docker qualification; AWS owns runner resources and admission.'
 related:
   - ../AGENTS.md
@@ -199,3 +199,9 @@ Every PR note for this repo must state:
 Non-macOS workflows route to repository-scoped ephemeral CodeBuild projects; macOS ARM64 remains GitHub-hosted. The Linux, ARM64 and Windows Electron entries retain their existing commands and architecture matrix. Semantic E2E uses the dedicated privileged Docker project. Runner labels bind the GitHub run ID and attempt; no hosted Linux/Windows fallback is configured.
 
 Before merging the runner migration, record an exact candidate's full local push gate and remote evidence for workflow checkout/toolchain/artifacts, Linux/ARM/Windows native packaging, semantic Docker execution, cancellation and CodeBuild build IDs. Keep release proof, production reference-data gates, permissions and secrets intact. Do not trigger a production deployment or publish a release merely to test runner setup. AWS resource configuration and admission belong to tiangong-aws; Next owns executable workflows and proof.
+
+## Manual CI timing comparison
+
+The manual `ai-doc-lint.yml` and `i18n-semantic-e2e.yml` workflows accept `provider=hosted|codebuild`, `cache_enabled=true|false`, `ref=<exact candidate SHA>` and `cache_epoch=<experiment namespace>`. Defaults preserve CodeBuild and caching. A nonempty cache epoch requires a matching exact 40-character candidate and produces a provider-specific dependency cache key. Use different epochs for cold samples and the same epoch for warm samples; keep doc lint and semantic experiments in separate epochs to avoid competing cache writers. Semantic concurrency groups include provider/cache/epoch so paired experiments do not cancel one another.
+
+Both providers run the candidate's original full commands and qualification proof verification. This first experiment changes only runner selection and store caching; no test, worker count, fixture, skip policy, coverage threshold, release or deployment behavior changes. Compare full job timestamps including post-action caching and initial dispatch delay, and retain logs plus the immutable proof artifacts. Benchmark success is not native packaging qualification or release readiness.
