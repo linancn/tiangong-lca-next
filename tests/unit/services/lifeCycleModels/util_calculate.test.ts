@@ -7,6 +7,7 @@
  * 副产品 ID 复用、倍率回写、边数值与错误映射。
  */
 
+import { getSharedMatrixCalculationClient } from '@/services/lifeCycleModels/matrixCalculation/workerClient';
 import { genLifeCycleModelProcesses } from '@/services/lifeCycleModels/util_calculate';
 
 jest.mock('@/services/supabase', () => {
@@ -308,6 +309,20 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
     expect(mockSelect).toHaveBeenCalledWith(
       expect.stringContaining('json->processDataSet->processInformation->quantitativeReference'),
     );
+  });
+
+  it('returns INVALID_REFERENCE when supabase omits the data payload', async () => {
+    mockOr.mockResolvedValue({});
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-missing-payload',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_REFERENCE_EXCHANGE' });
+    expect(mockFrom).toHaveBeenCalledWith('processes');
   });
 
   it('throws INVALID_TARGET_AMOUNT when the target amount is missing or non-positive', async () => {
@@ -662,5 +677,364 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
     // 循环完整求解：A = 50/49、B = 10/49
     expect(Number(processInstance[0]['@multiplicationFactor'])).toBeCloseTo(50 / 49, 9);
     expect(Number(processInstance[1]['@multiplicationFactor'])).toBeCloseTo(10 / 49, 9);
+  });
+});
+
+describe('genLifeCycleModelProcesses worker-run mapping', () => {
+  it('maps a cancelled worker run to CalculationCancelledError', async () => {
+    const client = getSharedMatrixCalculationClient();
+    const runSpy = jest.spyOn(client, 'run').mockResolvedValueOnce({ status: 'cancelled' });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-cancelled',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ name: 'CalculationCancelledError' });
+
+    runSpy.mockRestore();
+  });
+
+  it('treats exchanges without amount fields as invalid amounts', async () => {
+    const databaseProcesses = clone(createSupabaseProcesses());
+    delete databaseProcesses[0].exchange[0].meanAmount;
+    delete databaseProcesses[0].exchange[0].resultingAmount;
+    delete databaseProcesses[0].exchange[0].meanValue;
+    mockOr.mockResolvedValue({ data: databaseProcesses });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-amount-less',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_EXCHANGE_AMOUNT' });
+  });
+
+  it('skips the process query when no instance carries a process reference', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: { referenceToReferenceProcess: 'nodeA' },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: {},
+                  connections: {},
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    mockOr.mockResolvedValue({ data: [] });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-no-refs',
+        [
+          { id: 'ga', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 1 } },
+        ] as any,
+        data,
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_REFERENCE_EXCHANGE' });
+
+    // 查询条件为空时不触发数据库查询
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('treats a missing quantitative reference on a database process as invalid', async () => {
+    const databaseProcesses = clone(createSupabaseProcesses());
+    delete databaseProcesses[1].quantitativeReference;
+    mockOr.mockResolvedValue({ data: databaseProcesses });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-missing-db-ref',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_REFERENCE_EXCHANGE' });
+  });
+
+  it('skips the process query when every instance lacks a process reference', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: { referenceToReferenceProcess: 'nodeA' },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: {},
+                  connections: {},
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    mockOr.mockResolvedValue({ data: [] });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-all-no-refs',
+        [
+          { id: 'ga', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 1 } },
+        ] as any,
+        data,
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_REFERENCE_EXCHANGE' });
+
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('rejects instances without process references and covers sparse exchange shapes', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: { referenceToReferenceProcess: 'nodeA' },
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  // 无 @dataSetInternalID 与 referenceToProcess：processKey 缺失，
+                  // 查询条件为空，参考交换缺失 → 校验失败
+                  referenceToProcess: {},
+                },
+                {
+                  // 缺 @dataSetInternalID 的实例：写回键为空串
+                  referenceToProcess: { '@refObjectId': 'procB', '@version': '1' },
+                  connections: {},
+                },
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: { '@refObjectId': 'procA', '@version': '1' },
+                  connections: {},
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    mockOr.mockResolvedValue({ data: [] });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-degenerate',
+        [
+          { id: 'ga', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: 1 } },
+        ] as any,
+        data,
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_REFERENCE_EXCHANGE' });
+  });
+
+  it('flags exchanges with no amount fields at all', async () => {
+    const databaseProcesses = clone(createSupabaseProcesses());
+    delete databaseProcesses[0].exchange[0].meanAmount;
+    delete databaseProcesses[0].exchange[0].resultingAmount;
+    delete databaseProcesses[0].exchange[0].meanValue;
+    mockOr.mockResolvedValue({ data: databaseProcesses });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-amount-less',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_EXCHANGE_AMOUNT' });
+  });
+
+  it('resolves unparseable exchange amounts to validation errors', async () => {
+    const databaseProcesses = clone(createSupabaseProcesses());
+    databaseProcesses[0].exchange[0].meanAmount = 'not-a-number';
+    databaseProcesses[0].exchange[0].resultingAmount = '';
+    mockOr.mockResolvedValue({ data: databaseProcesses });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-unparseable-amount',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_EXCHANGE_AMOUNT' });
+  });
+});
+
+describe('genLifeCycleModelProcesses sparse payload branches', () => {
+  it('handles legacy and new connection shapes, unmatched nodes, disconnected instances and absent names', async () => {
+    const data = {
+      lifeCycleModelDataSet: {
+        lifeCycleModelInformation: {
+          quantitativeReference: { referenceToReferenceProcess: 'nodeA' },
+          // 无 dataSetInformation.name：主模型命名缺失分支
+          technology: {
+            processes: {
+              processInstance: [
+                {
+                  // 无画布节点匹配、无连接的实例：无活动，不写倍率
+                  '@dataSetInternalID': 'nodeEmpty',
+                  referenceToProcess: { '@refObjectId': 'procA', '@version': '1' },
+                  connections: {},
+                },
+                {
+                  // 缺 @dataSetInternalID 的实例：写回键为空串
+                  referenceToProcess: { '@refObjectId': 'procB', '@version': '1' },
+                  connections: {},
+                },
+                {
+                  '@dataSetInternalID': 'nodeA',
+                  referenceToProcess: { '@refObjectId': 'procA', '@version': '1' },
+                  connections: {
+                    // 缺 @flowUUID 的输出与缺 @id 的下游被跳过；
+                    // 单对象形态 + 新格式 downstreamProcess（带 @flowUUID/@version）
+                    outputExchange: [
+                      { downstreamProcess: { '@id': 'nodeB' } },
+                      {
+                        '@flowUUID': 'flow-A-to-B',
+                        downstreamProcess: [{ '@flowUUID': 'flow-A-to-B' }],
+                      },
+                      {
+                        '@flowUUID': 'flow-A-to-B',
+                        downstreamProcess: {
+                          '@id': 'nodeB',
+                          '@flowUUID': 'flow-A-to-B',
+                          '@version': '1',
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  '@dataSetInternalID': 'nodeB',
+                  referenceToProcess: { '@refObjectId': 'procB', '@version': '1' },
+                  connections: {
+                    // 重复边被去重；@flowUUID 缺失时回退为输出流
+                    outputExchange: [
+                      {
+                        '@flowUUID': 'flow-B-final',
+                        downstreamProcess: { '@id': 'nodeA', '@flowUUID': 'flow-B-final' },
+                      },
+                      {
+                        '@flowUUID': 'flow-B-final',
+                        downstreamProcess: { '@id': 'nodeA', '@flowUUID': 'flow-B-final' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    mockOr.mockResolvedValue({
+      data: clone([
+        {
+          id: 'procA',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exA_out',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-A-to-B' },
+              meanAmount: '1',
+              resultingAmount: '1',
+            },
+            {
+              '@dataSetInternalID': 'exA_in',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-B-final' },
+              meanAmount: '0.5',
+              resultingAmount: '0.5',
+            },
+          ],
+          quantitativeReference: { referenceToReferenceFlow: 'exA_out' },
+        },
+        {
+          id: 'procB',
+          version: '1',
+          exchange: [
+            {
+              '@dataSetInternalID': 'exB_in',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-A-to-B' },
+              meanAmount: '1',
+              resultingAmount: '1',
+            },
+            {
+              '@dataSetInternalID': 'exB_out',
+              exchangeDirection: 'OUTPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-B-final' },
+              meanAmount: '1',
+              resultingAmount: '1',
+              allocations: { allocation: { '@allocatedFraction': '100%' } },
+            },
+            {
+              // 缺方向/内部ID/流引用的交换：规整为空流引用、数量 0，被编译忽略
+              meanValue: '1',
+              allocations: { allocation: { '@allocatedFraction': '0%' } },
+            },
+            {
+              '@dataSetInternalID': 'exB_in_aux',
+              exchangeDirection: 'INPUT',
+              referenceToFlowDataSet: { '@refObjectId': 'flow-aux' },
+              meanValue: '1',
+            },
+          ],
+          quantitativeReference: { referenceToReferenceFlow: 'exB_out' },
+        },
+      ]),
+    });
+
+    // 画布节点不含 nodeB/nodeEmpty → nodeId 未匹配分支；nodeA 目标量为字符串
+    const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
+      'sparse-model',
+      [
+        { id: 'ga', data: { index: 'nodeA', quantitativeReference: '1', targetAmount: '2' } },
+      ] as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
+    expect(primary).toBeDefined();
+
+    const processInstance = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
+    const multiplierByIndex = new Map(
+      processInstance.map((instance: any) => [
+        instance['@dataSetInternalID'] as string,
+        instance['@multiplicationFactor'],
+      ]),
+    );
+    // nodeEmpty 无活动：无 @multiplicationFactor（removeEmptyObjects 移除空对象）
+    expect(multiplierByIndex.get('nodeEmpty')).toBeUndefined();
+    // 循环解：x_A − x_B = 2、x_B = 0.5·x_A → x_A = 4、x_B = 2；倍率 = x/参考量 1
+    expect(Number(multiplierByIndex.get('nodeA'))).toBeCloseTo(4, 9);
+    expect(Number(multiplierByIndex.get('nodeB'))).toBeCloseTo(2, 9);
+
+    // 单供应去重：每条流只保留一条边
+    const edgeFlows = up2DownEdges.map((edge) => `${edge.upstreamId}->${edge.downstreamId}`).sort();
+    expect(edgeFlows).toEqual(['nodeA->nodeB', 'nodeB->nodeA']);
+    expect(
+      Number(up2DownEdges.find((edge) => edge.flowUUID === 'flow-A-to-B')?.exchangeAmount),
+    ).toBeCloseTo(2, 9);
   });
 });

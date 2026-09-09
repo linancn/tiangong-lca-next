@@ -73,3 +73,159 @@ describe('MatrixCalculationClient', () => {
     expect(thirdOutcome.status).toBe('cancelled');
   });
 });
+
+describe('MatrixCalculationClient worker path', () => {
+  class FakeWorker {
+    static instances: FakeWorker[] = [];
+    url: unknown;
+    onmessage: ((event: { data: unknown }) => void) | null = null;
+    onerror: ((event: unknown) => void) | null = null;
+    posted: unknown[] = [];
+    terminated = false;
+
+    constructor(url: unknown) {
+      if ((globalThis as Record<string, unknown>).__failWorkerConstruction) {
+        throw new Error('worker construction failed');
+      }
+      this.url = url;
+      FakeWorker.instances.push(this);
+    }
+
+    postMessage(message: unknown) {
+      this.posted.push(message);
+    }
+
+    terminate() {
+      this.terminated = true;
+    }
+  }
+
+  beforeEach(() => {
+    FakeWorker.instances = [];
+    (globalThis as Record<string, unknown>).__failWorkerConstruction = false;
+    // 客户端先检查 Worker 是否存在；工厂注入决定实际创建行为
+    (globalThis as Record<string, unknown>).Worker = FakeWorker;
+  });
+
+  afterEach(() => {
+    delete (globalThis as Record<string, unknown>).__failWorkerConstruction;
+    delete (globalThis as Record<string, unknown>).Worker;
+  });
+
+  it('resolves results delivered through the worker message channel and ignores non-result messages', async () => {
+    const client = new MatrixCalculationClient({
+      createWorker: () => new FakeWorker('matrix-worker-url') as unknown as Worker,
+    });
+    const pending = client.run(buildPayload(4));
+    const worker = FakeWorker.instances[FakeWorker.instances.length - 1];
+    // 非 result 消息与非匹配 runId 均被忽略
+    worker.onmessage?.({ data: { type: 'calculate', runId: 'x' } });
+    worker.onmessage?.({ data: null });
+    worker.onmessage?.({
+      data: {
+        type: 'result',
+        runId: 'not-the-run',
+        ok: true,
+        result: {
+          views: [],
+          instanceMultipliers: {},
+          edgeAmounts: {},
+          balancedEdgeIds: [],
+          groups: [],
+        },
+      },
+    });
+    worker.onmessage?.({
+      data: {
+        type: 'result',
+        runId: (worker.posted[0] as { runId: string }).runId,
+        ok: true,
+        result: {
+          views: [],
+          instanceMultipliers: { n0: 4 },
+          edgeAmounts: {},
+          balancedEdgeIds: [],
+          groups: [],
+        },
+      },
+    });
+    const outcome = await pending;
+    expect(outcome.status).toBe('completed');
+    expect(outcome.result?.instanceMultipliers.n0).toBe(4);
+    client.dispose();
+    expect(worker.terminated).toBe(true);
+  });
+
+  it('falls back to the generic failure when the worker result omits the error payload', async () => {
+    const client = new MatrixCalculationClient({
+      createWorker: () => new FakeWorker('matrix-worker-url') as unknown as Worker,
+    });
+    const pending = client.run(buildPayload(1));
+    const worker = FakeWorker.instances[FakeWorker.instances.length - 1];
+    worker.onmessage?.({
+      data: {
+        type: 'result',
+        runId: (worker.posted[0] as { runId: string }).runId,
+        ok: false,
+      },
+    });
+    const outcome = await pending;
+    expect(outcome.status).toBe('failed');
+    expect(outcome.error?.code).toBe('CALCULATION_FAILED');
+    client.dispose();
+  });
+
+  it('maps worker-reported typed errors and late results to failed/discarded', async () => {
+    const client = new MatrixCalculationClient({
+      createWorker: () => new FakeWorker('matrix-worker-url') as unknown as Worker,
+    });
+    const pending = client.run(buildPayload(1));
+    const worker = FakeWorker.instances[FakeWorker.instances.length - 1];
+    worker.onmessage?.({
+      data: {
+        type: 'result',
+        runId: 'not-the-run',
+        ok: false,
+        error: { code: 'CALCULATION_FAILED', issues: [] },
+      },
+    });
+    worker.onmessage?.({
+      data: {
+        type: 'result',
+        runId: (worker.posted[0] as { runId: string }).runId,
+        ok: false,
+        error: { code: 'MODEL_NOT_SOLVABLE', issues: [] },
+      },
+    });
+    const outcome = await pending;
+    expect(outcome.status).toBe('failed');
+    expect(outcome.error?.code).toBe('MODEL_NOT_SOLVABLE');
+  });
+
+  it('resolves failed when the worker raises onerror', async () => {
+    const client = new MatrixCalculationClient({
+      createWorker: () => new FakeWorker('matrix-worker-url') as unknown as Worker,
+    });
+    const pending = client.run(buildPayload(1));
+    const worker = FakeWorker.instances[FakeWorker.instances.length - 1];
+    worker.onerror?.(new Error('worker crashed'));
+    const outcome = await pending;
+    expect(outcome.status).toBe('failed');
+    expect(outcome.error?.code).toBe('CALCULATION_FAILED');
+  });
+
+  it('falls back to synchronous execution when worker construction fails', async () => {
+    const client = new MatrixCalculationClient({
+      createWorker: () => {
+        throw new Error('worker construction failed');
+      },
+    });
+    const outcome = await client.run(buildPayload(6));
+    expect(outcome.status).toBe('completed');
+    expect(outcome.result?.instanceMultipliers.n0).toBeCloseTo(6, 9);
+    // 后续运行直接走同步回退
+    const again = await client.run(buildPayload(7));
+    expect(again.status).toBe('completed');
+    expect(again.result?.instanceMultipliers.n0).toBeCloseTo(7, 9);
+  });
+});

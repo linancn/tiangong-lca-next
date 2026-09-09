@@ -216,10 +216,7 @@ export async function genLifeCycleModelProcesses(
     throw new CalculationCancelledError();
   }
   if (outcome.status === 'failed' || !outcome.result) {
-    throw new CalculationError(
-      outcome.error?.code ?? 'CALCULATION_FAILED',
-      outcome.error?.issues ?? [],
-    );
+    throw new CalculationError(outcome.error!.code, outcome.error!.issues);
   }
 
   const { instanceMultipliers, edgeAmounts, groups } = outcome.result;
@@ -261,7 +258,7 @@ export async function genLifeCycleModelProcesses(
         downstreamNodeId: downstream?.nodeId,
         mainOutputFlowUUID: '',
         mainInputFlowUUID: '',
-        exchangeAmount: edgeAmounts[connection.edgeId] ?? 0,
+        exchangeAmount: edgeAmounts[connection.edgeId]!,
         isBalanced: true,
         unbalancedAmount: 0,
       });
@@ -316,7 +313,7 @@ export async function genLifeCycleModelProcesses(
       const rootInstanceIndex = group.root.instanceIndex;
 
       const newExchanges = group.exchanges.map((entry, index) => ({
-        ...((entry.template.raw ?? {}) as any),
+        ...(entry.template.raw as any),
         meanAmount: entry.amount,
         resultingAmount: entry.amount,
         quantitativeReference: entry.quantitativeReference,
@@ -358,9 +355,8 @@ export async function genLifeCycleModelProcesses(
 
       const finalId = {
         nodeId: rootInstanceIndex,
-        processId:
-          matrixInstances.find((instance) => instance.instanceIndex === rootInstanceIndex)
-            ?.processId ?? '',
+        processId: matrixInstances.find((instance) => instance.instanceIndex === rootInstanceIndex)!
+          .processId,
         allocatedExchangeFlowId: group.pivotFlowId,
         allocatedExchangeDirection: group.pivotDirection,
       };

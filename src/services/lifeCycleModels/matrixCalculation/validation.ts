@@ -140,7 +140,7 @@ export const validateCalculationPayload = (
     const distinctUpstreams = new Set(providers.map((connection) => connection.upstreamIndex));
     if (distinctUpstreams.size > 1) {
       const downstreamIndex = providerKey.split('\u0000')[0];
-      const flowId = providerKey.split('\u0000')[1] ?? '';
+      const flowId = providerKey.split('\u0000')[1];
       const downstream = instancesByIndex.get(downstreamIndex);
       issues.push({
         code: 'MULTIPLE_PROVIDERS',

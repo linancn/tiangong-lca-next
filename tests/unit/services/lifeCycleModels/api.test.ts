@@ -119,6 +119,9 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
 }));
 
 const mockGenLifeCycleModelProcesses = jest.fn();
+const { CalculationCancelledError, CalculationError } = jest.requireActual(
+  '@/services/lifeCycleModels/matrixCalculation/types',
+) as typeof import('@/services/lifeCycleModels/matrixCalculation/types');
 
 jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
   __esModule: true,
@@ -3695,5 +3698,159 @@ describe('contributeLifeCycleModel', () => {
     expect(consoleSpy).toHaveBeenCalledWith('Error fetching ref data:', expect.any(Error));
     expect(consoleSpy).toHaveBeenCalledWith('Error contributing data:', expect.any(Error));
     consoleSpy.mockRestore();
+  });
+});
+
+describe('calculation mutation mapping', () => {
+  it('maps calculation failures with located issues and skips persistence', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: buildLifecycleModelJsonOrdered(),
+      validationError: undefined,
+    });
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
+      new CalculationError('MULTIPLE_PROVIDERS', [
+        { code: 'MULTIPLE_PROVIDERS', instanceIndex: 'nodeA', flowId: 'flow-1' },
+      ]),
+    );
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MULTIPLE_PROVIDERS',
+      calculationIssues: [{ code: 'MULTIPLE_PROVIDERS', instanceIndex: 'nodeA', flowId: 'flow-1' }],
+    });
+  });
+
+  it('maps cancelled calculations to the cancellation status without error styling', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(new CalculationCancelledError());
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, code: 'CALCULATION_CANCELLED' });
+  });
+
+  it('rethrows unexpected calculation errors instead of masking them', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(new Error('boom'));
+
+    await expect(
+      lifeCycleModelsApi.createLifeCycleModel({
+        id: sampleModelId,
+        model: { nodes: [], edges: [] },
+      }),
+    ).rejects.toThrow('boom');
+  });
+
+  it('discards the run as RESULT_DISCARDED when the edit state changed before saving', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: false,
+    });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      { id: sampleModelId, model: { nodes: [], edges: [] } },
+      { hasModelChanged: () => true },
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
+  });
+
+  it('maps update-side calculation failures with located issues', async () => {
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
+      new CalculationError('INVALID_ALLOCATION', [
+        { code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' },
+      ]),
+    );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'INVALID_ALLOCATION',
+      calculationIssues: [{ code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' }],
+    });
+  });
+
+  it('attaches the LCIA_INCOMPLETE notice only to successful saves with incomplete coverage', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: [] }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: true,
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({ data: [] });
+    const edgePayload = buildSaveResult();
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      calculationNotice: 'LCIA_INCOMPLETE',
+    });
+
+    // 失败结果不附加通知
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: true,
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({ ok: false, code: 'SAVE_REJECTED', message: 'no' }),
+    );
+
+    const failedResult = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+    expect(failedResult).toMatchObject({ ok: false, code: 'SAVE_REJECTED' });
+    expect(failedResult.calculationNotice).toBeUndefined();
+
+    // update 的 RESULT_DISCARDED 分支
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: false,
+    });
+    const discarded = await lifeCycleModelsApi.updateLifeCycleModel(
+      { id: sampleModelId, version: sampleVersion, model: { nodes: [], edges: [] } },
+      { hasModelChanged: () => true },
+    );
+    expect(discarded).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
   });
 });

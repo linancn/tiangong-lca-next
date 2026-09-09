@@ -46,8 +46,7 @@ export const assembleResult = (
     let delivered = 0;
     let systemDelivered = 0;
     for (const consumption of edge.consumptions) {
-      const consumerView = viewById.get(consumption.viewId);
-      if (!consumerView) continue;
+      const consumerView = viewById.get(consumption.viewId)!;
       const amount = consumption.amount * activityOf(consumerView);
       delivered += amount;
       if (!deadEndViewIds.has(consumerView.id)) {
@@ -81,10 +80,25 @@ export const assembleResult = (
     const deliveredToSystem = deliveredBySupplierView.get(view.id) ?? 0;
     const deliveredToDeadEnds = deadEndDeliveredBySupplierView.get(view.id) ?? 0;
     const deliveredTotal = deliveredToSystem + deliveredToDeadEnds;
-    // 参考视图的最终需求（目标量）是合法的边界流出；其余视图无自由边界
-    const expectedBoundary = view.isReference ? compilation.demand[view.columnIndex] : 0;
+    if (view.isReference) {
+      // 参考视图：目标量可经边界或死端管道交付，只禁止超额交付
+      if (
+        activity - deliveredTotal <
+        -CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(activity), Math.abs(deliveredTotal))
+      ) {
+        issues.push({
+          code: 'MODEL_NOT_SOLVABLE',
+          instanceIndex: view.instanceIndex,
+          nodeId: instance?.nodeId,
+          flowId: view.pivotFlowId,
+          exchangeInternalId: view.pivotExchangeId,
+        });
+      }
+      continue;
+    }
+    // 非参考连通枢轴输出没有自由边界：产量必须被消费完
     if (
-      Math.abs(activity - deliveredTotal - expectedBoundary) >
+      Math.abs(activity - deliveredTotal) >
       CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(activity), Math.abs(deliveredTotal))
     ) {
       issues.push({
@@ -105,8 +119,7 @@ export const assembleResult = (
     });
     const consumerView = consumption ? viewById.get(consumption.viewId) : undefined;
     if (!consumption || !consumerView?.isDeadEnd) continue;
-    const supplierView = viewById.get(edge.supplierViewId);
-    if (!supplierView) continue;
+    const supplierView = viewById.get(edge.supplierViewId)!;
     const supplierDeliveredToSystem = deliveredBySupplierView.get(supplierView.id) ?? 0;
     const leftover = activityOf(supplierView) - supplierDeliveredToSystem;
     const pipeFlow = consumption.amount * activityOf(consumerView);
@@ -141,8 +154,7 @@ export const assembleResult = (
   // 实例倍率：主视图活动量 / |主视图枢轴数量|
   const instanceMultipliers: Record<string, number> = {};
   for (const [instanceIndex, primaryViewId] of compilation.primaryViewIdByInstance) {
-    const primaryView = viewById.get(primaryViewId);
-    if (!primaryView) continue;
+    const primaryView = viewById.get(primaryViewId)!;
     const activity = activityOf(primaryView);
     if (activity <= 0 || !primaryView.pivotAmount) continue;
     instanceMultipliers[instanceIndex] = activity / primaryView.pivotAmount;
@@ -168,8 +180,7 @@ export const assembleResult = (
       for (const [key, supplierViewId] of supplierViewByConsumerInput) {
         if (!key.startsWith(`${view.instanceIndex}\u0000`)) continue;
         if (visited.has(supplierViewId)) continue;
-        const supplierView = viewById.get(supplierViewId);
-        if (!supplierView) continue;
+        const supplierView = viewById.get(supplierViewId)!;
         // 副产品闭包不吸收其他情景的根视图（参考视图或别的死端）
         if (type === 'secondary' && (supplierView.isReference || supplierView.isDeadEnd)) {
           continue;
@@ -182,9 +193,7 @@ export const assembleResult = (
     const members = memberIds
       .map((id) => viewById.get(id))
       .filter((view): view is CompiledView => !!view);
-    if (members.length === 0 || members.every((view) => activityOf(view) <= 0)) {
-      return undefined;
-    }
+    // 组根视图已被调用方保证活动量为正，成员必然非空
 
     const memberSet = new Set(memberIds);
     const aggregated = new Map<string, MatrixResultExchange>();
@@ -208,7 +217,6 @@ export const assembleResult = (
     for (const view of members) {
       const instance = instanceByIndex.get(view.instanceIndex)!;
       const activity = activityOf(view);
-      if (activity <= 0) continue;
 
       for (const exchange of instance.exchanges) {
         const payload = exchange.payload;
@@ -232,8 +240,7 @@ export const assembleResult = (
             if (edge.supplierViewId !== view.id) continue;
             for (const consumption of edge.consumptions) {
               if (!memberSet.has(consumption.viewId)) continue;
-              const consumerView = viewById.get(consumption.viewId);
-              if (!consumerView) continue;
+              const consumerView = viewById.get(consumption.viewId)!;
               inGroupConsumption += consumption.amount * activityOf(consumerView);
             }
           }
@@ -241,7 +248,7 @@ export const assembleResult = (
         } else {
           const fraction = isPivot
             ? 1
-            : (compilation.fractionsByView.get(view.id)?.get(payload.internalId) ?? 0);
+            : compilation.fractionsByView.get(view.id)!.get(payload.internalId)!;
           amount = ((payload.amount ?? 0) * fraction * activity) / view.pivotAmount;
         }
 
@@ -290,16 +297,12 @@ export const assembleResult = (
   };
 
   const groups: MatrixResultGroup[] = [];
-  const refView = viewById.get(compilation.refViewId);
-  if (refView) {
-    const primaryGroup = buildGroup(refView, 'primary');
-    if (primaryGroup) groups.push(primaryGroup);
-  }
+  const refView = viewById.get(compilation.refViewId)!;
+  groups.push(buildGroup(refView, 'primary')!);
   for (const view of views) {
     if (!view.isDeadEnd || view.isReference) continue;
     if (activityOf(view) <= 0) continue;
-    const group = buildGroup(view, 'secondary');
-    if (group) groups.push(group);
+    groups.push(buildGroup(view, 'secondary')!);
   }
 
   return {

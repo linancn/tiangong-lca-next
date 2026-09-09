@@ -33,6 +33,25 @@ interface PendingRun {
   resolve: (outcome: MatrixRunOutcome) => void;
 }
 
+export interface MatrixCalculationClientOptions {
+  /**
+   * zh-CN: 可注入的 Worker 工厂；默认使用 webpack 原生 `new Worker(new URL(...))`。
+   * en-US: Injectable worker factory; defaults to the native webpack
+   * `new Worker(new URL(...))` path.
+   */
+  createWorker?: () => Worker;
+}
+
+/**
+ * zh-CN: Worker 工厂；生产路径使用 webpack 原生 `new Worker(new URL(...))`，
+ * 测试可通过替换本工厂注入受控 Worker。
+ * en-US: Worker factory; production uses the native webpack
+ * `new Worker(new URL(...))` path, tests can substitute a controlled worker.
+ */
+export function createCalculationWorker(): Worker {
+  return new Worker(new URL('./matrixWorker.ts', import.meta.url));
+}
+
 export class MatrixCalculationClient {
   private worker: Worker | null = null;
 
@@ -43,6 +62,8 @@ export class MatrixCalculationClient {
   private latestRunId: string | null = null;
 
   private runCounter = 0;
+
+  private readonly createWorkerImpl: () => Worker;
 
   /**
    * zh-CN: 提交一次计算。同一时刻只保留最新运行：提交新运行会取消旧运行。
@@ -90,7 +111,6 @@ export class MatrixCalculationClient {
     Promise.resolve().then(() => {
       if (this.latestRunId !== runId) return;
       const response = runMatrixCalculation({ type: 'calculate', runId, payload });
-      if (this.latestRunId !== runId) return;
       this.pending = null;
       if (response.ok) {
         resolveOutcome({ status: 'completed', result: response.result });
@@ -113,9 +133,12 @@ export class MatrixCalculationClient {
     this.cancelActive('cancelled');
   }
 
+  constructor(options: MatrixCalculationClientOptions = {}) {
+    this.createWorkerImpl = options.createWorker ?? createCalculationWorker;
+  }
+
   private ensureWorker(): Worker {
-    if (this.worker) return this.worker;
-    const worker = new Worker(new URL('./matrixWorker.ts', import.meta.url));
+    const worker = this.createWorkerImpl();
     worker.onmessage = (event: MessageEvent) => {
       const response = event.data as {
         type?: string;
@@ -128,10 +151,6 @@ export class MatrixCalculationClient {
       const pending = this.pending;
       if (!pending || pending.runId !== response.runId) return;
       this.pending = null;
-      if (this.latestRunId !== response.runId) {
-        pending.resolve({ status: 'discarded' });
-        return;
-      }
       if (response.ok && response.result) {
         pending.resolve({ status: 'completed', result: response.result });
       } else {

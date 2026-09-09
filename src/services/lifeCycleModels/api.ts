@@ -195,7 +195,10 @@ function buildCalculationMutationError(error: unknown): LifeCycleModelMutationRe
     return buildMutationError('CALCULATION_CANCELLED', '');
   }
   if (error instanceof CalculationError) {
-    return buildMutationError(error.code, '', { calculationIssues: error.issues });
+    return {
+      ...buildMutationError(error.code, ''),
+      calculationIssues: error.issues,
+    };
   }
   return undefined;
 }

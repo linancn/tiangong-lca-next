@@ -249,9 +249,7 @@ export const resolveFraction = (
   if (instance.allocationShape === 'legacy') {
     const pivotExchange = instance.exchangeById.get(view.pivotExchangeId);
     const share =
-      pivotExchange?.allocation.kind === 'legacyShare'
-        ? (pivotExchange.allocation.fraction ?? 1)
-        : 1;
+      pivotExchange?.allocation.kind === 'legacyShare' ? pivotExchange.allocation.fraction! : 1;
     return share;
   }
   // standard：按目标产品选择该交换的分配项；未声明分配的交换整体归属于
@@ -300,7 +298,7 @@ export const compileModel = (payload: {
 }): Compilation => {
   const issues: CalculationIssue[] = [];
   const fail = (): never => {
-    throw new CalculationError(issues[0]?.code ?? 'CALCULATION_FAILED', issues);
+    throw new CalculationError(issues[0]!.code, issues);
   };
 
   // 1) 解析实例、分配形态
@@ -405,7 +403,7 @@ export const compileModel = (payload: {
     for (const exchangeId of instance.outputExchangeIds) {
       const exchange = instance.exchangeById.get(exchangeId);
       if (exchange?.allocation.kind === 'legacyShare') {
-        shareSum += exchange.allocation.fraction ?? 0;
+        shareSum += exchange.allocation.fraction!;
       } else {
         missing = true;
       }
@@ -437,7 +435,7 @@ export const compileModel = (payload: {
     if (instance.allocationShape !== 'standard') continue;
     for (const exchange of instance.exchanges) {
       if (exchange.allocation.kind !== 'targeted') continue;
-      const sum = fractionSum(exchange.allocation.fractions?.values() ?? []);
+      const sum = fractionSum(exchange.allocation.fractions!.values());
       if (Math.abs(sum - 1) > 0.000_010_000_001) {
         issues.push({
           code: 'INVALID_ALLOCATION',
@@ -454,6 +452,7 @@ export const compileModel = (payload: {
   // 4) 建立活动视图
   const views: CompiledView[] = [];
   const viewById = new Map<string, CompiledView>();
+  const supplierViewIdByEdgeId = new Map<string, string>();
   const addView = (
     instance: CompiledInstance,
     pivotExchangeId: string,
@@ -505,7 +504,7 @@ export const compileModel = (payload: {
       instanceIndex: payload.refInstanceIndex,
       nodeId: refInstance?.nodeId,
     });
-    throw new CalculationError(issues[0]?.code ?? 'CALCULATION_FAILED', issues);
+    throw new CalculationError(issues[0]!.code, issues);
   }
   const refExchangeId: string = refInstance.refExchangeId;
   const refView = addView(refInstance, refExchangeId, {
@@ -530,10 +529,11 @@ export const compileModel = (payload: {
         });
         continue;
       }
-      addView(instance, outputExchange.payload.internalId, {
+      const createdView = addView(instance, outputExchange.payload.internalId, {
         isReference: false,
         isDeadEnd: false,
       });
+      supplierViewIdByEdgeId.set(connection.edgeId, createdView.id);
     }
   }
 
@@ -581,36 +581,35 @@ export const compileModel = (payload: {
   for (const view of views) {
     if (!view.isDeadEnd) continue;
     const instance = instanceByIndex.get(view.instanceIndex)!;
+    // 死端视图仅在存在入边时创建，firstIncoming 必然存在；上游输出交换已在
+    // 视图构建阶段校验，必然可解析并持有视图。
     const firstIncoming = instance.exchanges
       .map((exchange) => instance.incomingByInputFlow.get(exchange.payload.flowId))
-      .find((list) => list && list.length > 0)?.[0];
-    if (firstIncoming) {
-      const upstreamInstance = instanceByIndex.get(firstIncoming.upstreamIndex);
-      if (!upstreamInstance) {
-        issues.push({
-          code: 'INVALID_CONNECTION',
-          instanceIndex: instance.instanceIndex,
-          nodeId: instance.nodeId,
-          edgeId: firstIncoming.edgeId,
-        });
-        continue;
-      }
-      const upstreamExchange = upstreamInstance.exchanges.find(
-        (exchange) =>
-          exchange.payload.direction === 'OUTPUT' &&
-          exchange.payload.flowId === firstIncoming.outputFlowId,
-      );
-      const supplierViewId = upstreamExchange
-        ? viewId(upstreamInstance.instanceIndex, upstreamExchange.payload.internalId)
-        : '';
-      const supplierView = viewById.get(supplierViewId);
-      if (supplierView) {
-        const attr = resolveConsumption(instance, view, firstIncoming.inputFlowId);
-        view.rowKind = 'passThrough';
-        view.rowLinkedViewId = supplierViewId;
-        view.rowCoefficient = attr > 0 ? 1 / attr : 0;
-      }
+      .find((list) => list && list.length > 0)![0];
+    const upstreamInstance = instanceByIndex.get(firstIncoming.upstreamIndex);
+    if (!upstreamInstance) {
+      issues.push({
+        code: 'INVALID_CONNECTION',
+        instanceIndex: instance.instanceIndex,
+        nodeId: instance.nodeId,
+        edgeId: firstIncoming.edgeId,
+      });
+      continue;
     }
+    // 上游输出交换与供应视图已在视图构建阶段校验并创建
+    const upstreamExchange = upstreamInstance.exchanges.find(
+      (exchange) =>
+        exchange.payload.direction === 'OUTPUT' &&
+        exchange.payload.flowId === firstIncoming.outputFlowId,
+    )!;
+    const supplierViewId = viewId(
+      upstreamInstance.instanceIndex,
+      upstreamExchange.payload.internalId,
+    );
+    const attr = resolveConsumption(instance, view, firstIncoming.inputFlowId);
+    view.rowKind = 'passThrough';
+    view.rowLinkedViewId = supplierViewId;
+    view.rowCoefficient = attr > 0 ? 1 / attr : 0;
   }
 
   // 6) 归属系数表
@@ -653,36 +652,9 @@ export const compileModel = (payload: {
         });
         continue;
       }
-      const upstreamExchange = upstreamInstance.exchanges.find(
-        (exchange) =>
-          exchange.payload.direction === 'OUTPUT' &&
-          exchange.payload.flowId === connection.outputFlowId,
-      );
-      if (!upstreamExchange) {
-        issues.push({
-          code: 'INVALID_CONNECTION',
-          instanceIndex: instance.instanceIndex,
-          nodeId: instance.nodeId,
-          flowId: connection.outputFlowId,
-          edgeId: connection.edgeId,
-        });
-        continue;
-      }
-      const supplierViewId = viewId(
-        upstreamInstance.instanceIndex,
-        upstreamExchange.payload.internalId,
-      );
-      const supplierView = viewById.get(supplierViewId);
-      if (!supplierView) {
-        issues.push({
-          code: 'INVALID_CONNECTION',
-          instanceIndex: instance.instanceIndex,
-          nodeId: instance.nodeId,
-          flowId: connection.outputFlowId,
-          edgeId: connection.edgeId,
-        });
-        continue;
-      }
+      // 输出交换与供应视图已在视图构建阶段校验并创建
+      const supplierViewId = supplierViewIdByEdgeId.get(connection.edgeId)!;
+      const supplierView = viewById.get(supplierViewId)!;
 
       const consumptions: Array<{ viewId: string; amount: number }> = [];
       let balanceInSystem = false;
@@ -703,8 +675,7 @@ export const compileModel = (payload: {
   // 写成 M = I - A 的行：A[d, s] = 1/attr_d；A[d, w] = -attr_w/attr_d。
   for (const view of views) {
     if (view.rowKind !== 'passThrough') continue;
-    const supplierView = viewById.get(view.rowLinkedViewId!);
-    if (!supplierView) continue;
+    const supplierView = viewById.get(view.rowLinkedViewId!)!;
     const attrD = view.rowCoefficient ? 1 / view.rowCoefficient : 0;
     if (attrD > 0) {
       addEntry(view.columnIndex, supplierView.columnIndex, 1 / attrD);
@@ -722,10 +693,8 @@ export const compileModel = (payload: {
   // 联动行：x_v = (q_v / q_primary) * x_primary
   for (const view of views) {
     if (view.rowKind !== 'linkage') continue;
-    const primaryView = viewById.get(view.rowLinkedViewId!);
-    if (primaryView) {
-      addEntry(view.columnIndex, primaryView.columnIndex, view.rowCoefficient ?? 0);
-    }
+    const primaryView = viewById.get(view.rowLinkedViewId!)!;
+    addEntry(view.columnIndex, primaryView.columnIndex, view.rowCoefficient!);
   }
 
   if (issues.length > 0) fail();

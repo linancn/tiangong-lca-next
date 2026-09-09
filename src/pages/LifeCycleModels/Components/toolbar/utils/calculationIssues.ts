@@ -78,14 +78,12 @@ export const resolveCalculationIssues = (
     }
 
     let processName = getNodeName(node, lang);
-    if (processName && (nameCounts.get(processName) ?? 0) > 1) {
+    if (processName && nameCounts.get(processName)! > 1) {
       const sameNameNodes = nodes.filter(
         (candidate) => getNodeName(candidate, lang) === processName,
       );
       const displayNumber = sameNameNodes.findIndex((candidate) => candidate?.id === node?.id);
-      if (displayNumber >= 0) {
-        processName = `${processName} ${displayNumber + 1}`;
-      }
+      processName = `${processName} ${displayNumber + 1}`;
     }
 
     const flowName = issue.flowId ? getPortFlowName(node, issue.flowId, lang) : undefined;
