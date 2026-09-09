@@ -63,11 +63,8 @@ jest.mock('ml-matrix', () => {
 
 type ExchangeExtra = { allocations?: unknown; raw?: unknown };
 
-type MatrixCalculationPayloadLike = {
-  refInstanceIndex: string;
-  targetAmount: number;
-  instances: Array<Record<string, unknown>>;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyModule = Record<string, any>;
 
 const exchange = (
   internalId: string,
@@ -109,9 +106,9 @@ describe('validateCalculationPayload', () => {
           ],
         }),
       ],
-    } as unknown as MatrixCalculationPayloadLike;
+    } as never;
 
-    expect(validateCalculationPayload(payload)).toEqual([
+    expect(validateCalculationPayload(payload as never)).toEqual([
       expect.objectContaining({ code: 'INVALID_CONNECTION', instanceIndex: 'n0' }),
     ]);
   });
@@ -142,9 +139,9 @@ describe('validateCalculationPayload', () => {
           ],
         }),
       ],
-    } as unknown as MatrixCalculationPayloadLike;
+    } as never;
 
-    expect(validateCalculationPayload(payload)).toEqual([
+    expect(validateCalculationPayload(payload as never)).toEqual([
       expect.objectContaining({ code: 'INVALID_CONNECTION', flowId: 'flow-other' }),
     ]);
   });
@@ -163,7 +160,7 @@ describe('validateCalculationPayload', () => {
           },
         }),
       ],
-    } as unknown as MatrixCalculationPayloadLike;
+    } as never;
 
     expect(validateCalculationPayload(payload)).toEqual(
       expect.arrayContaining([
@@ -193,7 +190,7 @@ describe('validateCalculationPayload', () => {
           },
         }),
       ],
-    } as unknown as MatrixCalculationPayloadLike;
+    } as never;
     expect(validateCalculationPayload(zeroRef)).toEqual([
       expect.objectContaining({ code: 'INVALID_REFERENCE_EXCHANGE', exchangeInternalId: 'e0' }),
     ]);
@@ -202,7 +199,7 @@ describe('validateCalculationPayload', () => {
       refInstanceIndex: 'n0',
       targetAmount: 1,
       instances: [baseInstance({ process: { id: 'p0', version: '1', exchanges: [] } })],
-    } as unknown as MatrixCalculationPayloadLike;
+    } as never;
     expect(validateCalculationPayload(missingRefId)).toEqual([
       expect.objectContaining({ code: 'INVALID_REFERENCE_EXCHANGE' }),
     ]);
@@ -214,7 +211,7 @@ describe('validateCalculationPayload', () => {
         refInstanceIndex: 'n0',
         targetAmount: 1,
         instances: [],
-      } as unknown as MatrixCalculationPayload),
+      } as never),
     ).toThrow(expect.objectContaining({ code: 'EMPTY_MODEL' }));
   });
 });
@@ -280,7 +277,7 @@ describe('compileModel allocation and connection edge paths', () => {
         },
       ],
     ];
-    for (const [name, allocations] of cases) {
+    for (const [, allocations] of cases) {
       expect(() =>
         compile({
           refInstanceIndex: 'n0',
@@ -296,7 +293,7 @@ describe('compileModel allocation and connection edge paths', () => {
             }),
           ],
         }),
-      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }), name);
+      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }));
     }
   });
 
@@ -706,12 +703,12 @@ describe('compileModel allocation and connection edge paths', () => {
       };
     };
     const result = assembleResult(compilation, [4, 4]);
-    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const primary = result.groups.find((group: any) => group.type === 'primary')!;
     // 内部废弃物流抵消；处理后的产出与原料成为边界
     expect(primary.exchanges.find((entry) => entry.flowId === 'flow-W')).toBeUndefined();
-    const treated = primary.exchanges.find((entry) => entry.flowId === 'flow-T')!;
+    const treated = primary.exchanges.find((entry: any) => entry.flowId === 'flow-T')!;
     expect(treated.amount).toBeCloseTo(2, 9);
-    const raw = primary.exchanges.find((entry) => entry.flowId === 'flow-R')!;
+    const raw = primary.exchanges.find((entry: any) => entry.flowId === 'flow-R')!;
     expect(raw.amount).toBeCloseTo(-2, 9);
   });
 
@@ -949,11 +946,12 @@ describe('runMatrixCalculation worker context and generic failures', () => {
         refInstanceIndex: 'n0',
         targetAmount: 1,
         instances: null,
-      } as unknown as MatrixCalculationPayloadLike,
+      } as never,
     });
-    expect(response.ok).toBe(false);
-    expect(response.error?.code).toBe('CALCULATION_FAILED');
-    expect(response.error?.issues).toEqual([]);
+    const failure = response as Extract<typeof response, { ok: false }>;
+    expect(failure.ok).toBe(false);
+    expect(failure.error.code).toBe('CALCULATION_FAILED');
+    expect(failure.error.issues).toEqual([]);
   });
 
   it('installs the message handler only in a worker global scope', async () => {
@@ -1057,7 +1055,7 @@ describe('compileModel remaining edge paths', () => {
       ['non-numeric-string', 'abc'],
       ['whitespace', '   '],
     ];
-    for (const [name, fraction] of cases) {
+    for (const [, fraction] of cases) {
       expect(() =>
         compile({
           refInstanceIndex: 'n0',
@@ -1078,7 +1076,7 @@ describe('compileModel remaining edge paths', () => {
             }),
           ],
         }),
-      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }), name);
+      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }));
     }
   });
 
@@ -1131,7 +1129,7 @@ describe('compileModel remaining edge paths', () => {
       ],
       ['object-without-fraction', { '@internalReferenceToCoProduct': 'e0' }],
     ];
-    for (const [name, allocations] of cases) {
+    for (const [, allocations] of cases) {
       expect(() =>
         compile({
           refInstanceIndex: 'n0',
@@ -1152,7 +1150,7 @@ describe('compileModel remaining edge paths', () => {
             }),
           ],
         }),
-      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }), name);
+      ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }));
     }
   });
 
@@ -1487,10 +1485,10 @@ describe('compileModel remaining edge paths', () => {
 describe('assembleResult port-balance issue reporting', () => {
   const { compileModel } = jest.requireActual(
     '@/services/lifeCycleModels/matrixCalculation/compile',
-  ) as never;
+  ) as AnyModule;
   const { assembleResult } = jest.requireActual(
     '@/services/lifeCycleModels/matrixCalculation/assemble',
-  ) as never;
+  ) as AnyModule;
 
   const compile = (payload: unknown) => compileModel(payload as never);
 
@@ -1556,7 +1554,7 @@ describe('assembleResult port-balance issue reporting', () => {
     const result = assembleResult(compilation, [1, 0, 0]);
     expect(result.instanceMultipliers.nR).toBeCloseTo(1, 9);
     expect(result.instanceMultipliers.nS).toBeUndefined();
-    expect(result.groups.find((group) => group.type === 'secondary')).toBeUndefined();
+    expect(result.groups.find((group: any) => group.type === 'secondary')).toBeUndefined();
   });
 
   it('reports connected pivots that are not fully consumed and inconsistent dead-end pipes', () => {
@@ -1611,7 +1609,8 @@ describe('assembleResult port-balance issue reporting', () => {
 describe('assembleResult grouping edge paths', () => {
   const { assembleResult } = jest.requireActual(
     '@/services/lifeCycleModels/matrixCalculation/assemble',
-  ) as never;
+  ) as AnyModule;
+
   const compile = (payload: unknown) => compileModel(payload as never);
 
   const buildABCPayload = () => ({
@@ -1795,16 +1794,16 @@ describe('assembleResult grouping edge paths', () => {
     const compilation = compile(payload);
     const result = assembleResult(compilation, [2, 2]);
 
-    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const primary = result.groups.find((group: any) => group.type === 'primary')!;
     // 参考视图的最终需求经死端管道交付：主组边界显示目标量
-    const refOutput = primary.exchanges.find((entry) => entry.flowId === 'flow-R')!;
+    const refOutput = primary.exchanges.find((entry: any) => entry.flowId === 'flow-R')!;
     expect(refOutput.amount).toBeCloseTo(2, 9);
     expect(refOutput.quantitativeReference).toBe(true);
 
-    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondary = result.groups.find((group: any) => group.type === 'secondary')!;
     // 副产品闭包不吸收参考视图；其输入显示为边界输入
     expect(secondary.refProcesses).toEqual([{ id: 'pd', version: '1' }]);
-    const secondaryInput = secondary.exchanges.find((entry) => entry.flowId === 'flow-R')!;
+    const secondaryInput = secondary.exchanges.find((entry: any) => entry.flowId === 'flow-R')!;
     expect(secondaryInput.amount).toBeCloseTo(-2, 9);
   });
 });
@@ -1949,13 +1948,13 @@ describe('solveCompiledSystem tiny-activity snapping', () => {
   it('snaps below-noise activities to zero while passing the residual check', () => {
     const { compileModel } = jest.requireActual(
       '@/services/lifeCycleModels/matrixCalculation/compile',
-    ) as never;
+    ) as AnyModule;
     const { solveCompiledSystem } = jest.requireActual(
       '@/services/lifeCycleModels/matrixCalculation/solve',
-    ) as never;
+    ) as AnyModule;
     const { LuDecomposition: RealLu, Matrix: RealMatrix } = jest.requireActual(
       'ml-matrix',
-    ) as never;
+    ) as AnyModule;
 
     const compilation = compileModel({
       refInstanceIndex: 'n0',
@@ -2003,9 +2002,8 @@ describe('solveCompiledSystem tiny-activity snapping', () => {
     } as never);
 
     // 在真解第二分量上叠加 1e-13 噪声，验证极小活动量被归零
-    jest.spyOn(require('ml-matrix') as never, 'LuDecomposition' as never).mockImplementation(((
-      matrix: unknown,
-    ) => {
+    const mlModule = require('ml-matrix') as { LuDecomposition: new (m: unknown) => any };
+    jest.spyOn(mlModule, 'LuDecomposition').mockImplementation((matrix: unknown) => {
       const real = new (
         RealLu as unknown as new (m: unknown) => {
           isSingular(): boolean;
@@ -2021,7 +2019,7 @@ describe('solveCompiledSystem tiny-activity snapping', () => {
           return RealMatrix.columnVector(values);
         },
       };
-    }) as never);
+    });
     try {
       const { x } = solveCompiledSystem(compilation);
       expect(x[0]).toBeCloseTo(3, 6);

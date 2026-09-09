@@ -698,7 +698,7 @@ describe('genLifeCycleModelProcesses worker-run mapping', () => {
   });
 
   it('treats exchanges without amount fields as invalid amounts', async () => {
-    const databaseProcesses = clone(createSupabaseProcesses());
+    const databaseProcesses = clone(createSupabaseProcesses()) as any[];
     delete databaseProcesses[0].exchange[0].meanAmount;
     delete databaseProcesses[0].exchange[0].resultingAmount;
     delete databaseProcesses[0].exchange[0].meanValue;
@@ -751,7 +751,7 @@ describe('genLifeCycleModelProcesses worker-run mapping', () => {
   });
 
   it('treats a missing quantitative reference on a database process as invalid', async () => {
-    const databaseProcesses = clone(createSupabaseProcesses());
+    const databaseProcesses = clone(createSupabaseProcesses()) as any[];
     delete databaseProcesses[1].quantitativeReference;
     mockOr.mockResolvedValue({ data: databaseProcesses });
 
@@ -844,7 +844,7 @@ describe('genLifeCycleModelProcesses worker-run mapping', () => {
   });
 
   it('flags exchanges with no amount fields at all', async () => {
-    const databaseProcesses = clone(createSupabaseProcesses());
+    const databaseProcesses = clone(createSupabaseProcesses()) as any[];
     delete databaseProcesses[0].exchange[0].meanAmount;
     delete databaseProcesses[0].exchange[0].resultingAmount;
     delete databaseProcesses[0].exchange[0].meanValue;
@@ -861,7 +861,7 @@ describe('genLifeCycleModelProcesses worker-run mapping', () => {
   });
 
   it('resolves unparseable exchange amounts to validation errors', async () => {
-    const databaseProcesses = clone(createSupabaseProcesses());
+    const databaseProcesses = clone(createSupabaseProcesses()) as any[];
     databaseProcesses[0].exchange[0].meanAmount = 'not-a-number';
     databaseProcesses[0].exchange[0].resultingAmount = '';
     mockOr.mockResolvedValue({ data: databaseProcesses });
