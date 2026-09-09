@@ -717,7 +717,9 @@ describe('matrix calculation golden fixtures', () => {
       runId: 'fixture',
       payload: versionMismatch,
     });
-    expect(response.ok).toBe(false);
+    if (response.ok) {
+      throw new Error('fixture unexpectedly succeeded');
+    }
     expect(response.error.code).toBe('INCOMPATIBLE_FLOW');
   });
 

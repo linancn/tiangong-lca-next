@@ -135,6 +135,29 @@ const MISSING_REFERENCE_PROCESS_ERROR_MESSAGE =
   'No referenceToReferenceProcess found in lifeCycleModelInformation';
 const MISSING_REFERENCE_PROCESS_ERROR_CODE = 'MISSING_REFERENCE_PROCESS';
 
+/**
+ * zh-CN: 计算错误码 → 静态 locale id 映射；未知码回退 CALCULATION_FAILED。
+ * en-US: Static calculation error code → locale id map; unknown codes fall
+ * back to CALCULATION_FAILED.
+ */
+const CALCULATION_ERROR_MESSAGE_IDS: Record<string, string> = {
+  EMPTY_MODEL: 'pages.lifecyclemodel.calculation.error.EMPTY_MODEL',
+  INVALID_REFERENCE: 'pages.lifecyclemodel.calculation.error.INVALID_REFERENCE',
+  INVALID_TARGET_AMOUNT: 'pages.lifecyclemodel.calculation.error.INVALID_TARGET_AMOUNT',
+  INVALID_REFERENCE_EXCHANGE: 'pages.lifecyclemodel.calculation.error.INVALID_REFERENCE_EXCHANGE',
+  MULTIPLE_PROVIDERS: 'pages.lifecyclemodel.calculation.error.MULTIPLE_PROVIDERS',
+  INVALID_CONNECTION: 'pages.lifecyclemodel.calculation.error.INVALID_CONNECTION',
+  INCOMPATIBLE_FLOW: 'pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW',
+  INVALID_EXCHANGE_AMOUNT: 'pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT',
+  INVALID_ALLOCATION: 'pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION',
+  MODEL_NOT_SOLVABLE: 'pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE',
+  NUMERIC_RESULT_INVALID: 'pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID',
+  NEGATIVE_ACTIVITY: 'pages.lifecyclemodel.calculation.error.NEGATIVE_ACTIVITY',
+  SOURCE_UNAVAILABLE: 'pages.lifecyclemodel.calculation.error.SOURCE_UNAVAILABLE',
+  LOCAL_LIMIT_EXCEEDED: 'pages.lifecyclemodel.calculation.error.LOCAL_LIMIT_EXCEEDED',
+  CALCULATION_FAILED: 'pages.lifecyclemodel.calculation.error.CALCULATION_FAILED',
+};
+
 /** zh-CN: 计算期间展示的模态状态键。en-US: Modal state keys shown during calculation. */
 type CalculationPhase = 'idle' | 'calculating';
 
@@ -1017,7 +1040,9 @@ const ToolbarEdit: FC<Props> = ({
       const issues = (result.calculationIssues ?? []) as CalculationIssue[];
       const resolvedIssues = resolveCalculationIssues(nodes, issues, contentLanguage);
       const errorMessage = intl.formatMessage({
-        id: `pages.lifecyclemodel.calculation.error.${result.code}`,
+        id:
+          CALCULATION_ERROR_MESSAGE_IDS[result.code] ??
+          CALCULATION_ERROR_MESSAGE_IDS.CALCULATION_FAILED,
       });
       calculationErrorModalRef.current?.destroy();
 
@@ -1088,6 +1113,8 @@ const ToolbarEdit: FC<Props> = ({
       });
       calculationErrorModalRef.current = { destroy: () => errorModal.destroy() };
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodes, contentLanguage, intl, modal],
   );
 
   const saveData = async (

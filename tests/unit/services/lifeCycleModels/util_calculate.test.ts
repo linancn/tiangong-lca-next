@@ -435,9 +435,9 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
     const processInstance =
       data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
     const multiplierByIndex = new Map(
-      processInstance.map((instance: any) => [
-        instance['@dataSetInternalID'],
-        instance['@multiplicationFactor'],
+      (processInstance as any[]).map((instance: any) => [
+        instance['@dataSetInternalID'] as string,
+        instance['@multiplicationFactor'] as string,
       ]),
     );
     expect(multiplierByIndex.get('nodeA')).toBe('2');
@@ -484,8 +484,8 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
 
   it('rejects legacy models where one input is fed by multiple providers', async () => {
     const data = createLifeCycleModelData();
-    const processInstances =
-      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
+    const processInstances = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
     // procD 的输出与 procB 的输出指向同一个 nodeA 输入流
     processInstances.push({
       '@dataSetInternalID': 'nodeD',
@@ -522,8 +522,8 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
 
   it('flags incompatible flow versions between connected ports', async () => {
     const data = createLifeCycleModelData();
-    const processInstances =
-      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
+    const processInstances = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
     processInstances[1].connections.outputExchange[0]['@version'] = '1';
     processInstances[1].connections.outputExchange[0].downstreamProcess['@version'] = '2';
     mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
@@ -657,8 +657,8 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
     );
     expect(Number(refExchange?.meanAmount)).toBeCloseTo(1, 9);
 
-    const processInstance =
-      data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
+    const processInstance = data.lifeCycleModelDataSet.lifeCycleModelInformation.technology
+      .processes.processInstance as any[];
     // 循环完整求解：A = 50/49、B = 10/49
     expect(Number(processInstance[0]['@multiplicationFactor'])).toBeCloseTo(50 / 49, 9);
     expect(Number(processInstance[1]['@multiplicationFactor'])).toBeCloseTo(10 / 49, 9);

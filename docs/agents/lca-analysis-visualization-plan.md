@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: edit-mode graph hydration and persistence reconciliation do not change the proposed LCA analysis or visualization contract.'
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
+lastReviewedNote: 'Reviewed for Next #1044: the matrix calculation replaces the legacy pipeline; visualization plan references remain unchanged.'
 ---
 
 # LCA Analysis And Visualization Plan

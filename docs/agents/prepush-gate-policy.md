@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
+lastReviewedNote: 'Reviewed for Next #1044: protected-branch and pre-push gate rollout is unchanged.'
 ---
 
 # Pre-Push Gate Policy

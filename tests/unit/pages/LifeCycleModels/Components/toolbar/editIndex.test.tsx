@@ -919,7 +919,9 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
     expect(mockToolbarUpdateReferenceDescription).toHaveBeenCalled();
     expect(mockUpdateNodeCb).toHaveBeenCalledWith({
@@ -1166,7 +1168,9 @@ describe('ToolbarEdit', () => {
               }),
             ]),
           }),
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'saved-edit-edge',
@@ -1200,7 +1204,9 @@ describe('ToolbarEdit', () => {
             nodes: [{ id: 'store-node', data: { label: 'Store Node', index: '0' } }],
             edges: [{ id: 'store-edge' }],
           },
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
   });
 
@@ -2156,7 +2162,9 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
       'saved-edge',
@@ -2228,7 +2236,8 @@ describe('ToolbarEdit', () => {
           }),
           hasModelChanged: expect.any(Function),
         }),
-        { sourceVersion: '1.0' }),
+        { sourceVersion: '1.0' },
+      ),
     );
     expect(mockUpdateEdge).not.toHaveBeenCalledWith(
       expect.anything(),
@@ -2266,7 +2275,9 @@ describe('ToolbarEdit', () => {
       expect(mockCreateLifeCycleModel).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'uuid-123',
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
@@ -2276,7 +2287,9 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'created-fallback',
           version: '5.0',
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
   });
 
@@ -2401,7 +2414,9 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-1',
           version: '1.0',
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
@@ -2412,7 +2427,9 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-fallback',
           version: '9.9',
-        }), expect.objectContaining({ hasModelChanged: expect.any(Function) })),
+        }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
+      ),
     );
   });
 
