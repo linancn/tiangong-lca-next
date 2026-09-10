@@ -64,7 +64,7 @@
     "jest": "jest",
     "lint": "pnpm lint:js && pnpm lint:prettier && pnpm tsc",
     "lint-staged": "lint-staged",
-    "lint-staged:js": "oxlint --format=stylish",
+    "lint-staged:js": "oxlint --format=stylish --no-error-on-unmatched-pattern",
     "lint:fix": "oxlint --fix --format=stylish ./src ./tests",
     "lint:js": "oxlint --format=stylish ./src ./tests",
     "lint:prettier": "prettier --check \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",

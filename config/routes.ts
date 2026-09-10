@@ -89,6 +89,7 @@ export default [
   {
     path: '/exampledata',
     name: 'exampledata',
+    hideInMenu: true,
     icon: 'FolderOpenOutlined',
     routes: [
       {

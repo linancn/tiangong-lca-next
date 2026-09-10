@@ -59,6 +59,8 @@ related:
 3. add stronger proof only when the risk actually increases
 4. record exact commands and environments in the PR
 
+The staged JavaScript lint command accepts an empty selection after the existing Oxlint ignore rules are applied (for example, a route-config-only commit). Eligible files still receive the same lint checks; formatting, type checks and the full pre-push gate remain required.
+
 ## Default Baseline
 
 Unless the change is doc-only repo-maintenance work, the minimum local baseline is:
