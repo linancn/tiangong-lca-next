@@ -1410,6 +1410,27 @@ describe('publishDatasetApi', () => {
 });
 
 describe('getAllVersions', () => {
+  it.each([undefined, -1, 100])(
+    'keeps example versions at -1 despite state override %s',
+    async (stateCode) => {
+      const builder = createQueryBuilder({ data: [], count: 0, error: null });
+      mockFrom.mockReturnValueOnce(builder);
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'ex',
+        stateCode,
+      );
+      expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+      expect(builder.eq).not.toHaveBeenCalledWith('state_code', 100);
+      expect(result.success).toBe(true);
+    },
+  );
+
   it('should return mapped contact data when query succeeds', async () => {
     const payload = {
       data: [

@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 ---
 
 # Testing Execution State
@@ -82,7 +82,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `pnpm i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
-- Issue #635 adds a separate Playwright semantic localization proof surface: `pnpm test:e2e:i18n` derives all locale/content-language expectations from registries, now binds 50 stable route/view assertion IDs including OAuth consent, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
+- Issue #635 adds a separate Playwright semantic localization proof surface: `pnpm test:e2e:i18n` derives all locale/content-language expectations from registries, now binds 58 stable route/view assertion IDs including OAuth consent, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and manual through `workflow_dispatch`: an operator selects an open business PR or exact SHA when its change risk warrants the content-addressed hermetic qualification, including the complete Chromium matrix and Firefox/WebKit critical scenarios; it is absent from routine PR/dev/release triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
 - canonical qualification discovery is recursive: nested specs cannot escape the fail-closed executed/designed-skip inventory, and all 50 assertion IDs remain mandatory

@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 ---
 
 # Supabase Environment And Database Workflow

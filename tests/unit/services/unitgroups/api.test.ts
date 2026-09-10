@@ -724,21 +724,21 @@ describe('getUnitGroupTableAll', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
-  it('applies co source and team filters', async () => {
+  it.each(['co', 'ex'])('preserves optional institution filtering for %s', async (scope) => {
     mockRpc.mockResolvedValueOnce({ data: [], error: null } as any);
 
     const result = await getUnitGroupTableAll(
       { current: 1, pageSize: 10 },
       {},
       'en',
-      'co',
+      scope,
       'team-co',
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
       'get_latest_unitgroup_versions',
       expect.objectContaining({
-        data_source: 'co',
+        data_source: scope,
         team_id_filter: 'team-co',
         state_code_filter: null,
       }),

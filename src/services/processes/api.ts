@@ -712,7 +712,12 @@ export async function getConnectableProcessesTable(
     JSON.stringify([{ referenceToFlowDataSet: baseFlowRef }]),
   );
 
-  if (dataSource === 'tg') {
+  if (dataSource === 'ex') {
+    query = query.eq('state_code', -1);
+    if (tid.length > 0) {
+      query = query.eq('team_id', tid);
+    }
+  } else if (dataSource === 'tg') {
     query = query.eq('state_code', 100);
     if (tid.length > 0) {
       query = query.eq('team_id', tid);

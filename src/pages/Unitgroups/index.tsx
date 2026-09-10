@@ -375,6 +375,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<UnitGroupTable, LocaleAwareTableParams>
+        key={`unitgroups-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={

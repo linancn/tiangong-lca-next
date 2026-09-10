@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -58,6 +58,8 @@ related:
 2. run the minimum proof for that change type
 3. add stronger proof only when the risk actually increases
 4. record exact commands and environments in the PR
+
+The staged JavaScript lint command accepts an empty selection after the existing Oxlint ignore rules are applied (for example, a route-config-only commit). Eligible files still receive the same lint checks; formatting, type checks and the full pre-push gate remain required.
 
 ## Default Baseline
 
@@ -140,7 +142,7 @@ For a normal release, run browser qualification manually on the still-open busin
 
 `release:to-dev --apply` changes only version metadata plus bounded Docpact review metadata. Its restricted local push proves deterministic structure, Docpact coverage, and static release contracts; it does not run browsers or change proof files. The resulting exact Release PR into `dev` runs the mandatory non-browser release gate—static contracts and the full Jest gate—then emits an external proof bound to the main baseline, dev base/head/tree, version, PR, workflow run/attempt, and artifact. The separate authenticated local closure continues to verify its real candidate target against tracked `main`.
 
-The full route/view proof has 50 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, OAuth consent error localization, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
+The full route/view proof has 58 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, OAuth consent error localization, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
 
 Authenticated setup may create only UUID-scoped `codex-e2e` process data. It writes an ignored intent ledger before attempting create. Before any delete, cleanup reads the production row by UUID and verifies the authenticated owner, the UUID at its exact ILCD path, and language/marker pairs at each of the five exact multilingual field paths; marker strings scattered elsewhere do not attest ownership. Only then may it delete the exact-ID row version. Evidence must prove `created=cleaned` and `leaked=0`. Screenshots, trace, video, stored auth state, and credential-bearing artifacts are disabled. When external evidence is supplied, the explicit production-readiness command requires its current route contract, backend target, raw `pnpm-lock.yaml`, `pnpm-workspace.yaml`, runtime assets, semantic tests, and declared route/source files to match; drift fails closed. The project version is independent of the pnpm lock, so no lock projection or version-field normalization is permitted: any lock or install-policy byte drift invalidates evidence.
 
