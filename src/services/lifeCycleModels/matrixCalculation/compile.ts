@@ -609,7 +609,20 @@ export const compileModel = (payload: {
     const refViewId = instance.refExchangeId
       ? viewId(instance.instanceIndex, instance.refExchangeId)
       : '';
-    const primaryId = instanceViewIds.includes(refViewId) ? refViewId : instanceViewIds[0];
+    // 行主视图必须承载真实需求方程：参考交换视图连通（或实例完全无连通
+    // 输出）时优先；参考产品是未连接边界视图而其他输出连通时，改用第一个
+    // 连通视图承担生产行，否则无消费者的边界主行会把整个实例强制为 0。
+    // 全局参考视图锚定目标需求，即使未连接也必须保持行主。
+    const isConnectedView = (viewId: string): boolean => {
+      const view = viewById.get(viewId);
+      return !!view && instance.outgoing.some((c) => c.outputFlowId === view.pivotFlowId);
+    };
+    let primaryId = instanceViewIds.includes(refViewId) ? refViewId : instanceViewIds[0];
+    const primaryIsGlobalReference = !!viewById.get(primaryId)?.isReference;
+    if (!primaryIsGlobalReference && !isConnectedView(primaryId)) {
+      const connectedViewId = instanceViewIds.find((id) => isConnectedView(id));
+      if (connectedViewId) primaryId = connectedViewId;
+    }
     primaryViewIdByInstance.set(instance.instanceIndex, primaryId);
   }
 

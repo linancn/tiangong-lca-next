@@ -909,6 +909,75 @@ describe('deleteLifeCycleModel', () => {
     expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN', message: '' });
   });
 
+  it('reports unknown save status for relay errors carrying a real 504 response body', async () => {
+    // 真实 Supabase FunctionsRelayError 携带 HTTP Response（如网关 504），
+    // 文本分支不得把它误判为确定的保存拒绝
+    class FakeHttpResponse {
+      status: number;
+      private bodyText: string;
+      constructor(bodyText: string, init: { status: number }) {
+        this.bodyText = bodyText;
+        this.status = init.status;
+      }
+      clone() {
+        return new FakeHttpResponse(this.bodyText, { status: this.status });
+      }
+      json() {
+        return Promise.reject(new SyntaxError('Unexpected token'));
+      }
+      text() {
+        return Promise.resolve(this.bodyText);
+      }
+    }
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        name: 'FunctionsRelayError',
+        message: 'Relay Error',
+        context: new FakeHttpResponse('upstream timeout', { status: 504 }),
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN' });
+  });
+
+  it('reports unknown save status for relay errors with an empty 504 response body', async () => {
+    // 空体的 504 同样无法证明事务未提交：不得落入 status>0 的确定拒绝分支
+    class FakeHttpResponse {
+      status: number;
+      private bodyText: string;
+      constructor(bodyText: string, init: { status: number }) {
+        this.bodyText = bodyText;
+        this.status = init.status;
+      }
+      clone() {
+        return new FakeHttpResponse(this.bodyText, { status: this.status });
+      }
+      json() {
+        return Promise.reject(new SyntaxError('Unexpected end of JSON input'));
+      }
+      text() {
+        return Promise.resolve(this.bodyText);
+      }
+    }
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        name: 'FunctionsRelayError',
+        message: 'Relay Error',
+        context: new FakeHttpResponse('', { status: 504 }),
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN' });
+  });
+
   it('reports unknown save status when the bundle endpoint response is missing', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce(undefined);
 

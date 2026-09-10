@@ -85,10 +85,8 @@ const computeGroupActivities = (
     if (value < -CALCULATION_TOLERANCES.negativeActivity * scale) {
       throw new CalculationError('NUMERIC_RESULT_INVALID');
     }
-    activities.set(
-      view.id,
-      Math.abs(value) <= CALCULATION_TOLERANCES.zeroActivity * scale ? 0 : value,
-    );
+    // 仅将极小负值（数值噪声）归零；正小值原样保留，避免丢失实质环境负荷
+    activities.set(view.id, value < 0 ? 0 : value);
   });
   return activities;
 };

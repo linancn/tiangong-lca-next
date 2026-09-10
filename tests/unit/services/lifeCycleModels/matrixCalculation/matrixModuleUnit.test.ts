@@ -2099,7 +2099,11 @@ describe('assembleResult grouping edge paths', () => {
       expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
     );
 
-    // 同一结构、正活动量：无归因需求的 T 活动量吸附为 0，聚合正常完成
+    // 容差内的极小负值（数值噪声）在组情景求解中归零，聚合正常完成
+    const noisyResult = assembleResult(compilation, [-1e-15, -1e-15, -1e-15]);
+    expect(noisyResult.groups).toBeDefined();
+
+    // 同一结构、正活动量：无归因需求的 T 活动量为 0，聚合正常完成
     const okResult = assembleResult(compilation, [1, 1, 0]);
     expect(okResult.groups).toBeDefined();
   });
@@ -2346,7 +2350,7 @@ describe('buildLifeCycleModelSubmodelRecord rich metadata', () => {
 });
 
 describe('solveCompiledSystem tiny-activity snapping', () => {
-  it('snaps below-noise activities to zero while passing the residual check', () => {
+  it('clamps negative noise to zero while preserving small positive activities', () => {
     const { compileModel } = jest.requireActual(
       '@/services/lifeCycleModels/matrixCalculation/compile',
     ) as AnyModule;
@@ -2416,7 +2420,35 @@ describe('solveCompiledSystem tiny-activity snapping', () => {
         solve: (rhs: unknown) => {
           const solved = real.solve(rhs);
           const values = solved.to1DArray();
+          // 正噪声方向：小正活动量保留（小活动量不等于可忽略的环境负荷）
           values[1] += 1e-13;
+          return RealMatrix.columnVector(values);
+        },
+      };
+    });
+    try {
+      const { x } = solveCompiledSystem(compilation);
+      expect(x[0]).toBeCloseTo(3, 6);
+      expect(x[1]).toBeGreaterThan(0);
+    } finally {
+      jest.restoreAllMocks();
+    }
+
+    // 负噪声方向：容差内的极小负值归零（非负活动语义）
+    jest.spyOn(mlModule, 'LuDecomposition').mockImplementation((matrix: unknown) => {
+      const real = new (
+        RealLu as unknown as new (m: unknown) => {
+          isSingular(): boolean;
+          solve(rhs: unknown): { to1DArray(): number[] };
+        }
+      )(matrix);
+      return {
+        isSingular: () => real.isSingular(),
+        solve: (rhs: unknown) => {
+          const solved = real.solve(rhs);
+          const values = solved.to1DArray();
+          // 容差内的极小负值（数值噪声）
+          values[1] = -1e-13;
           return RealMatrix.columnVector(values);
         },
       };

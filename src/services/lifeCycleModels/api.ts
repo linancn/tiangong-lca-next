@@ -309,6 +309,14 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
   const status = Number(error?.context?.status ?? 0);
   const response = error?.context;
 
+  // 传输层失败（FunctionsFetchError）与网关中继失败（FunctionsRelayError，
+  // 可能携带真实 HTTP Response 如 504）都不产生应用层应答：无法证明后端
+  // 事务是否提交，必须在任何 HTTP/文本分支之前按未知提交状态处理。
+  const errorName = typeof error?.name === 'string' ? error.name : '';
+  if (errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError') {
+    return buildMutationError('SAVE_STATUS_UNKNOWN', error?.message ?? '', error);
+  }
+
   if (response && typeof response.clone === 'function') {
     try {
       const payload = await response.clone().json();
@@ -366,13 +374,8 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
     );
   }
 
-  // 运输层失败（FunctionsFetchError/FunctionsRelayError 等）没有服务器应答：
-  // 无法证明事务未提交，按未知提交状态处理。
-  const errorName = typeof error?.name === 'string' ? error.name : '';
-  if (errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError') {
-    return buildMutationError('SAVE_STATUS_UNKNOWN', error?.message ?? '', error);
-  }
-
+  // 其余无状态错误（无 errorName 匹配、无服务器应答）同样无法证明事务
+  // 未提交，按未知提交状态处理。
   return buildMutationError(
     'SAVE_STATUS_UNKNOWN',
     error?.message ?? 'Lifecycle model bundle request failed',

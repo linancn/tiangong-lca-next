@@ -100,9 +100,9 @@ export const solveCompiledSystem = (compilation: Compilation): SolveOutcome => {
     throw new CalculationError('NEGATIVE_ACTIVITY', negativeIssues);
   }
 
-  // 极小负值与极小值归零
-  const snapped = x.map((value) =>
-    Math.abs(value) <= CALCULATION_TOLERANCES.zeroActivity * scale ? 0 : value,
-  );
+  // 仅将极小负值（数值噪声）归零；正小值原样保留——活动量小不代表环境负荷
+  // 可忽略（如 1e-13 活动量 × 1e13 原料强度 = 1 的实质负荷），展示舍入与
+  // 计算语义分离。
+  const snapped = x.map((value) => (value < 0 ? 0 : value));
   return { x: snapped };
 };

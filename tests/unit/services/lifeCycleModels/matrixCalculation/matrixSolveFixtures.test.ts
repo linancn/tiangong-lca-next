@@ -1093,4 +1093,161 @@ describe('matrix calculation golden fixtures', () => {
       }),
     ).toBe('INVALID_TARGET_AMOUNT');
   });
+
+  it('keeps a connected non-reference supplier demand-driven when the reference product is an unconnected boundary view', () => {
+    // 复审发现 1 反例：B 参考产品 P=2（60%）+ 联产品 Q=1（40%），raw=10；
+    // 仅 Q 连接到星标过程 E（耗 Q=1 产 E=1），目标 E=1。
+    // 加边界 P 视图后行主仍取 Q：需求经 Q 驱动 B，E 归因 raw=4，
+    // 边界 P 保留独立副结果（raw=-6, P=+2）。
+    const buildPayload = (): MatrixCalculationPayload => ({
+      refInstanceIndex: 'nodeE',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_P',
+            exchanges: [
+              exchange('exB_P', 'OUTPUT', 'flow-P', 2, {
+                allocations: { allocation: { '@allocatedFraction': '60%' } },
+              }),
+              exchange('exB_Q', 'OUTPUT', 'flow-Q', 1, {
+                allocations: { allocation: { '@allocatedFraction': '40%' } },
+              }),
+              exchange('exB_raw', 'INPUT', 'flow-raw', 10),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeE',
+              outputFlowId: 'flow-Q',
+              inputFlowId: 'flow-Q',
+              edgeId: 'nodeB->nodeE:flow-Q',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeE',
+          processId: 'procE',
+          processVersion: '1',
+          process: {
+            id: 'procE',
+            version: '1',
+            refExchangeInternalId: 'exE_out',
+            exchanges: [
+              exchange('exE_in', 'INPUT', 'flow-Q', 1),
+              exchange('exE_out', 'OUTPUT', 'flow-E', 1),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    });
+
+    const result = okResult(buildPayload());
+    expect(result.instanceMultipliers.nodeE).toBeCloseTo(1, 9);
+    // 需求经 Q 驱动 B：x_Q = 1，x_P = 2，倍率 1
+    expect(result.instanceMultipliers.nodeB).toBeCloseTo(1, 9);
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-E')!.amount, 1, 9);
+    // 组内连通的 Q 交付在主组内抵消，不进入外部清单
+    expect(byFlow.has('INPUT:flow-Q')).toBe(false);
+    // E 归因 raw 负荷 = 10 × 40% = 4
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -4, 9);
+    expect(byFlow.has('OUTPUT:flow-P')).toBe(false);
+
+    // 边界 P 的独立副结果
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-P')!.amount, 2, 9);
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-raw')!.amount, -6, 9);
+
+    // 交换顺序置换（视图创建顺序不同）：行主选择与结果不变
+    const permuted = buildPayload();
+    const procBExchanges = permuted.instances[0].process!.exchanges;
+    permuted.instances[0].process!.exchanges = [
+      procBExchanges[2],
+      procBExchanges[1],
+      procBExchanges[0],
+    ];
+    const permutedResult = okResult(permuted);
+    const permutedPrimary = permutedResult.groups.find((group) => group.type === 'primary')!;
+    const permutedByFlow = new Map(
+      permutedPrimary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(permutedByFlow.get('INPUT:flow-raw')!.amount, -4, 9);
+    expect(permutedResult.instanceMultipliers.nodeB).toBeCloseTo(1, 9);
+  });
+
+  it('preserves small positive activities so material upstream loads are not lost', () => {
+    // 复审发现 2 反例：E 产 1、耗 P=1e-13；B 产 P=1、raw=1e13。
+    // 精确解 x_B=1e-13 → raw=1（实质负荷）；小活动量不得被吸附为 0。
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nodeE',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_out',
+            exchanges: [
+              exchange('exB_out', 'OUTPUT', 'flow-P', 1),
+              exchange('exB_raw', 'INPUT', 'flow-raw', 1e13),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeE',
+              outputFlowId: 'flow-P',
+              inputFlowId: 'flow-P',
+              edgeId: 'nodeB->nodeE:flow-P',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nodeE',
+          processId: 'procE',
+          processVersion: '1',
+          process: {
+            id: 'procE',
+            version: '1',
+            refExchangeInternalId: 'exE_out',
+            exchanges: [
+              exchange('exE_in', 'INPUT', 'flow-P', 1e-13),
+              exchange('exE_out', 'OUTPUT', 'flow-E', 1),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.nodeE).toBeCloseTo(1, 12);
+    expect(result.instanceMultipliers.nodeB).toBeCloseTo(1e-13, 18);
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-E')!.amount, 1, 12);
+    // 组内连通的 P 交付在主组内抵消，不进入外部清单
+    expect(byFlow.has('INPUT:flow-P')).toBe(false);
+    // 上游实质负荷：1e13 × 1e-13 = 1
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -1, 9);
+  });
 });
