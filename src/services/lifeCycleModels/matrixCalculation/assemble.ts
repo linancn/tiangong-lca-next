@@ -15,6 +15,7 @@
  * aggregate independent attribution scenarios with internal flows cancelling.
  */
 
+import { LuDecomposition, Matrix } from 'ml-matrix';
 import type { CompiledView, Compilation } from './compile';
 import type {
   CalculationIssue,
@@ -24,6 +25,73 @@ import type {
   SolvedView,
 } from './types';
 import { CALCULATION_TOLERANCES, CalculationError } from './types';
+
+/**
+ * zh-CN: 按归因情景求解组内各视图的活动量。组根锚定其全局活动量（该情景的
+ * 物理规模）；其余成员求解组内子系统（仅保留组内消耗列），使共享上游的
+ * 活动量等于组内归因需求，而不是全局合计。
+ * en-US: Solve per-scenario group activities. The group root is anchored at
+ * its global activity (the scenario's physical scale); other members solve
+ * the group subsystem restricted to in-group consumption columns, so shared
+ * upstream activity equals the group's attributed demand rather than the
+ * global total.
+ */
+const computeGroupActivities = (
+  compilation: Compilation,
+  edges: Compilation['edges'],
+  members: CompiledView[],
+  rootView: CompiledView,
+  activityOf: (view: CompiledView) => number,
+): Map<string, number> => {
+  const n = members.length;
+  const memberIndex = new Map<string, number>();
+  members.forEach((view, index) => memberIndex.set(view.id, index));
+  const matrix = Matrix.identity(n, n);
+  const rhs = new Array<number>(n).fill(0);
+  members.forEach((view, index) => {
+    if (view.id === rootView.id) {
+      // 组根锚定其全局活动量（该情景的物理规模）
+      rhs[index] = activityOf(view);
+      return;
+    }
+    // 非根成员：活动量 = 组内消费者对其产品的归因需求 + 自身外部需求
+    rhs[index] = compilation.demand[view.columnIndex] ?? 0;
+  });
+  const rootIdx = memberIndex.get(rootView.id)!;
+  for (const edge of edges) {
+    const supplierIdx = memberIndex.get(edge.supplierViewId);
+    if (supplierIdx === undefined || supplierIdx === rootIdx) continue;
+    for (const consumption of edge.consumptions) {
+      const consumerIdx = memberIndex.get(consumption.viewId);
+      if (consumerIdx === undefined) continue;
+      // 供应方行：活动量 = 组内消费者归因需求之和；组根的行被锚定行替换，
+      // 其全局活动量已含全部消费，不重复叠加。
+      matrix.set(
+        supplierIdx,
+        consumerIdx,
+        matrix.get(supplierIdx, consumerIdx) - consumption.amount,
+      );
+    }
+  }
+  const lu = new LuDecomposition(matrix);
+  if (lu.isSingular()) {
+    throw new CalculationError('MODEL_NOT_SOLVABLE');
+  }
+  const solved = lu.solve(Matrix.columnVector(rhs)).to1DArray() as number[];
+  const scale = Math.max(1, ...solved.map((value) => Math.abs(value)));
+  const activities = new Map<string, number>();
+  members.forEach((view, index) => {
+    const value = solved[index];
+    if (value < -CALCULATION_TOLERANCES.negativeActivity * scale) {
+      throw new CalculationError('NUMERIC_RESULT_INVALID');
+    }
+    activities.set(
+      view.id,
+      Math.abs(value) <= CALCULATION_TOLERANCES.zeroActivity * scale ? 0 : value,
+    );
+  });
+  return activities;
+};
 
 /**
  * zh-CN: 汇总求解结果并执行端口平衡校验，返回完整计算结果。
@@ -196,6 +264,10 @@ export const assembleResult = (
     // 组根视图已被调用方保证活动量为正，成员必然非空
 
     const memberSet = new Set(memberIds);
+    // 每个组是独立归因情景：共享上游的组内活动量按组内归因需求求解
+    const groupActivity = computeGroupActivities(compilation, edges, members, rootView, activityOf);
+    // computeGroupActivities 为全部成员写入活动量，查询对象均为成员
+    const scenarioActivityOf = (view: CompiledView): number => groupActivity.get(view.id) as number;
     const aggregated = new Map<string, MatrixResultExchange>();
     const order: string[] = [];
     const addExchange = (
@@ -216,7 +288,7 @@ export const assembleResult = (
 
     for (const view of members) {
       const instance = instanceByIndex.get(view.instanceIndex)!;
-      const activity = activityOf(view);
+      const activity = scenarioActivityOf(view);
 
       for (const exchange of instance.exchanges) {
         const payload = exchange.payload;
@@ -241,7 +313,7 @@ export const assembleResult = (
             for (const consumption of edge.consumptions) {
               if (!memberSet.has(consumption.viewId)) continue;
               const consumerView = viewById.get(consumption.viewId)!;
-              inGroupConsumption += consumption.amount * activityOf(consumerView);
+              inGroupConsumption += consumption.amount * scenarioActivityOf(consumerView);
             }
           }
           amount = activity - inGroupConsumption;
@@ -300,8 +372,13 @@ export const assembleResult = (
   const refView = viewById.get(compilation.refViewId)!;
   groups.push(buildGroup(refView, 'primary')!);
   for (const view of views) {
-    if (!view.isDeadEnd || view.isReference) continue;
+    if (view.isReference) continue;
     if (activityOf(view) <= 0) continue;
+    // 副产品情景根：枢轴输出未连接的视图（死端或未连接的已分配产品）
+    const isBoundaryProduct =
+      view.isDeadEnd ||
+      !instanceByIndex.get(view.instanceIndex)!.connectedOutputFlowIds.has(view.pivotFlowId);
+    if (!isBoundaryProduct) continue;
     groups.push(buildGroup(view, 'secondary')!);
   }
 

@@ -36,13 +36,18 @@ import {
   getLifeCycleModelPortFlowVersion,
 } from '@/services/lifeCycleModels/util';
 import { getSharedMatrixCalculationClient } from '@/services/lifeCycleModels/matrixCalculation/workerClient';
+import { CalculationOperation } from '@/services/lifeCycleModels/matrixCalculation/types';
 import type { CalculationIssue } from '@/services/lifeCycleModels/matrixCalculation/types';
-import { findConflictingProviderEdges } from '@/services/lifeCycleModels/matrixCalculation/validation';
 import {
   isCalculationErrorCode,
   resolveCalculationIssues,
   type ResolvedCalculationIssue,
 } from './utils/calculationIssues';
+import {
+  collectCanvasProviderRelations,
+  collectMultiProviderConflictNodeIds,
+  findConflictingProviderEdges,
+} from './utils/providerRelations';
 import {
   getLifeCycleModelGraphProcessReferences,
   normalizeLifeCycleModelGraphForDisplay,
@@ -165,60 +170,6 @@ type CalculationPhase = 'idle' | 'calculating';
  * zh-CN: 从画布边集合提取供应关系，用于单供应校验。
  * en-US: Extract provider relations from canvas edges for the single-provider check.
  */
-const collectCanvasProviderRelations = (
-  graphEdges: LifeCycleModelGraphEdge[],
-): Array<{
-  upstreamIndex: string;
-  downstreamIndex: string;
-  inputFlowId: string;
-  edgeId: string;
-}> => {
-  const relations: Array<{
-    upstreamIndex: string;
-    downstreamIndex: string;
-    inputFlowId: string;
-    edgeId: string;
-  }> = [];
-  for (const edge of graphEdges) {
-    const outputFlowId = edge?.data?.connection?.outputExchange?.['@flowUUID'];
-    const inputFlowId = edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'];
-    if (!outputFlowId || !inputFlowId) continue;
-    relations.push({
-      upstreamIndex: String(edge?.data?.node?.sourceNodeID ?? ''),
-      downstreamIndex: String(edge?.data?.node?.targetNodeID ?? ''),
-      inputFlowId,
-      edgeId: String(edge?.id ?? ''),
-    });
-  }
-  return relations;
-};
-
-/**
- * zh-CN: 收集存在多供应方冲突的下游画布节点 ID（读取旧模型与粘贴后提示）。
- * en-US: Collect downstream canvas node ids with multi-provider conflicts
- * (surfaced after loading legacy models and pasting).
- */
-const collectMultiProviderConflictNodeIds = (graphEdges: LifeCycleModelGraphEdge[]): string[] => {
-  const byTargetInput = new Map<string, Set<string>>();
-  const nodeIdsByTarget = new Map<string, Set<string>>();
-  for (const relation of collectCanvasProviderRelations(graphEdges)) {
-    if (!relation.downstreamIndex) continue;
-    const key = `${relation.downstreamIndex}\u0000${relation.inputFlowId}`;
-    const providers = byTargetInput.get(key) ?? new Set<string>();
-    providers.add(relation.upstreamIndex);
-    byTargetInput.set(key, providers);
-    const nodeIds = nodeIdsByTarget.get(key) ?? new Set<string>();
-    nodeIds.add(relation.downstreamIndex);
-    nodeIdsByTarget.set(key, nodeIds);
-  }
-  const conflicted: string[] = [];
-  for (const [key, providers] of byTargetInput) {
-    if (providers.size > 1) {
-      conflicted.push(...(nodeIdsByTarget.get(key) ?? []));
-    }
-  }
-  return Array.from(new Set(conflicted));
-};
 
 const toSaveMutationError = (
   error: unknown,
@@ -663,7 +614,22 @@ const ToolbarEdit: FC<Props> = ({
     setIsSave(false);
   }, [setIsSave]);
 
+  /**
+   * zh-CN: 取消当前保存操作。持久化尚未提交时整条操作被取消并提示已取消；
+   * 已进入持久化阶段则不承诺撤销，由保存结果决定最终状态。
+   * en-US: Cancels the current save operation. Before the commit the whole
+   * operation is cancelled with the cancelled status; once persistence is in
+   * flight no undo is promised and the save result decides the outcome.
+   */
+  const saveOperationRef = useRef<CalculationOperation | null>(null);
   const cancelActiveCalculation = useCallback(() => {
+    if (saveOperationRef.current?.currentStage === 'persisting') {
+      message.info(
+        intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.saveInFlight' }),
+      );
+      return;
+    }
+    saveOperationRef.current?.cancel();
     getSharedMatrixCalculationClient().cancel();
   }, []);
 
@@ -734,6 +700,7 @@ const ToolbarEdit: FC<Props> = ({
         markModelDirty();
         setMultiProviderConflictNodeIds(
           collectMultiProviderConflictNodeIds(
+            nodes,
             graph
               .getEdges()
               .map((edge: X6Edge) =>
@@ -1348,6 +1315,8 @@ const ToolbarEdit: FC<Props> = ({
           : (edges as LifeCycleModelGraphEdge[]),
       });
       const modelSignatureAtSaveStart = buildModelSignature(currentNodes, currentEdges);
+      // 覆盖整个保存操作（源加载 → 求解 → LCIA → 提交）的取消标识
+      const saveOperation = new CalculationOperation();
       const mutationOptions = {
         ...(options?.langIntent ? { intent: options.langIntent } : {}),
         ...(persistenceGraph ? { persistenceGraph } : {}),
@@ -1355,6 +1324,7 @@ const ToolbarEdit: FC<Props> = ({
           const { liveNodes, liveEdges } = readLiveGraphCells();
           return buildModelSignature(liveNodes, liveEdges) !== modelSignatureAtSaveStart;
         },
+        operation: saveOperation,
       };
 
       if (thisAction === 'edit') {
@@ -1362,6 +1332,7 @@ const ToolbarEdit: FC<Props> = ({
         setCalculationPhase('calculating');
         let result: LifeCycleModelMutationResult;
         try {
+          saveOperationRef.current = saveOperation;
           result = await runMutation(() =>
             mutationOptions
               ? updateLifeCycleModel(lifecycleModelPayload, mutationOptions)
@@ -1369,6 +1340,7 @@ const ToolbarEdit: FC<Props> = ({
           );
         } finally {
           setCalculationPhase('idle');
+          saveOperationRef.current = null;
         }
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
@@ -1442,6 +1414,7 @@ const ToolbarEdit: FC<Props> = ({
         setCalculationPhase('calculating');
         let result: LifeCycleModelMutationResult;
         try {
+          saveOperationRef.current = saveOperation;
           result = await runMutation(() => {
             if (createVersionOptions) {
               return createLifeCycleModel(
@@ -1454,6 +1427,7 @@ const ToolbarEdit: FC<Props> = ({
           });
         } finally {
           setCalculationPhase('idle');
+          saveOperationRef.current = null;
         }
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
@@ -1574,7 +1548,7 @@ const ToolbarEdit: FC<Props> = ({
       // 拒绝新边并给出短文案（不宣称整个模型无法计算）。
       const candidateInputFlowId = targetFlowIDs?.[targetFlowIDs?.length - 1] ?? '';
       const conflictingEdgeIds = findConflictingProviderEdges(
-        collectCanvasProviderRelations(edges),
+        collectCanvasProviderRelations(nodes, edges),
         {
           upstreamIndex: String(sourceNode?.data?.index ?? ''),
           downstreamIndex: String(targetNode?.data?.index ?? ''),
@@ -1889,7 +1863,7 @@ const ToolbarEdit: FC<Props> = ({
         edges: initEdges,
       });
       // 旧模型中的多供应冲突：不删除任何边，仅标记冲突节点
-      setMultiProviderConflictNodeIds(collectMultiProviderConflictNodeIds(initEdges));
+      setMultiProviderConflictNodeIds(collectMultiProviderConflictNodeIds(initNodes, initEdges));
 
       setNodeCount(initNodes.length);
       resetGraphCommandState();
@@ -1956,7 +1930,9 @@ const ToolbarEdit: FC<Props> = ({
             edges: initEdges,
           });
           // 旧模型中的多供应冲突：不删除任何边，仅标记冲突节点
-          setMultiProviderConflictNodeIds(collectMultiProviderConflictNodeIds(initEdges));
+          setMultiProviderConflictNodeIds(
+            collectMultiProviderConflictNodeIds(initNodes, initEdges),
+          );
 
           setNodeCount(initNodes.length);
           resetGraphCommandState();

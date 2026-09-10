@@ -8,6 +8,7 @@
  */
 
 import { getSharedMatrixCalculationClient } from '@/services/lifeCycleModels/matrixCalculation/workerClient';
+import { CalculationOperation } from '@/services/lifeCycleModels/matrixCalculation/types';
 import { genLifeCycleModelProcesses } from '@/services/lifeCycleModels/util_calculate';
 
 jest.mock('@/services/supabase', () => {
@@ -1036,5 +1037,88 @@ describe('genLifeCycleModelProcesses sparse payload branches', () => {
     expect(
       Number(up2DownEdges.find((edge) => edge.flowUUID === 'flow-A-to-B')?.exchangeAmount),
     ).toBeCloseTo(2, 9);
+  });
+});
+
+describe('genLifeCycleModelProcesses operation cancellation', () => {
+  it('aborts before the worker run when the operation is already cancelled', async () => {
+    const operation = new CalculationOperation();
+    operation.cancel();
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-cancelled-early',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+        { operation },
+      ),
+    ).rejects.toMatchObject({ name: 'CalculationCancelledError' });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('aborts after deferred loads when cancelled mid-flight', async () => {
+    let releaseSource: (value: unknown) => void = () => {};
+    const sourcePromise = new Promise((resolve) => {
+      releaseSource = resolve;
+    });
+    mockOr.mockReturnValueOnce(sourcePromise);
+
+    const operation = new CalculationOperation();
+    const pending = genLifeCycleModelProcesses(
+      'model-cancel-source',
+      createIndexedModelNodes() as any,
+      createLifeCycleModelData(),
+      [],
+      { operation },
+    );
+
+    operation.cancel();
+    releaseSource({ data: clone(createSupabaseProcesses()) });
+
+    await expect(pending).rejects.toMatchObject({ name: 'CalculationCancelledError' });
+  });
+
+  it('aborts between LCIA evaluations when cancelled while LCIA promises are pending', async () => {
+    let releaseLcia: (value: unknown) => void = () => {};
+    const lciaPromise = new Promise((resolve) => {
+      releaseLcia = resolve;
+    });
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockImplementationOnce(() => lciaPromise);
+
+    const operation = new CalculationOperation();
+    const pending = genLifeCycleModelProcesses(
+      'model-cancel-lcia',
+      createIndexedModelNodes() as any,
+      createLifeCycleModelData(),
+      [],
+      { operation },
+    );
+
+    operation.cancel();
+    releaseLcia([{ '@id': 'LCIA_PRIMARY' }]);
+
+    await expect(pending).rejects.toMatchObject({ name: 'CalculationCancelledError' });
+  });
+
+  it('aborts after the run resolves when the operation was cancelled while the run was in flight', async () => {
+    // 求解期间的取消不中断 worker 本身：运行正常返回后，运行后置检查仍须中止
+    let checks = 0;
+    const operation = {
+      isCancelled: () => (checks += 1) >= 5,
+      beginStage: () => {},
+    };
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+
+    await expect(
+      genLifeCycleModelProcesses(
+        'model-cancel-post-run',
+        createIndexedModelNodes() as any,
+        createLifeCycleModelData(),
+        [],
+        { operation: operation as any },
+      ),
+    ).rejects.toMatchObject({ name: 'CalculationCancelledError' });
   });
 });

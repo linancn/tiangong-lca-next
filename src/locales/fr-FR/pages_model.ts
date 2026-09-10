@@ -324,6 +324,7 @@ export default {
   'pages.lifecyclemodel.calculation.status.resultNotUpdated': "Ce calcul ne s'est pas terminé. Les résultats du calcul n'ont pas été mis à jour.",
   'pages.lifecyclemodel.calculation.status.saveRejected': "Le calcul est terminé, mais les résultats n'ont pas pu être enregistrés. Réessayez l'enregistrement.",
   'pages.lifecyclemodel.calculation.status.saveStatusUnknown': "Le statut d'enregistrement n'a pas pu être confirmé. Vérifiez si les résultats ont été enregistrés avant de réessayer.",
+  'pages.lifecyclemodel.calculation.status.saveInFlight': "L'enregistrement a déjà été soumis et ne peut pas être annulé. Attendez le résultat de l'enregistrement.",
   'pages.lifecyclemodel.calculation.status.saveSucceeded': 'Le modèle et les résultats du calcul ont été enregistrés.',
   'pages.lifecyclemodel.calculation.status.previousResult': "Les résultats ci-dessous ont été enregistrés précédemment et ne représentent pas le modèle en cours d'édition.",
   'pages.lifecyclemodel.calculation.status.lciaIncomplete': "Le calcul de l'inventaire est terminé, mais les facteurs d'évaluation des impacts sont incomplets. Certains résultats d'impact ne sont pas disponibles.",

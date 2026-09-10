@@ -324,6 +324,7 @@ export default {
   'pages.lifecyclemodel.calculation.status.resultNotUpdated': 'This calculation did not complete. The calculation results were not updated.',
   'pages.lifecyclemodel.calculation.status.saveRejected': 'The calculation completed, but the results could not be saved. Try saving again.',
   'pages.lifecyclemodel.calculation.status.saveStatusUnknown': 'The save status could not be confirmed. Check whether the results were saved before retrying.',
+  'pages.lifecyclemodel.calculation.status.saveInFlight': 'The save has already been submitted and cannot be cancelled. Wait for the save result.',
   'pages.lifecyclemodel.calculation.status.saveSucceeded': 'The model and calculation results have been saved.',
   'pages.lifecyclemodel.calculation.status.previousResult': 'The results below were saved previously and do not represent the model currently being edited.',
   'pages.lifecyclemodel.calculation.status.lciaIncomplete': 'The inventory calculation completed, but impact assessment factors are incomplete. Some impact results are unavailable.',

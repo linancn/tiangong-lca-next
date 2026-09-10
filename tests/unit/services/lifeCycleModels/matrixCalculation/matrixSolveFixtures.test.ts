@@ -776,8 +776,8 @@ describe('matrix calculation golden fixtures', () => {
 
     const result = okResult(payload);
     expect(result.instanceMultipliers.n0).toBeCloseTo(1, 9);
-    // n0 的输入按参考视图份额 0.99 归属：x_n1 = 2e-8 × 0.99 / 1e-8 = 1.98
-    expect(result.instanceMultipliers.n1).toBeCloseTo(1.98, 9);
+    // n1 同时服务 e0 情景（0.99 归属）与 u0 情景（0.01 归属）：x_n1 = 2e-8，倍率 = 2
+    expect(result.instanceMultipliers.n1).toBeCloseTo(2, 9);
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const byFlow = new Map(
       primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
@@ -785,10 +785,214 @@ describe('matrix calculation golden fixtures', () => {
     expectCloseTo(byFlow.get('OUTPUT:flow-F0')!.amount, 1e-6, 12);
     // 已连接输入在组内抵消，不进入外部清单
     expect(byFlow.has('INPUT:flow-F1')).toBe(false);
-    // n1 的未连接原料按其活动量归属保留：5e-8 × 1.98 = 9.9e-8
+    // n1 的未连接原料按其主情景活动量归属保留：5e-8 × 1.98 = 9.9e-8
     expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -9.9e-8, 15);
-    // 未连接输出（无视图）按参考产出视图的归属份额保留：3e-9 × 0.99
-    expectCloseTo(byFlow.get('OUTPUT:flow-U')!.amount, 3e-9 * 0.99, 15);
+    // 已分配的未连接输出 u0 有独立情景，不再混入主结果
+    expect(byFlow.has('OUTPUT:flow-U')).toBe(false);
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    // u0 情景：份额 1% 且已闭合 → 无负担运输，仅保留产出
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-U')!.amount, 3e-9, 15);
+    expect(secondaryByFlow.get('OUTPUT:flow-U')!.quantitativeReference).toBe(true);
+  });
+
+  it('carries ordinary emissions at full scale without allocation declarations', () => {
+    // 反例（审查 1）：参考产品 1 + 未分配 CO2 输出 10，无分配声明。
+    // 排放不是需要分配份额的联产品：按参考默认语义全额随参考活动缩放。
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'n0',
+      targetAmount: 2,
+      instances: [
+        {
+          instanceIndex: 'n0',
+          processId: 'p0',
+          processVersion: '1',
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-P', 1),
+              exchange('eCO2', 'OUTPUT', 'flow-CO2', 10),
+              exchange('i0', 'INPUT', 'flow-raw', 5),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.n0).toBeCloseTo(2, 9);
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const byFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(byFlow.get('OUTPUT:flow-P')!.amount, 2, 9);
+    expect(byFlow.get('OUTPUT:flow-P')!.quantitativeReference).toBe(true);
+    // 排放按参考活动全额缩放：10 × 2
+    expectCloseTo(byFlow.get('OUTPUT:flow-CO2')!.amount, 20, 9);
+    expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -10, 9);
+  });
+
+  it('attributes shared upstream inventory per product scenario', () => {
+    // 反例（审查 2）：P 产 P2/Q1（60/40）耗 L10；R 产 L1 耗 raw1；Q 接末端 E。
+    // 主/副结果按归因情景求上游活动量：raw 6 与 4，内部 L 抵消。
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nPQ',
+      targetAmount: 2,
+      instances: [
+        {
+          instanceIndex: 'nPQ',
+          processId: 'pq',
+          processVersion: '1',
+          process: {
+            id: 'pq',
+            version: '1',
+            refExchangeInternalId: 'exP',
+            exchanges: [
+              exchange('exP', 'OUTPUT', 'flow-P', 2, {
+                allocations: { allocation: { '@allocatedFraction': '60%' } },
+              }),
+              exchange('exQ', 'OUTPUT', 'flow-Q', 1, {
+                allocations: { allocation: { '@allocatedFraction': '40%' } },
+              }),
+              exchange('exL', 'INPUT', 'flow-L', 10),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nPQ',
+              downstreamIndex: 'nE',
+              outputFlowId: 'flow-Q',
+              inputFlowId: 'flow-Q',
+              edgeId: 'nPQ->nE:flow-Q',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nR',
+          processId: 'pr',
+          processVersion: '1',
+          process: {
+            id: 'pr',
+            version: '1',
+            refExchangeInternalId: 'exR_L',
+            exchanges: [
+              exchange('exR_L', 'OUTPUT', 'flow-L', 1),
+              exchange('exR_raw', 'INPUT', 'flow-raw', 1),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nR',
+              downstreamIndex: 'nPQ',
+              outputFlowId: 'flow-L',
+              inputFlowId: 'flow-L',
+              edgeId: 'nR->nPQ:flow-L',
+            },
+          ],
+        },
+        {
+          instanceIndex: 'nE',
+          processId: 'pe',
+          processVersion: '1',
+          process: {
+            id: 'pe',
+            version: '1',
+            refExchangeInternalId: 'exE',
+            exchanges: [
+              exchange('exE_in', 'INPUT', 'flow-Q', 1),
+              exchange('exE', 'OUTPUT', 'flow-E', 1),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nR).toBeCloseTo(10, 9);
+    expect(result.instanceMultipliers.nE).toBeCloseTo(1, 9);
+
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const primaryByFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(primaryByFlow.get('OUTPUT:flow-P')!.amount, 2, 9);
+    expect(primaryByFlow.get('OUTPUT:flow-P')!.quantitativeReference).toBe(true);
+    // 主情景的归因上游：raw 6；内部 L 与 R 的 L 产出完全抵消，均不进入清单
+    expect(primaryByFlow.has('INPUT:flow-L')).toBe(false);
+    expectCloseTo(primaryByFlow.get('INPUT:flow-raw')!.amount, -6, 9);
+    expect(primaryByFlow.has('OUTPUT:flow-L')).toBe(false);
+    expect(primaryByFlow.has('OUTPUT:flow-Q')).toBe(false);
+
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-E')!.amount, 1, 9);
+    expect(secondaryByFlow.get('OUTPUT:flow-E')!.quantitativeReference).toBe(true);
+    // 副情景的归因上游：raw 4；内部 L 抵消
+    expect(secondaryByFlow.has('INPUT:flow-L')).toBe(false);
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-raw')!.amount, -4, 9);
+    expect(secondaryByFlow.has('OUTPUT:flow-L')).toBe(false);
+  });
+
+  it('keeps independent secondary results for unconnected allocated coproducts', () => {
+    // 反例（审查 3）：单实例 P2/Q1（60/40）耗 L10，目标 P2。
+    // 未连接的已分配副产品保留独立结果：Q=1、L=-4；主结果不携带 Q。
+    const payload: MatrixCalculationPayload = {
+      refInstanceIndex: 'nPQ',
+      targetAmount: 2,
+      instances: [
+        {
+          instanceIndex: 'nPQ',
+          processId: 'pq',
+          processVersion: '1',
+          process: {
+            id: 'pq',
+            version: '1',
+            refExchangeInternalId: 'exP',
+            exchanges: [
+              exchange('exP', 'OUTPUT', 'flow-P', 2, {
+                allocations: { allocation: { '@allocatedFraction': '60%' } },
+              }),
+              exchange('exQ', 'OUTPUT', 'flow-Q', 1, {
+                allocations: { allocation: { '@allocatedFraction': '40%' } },
+              }),
+              exchange('exL', 'INPUT', 'flow-L', 10),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    };
+
+    const result = okResult(payload);
+    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
+
+    const primary = result.groups.find((group) => group.type === 'primary')!;
+    const primaryByFlow = new Map(
+      primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(primaryByFlow.get('OUTPUT:flow-P')!.amount, 2, 9);
+    expect(primaryByFlow.get('OUTPUT:flow-P')!.quantitativeReference).toBe(true);
+    expectCloseTo(primaryByFlow.get('INPUT:flow-L')!.amount, -6, 9);
+    // 主结果不携带另一产品的数量
+    expect(primaryByFlow.has('OUTPUT:flow-Q')).toBe(false);
+
+    const secondary = result.groups.find((group) => group.type === 'secondary')!;
+    const secondaryByFlow = new Map(
+      secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
+    );
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-Q')!.amount, 1, 9);
+    expect(secondaryByFlow.get('OUTPUT:flow-Q')!.quantitativeReference).toBe(true);
+    // 副产品情景承载 40% 负荷
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-L')!.amount, -4, 9);
   });
 
   it('rejects legacy models where one input has multiple providers instead of silently picking one', () => {

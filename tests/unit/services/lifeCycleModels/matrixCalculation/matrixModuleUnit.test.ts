@@ -27,8 +27,16 @@ const mockLuBehavior: {
 jest.mock('ml-matrix', () => {
   const actual = jest.requireActual('ml-matrix');
   class FakeLu {
-    isSingular() {
-      return false;
+    // 类型标注内不得出现自由标识符：jest.mock 工厂的提升校验会拒绝
+    private mockReal: any;
+    constructor(matrix: unknown) {
+      if (mockLuBehavior.throwOnConstruct) {
+        throw new Error('construct failed');
+      }
+      this.mockReal = new actual.LuDecomposition(matrix);
+    }
+    isSingular(): boolean {
+      return this.mockReal.isSingular();
     }
     solve(y: unknown) {
       if (mockLuBehavior.throwOnSolve) {
@@ -40,24 +48,12 @@ jest.mock('ml-matrix', () => {
       if (mockLuBehavior.solution === 'wrong') {
         return actual.Matrix.columnVector([0.5]);
       }
-      return y;
+      return this.mockReal.solve(y);
     }
   }
   return {
     ...actual,
-    LuDecomposition: class {
-      constructor() {
-        if (mockLuBehavior.throwOnConstruct) {
-          throw new Error('construct failed');
-        }
-      }
-      isSingular() {
-        return FakeLu.prototype.isSingular.call(this);
-      }
-      solve(y: unknown) {
-        return FakeLu.prototype.solve.call(this, y);
-      }
-    },
+    LuDecomposition: FakeLu,
   };
 });
 
@@ -547,7 +543,8 @@ describe('compileModel allocation and connection edge paths', () => {
     expect(compilation.primaryViewIdByInstance.get('n1')).toBe(n1Views[0].id);
   });
 
-  it('treats multi-output instances without allocation declarations as legacy and reports missing shares', () => {
+  it('reports ambiguous partial declarations but keeps undeclared outputs ordinary', () => {
+    // 部分声明（仅 60%，不闭合）属于歧义分配 → 报告数据问题，不自动归一化
     expect(() =>
       compile({
         refInstanceIndex: 'n0',
@@ -559,7 +556,9 @@ describe('compileModel allocation and connection edge paths', () => {
               version: '1',
               refExchangeInternalId: 'e0',
               exchanges: [
-                exchange('e0', 'OUTPUT', 'flow-F0', 1),
+                exchange('e0', 'OUTPUT', 'flow-F0', 1, {
+                  allocations: { allocation: { '@allocatedFraction': '60%' } },
+                }),
                 exchange('e1', 'OUTPUT', 'flow-F1', 1),
               ],
             },
@@ -1154,8 +1153,8 @@ describe('compileModel remaining edge paths', () => {
     }
   });
 
-  it('treats exchanges without amounts and unmatched input flows as zero contributions', () => {
-    // 消费端缺少对应输入交换：resolveConsumption 返回 0；非枢轴交换数量 null 按 0 归属
+  it('treats unmatched input flows as zero contributions and rejects exchanges without amounts', () => {
+    // 消费端缺少对应输入交换：resolveConsumption 返回 0；有流引用但缺数量 → INVALID_EXCHANGE_AMOUNT
     const compilation = compile({
       refInstanceIndex: 'n0',
       targetAmount: 2,
@@ -1169,10 +1168,7 @@ describe('compileModel remaining edge paths', () => {
               exchange('e0', 'OUTPUT', 'flow-F0', 1, {
                 allocations: { allocation: { '@allocatedFraction': '100%' } },
               }),
-              exchange('eX', 'OUTPUT', 'flow-X', null, {
-                allocations: { allocation: { '@allocatedFraction': '0%' } },
-              }),
-              exchange('i0', 'INPUT', 'flow-F1', null),
+              exchange('i0', 'INPUT', 'flow-F1', 3),
             ],
           },
           connections: [],
@@ -1210,13 +1206,186 @@ describe('compileModel remaining edge paths', () => {
     });
     expect(compilation.views).toHaveLength(2);
 
-    // 零数量交换在聚合中按 0 归属并被零值过滤
+    // 有流引用但缺少数量的交换按无效数量拒绝，不再按 0 归属
+    expect(() =>
+      compile({
+        refInstanceIndex: 'n0',
+        targetAmount: 1,
+        instances: [
+          baseInstance({
+            process: {
+              id: 'p0',
+              version: '1',
+              refExchangeInternalId: 'e0',
+              exchanges: [
+                exchange('e0', 'OUTPUT', 'flow-F0', 1, {
+                  allocations: { allocation: { '@allocatedFraction': '100%' } },
+                }),
+                exchange('eX', 'OUTPUT', 'flow-X', null, {
+                  allocations: { allocation: { '@allocatedFraction': '0%' } },
+                }),
+              ],
+            },
+            connections: [],
+          }),
+        ],
+      }),
+    ).toThrow(expect.objectContaining({ code: 'INVALID_EXCHANGE_AMOUNT' }));
+
+    // 未匹配流按 0 归属，聚合可正常完成（x_n1 = 3 × 2 = 6 与消费平衡一致）
     const { assembleResult } = jest.requireActual(
       '@/services/lifeCycleModels/matrixCalculation/assemble',
     ) as never as {
       assembleResult: (c: unknown, x: number[]) => { groups: unknown[] };
     };
-    const result = assembleResult(compilation, [2, 0]);
+    const result = assembleResult(compilation, [2, 6]);
+    expect(result.groups).toBeDefined();
+  });
+
+  it('attributes an undeclared connected output at the implicit share in a legacy instance', () => {
+    // 已声明份额闭合（50/50），第三个连通输出未声明：按剩余隐含份额（0）归属，
+    // 不再按联产品报错（审查 1）
+    const compilation = compile({
+      refInstanceIndex: 'n0',
+      targetAmount: 1,
+      instances: [
+        baseInstance({
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-F0', 1, {
+                allocations: { allocation: { '@allocatedFraction': '50%' } },
+              }),
+              exchange('e1', 'OUTPUT', 'flow-F1', 1, {
+                allocations: { allocation: { '@allocatedFraction': '50%' } },
+              }),
+              exchange('e2', 'OUTPUT', 'flow-F2', 2),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n0',
+              downstreamIndex: 'n1',
+              outputFlowId: 'flow-F2',
+              inputFlowId: 'flow-F2',
+              edgeId: 'n0->n1:flow-F2',
+            },
+          ],
+        }),
+        baseInstance({
+          instanceIndex: 'n1',
+          processId: 'p1',
+          process: {
+            id: 'p1',
+            version: '1',
+            refExchangeInternalId: 'r0',
+            exchanges: [
+              exchange('r0', 'OUTPUT', 'flow-R', 1),
+              exchange('i0', 'INPUT', 'flow-F2', 1),
+            ],
+          },
+          connections: [],
+        }),
+      ],
+    });
+    const e2View = compilation.views.find(
+      (view: { pivotExchangeId: string }) => view.pivotExchangeId === 'e2',
+    );
+    expect(e2View).toBeDefined();
+  });
+
+  it('skips edges whose upstream output exchange is missing and reports INVALID_CONNECTION', () => {
+    // 连接引用了上游不存在的输出流：视图构建阶段记录 INVALID_CONNECTION，
+    // 失败检查中断编译，不进入边循环
+    expect(() =>
+      compile({
+        refInstanceIndex: 'n0',
+        targetAmount: 1,
+        instances: [
+          baseInstance({
+            connections: [
+              {
+                upstreamIndex: 'n0',
+                downstreamIndex: 'n1',
+                outputFlowId: 'flow-ghost',
+                inputFlowId: 'flow-ghost',
+                edgeId: 'n0->n1:flow-ghost',
+              },
+            ],
+          }),
+          baseInstance({
+            instanceIndex: 'n1',
+            processId: 'p1',
+            process: {
+              id: 'p1',
+              version: '1',
+              refExchangeInternalId: 'r0',
+              exchanges: [
+                exchange('r0', 'OUTPUT', 'flow-R', 1),
+                exchange('i0', 'INPUT', 'flow-ghost', 1),
+              ],
+            },
+            connections: [],
+          }),
+        ],
+      }),
+    ).toThrow(expect.objectContaining({ code: 'INVALID_CONNECTION' }));
+  });
+
+  it('treats connected inputs without amounts as zero consumption during compilation', () => {
+    // 非枢轴交换缺数量（编译层防御）：按 0 消费归属编译通过；
+    // 完整计算入口会在校验阶段先行拒绝（INVALID_EXCHANGE_AMOUNT）
+    const compilation = compile({
+      refInstanceIndex: 'n0',
+      targetAmount: 1,
+      instances: [
+        baseInstance({
+          process: {
+            id: 'p0',
+            version: '1',
+            refExchangeInternalId: 'e0',
+            exchanges: [
+              exchange('e0', 'OUTPUT', 'flow-F0', 1),
+              exchange('i0', 'INPUT', 'flow-F1', null),
+            ],
+          },
+          connections: [],
+        }),
+        baseInstance({
+          instanceIndex: 'n1',
+          processId: 'p1',
+          process: {
+            id: 'p1',
+            version: '1',
+            refExchangeInternalId: 'r0',
+            exchanges: [
+              exchange('r0', 'OUTPUT', 'flow-F1', 1),
+              exchange('i1', 'INPUT', 'flow-raw', 1),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'n1',
+              downstreamIndex: 'n0',
+              outputFlowId: 'flow-F1',
+              inputFlowId: 'flow-F1',
+              edgeId: 'n1->n0:flow-F1',
+            },
+          ],
+        }),
+      ],
+    });
+    expect(compilation.views).toHaveLength(2);
+
+    // 聚合阶段对缺数量交换按 0 归属：n1 无入边活动量为 0，n0 边界输入为 0
+    const { assembleResult } = jest.requireActual(
+      '@/services/lifeCycleModels/matrixCalculation/assemble',
+    ) as never as {
+      assembleResult: (c: unknown, x: number[]) => { groups: unknown[] };
+    };
+    const result = assembleResult(compilation, [1, 0]);
     expect(result.groups).toBeDefined();
   });
 
@@ -1805,6 +1974,238 @@ describe('assembleResult grouping edge paths', () => {
     expect(secondary.refProcesses).toEqual([{ id: 'pd', version: '1' }]);
     const secondaryInput = secondary.exchanges.find((entry: any) => entry.flowId === 'flow-R')!;
     expect(secondaryInput.amount).toBeCloseTo(-2, 9);
+  });
+
+  it('reports NUMERIC_RESULT_INVALID when a group subsystem solves to a negative activity', () => {
+    // 防御性分支：直接以负活动量调用聚合（真实求解阶段不会产生负活动量），
+    // 组根锚定负值会让组内成员解出负活动量；T 无归因需求，活动量吸附为 0
+    const viewR = {
+      id: 'nR::x',
+      instanceIndex: 'nR',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-R',
+      pivotAmount: 1,
+      isReference: true,
+      isDeadEnd: false,
+      columnIndex: 0,
+      rowKind: 'anchor',
+    };
+    const viewS = {
+      id: 'nS::x',
+      instanceIndex: 'nS',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-S',
+      pivotAmount: 1,
+      isReference: false,
+      isDeadEnd: false,
+      columnIndex: 1,
+      rowKind: 'production',
+    };
+    const viewT = {
+      id: 'nT::x',
+      instanceIndex: 'nT',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-T',
+      pivotAmount: 1,
+      isReference: false,
+      isDeadEnd: false,
+      columnIndex: 2,
+      rowKind: 'production',
+    };
+    const compilation = {
+      views: [viewR, viewS, viewT],
+      viewById: new Map([
+        [viewR.id, viewR],
+        [viewS.id, viewS],
+        [viewT.id, viewT],
+      ]),
+      instanceByIndex: new Map([
+        [
+          'nR',
+          {
+            instanceIndex: 'nR',
+            nodeId: 'node-r',
+            refExchangeId: 'x',
+            connectedOutputFlowIds: new Set(['flow-R']),
+            exchanges: [
+              { payload: { internalId: 'x', direction: 'OUTPUT', flowId: 'flow-R', amount: 1 } },
+            ],
+          },
+        ],
+        [
+          'nS',
+          {
+            instanceIndex: 'nS',
+            nodeId: 'node-s',
+            refExchangeId: 'x',
+            connectedOutputFlowIds: new Set(['flow-S']),
+            exchanges: [
+              { payload: { internalId: 'x', direction: 'OUTPUT', flowId: 'flow-S', amount: 1 } },
+            ],
+          },
+        ],
+        [
+          'nT',
+          {
+            instanceIndex: 'nT',
+            nodeId: 'node-t',
+            refExchangeId: 'x',
+            connectedOutputFlowIds: new Set(['flow-T']),
+            exchanges: [
+              { payload: { internalId: 'x', direction: 'OUTPUT', flowId: 'flow-T', amount: 1 } },
+            ],
+          },
+        ],
+      ]),
+      edges: [
+        {
+          connection: {
+            edgeId: 'nS->nR:flow-S',
+            upstreamIndex: 'nS',
+            downstreamIndex: 'nR',
+            outputFlowId: 'flow-S',
+            inputFlowId: 'flow-S',
+          },
+          supplierViewId: viewS.id,
+          consumptions: [{ viewId: viewR.id, amount: 1 }],
+          inSystem: true,
+        },
+        {
+          connection: {
+            edgeId: 'nT->nR:flow-T',
+            upstreamIndex: 'nT',
+            downstreamIndex: 'nR',
+            outputFlowId: 'flow-T',
+            inputFlowId: 'flow-T',
+          },
+          supplierViewId: viewT.id,
+          consumptions: [{ viewId: viewR.id, amount: 0 }],
+          inSystem: false,
+        },
+      ],
+      primaryViewIdByInstance: new Map([
+        ['nR', viewR.id],
+        ['nS', viewS.id],
+        ['nT', viewT.id],
+      ]),
+      demand: [0, 0],
+      refViewId: viewR.id,
+    } as never;
+
+    expect(() => assembleResult(compilation, [-1, -1, 0])).toThrow(
+      expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
+    );
+
+    // 同一结构、正活动量：无归因需求的 T 活动量吸附为 0，聚合正常完成
+    const okResult = assembleResult(compilation, [1, 1, 0]);
+    expect(okResult.groups).toBeDefined();
+  });
+
+  it('reports MODEL_NOT_SOLVABLE when a group subsystem matrix is singular', () => {
+    // 防御性分支：组内消耗子矩阵奇异（S 与 T 互相 1:1 供给且组根活动量为 0），
+    // 组子系统无唯一解。
+    const viewR = {
+      id: 'nR::x',
+      instanceIndex: 'nR',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-R',
+      pivotAmount: 1,
+      isReference: true,
+      isDeadEnd: false,
+      columnIndex: 0,
+      rowKind: 'anchor',
+    };
+    const viewS = {
+      id: 'nS::x',
+      instanceIndex: 'nS',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-S',
+      pivotAmount: 1,
+      isReference: false,
+      isDeadEnd: false,
+      columnIndex: 1,
+      rowKind: 'production',
+    };
+    const viewT = {
+      id: 'nT::x',
+      instanceIndex: 'nT',
+      pivotExchangeId: 'x',
+      pivotDirection: 'OUTPUT',
+      pivotFlowId: 'flow-T',
+      pivotAmount: 1,
+      isReference: false,
+      isDeadEnd: false,
+      columnIndex: 2,
+      rowKind: 'production',
+    };
+    const compilation = {
+      views: [viewR, viewS, viewT],
+      viewById: new Map([
+        [viewR.id, viewR],
+        [viewS.id, viewS],
+        [viewT.id, viewT],
+      ]),
+      instanceByIndex: new Map([
+        ['nR', { instanceIndex: 'nR', nodeId: 'node-r', refExchangeId: 'x' }],
+        ['nS', { instanceIndex: 'nS', nodeId: 'node-s', refExchangeId: 'x' }],
+        ['nT', { instanceIndex: 'nT', nodeId: 'node-t', refExchangeId: 'x' }],
+      ]),
+      edges: [
+        {
+          connection: {
+            edgeId: 'nS->nR:flow-S',
+            upstreamIndex: 'nS',
+            downstreamIndex: 'nR',
+            outputFlowId: 'flow-S',
+            inputFlowId: 'flow-S',
+          },
+          supplierViewId: viewS.id,
+          consumptions: [{ viewId: viewR.id, amount: 0 }],
+          inSystem: false,
+        },
+        {
+          connection: {
+            edgeId: 'nS->nT:flow-S',
+            upstreamIndex: 'nS',
+            downstreamIndex: 'nT',
+            outputFlowId: 'flow-S',
+            inputFlowId: 'flow-S',
+          },
+          supplierViewId: viewS.id,
+          consumptions: [{ viewId: viewT.id, amount: 1 }],
+          inSystem: true,
+        },
+        {
+          connection: {
+            edgeId: 'nT->nS:flow-T',
+            upstreamIndex: 'nT',
+            downstreamIndex: 'nS',
+            outputFlowId: 'flow-T',
+            inputFlowId: 'flow-T',
+          },
+          supplierViewId: viewT.id,
+          consumptions: [{ viewId: viewS.id, amount: 1 }],
+          inSystem: true,
+        },
+      ],
+      primaryViewIdByInstance: new Map([
+        ['nR', viewR.id],
+        ['nS', viewS.id],
+        ['nT', viewT.id],
+      ]),
+      // 省略 demand 尾部：非根成员的外部需求按 0 处理
+      demand: [0],
+      refViewId: viewR.id,
+    } as never;
+
+    expect(() => assembleResult(compilation, [0, 1, 1])).toThrow(
+      expect.objectContaining({ code: 'MODEL_NOT_SOLVABLE' }),
+    );
   });
 });
 

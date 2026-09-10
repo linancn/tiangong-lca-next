@@ -11,7 +11,11 @@ import type {
   MatrixExchangePayload,
   MatrixInstancePayload,
 } from './matrixCalculation/types';
-import { CalculationCancelledError, CalculationError } from './matrixCalculation/types';
+import {
+  CalculationCancelledError,
+  CalculationError,
+  CalculationOperation,
+} from './matrixCalculation/types';
 import { buildMatrixEdgeId } from './matrixCalculation/validation';
 import { getSharedMatrixCalculationClient } from './matrixCalculation/workerClient';
 import { toReferenceProcessKey } from './referenceProcess';
@@ -69,7 +73,17 @@ export async function genLifeCycleModelProcesses(
   modelNodes: any[] | null | undefined,
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
+  options?: { operation?: CalculationOperation },
 ) {
+  const operation = options?.operation;
+  const assertNotCancelled = (): void => {
+    if (operation?.isCancelled()) {
+      throw new CalculationCancelledError();
+    }
+  };
+
+  assertNotCancelled();
+
   const refProcessNodeId = toReferenceProcessKey(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
       ?.quantitativeReference?.referenceToReferenceProcess,
@@ -211,13 +225,22 @@ export async function genLifeCycleModelProcesses(
     instances: matrixInstances,
   };
 
-  const outcome = await getSharedMatrixCalculationClient().run(payload);
+  operation?.beginStage('solving');
+  assertNotCancelled();
+
+  const outcome = await getSharedMatrixCalculationClient().run(payload, { operation });
+  if (operation?.isCancelled()) {
+    throw new CalculationCancelledError();
+  }
   if (outcome.status === 'cancelled' || outcome.status === 'discarded') {
     throw new CalculationCancelledError();
   }
   if (outcome.status === 'failed' || !outcome.result) {
     throw new CalculationError(outcome.error!.code, outcome.error!.issues);
   }
+
+  operation?.beginStage('assembly');
+  assertNotCancelled();
 
   const { instanceMultipliers, edgeAmounts, groups } = outcome.result;
 
@@ -322,7 +345,9 @@ export async function genLifeCycleModelProcesses(
         '@dataSetInternalID': (index + 1).toString(),
       }));
 
+      assertNotCancelled();
       const lciaCalculation = await LCIAResultCalculationWithEvidence(newExchanges);
+      assertNotCancelled();
       lciaIncompleteFlags.push(
         (lciaCalculation.report as any)?.method_factor_coverage?.coverage_status ===
           'incomplete_coverage',

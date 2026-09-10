@@ -177,6 +177,12 @@ export interface CompiledInstance {
   outputExchangeIds: string[];
   refExchangeId?: string;
   allocationShape: AllocationShape;
+  /** zh-CN: 声明为分配目标的输出交换（联产品）；未声明者为普通产出交换。en-US: Output exchanges declared as allocation targets (co-products); undeclared ones are ordinary output exchanges. */
+  allocationTargetIds: Set<string>;
+  /** zh-CN: 已连接输出的流 UUID 集合。en-US: Flow UUIDs of connected output exchanges. */
+  connectedOutputFlowIds: Set<string>;
+  /** zh-CN: 未声明输出的隐含份额（1 − 已声明份额之和）。en-US: Implicit share for undeclared outputs (1 − sum of declared shares). */
+  implicitShare: number;
   /** zh-CN: 本实例相关的全部连接（入边+出边）。en-US: All connections touching this instance. */
   connections: MatrixConnectionPayload[];
   /** zh-CN: 出边（本实例的输出连接）。en-US: Outgoing connections. */
@@ -248,9 +254,11 @@ export const resolveFraction = (
   if (instance.allocationShape === 'single') return 1;
   if (instance.allocationShape === 'legacy') {
     const pivotExchange = instance.exchangeById.get(view.pivotExchangeId);
-    const share =
-      pivotExchange?.allocation.kind === 'legacyShare' ? pivotExchange.allocation.fraction! : 1;
-    return share;
+    if (pivotExchange?.allocation.kind === 'legacyShare') return pivotExchange.allocation.fraction!;
+    // 参考视图采用未声明参考默认（全额归属）；未声明的非参考边界产品视图
+    // 携带剩余份额（已声明份额闭合后通常为 0，即无负担运输）。
+    if (view.pivotExchangeId === instance.refExchangeId) return 1;
+    return instance.implicitShare;
   }
   // standard：按目标产品选择该交换的分配项；未声明分配的交换整体归属于
   // 实例自己的定量参考视图（与 Worker 合同一致），其余视图为稀疏零。
@@ -335,7 +343,9 @@ export const compileModel = (payload: {
     } else if (hasLegacy) {
       allocationShape = 'legacy';
     } else {
-      allocationShape = outputExchangeIds.length > 1 ? 'legacy' : 'single';
+      // 未声明任何分配时采用参考默认语义：全部负荷归属参考视图，
+      // 其余输出为普通产出交换（如排放），不要求分配份额。
+      allocationShape = 'single';
     }
 
     if (hasInvalidAllocation) {
@@ -348,6 +358,32 @@ export const compileModel = (payload: {
       });
     }
 
+    const allocationTargetIds = new Set<string>();
+    if (allocationShape === 'legacy') {
+      for (const exchangeId of outputExchangeIds) {
+        const exchange = exchangeById.get(exchangeId);
+        // 无流引用的退化交换不构成可链接产品
+        if (exchange?.allocation.kind === 'legacyShare' && exchange.payload.flowId) {
+          allocationTargetIds.add(exchangeId);
+        }
+      }
+    } else if (allocationShape === 'standard') {
+      for (const exchange of exchanges) {
+        if (exchange.allocation.kind !== 'targeted' || !exchange.payload.flowId) continue;
+        for (const target of exchange.allocation.fractions!.keys()) {
+          const targetExchange = exchangeById.get(target);
+          if (targetExchange?.payload.direction === 'OUTPUT') allocationTargetIds.add(target);
+        }
+      }
+    }
+    let declaredShareSum = 0;
+    for (const exchangeId of outputExchangeIds) {
+      const exchange = exchangeById.get(exchangeId);
+      if (exchange?.allocation.kind === 'legacyShare')
+        declaredShareSum += exchange.allocation.fraction!;
+    }
+    const implicitShare = Math.min(1, Math.max(0, 1 - declaredShareSum));
+
     return {
       instanceIndex: instance.instanceIndex,
       nodeId: instance.nodeId,
@@ -359,6 +395,9 @@ export const compileModel = (payload: {
       outputExchangeIds,
       refExchangeId: instance.process.refExchangeInternalId,
       allocationShape,
+      allocationTargetIds,
+      connectedOutputFlowIds: new Set<string>(),
+      implicitShare,
       connections: instance.connections,
       outgoing: [],
       incomingByInputFlow: new Map<string, MatrixConnectionPayload[]>(),
@@ -380,6 +419,7 @@ export const compileModel = (payload: {
     for (const connection of allConnections) {
       if (connection.upstreamIndex === instance.instanceIndex) {
         instance.outgoing.push(connection);
+        instance.connectedOutputFlowIds.add(connection.outputFlowId);
       }
       if (connection.downstreamIndex === instance.instanceIndex) {
         const list = instance.incomingByInputFlow.get(connection.inputFlowId) ?? [];
@@ -398,17 +438,16 @@ export const compileModel = (payload: {
     if (instance.allocationShape !== 'legacy') continue;
     if (instance.outputExchangeIds.length <= 1) continue;
 
+    // 仅声明为分配目标的输出构成分配向量；未声明输出（如排放）是普通交换，
+    // 按各视图份额归属，不要求份额。
     let shareSum = 0;
-    let missing = false;
     for (const exchangeId of instance.outputExchangeIds) {
       const exchange = instance.exchangeById.get(exchangeId);
       if (exchange?.allocation.kind === 'legacyShare') {
         shareSum += exchange.allocation.fraction!;
-      } else {
-        missing = true;
       }
     }
-    if (missing || Math.abs(shareSum - 1) > 0.000_010_000_001) {
+    if (Math.abs(shareSum - 1) > 0.000_010_000_001) {
       issues.push({
         code: 'INVALID_ALLOCATION',
         instanceIndex: instance.instanceIndex,
@@ -535,6 +574,15 @@ export const compileModel = (payload: {
       });
       supplierViewIdByEdgeId.set(connection.edgeId, createdView.id);
     }
+    // 未连接但已声明为分配目标的输出是边界联产品：保留独立视图与副产品结果，
+    // 不要求人造下游节点（发现 3）。
+    for (const exchangeId of instance.allocationTargetIds) {
+      if (viewById.has(viewId(instance.instanceIndex, exchangeId))) continue;
+      addView(instance, exchangeId, {
+        isReference: false,
+        isDeadEnd: false,
+      });
+    }
   }
 
   // 死端实例：有入边、无出边、非参考实例 → 参考视图作为直通变量
@@ -652,7 +700,9 @@ export const compileModel = (payload: {
         });
         continue;
       }
-      // 输出交换与供应视图已在视图构建阶段校验并创建
+      // 输出交换与供应视图已在视图构建阶段校验并创建；无效连接已在上方记录并
+      // 于失败检查处中断，能到达此处的连接必有供应视图。未声明分配的输出不是
+      // 可链接产品，其边不构成技术圈链接，消费端输入保留为边界交换。
       const supplierViewId = supplierViewIdByEdgeId.get(connection.edgeId)!;
       const supplierView = viewById.get(supplierViewId)!;
 

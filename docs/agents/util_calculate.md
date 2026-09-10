@@ -23,7 +23,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
 lastReviewedAt: 2026-09-09
 lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
-lastReviewedNote: 'Reviewed for Next #1044: rewritten for the browser-local matrix calculation pipeline solving (I-A)x=y with LU; legacy cycle-breaking, max-flow allocation and remaining-rate correction removed.'
+lastReviewedNote: 'Reviewed for Next #1044 review fixes: declared-only allocation targets with implicit shares for undeclared outputs, per-group attributed scenarios (group subsystem anchored at global activity), secondary results for unconnected allocated boundary products, and operation-scoped cancellation across source load, solving, LCIA and persistence.'
 ---
 
 # Lifecycle Model Calculation Reference
@@ -78,20 +78,21 @@ Failures throw `CalculationError` (typed `code` plus locatable `issues`) or `Cal
 | 4 | `solve.ts` | LU solve of (I-A)x=y, residual / non-finite / non-negative checks |
 | 5 | `assemble.ts` | port-balance verification, instance multipliers, edge amounts, primary/secondary groups |
 | 6 | `util_calculate.ts` | submodel records (existing shape), LCIA via existing evidence path, multiplier write-back |
-| 7 | `api.ts` | existing persistence plan and bundle save (unchanged schema) |
+| 7 | `api.ts` | persistence plan, bundle save (unchanged schema), save-status mapping: authoritative rejection → `SAVE_REJECTED`; transport failures or unparseable response bodies → `SAVE_STATUS_UNKNOWN` (never a definite rejection without evidence) |
 
 ## Calculation Semantics
 
 - The system is demand-driven: the ★ reference target is the final demand `y` of the reference view; every other view is driven by connected consumers. Cycles enter the equations fully; nothing breaks edges.
-- A **view** (matrix variable) exists for: the reference process's quantitative-reference exchange, every connected output exchange of every instance, and the reference exchange of dead-end instances (connected inputs, no connected outputs, not the reference).
+- A **view** (matrix variable) exists for: the reference process's quantitative-reference exchange, every connected output exchange of every instance, every output exchange that carries an allocation declaration (connected or not, so allocated coproducts keep independent results), and the reference exchange of dead-end instances (connected inputs, no connected outputs, not the reference).
 - Each view's pivot is normalized to +1 per unit activity. Every other exchange is attributed with its allocation fraction divided by the pivot amount. Attribution shapes:
-  - **single** (one output): all exchanges fully attributed (fraction 1).
-  - **legacy uniform share**: each output carries its own share (Next legacy `@allocatedFraction`, a trailing `%` is tolerated); a view attributes all exchanges at its pivot's share; declared shares must close to 100%.
+  - **single** (one output, or several outputs without allocation declarations): all exchanges fully attributed (fraction 1). Ordinary outputs without declarations — elementary emissions, wastes, unallocated coproducts — are not allocation targets; they ride along at full scale.
+  - **legacy uniform share**: only _declared_ outputs (`@allocatedFraction`, a trailing `%` is tolerated) are allocation targets; each declares its own share; a view attributes all exchanges at its pivot's share; the declared shares must close to 100%. Undeclared outputs keep an implicit share (1 − declared sum) and are attributed at that implicit share.
   - **standard exchange-target allocation**: per exchange, the allocation item targeting the view product is selected; undeclared exchanges fully attribute to the instance's own reference view; each declared vector must close to 100%.
 - Missing/invalid/ambiguous allocation data raises `INVALID_ALLOCATION`; the calculation never normalizes or splits shares on its own.
 - Row assignment: reference view → anchor row (y = target); an instance's primary view (its reference-exchange view when active, else its first view) → production row; its other views → joint-production linkage rows (x_v = (q_v/q_primary)·x_primary, keeping one physical run count per instance); dead-end views → pass-through rows driven by the supplier's leftover after demand-driven consumption.
 - Balances not encoded in the square system (extra dead-end pipes, linkage conflicts) are verified post-solve together with M·x-y residuals; failures map to `MODEL_NOT_SOLVABLE` or `NUMERIC_RESULT_INVALID` — never a silent surplus or a fallback.
 - Instance `@multiplicationFactor` = primary-view activity / |reference amount|; all views of one instance agree through the linkage rows.
+- **Attributed scenarios**: each submodel group is assembled from its own attributed activity levels, not the global solution. Within a group the root is anchored at its global activity (the scenario's physical scale) and non-root members are driven by in-group consumers only, so shared upstream inventory is attributed per scenario (raw demand splits correctly) and internal flows cancel inside the group. Secondary results are created for every eligible allocated boundary product — dead-end views and unconnected allocated coproducts alike — so each allocated product keeps an independent result without an artificial downstream node.
 
 ## Hard Rules
 
@@ -106,6 +107,7 @@ Failures throw `CalculationError` (typed `code` plus locatable `issues`) or `Cal
 
 - The worker runs compile/solve/assemble on plain structured-cloneable data; no DOM, IndexedDB, or network access. Source loading and LCIA stay on the main thread.
 - `workerClient.ts` binds one run id per calculation; only the latest run's result is applied, superseded runs resolve as `discarded`, cancellation terminates the worker (`cancelled`), and environments without Worker fall back to synchronous execution with identical semantics.
+- **Operation-scoped cancellation** covers the whole save operation, not just the worker run: `CalculationOperation` (`types.ts`) is created per save in the editor, passed through `util_calculate` options and `workerClient.run` options, and checked at entry, before dispatch, after source loads, after the solve, between LCIA evaluations, and before persistence. Cancelling during the persisting stage does not abort the save; the editor reports the save as already in flight (`saveInFlight`) and the save result decides the outcome.
 
 ## Update When
 

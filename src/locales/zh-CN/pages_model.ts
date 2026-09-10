@@ -321,6 +321,7 @@ export default {
   'pages.lifecyclemodel.calculation.status.resultNotUpdated': '本次计算未完成，计算结果未更新。',
   'pages.lifecyclemodel.calculation.status.saveRejected': '计算已完成，但结果未能保存。请重试保存。',
   'pages.lifecyclemodel.calculation.status.saveStatusUnknown': '无法确认结果是否已保存。请先检查保存状态，再决定是否重试。',
+  'pages.lifecyclemodel.calculation.status.saveInFlight': '保存已提交，无法取消。请等待保存结果。',
   'pages.lifecyclemodel.calculation.status.saveSucceeded': '模型及计算结果已保存。',
   'pages.lifecyclemodel.calculation.status.previousResult': '以下为上次已保存的结果，不代表当前编辑中的模型。',
   'pages.lifecyclemodel.calculation.status.lciaIncomplete': '清单计算已完成，但影响评价因子不完整。部分影响结果暂不可用。',

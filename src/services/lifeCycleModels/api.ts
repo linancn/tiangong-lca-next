@@ -51,7 +51,11 @@ import {
   genLifeCycleModelJsonOrdered,
   MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE,
 } from './util';
-import { CalculationCancelledError, CalculationError } from './matrixCalculation/types';
+import {
+  CalculationCancelledError,
+  CalculationError,
+  CalculationOperation,
+} from './matrixCalculation/types';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
 type LifeCycleModelListRpcRow = {
@@ -71,6 +75,14 @@ type LifeCycleModelSearchOrderBy = {
 
 type LifeCycleModelMutationOptions = NormalizeLangPayloadForSaveOptions & {
   persistenceGraph?: LifeCycleModelGraphData;
+  /**
+   * zh-CN: 覆盖整个保存操作（源加载 → 求解 → LCIA → 提交）的取消标识；
+   * 提交前复核，已提交后取消不承诺撤销。
+   * en-US: A cancellation handle spanning the whole save operation; re-checked
+   * before committing. Cancelling after the commit leaves the outcome to the
+   * save result (no undo promise).
+   */
+  operation?: CalculationOperation;
   /**
    * zh-CN: 内存中的模型摘要比对回调：计算完成后、提交保存前调用；返回 true
    * 表示编辑态已变化，本次计算结果按 RESULT_DISCARDED 丢弃，不覆盖新编辑态，
@@ -223,6 +235,7 @@ async function runLifeCycleModelCalculation(input: {
   nodes: any[];
   lifeCycleModelJsonOrdered: any;
   oldSubmodels: any[];
+  operation?: CalculationOperation;
 }): Promise<LifeCycleModelCalculationOutcome> {
   try {
     const { lifeCycleModelProcesses, up2DownEdges, lciaIncomplete } =
@@ -231,6 +244,7 @@ async function runLifeCycleModelCalculation(input: {
         input.nodes,
         input.lifeCycleModelJsonOrdered,
         input.oldSubmodels,
+        ...(input.operation ? [{ operation: input.operation }] : []),
       );
     return { ok: true, lifeCycleModelProcesses, up2DownEdges, lciaIncomplete: !!lciaIncomplete };
   } catch (error) {
@@ -343,8 +357,24 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
     return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
   }
 
+  // 有服务器应答状态但无已映射语义：权威拒绝证据，按保存失败处理。
+  if (status > 0) {
+    return buildMutationError(
+      'SAVE_REJECTED',
+      error?.message ?? 'Lifecycle model bundle request failed',
+      error,
+    );
+  }
+
+  // 运输层失败（FunctionsFetchError/FunctionsRelayError 等）没有服务器应答：
+  // 无法证明事务未提交，按未知提交状态处理。
+  const errorName = typeof error?.name === 'string' ? error.name : '';
+  if (errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError') {
+    return buildMutationError('SAVE_STATUS_UNKNOWN', error?.message ?? '', error);
+  }
+
   return buildMutationError(
-    'SAVE_REJECTED',
+    'SAVE_STATUS_UNKNOWN',
     error?.message ?? 'Lifecycle model bundle request failed',
     error,
   );
@@ -393,9 +423,9 @@ async function invokeLifecycleModelBundleFunction(
       return result.data;
     }
 
-    // 后端已应答但载荷无效：确认事务未提交，使用明确拒绝语义。
+    // 后端已应答但载荷无效：无法证明事务未提交，按未知提交状态处理。
     return buildMutationError(
-      'SAVE_REJECTED',
+      'SAVE_STATUS_UNKNOWN',
       'Lifecycle model bundle endpoint returned an invalid response',
       result.data,
     );
@@ -482,6 +512,7 @@ export async function createLifeCycleModel(
     nodes: data?.model?.nodes ?? [],
     lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     oldSubmodels: [],
+    operation: options?.operation,
   });
   if (!calculation.ok) {
     return attachLangNormalizationMetadata(calculation.error, langMetadata, options);
@@ -523,6 +554,17 @@ export async function createLifeCycleModel(
         sourceVersion: createVersionOptions.sourceVersion,
       }
     : plan;
+  // 提交前复核操作级取消：已取消则不发起保存
+  if (options?.operation) {
+    if (options.operation.isCancelled()) {
+      return attachLangNormalizationMetadata(
+        buildMutationError('CALCULATION_CANCELLED', ''),
+        langMetadata,
+        options,
+      );
+    }
+    options.operation.beginStage('persisting');
+  }
   const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', savePlan);
   return attachLangNormalizationMetadata(
     attachCalculationNotice(result, calculation.lciaIncomplete),
@@ -590,6 +632,7 @@ export async function updateLifeCycleModel(
     nodes: data?.model?.nodes ?? [],
     lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     oldSubmodels,
+    operation: options?.operation,
   });
   if (!calculation.ok) {
     return attachLangNormalizationMetadata(calculation.error, langMetadata, options);
@@ -633,6 +676,17 @@ export async function updateLifeCycleModel(
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
+  // 提交前复核操作级取消：已取消则不发起保存
+  if (options?.operation) {
+    if (options.operation.isCancelled()) {
+      return attachLangNormalizationMetadata(
+        buildMutationError('CALCULATION_CANCELLED', ''),
+        langMetadata,
+        options,
+      );
+    }
+    options.operation.beginStage('persisting');
+  }
   const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
   return attachLangNormalizationMetadata(
     attachCalculationNotice(result, calculation.lciaIncomplete),
@@ -1177,14 +1231,13 @@ export async function contributeLifeCycleModel(id: string, version: string) {
           item.refData.stateCode !== 200 &&
           item.refData.userId === userid
         ) {
-          if (!needContributeMap.has(refKey)) {
-            needContributeMap.set(refKey, {
-              type: item.ref['@type'],
-              ...item.refData,
-              id: item.ref['@refObjectId'],
-              version: item.ref['@version'],
-            });
-          }
+          // 上游按 refObjectId+version+type 去重，此处键必然唯一
+          needContributeMap.set(refKey, {
+            type: item.ref['@type'],
+            ...item.refData,
+            id: item.ref['@refObjectId'],
+            version: item.ref['@version'],
+          });
         }
 
         if (item.refData.json) {

@@ -69,6 +69,37 @@ export class CalculationError extends Error {
 }
 
 /**
+ * zh-CN: 覆盖整个计算操作（源加载 → Worker 求解 → LCIA 组装）的取消标识。
+ * 各阶段边界检查该标识；取消不是错误，UI 以状态文案提示。
+ * en-US: A cancellation handle spanning the whole calculation operation
+ * (source loading → worker solve → LCIA assembly). Stage boundaries check the
+ * flag; cancellation is not an error and is surfaced as status copy.
+ */
+export class CalculationOperation {
+  private cancelled = false;
+
+  private stage: 'preparing' | 'source' | 'solving' | 'assembly' | 'persisting' | 'done' =
+    'preparing';
+
+  cancel(): void {
+    this.cancelled = true;
+  }
+
+  isCancelled(): boolean {
+    return this.cancelled;
+  }
+
+  /** zh-CN: 推进阶段标记，供 UI 区分取消时所在阶段。en-US: Advance the stage marker. */
+  beginStage(stage: 'source' | 'solving' | 'assembly' | 'persisting' | 'done'): void {
+    this.stage = stage;
+  }
+
+  get currentStage(): string {
+    return this.stage;
+  }
+}
+
+/**
  * zh-CN: 用户取消计算。取消不是错误：UI 以状态文案提示，不按失败处理。
  * en-US: The user cancelled the calculation. Cancellation is not an error: the
  * UI surfaces the status copy and does not treat it as a failure.

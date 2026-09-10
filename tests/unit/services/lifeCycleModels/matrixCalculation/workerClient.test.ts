@@ -229,3 +229,26 @@ describe('MatrixCalculationClient worker path', () => {
     expect(again.result?.instanceMultipliers.n0).toBeCloseTo(7, 9);
   });
 });
+
+describe('MatrixCalculationClient operation-scope cancellation', () => {
+  it('resolves cancelled when the operation was cancelled before dispatch', async () => {
+    const client = new MatrixCalculationClient();
+    const operation = {
+      isCancelled: () => true,
+    } as unknown as import('@/services/lifeCycleModels/matrixCalculation/types').CalculationOperation;
+    const outcome = await client.run(buildPayload(1), { operation });
+    expect(outcome.status).toBe('cancelled');
+  });
+
+  it('resolves cancelled when the operation is cancelled while the run is queued', async () => {
+    // 排队中的运行在分发前就被操作取消：不会创建或使用 Worker
+    const client = new MatrixCalculationClient();
+    const operation = {
+      isCancelled: jest.fn().mockReturnValueOnce(false).mockReturnValue(true),
+    } as unknown as import('@/services/lifeCycleModels/matrixCalculation/types').CalculationOperation;
+    const pending = client.run(buildPayload(1), { operation });
+    const outcome = await pending;
+    expect(outcome.status).toBe('cancelled');
+    expect(operation.isCancelled).toHaveBeenCalled();
+  });
+});

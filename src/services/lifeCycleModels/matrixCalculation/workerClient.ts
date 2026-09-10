@@ -16,6 +16,7 @@ import { runMatrixCalculation } from './matrixWorker';
 import type {
   CalculationIssue,
   CalculationErrorCode,
+  CalculationOperation,
   MatrixCalculationPayload,
   MatrixCalculationResult,
 } from './types';
@@ -70,16 +71,34 @@ export class MatrixCalculationClient {
    * en-US: Submit one calculation. Only the latest run is kept: submitting a
    * new run cancels the previous one.
    */
-  run(payload: MatrixCalculationPayload): Promise<MatrixRunOutcome> {
+  run(
+    payload: MatrixCalculationPayload,
+    options?: { operation?: CalculationOperation },
+  ): Promise<MatrixRunOutcome> {
     this.cancelActive('cancelled');
     const runId = `matrix-run-${Date.now()}-${(this.runCounter += 1)}`;
     this.latestRunId = runId;
+
+    // 提交前复核操作级取消（源加载阶段可能已取消）
+    if (options?.operation?.isCancelled()) {
+      this.pending = null;
+      this.latestRunId = null;
+      return Promise.resolve({ status: 'cancelled' });
+    }
 
     let resolveOutcome!: (outcome: MatrixRunOutcome) => void;
     const promise = new Promise<MatrixRunOutcome>((resolve) => {
       resolveOutcome = resolve;
     });
     this.pending = { runId, resolve: resolveOutcome };
+
+    // 排队后、分发前的取消复核：同步回退与 Worker 路径语义一致
+    if (options?.operation?.isCancelled()) {
+      this.pending = null;
+      this.latestRunId = null;
+      resolveOutcome({ status: 'cancelled' });
+      return promise;
+    }
 
     if (typeof Worker === 'undefined' || this.workerCreationFailed) {
       this.runSyncFallback(runId, payload, resolveOutcome);

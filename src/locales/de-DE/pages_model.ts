@@ -324,6 +324,7 @@ export default {
   'pages.lifecyclemodel.calculation.status.resultNotUpdated': 'Diese Berechnung wurde nicht abgeschlossen. Die Berechnungsergebnisse wurden nicht aktualisiert.',
   'pages.lifecyclemodel.calculation.status.saveRejected': 'Die Berechnung ist abgeschlossen, aber die Ergebnisse konnten nicht gespeichert werden. Versuchen Sie erneut zu speichern.',
   'pages.lifecyclemodel.calculation.status.saveStatusUnknown': 'Der Speicherstatus konnte nicht bestätigt werden. Prüfen Sie, ob die Ergebnisse gespeichert wurden, bevor Sie es erneut versuchen.',
+  'pages.lifecyclemodel.calculation.status.saveInFlight': 'Das Speichern wurde bereits übermittelt und kann nicht abgebrochen werden. Warten Sie auf das Speicherergebnis.',
   'pages.lifecyclemodel.calculation.status.saveSucceeded': 'Das Modell und die Berechnungsergebnisse wurden gespeichert.',
   'pages.lifecyclemodel.calculation.status.previousResult': 'Die folgenden Ergebnisse wurden zuvor gespeichert und entsprechen nicht dem aktuell bearbeiteten Modell.',
   'pages.lifecyclemodel.calculation.status.lciaIncomplete': 'Die Sachbilanzberechnung ist abgeschlossen, aber die Wirkungsabschätzungsfaktoren sind unvollständig. Einige Wirkungsergebnisse sind nicht verfügbar.',
