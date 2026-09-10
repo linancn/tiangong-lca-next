@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-10
-lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
 lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 related:
   - .docpact/config.yaml

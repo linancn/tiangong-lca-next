@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-09-10"
-lastReviewedCommit: "61d2323d8cb477ae881496aad9edb43aee0b3073"
+lastReviewedCommit: "8e597d6e6b510050d90f0f2470d153aa836ffce7"
 lastReviewedNote: "Next #1050: example catalog and 58-route localization coverage reviewed; ownership and delivery gates remain unchanged."
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
