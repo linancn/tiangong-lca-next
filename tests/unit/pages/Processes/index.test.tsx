@@ -1010,49 +1010,52 @@ describe('ProcessesPage', () => {
     expect(message.success).toHaveBeenCalledWith('Data contributed to the team successfully.');
   });
 
-  it('renders tgdata and shared-data action layouts without my-data controls', async () => {
-    mockGetProcessTableAll.mockResolvedValue({
-      data: [
-        {
-          id: 'proc-3',
-          version: '3.0.0',
-          name: 'TG process',
-          generalComment: '',
-          classification: 'Energy',
-          typeOfDataSet: 'gate to gate',
-          referenceYear: '2023',
-          location: 'EU',
-          modifiedAt: '2024-03-01T00:00:00Z',
-          modelId: '',
-          teamId: 'team-1',
-        },
-      ],
-      success: true,
-    });
-    mockGetDataSource.mockReturnValue('tg');
+  it.each(['tg', 'ex'])(
+    'renders %s and shared-data action layouts without my-data controls',
+    async (scope) => {
+      mockGetProcessTableAll.mockResolvedValue({
+        data: [
+          {
+            id: 'proc-3',
+            version: '3.0.0',
+            name: 'TG process',
+            generalComment: '',
+            classification: 'Energy',
+            typeOfDataSet: 'gate to gate',
+            referenceYear: '2023',
+            location: 'EU',
+            modifiedAt: '2024-03-01T00:00:00Z',
+            modelId: '',
+            teamId: 'team-1',
+          },
+        ],
+        success: true,
+      });
+      mockGetDataSource.mockReturnValue(scope);
 
-    const { rerender } = renderWithProviders(<ProcessesPage />);
+      const { rerender } = renderWithProviders(<ProcessesPage />);
 
-    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
-    expect(await screen.findByTestId('review-detail')).toHaveTextContent('proc-3:3.0.0');
-    expect(screen.getByText('reload-option')).toBeInTheDocument();
-    expect(screen.queryByTestId('lca-solve-toolbar')).not.toBeInTheDocument();
+      await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+      expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+      expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
+      expect(await screen.findByTestId('review-detail')).toHaveTextContent('proc-3:3.0.0');
+      expect(screen.getByText('reload-option')).toBeInTheDocument();
+      expect(screen.queryByTestId('lca-solve-toolbar')).not.toBeInTheDocument();
 
-    mockGetDataSource.mockReturnValue('co');
-    rerender(<ProcessesPage />);
+      mockGetDataSource.mockReturnValue('co');
+      rerender(<ProcessesPage />);
 
-    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalledTimes(2));
-    expect(screen.queryByTestId('review-detail')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
-    expect(
-      (await screen.findAllByTestId('process-create')).some((node) =>
-        node.textContent?.includes('"actionType":"copy"'),
-      ),
-    ).toBe(true);
-  });
+      await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalledTimes(2));
+      expect(screen.queryByTestId('review-detail')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('process-delete')).not.toBeInTheDocument();
+      expect(
+        (await screen.findAllByTestId('process-create')).some((node) =>
+          node.textContent?.includes('"actionType":"copy"'),
+        ),
+      ).toBe(true);
+    },
+  );
 
   it('uses compact mobile controls for non-my process data', async () => {
     mockBreakpointScreens = { md: false };

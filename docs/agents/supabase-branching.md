@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
-lastReviewedNote: 'Reviewed for Next #1044: no schema, migration, or environment change; dev-environment selection unchanged.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 ---
 
 # Supabase Environment And Database Workflow

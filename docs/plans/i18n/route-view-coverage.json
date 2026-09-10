@@ -108,8 +108,14 @@
       "routeAssertionId": "rv.welcome.overview",
       "scenario": "typed-view-variants",
       "target": {
-        "navigate": { "hashPath": "/welcome", "hashQuery": {} },
-        "expected": { "hashPath": "/welcome", "hashQuery": {} },
+        "navigate": {
+          "hashPath": "/welcome",
+          "hashQuery": {}
+        },
+        "expected": {
+          "hashPath": "/welcome",
+          "hashQuery": {}
+        },
         "visibleMessageIds": ["pages.welcome.overview.metrics.unitProcessesAndInventories"]
       }
     },
@@ -122,11 +128,15 @@
       "target": {
         "navigate": {
           "hashPath": "/welcome",
-          "hashQuery": { "view": "carbon-footprint" }
+          "hashQuery": {
+            "view": "carbon-footprint"
+          }
         },
         "expected": {
           "hashPath": "/welcome",
-          "hashQuery": { "view": "carbon-footprint" }
+          "hashQuery": {
+            "view": "carbon-footprint"
+          }
         },
         "visibleMessageIds": ["pages.welcome.carbonFootprintGuide.title"]
       }
@@ -138,8 +148,14 @@
       "routeAssertionId": "rv.team.team-membership",
       "scenario": "typed-action-variants",
       "target": {
-        "navigate": { "hashPath": "/team", "hashQuery": {} },
-        "expected": { "hashPath": "/team", "hashQuery": {} },
+        "navigate": {
+          "hashPath": "/team",
+          "hashQuery": {}
+        },
+        "expected": {
+          "hashPath": "/team",
+          "hashQuery": {}
+        },
         "visibleMessageIds": ["pages.team.tabs.info"]
       }
     },
@@ -150,8 +166,18 @@
       "routeAssertionId": "rv.team.team-membership",
       "scenario": "typed-action-variants",
       "target": {
-        "navigate": { "hashPath": "/team", "hashQuery": { "action": "create" } },
-        "expected": { "hashPath": "/team", "hashQuery": { "action": "create" } },
+        "navigate": {
+          "hashPath": "/team",
+          "hashQuery": {
+            "action": "create"
+          }
+        },
+        "expected": {
+          "hashPath": "/team",
+          "hashQuery": {
+            "action": "create"
+          }
+        },
         "visibleMessageIds": ["pages.team.tabs.info", "pages.team.info.section.basic"]
       }
     },
@@ -162,8 +188,18 @@
       "routeAssertionId": "rv.team.team-membership",
       "scenario": "typed-action-variants",
       "target": {
-        "navigate": { "hashPath": "/team", "hashQuery": { "action": "edit" } },
-        "expected": { "hashPath": "/team", "hashQuery": { "action": "edit" } },
+        "navigate": {
+          "hashPath": "/team",
+          "hashQuery": {
+            "action": "edit"
+          }
+        },
+        "expected": {
+          "hashPath": "/team",
+          "hashQuery": {
+            "action": "edit"
+          }
+        },
         "visibleMessageIds": ["pages.team.tabs.info"]
       }
     },
@@ -178,11 +214,24 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "edit" } },
-        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "edit" } },
+        "navigate": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "mode": "edit"
+          }
+        },
+        "expected": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "mode": "edit"
+          }
+        },
         "runtimeFixture": {
           "kind": "production-process-ledger",
-          "hashQuery": { "id": "ledger.id", "version": "ledger.version" }
+          "hashQuery": {
+            "id": "ledger.id",
+            "version": "ledger.version"
+          }
         },
         "visibleMessageIds": ["pages.process.drawer.title.edit"]
       }
@@ -198,11 +247,24 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "view" } },
-        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "view" } },
+        "navigate": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "mode": "view"
+          }
+        },
+        "expected": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "mode": "view"
+          }
+        },
         "runtimeFixture": {
           "kind": "production-process-ledger",
-          "hashQuery": { "id": "ledger.id", "version": "ledger.version" }
+          "hashQuery": {
+            "id": "ledger.id",
+            "version": "ledger.version"
+          }
         },
         "visibleMessageIds": ["pages.process.drawer.title.view"]
       }
@@ -218,11 +280,21 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/mydata/processes", "hashQuery": {} },
-        "expected": { "hashPath": "/mydata/processes", "hashQuery": {} },
+        "navigate": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {}
+        },
+        "expected": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {}
+        },
         "runtimeFixture": {
           "kind": "production-process-ledger",
-          "hashQuery": { "id": "ledger.id", "mode": "edit", "version": "ledger.version" }
+          "hashQuery": {
+            "id": "ledger.id",
+            "mode": "edit",
+            "version": "ledger.version"
+          }
         },
         "visibleMessageIds": ["pages.process.drawer.title.edit"]
       }
@@ -238,11 +310,25 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "required": "1" } },
-        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "required": "1" } },
+        "navigate": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "required": "1"
+          }
+        },
+        "expected": {
+          "hashPath": "/mydata/processes",
+          "hashQuery": {
+            "required": "1"
+          }
+        },
         "runtimeFixture": {
           "kind": "production-process-ledger",
-          "hashQuery": { "id": "ledger.id", "mode": "edit", "version": "ledger.version" }
+          "hashQuery": {
+            "id": "ledger.id",
+            "mode": "edit",
+            "version": "ledger.version"
+          }
         },
         "visibleMessageIds": ["pages.process.drawer.title.edit"]
       }
@@ -258,8 +344,18 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/data-processing", "hashQuery": { "tab": "builds" } },
-        "expected": { "hashPath": "/data-processing", "hashQuery": { "tab": "builds" } },
+        "navigate": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "builds"
+          }
+        },
+        "expected": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "builds"
+          }
+        },
         "visibleMessageIds": ["pages.dataProcessing.form.packageName"]
       }
     },
@@ -274,8 +370,18 @@
         "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
       },
       "target": {
-        "navigate": { "hashPath": "/data-processing", "hashQuery": { "tab": "preview" } },
-        "expected": { "hashPath": "/data-processing", "hashQuery": { "tab": "preview" } },
+        "navigate": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "preview"
+          }
+        },
+        "expected": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "preview"
+          }
+        },
         "visibleMessageIds": ["pages.dataProcessing.form.previewPackageId"]
       }
     },
@@ -292,11 +398,15 @@
       "target": {
         "navigate": {
           "hashPath": "/data-processing",
-          "hashQuery": { "tab": "publication" }
+          "hashQuery": {
+            "tab": "publication"
+          }
         },
         "expected": {
           "hashPath": "/data-processing",
-          "hashQuery": { "tab": "publication" }
+          "hashQuery": {
+            "tab": "publication"
+          }
         },
         "visibleMessageIds": ["pages.dataProcessing.form.publishPackageId"]
       }
@@ -315,7 +425,7 @@
       "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v2",
       "schemaPath": "docs/plans/i18n/semantic-e2e-evidence.schema.json",
       "evidencePath": ".local/e2e-release/semantic-e2e-evidence.json",
-      "requiredAssertionCount": 50,
+      "requiredAssertionCount": 58,
       "requiredLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
       "requiredBrowsers": ["chromium", "firefox", "webkit"],
       "browserCoverage": {
@@ -360,8 +470,14 @@
     "rv.section-redirects.tgdata": {
       "kind": "configured-redirect",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.models"]
@@ -370,8 +486,14 @@
     "rv.section-redirects.codata": {
       "kind": "configured-redirect",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.models"]
@@ -380,8 +502,14 @@
     "rv.section-redirects.mydata": {
       "kind": "configured-redirect",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.models"]
@@ -390,8 +518,14 @@
     "rv.section-redirects.tedata": {
       "kind": "configured-redirect",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.models"]
@@ -400,8 +534,14 @@
     "rv.section-redirects.user": {
       "kind": "configured-redirect",
       "session": "anonymous",
-      "navigate": { "hashPath": "/user", "hashQuery": {} },
-      "expected": { "hashPath": "/user/login", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/user",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/user/login",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.login.login.tab"]
@@ -411,8 +551,14 @@
       "kind": "role-boundary",
       "requiredScenarios": ["route"],
       "session": "authenticated",
-      "navigate": { "hashPath": "/manageSystem", "hashQuery": {} },
-      "expected": { "hashPath": "/manageSystem", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/manageSystem",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/manageSystem",
+        "hashQuery": {}
+      },
       "boundary": {
         "selector": "[data-testid='access-denied']",
         "messageIds": ["pages.accessDenied.message"]
@@ -421,8 +567,14 @@
     "rv.review.review-workbench": {
       "kind": "role-boundary",
       "session": "authenticated",
-      "navigate": { "hashPath": "/review", "hashQuery": {} },
-      "expected": { "hashPath": "/review", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/review",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/review",
+        "hashQuery": {}
+      },
       "boundary": {
         "selector": "[data-testid='access-denied']",
         "messageIds": ["pages.accessDenied.message"]
@@ -431,8 +583,14 @@
     "rv.lifecycle-model-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/models", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/models",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.models"]
@@ -441,8 +599,14 @@
     "rv.lifecycle-model-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/models", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/models",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.models"]
@@ -452,8 +616,14 @@
       "kind": "localized-view",
       "requiredScenarios": ["route", "responsive-surface-matrix"],
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/models", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/models",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.models"]
@@ -462,8 +632,14 @@
     "rv.lifecycle-model-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/models", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/models", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/models",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/models",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.models"]
@@ -472,8 +648,14 @@
     "rv.process-analysis.process-analysis": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/processes/analysis", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/processes/analysis", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/processes/analysis",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/processes/analysis",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.process.lca.page.title"]
@@ -482,8 +664,14 @@
     "rv.process-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/processes", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/processes", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/processes",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/processes",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.processes"]
@@ -492,8 +680,14 @@
     "rv.process-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/processes", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/processes", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/processes",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/processes",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.processes"]
@@ -510,8 +704,14 @@
         "responsive-surface-matrix"
       ],
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/processes", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/processes", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/processes",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/processes",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.processes"]
@@ -520,8 +720,14 @@
     "rv.process-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/processes", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/processes", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/processes",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/processes",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.processes"]
@@ -530,8 +736,14 @@
     "rv.flow-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/flows", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/flows", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/flows",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/flows",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.flows"]
@@ -540,8 +752,14 @@
     "rv.flow-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/flows", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/flows", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/flows",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/flows",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.flows"]
@@ -550,8 +768,14 @@
     "rv.flow-lists.mydata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/flows", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/flows", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/flows",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/flows",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.flows"]
@@ -560,8 +784,14 @@
     "rv.flow-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/flows", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/flows", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/flows",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/flows",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.flows"]
@@ -570,8 +800,14 @@
     "rv.flow-property-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/flowproperties", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/flowproperties", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/flowproperties",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/flowproperties",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.flowproperties"]
@@ -580,8 +816,14 @@
     "rv.flow-property-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/flowproperties", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/flowproperties", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/flowproperties",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/flowproperties",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.flowproperties"]
@@ -590,8 +832,14 @@
     "rv.flow-property-lists.mydata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/flowproperties", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/flowproperties", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/flowproperties",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/flowproperties",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.flowproperties"]
@@ -600,8 +848,14 @@
     "rv.flow-property-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/flowproperties", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/flowproperties", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/flowproperties",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/flowproperties",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.flowproperties"]
@@ -610,8 +864,14 @@
     "rv.unit-group-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/unitgroups", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/unitgroups", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/unitgroups",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/unitgroups",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.unitgroups"]
@@ -620,8 +880,14 @@
     "rv.unit-group-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/unitgroups", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/unitgroups", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/unitgroups",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/unitgroups",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.unitgroups"]
@@ -630,8 +896,14 @@
     "rv.unit-group-lists.mydata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/unitgroups", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/unitgroups", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/unitgroups",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/unitgroups",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.unitgroups"]
@@ -640,8 +912,14 @@
     "rv.unit-group-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/unitgroups", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/unitgroups", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/unitgroups",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/unitgroups",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.unitgroups"]
@@ -650,8 +928,14 @@
     "rv.source-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/sources", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/sources", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/sources",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/sources",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.sources"]
@@ -660,8 +944,14 @@
     "rv.source-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/sources", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/sources", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/sources",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/sources",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.sources"]
@@ -670,8 +960,14 @@
     "rv.source-lists.mydata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/sources", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/sources", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/sources",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/sources",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.sources"]
@@ -680,8 +976,14 @@
     "rv.source-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/sources", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/sources", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/sources",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/sources",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.sources"]
@@ -690,8 +992,14 @@
     "rv.contact-lists.tgdata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tgdata/contacts", "hashQuery": {} },
-      "expected": { "hashPath": "/tgdata/contacts", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tgdata/contacts",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tgdata/contacts",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tgdata", "menu.tgdata.contacts"]
@@ -700,8 +1008,14 @@
     "rv.contact-lists.codata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/codata/contacts", "hashQuery": {} },
-      "expected": { "hashPath": "/codata/contacts", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codata/contacts",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codata/contacts",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.codata", "menu.tgdata.contacts"]
@@ -710,8 +1024,14 @@
     "rv.contact-lists.mydata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/mydata/contacts", "hashQuery": {} },
-      "expected": { "hashPath": "/mydata/contacts", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/mydata/contacts",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/mydata/contacts",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.mydata", "menu.tgdata.contacts"]
@@ -720,8 +1040,14 @@
     "rv.contact-lists.tedata": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/tedata/contacts", "hashQuery": {} },
-      "expected": { "hashPath": "/tedata/contacts", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/tedata/contacts",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/tedata/contacts",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.tedata", "menu.tgdata.contacts"]
@@ -730,8 +1056,14 @@
     "rv.data-processing.build-preview-publication-tabs": {
       "kind": "role-boundary",
       "session": "authenticated",
-      "navigate": { "hashPath": "/data-processing", "hashQuery": {} },
-      "expected": { "hashPath": "/data-processing", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/data-processing",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/data-processing",
+        "hashQuery": {}
+      },
       "boundary": {
         "selector": "[data-testid='access-denied']",
         "messageIds": ["pages.accessDenied.message"]
@@ -740,8 +1072,14 @@
     "rv.account.account-profile": {
       "kind": "localized-view",
       "session": "authenticated",
-      "navigate": { "hashPath": "/account", "hashQuery": {} },
-      "expected": { "hashPath": "/account", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/account",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/account",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.account.profile", "pages.account.profile.email"]
@@ -756,8 +1094,14 @@
         "responsive-surface-matrix"
       ],
       "session": "authenticated",
-      "navigate": { "hashPath": "/team", "hashQuery": {} },
-      "expected": { "hashPath": "/team", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/team",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/team",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["menu.account.team"]
@@ -767,10 +1111,17 @@
       "kind": "configured-redirect",
       "requiredScenarios": ["route"],
       "session": "authenticated",
-      "navigate": { "hashPath": "/", "hashQuery": { "view": "carbon-footprint" } },
+      "navigate": {
+        "hashPath": "/",
+        "hashQuery": {
+          "view": "carbon-footprint"
+        }
+      },
       "expected": {
         "hashPath": "/welcome",
-        "hashQuery": { "view": "carbon-footprint" }
+        "hashQuery": {
+          "view": "carbon-footprint"
+        }
       },
       "visible": {
         "kind": "locale-messages",
@@ -781,8 +1132,14 @@
       "kind": "localized-view",
       "requiredScenarios": ["route", "modal-state-machine", "responsive-surface-matrix"],
       "session": "authenticated",
-      "navigate": { "hashPath": "/welcome", "hashQuery": {} },
-      "expected": { "hashPath": "/welcome", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/welcome",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/welcome",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.welcome.overview.metrics.unitProcessesAndInventories"]
@@ -794,11 +1151,15 @@
       "session": "authenticated",
       "navigate": {
         "hashPath": "/welcome",
-        "hashQuery": { "view": "carbon-footprint" }
+        "hashQuery": {
+          "view": "carbon-footprint"
+        }
       },
       "expected": {
         "hashPath": "/welcome",
-        "hashQuery": { "view": "carbon-footprint" }
+        "hashQuery": {
+          "view": "carbon-footprint"
+        }
       },
       "visible": {
         "kind": "locale-messages",
@@ -814,8 +1175,14 @@
         "locale-fallback-refresh"
       ],
       "session": "anonymous",
-      "navigate": { "hashPath": "/user/login", "hashQuery": {} },
-      "expected": { "hashPath": "/user/login", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/user/login",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/user/login",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.login.login.tab"]
@@ -828,11 +1195,15 @@
       "session": "anonymous",
       "navigate": {
         "hashPath": "/oauth/consent",
-        "hashQuery": { "error": "invalid_authorization_request" }
+        "hashQuery": {
+          "error": "invalid_authorization_request"
+        }
       },
       "expected": {
         "hashPath": "/oauth/consent",
-        "hashQuery": { "error": "invalid_authorization_request" }
+        "hashQuery": {
+          "error": "invalid_authorization_request"
+        }
       },
       "visible": {
         "kind": "locale-messages",
@@ -842,8 +1213,14 @@
     "rv.login.password-forgot": {
       "kind": "localized-view",
       "session": "anonymous",
-      "navigate": { "hashPath": "/user/login/password_forgot", "hashQuery": {} },
-      "expected": { "hashPath": "/user/login/password_forgot", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/user/login/password_forgot",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/user/login/password_forgot",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.login.passwordForgot.tab"]
@@ -852,8 +1229,14 @@
     "rv.login.password-reset": {
       "kind": "localized-view",
       "session": "anonymous",
-      "navigate": { "hashPath": "/user/login/password_reset", "hashQuery": {} },
-      "expected": { "hashPath": "/user/login/password_reset", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/user/login/password_reset",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/user/login/password_reset",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.login.passwordReset.requestNewLink"]
@@ -863,8 +1246,14 @@
       "kind": "role-boundary",
       "localeTransition": "storage-reload",
       "session": "authenticated",
-      "navigate": { "hashPath": "/dashboard/national-carbon", "hashQuery": {} },
-      "expected": { "hashPath": "/dashboard/national-carbon", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/dashboard/national-carbon",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/dashboard/national-carbon",
+        "hashQuery": {}
+      },
       "boundary": {
         "selector": "[data-testid='access-denied']",
         "messageIds": ["pages.accessDenied.message"]
@@ -885,20 +1274,155 @@
       "localeTransition": "storage-reload",
       "requiredScenarios": ["route"],
       "session": "authenticated",
-      "navigate": { "hashPath": "/codex-e2e-not-found", "hashQuery": {} },
-      "expected": { "hashPath": "/codex-e2e-not-found", "hashQuery": {} },
+      "navigate": {
+        "hashPath": "/codex-e2e-not-found",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/codex-e2e-not-found",
+        "hashQuery": {}
+      },
       "visible": {
         "kind": "locale-messages",
         "messageIds": ["pages.404.subTitle", "pages.404.buttonText"]
+      }
+    },
+    "rv.section-redirects.exampledata": {
+      "kind": "configured-redirect",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/models",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.models"]
+      }
+    },
+    "rv.lifecycle-model-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/models",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/models",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.models"]
+      }
+    },
+    "rv.process-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/processes",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/processes",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.processes"]
+      }
+    },
+    "rv.flow-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/flows",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/flows",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.flows"]
+      }
+    },
+    "rv.flow-property-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/flowproperties",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/flowproperties",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.flowproperties"]
+      }
+    },
+    "rv.unit-group-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/unitgroups",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/unitgroups",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.unitgroups"]
+      }
+    },
+    "rv.source-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/sources",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/sources",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.sources"]
+      }
+    },
+    "rv.contact-lists.exampledata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/exampledata/contacts",
+        "hashQuery": {}
+      },
+      "expected": {
+        "hashPath": "/exampledata/contacts",
+        "hashQuery": {}
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.exampledata", "menu.exampledata.contacts"]
       }
     }
   },
   "routeFamilies": [
     {
       "id": "section-redirects",
-      "routes": ["/tgdata", "/codata", "/mydata", "/tedata"],
+      "routes": ["/tgdata", "/exampledata", "/codata", "/mydata", "/tedata"],
       "executableAssertionIds": {
         "/tgdata": "rv.section-redirects.tgdata",
+        "/exampledata": "rv.section-redirects.exampledata",
         "/codata": "rv.section-redirects.codata",
         "/mydata": "rv.section-redirects.mydata",
         "/tedata": "rv.section-redirects.tedata"
@@ -1068,9 +1592,16 @@
     },
     {
       "id": "lifecycle-model-lists",
-      "routes": ["/tgdata/models", "/codata/models", "/mydata/models", "/tedata/models"],
+      "routes": [
+        "/tgdata/models",
+        "/exampledata/models",
+        "/codata/models",
+        "/mydata/models",
+        "/tedata/models"
+      ],
       "executableAssertionIds": {
         "/tgdata/models": "rv.lifecycle-model-lists.tgdata",
+        "/exampledata/models": "rv.lifecycle-model-lists.exampledata",
         "/codata/models": "rv.lifecycle-model-lists.codata",
         "/mydata/models": "rv.lifecycle-model-lists.mydata",
         "/tedata/models": "rv.lifecycle-model-lists.tedata"
@@ -1169,12 +1700,14 @@
       "id": "process-lists",
       "routes": [
         "/tgdata/processes",
+        "/exampledata/processes",
         "/codata/processes",
         "/mydata/processes",
         "/tedata/processes"
       ],
       "executableAssertionIds": {
         "/tgdata/processes": "rv.process-lists.tgdata",
+        "/exampledata/processes": "rv.process-lists.exampledata",
         "/codata/processes": "rv.process-lists.codata",
         "/mydata/processes": "rv.process-lists.mydata",
         "/tedata/processes": "rv.process-lists.tedata"
@@ -1230,9 +1763,16 @@
     },
     {
       "id": "flow-lists",
-      "routes": ["/tgdata/flows", "/codata/flows", "/mydata/flows", "/tedata/flows"],
+      "routes": [
+        "/tgdata/flows",
+        "/exampledata/flows",
+        "/codata/flows",
+        "/mydata/flows",
+        "/tedata/flows"
+      ],
       "executableAssertionIds": {
         "/tgdata/flows": "rv.flow-lists.tgdata",
+        "/exampledata/flows": "rv.flow-lists.exampledata",
         "/codata/flows": "rv.flow-lists.codata",
         "/mydata/flows": "rv.flow-lists.mydata",
         "/tedata/flows": "rv.flow-lists.tedata"
@@ -1287,12 +1827,14 @@
       "id": "flow-property-lists",
       "routes": [
         "/tgdata/flowproperties",
+        "/exampledata/flowproperties",
         "/codata/flowproperties",
         "/mydata/flowproperties",
         "/tedata/flowproperties"
       ],
       "executableAssertionIds": {
         "/tgdata/flowproperties": "rv.flow-property-lists.tgdata",
+        "/exampledata/flowproperties": "rv.flow-property-lists.exampledata",
         "/codata/flowproperties": "rv.flow-property-lists.codata",
         "/mydata/flowproperties": "rv.flow-property-lists.mydata",
         "/tedata/flowproperties": "rv.flow-property-lists.tedata"
@@ -1345,12 +1887,14 @@
       "id": "unit-group-lists",
       "routes": [
         "/tgdata/unitgroups",
+        "/exampledata/unitgroups",
         "/codata/unitgroups",
         "/mydata/unitgroups",
         "/tedata/unitgroups"
       ],
       "executableAssertionIds": {
         "/tgdata/unitgroups": "rv.unit-group-lists.tgdata",
+        "/exampledata/unitgroups": "rv.unit-group-lists.exampledata",
         "/codata/unitgroups": "rv.unit-group-lists.codata",
         "/mydata/unitgroups": "rv.unit-group-lists.mydata",
         "/tedata/unitgroups": "rv.unit-group-lists.tedata"
@@ -1401,9 +1945,16 @@
     },
     {
       "id": "source-lists",
-      "routes": ["/tgdata/sources", "/codata/sources", "/mydata/sources", "/tedata/sources"],
+      "routes": [
+        "/tgdata/sources",
+        "/exampledata/sources",
+        "/codata/sources",
+        "/mydata/sources",
+        "/tedata/sources"
+      ],
       "executableAssertionIds": {
         "/tgdata/sources": "rv.source-lists.tgdata",
+        "/exampledata/sources": "rv.source-lists.exampledata",
         "/codata/sources": "rv.source-lists.codata",
         "/mydata/sources": "rv.source-lists.mydata",
         "/tedata/sources": "rv.source-lists.tedata"
@@ -1455,9 +2006,16 @@
     },
     {
       "id": "contact-lists",
-      "routes": ["/tgdata/contacts", "/codata/contacts", "/mydata/contacts", "/tedata/contacts"],
+      "routes": [
+        "/tgdata/contacts",
+        "/exampledata/contacts",
+        "/codata/contacts",
+        "/mydata/contacts",
+        "/tedata/contacts"
+      ],
       "executableAssertionIds": {
         "/tgdata/contacts": "rv.contact-lists.tgdata",
+        "/exampledata/contacts": "rv.contact-lists.exampledata",
         "/codata/contacts": "rv.contact-lists.codata",
         "/mydata/contacts": "rv.contact-lists.mydata",
         "/tedata/contacts": "rv.contact-lists.tedata"

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-09"
-lastReviewedCommit: "202e30656b62cad9ca1403b7d02880dff6bbe08c"
-lastReviewedNote: 'Reviewed for Next #1044: new src/services/lifeCycleModels/matrixCalculation/** and submodelRecord.ts paths fall under existing trigger patterns; routing, ownership and lint rules unchanged.'
+lastReviewedAt: "2026-09-10"
+lastReviewedCommit: "61d2323d8cb477ae881496aad9edb43aee0b3073"
+lastReviewedNote: "Next #1050: example catalog and 58-route localization coverage reviewed; ownership and delivery gates remain unchanged."
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

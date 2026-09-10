@@ -960,7 +960,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
     });
 
-    it('should include team filters for searchable public and collaborative sources', async () => {
+    it.each(['tg', 'ex'])('preserves optional institution filtering for %s', async (scope) => {
       supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
       getLangText.mockReturnValue('Team Source');
       jsonToList.mockReturnValue([]);
@@ -969,7 +969,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       await getSourceTablePgroongaSearch(
         mockPaginationParams,
         'en',
-        'tg',
+        scope,
         'team query',
         mockFilterCondition,
         undefined,
@@ -979,7 +979,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(supabase.rpc).toHaveBeenCalledWith(
         'search_sources',
         expect.objectContaining({
-          data_source: 'tg',
+          data_source: scope,
           team_id_filter: 'team-123',
         }),
       );

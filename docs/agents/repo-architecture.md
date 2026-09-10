@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
-lastReviewedNote: 'Reviewed for Next #1044: lifeCycleModels calculation ownership stays inside src/services/lifeCycleModels/**; stable path map unchanged.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -110,7 +110,7 @@ Rules:
 
 Main Process/Flow tables and their existing pickers retain version-qualified row/selection keys. Detail and reference actions keep the returned version; the client does not collapse rows by ID or rerank by the number of versions.
 
-Edge owns rewrite -> normalized English `semantic_query_en` -> embedding. Database owns each bounded lexical/semantic recall, exact-version fusion/hydration and `tg/co/my/te` visibility. Original multilingual full-text input remains intact; English vector input does not restrict authored full-text languages. Portal's separate state-100/200 allowlist must not be copied over Next's authorized personal/team scopes.
+Edge owns rewrite -> normalized English `semantic_query_en` -> embedding. Database owns each bounded lexical/semantic recall, exact-version fusion/hydration and `tg/co/ex/my/te` visibility. Original multilingual full-text input remains intact; English vector input does not restrict authored full-text languages. Portal's separate state-100/200 allowlist must not be copied over Next's authorized personal/team scopes.
 
 The self-hosted mirror remains generated from one exact canonical Edge tree and receipt. The single online-backend exception for this delivery is recorded in `supabase-branching.md` and workspace #963; normal environment selection and promotion policy are unchanged.
 
@@ -208,3 +208,7 @@ Next owns read orchestration, release dataset identity display, directional LCI/
 - a merged child PR does not finish workspace delivery
 
 The self-hosted snapshot tools keep the generated Edge tree and Database initializer paired. `docker/scripts/export-snapshot-bootstrap.sql` projects constrained roles and source ACL boundaries; `export-snapshot-queue-bootstrap.sql` recreates extension-owned empty queue storage and the Database-owned visibility fence after schema restoration. Runtime/backend semantics remain in their owning repositories.
+
+## Example data catalog
+
+`/exampledata` is an authenticated sibling of `/tgdata` and redirects to its Models page. Its parent route sets `hideInMenu: true` to hide the entire Example Data menu group while retaining direct access to every route and all existing functionality. Remove that flag to show the menu again. Both sections reuse the same seven dataset pages, columns, search, detail, version, copy, and export controls. `getDataSource` maps the new section to `ex`; version lists enforce `state_code=-1`, while database queries own list/search scope before pagination and latest-version selection. Switching scope remounts list tables so rows from the previous section cannot remain visible. Example originals expose the same read-only actions as open data; copies use the existing personal draft creation path. Portal and anonymous routes keep their existing boundaries.

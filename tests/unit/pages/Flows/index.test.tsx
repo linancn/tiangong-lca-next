@@ -827,25 +827,28 @@ describe('FlowsPage', () => {
     );
   });
 
-  it('omits my-data toolbar actions for non-my data sources while keeping public row actions', async () => {
-    mockLocation = {
-      pathname: '/tgdata/flows',
-      search: '',
-    };
-    mockGetDataSource.mockReturnValue('tg');
+  it.each(['tg', 'ex'])(
+    'keeps read, export and copy actions without authoring controls for %s',
+    async (scope) => {
+      mockLocation = {
+        pathname: '/tgdata/flows',
+        search: '',
+      };
+      mockGetDataSource.mockReturnValue(scope);
 
-    renderWithProviders(<FlowsPage />);
+      renderWithProviders(<FlowsPage />);
 
-    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+      await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
 
-    expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'flow-view' })).toHaveLength(2);
-    expect(
-      screen.getByRole('button', { name: /export-flows-flow-1-01.00.000/i }),
-    ).toBeInTheDocument();
-  });
+      expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'flow-view' })).toHaveLength(2);
+      expect(
+        screen.getByRole('button', { name: /export-flows-flow-1-01.00.000/i }),
+      ).toBeInTheDocument();
+    },
+  );
 
   it('opens and closes the route-driven edit drawer for my-data links', async () => {
     mockLocation = {

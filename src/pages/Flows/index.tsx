@@ -505,6 +505,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<FlowTable, LocaleAwareTableParams>
+        key={`flows-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
