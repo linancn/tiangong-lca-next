@@ -2099,13 +2099,11 @@ describe('assembleResult grouping edge paths', () => {
       expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
     );
 
-    // 容差内的极小负值（数值噪声）在组情景求解中归零，聚合正常完成
-    const noisyResult = assembleResult(compilation, [-1e-15, -1e-15, -1e-15]);
-    expect(noisyResult.groups).toBeDefined();
-
-    // 同一结构、正活动量：无归因需求的 T 活动量为 0，聚合正常完成
-    const okResult = assembleResult(compilation, [1, 1, 0]);
-    expect(okResult.groups).toBeDefined();
+    // 容差内的极小负值（数值噪声）在组情景求解中归零（不做量级吸附）；
+    // 归零后主组功能单位交换为 0，按新的完整性校验明确失败
+    expect(() => assembleResult(compilation, [-1e-15, -1e-15, -1e-15])).toThrow(
+      expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
+    );
   });
 
   it('reports MODEL_NOT_SOLVABLE when a group subsystem matrix is singular', () => {

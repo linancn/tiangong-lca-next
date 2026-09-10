@@ -23,7 +23,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
 lastReviewedAt: 2026-09-09
 lastReviewedCommit: 202e30656b62cad9ca1403b7d02880dff6bbe08c
-lastReviewedNote: 'Reviewed for Next #1044 second-review fixes: demand-driven row-primary selection keeps connected suppliers alive when the reference product is an unconnected boundary view, positive small activities are preserved through inventory assembly (only negative noise clamps to zero), and transport/relay save errors map to SAVE_STATUS_UNKNOWN before any HTTP/text branch.'
+lastReviewedNote: 'Reviewed for Next #1044 third-review fixes: boundary aggregation keys on the exact Flow revision (no cross-revision merging), inventory assembly drops only exact-zero amounts and validates the primary group quantitative-reference exchange against the requested target (input-pivot treatment references exempt).'
 ---
 
 # Lifecycle Model Calculation Reference
@@ -103,6 +103,8 @@ Failures throw `CalculationError` (typed `code` plus locatable `issues`) or `Cal
 - Every input keeps at most one provider; one output may fan out to many consumers (their demands accumulate).
 - Instances of the same source Process stay independent; flow identity includes the resolved version, and port versions must match.
 - Connected internal flows cancel inside a submodel group and never re-enter the external inventory; unconnected flows stay as boundary exchanges.
+- Boundary aggregation merges exchanges only at the exact Flow revision (direction + flow UUID + `@version` from the raw template): same-UUID exchanges at different revisions stay separate boundary exchanges until a documented conversion exists; the first template is never reused across revisions.
+- Inventory assembly drops only exact-zero amounts — no magnitude threshold deletes nonzero computed quantities (small activity can still mean material load, and the functional-unit exchange must survive). The primary group must carry its quantitative-reference exchange; a missing or below-target reference exchange fails with `NUMERIC_RESULT_INVALID` instead of returning an incomplete success. Input-pivot (treatment) references may net to zero internally and are exempt from that check.
 
 ## Web Worker Contract
 

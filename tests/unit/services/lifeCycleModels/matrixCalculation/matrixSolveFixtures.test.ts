@@ -1250,4 +1250,133 @@ describe('matrix calculation golden fixtures', () => {
     // 上游实质负荷：1e13 × 1e-13 = 1
     expectCloseTo(byFlow.get('INPUT:flow-raw')!.amount, -1, 9);
   });
+
+  it('keeps the functional-unit reference exchange for tiny targets and validates it against the target', () => {
+    // 复审发现 1 反例：E 产 E=1、耗 raw=1e13，目标 E=1e-13。
+    // 活动量 1e-13 是合法量级：功能单位交换与原料负荷都必须完整保留，
+    // 且主组必须携带定量参考交换。
+    const buildPayload = (scale: number): MatrixCalculationPayload => ({
+      refInstanceIndex: 'nodeE',
+      targetAmount: 1e-13 * scale,
+      instances: [
+        {
+          instanceIndex: 'nodeE',
+          processId: 'procE',
+          processVersion: '1',
+          process: {
+            id: 'procE',
+            version: '1',
+            refExchangeInternalId: 'exE_out',
+            exchanges: [
+              exchange('exE_out', 'OUTPUT', 'flow-E', 1 * scale),
+              exchange('exE_raw', 'INPUT', 'flow-raw', 1e13 * scale),
+            ],
+          },
+          connections: [],
+        },
+      ],
+    });
+
+    for (const scale of [1, 1e6]) {
+      const result = okResult(buildPayload(scale));
+      const primary = result.groups.find((group) => group.type === 'primary')!;
+      const refExchange = primary.exchanges.find((entry) => entry.quantitativeReference)!;
+      expect(refExchange.direction).toBe('OUTPUT');
+      expect(refExchange.flowId).toBe('flow-E');
+      expectCloseTo(refExchange.amount, 1e-13 * scale, 18);
+      const raw = primary.exchanges.find((entry) => entry.flowId === 'flow-raw')!;
+      // 单位等价模型：raw 负荷 = 1e13 × 目标/参考量 = scale（原始单位下为 1），
+      // 量级过滤不得删除任何一侧
+      expectCloseTo(raw.amount, -scale, 9);
+      expect(result.instanceMultipliers.nodeE).toBeCloseTo(1e-13, 18);
+      // 序列化输出保留功能单位交换
+      const serialized = JSON.parse(JSON.stringify(primary)) as typeof primary;
+      expect(serialized.exchanges.some((entry) => entry.quantitativeReference)).toBe(true);
+      expectCloseTo(
+        serialized.exchanges.find((entry) => entry.flowId === 'flow-E')!.amount,
+        1e-13 * scale,
+        18,
+      );
+    }
+  });
+
+  it('keeps boundary exchanges of different Flow revisions separate', () => {
+    // 复审发现 2 反例：星标 E 耗 B 产品 1 与边界原料 R v1 数量 2；
+    // B 耗同一 UUID R v2 数量 3。两个修订必须保留为两个边界交换，
+    // 不得合并成 -5 并只保留第一个模板。
+    const rawRef = (version: string) => ({
+      raw: { referenceToFlowDataSet: { '@refObjectId': 'flow-raw', '@version': version } },
+    });
+    const buildPayload = (): MatrixCalculationPayload => ({
+      refInstanceIndex: 'nodeE',
+      targetAmount: 1,
+      instances: [
+        {
+          instanceIndex: 'nodeE',
+          processId: 'procE',
+          processVersion: '1',
+          process: {
+            id: 'procE',
+            version: '1',
+            refExchangeInternalId: 'exE_out',
+            exchanges: [
+              exchange('exE_inB', 'INPUT', 'flow-B', 1),
+              exchange('exE_raw', 'INPUT', 'flow-raw', 2, rawRef('01.00.000')),
+              exchange('exE_out', 'OUTPUT', 'flow-E', 1),
+            ],
+          },
+          connections: [],
+        },
+        {
+          instanceIndex: 'nodeB',
+          processId: 'procB',
+          processVersion: '1',
+          process: {
+            id: 'procB',
+            version: '1',
+            refExchangeInternalId: 'exB_out',
+            exchanges: [
+              exchange('exB_out', 'OUTPUT', 'flow-B', 1),
+              exchange('exB_raw', 'INPUT', 'flow-raw', 3, rawRef('02.00.000')),
+            ],
+          },
+          connections: [
+            {
+              upstreamIndex: 'nodeB',
+              downstreamIndex: 'nodeE',
+              outputFlowId: 'flow-B',
+              inputFlowId: 'flow-B',
+              edgeId: 'nodeB->nodeE:flow-B',
+            },
+          ],
+        },
+      ],
+    });
+
+    for (const reversed of [false, true]) {
+      const payload = buildPayload();
+      if (reversed) {
+        payload.instances = [payload.instances[1], payload.instances[0]];
+      }
+      const result = okResult(payload);
+      const primary = result.groups.find((group) => group.type === 'primary')!;
+      const rawExchanges = primary.exchanges.filter((entry) => entry.flowId === 'flow-raw');
+      expect(rawExchanges).toHaveLength(2);
+      const byVersion = new Map(
+        rawExchanges.map((entry) => [
+          String(
+            (entry.template.raw as { referenceToFlowDataSet?: { '@version'?: string } })
+              ?.referenceToFlowDataSet?.['@version'],
+          ),
+          entry,
+        ]),
+      );
+      expectCloseTo(byVersion.get('01.00.000')!.amount, -2, 9);
+      expectCloseTo(byVersion.get('02.00.000')!.amount, -3, 9);
+      // B 的产品交付在组内抵消，主组清单只有 E 与两个原料修订
+      const refExchange = primary.exchanges.find((entry) => entry.quantitativeReference)!;
+      expect(refExchange.flowId).toBe('flow-E');
+      expectCloseTo(refExchange.amount, 1, 9);
+    }
+  });
 });

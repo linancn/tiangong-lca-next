@@ -268,13 +268,23 @@ export const assembleResult = (
     const scenarioActivityOf = (view: CompiledView): number => groupActivity.get(view.id) as number;
     const aggregated = new Map<string, MatrixResultExchange>();
     const order: string[] = [];
+    // 组根定量参考交换的聚合键（含版本），循环中捕获
+    let rootRefKey = '';
+    const flowVersionOf = (template: MatrixResultExchange['template']): string => {
+      const version = (
+        template.raw as { referenceToFlowDataSet?: { '@version'?: unknown } } | undefined
+      )?.referenceToFlowDataSet?.['@version'];
+      return typeof version === 'string' ? version : '';
+    };
     const addExchange = (
       direction: 'INPUT' | 'OUTPUT',
       flowId: string,
       amount: number,
       template: MatrixResultExchange['template'],
     ) => {
-      const key = `${direction}\u0000${flowId}`;
+      // 聚合键包含精确 Flow 版本：不同修订的同一 UUID 是不同交换，
+      // 缺乏换算证据时不得合并（保留各自模板与版本引用）
+      const key = `${direction}\u0000${flowId}\u0000${flowVersionOf(template)}`;
       const existing = aggregated.get(key);
       if (!existing) {
         order.push(key);
@@ -322,6 +332,10 @@ export const assembleResult = (
           amount = ((payload.amount ?? 0) * fraction * activity) / view.pivotAmount;
         }
 
+        if (view.id === rootView.id && isPivot) {
+          rootRefKey = `${payload.direction}\u0000${payload.flowId}\u0000${flowVersionOf(payload)}`;
+        }
+
         if (payload.direction === 'INPUT') {
           // 已连接且供应视图在组内的输入是内部流，完全抵消不进入清单
           const supplierViewId = supplierViewByConsumerInput.get(
@@ -331,7 +345,9 @@ export const assembleResult = (
           amount = -Math.abs(amount);
         }
 
-        if (Math.abs(amount) <= CALCULATION_TOLERANCES.zeroActivity * Math.max(1, activity)) {
+        // 仅过滤精确为零的交换；非零计算结果一律保留——数量级小不代表
+        // 负荷可忽略，功能单位交换尤其不得被量级阈值删除
+        if (amount === 0) {
           continue;
         }
         addExchange(payload.direction, payload.flowId, amount, payload);
@@ -339,9 +355,34 @@ export const assembleResult = (
     }
 
     // 标记定量参考
-    const refExchange = aggregated.get(`${rootView.pivotDirection}\u0000${rootView.pivotFlowId}`);
+    const refExchange = aggregated.get(rootRefKey);
     if (refExchange) {
       refExchange.quantitativeReference = true;
+    }
+    if (type === 'primary' && rootView.pivotDirection === 'OUTPUT') {
+      // 输出枢轴的主组必须携带功能单位交换：参考交换缺失说明清单不完整
+      // （数量为 0 或被错误过滤），明确失败而不是返回成功的不完整结果。
+      // 参考交换数量 = 目标 + 组外导出，故只做下界校验。输入枢轴（处置
+      // 模型）的参考交换可为内部流并净化为零，不做此校验。
+      // 编译阶段保证主根的需求向量分量为目标量
+      const target = compilation.demand[rootView.columnIndex] as number;
+      const tolerance = CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(target));
+      if (
+        !refExchange ||
+        refExchange.direction !== rootView.pivotDirection ||
+        refExchange.flowId !== rootView.pivotFlowId ||
+        refExchange.amount < target - tolerance
+      ) {
+        throw new CalculationError('NUMERIC_RESULT_INVALID', [
+          {
+            code: 'NUMERIC_RESULT_INVALID',
+            instanceIndex: rootView.instanceIndex,
+            nodeId: instanceByIndex.get(rootView.instanceIndex)?.nodeId,
+            flowId: rootView.pivotFlowId,
+            exchangeInternalId: rootView.pivotExchangeId,
+          },
+        ]);
+      }
     }
 
     const refProcesses = Array.from(
