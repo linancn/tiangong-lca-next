@@ -3895,6 +3895,29 @@ describe('getConnectableProcessesTable', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
+  it.each(['team-example', '', []])(
+    'keeps connectable examples fixed to -1 with optional team %p',
+    async (tid) => {
+      const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+      mockFrom.mockReturnValueOnce(builder);
+      const result = await processesApi.getConnectableProcessesTable(
+        { current: 1, pageSize: 10 },
+        {},
+        'en',
+        'ex',
+        tid,
+        'input:flow-example',
+        '',
+      );
+      expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
+      expect(builder.eq).not.toHaveBeenCalledWith('state_code', 100);
+      expect(builder.eq.mock.calls.filter(([column]: [string]) => column === 'team_id')).toEqual(
+        tid.length > 0 ? [['team_id', tid]] : [],
+      );
+      expect(result).toEqual({ data: [], success: true });
+    },
+  );
+
   it('falls back to modified_at ordering when connectable sort uses a derived column', async () => {
     const builder = createQueryBuilder({
       data: [],

@@ -395,6 +395,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<ContactTable, LocaleAwareTableParams>
+        key={`contacts-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={

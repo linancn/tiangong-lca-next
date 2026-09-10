@@ -1274,7 +1274,9 @@ export async function getAllVersions(
     }
   }
 
-  if (hasExactStateCode) {
+  if (dataSource === 'ex') {
+    query = query.eq('state_code', -1);
+  } else if (hasExactStateCode) {
     query = query.eq('state_code', stateCode);
   } else if (dataSource === 'tg') {
     query = query.eq('state_code', 100);

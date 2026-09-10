@@ -6,6 +6,8 @@ import { getLanguageDisplayName } from '@/services/general/contentLanguageRegist
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
     return <FormattedMessage id='menu.mydata' defaultMessage='My Data' />;
+  } else if (dataSource === 'ex') {
+    return <FormattedMessage id='menu.exampledata' defaultMessage='Example Data' />;
   } else if (dataSource === 'tg') {
     return <FormattedMessage id='menu.tgdata' defaultMessage='Open Data' />;
   } else if (dataSource === 'co') {

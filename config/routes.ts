@@ -87,6 +87,59 @@ export default [
     ],
   },
   {
+    path: '/exampledata',
+    name: 'exampledata',
+    icon: 'FolderOpenOutlined',
+    routes: [
+      {
+        path: '/exampledata',
+        redirect: '/exampledata/models',
+      },
+      {
+        name: 'models',
+        path: '/exampledata/models',
+        icon: 'AppstoreAddOutlined',
+        component: './LifeCycleModels',
+      },
+      {
+        name: 'processes',
+        icon: 'ShareAltOutlined',
+        path: '/exampledata/processes',
+        component: './Processes',
+      },
+      {
+        name: 'flows',
+        icon: 'NodeExpandOutlined',
+        path: '/exampledata/flows',
+        component: './Flows',
+      },
+      {
+        name: 'flowproperties',
+        icon: 'ControlOutlined',
+        path: '/exampledata/flowproperties',
+        component: './Flowproperties',
+      },
+      {
+        name: 'unitgroups',
+        icon: 'RetweetOutlined',
+        path: '/exampledata/unitgroups',
+        component: './Unitgroups',
+      },
+      {
+        name: 'sources',
+        icon: 'PaperClipOutlined',
+        path: '/exampledata/sources',
+        component: './Sources',
+      },
+      {
+        name: 'contacts',
+        icon: 'TeamOutlined',
+        path: '/exampledata/contacts',
+        component: './Contacts',
+      },
+    ],
+  },
+  {
     path: '/codata',
     name: 'codata',
     icon: 'FolderOutlined',

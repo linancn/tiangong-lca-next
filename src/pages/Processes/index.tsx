@@ -421,7 +421,7 @@ const TableList: FC = () => {
             </ResponsiveDataListActions>,
           ];
         }
-        if (dataSource === 'tg') {
+        if (dataSource === 'tg' || dataSource === 'ex') {
           return [
             <ResponsiveDataListActions
               key={0}

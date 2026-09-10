@@ -729,14 +729,14 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       expect(supabase.rpc).not.toHaveBeenCalled();
     });
 
-    it('should apply co source team filters', async () => {
+    it.each(['co', 'ex'])('preserves optional institution filtering for %s', async (scope) => {
       supabase.rpc.mockResolvedValueOnce({ data: [], error: null });
 
       const result = await getFlowpropertyTableAll(
         { current: 1, pageSize: 10 },
         { createdAt: 'descend' },
         'en',
-        'co',
+        scope,
         'team-456',
         undefined,
       );
@@ -744,7 +744,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       expect(supabase.rpc).toHaveBeenCalledWith(
         'get_latest_flowproperty_versions',
         expect.objectContaining({
-          data_source: 'co',
+          data_source: scope,
           team_id_filter: 'team-456',
           state_code_filter: null,
           sort_by: 'created_at',
