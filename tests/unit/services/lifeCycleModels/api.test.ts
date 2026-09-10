@@ -119,6 +119,9 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
 }));
 
 const mockGenLifeCycleModelProcesses = jest.fn();
+const { CalculationCancelledError, CalculationError } = jest.requireActual(
+  '@/services/lifeCycleModels/matrixCalculation/types',
+) as typeof import('@/services/lifeCycleModels/matrixCalculation/types');
 
 jest.mock('@/services/lifeCycleModels/util_calculate', () => ({
   __esModule: true,
@@ -539,7 +542,7 @@ describe('deleteLifeCycleModel', () => {
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'session lookup failed',
     });
   });
@@ -572,7 +575,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toMatchObject({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'network down',
     });
   });
@@ -622,6 +625,58 @@ describe('deleteLifeCycleModel', () => {
       message: 'Plan payload is invalid',
       details: { field: 'processMutations' },
     });
+  });
+
+  it('falls past JSON bodies without a string code to status-based handling', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({ status: 500, jsonPayload: { foo: 'bar' } }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_REJECTED' });
+  });
+
+  it('falls past JSON bodies without a string message to status-based handling', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({ status: 500, jsonPayload: { code: 'ONLY_CODE' } }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_REJECTED' });
+  });
+
+  it('uses the default rejection message when the invoke error carries none', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({
+        status: 500,
+        jsonError: new Error('bad json'),
+        message: null as any,
+      }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'SAVE_REJECTED',
+      message: 'Lifecycle model bundle request failed',
+    });
+  });
+
+  it('reports unknown save status when the invoke error has no name at all', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: createInvokeError({ status: 0, message: 'mystery' }),
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN', message: 'mystery' });
   });
 
   it('falls back to text-based status handling when JSON parsing fails', async () => {
@@ -725,7 +780,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_REJECTED',
       message: 'Plain text failure',
       details: { status: 500 },
     });
@@ -741,7 +796,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });
@@ -818,7 +873,7 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_REJECTED',
       message: 'Unexpected lifecycle bundle failure',
       details: {
         message: 'Unexpected lifecycle bundle failure',
@@ -827,20 +882,116 @@ describe('deleteLifeCycleModel', () => {
     });
   });
 
-  it('returns a generic function error when the bundle endpoint response is missing', async () => {
+  it('reports unknown save status for transport failures without a server response', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: { name: 'FunctionsFetchError', message: 'fetch failed' },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toEqual({
+      ok: false,
+      code: 'SAVE_STATUS_UNKNOWN',
+      message: 'fetch failed',
+      details: { name: 'FunctionsFetchError', message: 'fetch failed' },
+    });
+  });
+
+  it('uses an empty message for transport failures that carry none', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: { name: 'FunctionsRelayError', message: undefined as any },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN', message: '' });
+  });
+
+  it('reports unknown save status for relay errors carrying a real 504 response body', async () => {
+    // 真实 Supabase FunctionsRelayError 携带 HTTP Response（如网关 504），
+    // 文本分支不得把它误判为确定的保存拒绝
+    class FakeHttpResponse {
+      status: number;
+      private bodyText: string;
+      constructor(bodyText: string, init: { status: number }) {
+        this.bodyText = bodyText;
+        this.status = init.status;
+      }
+      clone() {
+        return new FakeHttpResponse(this.bodyText, { status: this.status });
+      }
+      json() {
+        return Promise.reject(new SyntaxError('Unexpected token'));
+      }
+      text() {
+        return Promise.resolve(this.bodyText);
+      }
+    }
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        name: 'FunctionsRelayError',
+        message: 'Relay Error',
+        context: new FakeHttpResponse('upstream timeout', { status: 504 }),
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN' });
+  });
+
+  it('reports unknown save status for relay errors with an empty 504 response body', async () => {
+    // 空体的 504 同样无法证明事务未提交：不得落入 status>0 的确定拒绝分支
+    class FakeHttpResponse {
+      status: number;
+      private bodyText: string;
+      constructor(bodyText: string, init: { status: number }) {
+        this.bodyText = bodyText;
+        this.status = init.status;
+      }
+      clone() {
+        return new FakeHttpResponse(this.bodyText, { status: this.status });
+      }
+      json() {
+        return Promise.reject(new SyntaxError('Unexpected end of JSON input'));
+      }
+      text() {
+        return Promise.resolve(this.bodyText);
+      }
+    }
+
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        name: 'FunctionsRelayError',
+        message: 'Relay Error',
+        context: new FakeHttpResponse('', { status: 504 }),
+      },
+    });
+
+    const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
+
+    expect(result).toMatchObject({ ok: false, code: 'SAVE_STATUS_UNKNOWN' });
+  });
+
+  it('reports unknown save status when the bundle endpoint response is missing', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce(undefined);
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: undefined,
     });
   });
 
-  it('returns INVALID_RESPONSE when the bundle endpoint returns malformed data', async () => {
+  it('reports unknown save status when the bundle endpoint returns malformed data', async () => {
     mockFunctionsInvoke.mockResolvedValueOnce({
       data: { unexpected: true },
       error: null,
@@ -850,33 +1001,33 @@ describe('deleteLifeCycleModel', () => {
 
     expect(result).toEqual({
       ok: false,
-      code: 'INVALID_RESPONSE',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle endpoint returned an invalid response',
       details: { unexpected: true },
     });
   });
 
-  it('falls back to the generic bundle error message when an invoke rejection has no message', async () => {
+  it('reports unknown save status when an invoke rejection has no message', async () => {
     mockFunctionsInvoke.mockRejectedValueOnce({});
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });
   });
 
-  it('falls back to the generic bundle error message when session lookup rejects without a message', async () => {
+  it('reports unknown save status when session lookup rejects without a message', async () => {
     mockAuthGetSession.mockRejectedValueOnce({});
 
     const result = await lifeCycleModelsApi.deleteLifeCycleModel(sampleModelId, sampleVersion);
 
     expect(result).toEqual({
       ok: false,
-      code: 'FUNCTION_ERROR',
+      code: 'SAVE_STATUS_UNKNOWN',
       message: 'Lifecycle model bundle request failed',
       details: {},
     });
@@ -1278,6 +1429,60 @@ describe('createLifeCycleModel', () => {
       sourceVersion: '01.00.000',
     });
     expect(result).toEqual(edgePayload);
+  });
+
+  it('reports CALCULATION_CANCELLED and skips persistence when the create operation is cancelled', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+
+    // 持久化前复核取消：整条操作已取消则不发起保存
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      { id: sampleModelId, model: { nodes: [], edges: [] } },
+      { operation: { isCancelled: () => true, beginStage: jest.fn() } as any },
+    );
+
+    expect(result).toMatchObject({ ok: false, code: 'CALCULATION_CANCELLED' });
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('advances the create operation to the persisting stage before saving', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+    const operation = { isCancelled: () => false, beginStage: jest.fn() };
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      { id: sampleModelId, model: { nodes: [], edges: [] } },
+      { operation: operation as any },
+    );
+
+    expect(operation.beginStage).toHaveBeenCalledWith('persisting');
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('rethrows unexpected calculation errors that are not calculation failures', async () => {
+    // 非计算错误（如编程错误）不折算成 mutation result，直接向上抛出
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(new TypeError('boom'));
+
+    await expect(
+      lifeCycleModelsApi.createLifeCycleModel(
+        { id: sampleModelId, model: { nodes: [], edges: [] } },
+        undefined,
+      ),
+    ).rejects.toThrow('boom');
   });
 });
 
@@ -1682,6 +1887,56 @@ describe('updateLifeCycleModel', () => {
         }),
       ],
     });
+    expect(result).toEqual(edgePayload);
+  });
+
+  it('reports CALCULATION_CANCELLED and skips persistence when the update operation is cancelled', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({ data: [{ submodels: undefined }], error: null }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce(undefined as any);
+
+    // 持久化前复核取消：整条操作已取消则不发起保存
+    const result = await lifeCycleModelsApi.updateLifeCycleModel(
+      { id: sampleModelId, version: sampleVersion },
+      { operation: { isCancelled: () => true, beginStage: jest.fn() } as any },
+    );
+
+    expect(result).toMatchObject({ ok: false, code: 'CALCULATION_CANCELLED' });
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('advances the update operation to the persisting stage before saving', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({ data: [{ submodels: undefined }], error: null }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce(undefined as any);
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce(undefined as any);
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+    const operation = { isCancelled: () => false, beginStage: jest.fn() };
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel(
+      { id: sampleModelId, version: sampleVersion },
+      { operation: operation as any },
+    );
+
+    expect(operation.beginStage).toHaveBeenCalledWith('persisting');
     expect(result).toEqual(edgePayload);
   });
 });
@@ -3624,7 +3879,7 @@ describe('contributeLifeCycleModel', () => {
           data: {
             stateCode: 10,
             userId: sampleUserId,
-            json: null,
+            json: { orphan: 'no-nested-refs' },
           },
         };
       }
@@ -3695,5 +3950,159 @@ describe('contributeLifeCycleModel', () => {
     expect(consoleSpy).toHaveBeenCalledWith('Error fetching ref data:', expect.any(Error));
     expect(consoleSpy).toHaveBeenCalledWith('Error contributing data:', expect.any(Error));
     consoleSpy.mockRestore();
+  });
+});
+
+describe('calculation mutation mapping', () => {
+  it('maps calculation failures with located issues and skips persistence', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: buildLifecycleModelJsonOrdered(),
+      validationError: undefined,
+    });
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
+      new CalculationError('MULTIPLE_PROVIDERS', [
+        { code: 'MULTIPLE_PROVIDERS', instanceIndex: 'nodeA', flowId: 'flow-1' },
+      ]),
+    );
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MULTIPLE_PROVIDERS',
+      calculationIssues: [{ code: 'MULTIPLE_PROVIDERS', instanceIndex: 'nodeA', flowId: 'flow-1' }],
+    });
+  });
+
+  it('maps cancelled calculations to the cancellation status without error styling', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(new CalculationCancelledError());
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, code: 'CALCULATION_CANCELLED' });
+  });
+
+  it('rethrows unexpected calculation errors instead of masking them', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(new Error('boom'));
+
+    await expect(
+      lifeCycleModelsApi.createLifeCycleModel({
+        id: sampleModelId,
+        model: { nodes: [], edges: [] },
+      }),
+    ).rejects.toThrow('boom');
+  });
+
+  it('discards the run as RESULT_DISCARDED when the edit state changed before saving', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: false,
+    });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      { id: sampleModelId, model: { nodes: [], edges: [] } },
+      { hasModelChanged: () => true },
+    );
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
+  });
+
+  it('maps update-side calculation failures with located issues', async () => {
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
+      new CalculationError('INVALID_ALLOCATION', [
+        { code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' },
+      ]),
+    );
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'INVALID_ALLOCATION',
+      calculationIssues: [{ code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' }],
+    });
+  });
+
+  it('attaches the LCIA_INCOMPLETE notice only to successful saves with incomplete coverage', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [{ submodels: [] }],
+        error: null,
+      }),
+    );
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: true,
+    });
+    mockGetProcessDetailByIdsAndVersion.mockResolvedValueOnce({ data: [] });
+    const edgePayload = buildSaveResult();
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      calculationNotice: 'LCIA_INCOMPLETE',
+    });
+
+    // 失败结果不附加通知
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: true,
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(
+      createMockEdgeFunctionResponse({ ok: false, code: 'SAVE_REJECTED', message: 'no' }),
+    );
+
+    const failedResult = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+    expect(failedResult).toMatchObject({ ok: false, code: 'SAVE_REJECTED' });
+    expect(failedResult.calculationNotice).toBeUndefined();
+
+    // update 的 RESULT_DISCARDED 分支
+    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+      lciaIncomplete: false,
+    });
+    const discarded = await lifeCycleModelsApi.updateLifeCycleModel(
+      { id: sampleModelId, version: sampleVersion, model: { nodes: [], edges: [] } },
+      { hasModelChanged: () => true },
+    );
+    expect(discarded).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
   });
 });

@@ -210,6 +210,43 @@ describe('ModelResult', () => {
     await userEvent.click(screen.getAllByTestId('process-edit')[0]);
   });
 
+  it('shows the previous-result notice only when enabled and submodels exist', async () => {
+    renderWithProviders(
+      <ModelResult
+        submodels={[{ id: 'model-1', version: '0.9.0' }]}
+        modelId='model-1'
+        modelVersion='1.0.0'
+        lang='en'
+        actionType='edit'
+        showPreviousResultNotice
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /model results/i })).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/saved previously/i)).toBeInTheDocument();
+  });
+
+  it('hides the previous-result notice when the model is saved', async () => {
+    renderWithProviders(
+      <ModelResult
+        submodels={[{ id: 'model-1', version: '0.9.0' }]}
+        modelId='model-1'
+        modelVersion='1.0.0'
+        lang='en'
+        actionType='edit'
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: /model results/i })).toBeInTheDocument(),
+    );
+    expect(screen.queryByText(/saved previously/i)).not.toBeInTheDocument();
+  });
+
   it('renders view-only actions in view mode and closes cleanly', async () => {
     renderWithProviders(
       <ModelResult

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "1ab5882ff99ae2a8319cf36f8abd95b377a251e0f348436ed4532813b69e0083",
+    "auditedInputDigest": "813e69bd79515277d919cff521cb7329808ab8dadb95a6fb547196837d398fc6",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -69,19 +69,19 @@
   "summary": {
     "localeCount": 4,
     "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
-    "localeUniqueKeyCounts": { "en-US": 3331, "zh-CN": 3331, "de-DE": 3331, "fr-FR": 3331 },
-    "canonicalCandidateKeyCount": 3331,
-    "activeStaticKeyCount": 2224,
-    "activeDynamicKeyCount": 306,
-    "reservedKeyCount": 801,
-    "productionSourceFileCount": 456,
-    "literalReferenceCount": 4236,
-    "dynamicCallsiteCount": 32,
-    "dynamicCallsiteSummaryCount": 32,
-    "registeredDynamicCallsiteCount": 32,
-    "reviewedDynamicCallsiteCount": 32,
-    "dynamicFamilyCount": 15,
-    "unknownHandlingCounts": { "localizedRuntimeFallback:implemented": 7, "closedWorld": 8 },
+    "localeUniqueKeyCounts": { "en-US": 3367, "zh-CN": 3367, "de-DE": 3367, "fr-FR": 3367 },
+    "canonicalCandidateKeyCount": 3367,
+    "activeStaticKeyCount": 2241,
+    "activeDynamicKeyCount": 321,
+    "reservedKeyCount": 805,
+    "productionSourceFileCount": 465,
+    "literalReferenceCount": 4254,
+    "dynamicCallsiteCount": 33,
+    "dynamicCallsiteSummaryCount": 33,
+    "registeredDynamicCallsiteCount": 33,
+    "reviewedDynamicCallsiteCount": 33,
+    "dynamicFamilyCount": 16,
+    "unknownHandlingCounts": { "localizedRuntimeFallback:implemented": 8, "closedWorld": 8 },
     "violationCount": 0,
     "violationCounts": {
       "scanErrors": 0,
@@ -46481,7 +46481,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1964,
+          "line": 2326,
           "column": 18,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Data Check",
@@ -46541,7 +46541,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1964,
+              "line": 2326,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -47804,7 +47804,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 985,
+          "line": 1228,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "Data with the same ID and version already exists.",
@@ -47864,7 +47864,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 985,
+              "line": 1228,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -47976,15 +47976,6 @@
         },
         {
           "kind": "formatMessage",
-          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1121,
-          "column": 15,
-          "symbol": "saveData",
-          "defaultMessage": "Created successfully!",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "formatMessage",
           "path": "src/pages/Processes/Components/create.tsx",
           "line": 384,
           "column": 19,
@@ -48033,12 +48024,6 @@
               "path": "src/pages/Flows/Components/create.tsx",
               "line": 378,
               "column": 21,
-              "kind": "formatMessage"
-            },
-            {
-              "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1121,
-              "column": 15,
               "kind": "formatMessage"
             },
             {
@@ -50188,7 +50173,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 215,
+          "line": 261,
           "column": 12,
           "symbol": "edgeLabelText",
           "defaultMessage": "Input",
@@ -50197,7 +50182,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 263,
+          "line": 309,
           "column": 24,
           "symbol": "inputFlowTool",
           "defaultMessage": "Input",
@@ -50239,13 +50224,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 215,
+              "line": 261,
               "column": 12,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 263,
+              "line": 309,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -51135,7 +51120,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1906,
+          "line": 2267,
           "column": 13,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Delete element",
@@ -51150,7 +51135,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1906,
+              "line": 2267,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -51360,7 +51345,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 203,
+          "line": 249,
           "column": 15,
           "symbol": "edgeLabelText",
           "defaultMessage": "Bal",
@@ -51384,7 +51369,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 203,
+              "line": 249,
               "column": 15,
               "kind": "formatMessage"
             },
@@ -51458,7 +51443,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 207,
+          "line": 253,
           "column": 14,
           "symbol": "edgeLabelText",
           "defaultMessage": "Def",
@@ -51482,7 +51467,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 207,
+              "line": 253,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -51556,7 +51541,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 211,
+          "line": 257,
           "column": 14,
           "symbol": "edgeLabelText",
           "defaultMessage": "Sur",
@@ -51580,7 +51565,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 211,
+              "line": 257,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -52149,7 +52134,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 365,
+          "line": 411,
           "column": 24,
           "symbol": "refTool",
           "defaultMessage": "Reference node",
@@ -52182,7 +52167,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 365,
+              "line": 411,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -52262,7 +52247,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 117,
+          "line": 132,
           "column": 16,
           "symbol": "ModelResult",
           "defaultMessage": "Model Results",
@@ -52271,7 +52256,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 135,
+          "line": 150,
           "column": 16,
           "symbol": "ModelResult",
           "defaultMessage": "Model Results",
@@ -52313,13 +52298,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 117,
+              "line": 132,
               "column": 16,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 135,
+              "line": 150,
               "column": 16,
               "kind": "FormattedMessage"
             },
@@ -52405,7 +52390,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1925,
+          "line": 2286,
           "column": 18,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Save data",
@@ -52420,7 +52405,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1925,
+              "line": 2286,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -52488,7 +52473,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 407,
+          "line": 453,
           "column": 24,
           "symbol": "nonRefTool",
           "defaultMessage": "Set as reference",
@@ -52503,7 +52488,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 407,
+              "line": 453,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -53144,7 +53129,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 219,
+          "line": 265,
           "column": 13,
           "symbol": "edgeLabelText",
           "defaultMessage": "Output",
@@ -53153,7 +53138,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 309,
+          "line": 355,
           "column": 24,
           "symbol": "outputFlowTool",
           "defaultMessage": "Output",
@@ -53195,13 +53180,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 219,
+              "line": 265,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 309,
+              "line": 355,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -53572,7 +53557,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1977,
+          "line": 2339,
           "column": 20,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Submit for Review",
@@ -53596,7 +53581,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1977,
+              "line": 2339,
               "column": 20,
               "kind": "FormattedMessage"
             },
@@ -54951,7 +54936,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1892,
+          "line": 2253,
           "column": 13,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Update Reference",
@@ -55056,7 +55041,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1892,
+              "line": 2253,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -93417,7 +93402,7 @@
     },
     {
       "id": "pages.flows.savesuccess",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_flow"],
@@ -93471,32 +93456,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1047,
-          "column": 15,
-          "symbol": "saveData",
-          "defaultMessage": "Saved successfully.",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Saved successfully.",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1047,
-              "column": 15,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.getCaptchaSecondText",
@@ -116228,7 +116189,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1591,
+          "line": 1950,
           "column": 39,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Automatically generated",
@@ -116243,7 +116204,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1591,
+              "line": 1950,
               "column": 39,
               "kind": "formatMessage"
             }
@@ -121329,7 +121290,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 153,
+          "line": 176,
           "column": 24,
           "symbol": "ModelResult",
           "defaultMessage": null,
@@ -121398,7 +121359,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 173,
+          "line": 196,
           "column": 24,
           "symbol": "ModelResult",
           "defaultMessage": null,
@@ -132748,6 +132709,2342 @@
       ]
     },
     {
+      "id": "pages.lifecyclemodel.calculation.action.calculateAgain",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Calculate again",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 336,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "重新计算",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 333,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Erneut berechnen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 336,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Calculer à nouveau",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 336,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1070,
+          "column": 17,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.action.cancel",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Cancel",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 340,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "取消",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 337,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Abbrechen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 340,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Annuler",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 340,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 2383,
+          "column": 16,
+          "symbol": "ToolbarEdit",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.action.close",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Close",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 338,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "关闭",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 335,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Schließen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 338,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Fermer",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 338,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1076,
+          "column": 21,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.action.locate",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Locate issue",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 335,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "定位问题",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 332,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Problem lokalisieren",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 335,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Localiser le problème",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 335,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1054,
+          "column": 26,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.action.retrySave",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Retry save",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 337,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "重试保存",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 334,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Speichern wiederholen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 337,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Réessayer l'enregistrement",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 337,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.action.viewAll",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "View all issues",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 339,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "查看全部问题",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 336,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Alle Probleme anzeigen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 339,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Voir tous les problèmes",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 339,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.connection.singleProvider",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "This input flow already has a provider. Remove the existing provider connection before connecting a new one.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 320,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "该输入流已有供应方。请先删除原供应连接，再连接新的供应方。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 317,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Dieser Eingangsfluss hat bereits einen Lieferanten. Entfernen Sie die bestehende Lieferantenverbindung, bevor Sie einen neuen Lieferanten verbinden.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 320,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Ce flux d'entrée a déjà un fournisseur. Supprimez la connexion fournisseur existante avant d'en connecter un nouveau.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 320,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1562,
+          "column": 11,
+          "symbol": "ToolbarEdit",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.CALCULATION_FAILED",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The calculation could not be completed. Try again. If the problem persists, contact support.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 319,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "计算未能完成。请重试；如果问题持续，请联系支持人员。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 316,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Berechnung konnte nicht abgeschlossen werden. Versuchen Sie es erneut. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 319,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le calcul n'a pas pu aboutir. Réessayez. Si le problème persiste, contactez l'assistance.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 319,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.EMPTY_MODEL",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The model has no processes. Add a process before calculating.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 305,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "模型中没有过程。请添加过程后再计算。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 302,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Modell enthält keine Prozesse. Fügen Sie einen Prozess hinzu, bevor Sie berechnen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 305,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le modèle ne contient aucun procédé. Ajoutez un procédé avant de calculer.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 305,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The flows, versions, or units at the two ends are incompatible. Use matching data and reconnect them.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 311,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "连接两端的流、版本或单位不兼容。请使用匹配的数据后重新连接。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 308,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Flüsse, Versionen oder Einheiten an den beiden Enden sind inkompatibel. Verwenden Sie passende Daten und verbinden Sie sie neu.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 311,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Les flux, versions ou unités aux deux extrémités sont incompatibles. Utilisez des données correspondantes et reconnectez-les.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 311,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Product allocation data is invalid or incomplete. Check the allocation targets and fractions, then try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "产品分配数据无效或不完整。请检查分配对象和比例后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 310,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Produktdaten der Zuteilung sind ungültig oder unvollständig. Prüfen Sie die Zuteilungsziele und -anteile und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Les données d'allocation des produits sont invalides ou incomplètes. Vérifiez les cibles et les fractions d'allocation, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_CONNECTION",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The connection is invalid. Check the processes and input/output flows at both ends.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 310,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "连接无效。请检查连接两端的过程和输入输出流。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 307,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Verbindung ist ungültig. Prüfen Sie die Prozesse und die Eingangs-/Ausgangsflüsse an beiden Enden.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 310,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "La connexion est invalide. Vérifiez les procédés et les flux d'entrée/sortie aux deux extrémités.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 310,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "An exchange amount is invalid. Check the amount for the affected flow and try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 312,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "交换数量无效。请检查对应流的数量后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 309,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Eine Austauschmenge ist ungültig. Prüfen Sie die Menge des betroffenen Flusses und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 312,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Une quantité d'échange est invalide. Vérifiez la quantité du flux concerné, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 312,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_REFERENCE",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Select exactly one reference process (★) before calculating.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 306,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "请指定一个参考过程（★）后再计算。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 303,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Wählen Sie genau einen Referenzprozess (★) aus, bevor Sie berechnen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 306,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Sélectionnez exactement un procédé de référence (★) avant de calculer.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 306,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_REFERENCE_EXCHANGE",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The reference exchange is missing or its amount is invalid. Check the reference exchange and its amount in the affected process.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 308,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "参考交换缺失或数量无效。请检查对应过程的参考交换及其数量。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 305,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Der Referenzaustausch fehlt oder seine Menge ist ungültig. Prüfen Sie den Referenzaustausch und seine Menge im betroffenen Prozess.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 308,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "L'échange de référence est manquant ou sa quantité est invalide. Vérifiez l'échange de référence et sa quantité dans le procédé concerné.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 308,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.INVALID_TARGET_AMOUNT",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The target amount must be a finite number greater than 0. Update it and try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 307,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "目标数量必须是大于 0 的有效数值。请修改后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 304,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Zielmenge muss eine endliche Zahl größer als 0 sein. Ändern Sie sie und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 307,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "La quantité cible doit être un nombre fini supérieur à 0. Modifiez-la, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 307,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.LOCAL_LIMIT_EXCEEDED",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The model exceeds the current local calculation limits. Reduce the model scope and try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 318,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "模型超出当前本地计算限制。请缩小模型范围后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 315,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Modell überschreitet die aktuellen lokalen Berechnungsgrenzen. Verkleinern Sie den Modellumfang und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 318,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le modèle dépasse les limites de calcul locales actuelles. Réduisez la portée du modèle, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 318,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "A unique result cannot be calculated for this model. Check the process connections and amounts, then try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "当前模型无法得到唯一的计算结果。请检查过程连接和数量设置后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 311,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Für dieses Modell kann kein eindeutiges Ergebnis berechnet werden. Prüfen Sie die Prozessverbindungen und Mengenangaben und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Un résultat unique ne peut pas être calculé pour ce modèle. Vérifiez les connexions des procédés et les quantités, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.MULTIPLE_PROVIDERS",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "This input flow is connected to multiple providers. Keep only one provider connection before calculating.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 309,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "该输入流连接了多个供应方。请只保留一个供应连接后再计算。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 306,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Dieser Eingangsfluss ist mit mehreren Lieferanten verbunden. Behalten Sie vor dem Berechnen nur eine Lieferantenverbindung bei.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 309,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Ce flux d'entrée est connecté à plusieurs fournisseurs. Ne conservez qu'une seule connexion fournisseur avant de calculer.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 309,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.NEGATIVE_ACTIVITY",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The result requires negative activity amounts for some processes, which is not allowed by the current model rules. Check the process connections and amounts.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 316,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "计算结果要求部分过程以负数量运行，不符合当前模型的计算规则。请检查过程连接和数量设置。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Ergebnis erfordert negative Aktivitätsmengen für einige Prozesse, was nach den Regeln des aktuellen Modells nicht zulässig ist. Prüfen Sie die Prozessverbindungen und Mengenangaben.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 316,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le résultat exige des quantités d'activité négatives pour certains procédés, ce qui n'est pas autorisé par les règles du modèle actuel. Vérifiez les connexions des procédés et les quantités.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 316,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The result failed numerical validation. Check the data magnitudes and process connections, then try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 315,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "计算结果未通过数值校验。请检查数据数量级和过程连接后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 312,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Ergebnis hat die numerische Prüfung nicht bestanden. Prüfen Sie die Datenwerte und Prozessverbindungen und versuchen Sie es erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 315,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le résultat n'a pas passé la validation numérique. Vérifiez les ordres de grandeur des données et les connexions des procédés, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 315,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.error.SOURCE_UNAVAILABLE",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelCalculationErrors"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Data required for the calculation could not be loaded. Check that the data is accessible and your network connection is working, then try again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 317,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "无法读取计算所需的数据。请检查数据是否可访问，并在确认网络连接正常后重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die für die Berechnung erforderlichen Daten konnten nicht geladen werden. Prüfen Sie, ob die Daten zugänglich sind, und vergewissern Sie sich, dass Ihre Netzwerkverbindung funktioniert, bevor Sie es erneut versuchen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 317,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Les données nécessaires au calcul n'ont pas pu être chargées. Vérifiez que les données sont accessibles et que votre connexion réseau fonctionne, puis réessayez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 317,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.location.flow",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Flow: {flowName}",
+          "argumentSignature": [{ "name": "flowName", "type": "simple" }],
+          "placeholders": ["flowName"],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 332,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "流：{flowName}",
+          "argumentSignature": [{ "name": "flowName", "type": "simple" }],
+          "placeholders": ["flowName"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 329,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Fluss: {flowName}",
+          "argumentSignature": [{ "name": "flowName", "type": "simple" }],
+          "placeholders": ["flowName"],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 332,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Flux : {flowName}",
+          "argumentSignature": [{ "name": "flowName", "type": "simple" }],
+          "placeholders": ["flowName"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 332,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1040,
+          "column": 33,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.location.flowFallback",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Flow {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 334,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "流 {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 331,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Fluss {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 334,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Flux {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 334,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.location.nodeFallback",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Node {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 333,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "节点 {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 330,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Knoten {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 333,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Nœud {index}",
+          "argumentSignature": [{ "name": "index", "type": "simple" }],
+          "placeholders": ["index"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 333,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1035,
+          "column": 27,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.location.process",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Process: {processName}",
+          "argumentSignature": [{ "name": "processName", "type": "simple" }],
+          "placeholders": ["processName"],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 331,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "过程：{processName}",
+          "argumentSignature": [{ "name": "processName", "type": "simple" }],
+          "placeholders": ["processName"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 328,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Prozess: {processName}",
+          "argumentSignature": [{ "name": "processName", "type": "simple" }],
+          "placeholders": ["processName"],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 331,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Procédé : {processName}",
+          "argumentSignature": [{ "name": "processName", "type": "simple" }],
+          "placeholders": ["processName"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 331,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1031,
+          "column": 27,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.calculating",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Calculating the model…",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 321,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "正在计算模型…",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 318,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Modell wird berechnet…",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 321,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Calcul du modèle en cours…",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 321,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 2375,
+          "column": 18,
+          "symbol": "ToolbarEdit",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.cancelled",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Calculation cancelled.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 322,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "计算已取消。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 319,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Berechnung abgebrochen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 322,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Calcul annulé.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 322,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1181,
+          "column": 13,
+          "symbol": "showMutationError",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.lciaIncomplete",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The inventory calculation completed, but impact assessment factors are incomplete. Some impact results are unavailable.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 330,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "清单计算已完成，但影响评价因子不完整。部分影响结果暂不可用。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 327,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Sachbilanzberechnung ist abgeschlossen, aber die Wirkungsabschätzungsfaktoren sind unvollständig. Einige Wirkungsergebnisse sind nicht verfügbar.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 330,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le calcul de l'inventaire est terminé, mais les facteurs d'évaluation des impacts sont incomplets. Certains résultats d'impact ne sont pas disponibles.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 330,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1359,
+          "column": 17,
+          "symbol": "saveData",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1445,
+          "column": 17,
+          "symbol": "saveData",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.previousResult",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The results below were saved previously and do not represent the model currently being edited.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 329,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "以下为上次已保存的结果，不代表当前编辑中的模型。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 326,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die folgenden Ergebnisse wurden zuvor gespeichert und entsprechen nicht dem aktuell bearbeiteten Modell.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 329,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Les résultats ci-dessous ont été enregistrés précédemment et ne représentent pas le modèle en cours d'édition.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 329,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
+          "line": 166,
+          "column": 13,
+          "symbol": "ModelResult",
+          "defaultMessage": "The results below were saved previously and do not represent the model currently being edited.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "The results below were saved previously and do not represent the model currently being edited.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
+              "line": 166,
+              "column": 13,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.resultDiscarded",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The model has changed, so this result was not applied. Calculate again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 323,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "模型已修改，本次计算结果未应用。请重新计算。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 320,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Modell wurde geändert, daher wurde dieses Ergebnis nicht übernommen. Berechnen Sie erneut.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 323,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le modèle a été modifié ; ce résultat n'a donc pas été appliqué. Recalculez.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 323,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1188,
+          "column": 13,
+          "symbol": "showMutationError",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.resultNotUpdated",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "This calculation did not complete. The calculation results were not updated.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 324,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "本次计算未完成，计算结果未更新。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 321,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Diese Berechnung wurde nicht abgeschlossen. Die Berechnungsergebnisse wurden nicht aktualisiert.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 324,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Ce calcul ne s'est pas terminé. Les résultats du calcul n'ont pas été mis à jour.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 324,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1064,
+          "column": 16,
+          "symbol": "errorModal",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.saveInFlight",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The save has already been submitted and cannot be cancelled. Wait for the save result.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 327,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "保存已提交，无法取消。请等待保存结果。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 324,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Speichern wurde bereits übermittelt und kann nicht abgebrochen werden. Warten Sie auf das Speicherergebnis.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 327,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "L'enregistrement a déjà été soumis et ne peut pas être annulé. Attendez le résultat de l'enregistrement.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 327,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 628,
+          "column": 9,
+          "symbol": "cancelActiveCalculation",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.saveRejected",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The calculation completed, but the results could not be saved. Try saving again.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 325,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "计算已完成，但结果未能保存。请重试保存。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 322,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Die Berechnung ist abgeschlossen, aber die Ergebnisse konnten nicht gespeichert werden. Versuchen Sie erneut zu speichern.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 325,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le calcul est terminé, mais les résultats n'ont pas pu être enregistrés. Réessayez l'enregistrement.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 325,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1207,
+          "column": 13,
+          "symbol": "showMutationError",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.saveStatusUnknown",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The save status could not be confirmed. Check whether the results were saved before retrying.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 326,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "无法确认结果是否已保存。请先检查保存状态，再决定是否重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 323,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Der Speicherstatus konnte nicht bestätigt werden. Prüfen Sie, ob die Ergebnisse gespeichert wurden, bevor Sie es erneut versuchen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 326,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le statut d'enregistrement n'a pas pu être confirmé. Vérifiez si les résultats ont été enregistrés avant de réessayer.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 326,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1200,
+          "column": 13,
+          "symbol": "showMutationError",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.status.saveSucceeded",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The model and calculation results have been saved.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 328,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "模型及计算结果已保存。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 325,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Das Modell und die Berechnungsergebnisse wurden gespeichert.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 328,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le modèle et les résultats du calcul ont été enregistrés.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 328,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1353,
+          "column": 15,
+          "symbol": "saveData",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+          "line": 1439,
+          "column": 15,
+          "symbol": "saveData",
+          "defaultMessage": null,
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": []
+    },
+    {
       "id": "pages.lifecyclemodel.checkData.inReview",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -132890,7 +135187,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 974,
+          "line": 1217,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "The model is missing reference process information. Complete or rebind the reference process, then try again.",
@@ -132905,7 +135202,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 974,
+              "line": 1217,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -132973,7 +135270,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1525,
+          "line": 1880,
           "column": 15,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Model is not public",
@@ -132997,7 +135294,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1525,
+              "line": 1880,
               "column": 15,
               "kind": "formatMessage"
             },
@@ -223438,7 +225735,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 995,
+          "line": 1238,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "This data is open data, save failed",
@@ -223504,7 +225801,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 995,
+              "line": 1238,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -232585,7 +234882,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1005,
+          "line": 1248,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "Data is under review, save failed",
@@ -232651,7 +234948,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1005,
+              "line": 1248,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -245934,7 +248231,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 45,
+          "line": 60,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Index",
@@ -246192,7 +248489,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 45,
+              "line": 60,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -246556,7 +248853,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 52,
+          "line": 67,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Name",
@@ -246754,7 +249051,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 52,
+              "line": 67,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -246993,7 +249290,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 79,
+          "line": 94,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Actions",
@@ -247233,7 +249530,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 79,
+              "line": 94,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -247460,7 +249757,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 71,
+          "line": 86,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Updated at",
@@ -247550,7 +249847,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 71,
+              "line": 86,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -247729,7 +250026,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-          "line": 65,
+          "line": 80,
           "column": 14,
           "symbol": "columns",
           "defaultMessage": "Version",
@@ -247942,7 +250239,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/modelResult/index.tsx",
-              "line": 65,
+              "line": 80,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -276108,6 +278405,16 @@
         },
         "proof": "A three-value mode union indexes an exhaustive Record of title, hint, and empty-state descriptors."
       },
+      "lifecycleModelCalculationErrors": {
+        "unknownHandling": {
+          "kind": "localizedRuntimeFallback",
+          "status": "implemented",
+          "strategy": "localized-generic-calculation-failure",
+          "keys": ["pages.lifecyclemodel.calculation.error.CALCULATION_FAILED"],
+          "proof": "Codes outside the reviewed descriptor map resolve to the localized generic CALCULATION_FAILED key."
+        },
+        "proof": "The calculation error modal resolves the typed frontend CalculationErrorCode through the reviewed static CALCULATION_ERROR_MESSAGE_IDS descriptor map whose keys are exactly the calculation error codes."
+      },
       "reviewDetail": {
         "unknownHandling": {
           "kind": "localizedRuntimeFallback",
@@ -276237,6 +278544,16 @@
       "locations": ["1298:12"],
       "category": "active-dynamic",
       "family": "dataProcessing",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+      "expression": "CALCULATION_ERROR_MESSAGE_IDS[result.code] ?? CALCULATION_ERROR_MESSAGE_IDS.CALCULATION_FAILED",
+      "locations": ["1009:28"],
+      "category": "active-dynamic",
+      "family": "lifecycleModelCalculationErrors",
       "reviewStatus": "reviewed"
     },
     {

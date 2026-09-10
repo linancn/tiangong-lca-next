@@ -40,6 +40,7 @@ import type {
   LifeCycleModelMutationResult,
   LifeCycleModelPersistencePlan,
   LifeCycleModelTable,
+  Up2DownEdge,
 } from './data';
 import {
   buildDeleteLifeCycleModelBundlePayload,
@@ -50,6 +51,11 @@ import {
   genLifeCycleModelJsonOrdered,
   MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE,
 } from './util';
+import {
+  CalculationCancelledError,
+  CalculationError,
+  CalculationOperation,
+} from './matrixCalculation/types';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
 type LifeCycleModelListRpcRow = {
@@ -69,6 +75,24 @@ type LifeCycleModelSearchOrderBy = {
 
 type LifeCycleModelMutationOptions = NormalizeLangPayloadForSaveOptions & {
   persistenceGraph?: LifeCycleModelGraphData;
+  /**
+   * zh-CN: 覆盖整个保存操作（源加载 → 求解 → LCIA → 提交）的取消标识；
+   * 提交前复核，已提交后取消不承诺撤销。
+   * en-US: A cancellation handle spanning the whole save operation; re-checked
+   * before committing. Cancelling after the commit leaves the outcome to the
+   * save result (no undo promise).
+   */
+  operation?: CalculationOperation;
+  /**
+   * zh-CN: 内存中的模型摘要比对回调：计算完成后、提交保存前调用；返回 true
+   * 表示编辑态已变化，本次计算结果按 RESULT_DISCARDED 丢弃，不覆盖新编辑态，
+   * 不写入持久化数据。
+   * en-US: In-memory model signature callback invoked after calculation and
+   * before submitting the save; returning true discards this run as
+   * RESULT_DISCARDED so stale results never overwrite the newer edit state or
+   * persisted data.
+   */
+  hasModelChanged?: () => boolean;
 };
 
 function normalizeLifeCycleModelTotalCount(row?: LifeCycleModelListRpcRow): number {
@@ -169,6 +193,69 @@ function buildMutationError(
   };
 }
 
+/**
+ * zh-CN: 将本地矩阵计算的取消/失败映射为可展示的失败结果。取消不是错误：
+ * 以 CALCULATION_CANCELLED 状态码区分，UI 用状态文案提示；失败携带可定位
+ * 的 calculationIssues。计算失败不更新任何已保存结果。
+ * en-US: Map local matrix calculation cancellation/failure to a displayable
+ * failure result. Cancellation is not an error: it is distinguished by the
+ * CALCULATION_CANCELLED code and surfaced with status copy; failures carry
+ * locatable calculationIssues. Failed calculations never update saved results.
+ */
+function buildCalculationMutationError(error: unknown): LifeCycleModelMutationResult | undefined {
+  if (error instanceof CalculationCancelledError) {
+    return buildMutationError('CALCULATION_CANCELLED', '');
+  }
+  if (error instanceof CalculationError) {
+    return {
+      ...buildMutationError(error.code, ''),
+      calculationIssues: error.issues,
+    };
+  }
+  return undefined;
+}
+
+type LifeCycleModelCalculationOutcome =
+  | {
+      ok: true;
+      lifeCycleModelProcesses: any[];
+      up2DownEdges: Up2DownEdge[];
+      lciaIncomplete: boolean;
+    }
+  | { ok: false; error: LifeCycleModelMutationResult };
+
+/**
+ * zh-CN: 运行本地矩阵计算并归一化取消/失败结果；成功时返回聚合结果与 LCIA
+ * 覆盖状态。
+ * en-US: Run the local matrix calculation and normalize cancellation/failure;
+ * on success return the aggregates and the LCIA coverage state.
+ */
+async function runLifeCycleModelCalculation(input: {
+  modelId: string;
+  nodes: any[];
+  lifeCycleModelJsonOrdered: any;
+  oldSubmodels: any[];
+  operation?: CalculationOperation;
+}): Promise<LifeCycleModelCalculationOutcome> {
+  try {
+    const { lifeCycleModelProcesses, up2DownEdges, lciaIncomplete } =
+      await genLifeCycleModelProcesses(
+        input.modelId,
+        input.nodes,
+        input.lifeCycleModelJsonOrdered,
+        input.oldSubmodels,
+        ...(input.operation ? [{ operation: input.operation }] : []),
+      );
+    return { ok: true, lifeCycleModelProcesses, up2DownEdges, lciaIncomplete: !!lciaIncomplete };
+  } catch (error) {
+    const calculationError = buildCalculationMutationError(error);
+    if (calculationError) {
+      return { ok: false, error: calculationError };
+    }
+    throw error;
+  }
+}
+
 function buildFlowVersionMutationError(error: unknown): LifeCycleModelMutationResult | undefined {
   if (
     typeof error !== 'object' ||
@@ -222,6 +309,14 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
   const status = Number(error?.context?.status ?? 0);
   const response = error?.context;
 
+  // 传输层失败（FunctionsFetchError）与网关中继失败（FunctionsRelayError，
+  // 可能携带真实 HTTP Response 如 504）都不产生应用层应答：无法证明后端
+  // 事务是否提交，必须在任何 HTTP/文本分支之前按未知提交状态处理。
+  const errorName = typeof error?.name === 'string' ? error.name : '';
+  if (errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError') {
+    return buildMutationError('SAVE_STATUS_UNKNOWN', error?.message ?? '', error);
+  }
+
   if (response && typeof response.clone === 'function') {
     try {
       const payload = await response.clone().json();
@@ -253,7 +348,7 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
         return buildMutationError('MODEL_NOT_FOUND', text || 'Lifecycle model not found');
       }
       if (text) {
-        return buildMutationError('FUNCTION_ERROR', text, { status });
+        return buildMutationError('SAVE_REJECTED', text, { status });
       }
     } catch (_textError) {
       // ignore text parse failures and fall through to generic handling.
@@ -270,11 +365,34 @@ async function parseFunctionInvokeError(error: any): Promise<LifeCycleModelMutat
     return buildMutationError('MODEL_NOT_FOUND', 'Lifecycle model not found');
   }
 
+  // 有服务器应答状态但无已映射语义：权威拒绝证据，按保存失败处理。
+  if (status > 0) {
+    return buildMutationError(
+      'SAVE_REJECTED',
+      error?.message ?? 'Lifecycle model bundle request failed',
+      error,
+    );
+  }
+
+  // 其余无状态错误（无 errorName 匹配、无服务器应答）同样无法证明事务
+  // 未提交，按未知提交状态处理。
   return buildMutationError(
-    'FUNCTION_ERROR',
+    'SAVE_STATUS_UNKNOWN',
     error?.message ?? 'Lifecycle model bundle request failed',
     error,
   );
+}
+
+/**
+ * zh-CN: 把 LCIA 覆盖状态附加到成功结果（LCIA_INCOMPLETE 通知）。
+ * en-US: Attach the LCIA coverage state to a successful result (LCIA_INCOMPLETE notice).
+ */
+function attachCalculationNotice(
+  result: LifeCycleModelMutationResult,
+  lciaIncomplete: boolean,
+): LifeCycleModelMutationResult {
+  if (!result.ok || !lciaIncomplete) return result;
+  return { ...result, calculationNotice: 'LCIA_INCOMPLETE' };
 }
 
 async function invokeLifecycleModelBundleFunction(
@@ -297,7 +415,7 @@ async function invokeLifecycleModelBundleFunction(
     });
 
     if (!result) {
-      return buildMutationError('FUNCTION_ERROR', 'Lifecycle model bundle request failed');
+      return buildMutationError('SAVE_STATUS_UNKNOWN', 'Lifecycle model bundle request failed');
     }
 
     if (result.error) {
@@ -308,14 +426,16 @@ async function invokeLifecycleModelBundleFunction(
       return result.data;
     }
 
+    // 后端已应答但载荷无效：无法证明事务未提交，按未知提交状态处理。
     return buildMutationError(
-      'INVALID_RESPONSE',
+      'SAVE_STATUS_UNKNOWN',
       'Lifecycle model bundle endpoint returned an invalid response',
       result.data,
     );
   } catch (error: any) {
+    // 超时/断线等未知提交状态：不断言数据没保存，由 UI 提示先检查保存状态。
     return buildMutationError(
-      'FUNCTION_ERROR',
+      'SAVE_STATUS_UNKNOWN',
       error?.message ?? 'Lifecycle model bundle request failed',
       error,
     );
@@ -390,12 +510,24 @@ export async function createLifeCycleModel(
     );
   }
 
-  const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
-    data.id,
-    data?.model?.nodes ?? [],
-    normalizedLifeCycleModelJsonOrdered,
-    [],
-  );
+  const calculation = await runLifeCycleModelCalculation({
+    modelId: data.id,
+    nodes: data?.model?.nodes ?? [],
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
+    oldSubmodels: [],
+    operation: options?.operation,
+  });
+  if (!calculation.ok) {
+    return attachLangNormalizationMetadata(calculation.error, langMetadata, options);
+  }
+  if (options?.hasModelChanged?.()) {
+    return attachLangNormalizationMetadata(
+      buildMutationError('RESULT_DISCARDED', ''),
+      langMetadata,
+      options,
+    );
+  }
+  const { lifeCycleModelProcesses, up2DownEdges } = calculation;
   const persistenceGraph = options?.persistenceGraph ?? data?.model;
 
   const planResult = await buildSaveLifeCycleModelPersistencePlan({
@@ -425,8 +557,23 @@ export async function createLifeCycleModel(
         sourceVersion: createVersionOptions.sourceVersion,
       }
     : plan;
+  // 提交前复核操作级取消：已取消则不发起保存
+  if (options?.operation) {
+    if (options.operation.isCancelled()) {
+      return attachLangNormalizationMetadata(
+        buildMutationError('CALCULATION_CANCELLED', ''),
+        langMetadata,
+        options,
+      );
+    }
+    options.operation.beginStage('persisting');
+  }
   const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', savePlan);
-  return attachLangNormalizationMetadata(result, langMetadata, options);
+  return attachLangNormalizationMetadata(
+    attachCalculationNotice(result, calculation.lciaIncomplete),
+    langMetadata,
+    options,
+  );
 }
 
 export async function updateLifeCycleModel(
@@ -483,12 +630,24 @@ export async function updateLifeCycleModel(
     );
   }
 
-  const { lifeCycleModelProcesses, up2DownEdges } = await genLifeCycleModelProcesses(
-    data.id,
-    data?.model?.nodes ?? [],
-    normalizedLifeCycleModelJsonOrdered,
+  const calculation = await runLifeCycleModelCalculation({
+    modelId: data.id,
+    nodes: data?.model?.nodes ?? [],
+    lifeCycleModelJsonOrdered: normalizedLifeCycleModelJsonOrdered,
     oldSubmodels,
-  );
+    operation: options?.operation,
+  });
+  if (!calculation.ok) {
+    return attachLangNormalizationMetadata(calculation.error, langMetadata, options);
+  }
+  if (options?.hasModelChanged?.()) {
+    return attachLangNormalizationMetadata(
+      buildMutationError('RESULT_DISCARDED', ''),
+      langMetadata,
+      options,
+    );
+  }
+  const { lifeCycleModelProcesses, up2DownEdges } = calculation;
 
   const oldProcessesResult = await getProcessDetailByIdsAndVersion(
     lifeCycleModelProcesses.map((process: any) => process.modelInfo.id),
@@ -520,8 +679,23 @@ export async function updateLifeCycleModel(
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
+  // 提交前复核操作级取消：已取消则不发起保存
+  if (options?.operation) {
+    if (options.operation.isCancelled()) {
+      return attachLangNormalizationMetadata(
+        buildMutationError('CALCULATION_CANCELLED', ''),
+        langMetadata,
+        options,
+      );
+    }
+    options.operation.beginStage('persisting');
+  }
   const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
-  return attachLangNormalizationMetadata(result, langMetadata, options);
+  return attachLangNormalizationMetadata(
+    attachCalculationNotice(result, calculation.lciaIncomplete),
+    langMetadata,
+    options,
+  );
 }
 
 export async function updateLifeCycleModelJsonApi(
@@ -1060,14 +1234,13 @@ export async function contributeLifeCycleModel(id: string, version: string) {
           item.refData.stateCode !== 200 &&
           item.refData.userId === userid
         ) {
-          if (!needContributeMap.has(refKey)) {
-            needContributeMap.set(refKey, {
-              type: item.ref['@type'],
-              ...item.refData,
-              id: item.ref['@refObjectId'],
-              version: item.ref['@version'],
-            });
-          }
+          // 上游按 refObjectId+version+type 去重，此处键必然唯一
+          needContributeMap.set(refKey, {
+            type: item.ref['@type'],
+            ...item.refData,
+            id: item.ref['@refObjectId'],
+            version: item.ref['@version'],
+          });
         }
 
         if (item.refData.json) {

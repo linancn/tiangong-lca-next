@@ -484,6 +484,33 @@
         "pages.welcome.carbonFootprintGuide.videoTitle",
         "pages.welcome.carbonFootprintGuide.workflowTitle"
       ]
+    },
+    "lifecycleModelCalculationErrors": {
+      "proof": "The calculation error modal resolves the typed frontend CalculationErrorCode through the reviewed static CALCULATION_ERROR_MESSAGE_IDS descriptor map whose keys are exactly the calculation error codes.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-generic-calculation-failure",
+        "keys": ["pages.lifecyclemodel.calculation.error.CALCULATION_FAILED"],
+        "proof": "Codes outside the reviewed descriptor map resolve to the localized generic CALCULATION_FAILED key."
+      },
+      "keys": [
+        "pages.lifecyclemodel.calculation.error.CALCULATION_FAILED",
+        "pages.lifecyclemodel.calculation.error.EMPTY_MODEL",
+        "pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW",
+        "pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION",
+        "pages.lifecyclemodel.calculation.error.INVALID_CONNECTION",
+        "pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT",
+        "pages.lifecyclemodel.calculation.error.INVALID_REFERENCE",
+        "pages.lifecyclemodel.calculation.error.INVALID_REFERENCE_EXCHANGE",
+        "pages.lifecyclemodel.calculation.error.INVALID_TARGET_AMOUNT",
+        "pages.lifecyclemodel.calculation.error.LOCAL_LIMIT_EXCEEDED",
+        "pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE",
+        "pages.lifecyclemodel.calculation.error.MULTIPLE_PROVIDERS",
+        "pages.lifecyclemodel.calculation.error.NEGATIVE_ACTIVITY",
+        "pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID",
+        "pages.lifecyclemodel.calculation.error.SOURCE_UNAVAILABLE"
+      ]
     }
   },
   "callsites": [
@@ -710,6 +737,13 @@
       "file": "src/pages/Welcome.tsx",
       "expression": "`teachingSteps.${key}.title`",
       "family": "welcomeGuide"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+      "expression": "CALCULATION_ERROR_MESSAGE_IDS[result.code] ?? CALCULATION_ERROR_MESSAGE_IDS.CALCULATION_FAILED",
+      "family": "lifecycleModelCalculationErrors"
     }
   ]
 }

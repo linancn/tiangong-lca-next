@@ -24,9 +24,24 @@ type Props = {
   modelVersion: string;
   lang: string;
   actionType: 'view' | 'edit';
+  /**
+   * zh-CN: 存在旧结果且与当前编辑中的模型不一致时显示 PREVIOUS_RESULT 说明；
+   * 无旧结果不显示。
+   * en-US: Shows the PREVIOUS_RESULT notice when previous results exist and do
+   * not match the model currently being edited; hidden when no previous
+   * results exist.
+   */
+  showPreviousResultNotice?: boolean;
 };
 
-const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, actionType }) => {
+const ModelResult: FC<Props> = ({
+  submodels,
+  modelId,
+  modelVersion,
+  lang,
+  actionType,
+  showPreviousResultNotice = false,
+}) => {
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
   const mainProductRequestEpochRef = useRef(0);
@@ -146,6 +161,14 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
+        {showPreviousResultNotice ? (
+          <div style={{ marginBottom: 12 }}>
+            <FormattedMessage
+              id='pages.lifecyclemodel.calculation.status.previousResult'
+              defaultMessage='The results below were saved previously and do not represent the model currently being edited.'
+            />
+          </div>
+        ) : null}
         <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           search={false}
           params={contentLanguageParams}

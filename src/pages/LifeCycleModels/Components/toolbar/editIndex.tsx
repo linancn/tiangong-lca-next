@@ -35,6 +35,19 @@ import {
   genPortLabel,
   getLifeCycleModelPortFlowVersion,
 } from '@/services/lifeCycleModels/util';
+import { getSharedMatrixCalculationClient } from '@/services/lifeCycleModels/matrixCalculation/workerClient';
+import { CalculationOperation } from '@/services/lifeCycleModels/matrixCalculation/types';
+import type { CalculationIssue } from '@/services/lifeCycleModels/matrixCalculation/types';
+import {
+  isCalculationErrorCode,
+  resolveCalculationIssues,
+  type ResolvedCalculationIssue,
+} from './utils/calculationIssues';
+import {
+  collectCanvasProviderRelations,
+  collectMultiProviderConflictNodeIds,
+  findConflictingProviderEdges,
+} from './utils/providerRelations';
 import {
   getLifeCycleModelGraphProcessReferences,
   normalizeLifeCycleModelGraphForDisplay,
@@ -60,7 +73,7 @@ import {
 } from '@ant-design/icons';
 import LoadingDisabledActionGroup from '@/components/LoadingDisabledActionGroup';
 import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
-import { App, Button, Space, Spin, theme, Tooltip } from 'antd';
+import { App, Button, Modal, Space, Spin, theme, Tooltip } from 'antd';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { v4 } from 'uuid';
@@ -127,6 +140,37 @@ const MISSING_REFERENCE_PROCESS_ERROR_MESSAGE =
   'No referenceToReferenceProcess found in lifeCycleModelInformation';
 const MISSING_REFERENCE_PROCESS_ERROR_CODE = 'MISSING_REFERENCE_PROCESS';
 
+/**
+ * zh-CN: 计算错误码 → 静态 locale id 映射；未知码回退 CALCULATION_FAILED。
+ * en-US: Static calculation error code → locale id map; unknown codes fall
+ * back to CALCULATION_FAILED.
+ */
+const CALCULATION_ERROR_MESSAGE_IDS: Record<string, string> = {
+  EMPTY_MODEL: 'pages.lifecyclemodel.calculation.error.EMPTY_MODEL',
+  INVALID_REFERENCE: 'pages.lifecyclemodel.calculation.error.INVALID_REFERENCE',
+  INVALID_TARGET_AMOUNT: 'pages.lifecyclemodel.calculation.error.INVALID_TARGET_AMOUNT',
+  INVALID_REFERENCE_EXCHANGE: 'pages.lifecyclemodel.calculation.error.INVALID_REFERENCE_EXCHANGE',
+  MULTIPLE_PROVIDERS: 'pages.lifecyclemodel.calculation.error.MULTIPLE_PROVIDERS',
+  INVALID_CONNECTION: 'pages.lifecyclemodel.calculation.error.INVALID_CONNECTION',
+  INCOMPATIBLE_FLOW: 'pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW',
+  INVALID_EXCHANGE_AMOUNT: 'pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT',
+  INVALID_ALLOCATION: 'pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION',
+  MODEL_NOT_SOLVABLE: 'pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE',
+  NUMERIC_RESULT_INVALID: 'pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID',
+  NEGATIVE_ACTIVITY: 'pages.lifecyclemodel.calculation.error.NEGATIVE_ACTIVITY',
+  SOURCE_UNAVAILABLE: 'pages.lifecyclemodel.calculation.error.SOURCE_UNAVAILABLE',
+  LOCAL_LIMIT_EXCEEDED: 'pages.lifecyclemodel.calculation.error.LOCAL_LIMIT_EXCEEDED',
+  CALCULATION_FAILED: 'pages.lifecyclemodel.calculation.error.CALCULATION_FAILED',
+};
+
+/** zh-CN: 计算期间展示的模态状态键。en-US: Modal state keys shown during calculation. */
+type CalculationPhase = 'idle' | 'calculating';
+
+/**
+ * zh-CN: 从画布边集合提取供应关系，用于单供应校验。
+ * en-US: Extract provider relations from canvas edges for the single-provider check.
+ */
+
 const toSaveMutationError = (
   error: unknown,
 ): Extract<LifeCycleModelMutationResult, { ok: false }> => {
@@ -170,11 +214,13 @@ const ToolbarEdit: FC<Props> = ({
   newVersion,
   onSubmitReviewSuccess = () => {},
 }) => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [thisId, setThisId] = useState(id);
   const [thisVersion, setThisVersion] = useState(version);
   const [thisAction, setThisAction] = useState(action);
   const [spinning, setSpinning] = useState(false);
+  const [calculationPhase, setCalculationPhase] = useState<CalculationPhase>('idle');
+  const [multiProviderConflictNodeIds, setMultiProviderConflictNodeIds] = useState<string[]>([]);
   const [infoData, setInfoData] = useState<LifeCycleModelEditorFormState>({});
   const [jsonTg, setJsonTg] = useState<LifeCycleModelJsonTg>({});
   const [problemNodes, setProblemNodes] = useState<refDataType[]>([]);
@@ -559,6 +605,34 @@ const ToolbarEdit: FC<Props> = ({
     setIsSave(true);
   }, [isSave, setIsSave]);
 
+  /**
+   * zh-CN: 模型内容变更后标记为未保存，使结果抽屉能显示 PREVIOUS_RESULT。
+   * en-US: Mark the model as unsaved after content changes so the results
+   * drawer can show PREVIOUS_RESULT.
+   */
+  const markModelDirty = useCallback(() => {
+    setIsSave(false);
+  }, [setIsSave]);
+
+  /**
+   * zh-CN: 取消当前保存操作。持久化尚未提交时整条操作被取消并提示已取消；
+   * 已进入持久化阶段则不承诺撤销，由保存结果决定最终状态。
+   * en-US: Cancels the current save operation. Before the commit the whole
+   * operation is cancelled with the cancelled status; once persistence is in
+   * flight no undo is promised and the save result decides the outcome.
+   */
+  const saveOperationRef = useRef<CalculationOperation | null>(null);
+  const cancelActiveCalculation = useCallback(() => {
+    if (saveOperationRef.current?.currentStage === 'persisting') {
+      message.info(
+        intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.saveInFlight' }),
+      );
+      return;
+    }
+    saveOperationRef.current?.cancel();
+    getSharedMatrixCalculationClient().cancel();
+  }, []);
+
   const resetGraphCommandState = useCallback(() => {
     graph?.cleanSelection?.();
     graph?.cleanClipboard?.();
@@ -623,11 +697,24 @@ const ToolbarEdit: FC<Props> = ({
         normalizePastedCells(pastedCells as Array<X6Node | X6Edge>);
         graph.cleanSelection();
         graph.select(pastedCells);
+        markModelDirty();
+        setMultiProviderConflictNodeIds(
+          collectMultiProviderConflictNodeIds(
+            nodes,
+            graph
+              .getEdges()
+              .map((edge: X6Edge) =>
+                typeof edge.toJSON === 'function'
+                  ? (edge.toJSON() as LifeCycleModelGraphEdge)
+                  : (edge as unknown as LifeCycleModelGraphEdge),
+              ),
+          ),
+        );
       });
 
       syncGraphSnapshot();
     },
-    [graph, normalizePastedCells, syncGraphSnapshot],
+    [graph, markModelDirty, normalizePastedCells, syncGraphSnapshot],
   );
 
   const duplicateSelection = useCallback(() => {
@@ -728,6 +815,7 @@ const ToolbarEdit: FC<Props> = ({
   );
 
   const updateTargetAmount = (data: LifeCycleModelTargetAmount) => {
+    markModelDirty();
     const refNode = nodes.find((node) => node?.data?.quantitativeReference === '1');
     if (refNode) {
       updateNode(refNode.id ?? '', {
@@ -810,6 +898,7 @@ const ToolbarEdit: FC<Props> = ({
         if (newNodes.length > 0) {
           addNodes(newNodes);
           setNodeCount((prev) => prev + newNodes.length);
+          markModelDirty();
         }
       }
 
@@ -871,8 +960,129 @@ const ToolbarEdit: FC<Props> = ({
       applyDelete();
     }
 
+    markModelDirty();
     refreshEdgeLabels();
-  }, [edges, graph, nodes, refreshEdgeLabels, removeEdges, removeNodes]);
+  }, [edges, graph, nodes, markModelDirty, refreshEdgeLabels, removeEdges, removeNodes]);
+
+  const navigateToNode = useCallback(
+    (nodeId?: string) => {
+      if (!nodeId) return false;
+      const targetNode = nodes.find((node) => node.id === nodeId);
+      if (!targetNode?.id) return false;
+      edges.forEach((edge) => {
+        if (edge.selected) {
+          updateEdge(edge.id ?? '', { selected: false });
+        }
+      });
+      nodes.forEach((node) => {
+        if (node.id !== targetNode.id && node.selected) {
+          updateNode(node.id ?? '', { selected: false });
+        }
+      });
+      graph?.cleanSelection?.();
+      updateNode(targetNode.id, { selected: true });
+      const targetCell = graph?.getCellById?.(targetNode.id);
+      if (targetCell && typeof graph?.centerCell === 'function') {
+        graph.centerCell(targetCell);
+      }
+      return true;
+    },
+    [edges, graph, nodes, updateEdge, updateNode],
+  );
+
+  /**
+   * zh-CN: 集中展示本地计算失败：一条明确错误文案 + 可定位问题列表 + 当前操作
+   * 状态（本次计算未完成，计算结果未更新）。定位信息独立于错误正文；无可靠
+   * 定位的问题不显示定位按钮。
+   * en-US: Centralized display for local calculation failures: one explicit
+   * error message + a locatable issue list + the operation status. Location
+   * data is independent of the body; issues without a reliable location show
+   * no locate button.
+   */
+  const calculationErrorModalRef = useRef<{ destroy: () => void } | null>(null);
+  const retrySaveRef = useRef<(() => void) | null>(null);
+
+  const showCalculationFailureModal = useCallback(
+    (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
+      const issues = (result.calculationIssues ?? []) as CalculationIssue[];
+      const resolvedIssues = resolveCalculationIssues(nodes, issues, contentLanguage);
+      const errorMessage = intl.formatMessage({
+        id:
+          CALCULATION_ERROR_MESSAGE_IDS[result.code] ??
+          CALCULATION_ERROR_MESSAGE_IDS.CALCULATION_FAILED,
+      });
+      calculationErrorModalRef.current?.destroy();
+
+      const errorModal = modal.error({
+        title: errorMessage,
+        content: (
+          <div>
+            {resolvedIssues.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+                {resolvedIssues.map((item: ResolvedCalculationIssue, index: number) => (
+                  <div
+                    key={`${item.issue.code}-${item.issue.instanceIndex ?? ''}-${
+                      item.issue.flowId ?? ''
+                    }-${index}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
+                  >
+                    <span>
+                      {item.processName
+                        ? intl.formatMessage(
+                            { id: 'pages.lifecyclemodel.calculation.location.process' },
+                            { processName: item.processName },
+                          )
+                        : intl.formatMessage(
+                            { id: 'pages.lifecyclemodel.calculation.location.nodeFallback' },
+                            { index: item.issue.instanceIndex || index + 1 },
+                          )}
+                      {item.flowName
+                        ? ` · ${intl.formatMessage(
+                            { id: 'pages.lifecyclemodel.calculation.location.flow' },
+                            { flowName: item.flowName },
+                          )}`
+                        : ''}
+                    </span>
+                    {item.nodeId ? (
+                      <Button
+                        size='small'
+                        onClick={() => {
+                          navigateToNode(item.nodeId);
+                          calculationErrorModalRef.current?.destroy();
+                        }}
+                      >
+                        {intl.formatMessage({
+                          id: 'pages.lifecyclemodel.calculation.action.locate',
+                        })}
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div style={{ marginTop: 12 }}>
+              {intl.formatMessage({
+                id: 'pages.lifecyclemodel.calculation.status.resultNotUpdated',
+              })}
+            </div>
+          </div>
+        ),
+        okText: intl.formatMessage({
+          id: 'pages.lifecyclemodel.calculation.action.calculateAgain',
+        }),
+        onOk: () => {
+          retrySaveRef.current?.();
+        },
+        cancelText: intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.action.close' }),
+        afterClose: () => {
+          calculationErrorModalRef.current = null;
+        },
+      });
+      calculationErrorModalRef.current = { destroy: () => errorModal.destroy() };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodes, contentLanguage, intl, modal],
+  );
 
   const saveData = async (
     setLoadingData: boolean,
@@ -966,6 +1176,39 @@ const ToolbarEdit: FC<Props> = ({
         },
       });
       const showMutationError = (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
+        if (result.code === 'CALCULATION_CANCELLED') {
+          message.info(
+            intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.cancelled' }),
+          );
+          return;
+        }
+
+        if (result.code === 'RESULT_DISCARDED') {
+          message.info(
+            intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.resultDiscarded' }),
+          );
+          return;
+        }
+
+        if (isCalculationErrorCode(result.code)) {
+          showCalculationFailureModal(result);
+          return;
+        }
+
+        if (result.code === 'SAVE_STATUS_UNKNOWN') {
+          message.warning(
+            intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.saveStatusUnknown' }),
+          );
+          return;
+        }
+
+        if (result.code === 'SAVE_REJECTED') {
+          message.error(
+            intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.status.saveRejected' }),
+          );
+          return;
+        }
+
         if (
           result.code === MISSING_REFERENCE_PROCESS_ERROR_CODE ||
           result.message === MISSING_REFERENCE_PROCESS_ERROR_MESSAGE
@@ -1021,21 +1264,84 @@ const ToolbarEdit: FC<Props> = ({
           return toSaveMutationError(error);
         }
       };
-      const mutationOptions =
-        options?.langIntent || persistenceGraph
-          ? {
-              ...(options?.langIntent ? { intent: options.langIntent } : {}),
-              ...(persistenceGraph ? { persistenceGraph } : {}),
-            }
-          : undefined;
+      /**
+       * zh-CN: 模型内存摘要：捕获于保存开始，计算完成后由 hasModelChanged
+       * 复核，防止旧结果覆盖新编辑态。摘要不进入持久化数据。
+       * en-US: In-memory model signature: captured at save start and re-checked
+       * via hasModelChanged after calculation so stale results never overwrite
+       * the newer edit state. The signature is never persisted.
+       */
+      const buildModelSignature = (
+        signatureNodes: LifeCycleModelGraphNode[],
+        signatureEdges: LifeCycleModelGraphEdge[],
+      ) =>
+        JSON.stringify({
+          nodes: signatureNodes.map((node) => [
+            node.id,
+            node.data?.index,
+            node.data?.id,
+            node.data?.version,
+            node.data?.quantitativeReference,
+            node.data?.targetAmount,
+          ]),
+          edges: signatureEdges.map((edge) => [
+            edge.id,
+            edge.source,
+            edge.target,
+            edge.data?.connection,
+          ]),
+        });
+      const readLiveGraphCells = (): {
+        liveNodes: LifeCycleModelGraphNode[];
+        liveEdges: LifeCycleModelGraphEdge[];
+      } => ({
+        liveNodes: graph
+          ? (graph
+              .getNodes()
+              .map((node: X6Node | LifeCycleModelGraphNode) =>
+                typeof (node as X6Node).toJSON === 'function'
+                  ? ((node as X6Node).toJSON() as LifeCycleModelGraphNode)
+                  : (node as LifeCycleModelGraphNode),
+              ) as LifeCycleModelGraphNode[])
+          : (nodes as LifeCycleModelGraphNode[]),
+        liveEdges: graph
+          ? (graph
+              .getEdges()
+              .map((edge: X6Edge | LifeCycleModelGraphEdge) =>
+                typeof (edge as X6Edge).toJSON === 'function'
+                  ? ((edge as X6Edge).toJSON() as LifeCycleModelGraphEdge)
+                  : (edge as LifeCycleModelGraphEdge),
+              ) as LifeCycleModelGraphEdge[])
+          : (edges as LifeCycleModelGraphEdge[]),
+      });
+      const modelSignatureAtSaveStart = buildModelSignature(currentNodes, currentEdges);
+      // 覆盖整个保存操作（源加载 → 求解 → LCIA → 提交）的取消标识
+      const saveOperation = new CalculationOperation();
+      const mutationOptions = {
+        ...(options?.langIntent ? { intent: options.langIntent } : {}),
+        ...(persistenceGraph ? { persistenceGraph } : {}),
+        hasModelChanged: () => {
+          const { liveNodes, liveEdges } = readLiveGraphCells();
+          return buildModelSignature(liveNodes, liveEdges) !== modelSignatureAtSaveStart;
+        },
+        operation: saveOperation,
+      };
 
       if (thisAction === 'edit') {
         const lifecycleModelPayload = { ...newData, id: thisId, version: thisVersion };
-        const result = await runMutation(() =>
-          mutationOptions
-            ? updateLifeCycleModel(lifecycleModelPayload, mutationOptions)
-            : updateLifeCycleModel(lifecycleModelPayload),
-        );
+        setCalculationPhase('calculating');
+        let result: LifeCycleModelMutationResult;
+        try {
+          saveOperationRef.current = saveOperation;
+          result = await runMutation(() =>
+            mutationOptions
+              ? updateLifeCycleModel(lifecycleModelPayload, mutationOptions)
+              : updateLifeCycleModel(lifecycleModelPayload),
+          );
+        } finally {
+          setCalculationPhase('idle');
+          saveOperationRef.current = null;
+        }
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
@@ -1045,10 +1351,16 @@ const ToolbarEdit: FC<Props> = ({
           if (!silent) {
             message.success(
               intl.formatMessage({
-                id: 'pages.flows.savesuccess',
-                defaultMessage: 'Saved successfully.',
+                id: 'pages.lifecyclemodel.calculation.status.saveSucceeded',
               }),
             );
+            if (result.calculationNotice === 'LCIA_INCOMPLETE') {
+              message.warning(
+                intl.formatMessage({
+                  id: 'pages.lifecyclemodel.calculation.status.lciaIncomplete',
+                }),
+              );
+            }
           }
           setThisId(savedModelId);
           setThisVersion(savedVersion);
@@ -1099,18 +1411,24 @@ const ToolbarEdit: FC<Props> = ({
         const lifecycleModelPayload = { ...newData, id: newId };
         const createVersionOptions =
           actionType === 'createVersion' ? { sourceVersion: thisVersion } : undefined;
-        const result = await runMutation(() => {
-          if (createVersionOptions) {
-            return createLifeCycleModel(
-              lifecycleModelPayload,
-              mutationOptions,
-              createVersionOptions,
-            );
-          }
-          return mutationOptions
-            ? createLifeCycleModel(lifecycleModelPayload, mutationOptions)
-            : createLifeCycleModel(lifecycleModelPayload);
-        });
+        setCalculationPhase('calculating');
+        let result: LifeCycleModelMutationResult;
+        try {
+          saveOperationRef.current = saveOperation;
+          result = await runMutation(() => {
+            if (createVersionOptions) {
+              return createLifeCycleModel(
+                lifecycleModelPayload,
+                mutationOptions,
+                createVersionOptions,
+              );
+            }
+            return createLifeCycleModel(lifecycleModelPayload, mutationOptions);
+          });
+        } finally {
+          setCalculationPhase('idle');
+          saveOperationRef.current = null;
+        }
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
@@ -1119,10 +1437,16 @@ const ToolbarEdit: FC<Props> = ({
           if (!silent) {
             message.success(
               intl.formatMessage({
-                id: 'pages.button.create.success',
-                defaultMessage: 'Created successfully!',
+                id: 'pages.lifecyclemodel.calculation.status.saveSucceeded',
               }),
             );
+            if (result.calculationNotice === 'LCIA_INCOMPLETE') {
+              message.warning(
+                intl.formatMessage({
+                  id: 'pages.lifecyclemodel.calculation.status.lciaIncomplete',
+                }),
+              );
+            }
           }
           setThisAction('edit');
           setThisId(savedModelId);
@@ -1190,6 +1514,10 @@ const ToolbarEdit: FC<Props> = ({
     }
   };
 
+  retrySaveRef.current = () => {
+    void saveData(true);
+  };
+
   useGraphEvent('edge:added', (evt) => {
     const edge = evt.edge;
     updateEdge(edge.id, edgeTemplate, VISUAL_ONLY_MUTATION_OPTIONS);
@@ -1215,6 +1543,29 @@ const ToolbarEdit: FC<Props> = ({
       const targetNodeID = edge.getTargetCellId();
       const sourceNode = nodes.find((node) => node.id === sourceNodeID);
       const targetNode = nodes.find((node) => node.id === targetNodeID);
+
+      // 单供应约束：同一条边重连自身不算第二供应方；其他来源已供应同一输入时
+      // 拒绝新边并给出短文案（不宣称整个模型无法计算）。
+      const candidateInputFlowId = targetFlowIDs?.[targetFlowIDs?.length - 1] ?? '';
+      const conflictingEdgeIds = findConflictingProviderEdges(
+        collectCanvasProviderRelations(nodes, edges),
+        {
+          upstreamIndex: String(sourceNode?.data?.index ?? ''),
+          downstreamIndex: String(targetNode?.data?.index ?? ''),
+          inputFlowId: candidateInputFlowId,
+        },
+        [edge.id],
+      );
+      if (conflictingEdgeIds.length > 0) {
+        removeEdges([edge.id]);
+        message.error(
+          intl.formatMessage({
+            id: 'pages.lifecyclemodel.calculation.connection.singleProvider',
+          }),
+        );
+        return;
+      }
+
       const sourceProcessId = sourceNode?.data?.id;
       const sourceProcessVersion = sourceNode?.data?.version;
       const targetProcessId = targetNode?.data?.id;
@@ -1236,6 +1587,7 @@ const ToolbarEdit: FC<Props> = ({
         'groupInput',
       );
 
+      markModelDirty();
       updateEdge(edge.id, {
         data: {
           connection: {
@@ -1479,6 +1831,7 @@ const ToolbarEdit: FC<Props> = ({
       setNodeCount(0);
       setProblemNodes([]);
       setSdkProblemProcessInstanceIds([]);
+      setMultiProviderConflictNodeIds([]);
       setJsonTg({});
       editorGraphHydrationBaselineRef.current = null;
       modelData({ nodes: [], edges: [] });
@@ -1509,6 +1862,8 @@ const ToolbarEdit: FC<Props> = ({
         nodes: initNodes,
         edges: initEdges,
       });
+      // 旧模型中的多供应冲突：不删除任何边，仅标记冲突节点
+      setMultiProviderConflictNodeIds(collectMultiProviderConflictNodeIds(initNodes, initEdges));
 
       setNodeCount(initNodes.length);
       resetGraphCommandState();
@@ -1574,6 +1929,10 @@ const ToolbarEdit: FC<Props> = ({
             nodes: initNodes,
             edges: initEdges,
           });
+          // 旧模型中的多供应冲突：不删除任何边，仅标记冲突节点
+          setMultiProviderConflictNodeIds(
+            collectMultiProviderConflictNodeIds(initNodes, initEdges),
+          );
 
           setNodeCount(initNodes.length);
           resetGraphCommandState();
@@ -1630,8 +1989,10 @@ const ToolbarEdit: FC<Props> = ({
       const hasSdkProcessInstanceProblem =
         typeof node?.data?.index === 'string' &&
         sdkProblemProcessInstanceIds.includes(node.data.index);
+      const hasProviderConflictProblem =
+        typeof node?.id === 'string' && multiProviderConflictNodeIds.includes(node.id);
 
-      if (hasReferenceProblem || hasSdkProcessInstanceProblem) {
+      if (hasReferenceProblem || hasSdkProcessInstanceProblem || hasProviderConflictProblem) {
         updateNode(
           node.id ?? '',
           {
@@ -1661,7 +2022,7 @@ const ToolbarEdit: FC<Props> = ({
         );
       }
     });
-  }, [problemNodes, sdkProblemProcessInstanceIds]);
+  }, [multiProviderConflictNodeIds, problemNodes, sdkProblemProcessInstanceIds]);
 
   const handleUpdateNode = async (ref: refDataType) => {
     setSpinning(true);
@@ -1959,6 +2320,7 @@ const ToolbarEdit: FC<Props> = ({
           modelVersion={thisVersion}
           lang={lang}
           actionType='edit'
+          showPreviousResultNotice={!isSave && (jsonTg?.submodels ?? []).length > 0}
         />
         <Tooltip
           title={<FormattedMessage id='pages.button.check' defaultMessage='Data Check' />}
@@ -2008,6 +2370,22 @@ const ToolbarEdit: FC<Props> = ({
           canDuplicate={hasSelectedCells}
         />
         <Spin className='tg-fullscreen-spin' spinning={spinning} fullscreen />
+        <Modal
+          open={calculationPhase === 'calculating'}
+          title={intl.formatMessage({
+            id: 'pages.lifecyclemodel.calculation.status.calculating',
+          })}
+          closable={false}
+          mask={{ closable: false }}
+          keyboard={false}
+          footer={
+            <Button onClick={() => cancelActiveCalculation()}>
+              {intl.formatMessage({ id: 'pages.lifecyclemodel.calculation.action.cancel' })}
+            </Button>
+          }
+        >
+          <Spin />
+        </Modal>
         <IoPortSelect
           lang={lang}
           node={ioPortSelectorNode as LifeCycleModelGraphNode}
