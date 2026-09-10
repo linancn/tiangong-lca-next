@@ -43,8 +43,8 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: '2026-09-09'
-lastReviewedCommit: '61d2323d8cb477ae881496aad9edb43aee0b3073'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 743f37af007d68c5b561756cdfb3218de73d1a3d
 lastReviewedNote: 'Next #1046: reviewed asynchronous TIDAS import submission, partial outcomes, committed counts and complete report downloads; all active locale messages use the shared registry.'
 related:
   - ../AGENTS.md
@@ -196,3 +196,5 @@ Every PR note for this repo must state:
 6. for semantic localization E2E, which browser/trust boundary ran and, for an authenticated run, the non-secret `created/cleaned/leaked` counts
 
 Partial import changes run the ImportTidasPackage, TidasImportResult, LcaTaskCenter, package taskCenter and general tidasPackage API suites. Prove enqueue returns before validation finishes, partial counts and witness paths render, v1 downloads remain readable, and browser polling errors never assert backend failure. Run active-locale artifacts/audits after changing result messages.
+
+Task Center time/order regressions must prove that repeated terminal import refreshes hours later preserve execution timestamps, duration and deterministic creation/ID order, including reversed feed order, local storage recovery, overlapping refreshes and account changes. Run the TIDAS task service and LcaTaskCenter component suites together.

@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: '2026-09-09'
-lastReviewedCommit: '61d2323d8cb477ae881496aad9edb43aee0b3073'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 743f37af007d68c5b561756cdfb3218de73d1a3d
 lastReviewedNote: 'Next #1046: reviewed asynchronous TIDAS import submission, partial outcomes, committed counts and complete report downloads; all active locale messages use the shared registry.'
 ---
 

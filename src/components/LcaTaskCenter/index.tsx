@@ -249,11 +249,16 @@ function formatDateTime(value: string, intl: IntlShapeLike): string {
 }
 
 function getTaskElapsedMs(item: TaskCenterItem): number {
-  const created = Date.parse(item.task.createdAt);
+  const created = Date.parse(
+    (item.kind === 'package' && item.task.startedAt) || item.task.createdAt,
+  );
   if (!Number.isFinite(created)) {
     return 0;
   }
-  const end = item.task.state === 'running' ? Date.now() : Date.parse(item.task.updatedAt);
+  const end =
+    item.task.state === 'running'
+      ? Date.now()
+      : Date.parse((item.kind === 'package' && item.task.finishedAt) || item.task.updatedAt);
   if (!Number.isFinite(end)) {
     return 0;
   }
@@ -1385,7 +1390,11 @@ const LcaTaskCenter: React.FC = () => {
       [
         ...lcaTasks.map((task) => ({ kind: 'lca' as const, task })),
         ...packageTasks.map((task) => ({ kind: 'package' as const, task })),
-      ].sort((left, right) => Date.parse(right.task.updatedAt) - Date.parse(left.task.updatedAt)),
+      ].sort(
+        (left, right) =>
+          Date.parse(right.task.createdAt) - Date.parse(left.task.createdAt) ||
+          left.task.id.localeCompare(right.task.id),
+      ),
     [lcaTasks, packageTasks],
   );
 

@@ -67,6 +67,84 @@ describe('tidasPackage/taskCenter', () => {
     localStorage.clear();
   });
 
+  it('refreshes terminal imports atomically with stable order and backend execution timestamps', async () => {
+    const center = loadTaskCenterModule();
+    await center.refreshTidasPackageTasksFromWorkerJobs();
+    const createdAt = '2026-09-09T10:31:50.000Z';
+    const startedAt = '2026-09-09T10:31:52.000Z';
+    const finishedAt = '2026-09-09T10:31:55.170Z';
+    const rows = ['a', 'b'].map((id) => ({
+      id,
+      jobKind: 'tidas.import_package',
+      subjectId: `package-${id}`,
+      status: id === 'a' ? 'completed' : 'failed',
+      createdAt,
+      startedAt,
+      finishedAt,
+      updatedAt: finishedAt,
+    }));
+    mockRequestWorkerJobsApi.mockResolvedValue({ data: rows, error: null });
+    const details = createDeferred<any>();
+    mockGetTidasPackageJobApi.mockImplementation(async (jobId) => {
+      await details.promise;
+      return {
+        data: {
+          ok: true,
+          job_id: jobId,
+          status: jobId === 'package-a' ? 'completed' : 'failed',
+          timestamps: {
+            created_at: createdAt,
+            started_at: startedAt,
+            finished_at: finishedAt,
+            updated_at: finishedAt,
+          },
+          artifacts_by_kind: {},
+          import_progress: { imported_count: 1 },
+        },
+      };
+    });
+    const changes: string[][] = [];
+    center.subscribeTidasPackageTasks(() =>
+      changes.push(center.listTidasPackageTasks().map((t) => t.id)),
+    );
+    mockRequestWorkerJobsApi.mockClear();
+    const first = center.refreshTidasPackageTasksFromWorkerJobs();
+    const overlapping = center.refreshTidasPackageTasksFromWorkerJobs();
+    await flushPromises();
+    expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1);
+    expect(changes).toEqual([]);
+    details.resolve(undefined);
+    await Promise.all([first, overlapping]);
+    expect(changes).toEqual([['a', 'b']]);
+
+    const snapshot = center.listTidasPackageTasks();
+    jest.useFakeTimers().setSystemTime(new Date('2026-09-10T01:33:38.000Z'));
+    mockRequestWorkerJobsApi.mockResolvedValue({ data: [...rows].reverse(), error: null });
+    await center.refreshTidasPackageTasksFromWorkerJobs();
+    expect(center.listTidasPackageTasks()).toEqual(snapshot);
+    expect(changes).toEqual([
+      ['a', 'b'],
+      ['a', 'b'],
+    ]);
+    expect(snapshot[0]).toMatchObject({ createdAt, updatedAt: finishedAt, startedAt, finishedAt });
+    expect(snapshot[1].state).toBe('failed');
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: rows.map((row) => ({ ...row, startedAt: null, finishedAt: 'invalid' })),
+      error: null,
+    });
+    mockGetTidasPackageJobApi.mockResolvedValue({ data: { ok: false } });
+    await center.refreshTidasPackageTasksFromWorkerJobs();
+    expect(center.listTidasPackageTasks()[0]).toMatchObject({ startedAt, finishedAt });
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(saved.tasks[0]).toMatchObject({ startedAt, finishedAt });
+    center.bindTidasPackageTaskCenterOwner(null);
+    mockRequestWorkerJobsApi.mockResolvedValue({ data: [], error: null });
+    const restored = loadTaskCenterModule();
+    expect(restored.listTidasPackageTasks()[0]).toMatchObject({ startedAt, finishedAt });
+    restored.bindTidasPackageTaskCenterOwner(null);
+    jest.useRealTimers();
+  });
+
   it('stays inert until an authenticated owner is bound and discards legacy global storage', async () => {
     localStorage.setItem(
       LEGACY_STORAGE_KEY,
@@ -495,23 +573,25 @@ describe('tidasPackage/taskCenter', () => {
     );
 
     const normalizedModule = loadTaskCenterModule();
-    expect(normalizedModule.listTidasPackageTasks()).toEqual([
-      expect.objectContaining({
-        id: 'normalized-task',
-        sequence: 1,
-        kind: 'tidas_package_export',
-        workerJobId: 'worker-normalized-task',
-        jobKind: 'tidas.export_package',
-        scope: null,
-        createdAt: '2026-03-21T10:00:00.000Z',
-        updatedAt: '2026-03-21T11:00:00.000Z',
-      }),
-      expect.objectContaining({
-        id: 'normalized-import-task',
-        kind: 'tidas_package_import',
-        sequence: 2,
-      }),
-    ]);
+    expect(normalizedModule.listTidasPackageTasks()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'normalized-task',
+          sequence: 1,
+          kind: 'tidas_package_export',
+          workerJobId: 'worker-normalized-task',
+          jobKind: 'tidas.export_package',
+          scope: null,
+          createdAt: '2026-03-21T10:00:00.000Z',
+          updatedAt: '2026-03-21T11:00:00.000Z',
+        }),
+        expect.objectContaining({
+          id: 'normalized-import-task',
+          kind: 'tidas_package_import',
+          sequence: 2,
+        }),
+      ]),
+    );
   });
 
   it('restores string scopes when savedAt is missing from storage', () => {
@@ -1049,6 +1129,7 @@ describe('tidasPackage/taskCenter', () => {
 
   it('surfaces worker_jobs refresh API errors with explicit and fallback messages', async () => {
     const explicitModule = loadTaskCenterModule();
+    await explicitModule.refreshTidasPackageTasksFromWorkerJobs();
     mockRequestWorkerJobsApi.mockResolvedValueOnce({
       data: null,
       error: { message: 'package api down' },
@@ -1058,6 +1139,7 @@ describe('tidasPackage/taskCenter', () => {
     );
 
     const fallbackModule = loadTaskCenterModule();
+    await fallbackModule.refreshTidasPackageTasksFromWorkerJobs();
     mockRequestWorkerJobsApi.mockResolvedValueOnce({ data: null, error: {} });
     await expect(fallbackModule.refreshTidasPackageTasksFromWorkerJobs()).rejects.toThrow(
       'Failed to refresh TIDAS package worker jobs',
@@ -2024,6 +2106,7 @@ describe('tidasPackage/taskCenter', () => {
     'recovers import detail during server refresh (%s)',
     async (mode) => {
       const center = loadTaskCenterModule();
+      await center.refreshTidasPackageTasksFromWorkerJobs();
       mockRequestWorkerJobsApi.mockResolvedValue({
         data: [1, 2].map((n) => ({
           id: `worker-${n}`,

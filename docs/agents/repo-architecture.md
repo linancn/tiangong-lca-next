@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: '2026-09-09'
-lastReviewedCommit: '61d2323d8cb477ae881496aad9edb43aee0b3073'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 743f37af007d68c5b561756cdfb3218de73d1a3d
 lastReviewedNote: 'Next #1046: reviewed asynchronous TIDAS import submission, partial outcomes, committed counts and complete report downloads; all active locale messages use the shared registry.'
 related:
   - ../AGENTS.md
@@ -210,3 +210,5 @@ Next owns read orchestration, release dataset identity display, directional LCI/
 The self-hosted snapshot tools keep the generated Edge tree and Database initializer paired. `docker/scripts/export-snapshot-bootstrap.sql` projects constrained roles and source ACL boundaries; `export-snapshot-queue-bootstrap.sql` recreates extension-owned empty queue storage and the Database-owned visibility fence after schema restoration. Runtime/backend semantics remain in their owning repositories.
 
 TIDAS ZIP import now submits `root_closure_v2` asynchronously after signed upload. The package Task Center keeps canonical job identity, projects partial/no-success/interrupted outcomes from report metadata, and recovers committed counts through the package API. Import polling failure preserves the last backend state. `ImportTidasPackage/ImportResult.tsx` loads the bounded v2 report and navigates directly to complete signed report downloads; historical v1 JSON remains downloadable.
+
+TIDAS Task Center retains backend start, finish and update timestamps through polling and local recovery. Finished package duration uses start-to-finish time (legacy records fall back to created/update time); readback never stamps a new business update time. The combined LCA/package list orders by creation time and task ID. Import detail refreshes publish one batch, and overlapping requests for the same authenticated owner share a refresh.
