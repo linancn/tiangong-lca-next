@@ -1,3 +1,6 @@
+import TidasImportResult, {
+  importOutcomeLabel,
+} from '@/components/ImportTidasPackage/ImportResult';
 import ClosureTaskDetail from '@/components/ClosureTaskDetail';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
@@ -108,7 +111,11 @@ function useDataProductTaskSummaries(): TaskSummaryV2[] {
 function statusTag(
   state: 'running' | 'completed' | 'failed',
   intl: IntlShapeLike,
+  importOutcome?: TidasPackageBackgroundTask['importOutcome'],
 ): React.ReactNode {
+  if (importOutcome && importOutcome !== 'success') {
+    return <Tag color='warning'>{importOutcomeLabel(importOutcome, intl)}</Tag>;
+  }
   if (state === 'completed') {
     return (
       <Tag color='success' icon={<CheckCircleOutlined />}>
@@ -242,11 +249,16 @@ function formatDateTime(value: string, intl: IntlShapeLike): string {
 }
 
 function getTaskElapsedMs(item: TaskCenterItem): number {
-  const created = Date.parse(item.task.createdAt);
+  const created = Date.parse(
+    (item.kind === 'package' && item.task.startedAt) || item.task.createdAt,
+  );
   if (!Number.isFinite(created)) {
     return 0;
   }
-  const end = item.task.state === 'running' ? Date.now() : Date.parse(item.task.updatedAt);
+  const end =
+    item.task.state === 'running'
+      ? Date.now()
+      : Date.parse((item.kind === 'package' && item.task.finishedAt) || item.task.updatedAt);
   if (!Number.isFinite(end)) {
     return 0;
   }
@@ -870,6 +882,8 @@ function taskProgressStrokeColor(
   item: TaskCenterItem,
   token: ReturnType<typeof theme.useToken>['token'],
 ): string {
+  if (item.kind === 'package' && item.task.importOutcome && item.task.importOutcome !== 'success')
+    return token.colorWarning;
   if (item.task.state === 'completed') {
     return token.colorSuccess;
   }
@@ -1218,6 +1232,7 @@ function packageBusinessDetail(
           },
         ]}
       />
+      {isImport && task.jobId && <TidasImportResult jobId={task.jobId} />}
       {singleRoot && (
         <DetailSection
           title={intl.formatMessage({
@@ -1375,7 +1390,11 @@ const LcaTaskCenter: React.FC = () => {
       [
         ...lcaTasks.map((task) => ({ kind: 'lca' as const, task })),
         ...packageTasks.map((task) => ({ kind: 'package' as const, task })),
-      ].sort((left, right) => Date.parse(right.task.updatedAt) - Date.parse(left.task.updatedAt)),
+      ].sort(
+        (left, right) =>
+          Date.parse(right.task.createdAt) - Date.parse(left.task.createdAt) ||
+          left.task.id.localeCompare(right.task.id),
+      ),
     [lcaTasks, packageTasks],
   );
 
@@ -1758,7 +1777,11 @@ const LcaTaskCenter: React.FC = () => {
                           <Typography.Text strong style={{ fontSize: 14 }}>
                             {taskTitle(item, intl)}
                           </Typography.Text>
-                          {statusTag(item.task.state, intl)}
+                          {statusTag(
+                            item.task.state,
+                            intl,
+                            item.kind === 'package' ? item.task.importOutcome : undefined,
+                          )}
                           <Popover
                             trigger='click'
                             placement='bottomLeft'

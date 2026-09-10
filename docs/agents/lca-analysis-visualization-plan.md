@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-09-04
-lastReviewedCommit: 268221f9f695944dc75d29a75c101183869001b1
-lastReviewedNote: 'Reviewed for Next #1023: edit-mode graph hydration and persistence reconciliation do not change the proposed LCA analysis or visualization contract.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 743f37af007d68c5b561756cdfb3218de73d1a3d
+lastReviewedNote: 'Next #1046: reviewed import-only Task Center changes and focused async/report regressions. Calculation/analysis behavior, bootstrap, protected gate and recorded coverage baseline remain unchanged; full delivery proof stays in the Issue/PR.'
 ---
 
 # LCA Analysis And Visualization Plan

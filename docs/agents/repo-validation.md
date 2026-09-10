@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-09-09
-lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
-lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
+lastReviewedAt: 2026-09-10
+lastReviewedCommit: 743f37af007d68c5b561756cdfb3218de73d1a3d
+lastReviewedNote: 'Next #1046: reviewed asynchronous TIDAS import submission, partial outcomes, committed counts and complete report downloads; all active locale messages use the shared registry.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -194,3 +194,7 @@ Every PR note for this repo must state:
 4. whether `pnpm prepush:gate` ran
 5. whether any required proof lives in another repo
 6. for semantic localization E2E, which browser/trust boundary ran and, for an authenticated run, the non-secret `created/cleaned/leaked` counts
+
+Partial import changes run the ImportTidasPackage, TidasImportResult, LcaTaskCenter, package taskCenter and general tidasPackage API suites. Prove enqueue returns before validation finishes, partial counts and witness paths render, v1 downloads remain readable, and browser polling errors never assert backend failure. Run active-locale artifacts/audits after changing result messages.
+
+Task Center time/order regressions must prove that repeated terminal import refreshes hours later preserve execution timestamps, duration and deterministic creation/ID order, including reversed feed order, local storage recovery, overlapping refreshes and account changes. Run the TIDAS task service and LcaTaskCenter component suites together.

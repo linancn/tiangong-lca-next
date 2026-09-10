@@ -16,6 +16,12 @@ const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
 const mockRefreshDataProductTasks = jest.fn();
 const mockSubscribeDataProductTasks = jest.fn(() => jest.fn());
 
+jest.mock('@/components/ImportTidasPackage/ImportResult', () => ({
+  __esModule: true,
+  default: ({ jobId }: { jobId: string }) => <div data-testid='import-result'>{jobId}</div>,
+  importOutcomeLabel: (value: string) => value,
+}));
+
 jest.mock('@/components/ClosureTaskDetail', () => ({
   __esModule: true,
   default: ({ canDownloadReport, closureCheckId, refreshSignal }: any) => (
@@ -246,6 +252,34 @@ describe('LcaTaskCenter', () => {
     mockRefreshLcaTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshTidasPackageTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshDataProductTasks.mockResolvedValue([]);
+  });
+
+  it('keeps completed package duration and order fixed after later metadata refreshes', () => {
+    mockPackageTasks = ['b', 'a'].map((id) => ({
+      id,
+      sequence: 1,
+      kind: 'tidas_package_import',
+      state: id === 'a' ? 'completed' : 'failed',
+      phase: id === 'a' ? 'completed' : 'failed',
+      filename: `${id}.zip`,
+      createdAt: '2026-09-09T10:31:50.000Z',
+      startedAt: '2026-09-09T10:31:52.000Z',
+      finishedAt: '2026-09-09T10:31:55.170Z',
+      updatedAt: '2026-09-10T01:33:38.000Z',
+    }));
+    const view = render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+    expect(screen.getAllByText('Elapsed 3.17 s')).toHaveLength(2);
+    const names = () =>
+      screen.getAllByText(/Import package: [ab]\.zip/).map((el) => el.textContent);
+    expect(names()).toEqual(['Import package: a.zip', 'Import package: b.zip']);
+    mockPackageTasks = mockPackageTasks
+      .map((task) => ({ ...task, updatedAt: '2026-09-11T01:33:38.000Z' }))
+      .reverse();
+    act(() => mockSubscribeTidasPackageTasks.mock.calls[0][0]());
+    view.rerender(<LcaTaskCenter />);
+    expect(screen.getAllByText('Elapsed 3.17 s')).toHaveLength(2);
+    expect(names()).toEqual(['Import package: a.zip', 'Import package: b.zip']);
   });
 
   it('shows the empty state when there are no tracked tasks', () => {
@@ -699,6 +733,7 @@ describe('LcaTaskCenter', () => {
       {
         id: 'pkg-import-filter',
         kind: 'tidas_package_import',
+        importOutcome: 'partial',
         state: 'running',
         phase: 'queued',
         filename: 'package.zip',
@@ -864,6 +899,7 @@ describe('LcaTaskCenter', () => {
         id: 'pkg-import-running',
         sequence: 5.7,
         kind: 'tidas_package_import',
+        importOutcome: 'success',
         state: 'running',
         phase: 'import_package',
         message: 'importing package data',
@@ -1011,10 +1047,7 @@ describe('LcaTaskCenter', () => {
     expect(downloadButtons).toHaveLength(2);
     fireEvent.click(downloadButtons[0]);
     await waitFor(() => {
-      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
-        1,
-        'pkg-completed-default-name',
-      );
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(1, 'pkg-completed');
     });
     await waitFor(() => {
       expect(message.success).toHaveBeenCalledWith('Downloaded downloaded.zip');
@@ -1022,7 +1055,10 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(downloadButtons[1]);
     await waitFor(() => {
-      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(2, 'pkg-completed');
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
+        2,
+        'pkg-completed-default-name',
+      );
     });
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('Failed to download TIDAS package');
@@ -1030,10 +1066,7 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(downloadButtons[0]);
     await waitFor(() => {
-      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(
-        3,
-        'pkg-completed-default-name',
-      );
+      expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(3, 'pkg-completed');
     });
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('download broken');
