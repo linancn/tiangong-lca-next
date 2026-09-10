@@ -2102,7 +2102,7 @@ describe('tidasPackage/taskCenter', () => {
     center.bindTidasPackageTaskCenterOwner(null);
     jest.useRealTimers();
   });
-  it.each(['valid', 'missing', 'throw', 'owner-change'])(
+  it.each(['valid', 'missing', 'throw', 'owner-change', 'owner-change-after-last-detail'])(
     'recovers import detail during server refresh (%s)',
     async (mode) => {
       const center = loadTaskCenterModule();
@@ -2122,7 +2122,10 @@ describe('tidasPackage/taskCenter', () => {
       mockGetTidasPackageJobApi.mockImplementation(async (jobId) => {
         if (mode === 'throw') throw new Error('offline');
         if (mode === 'missing') return { data: { ok: false }, error: null };
-        if (mode === 'owner-change') {
+        if (
+          mode === 'owner-change' ||
+          (mode === 'owner-change-after-last-detail' && jobId === 'job-2')
+        ) {
           mockRequestWorkerJobsApi.mockResolvedValue({ data: [], error: null });
           center.bindTidasPackageTaskCenterOwner('user-b');
         }
@@ -2141,7 +2144,7 @@ describe('tidasPackage/taskCenter', () => {
         };
       });
       await center.refreshTidasPackageTasksFromWorkerJobs();
-      expect(center.listTidasPackageTasks()).toHaveLength(mode === 'owner-change' ? 0 : 2);
+      expect(center.listTidasPackageTasks()).toHaveLength(mode.startsWith('owner-change') ? 0 : 2);
       expect(center.listTidasPackageTasks()[0]?.importSummary?.imported_count).toBe(
         mode === 'valid' ? 1 : undefined,
       );
