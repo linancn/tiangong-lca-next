@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-03
-lastReviewedCommit: 0cfd00b890fb998ba7f43859bfb424617b5ecb90
-lastReviewedNote: 'Reviewed for Next #1020: Team information spacing and component-size cleanup does not change submission admission, Review Admin diagnostics or review-state transitions.'
+lastReviewedAt: 2026-09-09
+lastReviewedCommit: 5fe90293372adb1ba25fbf2d7dda06ba99bd94e9
+lastReviewedNote: 'Reviewed for Next #1042: six review task tabs consume Database v4 lexical search; request scope resets and stale-response handling preserve role boundaries. Read-only browser RPC allowlist advances to v4; existing testing, language and delivery gates remain in force.'
 ---
 
 # Audit Status Reference
@@ -117,3 +117,7 @@ Only Review Admin can manually start or read the joint pending-review quality di
 10. every top-level row keeps its own selectable action when the actor has permission; Review Members see only their assigned/readable reviews
 11. the child table does not show a reference-path column, and no persisted or visible reference-overview field is required
 12. every readable Root or Reference row exposes a view icon that opens the existing read-only Contact, Source, Unit Group, Flow Property, Flow, Process, or Lifecycle Model drawer; viewing does not alter review state or access
+
+## Review Queue Search
+
+All six task tabs use the v4 Admin/Member queue RPCs with `p_query`, reusing the seven dataset families' existing `search_text` projections. Matching binds the review's exact table/id/version and retains queue authorization and filters before task totals and pagination. Search reads that version's current stored projection, not submission-time historical content or submitter/team/opinion metadata. Root and Reference tasks match independently; expanded children keep the current tab's readable reference context. Search and clear reset paging, selection and expansion; repeated submissions refresh. Request/view epochs reject stale main and child responses. Query failures show the shared localized request error and are not reported as successful empty lists. Database v4 availability is a deployment prerequisite; v3 remains for older clients.

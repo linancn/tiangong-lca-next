@@ -1189,6 +1189,8 @@ export function toAmountNumber(amount: string) {
 export function getDataSource(pathname: string) {
   if (pathname.includes('/mydata')) {
     return 'my';
+  } else if (pathname.includes('/exampledata')) {
+    return 'ex';
   } else if (pathname.includes('/tgdata')) {
     return 'tg';
   } else if (pathname.includes('/codata')) {

@@ -20,6 +20,7 @@ describe('Utils page helpers', () => {
       <>
         {getDataTitle('my')}
         {getDataTitle('tg')}
+        {getDataTitle('ex')}
         {getDataTitle('co')}
         {getDataTitle('te')}
       </>,
@@ -27,6 +28,7 @@ describe('Utils page helpers', () => {
 
     expect(screen.getByText('My Data')).toBeInTheDocument();
     expect(screen.getByText('Open Data')).toBeInTheDocument();
+    expect(screen.getByText('Example Data')).toBeInTheDocument();
     expect(screen.getByText('Commercial Data')).toBeInTheDocument();
     expect(screen.getByText('Team Data')).toBeInTheDocument();
     expect(getDataTitle('unknown')).toBe('');

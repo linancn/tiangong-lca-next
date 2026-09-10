@@ -25,6 +25,7 @@ import { ExperimentOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -188,8 +189,27 @@ const AssignmentReview = ({
     Record<string, Promise<RootReviewReferenceProgress[]> | undefined>
   >({});
   const subTableLoadErrorIdsRef = useRef<Set<string>>(new Set());
-  const previousLangRef = useRef(lang);
-  const filterReloadInitializedRef = useRef(false);
+  const [keyword, setKeyword] = useState('');
+  const [searchRevision, setSearchRevision] = useState(0);
+  const [queryFailed, setQueryFailed] = useState(false);
+  const requestEpochRef = useRef(0);
+  const viewEpochRef = useRef(0);
+  const requestScope = JSON.stringify([
+    keyword,
+    searchRevision,
+    lang,
+    tableType,
+    displayMode,
+    targetTable,
+    userData?.user_id,
+    userData?.role,
+  ]);
+  const requestScopeRef = useRef(requestScope);
+  if (requestScopeRef.current !== requestScope) {
+    requestScopeRef.current = requestScope;
+    requestEpochRef.current += 1;
+    viewEpochRef.current += 1;
+  }
   const childActionRef = useRef<{ reload: () => void }>({} as { reload: () => void });
 
   const isReferenceMatchingCurrentTab = (record: RootReviewReferenceProgress) =>
@@ -262,6 +282,8 @@ const AssignmentReview = ({
     });
 
   const resetReviewViewState = () => {
+    viewEpochRef.current += 1;
+    mainReviewRowsRef.current = {};
     clearUnifiedSelection();
     setExpandedRowKeys([]);
     setSubTableData({});
@@ -272,31 +294,17 @@ const AssignmentReview = ({
   };
 
   const reloadAfterChildAction = () => {
+    requestEpochRef.current += 1;
     resetReviewViewState();
     actionRef.current?.reload?.();
   };
   childActionRef.current.reload = reloadAfterChildAction;
 
   useEffect(() => {
-    if (previousLangRef.current === lang) {
-      return;
-    }
-
-    previousLangRef.current = lang;
     resetReviewViewState();
-    actionRef.current?.reload?.();
-  }, [actionRef, lang]);
-
-  useEffect(() => {
-    if (!filterReloadInitializedRef.current) {
-      filterReloadInitializedRef.current = true;
-      return;
-    }
-
-    resetReviewViewState();
-    actionRef.current?.setPageInfo?.({ current: 1, pageSize: 50 });
-    actionRef.current?.reload?.();
-  }, [actionRef, displayMode, targetTable]);
+    setQueryFailed(false);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+  }, [actionRef, requestScope]);
 
   const handleDisplayModeChange = (nextDisplayMode: ReviewDisplayMode) => {
     setDisplayMode(nextDisplayMode);
@@ -312,10 +320,11 @@ const AssignmentReview = ({
   };
 
   const reviewQueueFilters: ReviewQueueFilters | undefined =
-    displayMode === 'all' && !targetTable
+    displayMode === 'all' && !targetTable && !keyword
       ? undefined
       : {
           displayMode,
+          ...(keyword ? { query: keyword } : {}),
           ...(targetTable ? { targetTable } : {}),
         };
 
@@ -389,11 +398,22 @@ const AssignmentReview = ({
       isReviewTargetTableCompatible(displayMode, value),
     ),
   ];
-  const onSearch: SearchProps['onSearch'] = () => {
-    // setKeyWord(value);
-    // actionRef.current?.setPageInfo?.({ current: 1 });
-    // actionRef.current?.reload();
+  const onSearch: SearchProps['onSearch'] = (value) => {
+    requestEpochRef.current += 1;
+    resetReviewViewState();
+    setQueryFailed(false);
+    actionRef.current?.setPageInfo?.({ current: 1 });
+    setKeyword(value.trim());
+    setSearchRevision((revision) => revision + 1);
   };
+
+  useEffect(
+    () => () => {
+      requestEpochRef.current += 1;
+      viewEpochRef.current += 1;
+    },
+    [],
+  );
 
   const loadSubTableData = async (rootReviewId: string) => {
     if (Object.prototype.hasOwnProperty.call(subTableDataRef.current, rootReviewId)) {
@@ -403,12 +423,14 @@ const AssignmentReview = ({
       return subTableRequestRef.current[rootReviewId];
     }
 
+    const viewEpoch = viewEpochRef.current;
     const rowKey = rootReviewId;
     subTableLoadErrorIdsRef.current.delete(rootReviewId);
     setSubTableLoading((prev) => ({ ...prev, [rowKey]: true }));
     const request = (async () => {
       try {
         const result = await getRootReviewReferenceProgress(rootReviewId);
+        if (viewEpoch !== viewEpochRef.current) return [];
         if (result.error) throw result.error;
         const currentTabData = result.data.filter(isReferenceMatchingCurrentTab);
         subTableLoadErrorIdsRef.current.delete(rootReviewId);
@@ -419,6 +441,7 @@ const AssignmentReview = ({
         setSubTableData((prev) => ({ ...prev, [rowKey]: currentTabData }));
         return currentTabData;
       } catch (error) {
+        if (viewEpoch !== viewEpochRef.current) return [];
         console.error('Failed to load reference review data:', error);
         subTableLoadErrorIdsRef.current.add(rootReviewId);
         const remainingSubTableData = { ...subTableDataRef.current };
@@ -427,8 +450,10 @@ const AssignmentReview = ({
         setSubTableData((prev) => ({ ...prev, [rowKey]: [] }));
         return [];
       } finally {
-        delete subTableRequestRef.current[rowKey];
-        setSubTableLoading((prev) => ({ ...prev, [rowKey]: false }));
+        if (viewEpoch === viewEpochRef.current) {
+          delete subTableRequestRef.current[rowKey];
+          setSubTableLoading((prev) => ({ ...prev, [rowKey]: false }));
+        }
       }
     })();
     subTableRequestRef.current[rootReviewId] = request;
@@ -436,6 +461,7 @@ const AssignmentReview = ({
   };
 
   const handleRootSelectionChange = (keys: React.Key[]) => {
+    const viewEpoch = viewEpochRef.current;
     const nextRootIds = keys.map(String);
     const previousRootIds = selectedRootReviewIdsRef.current;
     const nextRootIdSet = new Set(nextRootIds);
@@ -464,6 +490,7 @@ const AssignmentReview = ({
         setSelectionLoadingRootIds((current) => Array.from(new Set([...current, rootReviewId])));
         void loadSubTableData(rootReviewId)
           .then((references) => {
+            if (viewEpoch !== viewEpochRef.current) return;
             if (!selectedRootReviewIdsRef.current.has(rootReviewId)) return;
             if (subTableLoadErrorIdsRef.current.has(rootReviewId)) {
               setSelectionFailedRootIds((current) =>
@@ -481,6 +508,7 @@ const AssignmentReview = ({
             );
           })
           .finally(() => {
+            if (viewEpoch !== viewEpochRef.current) return;
             setSelectionLoadingRootIds((current) => current.filter((id) => id !== rootReviewId));
           });
       });
@@ -1084,14 +1112,25 @@ const AssignmentReview = ({
                 size={'large'}
                 placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
                 onSearch={onSearch}
+                allowClear
+                maxLength={1000}
                 enterButton
               />
             </Col>
           </Row>
         </Card>
       )}
-      <ProTable<ReviewsTable, ListPagination>
+      {queryFailed && (
+        <Alert
+          type='error'
+          showIcon
+          title={intl.formatMessage({ id: 'component.request.failed' })}
+        />
+      )}
+      <ProTable<ReviewsTable, Partial<ListPagination> & { scope: string }>
         loading={tableLoading}
+        dataSource={queryFailed ? [] : undefined}
+        params={{ scope: requestScope }}
         columns={columns}
         rowKey='id'
         search={false}
@@ -1227,11 +1266,17 @@ const AssignmentReview = ({
         }
         request={async (
           params: {
-            pageSize: number;
-            current: number;
+            pageSize?: number;
+            current?: number;
+            scope?: string;
           },
           sort,
         ) => {
+          if (params.scope !== undefined && params.scope !== requestScopeRef.current) {
+            return { data: [], success: false, total: 0 };
+          }
+          const requestEpoch = ++requestEpochRef.current;
+          const isCurrentRequest = () => requestEpoch === requestEpochRef.current;
           try {
             if (!userData?.role) {
               return {
@@ -1241,21 +1286,30 @@ const AssignmentReview = ({
               };
             }
             setTableLoading(true);
+            setQueryFailed(false);
             clearUnifiedSelection();
-            const result = await getReviewsTableData(params, sort);
+            const result = await getReviewsTableData(
+              { current: params.current ?? 1, pageSize: params.pageSize ?? 50 },
+              sort,
+            );
+            if (!isCurrentRequest()) return { data: [], success: false, total: 0 };
+            if (result.success === false) {
+              mainReviewRowsRef.current = {};
+              setQueryFailed(true);
+              return { data: [], success: false, total: 0 };
+            }
             mainReviewRowsRef.current = Object.fromEntries(
               (result.data ?? []).map((record) => [record.id, record]),
             );
             return result;
-          } catch (error) {
-            console.error(error);
-            return {
-              data: [],
-              success: true,
-              total: 0,
-            };
+          } catch (_error) {
+            if (isCurrentRequest()) {
+              mainReviewRowsRef.current = {};
+              setQueryFailed(true);
+            }
+            return { data: [], success: false, total: 0 };
           } finally {
-            setTableLoading(false);
+            if (isCurrentRequest()) setTableLoading(false);
           }
         }}
         actionRef={actionRef}

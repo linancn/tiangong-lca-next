@@ -390,6 +390,7 @@ const TableList: FC = () => {
         </Row>
       </Card>
       <ProTable<SourceTable, LocaleAwareTableParams>
+        key={`sources-table:${dataSource}:${tid ?? ''}`}
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={

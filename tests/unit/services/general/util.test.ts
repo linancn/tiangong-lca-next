@@ -1938,6 +1938,7 @@ describe('General Utility Functions', () => {
     it('should identify data source from pathname', () => {
       expect(getDataSource('/mydata/flows')).toBe('my');
       expect(getDataSource('/tgdata/processes')).toBe('tg');
+      expect(getDataSource('/exampledata/processes')).toBe('ex');
       expect(getDataSource('/codata/sources')).toBe('co');
       expect(getDataSource('/tedata/units')).toBe('te');
     });

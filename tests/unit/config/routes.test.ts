@@ -79,3 +79,22 @@ describe('route access config', () => {
     ).toBe(true);
   });
 });
+
+describe('example data routes', () => {
+  it('reuses all seven open-data pages under a separate scope', () => {
+    const open = routes.find((route) => route.path === '/tgdata')!;
+    const example = routes.find((route) => route.path === '/exampledata')!;
+    expect(example.name).toBe('exampledata');
+    expect(example.routes).toEqual(
+      open.routes?.map((route) => ({
+        ...route,
+        path: route.path.replace('/tgdata', '/exampledata'),
+        ...('redirect' in route
+          ? { redirect: route.redirect?.replace('/tgdata', '/exampledata') }
+          : {}),
+      })),
+    );
+    expect(example.routes?.filter((route) => route.component)).toHaveLength(7);
+    expect(routes.indexOf(example)).toBe(routes.indexOf(open) + 1);
+  });
+});

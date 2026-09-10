@@ -230,6 +230,8 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
   const ProTable = ({
+    params,
+    dataSource,
     request,
     actionRef,
     columns = [] as any[],
@@ -244,11 +246,16 @@ jest.mock('@ant-design/pro-components', () => {
       pageSize: pagination?.pageSize ?? 10,
     });
     const requestRef = React.useRef(request);
+    const queryParamsRef = React.useRef(params);
+    queryParamsRef.current = params;
 
     const runRequest = React.useCallback(async (override: any = {}) => {
       paramsRef.current = { ...paramsRef.current, ...override };
-      const result = await requestRef.current?.(paramsRef.current, {});
-      setRows(result?.data ?? []);
+      const result = await requestRef.current?.(
+        { ...paramsRef.current, ...queryParamsRef.current },
+        {},
+      );
+      if (result?.success !== false) setRows(result?.data ?? []);
       return result;
     }, []);
 
@@ -258,15 +265,19 @@ jest.mock('@ant-design/pro-components', () => {
 
     React.useEffect(() => {
       runRequest();
-      // We intentionally call once on mount; subsequent reloads use actionRef.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [JSON.stringify(params)]);
 
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
           reload: () => runRequest(),
-          setPageInfo: (info: any) => runRequest(info ?? {}),
+          setPageInfo: (info: any) => {
+            if (
+              Object.entries(info ?? {}).some(([key, value]) => paramsRef.current[key] !== value)
+            ) {
+              return runRequest(info);
+            }
+          },
         };
       }
     }, [actionRef, runRequest]);
@@ -293,7 +304,7 @@ jest.mock('@ant-design/pro-components', () => {
               ))
             : toolbar}
         </div>
-        {rows.map((row: any, rowIndex: number) => {
+        {(dataSource ?? rows).map((row: any, rowIndex: number) => {
           const rowIdentifier = rowKey && row[rowKey] ? row[rowKey] : rowIndex;
           return (
             <div data-testid={`pro-table-row-${rowIdentifier}`} key={`row-${rowIdentifier}`}>

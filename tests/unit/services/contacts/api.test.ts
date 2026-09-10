@@ -668,16 +668,16 @@ describe('Contacts API Service', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('should include team filters for public and collaborative data', async () => {
+    it.each(['co', 'ex'])('preserves optional institution filtering for %s', async (scope) => {
       const { getContactTableAll } = require('@/services/contacts/api');
       mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
 
-      await getContactTableAll({}, {}, 'en', 'co', 'team-co');
+      await getContactTableAll({}, {}, 'en', scope, 'team-co');
 
       expect(mockRpc).toHaveBeenCalledWith(
         'get_latest_contact_versions',
         expect.objectContaining({
-          data_source: 'co',
+          data_source: scope,
           team_id_filter: 'team-co',
         }),
       );

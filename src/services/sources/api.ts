@@ -68,7 +68,7 @@ async function getSourceTeamFilter(dataSource: string, tid: string | []) {
   if (dataSource === 'te') {
     return await getTeamIdByUserId();
   }
-  if (dataSource === 'tg' || dataSource === 'co') {
+  if (dataSource === 'tg' || dataSource === 'co' || dataSource === 'ex') {
     return getOptionalTeamId(tid);
   }
   return null;

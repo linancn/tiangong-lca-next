@@ -84,6 +84,16 @@ jest.mock('antd', () => {
   );
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
+  // 与真实 antd 一致：Modal 通过 portal 渲染到 body，不受外层禁用 fieldset 影响
+  const { createPortal } = require('react-dom');
+  const Modal = ({ children, footer }: any) =>
+    createPortal(
+      <div data-testid='calculation-modal'>
+        {children}
+        {footer}
+      </div>,
+      globalThis.document.body,
+    );
   const message = {
     success: jest.fn(),
     error: jest.fn(),
@@ -91,8 +101,12 @@ jest.mock('antd', () => {
     warning: jest.fn(),
     loading: jest.fn(),
   };
+  const modal = {
+    error: jest.fn(),
+    destroyAll: jest.fn(),
+  };
 
-  const App = { useApp: () => ({ message }) };
+  const App = { useApp: () => ({ message, modal }) };
   const theme = {
     useToken: () => ({
       token: {
@@ -112,8 +126,10 @@ jest.mock('antd', () => {
     Tooltip,
     Space,
     Spin,
+    Modal,
     App,
     message,
+    modal,
     theme,
   };
 });
@@ -655,6 +671,130 @@ const getNodeTool = (nodeId: string, toolId: string) => {
   return latestTools.find((tool: any) => tool?.id === toolId);
 };
 
+describe('single-provider connection rejection (event handler)', () => {
+  const baseProps = {
+    id: 'model-1',
+    version: '1.0',
+    lang: 'en',
+    drawerVisible: false,
+    isSave: false,
+    action: 'edit',
+    setIsSave: jest.fn(),
+    onClose: jest.fn(),
+    updateNodeCb: mockUpdateNodeCb,
+  };
+  const uuidNodes = [
+    {
+      id: 'uuid-node-1',
+      data: {
+        id: 'proc-1',
+        index: 'pi-1',
+        version: '1.0',
+        label: 'Node 1',
+        quantitativeReference: '0',
+      },
+    },
+    {
+      id: 'uuid-node-2',
+      data: {
+        id: 'proc-2',
+        index: 'pi-2',
+        version: '1.0',
+        label: 'Node 2',
+        quantitativeReference: '0',
+      },
+    },
+    {
+      id: 'uuid-node-3',
+      data: {
+        id: 'proc-3',
+        index: 'pi-3',
+        version: '1.0',
+        label: 'Node 3',
+        quantitativeReference: '0',
+      },
+    },
+  ];
+  // 画布 UUID 与实例序号(pi-N)完全不同
+
+  const withStore = (edges: unknown[]) => {
+    mockGraphStoreState.nodes = uuidNodes;
+    mockGraphStoreState.edges = edges as never;
+  };
+
+  const connectedEvent = (
+    edgeId: string,
+    sourceCell: string,
+    targetCell: string,
+    flowId: string,
+  ) => ({
+    edge: {
+      id: edgeId,
+      getSourcePortId: () => `groupOutput:${sourceCell}:${flowId}`,
+      getTargetPortId: () => `groupInput:${targetCell}:${flowId}`,
+      getSourceCellId: () => sourceCell,
+      getTargetCellId: () => targetCell,
+    },
+  });
+
+  beforeEach(() => {
+    withStore([]);
+  });
+
+  it('rejects a second provider whose canvas UUID differs from the instance index', async () => {
+    withStore([
+      {
+        id: 'edge-first',
+        source: { cell: 'uuid-node-1' },
+        target: { cell: 'uuid-node-2' },
+        data: {
+          node: { sourceNodeID: 'uuid-node-1', targetNodeID: 'uuid-node-2' },
+          connection: {
+            outputExchange: { '@flowUUID': 'flow-1', downstreamProcess: { '@flowUUID': 'flow-1' } },
+          },
+        },
+      },
+    ]);
+    render(<ToolbarEdit {...baseProps} drawerVisible />);
+    const connectedHandler = getGraphHandler('edge:connected');
+    expect(connectedHandler).toBeDefined();
+
+    connectedHandler(connectedEvent('edge-second', 'uuid-node-3', 'uuid-node-2', 'flow-1'));
+
+    await waitFor(() => expect(mockRemoveEdges).toHaveBeenCalledWith(['edge-second']));
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    expect(antMessage.error).toHaveBeenCalledWith(
+      'pages.lifecyclemodel.calculation.connection.singleProvider',
+    );
+  });
+
+  it('accepts reconnecting the same edge and fan-out to different inputs', async () => {
+    withStore([
+      {
+        id: 'edge-first',
+        source: { cell: 'uuid-node-1' },
+        target: { cell: 'uuid-node-2' },
+        data: {
+          node: { sourceNodeID: 'uuid-node-1', targetNodeID: 'uuid-node-2' },
+          connection: {
+            outputExchange: { '@flowUUID': 'flow-1', downstreamProcess: { '@flowUUID': 'flow-1' } },
+          },
+        },
+      },
+    ]);
+    render(<ToolbarEdit {...baseProps} drawerVisible />);
+    const connectedHandler = getGraphHandler('edge:connected');
+
+    // 重连同一条边（排除自身）不被拒绝
+    connectedHandler(connectedEvent('edge-first', 'uuid-node-1', 'uuid-node-2', 'flow-1'));
+    await waitFor(() => expect(mockRemoveEdges).not.toHaveBeenCalled());
+
+    // 不同输入的独立连线不被拒绝
+    connectedHandler(connectedEvent('edge-other-input', 'uuid-node-3', 'uuid-node-2', 'flow-9'));
+    await waitFor(() => expect(mockRemoveEdges).not.toHaveBeenCalled());
+  });
+});
+
 describe('ToolbarEdit', () => {
   const baseProps = {
     id: 'model-1',
@@ -913,6 +1053,7 @@ describe('ToolbarEdit', () => {
             edges: expect.any(Array),
           }),
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
     expect(mockToolbarUpdateReferenceDescription).toHaveBeenCalled();
@@ -1161,6 +1302,7 @@ describe('ToolbarEdit', () => {
             ]),
           }),
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
@@ -1196,6 +1338,7 @@ describe('ToolbarEdit', () => {
             edges: [{ id: 'store-edge' }],
           },
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
   });
@@ -2153,6 +2296,7 @@ describe('ToolbarEdit', () => {
             edges: expect.any(Array),
           }),
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
     expect(mockUpdateEdge).toHaveBeenCalledWith(
@@ -2223,6 +2367,7 @@ describe('ToolbarEdit', () => {
             nodes: expect.any(Array),
             edges: expect.any(Array),
           }),
+          hasModelChanged: expect.any(Function),
         }),
         { sourceVersion: '1.0' },
       ),
@@ -2264,6 +2409,7 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'uuid-123',
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
 
@@ -2275,6 +2421,7 @@ describe('ToolbarEdit', () => {
           id: 'created-fallback',
           version: '5.0',
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
   });
@@ -2401,6 +2548,7 @@ describe('ToolbarEdit', () => {
           id: 'model-1',
           version: '1.0',
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
 
@@ -2413,6 +2561,7 @@ describe('ToolbarEdit', () => {
           id: 'model-fallback',
           version: '9.9',
         }),
+        expect.objectContaining({ hasModelChanged: expect.any(Function) }),
       ),
     );
   });
@@ -3742,6 +3891,85 @@ describe('ToolbarEdit', () => {
           }),
         }),
         { ignoreHistory: true },
+      ),
+    );
+  });
+
+  it('cancels the whole save operation when cancel is clicked before persistence', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    let capturedOperation: { isCancelled: () => boolean } | null = null;
+    let releaseSave: (value: unknown) => void = () => {};
+    mockUpdateLifeCycleModel.mockImplementationOnce(
+      (_payload: unknown, options: { operation?: { isCancelled: () => boolean } }) => {
+        capturedOperation = options?.operation ?? null;
+        return new Promise((resolve) => {
+          releaseSave = resolve;
+        });
+      },
+    );
+
+    await renderVisibleToolbarEdit();
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+    await waitFor(() => expect(mockUpdateLifeCycleModel).toHaveBeenCalled());
+    expect(capturedOperation).not.toBeNull();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'pages.lifecyclemodel.calculation.action.cancel' }),
+    );
+
+    // 持久化尚未开始：整个操作被取消，不提示“保存已提交”
+    expect(antMessage.info).not.toHaveBeenCalledWith(
+      'pages.lifecyclemodel.calculation.status.saveInFlight',
+    );
+    expect(capturedOperation!.isCancelled()).toBe(true);
+
+    releaseSave({ ok: false, code: 'CALCULATION_CANCELLED', message: 'cancelled' });
+    await waitFor(() =>
+      expect(antMessage.info).toHaveBeenCalledWith(
+        'pages.lifecyclemodel.calculation.status.cancelled',
+      ),
+    );
+  });
+
+  it('keeps the save in flight when cancel is clicked during the persisting stage', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    let capturedOperation: { isCancelled: () => boolean } | null = null;
+    let releaseSave: (value: unknown) => void = () => {};
+    mockUpdateLifeCycleModel.mockImplementationOnce(
+      (
+        _payload: unknown,
+        options: {
+          operation?: { isCancelled: () => boolean; beginStage: (stage: string) => void };
+        },
+      ) => {
+        capturedOperation = options?.operation ?? null;
+        capturedOperation?.beginStage('persisting');
+        return new Promise((resolve) => {
+          releaseSave = resolve;
+        });
+      },
+    );
+
+    await renderVisibleToolbarEdit();
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+    await waitFor(() => expect(mockUpdateLifeCycleModel).toHaveBeenCalled());
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'pages.lifecyclemodel.calculation.action.cancel' }),
+    );
+
+    // 已进入持久化阶段：不取消操作，提示保存已提交
+    expect(antMessage.info).toHaveBeenCalledWith(
+      'pages.lifecyclemodel.calculation.status.saveInFlight',
+    );
+    expect(capturedOperation!.isCancelled()).toBe(false);
+
+    releaseSave({ ok: false, code: 'VERSION_CONFLICT', message: 'conflict' });
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith(
+        'Data with the same ID and version already exists.',
       ),
     );
   });

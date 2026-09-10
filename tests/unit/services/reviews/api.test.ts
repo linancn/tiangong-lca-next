@@ -929,7 +929,8 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { displayMode: 'other', targetTable: 'sources' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'pending',
       p_page: 1,
       p_page_size: 50,
@@ -955,7 +956,7 @@ describe('getReviewsTableDataOfReviewMember', () => {
     expect(result).toEqual({ data: [], success: true, total: 0 });
   });
 
-  it('returns empty table when pending comment query returns error', async () => {
+  it('preserves pending queue query errors', async () => {
     mockRpc.mockResolvedValueOnce({ error: { message: 'db failed' }, data: null });
 
     const result = await reviewsApi.getReviewsTableDataOfReviewMember(
@@ -966,14 +967,15 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
       p_sort_by: 'modified_at',
       p_sort_order: 'descend',
     });
-    expect(result).toEqual({ data: [], success: true, total: 0 });
+    expect(result).toEqual({ data: [], success: false, total: 0, error: { message: 'db failed' } });
   });
 
   it('resolves pending comments with getUserId when userData is omitted', async () => {
@@ -987,7 +989,8 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'pending',
       p_page: 1,
       p_page_size: 10,
@@ -1166,7 +1169,8 @@ describe('getReviewsTableDataOfReviewMember', () => {
       { user_id: 'reviewer-1' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'reviewer-rejected',
       p_page: 2,
       p_page_size: 10,
@@ -1235,7 +1239,8 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 50,
@@ -1424,7 +1429,8 @@ describe('getReviewsTableDataOfReviewMember', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_member_queue_items_v4', {
+      p_query: null,
       p_status: 'reviewed',
       p_page: 1,
       p_page_size: 10,
@@ -1454,7 +1460,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       { displayMode: 'model_process', targetTable: 'processes' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v4', {
+      p_query: null,
       p_status: 'unassigned',
       p_page: 1,
       p_page_size: 50,
@@ -1476,7 +1483,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v4', {
+      p_query: null,
       p_status: 'unassigned',
       p_page: 1,
       p_page_size: 10,
@@ -1586,7 +1594,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v4', {
+      p_query: null,
       p_status: 'assigned',
       p_page: 2,
       p_page_size: 10,
@@ -1661,7 +1670,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v4', {
+      p_query: null,
       p_status: 'admin-rejected',
       p_page: 1,
       p_page_size: 10,
@@ -1888,7 +1898,8 @@ describe('getReviewsTableDataOfReviewAdmin', () => {
       'en',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v3', {
+    expect(mockRpc).toHaveBeenCalledWith('qry_review_get_admin_queue_items_v4', {
+      p_query: null,
       p_status: 'assigned',
       p_page: 1,
       p_page_size: 10,
@@ -2653,5 +2664,62 @@ describe('getLifeCycleModelSubTableDataBatch', () => {
     );
 
     expect(result).toEqual({ data: {}, success: true });
+  });
+});
+
+describe('review queue full-text search', () => {
+  it.each(['unassigned', 'assigned', 'admin-rejected'] as const)(
+    'forwards the query with filters for admin %s',
+    async (status) => {
+      mockRpc.mockResolvedValueOnce({ data: [], error: null });
+      await reviewsApi.getReviewsTableDataOfReviewAdmin(
+        { current: 2, pageSize: 10 },
+        {},
+        status,
+        'zh',
+        { query: '变压器 wind', displayMode: 'model_process', targetTable: 'processes' },
+      );
+      expect(mockRpc).toHaveBeenCalledWith(
+        'qry_review_get_admin_queue_items_v4',
+        expect.objectContaining({
+          p_query: '变压器 wind',
+          p_status: status,
+          p_page: 2,
+          p_display_mode: 'model_process',
+          p_target_table: 'processes',
+        }),
+      );
+    },
+  );
+  it.each(['pending', 'reviewed', 'reviewer-rejected'] as const)(
+    'forwards the query for member %s',
+    async (status) => {
+      mockRpc.mockResolvedValueOnce({ data: [], error: null });
+      await reviewsApi.getReviewsTableDataOfReviewMember(
+        { current: 1, pageSize: 50 },
+        {},
+        status,
+        'zh',
+        { user_id: 'reviewer-1' },
+        { query: '49.5MW' },
+      );
+      expect(mockRpc).toHaveBeenCalledWith(
+        'qry_review_get_member_queue_items_v4',
+        expect.objectContaining({ p_query: '49.5MW', p_status: status }),
+      );
+    },
+  );
+  it('preserves admin query errors instead of returning an empty success', async () => {
+    const error = { code: '22023', message: 'invalid query' };
+    mockRpc.mockResolvedValueOnce({ data: null, error });
+    await expect(
+      reviewsApi.getReviewsTableDataOfReviewAdmin(
+        { current: 1, pageSize: 50 },
+        {},
+        'unassigned',
+        'en',
+        { query: '(' },
+      ),
+    ).resolves.toEqual({ data: [], total: 0, success: false, error });
   });
 });
