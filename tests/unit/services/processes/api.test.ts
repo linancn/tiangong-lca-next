@@ -3895,7 +3895,7 @@ describe('getConnectableProcessesTable', () => {
     expect(result).toEqual({ data: [], success: true });
   });
 
-  it.each(['team-example', '', []])(
+  it.each(['team-example', '', [] as []])(
     'keeps connectable examples fixed to -1 with optional team %p',
     async (tid) => {
       const builder = createQueryBuilder({ data: [], error: null, count: 0 });
