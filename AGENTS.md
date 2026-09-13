@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 89575d9b6261133d499a5764505a9643ccfa56e4
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
 lastReviewedNote: 'Reviewed for platform #1062: the Gitleaks Security Scan workflow (.github/workflows/gitleaks.yml), its dedicated config (.gitleaks.toml) and ignore file (.gitleaksignore) are removed entirely; no CLI replacement is introduced. Docpact governance references to those files are cleaned. Package version, dependencies, lock, build/lint/type/coverage/release-proof gates and other workflows are unchanged.'
 related:
   - .docpact/config.yaml
