@@ -44,7 +44,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 033f98652fbb0ca42f727faf5c13eed747ea2c04
+lastReviewedCommit: 0b0589cb13a618070bd0033f7294a6272d7ecefc
 lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 ---
 
