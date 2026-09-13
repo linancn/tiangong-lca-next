@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 89575d9b6261133d499a5764505a9643ccfa56e4
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
 lastReviewedNote: 'Reviewed for platform #1062: user-requested Gitleaks Action retirement removes its workflow and dedicated configuration. All other build, lint, type, coverage, release-proof and branch gates remain unchanged; no CLI replacement is added.'
 ---
 
