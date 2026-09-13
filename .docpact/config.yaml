@@ -52,8 +52,6 @@ ownership:
           - tests/e2e/**
           - .dockerignore
           - .gitignore
-          - .gitleaks.toml
-          - .gitleaksignore
           - .oxlintrc.json
           - .prettierignore
           - .prettierrc.js
@@ -125,8 +123,6 @@ coverage:
     - tests/e2e/**
     - .dockerignore
     - .gitignore
-    - .gitleaks.toml
-    - .gitleaksignore
     - .oxlintrc.json
     - .prettierignore
     - .prettierrc.js
@@ -221,8 +217,6 @@ routing:
         - pnpm-workspace.yaml
         - .dockerignore
         - .gitignore
-        - .gitleaks.toml
-        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -296,8 +290,6 @@ routing:
         - pnpm-workspace.yaml
         - .dockerignore
         - .gitignore
-        - .gitleaks.toml
-        - .gitleaksignore
         - .oxlintrc.json
         - .prettierignore
         - .prettierrc.js
@@ -442,10 +434,6 @@ rules:
         kind: package-manager-config
       - path: .dockerignore
         kind: container-build-input
-      - path: .gitleaks.toml
-        kind: secret-scan-config
-      - path: .gitleaksignore
-        kind: secret-scan-config
       - path: .nvmrc
         kind: runtime-baseline
       - path: .oxlintrc.json
@@ -728,10 +716,6 @@ rules:
         kind: container-build-input
       - path: .gitignore
         kind: local-runtime-boundary
-      - path: .gitleaks.toml
-        kind: secret-scan-config
-      - path: .gitleaksignore
-        kind: secret-scan-config
       - path: .oxlintrc.json
         kind: lint-gate
       - path: .prettierrc.js
