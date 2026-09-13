@@ -52,12 +52,15 @@ type Fixture = {
 const sourceRoot = process.cwd();
 const releaseScript = path.join(sourceRoot, 'scripts/release/release-to-dev.cjs');
 const promotionScript = path.join(sourceRoot, 'scripts/release/promote-dev-to-main.cjs');
+// Fixture setup cannot inherit the caller's repository or account bindings.
+// runCli adds explicit test inputs after this isolation so they reach the SUT.
 const LOCAL_GIT_ENVIRONMENT_KEYS = [
-  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_CONFIG',
-  'GIT_CONFIG_PARAMETERS',
   'GIT_CONFIG_COUNT',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_OBJECT_DIRECTORY',
+  'GIT_COMMON_DIR',
   'GIT_DIR',
   'GIT_WORK_TREE',
   'GIT_IMPLICIT_WORK_TREE',
@@ -240,7 +243,11 @@ const createFixture = (devVersion = '1.0.0'): Fixture => {
   git(root, ['commit', '-m', 'main baseline']);
   const mainSha = git(root, ['rev-parse', 'HEAD']);
   git(root, ['remote', 'add', 'origin', origin]);
-  git(root, ['remote', 'add', 'fork', fork]);
+  // Raw canonical fork identity: the strict owner derivation reads this value, while
+  // a repo-local insteadOf rewrite keeps the real transport on the local bare fork.
+  const forkOwnerRepository = 'https://github.com/test-owner/tiangong-lca-next.git';
+  git(root, ['remote', 'add', 'fork', forkOwnerRepository]);
+  git(root, ['config', `url.${fork}.insteadOf`, forkOwnerRepository]);
   git(root, ['push', '--no-verify', 'origin', 'main']);
   git(root, ['push', '--no-verify', 'fork', 'main']);
 
@@ -277,18 +284,20 @@ const runCli = (
   script: string,
   args: string[],
   environment: Record<string, string> = {},
+  cwd = fixture.root,
 ) =>
   spawnSync(process.execPath, [script, ...args], {
-    cwd: fixture.root,
+    cwd,
     encoding: 'utf8',
-    env: isolatedEnvironment({
+    env: {
+      ...isolatedEnvironment(),
       PATH: `${fixture.bin}${path.delimiter}${process.env.PATH}`,
       FAKE_GH_PACKAGE_JSON: JSON.stringify(fixture.packageJson),
       FAKE_GH_PNPM_LOCK: fixture.pnpmLock,
       FAKE_DOCPACT_BASE_SHA: fixture.devSha,
       RELEASE_AUTOMATION_DOCPACT_BIN: path.join(fixture.bin, 'docpact'),
       ...environment,
-    }),
+    },
   });
 
 const promotionPr = (fixture: Fixture, mergeSha = fixture.devSha) =>
@@ -338,6 +347,84 @@ afterEach(() => {
 });
 
 describe('release automation public contracts', () => {
+  it('release push preserves runtime account config and strips foreign repository bindings', () => {
+    const fixture = createFixture('1.0.0');
+    git(fixture.root, ['config', '--unset-all', `url.${fixture.fork}.insteadOf`]);
+    git(fixture.root, ['config', 'protocol.https.allow', 'never']);
+    fs.mkdirSync(path.join(fixture.root, 'docs'), { recursive: true });
+    // Workspace accounts runner contract: GIT_CONFIG_COUNT injects the account URL
+    // rewrite and commit author. Foreign repository bindings (GIT_DIR, GIT_COMMON_DIR,
+    // foreign GIT_WORK_TREE, runtime core.bare) must not redirect managed operations.
+    const runtimeAccount = {
+      GIT_CONFIG_COUNT: '4',
+      GIT_CONFIG_KEY_0: `url.${fixture.fork}.insteadOf`,
+      GIT_CONFIG_VALUE_0: 'https://github.com/test-owner/tiangong-lca-next.git',
+      GIT_CONFIG_KEY_1: 'user.name',
+      GIT_CONFIG_VALUE_1: 'Runtime Author',
+      GIT_CONFIG_KEY_2: 'user.email',
+      GIT_CONFIG_VALUE_2: 'runtime-author@example.test',
+      GIT_CONFIG_KEY_3: 'core.bare',
+      GIT_CONFIG_VALUE_3: 'true',
+    };
+    const foreignBindings = {
+      GIT_DIR: fixture.origin,
+      GIT_COMMON_DIR: path.join(fixture.origin, 'objects'),
+      GIT_WORK_TREE: fixture.origin,
+      // Foreign core.worktree smuggled through the git subprocess-parameter channel:
+      // the SUT's explicit GIT_WORK_TREE must override it for known-root operations.
+      GIT_CONFIG_PARAMETERS: `'core.worktree=${fixture.origin.replace(/'/g, "'\\''")}'`,
+    };
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '2.0.0', '--issue', '778', '--apply'],
+      { ...runtimeAccount, ...foreignBindings },
+      // Layout discovery must find the repository root from a subdirectory.
+      path.join(fixture.root, 'docs'),
+    );
+    expect(result.status).toBe(0);
+
+    const branchRef = 'refs/heads/codex/issue-778-version-v2.0.0';
+    const pushed = git(fixture.fork, ['rev-parse', branchRef]);
+    expect(pushed).toBe(git(fixture.root, ['rev-parse', 'HEAD']));
+    const author = git(fixture.fork, ['log', '-1', '--format=%an <%ae>', branchRef]);
+    expect(author).toBe('Runtime Author <runtime-author@example.test>');
+    // The candidate commit lives in the root repository, not redirected into the
+    // foreign GIT_DIR/GIT_COMMON_DIR/core.worktree bindings.
+    expect(git(fixture.root, ['cat-file', '-t', pushed])).toBe('commit');
+    // The local HTTPS prohibition makes a lost runtime rewrite fail before network
+    // access; the commit must land only in the intended fork, not the foreign repo.
+    const originProbe = spawnSync('git', ['rev-parse', '--verify', '--quiet', branchRef], {
+      cwd: fixture.origin,
+      env: isolatedEnvironment(),
+      encoding: 'utf8',
+    });
+    expect(originProbe.status).not.toBe(0);
+  });
+
+  it.each([
+    'git@github.com:test-owner/tiangong-lca-next.git',
+    'ssh://git@github.com/test-owner/tiangong-lca-next.git',
+  ])('derives the fork owner from canonical SSH identity %s', (remote) => {
+    const fixture = createFixture('1.0.0');
+    git(fixture.root, ['remote', 'set-url', 'fork', remote]);
+    git(fixture.root, ['config', `url.${fixture.fork}.insteadOf`, remote]);
+    const result = runCli(fixture, releaseScript, ['--version', '2.0.0', '--issue', '778']);
+    expect(result.status).toBe(0);
+  });
+
+  it.each([
+    'https://private-token@github.com/test-owner/tiangong-lca-next.git',
+    'https://untrusted.example/github.com/test-owner/tiangong-lca-next.git',
+  ])('rejects ambiguous remote identity without disclosing its value', (remote) => {
+    const fixture = createFixture('1.0.0');
+    git(fixture.root, ['remote', 'set-url', 'fork', remote]);
+    const result = runCli(fixture, releaseScript, ['--version', '2.0.0', '--issue', '778']);
+    expect(result.status).not.toBe(0);
+    expect(result.stdout + result.stderr).not.toContain(remote);
+    expect(result.stdout + result.stderr).not.toContain('private-token');
+  });
+
   it('parses stable versions and rejects ambiguous mutation modes', () => {
     expect(workflow.parseStableVersion('1.2.3', 'version')).toEqual({
       text: '1.2.3',

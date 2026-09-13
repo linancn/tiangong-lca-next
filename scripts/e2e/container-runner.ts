@@ -62,7 +62,7 @@ type CandidateManifest = {
   };
   kind: 'tiangong-next-release-e2e-candidate';
   repository: {
-    canonical: 'linancn/tiangong-lca-next';
+    canonical: 'tiangong-lca/platform';
     packageName: 'tiangong-lca-next';
   };
   schemaVersion: number;
@@ -241,7 +241,7 @@ async function verifyCandidateIdentity(
   if (
     manifest.kind !== 'tiangong-next-release-e2e-candidate' ||
     manifest.schemaVersion !== 5 ||
-    manifest.repository?.canonical !== 'linancn/tiangong-lca-next' ||
+    manifest.repository?.canonical !== 'tiangong-lca/platform' ||
     manifest.repository?.packageName !== 'tiangong-lca-next'
   ) {
     throw new Error('Candidate manifest kind or schema version is unsupported.');

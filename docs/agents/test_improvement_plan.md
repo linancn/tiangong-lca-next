@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
+lastReviewedNote: 'Reviewed for platform #1055: the release-admission guard gained an executed behavioral test (`tests/unit/scripts/buildReleaseContextGuard.test.ts`, five canonical/rejection cases on fixture remotes); existing plan and todo items are otherwise unchanged.'
 ---
 
 # Testing Strategy

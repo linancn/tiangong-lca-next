@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
 lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 ---
 
@@ -156,7 +156,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | compute the semantic qualification identity key | `pnpm e2e:qualification:key` |
 | qualify the semantic release harness locally without production access | `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json` |
 | verify an external qualification proof | `pnpm release:proof:verify --proof <path>` |
-| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo linancn/tiangong-lca-next --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
+| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo tiangong-lca/platform --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
 | enforce active German runtime assembly | `pnpm i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `pnpm i18n:de:pilot` |

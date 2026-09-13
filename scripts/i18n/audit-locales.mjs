@@ -1325,7 +1325,7 @@ function buildManifest(root, baseRef, dynamicRegistryPath, pinnedBaseCommit = nu
       baseCommit,
       auditedInputDigest: auditInputDigest(root, auditedInputPaths),
       auditedInputDigestAlgorithm: 'sha256(path\\0content\\0)',
-      repository: 'linancn/tiangong-lca-next',
+      repository: 'tiangong-lca/platform',
     },
     auditPolicy: {
       categories: CATEGORY_DEFINITIONS,

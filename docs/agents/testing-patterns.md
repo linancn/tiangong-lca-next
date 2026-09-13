@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
+lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
 ---
 
 # Testing Patterns Reference
@@ -255,3 +255,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 - focused suites passed
 - async leaks checked when the failure mode suggests it
 - related testing docs updated if workflow rules changed
+
+## Workflow guard fixtures (platform #1055)
+
+Inline release-admission guards stay workflow-owned. Focused tests extract the exact `run:` block from the workflow file and execute it against fixture git remotes (insteadOf-mapped bare upstream, fixture `GITHUB_*` environment) instead of re-implementing the shell logic; see `tests/unit/scripts/buildReleaseContextGuard.test.ts`.
