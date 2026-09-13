@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
+lastReviewedNote: 'Reviewed for platform #1062: the Gitleaks Security Scan workflow (.github/workflows/gitleaks.yml), its dedicated config (.gitleaks.toml) and ignore file (.gitleaksignore) are removed entirely; no CLI replacement is introduced. Docpact governance references to those files are cleaned. Package version, dependencies, lock, build/lint/type/coverage/release-proof gates and other workflows are unchanged.'
 ---
 
 # Development Bootstrap
@@ -156,7 +156,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | compute the semantic qualification identity key | `pnpm e2e:qualification:key` |
 | qualify the semantic release harness locally without production access | `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json` |
 | verify an external qualification proof | `pnpm release:proof:verify --proof <path>` |
-| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo linancn/tiangong-lca-next --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
+| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo tiangong-lca/platform --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
 | enforce active German runtime assembly | `pnpm i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `pnpm i18n:de:pilot` |
@@ -235,6 +235,10 @@ Use these commands for every normal versioned release. They replace manual packa
    ```bash
    pnpm --silent release:promote-dev-to-main --release-pr <merged-dev-pr-number> --issue <number> --apply
    ```
+
+For workspace-managed delivery, add `--prepare-only` to either `--apply` command. The helper still composes and pushes the exact candidate through every structural, Docpact and restricted push gate, then returns `status: ready_for_submission` and `pr_proposal` without creating a PR. Save the proposal body verbatim to a file and pass its repository, base, head and title through the workspace controller's current `task submit` surface; use its immutable-promote route for the main promotion. Confirm the submitted PR head equals `pr_proposal.expected_head` and preserve the embedded release marker. Start each owning executable task through the controller before preparing it. When an exact matching open PR already exists, the helper returns that PR without creating another one.
+
+The push remote must identify one fetch/push repository. Canonical HTTPS and SSH URLs may differ only in transport; account-specific transport belongs in scoped Git configuration. Direct `tiangong-lca/platform` heads use a bare branch name, while personal forks use `owner:branch` when creating the PR. PR lookup uses a bare branch and verifies returned head repository/owner metadata before reuse. Multiple URLs, conflicting explicit owners, a different repository under the canonical owner, missing PR identity or a full bounded result stop the helper. An opaque personal-fork remote requires an explicit `--head-owner`; that override cannot bypass a known mismatch or ambiguous fetch/push destination.
 
 The commands create or reuse PRs but never merge them. Merge the dev Release PR only after its non-browser gate passes; the later main check is expected to be proof/identity-only and must fail closed if the candidate or main baseline drifted. Browser E2E is not evaluated by either release PR. Use a manual release-assembly path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
 

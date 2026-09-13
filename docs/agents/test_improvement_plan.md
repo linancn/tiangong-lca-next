@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
+lastReviewedNote: 'Reviewed for platform #1062: user-requested Gitleaks Action retirement removes its workflow and dedicated configuration. All other build, lint, type, coverage, release-proof and branch gates remain unchanged; no CLI replacement is added.'
 ---
 
 # Testing Strategy

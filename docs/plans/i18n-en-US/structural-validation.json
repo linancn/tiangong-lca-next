@@ -42,7 +42,7 @@
     "highRiskMessageCount": 1527,
     "highRiskMessageDigest": "dcbff776e258d68d5bb433c586b2a5314544ed8ee3bdb0eb7ee2301ef06b909f",
     "catalogDigest": "29b7a28021f8d01afb690ebe0d69d19f78c762550c4b4c27cf562a885345aa38",
-    "dossierDigest": "ca22924186638b89103c098d2691526e591939b32ed1084b3b58f9a446d70b61",
+    "dossierDigest": "c63fad25f7180bd6308b23600f1d3fdd5d8acd4ee4323615e81c4ed918e14ad6",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
     "routeEvidenceDigest": "4a444b01d24f36cb7fd562867e82f5d614803564cde9e14aaf47e7197cbde98d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
@@ -98,7 +98,7 @@
         "messageDigest": "2b2a0add5d77cc325de62a08dd9f7900f6795383399b8947114d10435e619ca1",
         "highRiskMessageCount": 1527,
         "highRiskMessageDigest": "dcbff776e258d68d5bb433c586b2a5314544ed8ee3bdb0eb7ee2301ef06b909f",
-        "dossierDigest": "ca22924186638b89103c098d2691526e591939b32ed1084b3b58f9a446d70b61",
+        "dossierDigest": "c63fad25f7180bd6308b23600f1d3fdd5d8acd4ee4323615e81c4ed918e14ad6",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "955d27a2cbef64175d5f10bf293a50d5da318e7d890cd481fe4cfff6e3a60691"
+  "validationDigest": "5f8526ed724aa360e15d09fea4578568587326e9301e1b4f297180f39c6d4dfd"
 }

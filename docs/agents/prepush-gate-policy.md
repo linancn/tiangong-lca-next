@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
+lastReviewedNote: 'Reviewed for platform #1062: user-requested Gitleaks Action retirement removes its workflow and dedicated configuration. All other build, lint, type, coverage, release-proof and branch gates remain unchanged; no CLI replacement is added.'
 ---
 
 # Pre-Push Gate Policy
@@ -56,6 +56,8 @@ lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused data
 Define the intended trigger policy for the existing local docpact gate and `pnpm prepush:gate` command without changing the quality bar.
 
 ## Exact Gate Command
+
+Adding `--prepare-only` to a deterministic release command's `--apply` mode defers only PR creation to the workspace controller. It retains the same candidate composition, Docpact/static checks, checked push and exact remote-SHA verification. The returned proposal is submission evidence; it does not replace the dev Release PR gate or the main promotion proof.
 
 ```bash
 pnpm docpact:gate

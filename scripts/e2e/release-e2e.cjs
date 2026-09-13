@@ -26,21 +26,22 @@ const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const RECEIPT_SCHEMA_VERSION = 6;
 const MANIFEST_SCHEMA_VERSION = 5;
 const REPORT_SCHEMA_VERSION = 2;
-const CANONICAL_REPOSITORY = 'linancn/tiangong-lca-next';
+const CANONICAL_REPOSITORY = 'tiangong-lca/platform';
 const IMAGE_LABEL = 'org.tiangong.lca.next.release-e2e';
 const ENVIRONMENT_IMAGE_LABEL = 'org.tiangong.lca.next.release-e2e-environment';
 const DEFAULT_RECOVERY_LEDGER_PATH = path.join(
   os.homedir(),
   '.local/state/tiangong-lca-next/e2e-production-ledger.json',
 );
-const LOCAL_GIT_ENVIRONMENT_KEYS = [
-  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+// Foreign repository bindings must never redirect qualification git reads; runtime
+// account configuration (GIT_CONFIG_COUNT/GIT_CONFIG_PARAMETERS and
+// GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n> pairs) is preserved for the known root.
+const GIT_REPOSITORY_BINDING_KEYS = [
   'GIT_CONFIG',
-  'GIT_CONFIG_PARAMETERS',
-  'GIT_CONFIG_COUNT',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_OBJECT_DIRECTORY',
+  'GIT_COMMON_DIR',
   'GIT_DIR',
-  'GIT_WORK_TREE',
   'GIT_IMPLICIT_WORK_TREE',
   'GIT_GRAFT_FILE',
   'GIT_INDEX_FILE',
@@ -49,6 +50,15 @@ const LOCAL_GIT_ENVIRONMENT_KEYS = [
   'GIT_PREFIX',
   'GIT_SHALLOW_FILE',
 ];
+
+function boundGitEnvironment(root, environment = process.env) {
+  const bound = { ...environment };
+  GIT_REPOSITORY_BINDING_KEYS.forEach((key) => delete bound[key]);
+  // The known root gets an explicit work tree so inherited core.worktree or
+  // core.bare bindings cannot redirect qualification reads.
+  bound.GIT_WORK_TREE = root;
+  return bound;
+}
 
 const EXIT = Object.freeze({
   INPUT: 2,
@@ -244,21 +254,18 @@ function runStreaming(command, args, options = {}) {
   return result.status ?? 1;
 }
 
-function isolatedGitEnvironment(environment = process.env) {
-  const isolated = { ...environment };
-  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete isolated[key]);
-  return isolated;
-}
-
 function git(args, options = {}) {
   return runCapture('git', args, {
     ...options,
-    env: isolatedGitEnvironment(options.env ?? process.env),
+    env: boundGitEnvironment(REPOSITORY_ROOT, options.env ?? process.env),
   }).stdout.trim();
 }
 
 function gitShow(relativePath) {
-  return runCapture('git', ['show', `HEAD:${relativePath}`]).stdout;
+  // Raw stdout is preserved (no trim) so original file content and newlines survive.
+  return runCapture('git', ['show', `HEAD:${relativePath}`], {
+    env: boundGitEnvironment(REPOSITORY_ROOT),
+  }).stdout;
 }
 
 function lockedDependencyVersion(packageName, repositoryRoot = REPOSITORY_ROOT) {
@@ -675,7 +682,9 @@ function assertHostPrerequisites() {
     dockerServerVersion: dockerEngineVersion(),
     gitVersion: git(['--version']),
     nodeVersion: process.version,
-    pnpmVersion: runCapture('pnpm', ['--version']).stdout.trim(),
+    pnpmVersion: runCapture('pnpm', ['--version'], {
+      env: boundGitEnvironment(REPOSITORY_ROOT),
+    }).stdout.trim(),
   };
 }
 
@@ -910,6 +919,7 @@ function requireCleanCommittedCandidate() {
   }
   const branchResult = runCapture('git', ['symbolic-ref', '--quiet', '--short', 'HEAD'], {
     allowFailure: true,
+    env: boundGitEnvironment(REPOSITORY_ROOT),
   });
   return {
     branch: branchResult.status === 0 ? branchResult.stdout.trim() : undefined,
@@ -947,7 +957,9 @@ function createCandidateBuildContext(candidate, environment, runId, options = {}
   const buildVerifierRaw = gitShow('scripts/e2e/verify-build-input.cjs');
   const packageJson = JSON.parse(packageJsonRaw);
   const pinnedPnpmVersion = /^pnpm@([^+]+)(?:\+.+)?$/u.exec(packageJson.packageManager ?? '')?.[1];
-  const hostPnpmVersion = runCapture('pnpm', ['--version']).stdout.trim();
+  const hostPnpmVersion = runCapture('pnpm', ['--version'], {
+    env: boundGitEnvironment(REPOSITORY_ROOT),
+  }).stdout.trim();
   if (!pinnedPnpmVersion || hostPnpmVersion !== pinnedPnpmVersion) {
     throw new ReleaseE2EError('Host pnpm does not match the committed package-manager pin.', {
       exitCode: EXIT.CANDIDATE,
@@ -1148,7 +1160,7 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
   ];
   const trackedEntries = runCapture('git', ['ls-files', '--stage', '-z', '--', ...pathPrefixes], {
     cwd: repositoryRoot,
-    env: isolatedGitEnvironment(),
+    env: boundGitEnvironment(repositoryRoot),
   })
     .stdout.split('\0')
     .filter(Boolean)
@@ -1181,7 +1193,7 @@ function qualificationInputSha256(repositoryRoot = REPOSITORY_ROOT) {
   const packageEntries = runCapture(
     'git',
     ['ls-files', '--stage', '--', 'package.json', ...packageManagerPaths],
-    { cwd: repositoryRoot, env: isolatedGitEnvironment() },
+    { cwd: repositoryRoot, env: boundGitEnvironment(repositoryRoot) },
   )
     .stdout.trim()
     .split(/\r?\n/u)
@@ -1236,6 +1248,7 @@ function assertExternalProofPath(proofPath) {
   if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`)) return;
   const ignored = runCapture('git', ['check-ignore', '--quiet', '--', relativePath], {
     allowFailure: true,
+    env: boundGitEnvironment(REPOSITORY_ROOT),
   });
   if (ignored.status !== 0) {
     throw new ReleaseE2EError(

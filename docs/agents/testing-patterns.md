@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 490df6476a1b7ca19c2d092f86636d52b9bdf637
+lastReviewedNote: 'Reviewed for platform #1062: user-requested Gitleaks Action retirement removes its workflow and dedicated configuration. All other build, lint, type, coverage, release-proof and branch gates remain unchanged; no CLI replacement is added.'
 ---
 
 # Testing Patterns Reference
@@ -75,6 +75,7 @@ lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused data
 - when mount and user actions can call the same async loader, guard the in-flight request outside render-state closures and prove that an action fired before the first response does not start a second request or let a later empty response overwrite valid data
 - test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
 - test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
+- release-helper fixtures must enforce the actual `gh` contract: list by bare branch, return explicit head owner/repository metadata, create direct repository heads without an organization prefix, and read the exact multiline `--body-file` contents while the owned temporary file exists. Prove `--apply --prepare-only` still prepares and pushes the exact version/promotion candidate, emits its submission proposal, and never invokes PR creation; malformed identity, ambiguous remotes and failed preflight must remain fail-closed.
 - schedule known process-heavy Jest suites first when that lowers cold-run tail latency, but preserve Jest discovery and the complete inventory. Keep Jest's own failure/duration/file-size order within each priority group and lock the selected paths with a sequencer contract test
 - for process-heavy Git/pnpm contract suites, build one immutable seed only when setup dominates runtime, then copy a separate repository and bare remote for every test case and rebind `origin` to that case. Never share mutable refs, receipts, gate logs, or transport state between tests
 - retain parallel unit execution on macOS, but start Jest workers with concurrent recompilation and Maglev disabled and recycle a unit worker after it crosses `512MB`; this avoids the documented Node 24/V8 stale-left-trimmed-pointer failure while allowing the slow-first suites to overlap ordinary work
@@ -255,3 +256,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 - focused suites passed
 - async leaks checked when the failure mode suggests it
 - related testing docs updated if workflow rules changed
+
+## Workflow guard fixtures (platform #1055)
+
+Inline release-admission guards stay workflow-owned. Focused tests extract the exact `run:` block from the workflow file and execute it against fixture git remotes (insteadOf-mapped bare upstream, fixture `GITHUB_*` environment) instead of re-implementing the shell logic; see `tests/unit/scripts/buildReleaseContextGuard.test.ts`.
