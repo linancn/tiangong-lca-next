@@ -42,9 +42,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 22b59e6e168f10ad9ae2c0755529eb75e3aa4e57
+lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
 ---
 
 # Pre-Push Gate Policy

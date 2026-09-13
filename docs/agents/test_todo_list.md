@@ -40,9 +40,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 22b59e6e168f10ad9ae2c0755529eb75e3aa4e57
+lastReviewedNote: 'Reviewed for platform #1055: the release-admission guard gained an executed behavioral test (`tests/unit/scripts/buildReleaseContextGuard.test.ts`, five canonical/rejection cases on fixture remotes); existing plan and todo items are otherwise unchanged.'
 ---
 
 # Testing Execution State

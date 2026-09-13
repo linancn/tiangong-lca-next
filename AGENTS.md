@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 8e597d6e6b510050d90f0f2470d153aa836ffce7
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: 22b59e6e168f10ad9ae2c0755529eb75e3aa4e57
+lastReviewedNote: 'Reviewed for platform #1055: canonical release admission, automation defaults, package/capture metadata and active repository links move to tiangong-lca/platform (repository id 805297890, owner id 327771381); package name, app identity, version 0.0.102, frozen dependencies, dev-to-main release semantics, historical proof and fixed-SHA source URLs stay unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

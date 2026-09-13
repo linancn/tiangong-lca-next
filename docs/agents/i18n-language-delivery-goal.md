@@ -5,7 +5,7 @@ scope: repo
 status: template
 authoritative: false
 owner: next
-targetRepo: linancn/tiangong-lca-next
+targetRepo: tiangong-lca/platform
 project: https://github.com/users/tiangong-lca/projects/1
 language: zh-CN
 version: 3.7

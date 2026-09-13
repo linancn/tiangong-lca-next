@@ -64,7 +64,7 @@ jobs:
           git fetch --force origin +refs/heads/main:refs/remotes/origin/main
           git fetch --force origin '+refs/tags/*:refs/tags/*'
 
-          if [ "${GITHUB_REPOSITORY}" != "linancn/tiangong-lca-next" ]; then
+          if [ "${GITHUB_REPOSITORY}" != "tiangong-lca/platform" ] || [ "${GITHUB_REPOSITORY_ID}" != "805297890" ] || [ "${GITHUB_REPOSITORY_OWNER_ID}" != "327771381" ]; then
             echo "should_release=false" >> "$GITHUB_OUTPUT"
             echo "::notice::Skipping release outside canonical repository: ${GITHUB_REPOSITORY}."
             exit 0

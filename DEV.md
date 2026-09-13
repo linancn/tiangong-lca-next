@@ -156,7 +156,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 | compute the semantic qualification identity key | `pnpm e2e:qualification:key` |
 | qualify the semantic release harness locally without production access | `pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json` |
 | verify an external qualification proof | `pnpm release:proof:verify --proof <path>` |
-| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo linancn/tiangong-lca-next --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
+| manually qualify a business PR/ref in GitHub | `gh workflow run i18n-semantic-e2e.yml --repo tiangong-lca/platform --ref <workflow-branch> -f ref=<business-pr-branch-or-sha>` |
 | enforce active German runtime assembly | `pnpm i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `pnpm i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `pnpm i18n:de:pilot` |

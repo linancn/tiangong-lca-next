@@ -7,7 +7,7 @@ const { spawnSync } = require('node:child_process');
 const { isDeepStrictEqual } = require('node:util');
 
 const SCHEMA_VERSION = 'tiangong.next.release-automation.v1';
-const DEFAULT_REPOSITORY = 'linancn/tiangong-lca-next';
+const DEFAULT_REPOSITORY = 'tiangong-lca/platform';
 const DEFAULT_CANONICAL_REMOTE = 'origin';
 const DEFAULT_PUSH_REMOTE = 'fork';
 const DEFAULT_LOG_DIRECTORY = '.local/release-automation';
