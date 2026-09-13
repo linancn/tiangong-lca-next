@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
-lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
+lastReviewedCommit: 033f98652fbb0ca42f727faf5c13eed747ea2c04
+lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -141,6 +141,8 @@ The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is a credenti
 The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Before Docker execution, the host controller rejects production-data mode whenever `CI` or `GITHUB_ACTIONS` is set. Only after that local check passes does it override the release image's inherited CI markers to empty inside the container; the container's safety check remains unchanged. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified external evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
 
 For a normal release, run browser qualification manually on the still-open business PR when the change risk warrants it. The workflow builds and serves the chosen committed candidate against the fixed `.invalid` profile in `docker/e2e/qualification.env`, intercepts every backend request, covers the complete Chromium route/view matrix and Firefox/WebKit critical scenarios, and never reads deployment `.env` or `origin/main:.env`. Its identity covers behavior-affecting source, public assets, config, shared E2E helpers, Git entry mode/type, runtime/test inputs, and the browser environment contract; deployment-only `.env` and root application version metadata are excluded.
+
+Workspace-managed release qualification adds `--prepare-only` to either helper's `--apply` mode and submits the returned exact-head proposal through the workspace controller. Focused proof must cover real candidate pushes without PR creation, direct organization versus personal-fork heads, identity-filtered PR reuse, ambiguous remote rejection and exact multiline body-file contents. This handoff retains all gates described below.
 
 `release:to-dev --apply` changes only version metadata plus bounded Docpact review metadata. Its restricted local push proves deterministic structure, Docpact coverage, and static release contracts; it does not run browsers or change proof files. The resulting exact Release PR into `dev` runs the mandatory non-browser release gate—static contracts and the full Jest gate—then emits an external proof bound to the main baseline, dev base/head/tree, version, PR, workflow run/attempt, and artifact. The separate authenticated local closure continues to verify its real candidate target against tracked `main`.
 

@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
-lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
+lastReviewedCommit: 033f98652fbb0ca42f727faf5c13eed747ea2c04
+lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 ---
 
 # Development Bootstrap
@@ -235,6 +235,10 @@ Use these commands for every normal versioned release. They replace manual packa
    ```bash
    pnpm --silent release:promote-dev-to-main --release-pr <merged-dev-pr-number> --issue <number> --apply
    ```
+
+For workspace-managed delivery, add `--prepare-only` to either `--apply` command. The helper still composes and pushes the exact candidate through every structural, Docpact and restricted push gate, then returns `status: ready_for_submission` and `pr_proposal` without creating a PR. Save the proposal body verbatim to a file and pass its repository, base, head and title through the workspace controller's current `task submit` surface; use its immutable-promote route for the main promotion. Confirm the submitted PR head equals `pr_proposal.expected_head` and preserve the embedded release marker. Start each owning executable task through the controller before preparing it. When an exact matching open PR already exists, the helper returns that PR without creating another one.
+
+The push remote must identify one fetch/push repository. Canonical HTTPS and SSH URLs may differ only in transport; account-specific transport belongs in scoped Git configuration. Direct `tiangong-lca/platform` heads use a bare branch name, while personal forks use `owner:branch` when creating the PR. PR lookup uses a bare branch and verifies returned head repository/owner metadata before reuse. Multiple URLs, conflicting explicit owners, a different repository under the canonical owner, missing PR identity or a full bounded result stop the helper. An opaque personal-fork remote requires an explicit `--head-owner`; that override cannot bypass a known mismatch or ambiguous fetch/push destination.
 
 The commands create or reuse PRs but never merge them. Merge the dev Release PR only after its non-browser gate passes; the later main check is expected to be proof/identity-only and must fail closed if the candidate or main baseline drifted. Browser E2E is not evaluated by either release PR. Use a manual release-assembly path only for an explicitly diagnosed unsupported or recovery case; document why the deterministic command could not represent the release, and preserve its version-only, immutable-candidate, and managed-gate guarantees.
 

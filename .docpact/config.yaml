@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-09-13"
-lastReviewedCommit: "ac09fc5113b742bcb507a68d532119cc83ea50f4"
-lastReviewedNote: "Next #1050: example catalog and 58-route localization coverage reviewed; ownership and delivery gates remain unchanged."
+lastReviewedAt: '2026-09-13'
+lastReviewedCommit: '033f98652fbb0ca42f727faf5c13eed747ea2c04'
+lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -108,12 +108,24 @@ const installFakeCommands = (fixture: Fixture) => {
     path.join(fixture.bin, 'gh'),
     `#!/usr/bin/env node
 'use strict';
+const fs = require('node:fs');
 const args = process.argv.slice(2);
+if (process.env.FAKE_GH_LOG) fs.appendFileSync(process.env.FAKE_GH_LOG, JSON.stringify({ args }) + '\\n');
 if (args[0] === 'pr' && args[1] === 'list') {
+  const head = args[args.indexOf('--head') + 1];
+  if (!head || head.includes(':')) throw new Error('pr list requires a bare branch');
+  const fields = args[args.indexOf('--json') + 1].split(',');
+  if (!fields.includes('headRepository') || !fields.includes('headRepositoryOwner')) throw new Error('missing head identity fields');
   process.stdout.write(process.env.FAKE_GH_PR_LIST || '[]');
 } else if (args[0] === 'pr' && args[1] === 'view') {
   process.stdout.write(process.env.FAKE_GH_PR_VIEW || '{}');
 } else if (args[0] === 'pr' && args[1] === 'create') {
+  const index = args.indexOf('--body-file');
+  if (index < 0 || args.includes('--body')) throw new Error('PR body must use --body-file');
+  const body = fs.readFileSync(args[index + 1], 'utf8');
+  const head = args[args.indexOf('--head') + 1];
+  if (head.startsWith('tiangong-lca:')) throw new Error('organization-prefixed head is unsupported');
+  if (process.env.FAKE_GH_LOG) fs.appendFileSync(process.env.FAKE_GH_LOG, JSON.stringify({ body, bodyFile: args[index + 1] }) + '\\n');
   process.stdout.write((process.env.FAKE_GH_CREATED_URL || 'https://example.test/pull/1') + '\\n');
 } else if (args[0] === 'api') {
   const endpoint = args[1] || '';
@@ -347,6 +359,290 @@ afterEach(() => {
 });
 
 describe('release automation public contracts', () => {
+  it.each(['release-to-dev', 'promote-dev-to-main'])(
+    '%s requires apply for prepare-only',
+    (command) => {
+      const args = command === 'release-to-dev' ? ['--version', '1.0.1'] : ['--release-pr', '42'];
+      expect(() =>
+        workflow.parseArguments([...args, '--issue', '778', '--prepare-only'], command),
+      ).toThrow('requires --apply');
+      expect(
+        workflow.parseArguments([...args, '--issue', '778', '--apply', '--prepare-only'], command),
+      ).toMatchObject({ apply: true, prepareOnly: true });
+    },
+  );
+
+  it.each(['personal', 'canonical', 'canonical-separate-push'])(
+    'prepares an exact release for %s without PR creation',
+    (transport) => {
+      const fixture = createFixture();
+      const ghLog = path.join(fixture.container, 'gh.jsonl');
+      const pnpmLog = path.join(fixture.container, 'pnpm.log');
+      if (transport !== 'personal') {
+        const url = 'https://github.com/tiangong-lca/platform.git';
+        git(fixture.root, ['remote', 'set-url', 'fork', url]);
+        git(fixture.root, ['config', '--add', `url.${fixture.fork}.insteadOf`, url]);
+        if (transport === 'canonical-separate-push') {
+          const ssh = 'git@github.com:tiangong-lca/platform.git';
+          git(fixture.root, ['config', 'remote.fork.pushurl', ssh]);
+          git(fixture.root, ['config', '--add', `url.${fixture.fork}.insteadOf`, ssh]);
+        }
+      }
+      const result = runCli(
+        fixture,
+        releaseScript,
+        ['--version', '1.0.1', '--issue', '778', '--apply', '--prepare-only'],
+        { FAKE_GH_LOG: ghLog, FAKE_PNPM_LOG: pnpmLog },
+      );
+      expect({ status: result.status, error: result.stdout }).toMatchObject({ status: 0 });
+      const output = JSON.parse(result.stdout);
+      const branch = 'codex/issue-778-version-v1.0.1';
+      expect(output).toMatchObject({
+        status: 'ready_for_submission',
+        pull_request: null,
+        next_action: 'submit_prepared_pull_request',
+        pr_proposal: {
+          repository: 'tiangong-lca/platform',
+          base: 'dev',
+          head: transport === 'personal' ? `test-owner:${branch}` : branch,
+          head_repository:
+            transport === 'personal' ? 'test-owner/tiangong-lca-next' : 'tiangong-lca/platform',
+          expected_head: output.candidate_sha,
+        },
+      });
+      expect(output.pr_proposal.body).toContain(`candidate=${output.candidate_sha}`);
+      expect(output.pr_proposal.body).toContain(`dev-base=${fixture.devSha}`);
+      expect(git(fixture.fork, ['rev-parse', `refs/heads/${branch}`])).toBe(output.candidate_sha);
+      expect(git(fixture.root, ['show', 'HEAD:pnpm-lock.yaml'])).toBe(
+        git(fixture.root, ['show', `${fixture.devSha}:pnpm-lock.yaml`]),
+      );
+      const calls = fs
+        .readFileSync(ghLog, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+      expect(calls.some((call) => call.args?.[0] === 'pr' && call.args[1] === 'create')).toBe(
+        false,
+      );
+      expect(fs.readFileSync(pnpmLog, 'utf8')).toContain('release-candidate');
+    },
+  );
+
+  it('prepares the exact immutable promotion without creating a PR', () => {
+    const fixture = createFixture('1.0.1');
+    const ghLog = path.join(fixture.container, 'gh.jsonl');
+    const result = runCli(
+      fixture,
+      promotionScript,
+      ['--release-pr', '42', '--issue', '778', '--apply', '--prepare-only'],
+      { FAKE_GH_PR_VIEW: promotionPr(fixture), FAKE_GH_LOG: ghLog },
+    );
+    expect({ status: result.status, error: result.stdout }).toMatchObject({ status: 0 });
+    const output = JSON.parse(result.stdout);
+    expect(output).toMatchObject({
+      status: 'ready_for_submission',
+      pull_request: null,
+      pr_proposal: { base: 'main', expected_head: fixture.devSha },
+    });
+    expect(output.pr_proposal.body).toContain(fixture.devSha);
+    expect(git(fixture.fork, ['rev-parse', `refs/heads/${output.branch}`])).toBe(fixture.devSha);
+    expect(fs.readFileSync(ghLog, 'utf8')).not.toContain('"pr","create"');
+  });
+
+  it('prepare-only retains a failed static gate without pushing or proposing', () => {
+    const fixture = createFixture();
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--apply', '--prepare-only'],
+      { FAKE_RELEASE_PREFLIGHT_FAIL: '1' },
+    );
+    expect(result.status).toBe(workflow.EXIT.gate);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      error: { code: 'release_preflight_failed' },
+    });
+    expect(JSON.parse(result.stdout).pr_proposal).toBeUndefined();
+    expect(
+      git(fixture.root, [
+        'ls-remote',
+        '--refs',
+        'fork',
+        'refs/heads/codex/issue-778-version-v1.0.1',
+      ]),
+    ).toBe('');
+  });
+
+  it.each(['personal', 'canonical'])(
+    'creates a %s PR with exact multiline body-file contents',
+    (transport) => {
+      const fixture = createFixture();
+      const ghLog = path.join(fixture.container, 'gh.jsonl');
+      if (transport === 'canonical') {
+        const url = 'https://github.com/tiangong-lca/platform.git';
+        git(fixture.root, ['remote', 'set-url', 'fork', url]);
+        git(fixture.root, ['config', '--add', `url.${fixture.fork}.insteadOf`, url]);
+      }
+      const result = runCli(
+        fixture,
+        releaseScript,
+        ['--version', '1.0.1', '--issue', '778', '--apply'],
+        { FAKE_GH_LOG: ghLog },
+      );
+      expect({ status: result.status, error: result.stdout }).toMatchObject({ status: 0 });
+      const calls = fs
+        .readFileSync(ghLog, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+      const create = calls.find((call) => call.args?.[1] === 'create').args;
+      const body = calls.find((call) => call.body !== undefined);
+      const branch = 'codex/issue-778-version-v1.0.1';
+      expect(create[create.indexOf('--head') + 1]).toBe(
+        transport === 'canonical' ? branch : `test-owner:${branch}`,
+      );
+      expect(body.body).toContain('\n\n');
+      expect(body.body).toContain(`candidate=${JSON.parse(result.stdout).candidate_sha}`);
+      expect(body.body).toContain('issue=778');
+      expect(fs.existsSync(body.bodyFile)).toBe(false);
+    },
+  );
+
+  it('filters another fork before reusing the selected owner and repository', () => {
+    const fixture = createFixture();
+    const candidateSha = 'a'.repeat(40);
+    const matched = {
+      number: 52,
+      url: 'https://example.test/pull/52',
+      state: 'OPEN',
+      headRefOid: candidateSha,
+      baseRefName: 'dev',
+      headRefName: 'codex/issue-778-version-v1.0.1',
+      headRepositoryOwner: { login: 'test-owner' },
+      headRepository: { nameWithOwner: 'test-owner/tiangong-lca-next' },
+      body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.devSha} main-base=${fixture.mainSha} candidate=${candidateSha} -->`,
+    };
+    const other = {
+      ...matched,
+      number: 51,
+      headRepositoryOwner: { login: 'another-owner' },
+      headRepository: { nameWithOwner: 'another-owner/platform' },
+    };
+    const wrongRepo = {
+      ...matched,
+      number: 50,
+      headRepository: { nameWithOwner: 'test-owner/unrelated' },
+    };
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--apply'],
+      {
+        FAKE_GH_PR_LIST: JSON.stringify([other, wrongRepo, matched]),
+        FAKE_GH_PACKAGE_JSON: JSON.stringify(versionDocuments('1.0.1').packageJson),
+      },
+    );
+    expect({ status: result.status, error: result.stdout }).toMatchObject({ status: 0 });
+    expect(JSON.parse(result.stdout)).toMatchObject({ reused: true, pull_request: { number: 52 } });
+    expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.mainSha);
+  });
+
+  it.each(['missing', 'bounded'])('rejects %s PR identity evidence before mutation', (kind) => {
+    const fixture = createFixture();
+    const prs =
+      kind === 'missing' ? [{ number: 1 }] : Array.from({ length: 100 }, () => ({ number: 1 }));
+    const result = runCli(
+      fixture,
+      releaseScript,
+      ['--version', '1.0.1', '--issue', '778', '--apply'],
+      { FAKE_GH_PR_LIST: JSON.stringify(prs) },
+    );
+    expect(result.status).not.toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      error: { code: kind === 'missing' ? 'pr_head_identity_missing' : 'pr_lookup_incomplete' },
+    });
+    expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.mainSha);
+  });
+
+  it.each([
+    'owner',
+    'multiple-fetch',
+    'multiple-push',
+    'different-push',
+    'same-owner-wrong-repo',
+    'opaque-canonical',
+  ])('rejects ambiguous %s before preparation', (kind) => {
+    const fixture = createFixture();
+    const args = ['--version', '1.0.1', '--issue', '778', '--apply'];
+    let expected = 'ambiguous_push_remote';
+    if (kind === 'owner') {
+      args.push('--head-owner', 'other-owner');
+      expected = 'head_owner_mismatch';
+    }
+    if (kind === 'multiple-fetch')
+      git(fixture.root, [
+        'config',
+        '--add',
+        'remote.fork.url',
+        'https://github.com/test-owner/second.git',
+      ]);
+    if (kind === 'multiple-push') {
+      git(fixture.root, [
+        'config',
+        '--add',
+        'remote.fork.pushurl',
+        'https://github.com/test-owner/tiangong-lca-next.git',
+      ]);
+      git(fixture.root, [
+        'config',
+        '--add',
+        'remote.fork.pushurl',
+        'https://github.com/test-owner/second.git',
+      ]);
+    }
+    if (kind === 'different-push')
+      git(fixture.root, [
+        'config',
+        'remote.fork.pushurl',
+        'https://github.com/test-owner/second.git',
+      ]);
+    if (kind === 'same-owner-wrong-repo') {
+      git(fixture.root, ['remote', 'set-url', 'fork', 'https://github.com/tiangong-lca/other.git']);
+      expected = 'ambiguous_head_repository';
+    }
+    if (kind === 'opaque-canonical') {
+      git(fixture.root, ['remote', 'set-url', 'fork', fixture.fork]);
+      args.push('--head-owner', 'tiangong-lca');
+      expected = 'ambiguous_head_repository';
+    }
+    const result = runCli(fixture, releaseScript, args);
+    expect(JSON.parse(result.stdout)).toMatchObject({ error: { code: expected } });
+    expect(result.status).not.toBe(0);
+    expect(git(fixture.root, ['rev-parse', 'HEAD'])).toBe(fixture.mainSha);
+    expect(git(fixture.fork, ['for-each-ref', '--format=%(refname)', 'refs/heads/codex/'])).toBe(
+      '',
+    );
+  });
+
+  it('retains an explicit personal owner for opaque local transport', () => {
+    const fixture = createFixture();
+    git(fixture.root, ['remote', 'set-url', 'fork', fixture.fork]);
+    const result = runCli(fixture, releaseScript, [
+      '--version',
+      '1.0.1',
+      '--issue',
+      '778',
+      '--head-owner',
+      'test-owner',
+      '--apply',
+      '--prepare-only',
+    ]);
+    expect({ status: result.status, error: result.stdout }).toMatchObject({ status: 0 });
+    expect(JSON.parse(result.stdout).pr_proposal).toMatchObject({
+      head: 'test-owner:codex/issue-778-version-v1.0.1',
+      head_repository: null,
+    });
+  });
+
   it('release push preserves runtime account config and strips foreign repository bindings', () => {
     const fixture = createFixture('1.0.0');
     git(fixture.root, ['config', '--unset-all', `url.${fixture.fork}.insteadOf`]);
@@ -474,7 +770,7 @@ describe('release automation public contracts', () => {
       '--branch',
       'codex/promote-not-a-dev-release',
       '--head-owner',
-      'fixture',
+      'test-owner',
     ]);
 
     expect(result.status).toBe(workflow.EXIT.usage);
@@ -494,7 +790,7 @@ describe('release automation public contracts', () => {
       '--issue',
       '778',
       '--head-owner',
-      'fixture',
+      'test-owner',
     ]);
 
     expect(result.status).toBe(0);
@@ -533,7 +829,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       { FAKE_GH_CREATED_URL: 'https://example.test/pull/56' },
     );
 
@@ -559,7 +855,7 @@ describe('release automation public contracts', () => {
       '--issue',
       '778',
       '--head-owner',
-      'fixture',
+      'test-owner',
       '--apply',
     ]);
 
@@ -618,7 +914,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner'],
       { FAKE_GH_PNPM_LOCK_ENCODING_NONE: '1' },
     );
 
@@ -635,7 +931,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_PNPM_LOG: pnpmLog,
         FAKE_GH_CREATED_URL: 'https://example.test/pull/51',
@@ -720,7 +1016,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_PNPM_LOG: pnpmLog,
         FAKE_GH_CREATED_URL: 'https://example.test/pull/54',
@@ -758,7 +1054,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       { FAKE_RELEASE_PREFLIGHT_FAIL: '1' },
     );
 
@@ -782,7 +1078,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_GH_CREATED_URL: 'https://example.test/pull/52',
         FAKE_DOCPACT_MODE: 'promotion-range-review',
@@ -809,7 +1105,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_GH_CREATED_URL: 'https://example.test/pull/53',
         FAKE_DOCPACT_MODE: 'candidate-review-masked-by-cumulative-range',
@@ -835,7 +1131,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       { FAKE_DOCPACT_MODE: 'unsupported' },
     );
 
@@ -925,6 +1221,8 @@ describe('release automation public contracts', () => {
         headRefOid: candidateSha,
         baseRefName: 'dev',
         headRefName: 'codex/issue-778-version-v1.0.1',
+        headRepositoryOwner: { login: 'test-owner' },
+        headRepository: { nameWithOwner: 'test-owner/tiangong-lca-next' },
         body: `<!-- tiangong-next-release-automation:v2 issue=778 version=1.0.1 dev-base=${fixture.devSha} main-base=${fixture.mainSha} candidate=${candidateSha} -->`,
       },
     ];
@@ -932,7 +1230,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       releaseScript,
-      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--version', '1.0.1', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_GH_PR_LIST: JSON.stringify(existing),
         FAKE_GH_PACKAGE_JSON: JSON.stringify(candidateDocuments.packageJson),
@@ -956,7 +1254,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       promotionScript,
-      ['--release-pr', '42', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--release-pr', '42', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_GH_PR_VIEW: promotionPr(fixture),
         FAKE_GH_CREATED_URL: 'https://example.test/pull/53',
@@ -990,7 +1288,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       promotionScript,
-      ['--release-pr', '42', '--issue', '778', '--head-owner', 'fixture', '--apply'],
+      ['--release-pr', '42', '--issue', '778', '--head-owner', 'test-owner', '--apply'],
       {
         FAKE_GH_PR_VIEW: promotionPr(fixture),
         FAKE_GH_CREATED_URL: 'https://example.test/pull/57',
@@ -1022,7 +1320,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       promotionScript,
-      ['--release-pr', '42', '--issue', '778', '--head-owner', 'fixture'],
+      ['--release-pr', '42', '--issue', '778', '--head-owner', 'test-owner'],
       { FAKE_GH_PR_VIEW: promotionPr(fixture, releaseSha) },
     );
 
@@ -1042,7 +1340,7 @@ describe('release automation public contracts', () => {
     const result = runCli(
       fixture,
       promotionScript,
-      ['--release-pr', '42', '--issue', '778', '--head-owner', 'fixture'],
+      ['--release-pr', '42', '--issue', '778', '--head-owner', 'test-owner'],
       { FAKE_GH_PR_VIEW: JSON.stringify(pr) },
     );
 
