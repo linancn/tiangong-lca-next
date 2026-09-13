@@ -43,8 +43,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
-lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
+lastReviewedCommit: 033f98652fbb0ca42f727faf5c13eed747ea2c04
+lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -56,6 +56,8 @@ lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now 
 Define the intended trigger policy for the existing local docpact gate and `pnpm prepush:gate` command without changing the quality bar.
 
 ## Exact Gate Command
+
+Adding `--prepare-only` to a deterministic release command's `--apply` mode defers only PR creation to the workspace controller. It retains the same candidate composition, Docpact/static checks, checked push and exact remote-SHA verification. The returned proposal is submission evidence; it does not replace the dev Release PR gate or the main promotion proof.
 
 ```bash
 pnpm docpact:gate

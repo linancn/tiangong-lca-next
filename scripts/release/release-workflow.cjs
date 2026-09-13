@@ -3,6 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { isDeepStrictEqual } = require('node:util');
 
@@ -289,6 +290,7 @@ function parsePositiveInteger(value, label) {
 function parseArguments(argv, command) {
   const options = {
     apply: false,
+    prepareOnly: false,
     format: 'json',
     repository: DEFAULT_REPOSITORY,
     remote: DEFAULT_CANONICAL_REMOTE,
@@ -314,6 +316,10 @@ function parseArguments(argv, command) {
     const argument = argv[index];
     if (argument === '--help' || argument === '-h') {
       options.help = true;
+      continue;
+    }
+    if (argument === '--prepare-only') {
+      options.prepareOnly = true;
       continue;
     }
     if (argument === '--apply' || argument === '--dry-run') {
@@ -353,6 +359,13 @@ function parseArguments(argv, command) {
     });
   }
   if (!options.help) {
+    if (options.prepareOnly && !options.apply) {
+      throw new ReleaseAutomationError(
+        'conflicting_modes',
+        '--prepare-only requires --apply; it prepares and pushes Git state but defers PR creation.',
+        { exitCode: EXIT.usage },
+      );
+    }
     options.issue = parsePositiveInteger(options.issue, '--issue');
     if (command === 'release-to-dev') {
       if (options.releasePr !== undefined) {
@@ -911,10 +924,19 @@ function optionalRemoteBranchSha(root, remote, branch) {
   return result.stdout.trim().split(/\s+/u)[0];
 }
 
-function remoteOwner(root, remote) {
+function canonicalRemoteIdentity(url) {
+  const match =
+    /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/iu.exec(
+      url,
+    );
+  if (!match || ['.', '..'].includes(match[2])) return null;
+  return { owner: match[1], repository: `${match[1]}/${match[2]}` };
+}
+
+function remoteIdentity(root, remote) {
   // Owner identity comes from the raw configured remote URL, never from the
-  // insteadOf-expanded effective transport, and push URLs or multiple fetch URLs
-  // fail closed instead of guessing. Raw URLs are never logged: they may carry
+  // insteadOf-expanded effective transport. Fetch and push must identify one
+  // repository; ambiguous URLs fail closed. Raw URLs are never logged: they may carry
   // operator credentials after account rewrites.
   const rawUrls = git(root, ['config', '--get-all', `remote.${remote}.url`], {
     allowFailure: true,
@@ -928,21 +950,32 @@ function remoteOwner(root, remote) {
     .stdout.trim()
     .split(/\r?\n/u)
     .filter(Boolean);
-  if (pushUrls.length > 0 || rawUrls.length !== 1) {
+  if (pushUrls.length > 1 || rawUrls.length !== 1) {
     throw new ReleaseAutomationError(
-      'unsupported_push_remote',
-      `Remote ${remote} must expose exactly one raw fetch URL and no explicit push URLs to derive a GitHub owner.`,
+      'ambiguous_push_remote',
+      `Remote ${remote} must have one fetch URL and at most one push URL.`,
       {
         details: { remote, raw_url_count: rawUrls.length, push_url_count: pushUrls.length },
-        nextAction: 'Pass --head-owner <github-login> explicitly.',
+        nextAction: 'Use a dedicated remote with one unambiguous fetch/push repository.',
       },
     );
   }
-  const match =
-    /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/iu.exec(
-      rawUrls[0],
-    );
-  if (!match) {
+  const identity = canonicalRemoteIdentity(rawUrls[0]);
+  if (pushUrls.length === 1 && pushUrls[0] !== rawUrls[0]) {
+    const pushIdentity = canonicalRemoteIdentity(pushUrls[0]);
+    if (
+      !identity ||
+      !pushIdentity ||
+      identity.repository.toLowerCase() !== pushIdentity.repository.toLowerCase()
+    ) {
+      throw new ReleaseAutomationError(
+        'ambiguous_push_remote',
+        `Remote ${remote} fetch and push URLs do not identify the same canonical repository.`,
+        { nextAction: 'Use a separate fork remote whose fetch and push identify one repository.' },
+      );
+    }
+  }
+  if (!identity) {
     throw new ReleaseAutomationError(
       'unsupported_push_remote',
       `Remote ${remote} is not a canonical github.com HTTPS or SSH checkout; refusing to derive a GitHub owner.`,
@@ -952,7 +985,36 @@ function remoteOwner(root, remote) {
       },
     );
   }
-  return match[1];
+  return identity;
+}
+
+function resolvePushHead(root, options) {
+  let identity;
+  try {
+    identity = remoteIdentity(root, options.pushRemote);
+  } catch (error) {
+    if (error.code !== 'unsupported_push_remote' || !options.headOwner) throw error;
+    identity = { owner: options.headOwner, repository: null };
+  }
+  const owner = options.headOwner || identity.owner;
+  if (!/^[A-Za-z0-9-]+$/u.test(owner) || owner.toLowerCase() !== identity.owner.toLowerCase()) {
+    throw new ReleaseAutomationError(
+      'head_owner_mismatch',
+      '--head-owner must match the configured GitHub head repository owner.',
+    );
+  }
+  const direct = identity.repository?.toLowerCase() === options.repository.toLowerCase();
+  if (owner.toLowerCase() === options.repository.split('/')[0].toLowerCase() && !direct) {
+    throw new ReleaseAutomationError(
+      'ambiguous_head_repository',
+      'A same-owner head must identify the canonical repository explicitly.',
+      {
+        nextAction:
+          'Configure a canonical GitHub remote; keep account-specific transport in scoped Git configuration.',
+      },
+    );
+  }
+  return { owner, headRepository: identity.repository, direct };
 }
 
 function localBranchExists(root, branch) {
@@ -1058,7 +1120,7 @@ function releaseLineAlignment(root, mainRef, devRef) {
   };
 }
 
-function findOpenPr(root, { repository, base, owner, branch }) {
+function findOpenPr(root, { repository, base, owner, branch, headRepository }) {
   const payload = parseJsonOutput(
     gh(root, [
       'pr',
@@ -1070,9 +1132,11 @@ function findOpenPr(root, { repository, base, owner, branch }) {
       '--base',
       base,
       '--head',
-      `${owner}:${branch}`,
+      branch,
+      '--limit',
+      '100',
       '--json',
-      'number,url,state,headRefOid,baseRefName,headRefName,body',
+      'number,url,state,headRefOid,baseRefName,headRefName,body,headRepository,headRepositoryOwner',
     ]),
     'gh pr list',
   );
@@ -1081,17 +1145,39 @@ function findOpenPr(root, { repository, base, owner, branch }) {
       exitCode: EXIT.external,
     });
   }
-  if (payload.length > 1) {
+  if (payload.length >= 100) {
+    throw new ReleaseAutomationError(
+      'pr_lookup_incomplete',
+      'PR lookup reached its bound; repository identity cannot be established from a partial list.',
+    );
+  }
+  for (const pr of payload) {
+    if (!pr?.headRepositoryOwner?.login || !pr?.headRepository?.nameWithOwner) {
+      throw new ReleaseAutomationError(
+        'pr_head_identity_missing',
+        'PR lookup lacks the head repository identity required for safe reuse.',
+      );
+    }
+  }
+  const matching = payload.filter(
+    (pr) =>
+      pr.headRefName === branch &&
+      pr.baseRefName === base &&
+      pr.headRepositoryOwner.login.toLowerCase() === owner.toLowerCase() &&
+      (!headRepository ||
+        pr.headRepository.nameWithOwner.toLowerCase() === headRepository.toLowerCase()),
+  );
+  if (matching.length > 1) {
     throw new ReleaseAutomationError(
       'ambiguous_pull_requests',
       'Multiple open pull requests match the release identity.',
       {
         exitCode: EXIT.drift,
-        details: { pull_requests: payload.map(({ number, url }) => ({ number, url })) },
+        details: { pull_requests: matching.map(({ number, url }) => ({ number, url })) },
       },
     );
   }
-  return payload[0] ?? null;
+  return matching[0] ?? null;
 }
 
 function viewPullRequest(root, repository, number) {
@@ -1109,21 +1195,29 @@ function viewPullRequest(root, repository, number) {
   );
 }
 
-function createPullRequest(root, { repository, base, owner, branch, title, body }) {
-  const result = gh(root, [
-    'pr',
-    'create',
-    '--repo',
-    repository,
-    '--base',
-    base,
-    '--head',
-    `${owner}:${branch}`,
-    '--title',
-    title,
-    '--body',
-    body,
-  ]);
+function createPullRequest(root, { repository, base, head, title, body }) {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'next-release-pr-'));
+  let result;
+  try {
+    const bodyFile = path.join(temporary, 'body.md');
+    fs.writeFileSync(bodyFile, body, { mode: 0o600, flag: 'wx' });
+    result = gh(root, [
+      'pr',
+      'create',
+      '--repo',
+      repository,
+      '--base',
+      base,
+      '--head',
+      head,
+      '--title',
+      title,
+      '--body-file',
+      bodyFile,
+    ]);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
   const url = result.stdout
     .trim()
     .split(/\r?\n/u)
@@ -1193,11 +1287,11 @@ function baseResult(command, options) {
 }
 
 function releaseHelp() {
-  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review Docpact, run static preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nMutation boundary:\n  The command proves that only package.json.version and bounded Docpact review\n  metadata changed, while pnpm-lock.yaml remains byte-for-byte unchanged. Its push\n  runs only Docpact and static preflight; the exact Release PR targeting dev owns\n  one non-browser full release gate and external proof. Browser E2E is an\n  operator-selected manual qualification to run on the open business PR before\n  release-to-dev when its change risk warrants it.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR only after its Release Candidate release proof succeeds, then run promote-dev-to-main with its PR number.`;
+  return `Prepare or reuse a version-bump pull request targeting dev.\n\nUsage:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 [--apply]\n\nOptions:\n  --version <x.y.z>       Required stable version greater than the current dev version.\n  --issue <number>        Required owning Next Issue.\n  --apply                 Review Docpact, run static preflight, push, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --prepare-only          With --apply, prepare/push the candidate and return pr_proposal without creating a PR.\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic branch name.\n  --log-dir <path>        Directory for gate logs and Docpact reports (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nMutation boundary:\n  The command proves that only package.json.version and bounded Docpact review\n  metadata changed, while pnpm-lock.yaml remains byte-for-byte unchanged. Its push\n  runs only Docpact and static preflight; the exact Release PR targeting dev owns\n  one non-browser full release gate and external proof. Browser E2E is an\n  operator-selected manual qualification to run on the open business PR before\n  release-to-dev when its change risk warrants it.\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778\n  node scripts/release/release-to-dev.cjs --version 0.0.67 --issue 778 --apply\n\nNext:\n  Merge the returned dev PR only after its Release Candidate release proof succeeds, then run promote-dev-to-main with its PR number.`;
 }
 
 function promotionHelp() {
-  return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the proved dev merge SHA, run structural/static gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its fast proof-identity check passes.`;
+  return `Prepare or reuse an immutable dev-to-main promotion pull request.\n\nUsage:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 [--apply]\n\nOptions:\n  --release-pr <number>   Required merged version-bump PR targeting dev.\n  --issue <number>        Required owning Next Issue closed by the main promotion.\n  --apply                 Pin the proved dev merge SHA, run structural/static gates, and create the PR.\n  --dry-run               Inspect and return the plan without Git or GitHub writes (default).\n  --prepare-only          With --apply, prepare/push the candidate and return pr_proposal without creating a PR.\n  --repo <owner/repo>     Canonical repository (default: ${DEFAULT_REPOSITORY}).\n  --remote <name>         Canonical read remote (default: ${DEFAULT_CANONICAL_REMOTE}).\n  --push-remote <name>    Writable fork remote (default: ${DEFAULT_PUSH_REMOTE}).\n  --head-owner <login>    GitHub owner for the PR head; derived from --push-remote by default.\n  --branch <name>         Override the deterministic immutable promotion branch.\n  --log-dir <path>        Directory for gate logs (default: ${DEFAULT_LOG_DIRECTORY}).\n  --format json|human     Output mode (default: json).\n\nRelease-line boundary:\n  main must be an ancestor of dev, or an exact two-parent promotion whose second\n  parent remains in dev history and has the same tree as main. Other divergence\n  requires governed reconciliation.\n\nExamples:\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778\n  node scripts/release/promote-dev-to-main.cjs --release-pr 801 --issue 778 --apply\n\nNext:\n  Merge the returned main PR after its fast proof-identity check passes.`;
 }
 
 function releasePrBody({
@@ -1256,7 +1350,8 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
   const target = parseStableVersion(options.version, '--version');
   const branch = options.branch || `codex/issue-${options.issue}-version-v${target.text}`;
   validateBranch(root, branch, 'release-to-dev');
-  const owner = options.headOwner || remoteOwner(root, options.pushRemote);
+  const pushHead = resolvePushHead(root, options);
+  const { owner, headRepository } = pushHead;
   const remoteDevSha = remoteBranchSha(root, options.remote, 'dev');
   const remoteMainSha = remoteBranchSha(root, options.remote, 'main');
   const existing = findOpenPr(root, {
@@ -1264,6 +1359,7 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     base: 'dev',
     owner,
     branch,
+    headRepository,
   });
   if (existing) {
     const marker = releaseMarker(existing.body);
@@ -1539,11 +1635,12 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       },
     );
   }
-  const pullRequest = createPullRequest(root, {
+  const proposal = {
     repository: options.repository,
     base: 'dev',
-    owner,
-    branch,
+    head: pushHead.direct ? branch : `${owner}:${branch}`,
+    head_repository: headRepository,
+    expected_head: candidateSha,
     title: `chore: prepare v${target.text} on dev`,
     body: releasePrBody({
       issue: options.issue,
@@ -1554,10 +1651,11 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
       docpactReview,
       qualification,
     }),
-  });
+  };
+  const pullRequest = options.prepareOnly ? null : createPullRequest(root, proposal);
   return {
     ...baseResult('release-to-dev', options),
-    status: 'ready_for_review',
+    status: options.prepareOnly ? 'ready_for_submission' : 'ready_for_review',
     reused: false,
     version: target.text,
     base_branch: 'dev',
@@ -1567,10 +1665,11 @@ function executeReleaseToDev(options, cwd = process.cwd()) {
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
+    ...(options.prepareOnly ? { pr_proposal: proposal } : {}),
     docpact_review: docpactReview,
     qualification,
     gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
-    next_action: 'merge_release_pr',
+    next_action: options.prepareOnly ? 'submit_prepared_pull_request' : 'merge_release_pr',
   };
 }
 
@@ -1638,12 +1737,14 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
   }
   const branch = options.branch || `codex/promote-v${version}-dev-to-main-issue-${options.issue}`;
   validateBranch(root, branch, 'promote-dev-to-main');
-  const owner = options.headOwner || remoteOwner(root, options.pushRemote);
+  const pushHead = resolvePushHead(root, options);
+  const { owner, headRepository } = pushHead;
   const existing = findOpenPr(root, {
     repository: options.repository,
     base: 'main',
     owner,
     branch,
+    headRepository,
   });
   if (existing) {
     if (existing.headRefOid !== devMergeSha) {
@@ -1810,11 +1911,12 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       },
     );
   }
-  const pullRequest = createPullRequest(root, {
+  const proposal = {
     repository: options.repository,
     base: 'main',
-    owner,
-    branch,
+    head: pushHead.direct ? branch : `${owner}:${branch}`,
+    head_repository: headRepository,
+    expected_head: candidateSha,
     title: `chore: promote v${version} dev to main`,
     body: promotionPrBody({
       issue: options.issue,
@@ -1823,10 +1925,11 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       devSha: devMergeSha,
       mainSha: fetchedMainSha,
     }),
-  });
+  };
+  const pullRequest = options.prepareOnly ? null : createPullRequest(root, proposal);
   return {
     ...baseResult('promote-dev-to-main', options),
-    status: 'ready_for_review',
+    status: options.prepareOnly ? 'ready_for_submission' : 'ready_for_review',
     reused: false,
     version,
     release_pr: { number: releasePr.number, url: releasePr.url },
@@ -1836,6 +1939,7 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
     branch,
     candidate_sha: candidateSha,
     pull_request: pullRequest,
+    ...(options.prepareOnly ? { pr_proposal: proposal } : {}),
     docpact_review: {
       status: 'not_applicable',
       reason: 'promotion_preserves_the_exact_merged_dev_candidate',
@@ -1845,7 +1949,7 @@ function executePromoteDevToMain(options, cwd = process.cwd()) {
       proof_storage: 'github_actions_artifact',
     },
     gate: { ...gate, log_path: relativeLogPath(root, plannedLog) },
-    next_action: 'merge_promotion_pr',
+    next_action: options.prepareOnly ? 'submit_prepared_pull_request' : 'merge_promotion_pr',
   };
 }
 
@@ -1854,11 +1958,14 @@ function humanResult(result) {
     return `${result.command}: failed\n\nSummary:\n- ${result.error.code}: ${result.error.message}\n\nNext:\n- ${result.next_action || 'Fix the reported precondition and rerun the same command.'}\n`;
   }
   const target = result.pull_request?.url || result.branch || result.repository;
+  const proposalNote = result.pr_proposal
+    ? '\n- PR creation deferred; use --format json to obtain the exact pr_proposal body/head.'
+    : '';
   const reviewedPathCount = new Set([
     ...(result.docpact_review?.reviewed_paths || []),
     ...(result.docpact_review?.evidence_paths || []),
   ]).size;
-  return `${result.command}: ${result.status}\n\nSummary:\n- ${target}\n- version: ${result.version ?? 'not resolved'}\n- candidate: ${result.candidate_sha ?? result.dev_merge_sha ?? result.base_sha ?? 'not created'}\n- Docpact review: ${result.docpact_review?.status ?? 'not reported'} (${reviewedPathCount} evidence path${reviewedPathCount === 1 ? '' : 's'})\n\nNext:\n- ${result.next_action}\n`;
+  return `${result.command}: ${result.status}\n\nSummary:\n- ${target}${proposalNote}\n- version: ${result.version ?? 'not resolved'}\n- candidate: ${result.candidate_sha ?? result.dev_merge_sha ?? result.base_sha ?? 'not created'}\n- Docpact review: ${result.docpact_review?.status ?? 'not reported'} (${reviewedPathCount} evidence path${reviewedPathCount === 1 ? '' : 's'})\n\nNext:\n- ${result.next_action}\n`;
 }
 
 function emitResult(result, format = 'json') {

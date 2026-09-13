@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
-lastReviewedNote: 'Reviewed for platform #1055: canonical release admission, automation defaults, package/capture metadata and active repository links move to tiangong-lca/platform (repository id 805297890, owner id 327771381); package name, app identity, version 0.0.102, frozen dependencies, dev-to-main release semantics, historical proof and fixed-SHA source URLs stay unchanged.'
+lastReviewedCommit: 033f98652fbb0ca42f727faf5c13eed747ea2c04
+lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
