@@ -254,6 +254,7 @@ describe('locale audit CLI schema defaults', () => {
         manifestPath,
       ]);
       expect(written.status).toBe(0);
+      expect(JSON.parse(written.stdout).source.repository).toBe('tiangong-lca/platform');
 
       writeFixtureFile(root, 'unrelated.txt', 'unrelated checkpoint\n');
       git(['add', 'unrelated.txt']);

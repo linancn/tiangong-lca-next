@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 22b59e6e168f10ad9ae2c0755529eb75e3aa4e57
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
 lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
 ---
 

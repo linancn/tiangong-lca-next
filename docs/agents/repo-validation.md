@@ -44,7 +44,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 22b59e6e168f10ad9ae2c0755529eb75e3aa4e57
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
 lastReviewedNote: 'Reviewed for platform #1055: canonical release admission now binds repository name, repository id 805297890 and owner id 327771381; gate composition, dev-to-main proof semantics and immutable promotion rules are unchanged.'
 related:
   - ../AGENTS.md
@@ -60,6 +60,8 @@ related:
 4. record exact commands and environments in the PR
 
 The staged JavaScript lint command accepts an empty selection after the existing Oxlint ignore rules are applied (for example, a route-config-only commit). Eligible files still receive the same lint checks; formatting, type checks and the full pre-push gate remain required.
+
+Release and E2E Git helpers preserve process-scoped account configuration while binding operations to the intended repository. Local root discovery isolates inherited Git layout configuration; subsequent Git and controlled release-gate children retain account URL rewrites and author settings. Release fork-owner discovery reads the unexpanded canonical GitHub HTTPS/SSH URL; ambiguous URLs or explicit push URLs require the existing `--head-owner` option. Real temporary-repository tests cover foreign directory bindings, runtime `core.worktree`/`core.bare`, a scoped author and rewrite, subdirectory invocation, and refusal before an unintended HTTPS request.
 
 ## Default Baseline
 

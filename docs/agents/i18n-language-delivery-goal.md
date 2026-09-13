@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-09-10
-lastReviewedCommit: 61d2323d8cb477ae881496aad9edb43aee0b3073
+lastReviewedAt: 2026-09-13
+lastReviewedCommit: ac09fc5113b742bcb507a68d532119cc83ea50f4
 lastReviewedNote: 'Next #1050: reviewed the example-data menu, seven reused dataset pages, fixed example version scope and 58-route localization contract; existing delivery and validation gates remain required.'
 baselineObservedAt: 2026-07-18
 related:

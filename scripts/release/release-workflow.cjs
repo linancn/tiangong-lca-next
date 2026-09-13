@@ -17,12 +17,15 @@ const MAX_CAPTURE_BYTES = 64 * 1024 * 1024;
 const MAIN_SEMANTIC_BRANCH_PATTERN = /^(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u;
 const PROMOTION_BRANCH_PATTERN = /^(?:codex\/)?promote(?:\/|-)/u;
 const MAX_DOCPACT_REVIEW_ROUNDS = 5;
-const LOCAL_GIT_ENVIRONMENT_KEYS = [
-  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+// Foreign repository bindings must never redirect managed git operations. Runtime
+// account configuration injected by the workspace accounts runner
+// (GIT_CONFIG_COUNT/GIT_CONFIG_PARAMETERS plus GIT_CONFIG_KEY_<n>/GIT_CONFIG_VALUE_<n>
+// pairs: account URL rewrite and author) is deliberately preserved.
+const GIT_REPOSITORY_BINDING_KEYS = [
   'GIT_CONFIG',
-  'GIT_CONFIG_PARAMETERS',
-  'GIT_CONFIG_COUNT',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
   'GIT_OBJECT_DIRECTORY',
+  'GIT_COMMON_DIR',
   'GIT_DIR',
   'GIT_WORK_TREE',
   'GIT_IMPLICIT_WORK_TREE',
@@ -33,6 +36,29 @@ const LOCAL_GIT_ENVIRONMENT_KEYS = [
   'GIT_PREFIX',
   'GIT_SHALLOW_FILE',
 ];
+
+function boundGitEnvironment(root) {
+  const environment = { ...process.env };
+  GIT_REPOSITORY_BINDING_KEYS.forEach((key) => delete environment[key]);
+  // An explicit work tree defeats inherited core.worktree / core.bare bindings while
+  // the preserved runtime account configuration keeps author and URL rewrites.
+  environment.GIT_WORK_TREE = root;
+  return environment;
+}
+
+// Runtime account configuration (GIT_CONFIG_COUNT/GIT_CONFIG_PARAMETERS) may carry
+// core.worktree or core.bare entries; layout discovery must follow the on-disk
+// repository, so the full local-git environment is isolated here. The known root
+// re-enables the account configuration through boundGitEnvironment.
+function repositoryDiscoveryEnvironment() {
+  const environment = { ...process.env };
+  GIT_REPOSITORY_BINDING_KEYS.forEach((key) => delete environment[key]);
+  delete environment.GIT_CONFIG_PARAMETERS;
+  delete environment.GIT_CONFIG_COUNT;
+  for (const key of Object.keys(environment))
+    if (/^GIT_CONFIG_(?:KEY|VALUE)_\d+$/u.test(key)) delete environment[key];
+  return environment;
+}
 
 const EXIT = Object.freeze({
   usage: 2,
@@ -105,7 +131,7 @@ function runLogged(command, args, { cwd, logFile }) {
     const result = spawnSync(command, args, {
       cwd,
       stdio: ['ignore', descriptor, descriptor],
-      env: process.env,
+      env: boundGitEnvironment(cwd),
     });
     if (result.error) {
       throw new ReleaseAutomationError('command_unavailable', `${command} could not be executed.`, {
@@ -120,9 +146,7 @@ function runLogged(command, args, { cwd, logFile }) {
 }
 
 function git(root, args, options = {}) {
-  const environment = { ...process.env };
-  LOCAL_GIT_ENVIRONMENT_KEYS.forEach((key) => delete environment[key]);
-  return run('git', args, { cwd: root, env: environment, ...options });
+  return run('git', args, { cwd: root, env: boundGitEnvironment(root), ...options });
 }
 
 function gh(root, args, options = {}) {
@@ -145,7 +169,10 @@ function parseJsonOutput(result, description) {
 }
 
 function repositoryRoot(cwd = process.cwd()) {
-  return git(cwd, ['rev-parse', '--show-toplevel']).stdout.trim();
+  return run('git', ['rev-parse', '--show-toplevel'], {
+    cwd,
+    env: repositoryDiscoveryEnvironment(),
+  }).stdout.trim();
 }
 
 function assertClean(root) {
@@ -885,14 +912,42 @@ function optionalRemoteBranchSha(root, remote, branch) {
 }
 
 function remoteOwner(root, remote) {
-  const url = git(root, ['remote', 'get-url', remote]).stdout.trim();
-  const match = /github\.com(?::|\/)([^/]+)\/[^/]+?(?:\.git)?$/u.exec(url);
+  // Owner identity comes from the raw configured remote URL, never from the
+  // insteadOf-expanded effective transport, and push URLs or multiple fetch URLs
+  // fail closed instead of guessing. Raw URLs are never logged: they may carry
+  // operator credentials after account rewrites.
+  const rawUrls = git(root, ['config', '--get-all', `remote.${remote}.url`], {
+    allowFailure: true,
+  })
+    .stdout.trim()
+    .split(/\r?\n/u)
+    .filter(Boolean);
+  const pushUrls = git(root, ['config', '--get-all', `remote.${remote}.pushurl`], {
+    allowFailure: true,
+  })
+    .stdout.trim()
+    .split(/\r?\n/u)
+    .filter(Boolean);
+  if (pushUrls.length > 0 || rawUrls.length !== 1) {
+    throw new ReleaseAutomationError(
+      'unsupported_push_remote',
+      `Remote ${remote} must expose exactly one raw fetch URL and no explicit push URLs to derive a GitHub owner.`,
+      {
+        details: { remote, raw_url_count: rawUrls.length, push_url_count: pushUrls.length },
+        nextAction: 'Pass --head-owner <github-login> explicitly.',
+      },
+    );
+  }
+  const match =
+    /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?$/iu.exec(
+      rawUrls[0],
+    );
   if (!match) {
     throw new ReleaseAutomationError(
       'unsupported_push_remote',
-      `Cannot derive a GitHub owner from remote ${remote}.`,
+      `Remote ${remote} is not a canonical github.com HTTPS or SSH checkout; refusing to derive a GitHub owner.`,
       {
-        details: { remote, url },
+        details: { remote },
         nextAction: 'Pass --head-owner <github-login> explicitly.',
       },
     );

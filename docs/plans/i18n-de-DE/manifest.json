@@ -5,7 +5,7 @@
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "auditedInputDigest": "813e69bd79515277d919cff521cb7329808ab8dadb95a6fb547196837d398fc6",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
-    "repository": "linancn/tiangong-lca-next"
+    "repository": "tiangong-lca/platform"
   },
   "auditPolicy": {
     "categories": {
