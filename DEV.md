@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 0b0589cb13a618070bd0033f7294a6272d7ecefc
-lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
+lastReviewedCommit: 89575d9b6261133d499a5764505a9643ccfa56e4
+lastReviewedNote: 'Reviewed for platform #1062: the Gitleaks Security Scan workflow (.github/workflows/gitleaks.yml), its dedicated config (.gitleaks.toml) and ignore file (.gitleaksignore) are removed entirely; no CLI replacement is introduced. Docpact governance references to those files are cleaned. Package version, dependencies, lock, build/lint/type/coverage/release-proof gates and other workflows are unchanged.'
 ---
 
 # Development Bootstrap

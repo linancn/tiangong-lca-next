@@ -40,8 +40,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-09-13
-lastReviewedCommit: 0b0589cb13a618070bd0033f7294a6272d7ecefc
-lastReviewedNote: 'Reviewed for platform #1057: deterministic release prepare-only handoff preserves candidate and promotion gates; direct organization and personal fork PR identity, bounded lookup and body-file contracts are documented. Existing quality thresholds and ownership remain unchanged.'
+lastReviewedCommit: 89575d9b6261133d499a5764505a9643ccfa56e4
+lastReviewedNote: 'Reviewed for platform #1062: user-requested Gitleaks Action retirement removes its workflow and dedicated configuration. All other build, lint, type, coverage, release-proof and branch gates remain unchanged; no CLI replacement is added.'
 ---
 
 # Testing Troubleshooting
