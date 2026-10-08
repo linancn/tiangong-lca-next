@@ -102,7 +102,7 @@ describe('branding config (config/branding.ts)', () => {
   it('selects ATLAS for both themes and retains explicit override precedence', () => {
     process.env.APP_BRAND = 'atlas';
     const atlas = require('../../../config/branding');
-    expect(atlas.lightBrandTheme.colorPrimary).toBe('#06162A');
+    expect(atlas.lightBrandTheme.colorPrimary).toBe('#2F6B9A');
     expect(atlas.lightBrandTheme.logo).toBe('/brands/atlas/icon.svg');
     expect(atlas.favicon).toBe('/brands/atlas/icon.ico');
     expect(atlas.getBrandTheme(true).colorPrimary).toBe('#618BBB');

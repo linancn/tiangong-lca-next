@@ -22,7 +22,7 @@
   "messages": {},
   "theme": {
     "light": {
-      "colorPrimary": "#06162A",
+      "colorPrimary": "#2F6B9A",
       "logo": "/brands/atlas/icon.svg"
     },
     "dark": {
@@ -39,7 +39,7 @@
   },
   "assets": {
     "iconDirectory": "icons/atlas",
-    "manifestThemeColor": "#06162A",
+    "manifestThemeColor": "#2F6B9A",
     "manifestBackgroundColor": "#06162A"
   },
   "desktop": {

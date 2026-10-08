@@ -19,7 +19,7 @@ describe('brand profiles', () => {
       expect(atlas.slogan[canonicalLocale]).toBe(original.slogan[canonicalLocale]);
       expect(atlas.localizedName[canonicalLocale]).toBe('ATLAS');
     }
-    expect(atlas.theme.light.colorPrimary).toBe('#06162A');
+    expect(atlas.theme.light.colorPrimary).toBe('#2F6B9A');
     expect(atlas.theme.dark.colorPrimary).not.toBe(atlas.theme.light.colorPrimary);
     expect(atlas.desktop.appId).not.toBe(original.desktop.appId);
     expect(atlas.links.terms).toBe(original.links.terms);
