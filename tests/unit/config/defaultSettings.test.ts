@@ -1,6 +1,7 @@
 const defaultSettingsOriginalEnv = { ...process.env };
 
 const DEFAULT_SETTINGS_ENV_KEYS = [
+  'APP_BRAND',
   'APP_LAYOUT',
   'APP_TITLE_ZH_CN',
   'APP_TITLE_EN_US',
@@ -93,5 +94,17 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     expect(getLocalizedLoginSubtitle('de-DE')).toBe('Deutscher Untertitel');
     expect(getLocalizedLoginSubtitle('fr-FR')).toBe('Sous-titre français');
     expect(getLocalizedLoginSubtitle('fr-CA')).toBe('Sous-titre français');
+  });
+
+  it('uses ATLAS localized titles and shared slogans without environment overrides', () => {
+    process.env.APP_BRAND = 'atlas';
+    const {
+      getLocalizedAppTitle,
+      getLocalizedLoginSubtitle,
+    } = require('../../../config/defaultSettings');
+    expect(getLocalizedAppTitle('zh-CN')).toBe('ATLAS 生命周期数据平台');
+    expect(getLocalizedAppTitle('en-US')).toBe('ATLAS LCA Data Platform');
+    expect(getLocalizedLoginSubtitle('zh-CN')).toBe('全球最大的开放生命周期数据平台');
+    expect(getLocalizedLoginSubtitle('en-US')).toBe("World's Largest Open LCA Data Platform");
   });
 });

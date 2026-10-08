@@ -1,3 +1,4 @@
+import { resolveBrandMessage } from '@/locales/brandMessages';
 import {
   DEFAULT_BROWSER_APP_LOCALE,
   getLocaleDefinition,
@@ -314,43 +315,79 @@ const Welcome: React.FC = () => {
     intro: string;
     sections: Array<{ key: SectionKey; heading: string; description: string }>;
   } = {
-    intro: formatMessage({ id: 'pages.welcome.overview.intro' }),
+    intro: resolveBrandMessage(
+      locale,
+      'pages.welcome.overview.intro',
+      formatMessage({ id: 'pages.welcome.overview.intro' }),
+    ),
     sections: [
       {
         key: 'internationalMethodology',
-        heading: formatMessage({
-          id: 'pages.welcome.overview.sections.internationalMethodology.title',
-        }),
-        description: formatMessage({
-          id: 'pages.welcome.overview.sections.internationalMethodology.description',
-        }),
+        heading: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.internationalMethodology.title',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.internationalMethodology.title',
+          }),
+        ),
+        description: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.internationalMethodology.description',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.internationalMethodology.description',
+          }),
+        ),
       },
       {
         key: 'ecosystemInteroperability',
-        heading: formatMessage({
-          id: 'pages.welcome.overview.sections.ecosystemInteroperability.title',
-        }),
-        description: formatMessage({
-          id: 'pages.welcome.overview.sections.ecosystemInteroperability.description',
-        }),
+        heading: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.ecosystemInteroperability.title',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.ecosystemInteroperability.title',
+          }),
+        ),
+        description: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.ecosystemInteroperability.description',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.ecosystemInteroperability.description',
+          }),
+        ),
       },
       {
         key: 'architectureExtensibility',
-        heading: formatMessage({
-          id: 'pages.welcome.overview.sections.architectureExtensibility.title',
-        }),
-        description: formatMessage({
-          id: 'pages.welcome.overview.sections.architectureExtensibility.description',
-        }),
+        heading: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.architectureExtensibility.title',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.architectureExtensibility.title',
+          }),
+        ),
+        description: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.architectureExtensibility.description',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.architectureExtensibility.description',
+          }),
+        ),
       },
       {
         key: 'modelingTraceability',
-        heading: formatMessage({
-          id: 'pages.welcome.overview.sections.modelingTraceability.title',
-        }),
-        description: formatMessage({
-          id: 'pages.welcome.overview.sections.modelingTraceability.description',
-        }),
+        heading: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.modelingTraceability.title',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.modelingTraceability.title',
+          }),
+        ),
+        description: resolveBrandMessage(
+          locale,
+          'pages.welcome.overview.sections.modelingTraceability.description',
+          formatMessage({
+            id: 'pages.welcome.overview.sections.modelingTraceability.description',
+          }),
+        ),
       },
     ],
   };
@@ -426,9 +463,13 @@ const Welcome: React.FC = () => {
   const dataEcosystemLabel = formatMessage({
     id: 'pages.welcome.overview.actions.dataEcosystem',
   });
-  const modalSubtitle = formatMessage({
-    id: 'pages.welcome.overview.dataEcosystemSubtitle',
-  });
+  const modalSubtitle = resolveBrandMessage(
+    locale,
+    'pages.welcome.overview.dataEcosystemSubtitle',
+    formatMessage({
+      id: 'pages.welcome.overview.dataEcosystemSubtitle',
+    }),
+  );
   const tidasTitle = formatMessage({ id: 'pages.welcome.overview.tidas.title' });
   const tidasDescription = formatMessage({ id: 'pages.welcome.overview.tidas.description' });
   const tidasImageLocale = getWelcomeTidasFallbackDefinition(appLocale, 'imageLocale');

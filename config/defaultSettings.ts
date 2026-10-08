@@ -5,10 +5,11 @@ import {
   type SupportedAppLocale,
 } from '../src/services/general/localeRegistry';
 import { lightBrandTheme } from './branding';
+import { brandProfile } from './brandProfile';
 
 const DEFAULT_LAYOUT = 'mix';
-const DEFAULT_TITLE = 'TianGong LCA Data Platform';
-const DEFAULT_LOGIN_SUBTITLE = "World's Largest Open LCA Data Platform";
+const DEFAULT_TITLE = brandProfile.title['en-US'];
+const DEFAULT_LOGIN_SUBTITLE = brandProfile.slogan['en-US'];
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
 
 type AppLayout = (typeof APP_LAYOUT_OPTIONS)[number];
@@ -43,17 +44,32 @@ const getLocalizedEnvValue = (
   return values[normalizedLocale];
 };
 
+// Umi replaces literal process.env accesses in the browser bundle. Dynamic
+// process.env[environment.titleKey] reads otherwise lose build-time overrides.
+const localizedBuildEnvironment: Record<string, string | undefined> = {
+  APP_TITLE_ZH_CN: process.env.APP_TITLE_ZH_CN,
+  APP_TITLE_EN_US: process.env.APP_TITLE_EN_US,
+  APP_TITLE_DE_DE: process.env.APP_TITLE_DE_DE,
+  APP_TITLE_FR_FR: process.env.APP_TITLE_FR_FR,
+  APP_LOGIN_SUBTITLE_ZH_CN: process.env.APP_LOGIN_SUBTITLE_ZH_CN,
+  APP_LOGIN_SUBTITLE_EN_US: process.env.APP_LOGIN_SUBTITLE_EN_US,
+  APP_LOGIN_SUBTITLE_DE_DE: process.env.APP_LOGIN_SUBTITLE_DE_DE,
+  APP_LOGIN_SUBTITLE_FR_FR: process.env.APP_LOGIN_SUBTITLE_FR_FR,
+};
+
 const appTitleEnvValues = Object.fromEntries(
   LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
     canonicalLocale,
-    readSettingEnv(process.env[environment.titleKey]),
+    readSettingEnv(localizedBuildEnvironment[environment.titleKey]) ??
+      brandProfile.title[canonicalLocale],
   ]),
 ) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
 const loginSubtitleEnvValues = Object.fromEntries(
   LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
     canonicalLocale,
-    readSettingEnv(process.env[environment.loginSubtitleKey]),
+    readSettingEnv(localizedBuildEnvironment[environment.loginSubtitleKey]) ??
+      brandProfile.slogan[canonicalLocale],
   ]),
 ) as Partial<Record<SupportedAppLocale, string | undefined>>;
 

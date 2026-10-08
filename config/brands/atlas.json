@@ -1,0 +1,51 @@
+{
+  "id": "atlas",
+  "displayName": "ATLAS",
+  "localizedName": {
+    "zh-CN": "ATLAS",
+    "en-US": "ATLAS",
+    "de-DE": "ATLAS",
+    "fr-FR": "ATLAS"
+  },
+  "title": {
+    "zh-CN": "ATLAS 生命周期数据平台",
+    "en-US": "ATLAS LCA Data Platform",
+    "de-DE": "ATLAS LCA-Datenplattform",
+    "fr-FR": "ATLAS LCA Data Platform"
+  },
+  "slogan": {
+    "zh-CN": "全球最大的开放生命周期数据平台",
+    "en-US": "World's Largest Open LCA Data Platform",
+    "de-DE": "Die weltweit größte offene LCA-Datenplattform",
+    "fr-FR": "La plus grande plateforme ouverte de données d’ACV au monde"
+  },
+  "messages": {},
+  "theme": {
+    "light": {
+      "colorPrimary": "#06162A",
+      "logo": "/brands/atlas/icon.svg"
+    },
+    "dark": {
+      "colorPrimary": "#618BBB",
+      "logo": "/brands/atlas/icon.svg"
+    }
+  },
+  "favicon": "/brands/atlas/icon.ico",
+  "links": {
+    "homepage": "https://www.tiangong.earth",
+    "source": "https://github.com/tiangong-lca/platform",
+    "terms": "/terms_of_use.html",
+    "privacy": "/privacy_notice.html"
+  },
+  "assets": {
+    "iconDirectory": "icons/atlas",
+    "manifestThemeColor": "#06162A",
+    "manifestBackgroundColor": "#06162A"
+  },
+  "desktop": {
+    "appId": "earth.tiangong.atlas",
+    "productName": "ATLAS",
+    "shortcutName": "ATLAS",
+    "downloadPrefix": "atlas-lca"
+  }
+}

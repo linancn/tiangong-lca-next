@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>ATLAS</title>
+  <rect width="512" height="512" rx="74" fill="#06162A"/>
+  <g transform="translate(256 256) scale(1.028409091) translate(-256 -256)">
+    <path fill="#FFFFFF" d="M109.333 376 256 121.333 402.667 376 382.667 388 256 168 129.333 388Z"/>
+    <path fill="#F5B900" d="M252 90.667H260V421.333H252Z"/>
+    <path fill="#F5B900" d="M80 257.333H432V265.333H80Z"/>
+  </g>
+</svg>

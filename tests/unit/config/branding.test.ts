@@ -1,6 +1,7 @@
 const brandingOriginalEnv = { ...process.env };
 
 const BRANDING_ENV_KEYS = [
+  'APP_BRAND',
   'APP_LIGHT_PRIMARY',
   'APP_DARK_PRIMARY',
   'APP_LIGHT_LOGO',
@@ -96,5 +97,20 @@ describe('branding config (config/branding.ts)', () => {
     expect(getBrandTheme(undefined).colorPrimary).toBe('#101010');
     expect(getBrandTheme(true).colorPrimary).toBe('#202020');
     expect(getBrandTheme(true).navTheme).toBe('realDark');
+  });
+
+  it('selects ATLAS for both themes and retains explicit override precedence', () => {
+    process.env.APP_BRAND = 'atlas';
+    const atlas = require('../../../config/branding');
+    expect(atlas.lightBrandTheme.colorPrimary).toBe('#06162A');
+    expect(atlas.lightBrandTheme.logo).toBe('/brands/atlas/icon.svg');
+    expect(atlas.favicon).toBe('/brands/atlas/icon.ico');
+    expect(atlas.getBrandTheme(true).colorPrimary).toBe('#618BBB');
+    jest.resetModules();
+    process.env.APP_LIGHT_PRIMARY = '#123456';
+    process.env.APP_FAVICON = '/custom.ico';
+    const overridden = require('../../../config/branding');
+    expect(overridden.lightBrandTheme.colorPrimary).toBe('#123456');
+    expect(overridden.favicon).toBe('/custom.ico');
   });
 });

@@ -21,6 +21,7 @@ import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
 import { getBrandTheme } from '../../../../config/branding';
+import { brandProfile } from '../../../../config/brandProfile';
 import {
   defaultAppTitle,
   defaultLoginSubtitle,
@@ -211,7 +212,7 @@ const Login: React.FC = () => {
   });
   const termsOfServiceLink = (
     <TypographyLink
-      href='/terms_of_use.html'
+      href={brandProfile.links.terms}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
@@ -222,7 +223,7 @@ const Login: React.FC = () => {
   );
   const privacyPolicyLink = (
     <TypographyLink
-      href='/privacy_notice.html'
+      href={brandProfile.links.privacy}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'

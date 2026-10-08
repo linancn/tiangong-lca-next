@@ -27,9 +27,9 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-08-22
-lastReviewedCommit: ae01a014
-lastReviewedNote: 'Reviewed for Next Issue #880: persistent ResultSet continuation preserves the current repository ownership, localization, validation, and release contracts.'
+lastReviewedAt: 2026-10-08
+lastReviewedCommit: 55dfcb2c5ebfda7bc0462734ba15c0f4f0173d6d
+lastReviewedNote: 'Reviewed Platform #1188 local brand profiles, presentation and package adapter; backend, authorization, calculation and release gates remain unchanged. Full release qualification is deferred pending local user review.'
 ---
 
 # LCIA Method Bundle and Calculation Evidence Contract

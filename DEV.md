@@ -63,6 +63,24 @@ lastReviewedNote: 'Reviewed Platform #1182 candidate-local frozen offline instal
 - deciding minimum proof for a change
 - deciding which document owns a rule
 
+## Local brand preview and builds
+
+Brand selection is independent of the backend environment. `APP_BRAND` accepts `tiangong` (default) or `atlas`; unknown values fail before startup/build. Both brands share the same routes, services, permissions and calculation behavior.
+
+```bash
+pnpm start:atlas       # ATLAS UI, existing non-production dev environment
+pnpm start:tiangong    # TianGong UI, same dev environment
+pnpm build:atlas      # selected web bundle in dist/
+pnpm build:tiangong   # replaces dist/ with the TianGong bundle
+pnpm dist:atlas --dir # local unpacked desktop build; publication disabled
+```
+
+Run Umi dev/build/test commands serially in one checkout because they share generated files and caches. Use `PORT=<free-port> pnpm start:atlas` to choose another local port. Stop an earlier process before switching brands. A local preview does not need a Git tag, deployment, or a production configuration change.
+
+Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans, footer/legal links, light/dark theme, favicon, static manifest and desktop identity. ATLAS slogans currently equal TianGong in every active locale; its homepage, source and legal links intentionally inherit existing destinations pending a separate decision. Existing `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_FAVICON`, `APP_TITLE_<LOCALE>` and `APP_LOGIN_SUBTITLE_<LOCALE>` overrides take precedence over the selected profile. Restart/rebuild after changing build-time settings.
+
+`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Release workflows still use the existing canonical version tag and TianGong deployment configuration; this local preview capability does not enable ATLAS publication. A future reviewed release change must bind brand, exact source commit and deployment destination explicitly.
+
 ## Prerequisites
 
 - Node.js `24.19.0`

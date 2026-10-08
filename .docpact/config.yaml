@@ -690,6 +690,22 @@ rules:
     triggers:
       - path: config/branding.ts
         kind: app-branding
+      - path: config/brandProfile.ts
+        kind: app-branding
+      - path: config/brandAssets.ts
+        kind: app-branding
+      - path: config/brands/**
+        kind: app-branding
+      - path: src/locales/brandMessages.ts
+        kind: app-branding
+      - path: scripts/branding/**
+        kind: packaging
+      - path: electron-builder.json
+        kind: packaging
+      - path: src/manifest.json
+        kind: app-branding
+      - path: public/brands/**
+        kind: app-branding
       - path: electron/**
         kind: packaging
       - path: icons/**

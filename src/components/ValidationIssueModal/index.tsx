@@ -1,4 +1,5 @@
 /* istanbul ignore file -- modal rendering is covered by behavioral tests; branch coverage is mostly UI-only formatting */
+import { resolveBrandMessage } from '@/locales/brandMessages';
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
@@ -572,10 +573,14 @@ const buildValidationIssueHtml = (
   <body>
     <h1>${escapeHtml(title)}</h1>
     <p>${escapeHtml(
-      intl.formatMessage({
-        id: 'pages.validationIssues.report.generated',
-        defaultMessage: 'Generated from TianGong LCA data validation.',
-      }),
+      resolveBrandMessage(
+        intl.locale,
+        'pages.validationIssues.report.generated',
+        intl.formatMessage({
+          id: 'pages.validationIssues.report.generated',
+          defaultMessage: 'Generated from TianGong LCA data validation.',
+        }),
+      ),
     )}</p>
     <table>
       <thead>

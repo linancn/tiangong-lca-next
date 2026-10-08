@@ -2,6 +2,7 @@ import styles from '@/style/custom.less';
 import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
+import { brandProfile } from '../../../config/brandProfile';
 
 const Footer: React.FC = () => {
   return (
@@ -12,15 +13,15 @@ const Footer: React.FC = () => {
       }}
       links={[
         {
-          key: 'TianGong LCA',
-          title: 'TianGong LCA',
-          href: 'https://www.tiangong.earth',
+          key: brandProfile.id,
+          title: brandProfile.displayName,
+          href: brandProfile.links.homepage,
           blankTarget: true,
         },
         {
           key: 'github',
           title: <GithubOutlined />,
-          href: 'https://github.com/tiangong-lca/platform',
+          href: brandProfile.links.source,
           blankTarget: true,
         },
       ]}

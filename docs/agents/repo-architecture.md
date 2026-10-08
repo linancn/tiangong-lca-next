@@ -68,6 +68,16 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 | other `docker/**` paths | self-hosted sync helpers and exact-revision, delete-aware mirrors; Edge function mirror provenance lives in `docker/volumes/functions/.source-revision.json` |
 | `electron/**` | desktop packaging surface |
 
+## Brand presentation boundary
+
+`config/brands/{tiangong,atlas}.json` owns each brand's public presentation settings. `config/brandProfile.ts` selects a validated build-time `APP_BRAND`, defaulting to TianGong; it never selects a backend, tenant, role or permission. `config/branding.ts` and `config/defaultSettings.ts` adapt the selected profile plus explicit environment overrides into the existing shared theme and localized app-shell consumers. ATLAS initially shares all TianGong slogans and supporting marketing copy.
+
+The profile covers names, slogans, per-locale presentation overrides, logos, favicon, footer/legal links, manifest colors/icons and desktop application identity. `src/locales/brandMessages.ts` applies only a closed set of argument-free presentation messages after ordinary localization. Canonical locale catalogs and ICU contracts remain authoritative; operator/legal identity, TIDAS attribution, dataset-source labels, factual dashboard text, protocol identifiers, storage keys and permanent dataset URLs are not rebranded. `messages` overrides accept only the helper's reviewed message IDs and plain text; titles/slogans belong in their dedicated profile fields.
+
+`config/brandAssets.ts` connects the shared profile to in-memory development middleware and a Webpack asset plugin. `scripts/branding/assets.cjs` generates the selected manifest and the 404, maintenance and OAuth-bridge shell presentation without editing tracked templates. The bridge script and hosted routing/noindex contracts remain intact. Static assets live under `public/brands/atlas`; desktop icons under `icons/atlas` come from the supplied rounded ATLAS asset package.
+
+`scripts/branding/electron-builder.cjs` adapts desktop package settings from the same profile. `scripts/branding/package-local.cjs` builds and packages locally with publication disabled. The existing release workflow and version-tag contract are unchanged; adding a deployed ATLAS target requires a separately reviewed release configuration. Local commands and override precedence live in `DEV.md`.
+
 ## Runtime Model
 
 Use this default read path:
@@ -237,4 +247,4 @@ The seven dataset serializers preserve singleton and repeated classification sys
 
 LifecycleModel graph saves merge stored instance metadata by internal ID before replacing graph-owned references and connections. Group declarations, instance parameters, groups and scaling fields remain data. Multiple Process reference-flow identities survive serialization; the existing exactly-one review and calculation policy remains consumer policy. Required documentation fields remain unchanged.
 
-The committed dependency is released SDK 0.4.1. Expanded ILCD validation requires the subsequent SDK release from tidas-sdks #158; candidate package qualification does not constitute registry publication or final dependency adoption.
+The committed SDK version is pinned by `package.json` and `pnpm-lock.yaml`; `tests/package-contracts/installedTidasSdk.contract.test.mjs` verifies the installed package independently of Jest mocks. Candidate package qualification does not constitute registry publication or final dependency adoption.
