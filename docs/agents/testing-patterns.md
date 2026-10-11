@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: 6a48ba7eb27a37101bfc6bd727d43dff9e9bf849
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
 lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 ---
 
