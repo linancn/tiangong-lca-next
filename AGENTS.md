@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: 6a48ba7eb27a37101bfc6bd727d43dff9e9bf849
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
 lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
 related:
   - .docpact/config.yaml
