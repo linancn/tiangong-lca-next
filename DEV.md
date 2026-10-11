@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: 289c3c26ec2b8d5365e7c9d5954ea30ce36a65f7
-lastReviewedNote: 'Reviewed Platform #1188 sidebar contrast follow-up against 289c3c26: scoped CSS inherits existing sider tokens; local preview, serial Umi commands, backend selection and release boundaries are unchanged.'
+lastReviewedCommit: a02fcef4d8aede5181f0580c9c34ac33d2a7cf42
+lastReviewedNote: 'Reviewed Platform #1188 Atlas footer layout follow-up against a02fcef4: full-width wrapping account row, compact tool grid without empty permission placeholders, and icon-only collapsed account. Changes remain Atlas-scoped; shared actions, TianGong, backend, dependencies and release policy are unchanged. Validation is recorded in Issue #1188.'
 ---
 
 # Development Bootstrap

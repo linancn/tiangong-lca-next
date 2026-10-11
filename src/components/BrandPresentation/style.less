@@ -279,18 +279,37 @@
 // ProLayout's side mode places actions in the sider, not the top header.
 // Keep all existing tools reachable when the configured navigation changes.
 .atlas-app-shell .ant-pro-sider {
+  .ant-pro-sider-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-block: 12px 4px;
+    border-top: 1px solid rgba(186, 202, 218, 0.2);
+  }
   .ant-pro-sider-actions-list {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     width: 100%;
-    gap: 8px;
+    gap: 4px;
+    margin-block: 0;
+    // Permission-gated actions can leave empty Space items. Do not reserve cells for them.
+    > .ant-space-item:has(> .ant-pro-sider-actions-list-item:empty) {
+      display: none;
+    }
+    .ant-pro-sider-actions-list-item {
+      padding: 0;
+    }
     .ant-badge {
       color: inherit;
     }
     [role='button'],
     button {
-      min-height: 32px;
-      min-width: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 40px;
+      min-width: 0;
     }
     .anticon {
       // HeaderActionIcon sets inline opacity for light headers.
@@ -304,5 +323,40 @@
   .tg-global-header-avatar-name {
     // Inherit ProLayout's sider text token instead of the page-body text color.
     color: inherit !important;
+  }
+  .tg-global-header-avatar-trigger {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-radius: var(--ant-border-radius);
+    text-align: start;
+  }
+  .tg-global-header-avatar-name {
+    height: auto;
+    line-height: 20px;
+    white-space: normal;
+  }
+  .tg-global-header-avatar-name-text {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+  }
+  &.ant-pro-sider-collapsed {
+    .ant-pro-sider-actions {
+      padding-inline: 0;
+    }
+    .tg-global-header-avatar-trigger {
+      justify-content: center;
+      min-height: 40px;
+      padding: 8px;
+    }
+    .tg-global-header-avatar-name {
+      gap: 0;
+    }
+    .tg-global-header-avatar-name-text {
+      display: none;
+    }
   }
 }
