@@ -293,13 +293,16 @@
       min-width: 28px;
     }
     .anticon {
-      opacity: 1;
+      // HeaderActionIcon sets inline opacity for light headers.
+      opacity: 1 !important;
     }
   }
   .ant-pro-sider-actions-list-collapsed {
     grid-template-columns: minmax(0, 1fr);
   }
-  .tg-global-header-avatar-trigger {
-    color: #b7c7d5 !important;
+  .tg-global-header-avatar-trigger,
+  .tg-global-header-avatar-name {
+    // Inherit ProLayout's sider text token instead of the page-body text color.
+    color: inherit !important;
   }
 }
