@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-10-10
-lastReviewedCommit: 85d30783af33d3c5ff72cdb30fe0b2a1c7154bf8
-lastReviewedNote: 'Reviewed PR1195 conflict resolution against Dev26f19842: combined display and product-provider documentation, retained both finite translation families and regenerated four-locale artifacts. Eight display/shared-UI source files are byte-identical to prior head40aa65a9; seventeen incoming source files exactly match Dev and the lockfile is unchanged. Focused eleven suites/105 tests, four-locale checks, qualification build and two-generation artifact idempotence pass. Existing permission/result behavior and local/hosted qualification boundaries remain unchanged; final checked push and live mergeability readback remain required. No browser, server or container was started, and no hosted data was changed.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 ---
 
 # Testing Strategy

@@ -1,6 +1,7 @@
 const brandingOriginalEnv = { ...process.env };
 
 const BRANDING_ENV_KEYS = [
+  'APP_BRAND',
   'APP_LIGHT_PRIMARY',
   'APP_DARK_PRIMARY',
   'APP_LIGHT_LOGO',
@@ -97,4 +98,37 @@ describe('branding config (config/branding.ts)', () => {
     expect(getBrandTheme(true).colorPrimary).toBe('#202020');
     expect(getBrandTheme(true).navTheme).toBe('realDark');
   });
+
+  it('selects ATLAS for both themes and retains explicit override precedence', () => {
+    process.env.APP_BRAND = 'atlas';
+    const atlas = require('../../../config/branding');
+    expect(atlas.lightBrandTheme.colorPrimary).toBe('#2F6B9A');
+    expect(atlas.lightBrandTheme.logo).toBe('/brands/atlas/icon.svg');
+    expect(atlas.favicon).toBe('/brands/atlas/icon.ico');
+    expect(atlas.getBrandTheme(true).colorPrimary).toBe('#618BBB');
+    jest.resetModules();
+    process.env.APP_LIGHT_PRIMARY = '#123456';
+    process.env.APP_FAVICON = '/custom.ico';
+    const overridden = require('../../../config/branding');
+    expect(overridden.lightBrandTheme.colorPrimary).toBe('#123456');
+    expect(overridden.favicon).toBe('/custom.ico');
+  });
+});
+
+it('selects the Atlas layout preset and honors the explicit layout override', () => {
+  const previous = { ...process.env };
+  try {
+    process.env.APP_BRAND = 'atlas';
+    delete process.env.APP_LAYOUT;
+    jest.resetModules();
+    const defaults = require('../../../config/defaultSettings').default;
+    expect(defaults).toMatchObject({ layout: 'side', siderWidth: 256, fixedHeader: true });
+    expect(defaults.token.sider.colorMenuBackground).toBe('#06162A');
+    process.env.APP_LAYOUT = 'top';
+    jest.resetModules();
+    expect(require('../../../config/defaultSettings').default.layout).toBe('top');
+  } finally {
+    process.env = previous;
+    jest.resetModules();
+  }
 });

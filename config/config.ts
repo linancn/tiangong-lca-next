@@ -1,4 +1,5 @@
 import { favicon } from './branding';
+import { brandProfile } from './brandProfile';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
@@ -137,7 +138,7 @@ export default defineConfig({
   //   ? [{ src: './scripts/loading.js', async: true }]
   //   : [{ src: '/scripts/loading.js', async: true }],
   // Register the two Pro utilities directly and avoid legacy aggregate dependencies.
-  plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record'],
+  plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record', './config/brandAssets'],
   /**
    * @name openAPI 插件的配置
    * @description 基于 openapi 的规范生成serve 和mock，能减少很多样板代码
@@ -161,6 +162,7 @@ export default defineConfig({
     strategy: 'normal',
   },
   favicons: [favicon],
+  links: [{ rel: 'manifest', href: '/manifest.json' }],
   /**
    * @name 文档索引策略
    * @description 该地址提供的是登录后使用的应用外壳，不是公开内容；应用路由使用 hash 模式，
@@ -176,6 +178,7 @@ export default defineConfig({
   // history: { type: 'memory' },
   // history: { type: 'browser' },
   define: {
+    'process.env.APP_BRAND': brandProfile.id,
     'process.env.SUPABASE_URL': process.env.SUPABASE_URL,
     'process.env.SUPABASE_PUBLISHABLE_KEY': process.env.SUPABASE_PUBLISHABLE_KEY,
     'process.env.APP_LIGHT_PRIMARY': process.env.APP_LIGHT_PRIMARY,

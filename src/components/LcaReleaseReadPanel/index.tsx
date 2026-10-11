@@ -16,6 +16,7 @@ import { useIntl } from '@umijs/max';
 import { Alert, Button, Card, Descriptions, Space, Spin } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './index.less';
+import { brandProfile } from '../../../config/brandProfile';
 
 type Props = {
   processId?: string;
@@ -39,7 +40,7 @@ export function releaseArtifactFilename(
 ): string {
   const profile =
     artifact.profileId === 'unit-process-full-closure.v1' ? 'unit-process' : 'model-result';
-  return `tiangong-lca-${releaseVersion}-${profile}.${artifact.format}.zip`;
+  return `${brandProfile.desktop.downloadPrefix}-${releaseVersion}-${profile}.${artifact.format}.zip`;
 }
 
 export function datasetForRole(

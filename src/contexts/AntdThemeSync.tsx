@@ -1,16 +1,23 @@
+import { brandProfile, type BrandProfile } from '../../config/brandProfile';
 import { useAntdConfigSetter } from '@umijs/max';
 import { theme as antdTheme, type ThemeConfig } from 'antd';
 import { useEffect, useRef } from 'react';
 
 export const ANTD_CSS_VAR_KEY = 'tiangong-lca';
 
-export function createAntdThemeConfig(isDarkMode: boolean, colorPrimary?: string): ThemeConfig {
+export function createAntdThemeConfig(
+  isDarkMode: boolean,
+  colorPrimary?: string,
+  selectedProfile: BrandProfile = brandProfile,
+): ThemeConfig {
+  const profile = selectedProfile.theme[isDarkMode ? 'dark' : 'light'];
   return {
     cssVar: { key: ANTD_CSS_VAR_KEY },
     components: {
-      Divider: { orientationMargin: 0 },
+      ...profile.components,
+      Divider: { orientationMargin: 0, ...profile.components?.Divider },
     },
-    token: { colorPrimary },
+    token: { ...profile.tokens, colorPrimary: colorPrimary ?? profile.colorPrimary },
     algorithm: isDarkMode ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
   };
 }

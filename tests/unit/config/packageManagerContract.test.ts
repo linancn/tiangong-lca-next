@@ -126,7 +126,9 @@ describe('pnpm package-manager contract', () => {
       '@umijs/request-record': '1.1.4',
     });
     expect(packageJson.devDependencies).not.toHaveProperty('umi-presets-pro');
-    expect(config).toContain("plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record']");
+    expect(config).toContain(
+      "plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record', './config/brandAssets']",
+    );
     expect(config).not.toContain('root-entry-name');
     expect(config).not.toContain('umi-presets-pro');
     expect(lockfile).not.toMatch(/(?:^|\W)antd@(?:4|5)\./mu);

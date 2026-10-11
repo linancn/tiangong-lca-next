@@ -1,3 +1,5 @@
+import './responsive.less';
+
 export const responsiveLoginFormProps = {
   containerStyle: {
     paddingInline: 0,

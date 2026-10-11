@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-10
-lastReviewedCommit: 85d30783af33d3c5ff72cdb30fe0b2a1c7154bf8
-lastReviewedNote: 'Reviewed PR1195 conflict resolution against Dev26f19842: combined display and product-provider documentation, retained both finite translation families and regenerated four-locale artifacts. Eight display/shared-UI source files are byte-identical to prior head40aa65a9; seventeen incoming source files exactly match Dev and the lockfile is unchanged. Focused eleven suites/105 tests, four-locale checks, qualification build and two-generation artifact idempotence pass. Existing permission/result behavior and local/hosted qualification boundaries remain unchanged; final checked push and live mergeability readback remain required. No browser, server or container was started, and no hosted data was changed.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
 ---
 
 # Development Bootstrap
@@ -62,6 +62,30 @@ lastReviewedNote: 'Reviewed PR1195 conflict resolution against Dev26f19842: comb
 - deciding branch policy
 - deciding minimum proof for a change
 - deciding which document owns a rule
+
+## Local brand preview and builds
+
+Brand selection is independent of the backend environment. `APP_BRAND` accepts `tiangong` (default) or `atlas`; unknown values fail before startup/build. Both brands share the same routes, services, permissions and calculation behavior.
+
+```bash
+pnpm start:atlas       # ATLAS UI, existing non-production dev environment
+pnpm start:tiangong    # TianGong UI, same dev environment
+pnpm build:atlas      # selected web bundle in dist/
+pnpm build:tiangong   # replaces dist/ with the TianGong bundle
+pnpm dist:atlas --dir # local unpacked desktop build; publication disabled
+```
+
+Run Umi dev/build/test commands serially in one checkout because they share generated files and caches. Use `PORT=<free-port> pnpm start:atlas` to choose another local port. Stop an earlier process before switching brands. A local preview does not need a Git tag, deployment, or a production configuration change.
+
+Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans, footer/legal links, light/dark theme, favicon, static manifest and desktop identity. ATLAS has independent four-locale product copy and a local application-home link; source and legal links retain their factual destinations. Existing `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_FAVICON`, `APP_TITLE_<LOCALE>` and `APP_LOGIN_SUBTITLE_<LOCALE>` overrides take precedence over the selected profile. Restart/rebuild after changing build-time settings.
+
+`APP_BRAND=atlas` selects the complete presentation: navy side navigation, ocean-blue light/dark interaction colors, component tokens, split login and task-oriented welcome. TianGong keeps its existing `mix` layout and component defaults. `APP_LAYOUT=side|top|mix` overrides the selected profile's navigation mode. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `splitMenus` (mix only), and `contentWidth` (top only). Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens); the same resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes.
+
+`presentation.login` selects `standard|split`, and `presentation.welcome` selects `overview|workspace`. Optional `presentation.navigationTitle` gives navigation a short label while localized product titles remain available to page consumers. Presentation copy must cover every supported locale. Layout variants only compose the shared auth forms and existing business routes; they do not select permissions or datasets. Atlas workspace omits TianGong's promotional counters instead of claiming them as Atlas statistics. Dataset source labels, TIDAS descriptions and legal/operator identities retain their actual attribution.
+
+Brand settings are build inputs. Build once for each brand before uploading static assets; changing a hosting environment variable after a manual upload does not rewrite the uploaded bundle. For local visual proof, build with `APP_BRAND=<brand> REACT_APP_ENV=qualification pnpm build`, serve that bundle on loopback, then run `E2E_BRAND=<brand> E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:<port> pnpm exec playwright test --config=playwright.branding.config.ts`. This suite uses only the existing semantic backend simulator and is not hosted/release qualification. Ordinary `pnpm start:atlas` retains the configured dev backend for user preview.
+
+`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Release workflows still use the existing canonical version tag and TianGong deployment configuration; this local preview capability does not enable ATLAS publication. A future reviewed release change must bind brand, exact source commit and deployment destination explicitly.
 
 ## Prerequisites
 

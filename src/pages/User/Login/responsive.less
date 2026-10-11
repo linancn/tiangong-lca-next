@@ -1,0 +1,20 @@
+// LoginForm's header has a fixed 44px height. Longer localized brand names
+// need natural height on small screens so the slogan stays below the title.
+@media (max-width: 575px) {
+  .ant-pro-form-login-container {
+    .ant-pro-form-login-header {
+      height: auto;
+      min-height: 44px;
+    }
+
+    .ant-pro-form-login-title {
+      min-width: 0;
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    .ant-pro-form-login-logo {
+      flex-shrink: 0;
+    }
+  }
+}

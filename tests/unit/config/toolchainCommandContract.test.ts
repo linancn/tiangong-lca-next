@@ -57,9 +57,7 @@ describe('single-track TypeScript 7 and Oxlint command contract', () => {
     expect(scripts['tsc:electron']).toBe(
       'node ./node_modules/typescript/bin/tsc --project tsconfig.electron.json',
     );
-    expect(scripts.dist).toBe(
-      'pnpm build && pnpm tsc:electron && electron-builder --config electron-builder.json',
-    );
+    expect(scripts.dist).toBe('node scripts/branding/package-local.cjs');
     expect(scripts.electron).toBe('pnpm tsc:electron && electron dist-electron/main.js');
     for (const command of Object.values(scripts)) {
       expect(command).not.toMatch(/\b(?:npm|npx)\b/u);
