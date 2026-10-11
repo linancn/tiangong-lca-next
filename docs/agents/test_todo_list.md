@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: edaf564b
-lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
+lastReviewedCommit: 6a48ba7eb27a37101bfc6bd727d43dff9e9bf849
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 ---
 
 # Testing Execution State

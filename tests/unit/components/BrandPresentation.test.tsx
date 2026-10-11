@@ -1,5 +1,5 @@
 import { AtlasLoginIntroduction, AtlasWorkspace } from '@/components/BrandPresentation';
-import { LOCALE_REGISTRY } from '@/services/general/localeRegistry';
+import { DEFAULT_BROWSER_APP_LOCALE, LOCALE_REGISTRY } from '@/services/general/localeRegistry';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 let mockLocale = 'en-US';
@@ -65,7 +65,9 @@ it('uses registry fallback for an unknown locale and renders nothing without a p
     </>,
   );
   expect(
-    screen.getByRole('heading', { name: atlas.presentation!.copy['zh-CN'].workspaceTitle }),
+    screen.getByRole('heading', {
+      name: atlas.presentation!.copy[DEFAULT_BROWSER_APP_LOCALE].workspaceTitle,
+    }),
   ).toBeVisible();
   mockProfile = { ...atlas, presentation: undefined };
   view.rerender(

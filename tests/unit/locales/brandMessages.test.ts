@@ -172,3 +172,14 @@ it('allows bounded plain-text marketing overrides and rejects unrelated override
     atlas.title['en-US'],
   );
 });
+
+it.each(Object.entries(catalogs))(
+  'replaces only the card application name when %s has no marketing override',
+  (locale, catalog) => {
+    const id = 'pages.card.description.3';
+    const text = resolveBrandMessage(locale, id, catalog[id], { ...atlas, messages: {} });
+    expect(text).toContain(atlas.title[locale as SupportedAppLocale]);
+    expect(text).not.toMatch(/Tian[Gg]ong|天工/);
+    expect(text.length).toBeGreaterThan(atlas.title[locale as SupportedAppLocale].length);
+  },
+);

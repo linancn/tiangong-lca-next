@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: edaf564b
-lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
+lastReviewedCommit: 6a48ba7eb27a37101bfc6bd727d43dff9e9bf849
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
 ---
 
 # Development Bootstrap

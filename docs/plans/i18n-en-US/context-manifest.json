@@ -152,7 +152,7 @@
           "viewState": "redirect-to-welcome",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "b039fbeb7aa95e0e27aa4778f09e18cd3547efdb11bec2738d3097d0ab136be4",
-          "focusedTestDigest": "2699e2c8d84dd6f077be9452f07aa9f90d344733348cc815a581651355cdd4c8",
+          "focusedTestDigest": "e0f5d2e57da89b7f5322bec0c0fe46aa5ed02f55d0822fd1523e3631781f30c2",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "d4754f0ac91aaabda0250ca6a0977f131654b0900d1b14b36a4c840aa42f6825",
           "derivedMessageCount": 49,
@@ -179,7 +179,7 @@
           "viewState": "overview",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "1d17276ae5b93ce2378de3f0a968bbe9b3a968cf5be54dce44307fb3dbfcb15a",
-          "focusedTestDigest": "36cb3fcfce266abdebc19e0a2b4051c443bd491077588a3df482f1803167104f",
+          "focusedTestDigest": "c178af24dc915eecd74c544ce3ace62be4f9dea2435109554b83e4b75a43a3f9",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "811949b6e0dccca1b6aa510e63afebb8839888cf24907b1dc2bae6a1755bf3d3",
           "derivedMessageCount": 50,
@@ -206,7 +206,7 @@
           "viewState": "carbon-footprint-guide",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "1d17276ae5b93ce2378de3f0a968bbe9b3a968cf5be54dce44307fb3dbfcb15a",
-          "focusedTestDigest": "3e93d9ab91b111a9ebdd0215fb932d710988ed6ff643993c0cc789ad76568f7b",
+          "focusedTestDigest": "5778914d15f36b10ae500f95ab3d3d24f38ccc7f51bb8b3ac5689bd47d4af29e",
           "plannedBrowserAssertionCount": 3,
           "plannedBrowserAssertionDigest": "7dce46b0e253c9000c52c96a89b772057bc78fbf5d13a1db1094e52d13b71be3",
           "derivedMessageCount": 82,
@@ -251,7 +251,7 @@
           "viewState": "login-and-register",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "e777a105c550909a76a42611eee727501330973d5c3490180c50780e64fcd9c9",
-          "focusedTestDigest": "c6e2e8f16f8cb1d0d576cbf0c59d11c30a5f0105c1316aae7fbcea5cece726f8",
+          "focusedTestDigest": "81e9b265c40733a0be54f85aca8cedbab916962709d52152d76a15dbd6b21dd1",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "5598e3ac5fb06b788671b7f7e67b5643b4f0057c5c9deef1fe99da6152ed7fc7",
           "derivedMessageCount": 77,
@@ -324,7 +324,7 @@
           "viewState": "national-carbon-dashboard",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "481b2b9c54541b5836632ff587bebf264a54e8397db5f6b26eea6297d6115c45",
-          "focusedTestDigest": "c2f41f14d641b3a2be2b2394dff6b8c23b15afdd34ac1c8e7813587277b93bc0",
+          "focusedTestDigest": "c4f9e2de8127f29fb7ec77c13880a22cbafda9ce9b689b3006b63546063a5777",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "95b95698b9168443cacad5913312e98989fb251f09feee48fbaf5f7203c57587",
           "derivedMessageCount": 312,
@@ -356,7 +356,7 @@
           "viewState": "static-legal-English-fallback",
           "requiredEvidenceScope": "declared-fallback-observed",
           "sourceDigest": "6f92a84c5c85f7e023d80b409ec20d2191a0c9223e2e6053260fe91d9a5ea1d1",
-          "focusedTestDigest": "74c68c75361765e846d268894b5d4ed05bfe2492cea9f48639f7d04044c20e70",
+          "focusedTestDigest": "2404856c52759939aa0bcfcbff54685277341d91372a96f27051669c80a01117",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "6f506207dd06ed5d9e9557d43a4bd7bbde8ec6f6d7288901db0b06a119bee742",
           "derivedMessageCount": 34,
@@ -374,7 +374,7 @@
           "viewState": "static-legal-English-fallback",
           "requiredEvidenceScope": "declared-fallback-observed",
           "sourceDigest": "8aa36657ac1736989be842952b8c69db10d47e5dfc8940ca98c7a3de60d5af3c",
-          "focusedTestDigest": "74c68c75361765e846d268894b5d4ed05bfe2492cea9f48639f7d04044c20e70",
+          "focusedTestDigest": "2404856c52759939aa0bcfcbff54685277341d91372a96f27051669c80a01117",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "d96cb2fb0f267c9b2a696b57a6631946440f273ada6ba434fd6a712d421392aa",
           "derivedMessageCount": 34,
@@ -392,7 +392,7 @@
           "viewState": "not-found",
           "requiredEvidenceScope": "internal-localization",
           "sourceDigest": "d689b825a4995411b05526decaa281ec33c7f9b1c4afabf5e66ef67695317f23",
-          "focusedTestDigest": "5c2a07a1d99f37c9b6a8a1a47e7e914f13c9a4f9537799cfcd0a97b603499ce4",
+          "focusedTestDigest": "fe996aeda575aad5981c3863dfa705d3288806756b95787cea97a12bfca669d8",
           "plannedBrowserAssertionCount": 2,
           "plannedBrowserAssertionDigest": "b8ea1e9c64fab4ac0f3adc277885552796c3a6f8f15c10a81ade409284f6cb99",
           "derivedMessageCount": 11,
@@ -1226,7 +1226,7 @@
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
           "sourceDigest": "5dddd6b3f2da3b1c8354839c257759d7ebc8c340ad47ef6b85d2f0bd69649455",
-          "focusedTestDigest": "e2def50b3543d57a4d57e54c82291a17d6ff699bbd1682791f23c7f09a1588e8",
+          "focusedTestDigest": "39e076cf2ba67329b2d30997c95ec67269ba33eb39c463e6c0bf6572640047c8",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 142,
@@ -1298,7 +1298,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "3658c421c5b3bf07376c3168bf6b2e8bc01c07f28a2d7f86cda27b3e19e08a8f",
+      "rowEvidenceDigest": "800b2a5eff8066f6090b7a9b771793d8ffb8c6315f33cc78f69dc7c6f36d9105",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1322,5 +1322,5 @@
     "docs/plans/i18n-en-US/style-guide.md": "be570ee8db2b034dde7274f774730575ad9b9226af7a5ac7ab35a45d1ef2620c"
   },
   "blockedContext": [],
-  "contextDigest": "24d2b3f84e327c6e362a7c09d491257b19867631e04f99af33844f3ffd036ab8"
+  "contextDigest": "26d1aa92e85ffcf71db0bafa8ac41be35491838be6afec6db17eae7f2db66b3d"
 }

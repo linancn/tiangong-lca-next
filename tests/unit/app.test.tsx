@@ -1,5 +1,12 @@
 // @ts-nocheck
 import { fireEvent, render, screen } from '@testing-library/react';
+let mockBrand = 'tiangong';
+jest.mock('../../config/brandProfile', () => ({
+  ...jest.requireActual('../../config/brandProfile'),
+  get brandProfile() {
+    return jest.requireActual('../../config/brandProfile').resolveBrandProfile(mockBrand);
+  },
+}));
 
 const mockQueryCurrentUser = jest.fn();
 const mockGetSystemUserRoleApi = jest.fn();
@@ -289,6 +296,7 @@ describe('app runtime config', () => {
   });
 
   beforeEach(() => {
+    mockBrand = 'tiangong';
     jest.resetModules();
     jest.clearAllMocks();
     window.localStorage.clear();
@@ -740,6 +748,19 @@ describe('app runtime config', () => {
     expect(mockHistory.location.search).toBe('?view=carbon-footprint');
     expect(children).toBeNull();
     expect(screen.queryByTestId('guide-child')).not.toBeInTheDocument();
+  });
+
+  it('selects the Atlas navigation identity without changing the shared login guard', () => {
+    mockBrand = 'atlas';
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: { currentUser: undefined, isDarkMode: false, settings: {} },
+      setInitialState: jest.fn(),
+    });
+    expect(runtimeLayout.className).toBe('atlas-app-shell');
+    expect(runtimeLayout.title).toBe('ATLAS');
+    runtimeLayout.onPageChange();
+    expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
   });
 
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
