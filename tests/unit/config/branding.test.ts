@@ -114,3 +114,21 @@ describe('branding config (config/branding.ts)', () => {
     expect(overridden.favicon).toBe('/custom.ico');
   });
 });
+
+it('selects the Atlas layout preset and honors the explicit layout override', () => {
+  const previous = { ...process.env };
+  try {
+    process.env.APP_BRAND = 'atlas';
+    delete process.env.APP_LAYOUT;
+    jest.resetModules();
+    const defaults = require('../../../config/defaultSettings').default;
+    expect(defaults).toMatchObject({ layout: 'side', siderWidth: 256, fixedHeader: true });
+    expect(defaults.token.sider.colorMenuBackground).toBe('#06162A');
+    process.env.APP_LAYOUT = 'top';
+    jest.resetModules();
+    expect(require('../../../config/defaultSettings').default.layout).toBe('top');
+  } finally {
+    process.env = previous;
+    jest.resetModules();
+  }
+});

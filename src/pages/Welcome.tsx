@@ -1,3 +1,5 @@
+import { AtlasWorkspace } from '@/components/BrandPresentation';
+import { brandProfile } from '../../config/brandProfile';
 import { resolveBrandMessage } from '@/locales/brandMessages';
 import {
   DEFAULT_BROWSER_APP_LOCALE,
@@ -494,9 +496,10 @@ const Welcome: React.FC = () => {
     : localeDefinition.assets.welcomeTidas.light;
   const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
-  const WELCOME_RADIUS = 8;
+  const WELCOME_RADIUS =
+    brandProfile.presentation?.welcome === 'workspace' ? token.borderRadius : 8;
 
-  const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), []);
+  const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), [WELCOME_RADIUS]);
 
   const modalStyles = useMemo(
     () => ({
@@ -728,133 +731,142 @@ const Welcome: React.FC = () => {
     </>
   );
 
-  const renderOverview = () => (
-    <>
-      <Row gutter={[16, 16]} wrap>
-        {metrics.map((metric) => (
-          <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
-            <Card
-              className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-              styles={{
-                body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
-              }}
-              style={{ ...cardBorderRadiusStyle, width: '100%' }}
-            >
-              <div className={styles.welcome_metric_content}>
-                <div className={styles.welcome_metric_header}>
-                  <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
-                    {metric.icon}
-                  </span>
-                  {metric.key === 'data5' ? (
-                    <Typography.Link
-                      strong
-                      href='#'
-                      onClick={handleOpenDataModal}
-                      style={{
-                        color: primaryColor,
+  const renderOverview = () =>
+    brandProfile.presentation?.welcome === 'workspace' ? (
+      <AtlasWorkspace
+        onGuide={handleOpenCarbonFootprintGuide}
+        onData={handleOpenDataModal}
+        onStandard={() => setIsTidasModalOpen(true)}
+        standardLabel={tidasTitle}
+        dataLabel={dataEcosystemLabel}
+      />
+    ) : (
+      <>
+        <Row gutter={[16, 16]} wrap>
+          {metrics.map((metric) => (
+            <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
+              <Card
+                className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
+                styles={{
+                  body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
+                }}
+                style={{ ...cardBorderRadiusStyle, width: '100%' }}
+              >
+                <div className={styles.welcome_metric_content}>
+                  <div className={styles.welcome_metric_header}>
+                    <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
+                      {metric.icon}
+                    </span>
+                    {metric.key === 'data5' ? (
+                      <Typography.Link
+                        strong
+                        href='#'
+                        onClick={handleOpenDataModal}
+                        style={{
+                          color: primaryColor,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Link>
+                    ) : (
+                      <Typography.Text
+                        strong
+                        style={{
+                          color: primaryColor,
+                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                        }}
+                      >
+                        {metric.title}
+                      </Typography.Text>
+                    )}
+                  </div>
+                  <Statistic
+                    value={metric.value}
+                    formatter={formatter}
+                    styles={{
+                      content: {
+                        fontSize: '1.25rem',
+                        color: token.colorText,
+                        lineHeight: 1.1,
                         fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {metric.title}
-                    </Typography.Link>
-                  ) : (
-                    <Typography.Text
-                      strong
-                      style={{
-                        color: primaryColor,
-                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                      }}
-                    >
-                      {metric.title}
-                    </Typography.Text>
-                  )}
-                </div>
-                <Statistic
-                  value={metric.value}
-                  formatter={formatter}
-                  styles={{
-                    content: {
-                      fontSize: '1.25rem',
-                      color: token.colorText,
-                      lineHeight: 1.1,
-                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                    },
-                  }}
-                  style={{ width: '100%', textAlign: 'center' }}
-                />
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      <Card
-        className={styles.welcome_card}
-        styles={{ body: { padding: 24 } }}
-        style={cardBorderRadiusStyle}
-      >
-        <Space orientation='vertical' size={16} style={{ width: '100%' }}>
-          <Typography.Paragraph
-            style={{
-              margin: 0,
-              color: token.colorText,
-              fontSize: '1rem',
-              lineHeight: 1.7,
-            }}
-          >
-            {overviewContent.intro}
-          </Typography.Paragraph>
-          <Space size={12} wrap>
-            <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
-              {tidasTitle}
-            </Button>
-            <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
-            <Button onClick={handleOpenCarbonFootprintGuide}>
-              {currentGuideContent.entryLabel}
-            </Button>
-          </Space>
-        </Space>
-      </Card>
-
-      <Row gutter={[16, 16]} align='stretch'>
-        {overviewContent.sections.map((section) => (
-          <Col xs={24} md={12} key={section.key}>
-            <Card
-              className={`${styles.welcome_card} ${styles.welcome_section_card}`}
-              styles={{ body: { padding: 24 } }}
-              style={cardBorderRadiusStyle}
-            >
-              <Space orientation='vertical' size={12}>
-                <div className={styles.welcome_section_header}>
-                  <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
-                    {sectionIconMap[section.key]}
-                  </span>
-                  <Typography.Text
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      lineHeight: '20px',
-                      fontSize: '1rem',
-                      margin: 0,
+                      },
                     }}
-                  >
-                    {section.heading}
-                  </Typography.Text>
+                    style={{ width: '100%', textAlign: 'center' }}
+                  />
                 </div>
-                <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-                  {section.description}
-                </Typography.Paragraph>
-              </Space>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    </>
-  );
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <Card
+          className={styles.welcome_card}
+          styles={{ body: { padding: 24 } }}
+          style={cardBorderRadiusStyle}
+        >
+          <Space orientation='vertical' size={16} style={{ width: '100%' }}>
+            <Typography.Paragraph
+              style={{
+                margin: 0,
+                color: token.colorText,
+                fontSize: '1rem',
+                lineHeight: 1.7,
+              }}
+            >
+              {overviewContent.intro}
+            </Typography.Paragraph>
+            <Space size={12} wrap>
+              <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
+                {tidasTitle}
+              </Button>
+              <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
+              <Button onClick={handleOpenCarbonFootprintGuide}>
+                {currentGuideContent.entryLabel}
+              </Button>
+            </Space>
+          </Space>
+        </Card>
+
+        <Row gutter={[16, 16]} align='stretch'>
+          {overviewContent.sections.map((section) => (
+            <Col xs={24} md={12} key={section.key}>
+              <Card
+                className={`${styles.welcome_card} ${styles.welcome_section_card}`}
+                styles={{ body: { padding: 24 } }}
+                style={cardBorderRadiusStyle}
+              >
+                <Space orientation='vertical' size={12}>
+                  <div className={styles.welcome_section_header}>
+                    <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
+                      {sectionIconMap[section.key]}
+                    </span>
+                    <Typography.Text
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        lineHeight: '20px',
+                        fontSize: '1rem',
+                        margin: 0,
+                      }}
+                    >
+                      {section.heading}
+                    </Typography.Text>
+                  </div>
+                  <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+                    {section.description}
+                  </Typography.Paragraph>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </>
+    );
 
   return (
     <PageContainer title={false} childrenContentStyle={{ padding: '16px 24px 24px' }}>

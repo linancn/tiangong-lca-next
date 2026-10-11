@@ -96,15 +96,17 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     expect(getLocalizedLoginSubtitle('fr-CA')).toBe('Sous-titre français');
   });
 
-  it('uses ATLAS localized titles and shared slogans without environment overrides', () => {
+  it('uses ATLAS localized titles and independent slogans without environment overrides', () => {
     process.env.APP_BRAND = 'atlas';
     const {
       getLocalizedAppTitle,
       getLocalizedLoginSubtitle,
     } = require('../../../config/defaultSettings');
-    expect(getLocalizedAppTitle('zh-CN')).toBe('ATLAS 生命周期数据平台');
-    expect(getLocalizedAppTitle('en-US')).toBe('ATLAS LCA Data Platform');
-    expect(getLocalizedLoginSubtitle('zh-CN')).toBe('全球最大的开放生命周期数据平台');
-    expect(getLocalizedLoginSubtitle('en-US')).toBe("World's Largest Open LCA Data Platform");
+    expect(getLocalizedAppTitle('zh-CN')).toBe('ATLAS 生命周期评价平台');
+    expect(getLocalizedAppTitle('en-US')).toBe('ATLAS Life Cycle Assessment');
+    expect(getLocalizedLoginSubtitle('zh-CN')).toBe('连接数据、建模与环境影响分析');
+    expect(getLocalizedLoginSubtitle('en-US')).toBe(
+      'Connect data, models and environmental insights',
+    );
   });
 });

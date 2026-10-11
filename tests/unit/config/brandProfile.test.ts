@@ -10,13 +10,14 @@ describe('brand profiles', () => {
     expect(() => resolveBrandProfile('../atlas')).toThrow('Unsupported APP_BRAND');
   });
 
-  it('provides every registered locale with provisional shared slogans', () => {
+  it('provides every registered locale with independent Atlas copy', () => {
     const original = resolveBrandProfile('tiangong');
     const atlas = resolveBrandProfile('atlas');
     for (const { canonicalLocale } of LOCALE_REGISTRY) {
       expect(original.title[canonicalLocale]).toBeTruthy();
       expect(atlas.title[canonicalLocale]).toContain('ATLAS');
-      expect(atlas.slogan[canonicalLocale]).toBe(original.slogan[canonicalLocale]);
+      expect(atlas.slogan[canonicalLocale]).not.toBe(original.slogan[canonicalLocale]);
+      expect(atlas.presentation?.copy[canonicalLocale].headline).toBeTruthy();
       expect(atlas.localizedName[canonicalLocale]).toBe('ATLAS');
     }
     expect(atlas.theme.light.colorPrimary).toBe('#2F6B9A');

@@ -1,3 +1,5 @@
+import { brandProfile } from '../config/brandProfile';
+import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
   AvatarName,
@@ -70,20 +72,23 @@ subscribeToPasswordRecovery(() => {
 export const antd: RuntimeAntdConfig = (memo) => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
+  const themeConfig = createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary);
   return {
     ...memo,
     theme: {
       ...memo.theme,
-      ...createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary),
+      ...themeConfig,
       token: {
         ...memo.theme?.token,
+        ...themeConfig.token,
         colorPrimary: brandTheme.colorPrimary,
       },
       components: {
         ...memo.theme?.components,
+        ...themeConfig.components,
         Divider: {
           ...memo.theme?.components?.Divider,
-          orientationMargin: 0,
+          ...themeConfig.components?.Divider,
         },
       },
     },
@@ -231,6 +236,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
+    className: brandProfile.id === 'atlas' ? 'atlas-app-shell' : undefined,
     actionsRender: (headerProps = {}) => {
       if (maintenanceActive) {
         return [];
@@ -470,7 +476,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         }),
         defaultDom,
       ),
-    title: appTitle,
+    title: brandProfile.presentation?.navigationTitle ?? appTitle,
   };
 };
 

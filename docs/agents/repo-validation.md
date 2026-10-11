@@ -44,8 +44,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: cf44dc626c2adfe248d721302d01037db939088a
-lastReviewedNote: 'Reviewed Platform #1188 four-locale regression proof for unchanged marketing text when ATLAS has no override. Focused 21 tests pass and brandMessages statements/lines are fully covered. Runtime, dependencies, bootstrap, coverage policy and release boundaries are unchanged; final committed full-gate evidence belongs in Issue #1188.'
+lastReviewedCommit: af971e66ae18aee7b9478166f64737151a2ffee4
+lastReviewedNote: 'Reviewed Platform #1188 Atlas presentation refinement against af971e66: optional layout and light/dark component tokens, independent localized presentation, and isolated fixture-only brand preview tests. Shared business behavior, dependencies, canonical release inventory and gate policy remain unchanged. Local preview validation and retained resources are recorded in Issue #1188; no release or full-coverage claim is made.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -218,3 +218,7 @@ All new package import helpers must enqueue `root_closure_v2` and reject unavail
 ### Process allocation qualification
 
 For Platform #1136, prove multi-target object/array round trips and zero shares in the Process utility suite, exact Flow-revision product checks in `allocationTargets.test.ts`, and real Ant Design Form/Select/Table interactions in `Exchange/allocation.test.tsx`. Matrix fixtures must verify independent electricity/raw/emission splits, preservation of an unconnected reference product's burden, equivalent-scale reuse, and existing cycles/treatment/legacy behavior. Process create/edit tests must reject new or changed invalid vectors without injecting untargeted default shares into generated results, preserve unchanged inherited problems only as unverified repair drafts, and block validation/review fallback. Protect stable exchange IDs, referenced-product deletion, located diagnostics and strict Model source validation. The hermetic `process-allocation.spec.ts` exercises the actual Process drawer against in-memory reserved-origin records; it is frontend workflow evidence, not deployed Worker import/export or production persistence evidence. Existing full gate and browser-proof boundaries are unchanged.
+
+## Brand presentation proof
+
+For changes to brand tokens, copy or layout presets, run focused brand-profile/default-settings/message tests, theme-sync tests and the affected Login/Welcome suites; run typecheck/lint and both brand builds. The `tests/e2e/branding/brand-presentation.spec.ts` browser smoke suite, selected with `playwright.branding.config.ts` outside the release qualification inventory, is explicitly selected with `E2E_BRAND` and only executes with `E2E_QUALIFICATION=true` against the existing semantic simulator. It exercises both brands separately, all four login locales, light/dark toggles, narrow-screen control access and overflow, then shared login, welcome, dataset navigation and the Atlas guide. Screenshots contain deterministic fixture UI only. Test login credentials are never sent to a real backend. Local smoke proof does not replace final release gates or hosted deployment evidence.

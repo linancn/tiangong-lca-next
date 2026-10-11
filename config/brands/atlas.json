@@ -8,31 +8,172 @@
     "fr-FR": "ATLAS"
   },
   "title": {
-    "zh-CN": "ATLAS 生命周期数据平台",
-    "en-US": "ATLAS LCA Data Platform",
-    "de-DE": "ATLAS LCA-Datenplattform",
-    "fr-FR": "ATLAS LCA Data Platform"
+    "zh-CN": "ATLAS 生命周期评价平台",
+    "en-US": "ATLAS Life Cycle Assessment",
+    "de-DE": "ATLAS Ökobilanzplattform",
+    "fr-FR": "ATLAS Analyse du cycle de vie"
   },
   "slogan": {
-    "zh-CN": "全球最大的开放生命周期数据平台",
-    "en-US": "World's Largest Open LCA Data Platform",
-    "de-DE": "Die weltweit größte offene LCA-Datenplattform",
-    "fr-FR": "La plus grande plateforme ouverte de données d’ACV au monde"
+    "zh-CN": "连接数据、建模与环境影响分析",
+    "en-US": "Connect data, models and environmental insights",
+    "de-DE": "Daten, Modelle und Umweltanalysen verbinden",
+    "fr-FR": "Relier données, modèles et analyses environnementales"
   },
-  "messages": {},
+  "messages": {
+    "zh-CN": {
+      "pages.welcome.overview.intro": "ATLAS — 在同一工作空间中组织生命周期数据、构建模型，并开展环境影响分析。",
+      "pages.card.description.3": "ATLAS — 在同一工作空间中组织生命周期数据、构建模型，并开展环境影响分析。",
+      "pages.welcome.overview.sections.internationalMethodology.title": "管理数据",
+      "pages.welcome.overview.sections.internationalMethodology.description": "整理过程、流与来源，保留完整的数据依据。",
+      "pages.welcome.overview.sections.modelingTraceability.title": "构建模型",
+      "pages.welcome.overview.sections.modelingTraceability.description": "连接过程与产品系统，开展生命周期评价。"
+    },
+    "en-US": {
+      "pages.welcome.overview.intro": "ATLAS — Organize life cycle data, build models and explore environmental impacts in one workspace.",
+      "pages.card.description.3": "ATLAS — Organize life cycle data, build models and explore environmental impacts in one workspace.",
+      "pages.welcome.overview.sections.internationalMethodology.title": "Manage data",
+      "pages.welcome.overview.sections.internationalMethodology.description": "Organize processes, flows and sources with their supporting evidence.",
+      "pages.welcome.overview.sections.modelingTraceability.title": "Build models",
+      "pages.welcome.overview.sections.modelingTraceability.description": "Connect processes and product systems for life cycle assessment."
+    },
+    "de-DE": {
+      "pages.welcome.overview.intro": "ATLAS — Lebenszyklusdaten organisieren, Modelle erstellen und Umweltwirkungen in einem Arbeitsbereich untersuchen.",
+      "pages.card.description.3": "ATLAS — Lebenszyklusdaten organisieren, Modelle erstellen und Umweltwirkungen in einem Arbeitsbereich untersuchen.",
+      "pages.welcome.overview.sections.internationalMethodology.title": "Daten verwalten",
+      "pages.welcome.overview.sections.internationalMethodology.description": "Prozesse, Flüsse und Quellen mit ihren Nachweisen organisieren.",
+      "pages.welcome.overview.sections.modelingTraceability.title": "Modelle erstellen",
+      "pages.welcome.overview.sections.modelingTraceability.description": "Prozesse und Produktsysteme für die Ökobilanzierung verknüpfen."
+    },
+    "fr-FR": {
+      "pages.welcome.overview.intro": "ATLAS — Organisez les données du cycle de vie, créez des modèles et analysez les impacts environnementaux dans un même espace.",
+      "pages.card.description.3": "ATLAS — Organisez les données du cycle de vie, créez des modèles et analysez les impacts environnementaux dans un même espace.",
+      "pages.welcome.overview.sections.internationalMethodology.title": "Gérer les données",
+      "pages.welcome.overview.sections.internationalMethodology.description": "Organisez les processus, les flux et les sources avec leurs justificatifs.",
+      "pages.welcome.overview.sections.modelingTraceability.title": "Créer des modèles",
+      "pages.welcome.overview.sections.modelingTraceability.description": "Reliez processus et systèmes de produits pour l’analyse du cycle de vie."
+    }
+  },
   "theme": {
     "light": {
       "colorPrimary": "#2F6B9A",
-      "logo": "/brands/atlas/icon.svg"
+      "logo": "/brands/atlas/icon.svg",
+      "tokens": {
+        "borderRadius": 4,
+        "fontFamily": "\"IBM Plex Sans\", \"Helvetica Neue\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "controlHeight": 36,
+        "colorInfo": "#2F6B9A",
+        "colorBgLayout": "#F2F4F4",
+        "colorBgContainer": "#FFFFFF",
+        "colorText": "#183247",
+        "colorTextSecondary": "#536777",
+        "colorBorderSecondary": "#DDE4E8"
+      },
+      "components": {
+        "Button": {
+          "primaryShadow": "none"
+        },
+        "Card": {
+          "headerFontSize": 16
+        },
+        "Table": {
+          "headerBg": "#EAF0F3",
+          "headerColor": "#183247"
+        },
+        "Tabs": {
+          "titleFontSize": 14
+        }
+      },
+      "layoutTokens": {
+        "sider": {
+          "colorMenuBackground": "#06162A",
+          "colorBgMenuItemCollapsedElevated": "#102B43",
+          "colorTextMenuTitle": "#F5F3EC",
+          "colorTextMenu": "#BACADA",
+          "colorTextMenuSecondary": "#BACADA",
+          "colorTextSubMenuSelected": "#FFFFFF",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuItemHover": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorBgMenuItemSelected": "#234969",
+          "colorBgMenuItemHover": "#15334D",
+          "colorBgMenuItemActive": "#234969",
+          "colorMenuItemDivider": "#294052",
+          "colorBgCollapsedButton": "#16334D",
+          "colorTextCollapsedButton": "#BACADA",
+          "colorTextCollapsedButtonHover": "#FFFFFF",
+          "menuHeight": 44
+        },
+        "header": {
+          "heightLayoutHeader": 64
+        },
+        "pageContainer": {
+          "paddingInlinePageContainerContent": 28,
+          "paddingBlockPageContainerContent": 24
+        }
+      }
     },
     "dark": {
       "colorPrimary": "#618BBB",
-      "logo": "/brands/atlas/icon.svg"
+      "logo": "/brands/atlas/icon.svg",
+      "tokens": {
+        "borderRadius": 4,
+        "fontFamily": "\"IBM Plex Sans\", \"Helvetica Neue\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "controlHeight": 36,
+        "colorInfo": "#618BBB",
+        "colorBgLayout": "#081522",
+        "colorBgContainer": "#102337",
+        "colorText": "#ECF1F4",
+        "colorTextSecondary": "#ADBCC9",
+        "colorBorderSecondary": "#2B4256"
+      },
+      "components": {
+        "Button": {
+          "primaryShadow": "none"
+        },
+        "Card": {
+          "headerFontSize": 16
+        },
+        "Table": {
+          "headerBg": "#183047",
+          "headerColor": "#ECF1F4"
+        },
+        "Tabs": {
+          "titleFontSize": 14
+        }
+      },
+      "layoutTokens": {
+        "sider": {
+          "colorMenuBackground": "#06162A",
+          "colorBgMenuItemCollapsedElevated": "#102B43",
+          "colorTextMenuTitle": "#F5F3EC",
+          "colorTextMenu": "#BACADA",
+          "colorTextMenuSecondary": "#BACADA",
+          "colorTextSubMenuSelected": "#FFFFFF",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuItemHover": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorBgMenuItemSelected": "#234969",
+          "colorBgMenuItemHover": "#15334D",
+          "colorBgMenuItemActive": "#234969",
+          "colorMenuItemDivider": "#294052",
+          "colorBgCollapsedButton": "#16334D",
+          "colorTextCollapsedButton": "#BACADA",
+          "colorTextCollapsedButtonHover": "#FFFFFF",
+          "menuHeight": 44
+        },
+        "header": {
+          "heightLayoutHeader": 64
+        },
+        "pageContainer": {
+          "paddingInlinePageContainerContent": 28,
+          "paddingBlockPageContainerContent": 24
+        }
+      }
     }
   },
   "favicon": "/brands/atlas/icon.ico",
   "links": {
-    "homepage": "https://www.tiangong.earth",
+    "homepage": "/#/welcome",
     "source": "https://github.com/tiangong-lca/platform",
     "terms": "/terms_of_use.html",
     "privacy": "/privacy_notice.html"
@@ -47,5 +188,76 @@
     "productName": "ATLAS",
     "shortcutName": "ATLAS",
     "downloadPrefix": "atlas-lca"
+  },
+  "layout": {
+    "layout": "side",
+    "siderWidth": 256,
+    "fixedHeader": true,
+    "fixSiderbar": true,
+    "splitMenus": false,
+    "contentWidth": "Fluid"
+  },
+  "presentation": {
+    "login": "split",
+    "welcome": "workspace",
+    "copy": {
+      "zh-CN": {
+        "eyebrow": "生命周期评价",
+        "headline": "从数据出发，\n看清环境影响。",
+        "introduction": "在同一工作空间中组织生命周期数据、构建模型，并开展环境影响分析。",
+        "workspaceTitle": "开始你的研究",
+        "workspaceDescription": "从数据整理到模型分析，选择下一步。",
+        "dataTitle": "管理数据",
+        "dataDescription": "整理过程、流与来源，保留完整的数据依据。",
+        "modelTitle": "构建模型",
+        "modelDescription": "连接过程与产品系统，开展生命周期评价。",
+        "guideTitle": "数据编制指南",
+        "guideDescription": "了解过程数据的编制、校验与提交步骤。",
+        "dataSourcesLabel": "数据贡献方"
+      },
+      "en-US": {
+        "eyebrow": "LIFE CYCLE ASSESSMENT",
+        "headline": "From data\nto understanding.",
+        "introduction": "Organize life cycle data, build models and explore environmental impacts in one workspace.",
+        "workspaceTitle": "Your work starts here",
+        "workspaceDescription": "From data preparation to model analysis. Choose your next step.",
+        "dataTitle": "Manage data",
+        "dataDescription": "Organize processes, flows and sources with their supporting evidence.",
+        "modelTitle": "Build models",
+        "modelDescription": "Connect processes and product systems for life cycle assessment.",
+        "guideTitle": "Data preparation guide",
+        "guideDescription": "Follow the steps to prepare, validate and submit process data.",
+        "dataSourcesLabel": "Data contributors"
+      },
+      "de-DE": {
+        "eyebrow": "ÖKOBILANZIERUNG",
+        "headline": "Aus Daten\nwird Verständnis.",
+        "introduction": "Lebenszyklusdaten organisieren, Modelle erstellen und Umweltwirkungen in einem Arbeitsbereich untersuchen.",
+        "workspaceTitle": "Hier beginnt Ihre Arbeit",
+        "workspaceDescription": "Von der Datenaufbereitung zur Modellanalyse. Wählen Sie den nächsten Schritt.",
+        "dataTitle": "Daten verwalten",
+        "dataDescription": "Prozesse, Flüsse und Quellen mit ihren Nachweisen organisieren.",
+        "modelTitle": "Modelle erstellen",
+        "modelDescription": "Prozesse und Produktsysteme für die Ökobilanzierung verknüpfen.",
+        "guideTitle": "Leitfaden zur Datenerstellung",
+        "guideDescription": "Prozessdaten schrittweise erstellen, prüfen und einreichen.",
+        "dataSourcesLabel": "Datenbeitragende"
+      },
+      "fr-FR": {
+        "eyebrow": "ANALYSE DU CYCLE DE VIE",
+        "headline": "Des données\nà la compréhension.",
+        "introduction": "Organisez les données du cycle de vie, créez des modèles et analysez les impacts environnementaux dans un même espace.",
+        "workspaceTitle": "Votre travail commence ici",
+        "workspaceDescription": "De la préparation des données à l’analyse des modèles. Choisissez la prochaine étape.",
+        "dataTitle": "Gérer les données",
+        "dataDescription": "Organisez les processus, les flux et les sources avec leurs justificatifs.",
+        "modelTitle": "Créer des modèles",
+        "modelDescription": "Reliez processus et systèmes de produits pour l’analyse du cycle de vie.",
+        "guideTitle": "Guide de préparation des données",
+        "guideDescription": "Suivez les étapes de préparation, de validation et de soumission des données de processus.",
+        "dataSourcesLabel": "Contributeurs de données"
+      }
+    },
+    "navigationTitle": "ATLAS"
   }
 }

@@ -42,7 +42,7 @@ describe.each(Object.entries(catalogs))('localized brand presentation in %s', (l
     });
   });
 
-  it('uses ATLAS identity while keeping the initial slogan and marketing text', () => {
+  it('uses the independent ATLAS identity and slogan', () => {
     expect(resolveBrandMessage(locale, 'pages.name', catalog['pages.name'], atlas)).toBe(
       atlas.title[locale as SupportedAppLocale],
     );
@@ -50,7 +50,7 @@ describe.each(Object.entries(catalogs))('localized brand presentation in %s', (l
       resolveBrandMessage(locale, 'pages.login.title', catalog['pages.login.title'], atlas),
     ).toBe(atlas.title[locale as SupportedAppLocale]);
     expect(resolveBrandMessage(locale, 'pages.welcome', catalog['pages.welcome'], atlas)).toBe(
-      catalog['pages.welcome'],
+      atlas.slogan[locale as SupportedAppLocale],
     );
     identityIds.forEach((id) => {
       expect(resolveBrandMessage(locale, id, catalog[id], atlas)).toContain('ATLAS');
@@ -74,7 +74,7 @@ describe.each(Object.entries(catalogs))('localized brand presentation in %s', (l
       atlas,
     );
     expect(intro).toContain('ATLAS');
-    expect(intro).toContain('TIDAS');
+    expect(intro).not.toMatch(/TianGong|天工/);
     [
       'pages.tab.title.tgdata',
       'pages.welcome.overview.actions.dataEcosystem',
@@ -99,9 +99,9 @@ it.each(['en-US', 'de-DE', 'fr-FR'] as const)(
   'preserves the full TIDAS name in the %s introduction',
   (locale) => {
     const id = 'pages.welcome.overview.intro';
-    expect(resolveBrandMessage(locale, id, catalogs[locale][id], atlas)).toContain(
-      'TianGong LCA Data System (TIDAS)',
-    );
+    expect(
+      resolveBrandMessage(locale, id, catalogs[locale][id], { ...atlas, messages: {} }),
+    ).toContain('TianGong LCA Data System (TIDAS)');
   },
 );
 

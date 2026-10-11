@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: cf44dc626c2adfe248d721302d01037db939088a
-lastReviewedNote: 'Reviewed Platform #1188 four-locale regression proof for unchanged marketing text when ATLAS has no override. Focused 21 tests pass and brandMessages statements/lines are fully covered. Runtime, dependencies, bootstrap, coverage policy and release boundaries are unchanged; final committed full-gate evidence belongs in Issue #1188.'
+lastReviewedCommit: af971e66ae18aee7b9478166f64737151a2ffee4
+lastReviewedNote: 'Reviewed Platform #1188 Atlas presentation refinement against af971e66: optional layout and light/dark component tokens, independent localized presentation, and isolated fixture-only brand preview tests. Shared business behavior, dependencies, canonical release inventory and gate policy remain unchanged. Local preview validation and retained resources are recorded in Issue #1188; no release or full-coverage claim is made.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

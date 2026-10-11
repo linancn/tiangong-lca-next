@@ -7,7 +7,7 @@ import {
 import { lightBrandTheme } from './branding';
 import { brandProfile } from './brandProfile';
 
-const DEFAULT_LAYOUT = 'mix';
+const DEFAULT_LAYOUT = brandProfile.layout?.layout ?? 'mix';
 const DEFAULT_TITLE = brandProfile.title['en-US'];
 const DEFAULT_LOGIN_SUBTITLE = brandProfile.slogan['en-US'];
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
@@ -90,19 +90,18 @@ const Settings: ProLayoutProps & {
 } = {
   navTheme: lightBrandTheme.navTheme,
   colorPrimary: lightBrandTheme.colorPrimary,
-  layout: readLayoutEnv(process.env.APP_LAYOUT),
   contentWidth: 'Fluid',
   fixedHeader: false,
   fixSiderbar: true,
+  ...brandProfile.layout,
+  // Explicit deployment override wins over the profile preset.
+  layout: readLayoutEnv(process.env.APP_LAYOUT),
   colorWeak: false,
   title: defaultAppTitle,
   pwa: true,
   logo: lightBrandTheme.logo,
   iconfontUrl: '',
-  token: {
-    // 参见ts声明，demo 见文档，通过token 修改样式
-    //https://procomponents.ant.design/components/layout#%E9%80%9A%E8%BF%87-token-%E4%BF%AE%E6%94%B9%E6%A0%B7%E5%BC%8F
-  },
+  token: lightBrandTheme.token ?? {},
 };
 
 export default Settings;
