@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: a02fcef4d8aede5181f0580c9c34ac33d2a7cf42
-lastReviewedNote: 'Reviewed Platform #1188 Atlas footer layout follow-up against a02fcef4: full-width wrapping account row, compact tool grid without empty permission placeholders, and icon-only collapsed account. Changes remain Atlas-scoped; shared actions, TianGong, backend, dependencies and release policy are unchanged. Validation is recorded in Issue #1188.'
+lastReviewedCommit: edaf564b
+lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
 ---
 
 # Development Bootstrap

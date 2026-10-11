@@ -31,10 +31,27 @@ import {
   previewLciaResultPackage,
   publishLciaResultPackage,
   queryPublishedLciaResults,
+  queryExactPublishedLciaResults,
   unpublishLciaResultPublication,
 } from '@/services/dataProducts/api';
 
 describe('dataProducts api', () => {
+  it('sends the opt-in exact public batch mode without requiring a session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { ok: true, data: { mode: 'processes_one_impact_exact' } },
+      error: null,
+    });
+    const request = {
+      impactCategoryId: '6209b35f-9447-40b5-b68c-a1099e3674a0',
+      processes: [{ id: 'process-a', version: '01.00.000' }],
+    };
+    expect((await queryExactPublishedLciaResults(request)).error).toBeNull();
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', {
+      body: { mode: 'processes_one_impact_exact', ...request },
+      region: FunctionRegion.UsEast1,
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthGetClaims.mockResolvedValue({ data: { claims: { sub: 'owner-a' } }, error: null });

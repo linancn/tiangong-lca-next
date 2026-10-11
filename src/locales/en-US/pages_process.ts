@@ -25,7 +25,7 @@ export default {
   'pages.process.list.loadError': 'Failed to load process list.',
   'pages.process.published.title': 'Published processes',
   'pages.process.published.table.processName': 'Process name',
-  'pages.process.published.table.calculationResult': 'Calculation result',
+  'pages.process.published.table.calculationResult': 'Calculation result ({unit})',
   'pages.process.referenceYear': 'Reference year',
   'pages.process.location': 'Location',
   'pages.process.lca.toolbar.tooltip': 'Run LCA',
@@ -927,4 +927,6 @@ export default {
   'pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source': 'Conflicting method coverage evidence was supplied.',
   'pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch': 'Method-level coverage is missing or does not match the reviewed source.',
   'pages.process.lca.evidence.reason.unknown': 'The evidence did not pass validation.',
+  'pages.process.published.climate.error': 'Failed to load',
+  'pages.process.published.climate.missing': 'No result for this version in the current publication',
 };

@@ -1,7 +1,7 @@
 import { verifyAllocationProductProblems } from '../processes/allocationTargets';
 import { v4 } from 'uuid';
 import { CONTENT_LANGUAGE_REGISTRY } from '../general/contentLanguageRegistry';
-import { jsonToList, listToJson, mergeLangArrays, removeEmptyObjects } from '../general/util';
+import { jsonToList, mergeLangArrays, removeEmptyObjects } from '../general/util';
 import { serializeStaticLciaReport } from '../lciaMethods/evidence';
 import { LCIAResultCalculationWithEvidence } from '../lciaMethods/util';
 import { publicEntity } from '../supabase/public';
@@ -21,6 +21,7 @@ import { buildMatrixEdgeId } from './matrixCalculation/validation';
 import { getSharedMatrixCalculationClient } from './matrixCalculation/workerClient';
 import { toReferenceProcessKey } from './referenceProcess';
 import { buildLifeCycleModelSubmodelRecord } from './submodelRecord';
+import { materializeProductSystem } from './productSystemPersistence';
 
 /**
  * zh-CN: 解析交换的参与计算数量，优先级与 Worker 合同一致：
@@ -198,7 +199,8 @@ export async function genLifeCycleModelProcesses(
       id,
       version,
       json->processDataSet->processInformation->quantitativeReference,
-      json->processDataSet->exchanges->exchange
+      json->processDataSet->exchanges->exchange,
+      json->processDataSet
       `,
             )
             .or(orConditions)
@@ -262,24 +264,19 @@ export async function genLifeCycleModelProcesses(
   operation?.beginStage('assembly');
   assertNotCancelled();
 
-  const { instanceMultipliers, edgeAmounts, groups } = outcome.result;
+  const { edgeAmounts, groups, productSystem } = outcome.result;
 
-  // 回写实例倍率（原始过程清单倍率），形状与旧路径一致
-  const newProcessInstance = mdProcesses.map((mdProcess: any) => {
-    const instanceIndex = String(mdProcess?.['@dataSetInternalID'] ?? '');
-    const multiplier = instanceMultipliers[instanceIndex];
-    return removeEmptyObjects({
-      '@dataSetInternalID': mdProcess?.['@dataSetInternalID'],
-      '@multiplicationFactor': multiplier === undefined ? {} : String(multiplier),
-      referenceToProcess: mdProcess?.referenceToProcess,
-      groups: mdProcess?.groups,
-      parameters: mdProcess?.parameters,
-      connections: mdProcess?.connections,
-    });
-  });
-
-  lifeCycleModelJsonOrdered.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance =
-    listToJson(newProcessInstance);
+  const allocatedProcesses = materializeProductSystem(
+    productSystem,
+    lifeCycleModelJsonOrdered,
+    oldSubmodels,
+    new Map(
+      (dbProcesses as any[]).map((process) => [
+        `${process.id}@${process.version}`,
+        process.processDataSet,
+      ]),
+    ),
+  );
 
   // 边数值（成功求解下全部平衡）
   const up2DownEdges: Up2DownEdge[] = [];
@@ -365,6 +362,8 @@ export async function genLifeCycleModelProcesses(
         quantitativeReference: entry.quantitativeReference,
         allocatedFraction: undefined,
         allocations: undefined,
+        referenceToVariable: undefined,
+        dataDerivationTypeStatus: 'Calculated',
         '@dataSetInternalID': (index + 1).toString(),
       }));
 
@@ -438,7 +437,7 @@ export async function genLifeCycleModelProcesses(
   );
 
   return {
-    lifeCycleModelProcesses: lifeCycleModelProcesses.filter((item) => item !== null),
+    lifeCycleModelProcesses: [...lifeCycleModelProcesses, ...allocatedProcesses],
     up2DownEdges,
     lciaIncomplete: lciaIncompleteFlags.some(Boolean),
   };

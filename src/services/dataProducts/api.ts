@@ -88,6 +88,23 @@ export type PublishedLciaResultPackageRequest = {
   impactCategoryId?: string;
 };
 
+export type PublishedLciaExactValue = {
+  id: string;
+  version: string;
+  status: 'available' | 'missing';
+  value: number | null;
+  unit: string;
+};
+
+export type PublishedLciaExactResults = {
+  mode: 'processes_one_impact_exact';
+  impact_id: string;
+  publication: Record<string, unknown>;
+  package: Record<string, unknown>;
+  rowCount: number;
+  values: PublishedLciaExactValue[];
+};
+
 export type PublishedLciaProcessSelection = {
   id: string;
   version: string;
@@ -371,4 +388,14 @@ export function queryPublishedLciaResults(request: QueryPublishedLciaResultsRequ
     'data_product_results',
     request as unknown as Record<string, unknown>,
   );
+}
+
+export function queryExactPublishedLciaResults(request: {
+  impactCategoryId: string;
+  processes: PublishedLciaProcessSelection[];
+}) {
+  return invokeDataProductFunction<PublishedLciaExactResults>('data_product_results', {
+    mode: 'processes_one_impact_exact',
+    ...request,
+  });
 }

@@ -297,8 +297,11 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => ({
 
 jest.mock('@/pages/LifeCycleModels/Components/modelResult', () => ({
   __esModule: true,
-  default: ({ modelId, modelVersion, actionType }: any) => (
-    <div>{`model-result:${modelId}:${modelVersion}:${actionType}`}</div>
+  default: ({ modelId, modelVersion, actionType, submodels }: any) => (
+    <div
+      data-testid='model-result'
+      data-submodels={JSON.stringify(submodels)}
+    >{`model-result:${modelId}:${modelVersion}:${actionType}`}</div>
   ),
 }));
 
@@ -2687,7 +2690,7 @@ describe('ToolbarEdit', () => {
               },
             ],
           },
-          submodels: [{ id: 'submodel-1' }],
+          submodels: [{ id: 'submodel-1' }, { id: 'provider-1', type: 'allocated' }],
         },
       },
     });
@@ -2720,6 +2723,9 @@ describe('ToolbarEdit', () => {
     expect(screen.getByText('toolbar-edit-info:edit:9.9.9')).toBeInTheDocument();
     expect(screen.getByText('life-cycle-model-edit:child-model:1.0')).toBeInTheDocument();
     expect(screen.getByText('model-result:model-1:1.0:edit')).toBeInTheDocument();
+    expect(JSON.parse(screen.getByTestId('model-result').getAttribute('data-submodels')!)).toEqual([
+      { id: 'submodel-1', version: '1.0' },
+    ]);
   });
 
   it('loads sparse existing models and falls back to empty editor payloads', async () => {
@@ -3973,4 +3979,37 @@ describe('ToolbarEdit', () => {
       ),
     );
   });
+  it.each([
+    ['MISSING_PRODUCT_ALLOCATION', 'missingProductAllocation'],
+    ['MISSING_REFERENCE_ALLOCATION', 'missingReferenceAllocation'],
+  ])(
+    'shows repair guidance and locates the affected product for %s',
+    async (allocationReason, suffix) => {
+      const modal = jest.requireMock('antd').modal;
+      const destroy = jest.fn();
+      modal.error.mockReset().mockReturnValue({ destroy });
+      mockUpdateLifeCycleModel.mockResolvedValueOnce({
+        ok: false,
+        code: 'INVALID_ALLOCATION',
+        calculationIssues: [
+          { code: 'INVALID_ALLOCATION', allocationReason, instanceIndex: 'pi-1', nodeId: 'node-1' },
+        ],
+      });
+      render(<ToolbarEdit {...baseProps} drawerVisible={true} />);
+      await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+      await waitFor(() => expect(modal.error).toHaveBeenCalled());
+      render(modal.error.mock.calls[0][0].content);
+      expect(
+        screen.getByText(`pages.lifecyclemodel.calculation.repair.${suffix}`),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('pages.lifecyclemodel.calculation.status.resultNotUpdated'),
+      ).toBeInTheDocument();
+      await userEvent.click(
+        screen.getByRole('button', { name: 'pages.lifecyclemodel.calculation.action.locate' }),
+      );
+      expect(mockUpdateNode).toHaveBeenCalledWith('node-1', { selected: true });
+      expect(destroy).toHaveBeenCalled();
+    },
+  );
 });

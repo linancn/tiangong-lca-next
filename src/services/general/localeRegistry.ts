@@ -239,7 +239,7 @@ export type SupportedAppLocale = (typeof LOCALE_REGISTRY)[number]['canonicalLoca
 export type LocaleRegistryEntry = (typeof LOCALE_REGISTRY)[number];
 
 export const CANONICAL_SOURCE_APP_LOCALE: SupportedAppLocale = 'en-US';
-export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = 'zh-CN';
+export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = CANONICAL_SOURCE_APP_LOCALE;
 export const DEFAULT_SERVICE_APP_LOCALE: SupportedAppLocale = CANONICAL_SOURCE_APP_LOCALE;
 
 export const SUPPORTED_APP_LOCALES: readonly SupportedAppLocale[] = LOCALE_REGISTRY.map(

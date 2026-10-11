@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-10-11"
-lastReviewedCommit: "a02fcef4d8aede5181f0580c9c34ac33d2a7cf42"
-lastReviewedNote: 'Reviewed Platform #1188 Atlas footer layout follow-up against a02fcef4: full-width wrapping account row, compact tool grid without empty permission placeholders, and icon-only collapsed account. Changes remain Atlas-scoped; shared actions, TianGong, backend, dependencies and release policy are unchanged. Validation is recorded in Issue #1188.'
+lastReviewedAt: '2026-10-11'
+lastReviewedCommit: 'edaf564b'
+lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -40,6 +40,7 @@ ownership:
           - README_CN.md
           - .docpact/**
           - docs/agents/**
+          - docs/plans/model-product-demand.md
           - docs/plans/i18n/**
           - docs/plans/i18n-*/**
           - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -106,6 +107,8 @@ coverage:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/model-modeling-and-calculation.md
+    - docs/plans/model-product-demand.md
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
@@ -277,6 +280,8 @@ routing:
         - docs/agents/lca-analysis-visualization-plan.md
         - docs/agents/public-classifications-gz-usage.md
         - docs/agents/util_calculate.md
+        - docs/agents/model-modeling-and-calculation.md
+        - docs/plans/model-product-demand.md
         - docs/agents/lcia-calculation-evidence.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
@@ -400,6 +405,8 @@ docInventory:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/model-modeling-and-calculation.md
+    - docs/plans/model-product-demand.md
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
@@ -942,6 +949,10 @@ rules:
         kind: domain-ui
       - path: docs/agents/util_calculate.md
         kind: domain-doc
+      - path: docs/agents/model-modeling-and-calculation.md
+        kind: domain-doc
+      - path: docs/plans/model-product-demand.md
+        kind: design-reference
       - path: docs/agents/contribution-path-analysis-design.md
         kind: design-reference
       - path: docs/agents/lca-analysis-visualization-plan.md
@@ -954,6 +965,8 @@ rules:
       - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/util_calculate.md
+        mode: review_or_update
+      - path: docs/agents/model-modeling-and-calculation.md
         mode: review_or_update
       - path: docs/agents/contribution-path-analysis-design.md
         mode: review_or_update

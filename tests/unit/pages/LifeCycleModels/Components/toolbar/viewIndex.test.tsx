@@ -343,7 +343,7 @@ describe('ToolbarView', () => {
           },
         },
         json_tg: {
-          submodels: [{ id: 'sub-1' }],
+          submodels: [{ id: 'sub-1' }, { id: 'provider-1', type: 'allocated' }],
           xflow: {
             nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
           },

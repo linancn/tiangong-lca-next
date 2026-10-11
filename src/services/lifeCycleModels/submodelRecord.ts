@@ -24,7 +24,7 @@ export interface LifeCycleModelSubmodelFinalId {
 export interface LifeCycleModelSubmodelRecordInput {
   option: 'create' | 'update';
   modelId: string;
-  type: 'primary' | 'secondary';
+  type: 'primary' | 'secondary' | 'allocated';
   finalId: LifeCycleModelSubmodelFinalId;
   baseName: any;
   newExchanges: any[];

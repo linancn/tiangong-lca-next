@@ -371,7 +371,7 @@ async function buildProcessMutation(args: {
     };
   }
 
-  if (args.process.modelInfo.type === 'secondary') {
+  if (args.process.modelInfo.type === 'secondary' || args.process.modelInfo.type === 'allocated') {
     processDataSet.processInformation.technology = {
       ...processDataSet.processInformation.technology,
       referenceToIncludedProcesses: mapRefProcessesToIncludedProcesses(
@@ -381,7 +381,11 @@ async function buildProcessMutation(args: {
   }
 
   let operation = args.process.option === 'update' ? 'update' : 'create';
-  if (operation === 'update' && args.oldProcess?.json) {
+  if (
+    operation === 'update' &&
+    args.oldProcess?.json &&
+    args.process.modelInfo.type !== 'allocated'
+  ) {
     overrideWithOldProcess({ processDataSet }, args.oldProcess.json);
   } else if (operation === 'update' && !args.oldProcess) {
     operation = 'create';
@@ -635,11 +639,18 @@ function shouldDeleteSubmodel(
   oldSubmodel: LifeCycleModelSubModel,
   lifeCycleModelProcesses: RawLifeCycleModelProcess[],
 ) {
+  if (lifeCycleModelProcesses.some((process) => process.modelInfo.id === oldSubmodel.id)) {
+    return false;
+  }
+  if (oldSubmodel.type === 'allocated') return true;
   if (oldSubmodel.type !== 'secondary') {
     return false;
   }
 
-  return !lifeCycleModelProcesses.some((process) => sameFinalId(oldSubmodel.finalId, process));
+  return !lifeCycleModelProcesses.some(
+    (process) =>
+      process.modelInfo.type === 'secondary' && sameFinalId(oldSubmodel.finalId, process),
+  );
 }
 
 function sameFinalId(oldFinalId: any, process: RawLifeCycleModelProcess) {

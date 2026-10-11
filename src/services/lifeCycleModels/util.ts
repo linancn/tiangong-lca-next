@@ -211,17 +211,19 @@ export const genReferenceToResultingProcess = (
     return data;
   }
 
-  const referenceToResultingProcess = lifeCycleModelProcesses.map((process: any) => {
-    return {
-      '@refObjectId': process?.modelInfo?.id,
-      '@type': 'process data set',
-      '@uri': `../processes/${process?.modelInfo?.id}.xml`,
-      '@version': version,
-      'common:shortDescription': genProcessNameJson(
-        process?.data?.processDataSet?.processInformation?.dataSetInformation?.name,
-      ),
-    };
-  });
+  const referenceToResultingProcess = lifeCycleModelProcesses
+    .filter((process: any) => process?.modelInfo?.type !== 'allocated')
+    .map((process: any) => {
+      return {
+        '@refObjectId': process?.modelInfo?.id,
+        '@type': 'process data set',
+        '@uri': `../processes/${process?.modelInfo?.id}.xml`,
+        '@version': version,
+        'common:shortDescription': genProcessNameJson(
+          process?.data?.processDataSet?.processInformation?.dataSetInformation?.name,
+        ),
+      };
+    });
   data['lifeCycleModelDataSet']['lifeCycleModelInformation']['dataSetInformation'][
     'referenceToResultingProcess'
   ] = referenceToResultingProcess;

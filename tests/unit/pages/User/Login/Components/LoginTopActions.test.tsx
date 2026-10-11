@@ -204,7 +204,7 @@ describe('LoginTopActions', () => {
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 
-  it('falls back to secondary text color and zh locale when optional token or locale values are missing', async () => {
+  it('falls back to secondary text color and English locale when optional token or locale values are missing', async () => {
     mockLocale = undefined as any;
     mockColorTextTertiary = undefined as any;
 
@@ -212,6 +212,6 @@ describe('LoginTopActions', () => {
 
     expect(screen.getByTestId('login-dark-mode')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Open help documentation' }));
-    expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth');
+    expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 });

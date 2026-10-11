@@ -103,7 +103,8 @@ export default defineConfig({
     default: DEFAULT_BROWSER_APP_LOCALE,
     antd: true,
     title: true,
-    useLocalStorage: true,
+    // Product runtime owns manual-only persistence and safe storage access.
+    useLocalStorage: false,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
   },

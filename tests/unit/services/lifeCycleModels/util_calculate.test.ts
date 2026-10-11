@@ -396,7 +396,7 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       );
 
     expect(lciaIncomplete).toBe(false);
-    expect(lifeCycleModelProcesses).toHaveLength(2);
+    expect(lifeCycleModelProcesses).toHaveLength(4);
 
     const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
     const secondary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'secondary');
@@ -436,16 +436,16 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       { '@xml:lang': 'fr', '#text': '[Sous-produit : Produit C] Processus de référence' },
     ]);
 
-    // 副模型边界：C 终产品 16/3 与 B 的 C 产品归因原料 7 × 0.4 / 4 × 16/3
+    // 副情景以 C 的参考量 1 为需求，原料负荷为 7 × 0.4 / 4。
     const secondaryExchanges = secondary?.data?.processDataSet?.exchanges?.exchange ?? [];
     const secondaryFinal = secondaryExchanges.find(
       (exchange: any) => exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-C-final',
     );
-    expect(Number(secondaryFinal?.meanAmount)).toBeCloseTo(16 / 3, 9);
+    expect(Number(secondaryFinal?.meanAmount)).toBeCloseTo(1, 9);
     const secondaryRaw = secondaryExchanges.find(
       (exchange: any) => exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-raw',
     );
-    expect(Number(secondaryRaw?.meanAmount)).toBeCloseTo((28 / 3) * 0.4, 9);
+    expect(Number(secondaryRaw?.meanAmount)).toBeCloseTo(0.7, 9);
 
     for (const generated of lifeCycleModelProcesses) {
       const entries = generated.data.processDataSet.exchanges.exchange;
@@ -455,7 +455,7 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
 
     expect(mockLCIAResultCalculation).toHaveBeenCalledTimes(2);
 
-    // 倍率回写：A 2、B 4/3、C 16/3
+    // 标准实例引用单位产品清单：A 倍率 2，B 的第一产品需求 4，C 主情景活动为 0。
     const processInstance =
       data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
     const multiplierByIndex = new Map(
@@ -465,14 +465,14 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       ]),
     );
     expect(multiplierByIndex.get('nodeA')).toBe('2');
-    expect(Number(multiplierByIndex.get('nodeB'))).toBeCloseTo(4 / 3, 9);
-    expect(Number(multiplierByIndex.get('nodeC'))).toBeCloseTo(16 / 3, 9);
+    expect(Number(multiplierByIndex.get('nodeB'))).toBeCloseTo(4, 9);
+    expect(Number(multiplierByIndex.get('nodeC'))).toBe(0);
 
     // 边数值：成功求解下全部平衡
     const edgeByFlow = new Map(up2DownEdges.map((edge) => [edge.flowUUID, edge]));
     expect(edgeByFlow.get('flow-B-to-A')?.exchangeAmount).toBeCloseTo(4, 9);
     expect(edgeByFlow.get('flow-B-to-A')?.isBalanced).toBe(true);
-    expect(edgeByFlow.get('flow-B-to-C')?.exchangeAmount).toBeCloseTo(16 / 3, 9);
+    expect(edgeByFlow.get('flow-B-to-C')?.exchangeAmount).toBe(0);
     expect(edgeByFlow.get('flow-B-to-C')?.upstreamNodeId).toBe('graph-node-b');
     expect(edgeByFlow.get('flow-B-to-C')?.downstreamNodeId).toBe('graph-node-c');
   });
@@ -1251,8 +1251,10 @@ describe('Worker allocation materialization contract', () => {
           data,
           [],
         );
-        expect(lifeCycleModelProcesses).toHaveLength(2);
-        for (const record of lifeCycleModelProcesses) {
+        expect(lifeCycleModelProcesses).toHaveLength(4);
+        for (const record of lifeCycleModelProcesses.filter(
+          (item) => item.modelInfo.type !== 'allocated',
+        )) {
           const primary = record.modelInfo.type === 'primary';
           const id = primary ? modelId : '44444444-4444-4444-8444-444444444444';
           const persisted = genProcessJsonOrdered(id, record.data.processDataSet);

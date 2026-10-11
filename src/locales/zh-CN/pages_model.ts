@@ -307,6 +307,8 @@ export default {
   'pages.lifecyclemodel.calculation.error.INVALID_CONNECTION': '连接无效。请检查连接两端的过程和输入输出流。',
   'pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW': '连接两端的流、版本或单位不兼容。请使用匹配的数据后重新连接。',
   'pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT': '交换数量无效。请检查对应流的数量后重试。',
+  'pages.lifecyclemodel.calculation.repair.missingProductAllocation': '该非参考产品没有分配说明。请在源过程中为各产品补充分配，或选择已分配的产品过程，再将模型节点更新到修复后的过程版本并重算。已保存结果保持不变。',
+  'pages.lifecyclemodel.calculation.repair.missingReferenceAllocation': '源过程已为其他产品声明分配，但参考产品没有份额。请明确填写参考产品的份额（可为 0%），并使各产品份额合计为 100%，再将模型节点更新到修复后的过程版本并重算。已保存结果保持不变。',
   'pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION': '产品分配数据无效或不完整。请检查分配对象和比例后重试。',
   'pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE': '当前模型无法得到唯一的计算结果。请检查过程连接和数量设置后重试。',
   'pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID': '计算结果未通过数值校验。请检查数据数量级和过程连接后重试。',

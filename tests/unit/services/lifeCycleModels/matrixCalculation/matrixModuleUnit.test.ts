@@ -510,37 +510,37 @@ describe('compileModel allocation and connection edge paths', () => {
     ).toThrow(expect.objectContaining({ code: 'INVALID_CONNECTION' }));
   });
 
-  it('assigns the first connected view as primary when the reference exchange is absent', () => {
-    const compilation = compile({
-      refInstanceIndex: 'n0',
-      targetAmount: 1,
-      instances: [
-        baseInstance(),
-        baseInstance({
-          instanceIndex: 'n1',
-          processId: 'p1',
-          process: {
-            id: 'p1',
-            version: '1',
-            exchanges: [
-              exchange('e1', 'OUTPUT', 'flow-F1', 1),
-              exchange('i1', 'INPUT', 'flow-F0', 1),
-            ],
-          },
-          connections: [
-            {
-              upstreamIndex: 'n1',
-              downstreamIndex: 'n0',
-              outputFlowId: 'flow-F1',
-              inputFlowId: 'flow-F1',
-              edgeId: 'n1->n0:flow-F1',
+  it('rejects a non-reference product without a declared allocation', () => {
+    expect(() =>
+      compile({
+        refInstanceIndex: 'n0',
+        targetAmount: 1,
+        instances: [
+          baseInstance(),
+          baseInstance({
+            instanceIndex: 'n1',
+            processId: 'p1',
+            process: {
+              id: 'p1',
+              version: '1',
+              exchanges: [
+                exchange('e1', 'OUTPUT', 'flow-F1', 1),
+                exchange('i1', 'INPUT', 'flow-F0', 1),
+              ],
             },
-          ],
-        }),
-      ],
-    });
-    const n1Views = compilation.views.filter((view) => view.instanceIndex === 'n1');
-    expect(compilation.primaryViewIdByInstance.get('n1')).toBe(n1Views[0].id);
+            connections: [
+              {
+                upstreamIndex: 'n1',
+                downstreamIndex: 'n0',
+                outputFlowId: 'flow-F1',
+                inputFlowId: 'flow-F1',
+                edgeId: 'n1->n0:flow-F1',
+              },
+            ],
+          }),
+        ],
+      }),
+    ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }));
   });
 
   it('reports ambiguous partial declarations but keeps undeclared outputs ordinary', () => {
@@ -711,7 +711,7 @@ describe('compileModel allocation and connection edge paths', () => {
     expect(raw.amount).toBeCloseTo(-2, 9);
   });
 
-  it('links non-primary views to the primary view and treats unconnected flows as boundary', () => {
+  it('compiles independent product demands and leaves unconnected inputs at the boundary', () => {
     const compilation = compile({
       refInstanceIndex: 'nPQ',
       targetAmount: 2,
@@ -761,13 +761,9 @@ describe('compileModel allocation and connection edge paths', () => {
     });
 
     const qView = compilation.views.find((view) => view.pivotExchangeId === 'exQ')!;
-    expect(qView.rowKind).toBe('linkage');
-    expect(qView.rowCoefficient).toBeCloseTo(2, 9);
-    // 联动行 (Q←P, q_Q/q_P = 2) 与死端直通行 (E←Q)；未连接的输入 flow-L 是边界流
-    expect(compilation.entries).toEqual([
-      { row: 2, col: 1, value: 1 },
-      { row: 1, col: 0, value: 2 },
-    ]);
+    expect(qView.rowKind).toBe('production');
+    // E 的每单位需求消耗 Q 一单位；P 的需求不强制产生 Q。
+    expect(compilation.entries).toEqual([{ row: 1, col: 2, value: 1 }]);
   });
 
   it('attributes standard allocations per target and leaves undeclared exchanges to the reference view', () => {
@@ -1242,9 +1238,33 @@ describe('compileModel remaining edge paths', () => {
     expect(result.groups).toBeDefined();
   });
 
-  it('attributes an undeclared connected output at the implicit share in a legacy instance', () => {
-    // 已声明份额闭合（50/50），第三个连通输出未声明：按剩余隐含份额（0）归属，
-    // 不再按联产品报错（审查 1）
+  it('rejects an undeclared reference product when legacy coproduct shares are declared', () => {
+    expect(() =>
+      compile({
+        refInstanceIndex: 'n0',
+        targetAmount: 1,
+        instances: [
+          baseInstance({
+            process: {
+              id: 'p0',
+              version: '1',
+              refExchangeInternalId: 'e0',
+              exchanges: [
+                exchange('e0', 'OUTPUT', 'flow-F0', 1),
+                exchange('e1', 'OUTPUT', 'flow-F1', 1, {
+                  allocations: { allocation: { '@allocatedFraction': '100%' } },
+                }),
+                exchange('i0', 'INPUT', 'flow-resource', 10),
+              ],
+            },
+          }),
+        ],
+      }),
+    ).toThrow(expect.objectContaining({ code: 'INVALID_ALLOCATION' }));
+  });
+
+  it('accepts an undeclared non-reference coproduct in a closed legacy allocation', () => {
+    // 已声明份额闭合（50/50），第三个连通产品的隐含份额为零。
     const compilation = compile({
       refInstanceIndex: 'n0',
       targetAmount: 1,
@@ -1290,10 +1310,9 @@ describe('compileModel remaining edge paths', () => {
         }),
       ],
     });
-    const e2View = compilation.views.find(
-      (view: { pivotExchangeId: string }) => view.pivotExchangeId === 'e2',
-    );
-    expect(e2View).toBeDefined();
+    const view = compilation.views.find((entry) => entry.pivotExchangeId === 'e2')!;
+    expect(view.rowKind).toBe('production');
+    expect(compilation.fractionsByView.get(view.id)?.get('e0')).toBe(0);
   });
 
   it('skips edges whose upstream output exchange is missing and reports INVALID_CONNECTION', () => {
@@ -1510,7 +1529,7 @@ describe('compileModel remaining edge paths', () => {
     ).toThrow(expect.objectContaining({ code: 'INVALID_CONNECTION' }));
   });
 
-  it('passes supply through to demand-driven consumers of the same supplier and skips dead-end adjustments', () => {
+  it('uses demand equations without creating supply-driven terminal activity', () => {
     // 供应视图同时供应需求驱动消费者与死端：直通行调整项覆盖
     const compilation = compile({
       refInstanceIndex: 'nP0',
@@ -1577,17 +1596,11 @@ describe('compileModel remaining edge paths', () => {
     });
 
     const deadEnd = compilation.views.find((view) => view.isDeadEnd)!;
-    expect(deadEnd.rowKind).toBe('passThrough');
-    // 直通行包含对需求驱动消费的调整项：attr_d·x_d = x_s − attr_0·x_0
-    expect(compilation.entries).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ row: deadEnd.columnIndex, col: 0 }),
-        expect.objectContaining({ row: deadEnd.columnIndex, col: 1, value: expect.any(Number) }),
-      ]),
-    );
+    expect(deadEnd.rowKind).toBe('production');
+    expect(compilation.entries.some((entry: any) => entry.row === deadEnd.columnIndex)).toBe(false);
   });
 
-  it('leaves pass-through rows inert when the dead end does not consume the supplied flow', () => {
+  it('keeps zero allocated terminal consumption out of demand coefficients', () => {
     // 死端的参考视图对输入流为稀疏零归属 → 直通行系数为 0
     const compilation = compile({
       refInstanceIndex: 'nS',
@@ -1646,8 +1659,12 @@ describe('compileModel remaining edge paths', () => {
     });
 
     const deadEnd = compilation.views.find((view) => view.isDeadEnd)!;
-    expect(deadEnd.rowKind).toBe('passThrough');
-    expect(deadEnd.rowCoefficient).toBe(0);
+    expect(deadEnd.rowKind).toBe('production');
+    expect(
+      compilation.entries.some(
+        (entry: any) => entry.col === deadEnd.columnIndex && entry.value !== 0,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -1723,7 +1740,9 @@ describe('assembleResult port-balance issue reporting', () => {
     const result = assembleResult(compilation, [1, 0, 0]);
     expect(result.instanceMultipliers.nR).toBeCloseTo(1, 9);
     expect(result.instanceMultipliers.nS).toBeUndefined();
-    expect(result.groups.find((group: any) => group.type === 'secondary')).toBeUndefined();
+    expect(result.groups.find((group: any) => group.type === 'secondary')?.exchanges).toEqual(
+      expect.arrayContaining([expect.objectContaining({ flowId: 'flow-D', amount: 1 })]),
+    );
   });
 
   it('reports connected pivots that are not fully consumed and inconsistent dead-end pipes', () => {
@@ -1770,7 +1789,7 @@ describe('assembleResult port-balance issue reporting', () => {
 
     // 真解为 x = [1/(1-0.125), ...]；构造一个不满足端口平衡的解
     expect(() => assembleResult(compilation, [1, 0.1])).toThrow(
-      expect.objectContaining({ code: 'MODEL_NOT_SOLVABLE' }),
+      expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
     );
   });
 });
@@ -1903,7 +1922,7 @@ describe('assembleResult grouping edge paths', () => {
     const compilation = compile(payload);
     // 正解 x_R = 1 + x_C；把 x_R 压到 1 而 x_C 保持 3 → 超额交付
     expect(() => assembleResult(compilation, [1, 3])).toThrow(
-      expect.objectContaining({ code: 'MODEL_NOT_SOLVABLE' }),
+      expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
     );
   });
 
@@ -1911,7 +1930,7 @@ describe('assembleResult grouping edge paths', () => {
     const compilation = compile(buildABCPayload());
     // 正确解为 [10, 4, 16/3, 16/3]；篡改死端活动量使直通管失配
     expect(() => assembleResult(compilation, [10, 4, 16 / 3, 1])).toThrow(
-      expect.objectContaining({ code: 'MODEL_NOT_SOLVABLE' }),
+      expect.objectContaining({ code: 'NUMERIC_RESULT_INVALID' }),
     );
   });
 
@@ -1961,7 +1980,7 @@ describe('assembleResult grouping edge paths', () => {
       ],
     };
     const compilation = compile(payload);
-    const result = assembleResult(compilation, [2, 2]);
+    const result = assembleResult(compilation, [2, 0]);
 
     const primary = result.groups.find((group: any) => group.type === 'primary')!;
     // 参考视图的最终需求经死端管道交付：主组边界显示目标量
@@ -1970,10 +1989,15 @@ describe('assembleResult grouping edge paths', () => {
     expect(refOutput.quantitativeReference).toBe(true);
 
     const secondary = result.groups.find((group: any) => group.type === 'secondary')!;
-    // 副产品闭包不吸收参考视图；其输入显示为边界输入
-    expect(secondary.refProcesses).toEqual([{ id: 'pd', version: '1' }]);
-    const secondaryInput = secondary.exchanges.find((entry: any) => entry.flowId === 'flow-R')!;
-    expect(secondaryInput.amount).toBeCloseTo(-2, 9);
+    // 独立副情景包含实际供给它的参考过程，原料需求按自身参考量求解。
+    expect(secondary.refProcesses).toEqual(
+      expect.arrayContaining([
+        { id: 'pd', version: '1' },
+        { id: 'pr', version: '1' },
+      ]),
+    );
+    const secondaryInput = secondary.exchanges.find((entry: any) => entry.flowId === 'flow-raw')!;
+    expect(secondaryInput.amount).toBeCloseTo(-1, 9);
   });
 
   it('reports NUMERIC_RESULT_INVALID when a group subsystem solves to a negative activity', () => {
@@ -2106,108 +2130,41 @@ describe('assembleResult grouping edge paths', () => {
     );
   });
 
-  it('reports MODEL_NOT_SOLVABLE when a group subsystem matrix is singular', () => {
-    // 防御性分支：组内消耗子矩阵奇异（S 与 T 互相 1:1 供给且组根活动量为 0），
-    // 组子系统无唯一解。
-    const viewR = {
-      id: 'nR::x',
-      instanceIndex: 'nR',
-      pivotExchangeId: 'x',
-      pivotDirection: 'OUTPUT',
-      pivotFlowId: 'flow-R',
-      pivotAmount: 1,
-      isReference: true,
-      isDeadEnd: false,
-      columnIndex: 0,
-      rowKind: 'anchor',
-    };
-    const viewS = {
-      id: 'nS::x',
-      instanceIndex: 'nS',
-      pivotExchangeId: 'x',
-      pivotDirection: 'OUTPUT',
-      pivotFlowId: 'flow-S',
-      pivotAmount: 1,
-      isReference: false,
-      isDeadEnd: false,
-      columnIndex: 1,
-      rowKind: 'production',
-    };
-    const viewT = {
-      id: 'nT::x',
-      instanceIndex: 'nT',
-      pivotExchangeId: 'x',
-      pivotDirection: 'OUTPUT',
-      pivotFlowId: 'flow-T',
-      pivotAmount: 1,
-      isReference: false,
-      isDeadEnd: false,
-      columnIndex: 2,
-      rowKind: 'production',
-    };
-    const compilation = {
-      views: [viewR, viewS, viewT],
-      viewById: new Map([
-        [viewR.id, viewR],
-        [viewS.id, viewS],
-        [viewT.id, viewT],
-      ]),
-      instanceByIndex: new Map([
-        ['nR', { instanceIndex: 'nR', nodeId: 'node-r', refExchangeId: 'x' }],
-        ['nS', { instanceIndex: 'nS', nodeId: 'node-s', refExchangeId: 'x' }],
-        ['nT', { instanceIndex: 'nT', nodeId: 'node-t', refExchangeId: 'x' }],
-      ]),
-      edges: [
-        {
-          connection: {
-            edgeId: 'nS->nR:flow-S',
-            upstreamIndex: 'nS',
-            downstreamIndex: 'nR',
-            outputFlowId: 'flow-S',
-            inputFlowId: 'flow-S',
-          },
-          supplierViewId: viewS.id,
-          consumptions: [{ viewId: viewR.id, amount: 0 }],
-          inSystem: false,
-        },
-        {
-          connection: {
-            edgeId: 'nS->nT:flow-S',
-            upstreamIndex: 'nS',
-            downstreamIndex: 'nT',
-            outputFlowId: 'flow-S',
-            inputFlowId: 'flow-S',
-          },
-          supplierViewId: viewS.id,
-          consumptions: [{ viewId: viewT.id, amount: 1 }],
-          inSystem: true,
-        },
-        {
-          connection: {
-            edgeId: 'nT->nS:flow-T',
-            upstreamIndex: 'nT',
-            downstreamIndex: 'nS',
-            outputFlowId: 'flow-T',
-            inputFlowId: 'flow-T',
-          },
-          supplierViewId: viewT.id,
-          consumptions: [{ viewId: viewS.id, amount: 1 }],
-          inSystem: true,
-        },
-      ],
-      primaryViewIdByInstance: new Map([
-        ['nR', viewR.id],
-        ['nS', viewS.id],
-        ['nT', viewT.id],
-      ]),
-      // 省略 demand 尾部：非根成员的外部需求按 0 处理
-      demand: [0],
-      refViewId: viewR.id,
-    } as never;
-
-    expect(() => assembleResult(compilation, [0, 1, 1])).toThrow(
-      expect.objectContaining({ code: 'MODEL_NOT_SOLVABLE' }),
+  it('rejects a singular unit-reuse system before inventory assembly', () => {
+    const { runMatrixCalculation } = jest.requireActual(
+      '@/services/lifeCycleModels/matrixCalculation/matrixWorker',
     );
+    const response = runMatrixCalculation({
+      type: 'calculate',
+      runId: 'singular',
+      payload: {
+        refInstanceIndex: 'n0',
+        targetAmount: 1,
+        instances: [
+          baseInstance({
+            process: {
+              id: 'p0',
+              version: '1',
+              refExchangeInternalId: 'e0',
+              exchanges: [
+                exchange('e0', 'OUTPUT', 'flow-F0', 1),
+                exchange('i0', 'INPUT', 'flow-F0', 1),
+              ],
+            },
+            connections: [
+              {
+                upstreamIndex: 'n0',
+                downstreamIndex: 'n0',
+                outputFlowId: 'flow-F0',
+                inputFlowId: 'flow-F0',
+                edgeId: 'reuse',
+              },
+            ],
+          }),
+        ],
+      },
+    });
+    expect(response).toMatchObject({ ok: false, error: { code: 'MODEL_NOT_SOLVABLE' } });
   });
 });
 

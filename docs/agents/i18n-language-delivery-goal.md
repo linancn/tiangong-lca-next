@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-10-04
-lastReviewedCommit: 4880287176bec8b80eca3adf1df8039f56ff3d28
-lastReviewedNote: 'Reviewed Platform #1177 qualification closure repair against the current route contract and browser inventory; v5 proof, strict negative cases and sanitized CI diagnostics preserve complete evidence requirements without changing product language or release authorization policy.'
+lastReviewedAt: 2026-10-09
+lastReviewedCommit: bce938c009c8ec02236158ab18361c31f2b1af34
+lastReviewedNote: 'Platform #1194: seven-type manager display configuration, 60 assertions / 57 routes, explicit audited display read RPCs, and PageContainer17 / ProTable69 inventory are synchronized. Immutable historical route proof is rejected; 52 route-proof tests, 125 surface/request contract assertions and 30 service/search regressions pass. Original Open Data search filters and Process result lookup are preserved. Full checked-push remains required; Database800 / Edge470 precede rollout. No merge or deployment.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -567,6 +567,7 @@ CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二
 
 - 复用 `UmiSelectLang` 的原生 locale 数据和渲染，保留其 `icon` 国旗；
 - 共享 Header 的 Umi `SelectLang` 必须使用 `reload={false}`，在当前 document 内更新 locale，而不是以整页 reload 掩盖挂载态刷新或旧请求竞态；
+- 浏览器自动选择、手选偏好、英文默认及旧版缓存兼容遵循 `docs/agents/repo-architecture.md` 的浏览器入口合同；新增语言必须覆盖有序浏览器候选及地区别名、手选后重开、自动选择不持久化，以及存储 getter/写入被禁止时的当前页切换；
 - 菜单项精确显示“国旗 + 语言原生名称”，例如当前基线的 `🇨🇳 简体中文`、`🇺🇸 English`、`🇩🇪 Deutsch`；
 - label 不附加国家名或地区限定；必要时只规范化 label，不删除或替换 Umi `icon`；
 - 国旗由 canonical locale 的 Umi metadata 决定，只是视觉标识，不表示建立同一语言的国家/地区变体；

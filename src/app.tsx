@@ -40,6 +40,7 @@ import {
   subscribeToTaskCenterAuthChanges,
 } from '@/services/auth/taskCenters';
 import { reloadBrowserPage } from '@/utils/browserNavigation';
+import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
 import styles from '@/style/custom.less';
 import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
@@ -70,7 +71,7 @@ subscribeToPasswordRecovery(() => {
 });
 
 export const antd: RuntimeAntdConfig = (memo) => {
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const isDarkMode = readBrowserStorage('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
   const themeConfig = createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary);
   return {
@@ -170,7 +171,7 @@ export async function getInitialState(): Promise<{
     return null;
   };
 
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const isDarkMode = readBrowserStorage('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
   const updatedSettings = {
     ...defaultSettings,
@@ -225,7 +226,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ...prevState,
         isDarkMode: !prevState.isDarkMode,
       };
-      localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
+      writeBrowserStorage('isDarkMode', newState.isDarkMode.toString());
       const brandTheme = getBrandTheme(newState.isDarkMode);
       const updatedSettings = {
         ...newState.settings,

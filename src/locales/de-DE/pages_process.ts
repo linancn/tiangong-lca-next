@@ -25,7 +25,7 @@ export default {
   'pages.process.list.loadError': 'Die Prozessliste konnte nicht geladen werden.',
   'pages.process.published.title': 'Veröffentlichte Prozesse',
   'pages.process.published.table.processName': 'Prozessname',
-  'pages.process.published.table.calculationResult': 'Berechnungsergebnis',
+  'pages.process.published.table.calculationResult': 'Berechnungsergebnis ({unit})',
   'pages.process.referenceYear': 'Referenzjahr',
   'pages.process.location': 'Standort',
   'pages.process.lca.toolbar.tooltip': 'LCA durchführen',
@@ -927,4 +927,6 @@ export default {
   'pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source': 'Es wurden widersprüchliche Nachweise zur Methodenabdeckung bereitgestellt.',
   'pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch': 'Die Abdeckung auf Methodenebene fehlt oder stimmt nicht mit der geprüften Quelle überein.',
   'pages.process.lca.evidence.reason.unknown': 'Der Berechnungsnachweis wurde nicht erfolgreich validiert.',
+  'pages.process.published.climate.error': 'Laden fehlgeschlagen',
+  'pages.process.published.climate.missing': 'Kein Ergebnis für diese Version in der aktuellen Veröffentlichung',
 };

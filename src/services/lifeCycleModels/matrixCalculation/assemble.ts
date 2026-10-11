@@ -1,21 +1,7 @@
-/**
- * Result assembly for the matrix calculation.
- *
- * zh-CN: 求解后的端口平衡校验、活动量/倍率映射与子模型聚合。职责：
- *  - 以原始矩阵复核端口平衡：连通枢轴输出必须被消费完；死端直通管的每条
- *    供应边都必须与供应方余量一致；
- *  - 把视图活动量映射为实例倍率（x / |参考数量|，经主视图统一）；
- *  - 按参考视图（主过程）与死端视图（副产品）聚合独立归因情景；
- *  - 组内已连接的内部交换相互抵消，不重复进入外部清单。
- *
- * en-US: Post-solve port-balance verification, activity/multiplier mapping and
- * submodel aggregation. Connected pivot outputs must be fully consumed; every
- * dead-end supply pipe must match the supplier's leftover; instance
- * multipliers are x / |reference amount| unified through primary views; groups
- * aggregate independent attribution scenarios with internal flows cancelling.
- */
+/** Assemble product activities, standard process instances and independent inventories. */
 
-import { LuDecomposition, Matrix } from 'ml-matrix';
+import { solveCompiledSystem } from './solve';
+import { buildProductSystem } from './productSystem';
 import type { CompiledView, Compilation } from './compile';
 import type {
   CalculationIssue,
@@ -26,69 +12,31 @@ import type {
 } from './types';
 import { CALCULATION_TOLERANCES, CalculationError } from './types';
 
-/**
- * zh-CN: 按归因情景求解组内各视图的活动量。组根锚定其全局活动量（该情景的
- * 物理规模）；其余成员求解组内子系统（仅保留组内消耗列），使共享上游的
- * 活动量等于组内归因需求，而不是全局合计。
- * en-US: Solve per-scenario group activities. The group root is anchored at
- * its global activity (the scenario's physical scale); other members solve
- * the group subsystem restricted to in-group consumption columns, so shared
- * upstream activity equals the group's attributed demand rather than the
- * global total.
- */
+/** Solve each result scenario from its own final demand, including feedback. */
 const computeGroupActivities = (
   compilation: Compilation,
   edges: Compilation['edges'],
   members: CompiledView[],
   rootView: CompiledView,
-  activityOf: (view: CompiledView) => number,
+  targetAmount: number,
 ): Map<string, number> => {
-  const n = members.length;
-  const memberIndex = new Map<string, number>();
-  members.forEach((view, index) => memberIndex.set(view.id, index));
-  const matrix = Matrix.identity(n, n);
-  const rhs = new Array<number>(n).fill(0);
-  members.forEach((view, index) => {
-    if (view.id === rootView.id) {
-      // 组根锚定其全局活动量（该情景的物理规模）
-      rhs[index] = activityOf(view);
-      return;
-    }
-    // 非根成员：活动量 = 组内消费者对其产品的归因需求 + 自身外部需求
-    rhs[index] = compilation.demand[view.columnIndex] ?? 0;
-  });
-  const rootIdx = memberIndex.get(rootView.id)!;
+  const memberIndex = new Map(members.map((view, index) => [view.id, index]));
+  const entries: Compilation['entries'] = [];
   for (const edge of edges) {
-    const supplierIdx = memberIndex.get(edge.supplierViewId);
-    if (supplierIdx === undefined || supplierIdx === rootIdx) continue;
+    const row = memberIndex.get(edge.supplierViewId);
+    if (row === undefined) continue;
     for (const consumption of edge.consumptions) {
-      const consumerIdx = memberIndex.get(consumption.viewId);
-      if (consumerIdx === undefined) continue;
-      // 供应方行：活动量 = 组内消费者归因需求之和；组根的行被锚定行替换，
-      // 其全局活动量已含全部消费，不重复叠加。
-      matrix.set(
-        supplierIdx,
-        consumerIdx,
-        matrix.get(supplierIdx, consumerIdx) - consumption.amount,
-      );
+      const col = memberIndex.get(consumption.viewId);
+      if (col !== undefined) entries.push({ row, col, value: consumption.amount });
     }
   }
-  const lu = new LuDecomposition(matrix);
-  if (lu.isSingular()) {
-    throw new CalculationError('MODEL_NOT_SOLVABLE');
-  }
-  const solved = lu.solve(Matrix.columnVector(rhs)).to1DArray() as number[];
-  const scale = Math.max(1, ...solved.map((value) => Math.abs(value)));
-  const activities = new Map<string, number>();
-  members.forEach((view, index) => {
-    const value = solved[index];
-    if (value < -CALCULATION_TOLERANCES.negativeActivity * scale) {
-      throw new CalculationError('NUMERIC_RESULT_INVALID');
-    }
-    // 仅将极小负值（数值噪声）归零；正小值原样保留，避免丢失实质环境负荷
-    activities.set(view.id, value < 0 ? 0 : value);
+  const { x } = solveCompiledSystem({
+    ...compilation,
+    views: members.map((view, columnIndex) => ({ ...view, columnIndex })),
+    entries,
+    demand: members.map((view) => (view.id === rootView.id ? targetAmount : 0)),
   });
-  return activities;
+  return new Map(members.map((view, index) => [view.id, x[index]]));
 };
 
 /**
@@ -102,110 +50,43 @@ export const assembleResult = (
   const { views, viewById, instanceByIndex, edges } = compilation;
   const activityOf = (view: CompiledView): number => solution[view.columnIndex];
 
-  // 每条边的交付量与每个供应视图的交付汇总（系统消费与死端直通分别累计）
   const deliveredBySupplierView = new Map<string, number>();
-  const deadEndDeliveredBySupplierView = new Map<string, number>();
   const edgeAmounts: Record<string, number> = {};
-
-  const deadEndViewIds = new Set(views.filter((view) => view.isDeadEnd).map((view) => view.id));
   for (const edge of edges) {
-    let delivered = 0;
-    let systemDelivered = 0;
-    for (const consumption of edge.consumptions) {
-      const consumerView = viewById.get(consumption.viewId)!;
-      const amount = consumption.amount * activityOf(consumerView);
-      delivered += amount;
-      if (!deadEndViewIds.has(consumerView.id)) {
-        systemDelivered += amount;
-      }
-    }
+    const delivered = edge.consumptions.reduce(
+      (sum, consumption) =>
+        sum + consumption.amount * activityOf(viewById.get(consumption.viewId)!),
+      0,
+    );
     edgeAmounts[edge.connection.edgeId] = delivered;
-    // 仅需求驱动（系统）消费计入供应余量；死端直通交付单独累计
-    if (systemDelivered !== 0) {
-      deliveredBySupplierView.set(
-        edge.supplierViewId,
-        (deliveredBySupplierView.get(edge.supplierViewId) ?? 0) + systemDelivered,
-      );
-    }
-    if (delivered - systemDelivered !== 0) {
-      deadEndDeliveredBySupplierView.set(
-        edge.supplierViewId,
-        (deadEndDeliveredBySupplierView.get(edge.supplierViewId) ?? 0) +
-          (delivered - systemDelivered),
-      );
-    }
+    deliveredBySupplierView.set(
+      edge.supplierViewId,
+      (deliveredBySupplierView.get(edge.supplierViewId) ?? 0) + delivered,
+    );
   }
 
-  // 端口平衡校验 1：连通枢轴输出没有自由边界，产量必须被消费完
+  // Verify allocated product balances, including external final demand. This
+  // protects calculation integrity without imposing a joint-production ratio.
   const issues: CalculationIssue[] = [];
   for (const view of views) {
-    const instance = instanceByIndex.get(view.instanceIndex);
-    const pivotIsConnected = edges.some((edge) => edge.supplierViewId === view.id);
-    if (!pivotIsConnected) continue;
     const activity = activityOf(view);
-    const deliveredToSystem = deliveredBySupplierView.get(view.id) ?? 0;
-    const deliveredToDeadEnds = deadEndDeliveredBySupplierView.get(view.id) ?? 0;
-    const deliveredTotal = deliveredToSystem + deliveredToDeadEnds;
-    if (view.isReference) {
-      // 参考视图：目标量可经边界或死端管道交付，只禁止超额交付
-      if (
-        activity - deliveredTotal <
-        -CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(activity), Math.abs(deliveredTotal))
-      ) {
-        issues.push({
-          code: 'MODEL_NOT_SOLVABLE',
-          instanceIndex: view.instanceIndex,
-          nodeId: instance?.nodeId,
-          flowId: view.pivotFlowId,
-          exchangeInternalId: view.pivotExchangeId,
-        });
-      }
-      continue;
-    }
-    // 非参考连通枢轴输出没有自由边界：产量必须被消费完
+    const required =
+      (deliveredBySupplierView.get(view.id) ?? 0) + compilation.demand[view.columnIndex];
     if (
-      Math.abs(activity - deliveredTotal) >
-      CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(activity), Math.abs(deliveredTotal))
+      !Number.isFinite(activity) ||
+      Math.abs(activity - required) >
+        CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(activity), Math.abs(required))
     ) {
       issues.push({
-        code: 'MODEL_NOT_SOLVABLE',
+        code: 'NUMERIC_RESULT_INVALID',
         instanceIndex: view.instanceIndex,
-        nodeId: instance?.nodeId,
+        nodeId: instanceByIndex.get(view.instanceIndex)?.nodeId,
         flowId: view.pivotFlowId,
         exchangeInternalId: view.pivotExchangeId,
       });
     }
   }
-
-  // 端口平衡校验 2：每条死端直通管的交付量必须等于供应方余量
-  for (const edge of edges) {
-    const consumption = edge.consumptions.find((item) => {
-      const view = viewById.get(item.viewId);
-      return !!view?.isDeadEnd;
-    });
-    const consumerView = consumption ? viewById.get(consumption.viewId) : undefined;
-    if (!consumption || !consumerView?.isDeadEnd) continue;
-    const supplierView = viewById.get(edge.supplierViewId)!;
-    const supplierDeliveredToSystem = deliveredBySupplierView.get(supplierView.id) ?? 0;
-    const leftover = activityOf(supplierView) - supplierDeliveredToSystem;
-    const pipeFlow = consumption.amount * activityOf(consumerView);
-    if (
-      Math.abs(pipeFlow - leftover) >
-      CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(leftover), Math.abs(pipeFlow))
-    ) {
-      issues.push({
-        code: 'MODEL_NOT_SOLVABLE',
-        instanceIndex: consumerView.instanceIndex,
-        nodeId: instanceByIndex.get(consumerView.instanceIndex)?.nodeId,
-        flowId: edge.connection.inputFlowId,
-        edgeId: edge.connection.edgeId,
-      });
-    }
-  }
-
-  if (issues.length > 0) {
-    throw new CalculationError(issues[0].code, issues);
-  }
+  if (issues.length) throw new CalculationError(issues[0].code, issues);
 
   // 视图活动量
   const solvedViews: SolvedView[] = views.map((view) => ({
@@ -214,16 +95,28 @@ export const assembleResult = (
     pivotDirection: view.pivotDirection,
     pivotFlowId: view.pivotFlowId,
     activity: activityOf(view),
+    multiplier: activityOf(view) / view.pivotAmount,
     isReference: view.isReference,
   }));
 
-  // 实例倍率：主视图活动量 / |主视图枢轴数量|
+  // A scalar is meaningful only when every product view has the same scale.
+  // Zero-demand products participate: one active coproduct is not evidence of
+  // a common physical multiplier for the whole multi-product source inventory.
   const instanceMultipliers: Record<string, number> = {};
-  for (const [instanceIndex, primaryViewId] of compilation.primaryViewIdByInstance) {
-    const primaryView = viewById.get(primaryViewId)!;
-    const activity = activityOf(primaryView);
-    if (activity <= 0 || !primaryView.pivotAmount) continue;
-    instanceMultipliers[instanceIndex] = activity / primaryView.pivotAmount;
+  for (const instanceIndex of compilation.primaryViewIdByInstance.keys()) {
+    const instanceViews = views.filter((view) => view.instanceIndex === instanceIndex);
+    const multipliers = instanceViews.map((view) => activityOf(view) / view.pivotAmount);
+    const first = multipliers[0];
+    if (
+      first > 0 &&
+      multipliers.every(
+        (value) =>
+          Math.abs(value - first) <=
+          CALCULATION_TOLERANCES.residual * Math.max(Math.abs(value), Math.abs(first)),
+      )
+    ) {
+      instanceMultipliers[instanceIndex] = first;
+    }
   }
 
   // 子模型分组：主过程（参考视图上游闭包）+ 副产品（死端视图上游闭包）
@@ -236,6 +129,7 @@ export const assembleResult = (
   const buildGroup = (
     rootView: CompiledView,
     type: 'primary' | 'secondary',
+    targetAmount: number,
   ): MatrixResultGroup | undefined => {
     const memberIds: string[] = [];
     const visited = new Set<string>([rootView.id]);
@@ -243,16 +137,13 @@ export const assembleResult = (
     while (queue.length > 0) {
       const view = queue.shift()!;
       memberIds.push(view.id);
-      for (const [key, supplierViewId] of supplierViewByConsumerInput) {
-        if (!key.startsWith(`${view.instanceIndex}\u0000`)) continue;
-        if (visited.has(supplierViewId)) continue;
-        const supplierView = viewById.get(supplierViewId)!;
-        // 副产品闭包不吸收其他情景的根视图（参考视图或别的死端）
-        if (type === 'secondary' && (supplierView.isReference || supplierView.isDeadEnd)) {
+      for (const edge of edges) {
+        if (!edge.consumptions.some((item) => item.viewId === view.id && item.amount !== 0))
           continue;
-        }
+        const supplierViewId = edge.supplierViewId;
+        if (visited.has(supplierViewId)) continue;
         visited.add(supplierViewId);
-        queue.push(supplierView);
+        queue.push(viewById.get(supplierViewId)!);
       }
     }
 
@@ -263,7 +154,13 @@ export const assembleResult = (
 
     const memberSet = new Set(memberIds);
     // 每个组是独立归因情景：共享上游的组内活动量按组内归因需求求解
-    const groupActivity = computeGroupActivities(compilation, edges, members, rootView, activityOf);
+    const groupActivity = computeGroupActivities(
+      compilation,
+      edges,
+      members,
+      rootView,
+      targetAmount,
+    );
     // computeGroupActivities 为全部成员写入活动量，查询对象均为成员
     const scenarioActivityOf = (view: CompiledView): number => groupActivity.get(view.id) as number;
     const aggregated = new Map<string, MatrixResultExchange>();
@@ -365,7 +262,7 @@ export const assembleResult = (
       // 参考交换数量 = 目标 + 组外导出，故只做下界校验。输入枢轴（处置
       // 模型）的参考交换可为内部流并净化为零，不做此校验。
       // 编译阶段保证主根的需求向量分量为目标量
-      const target = compilation.demand[rootView.columnIndex] as number;
+      const target = targetAmount;
       const tolerance = CALCULATION_TOLERANCES.residual * Math.max(1, Math.abs(target));
       if (
         !refExchange ||
@@ -409,19 +306,19 @@ export const assembleResult = (
 
   const groups: MatrixResultGroup[] = [];
   const refView = viewById.get(compilation.refViewId)!;
-  groups.push(buildGroup(refView, 'primary')!);
+  groups.push(buildGroup(refView, 'primary', compilation.demand[refView.columnIndex])!);
   for (const view of views) {
     if (view.isReference) continue;
-    if (activityOf(view) <= 0) continue;
     // 副产品情景根：枢轴输出未连接的视图（死端或未连接的已分配产品）
     const isBoundaryProduct =
       view.isDeadEnd ||
       !instanceByIndex.get(view.instanceIndex)!.connectedOutputFlowIds.has(view.pivotFlowId);
     if (!isBoundaryProduct) continue;
-    groups.push(buildGroup(view, 'secondary')!);
+    groups.push(buildGroup(view, 'secondary', view.pivotAmount)!);
   }
 
   return {
+    productSystem: buildProductSystem(compilation, solution),
     views: solvedViews,
     instanceMultipliers,
     edgeAmounts,

@@ -6,7 +6,10 @@ import {
   type LocaleRegistryEntry,
 } from '../../../src/services/general/localeRegistry';
 import { LOGIN_PATH } from '../../../src/services/general/publicRoutePolicy';
-import { UMI_LOCALE_STORAGE_KEY } from '../../../src/services/general/runtimeLocale';
+import {
+  MANUAL_LOCALE_STORAGE_KEY,
+  UMI_LOCALE_STORAGE_KEY,
+} from '../../../src/services/general/runtimeLocale';
 import {
   annotateEvidence,
   findRouteAssertion,
@@ -100,17 +103,23 @@ async function expectLocalizedLogin(
   localeDefinition: LocaleRegistryEntry,
 ): Promise<void> {
   await waitForRenderedLoginControl(page);
-  await expect.poll(() => readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
   await expectLocalizedLoginContent(page, localeDefinition);
 }
 
-async function selectLoginLocale(page: Page, localeDefinition: LocaleRegistryEntry): Promise<void> {
+async function selectLoginLocale(
+  page: Page,
+  localeDefinition: LocaleRegistryEntry,
+  persist = true,
+): Promise<void> {
   const languageControl = await waitForRenderedLoginControl(page);
   await languageControl.click();
   const menu = page.getByRole('menu');
   await expect(menu).toBeVisible();
   await menu.getByRole('menuitem').filter({ hasText: localeDefinition.nativeLabel }).click();
   await expectLocalizedLogin(page, localeDefinition);
+  if (persist) {
+    await expect.poll(() => readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
+  }
 }
 
 function materializeLegacyAlias(localeDefinition: LocaleRegistryEntry): string {
@@ -199,10 +208,50 @@ test('browser locale preference selects every registry locale on first render', 
     try {
       await page.goto(loginUrl(baseURL!), { waitUntil: 'domcontentloaded' });
       await expectLocalizedLogin(page, localeDefinition);
+      expect(await readStoredAppLocale(page)).toBeNull();
+      expect(
+        await page.evaluate((key) => localStorage.getItem(key), UMI_LOCALE_STORAGE_KEY),
+      ).toBeNull();
     } finally {
       await context.close();
       assertAnonymousBackendGuardClosed(productionRequestGuard);
     }
+  }
+
+  const context = await browser.newContext({ baseURL: baseURL!, serviceWorkers: 'block' });
+  const guard = await installAnonymousBackendGuard(context);
+  await context.addInitScript(() => {
+    const changed = new URL(window.location.href).searchParams.has('codex-browser-language-change');
+    Object.defineProperty(window.navigator, 'languages', {
+      configurable: true,
+      get: () => (changed ? ['es-ES', 'de-AT', 'fr-CA'] : ['es-ES', 'fr-CA', 'de-AT']),
+    });
+    Object.defineProperty(window.navigator, 'language', {
+      configurable: true,
+      get: () => 'en-GB',
+    });
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(loginUrl(baseURL!), { waitUntil: 'domcontentloaded' });
+    await expectLocalizedLogin(
+      page,
+      LOCALE_REGISTRY.find(({ languageCode }) => languageCode === 'fr')!,
+    );
+    const changedUrl = new URL(loginUrl(baseURL!));
+    changedUrl.searchParams.set('codex-browser-language-change', '1');
+    await page.goto(changedUrl.toString(), { waitUntil: 'domcontentloaded' });
+    await expectLocalizedLogin(
+      page,
+      LOCALE_REGISTRY.find(({ languageCode }) => languageCode === 'de')!,
+    );
+    expect(await readStoredAppLocale(page)).toBeNull();
+    expect(
+      await page.evaluate((key) => localStorage.getItem(key), UMI_LOCALE_STORAGE_KEY),
+    ).toBeNull();
+  } finally {
+    await context.close();
+    assertAnonymousBackendGuardClosed(guard);
   }
 });
 
@@ -222,6 +271,10 @@ test('legacy locale aliases migrate and an invalid stored locale uses the regist
     try {
       await page.goto(loginUrl(baseURL!), { waitUntil: 'domcontentloaded' });
       await expectLocalizedLogin(page, localeDefinition);
+      expect(await readStoredAppLocale(page)).toBeNull();
+      expect(await page.evaluate((key) => localStorage.getItem(key), UMI_LOCALE_STORAGE_KEY)).toBe(
+        localeDefinition.canonicalLocale,
+      );
     } finally {
       await context.close();
       assertAnonymousBackendGuardClosed(productionRequestGuard);
@@ -282,5 +335,48 @@ test('refresh preserves the login URL state and every selected registry locale',
     expect(new URL(page.url()).search).toBe(expectedSearch);
     expect(new URL(page.url()).hash).toBe(expectedHash);
     await expectLocalizedLogin(page, localeDefinition);
+    expect(await readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
   }
+
+  await page.addInitScript((key) => {
+    const setItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (storageKey, value) {
+      if (storageKey === key) throw new DOMException('Storage denied', 'SecurityError');
+      return setItem.call(this, storageKey, value);
+    };
+  }, MANUAL_LOCALE_STORAGE_KEY);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const lastLocale = LOCALE_REGISTRY[LOCALE_REGISTRY.length - 1]!;
+  const nextLocale = LOCALE_REGISTRY.find(
+    ({ canonicalLocale }) => canonicalLocale !== lastLocale.canonicalLocale,
+  )!;
+  await page.evaluate(() => {
+    (window as Window & { codexLanguageDocument?: string }).codexLanguageDocument = 'same-document';
+  });
+  await selectLoginLocale(page, nextLocale, false);
+  expect(
+    await page.evaluate(
+      () => (window as Window & { codexLanguageDocument?: string }).codexLanguageDocument,
+    ),
+  ).toBe('same-document');
+  expect(await readStoredAppLocale(page)).toBe(lastLocale.canonicalLocale);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expectLocalizedLogin(page, lastLocale);
+
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get: () => {
+        throw new DOMException('Storage denied', 'SecurityError');
+      },
+    });
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const browserLocale = LOCALE_REGISTRY.find(
+    ({ canonicalLocale }) => canonicalLocale === DEFAULT_BROWSER_APP_LOCALE,
+  )!;
+  await expectLocalizedLogin(page, browserLocale);
+  await selectLoginLocale(page, nextLocale, false);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expectLocalizedLogin(page, browserLocale);
 });

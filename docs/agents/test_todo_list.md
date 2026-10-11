@@ -41,8 +41,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: af971e66ae18aee7b9478166f64737151a2ffee4
-lastReviewedNote: 'Reviewed Platform #1188 Atlas presentation refinement against af971e66: optional layout and light/dark component tokens, independent localized presentation, and isolated fixture-only brand preview tests. Shared business behavior, dependencies, canonical release inventory and gate policy remain unchanged. Local preview validation and retained resources are recorded in Issue #1188; no release or full-coverage claim is made.'
+lastReviewedCommit: edaf564b
+lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
 ---
 
 # Testing Execution State

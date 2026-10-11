@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-10-08
-lastReviewedCommit: 55dfcb2c5ebfda7bc0462734ba15c0f4f0173d6d
-lastReviewedNote: 'Reviewed Platform #1188 local brand profiles, presentation and package adapter; backend, authorization, calculation and release gates remain unchanged. Full release qualification is deferred pending local user review.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: edaf564b
+lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
 ---
 
 # Supabase Environment And Database Workflow

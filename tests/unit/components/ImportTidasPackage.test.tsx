@@ -244,7 +244,7 @@ describe('ImportTidasPackage Component', () => {
     );
   });
 
-  it('falls back to the default docs link when locale is missing', () => {
+  it('falls back to the English docs link when locale is missing', () => {
     mockLocale = undefined;
 
     render(<ImportTidasPackage />);
@@ -253,7 +253,7 @@ describe('ImportTidasPackage Component', () => {
 
     expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
       'href',
-      'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
+      'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
     );
   });
 

@@ -46,8 +46,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-11
-lastReviewedCommit: a02fcef4d8aede5181f0580c9c34ac33d2a7cf42
-lastReviewedNote: 'Reviewed Platform #1188 Atlas footer layout follow-up against a02fcef4: full-width wrapping account row, compact tool grid without empty permission placeholders, and icon-only collapsed account. Changes remain Atlas-scoped; shared actions, TianGong, backend, dependencies and release policy are unchanged. Validation is recorded in Issue #1188.'
+lastReviewedCommit: edaf564b
+lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -90,6 +90,8 @@ Required principles:
 | `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
 | `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
 | `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| [Model 建模与计算说明](docs/agents/model-modeling-and-calculation.md) | product-demand modeling semantics, functional units, allocation, quantities and dataset relationships | implementation progress and runtime module contracts |
+| [Model 产品需求计算修改方案](docs/plans/model-product-demand.md) | proposed product-demand implementation, persistence mapping and acceptance cases | live delivery status |
 | `docs/agents/lcia-calculation-evidence.md` | reviewed LCIA bundle, cache trust, factor coverage, and calculation-evidence contract | Worker or Edge implementation truth |
 | `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
 
@@ -135,6 +137,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
+- browser language preference and legacy-cache compatibility follow `docs/agents/repo-architecture.md`; the product-owned browser locale bridge is the sole private Umi locale-provider adapter and requires its installed-template compatibility proof on upgrades
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`

@@ -3,6 +3,7 @@
  */
 
 import {
+  getAllocationRepairMessageId,
   isCalculationErrorCode,
   resolveCalculationIssues,
 } from '@/pages/LifeCycleModels/Components/toolbar/utils/calculationIssues';
@@ -220,5 +221,26 @@ describe('isCalculationErrorCode', () => {
     expect(isCalculationErrorCode('CALCULATION_FAILED')).toBe(true);
     expect(isCalculationErrorCode('SAVE_REJECTED')).toBe(false);
     expect(isCalculationErrorCode(undefined)).toBe(false);
+  });
+});
+
+describe('allocation repair guidance', () => {
+  it.each([
+    ['MISSING_PRODUCT_ALLOCATION', 'missingProductAllocation'],
+    ['MISSING_REFERENCE_ALLOCATION', 'missingReferenceAllocation'],
+  ] as const)('maps %s to its specific repair instruction', (allocationReason, suffix) => {
+    expect(getAllocationRepairMessageId({ code: 'INVALID_ALLOCATION', allocationReason })).toBe(
+      `pages.lifecyclemodel.calculation.repair.${suffix}`,
+    );
+  });
+  it('keeps general and unknown issues on the existing diagnostic path', () => {
+    expect(getAllocationRepairMessageId({ code: 'INVALID_ALLOCATION' })).toBeUndefined();
+    expect(
+      getAllocationRepairMessageId({
+        code: 'INVALID_ALLOCATION',
+        allocationReason: 'future',
+      } as any),
+    ).toBeUndefined();
+    expect(getAllocationRepairMessageId({ code: 'MODEL_NOT_SOLVABLE' })).toBeUndefined();
   });
 });

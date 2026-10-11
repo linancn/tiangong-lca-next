@@ -4021,28 +4021,42 @@ describe('calculation mutation mapping', () => {
     expect(result).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
   });
 
-  it('maps update-side calculation failures with located issues', async () => {
-    mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [{ submodels: [] }], error: null }));
-    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
-    mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
-      new CalculationError('INVALID_ALLOCATION', [
-        { code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' },
-      ]),
-    );
+  it.each(['MISSING_PRODUCT_ALLOCATION', 'MISSING_REFERENCE_ALLOCATION'] as const)(
+    'keeps saved results when recalculation needs repair: %s',
+    async (allocationReason) => {
+      const saved = {
+        submodels: [{ id: 'saved-primary', type: 'primary', version: sampleVersion }],
+      };
+      const before = JSON.stringify(saved);
+      mockFrom.mockReturnValueOnce(createQueryBuilder({ data: [saved], error: null }));
+      mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(buildLifecycleModelJsonOrdered());
+      const issue = {
+        code: 'INVALID_ALLOCATION' as const,
+        allocationReason,
+        instanceIndex: 'nodeB',
+        flowId: 'product-B',
+        exchangeInternalId: '2',
+      };
+      mockGenLifeCycleModelProcesses.mockRejectedValueOnce(
+        new CalculationError('INVALID_ALLOCATION', [issue]),
+      );
 
-    const result = await lifeCycleModelsApi.updateLifeCycleModel({
-      id: sampleModelId,
-      version: sampleVersion,
-      model: { nodes: [], edges: [] },
-    });
+      const result = await lifeCycleModelsApi.updateLifeCycleModel({
+        id: sampleModelId,
+        version: sampleVersion,
+        model: { nodes: [], edges: [] },
+      });
 
-    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(result).toMatchObject({
-      ok: false,
-      code: 'INVALID_ALLOCATION',
-      calculationIssues: [{ code: 'INVALID_ALLOCATION', instanceIndex: 'nodeB' }],
-    });
-  });
+      expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(JSON.stringify(saved)).toBe(before);
+      expect(result).toMatchObject({
+        ok: false,
+        code: 'INVALID_ALLOCATION',
+        calculationIssues: [issue],
+      });
+    },
+  );
 
   it('attaches the LCIA_INCOMPLETE notice only to successful saves with incomplete coverage', async () => {
     const rawJson = buildLifecycleModelJsonOrdered();

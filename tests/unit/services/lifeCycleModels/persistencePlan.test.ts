@@ -1813,3 +1813,66 @@ describe('buildSaveLifeCycleModelPersistencePlan', () => {
     });
   });
 });
+
+describe('allocated provider persistence', () => {
+  it('updates a provider from its current source inventory and retires obsolete providers independently of result identities', async () => {
+    const finalId = {
+      nodeId: 'node-a',
+      processId: 'source-a',
+      allocatedExchangeDirection: 'OUTPUT',
+      allocatedExchangeFlowId: 'flow-a',
+    };
+    const provider = buildProcessDataSet() as any;
+    provider.processInformation.time = { 'common:referenceYear': 2025 };
+    provider.modellingAndValidation.LCIMethodAndAllocation = {
+      typeOfDataSet: 'Unit process, single operation',
+    };
+    const prior = buildProcessDataSet() as any;
+    prior.processInformation.time = { 'common:referenceYear': 2020 };
+    prior.modellingAndValidation.LCIMethodAndAllocation = { typeOfDataSet: 'LCI result' };
+    const nodes = [{ id: 'node-a', data: { id: 'source-a', version: '01.00.000' } }];
+    const result = await buildSaveLifeCycleModelPersistencePlan({
+      mode: 'update',
+      modelId: sampleModelId,
+      version: sampleVersion,
+      lifeCycleModelJsonOrdered: buildLifecycleModelJsonOrdered(),
+      nodes: nodes as any,
+      edges: [],
+      up2DownEdges: [],
+      lifeCycleModelProcesses: [
+        {
+          option: 'update',
+          modelInfo: { id: 'provider-a', type: 'allocated', finalId },
+          data: { processDataSet: provider },
+          refProcesses: [{ id: 'source-a', version: '01.00.000', 'common:shortDescription': [] }],
+        },
+      ],
+      oldSubmodels: [
+        { id: 'provider-a', version: sampleVersion, type: 'allocated', finalId },
+        { id: 'retired-provider', version: sampleVersion, type: 'allocated', finalId },
+        { id: 'retired-result', version: sampleVersion, type: 'secondary', finalId },
+      ],
+      oldProcesses: [{ id: 'provider-a', version: sampleVersion, json: { processDataSet: prior } }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.code);
+    expect(result.plan.parent.jsonTg.xflow?.nodes).toEqual(nodes);
+    expect(result.plan.processMutations.filter((m) => m.op === 'delete').map((m) => m.id)).toEqual([
+      'retired-provider',
+      'retired-result',
+    ]);
+    const mutation = asUpsertMutation(result.plan.processMutations.find((m) => m.op === 'update'));
+    expect(mutation.id).toBe('provider-a');
+    expect(
+      mutation.jsonOrdered.processDataSet.processInformation.time['common:referenceYear'],
+    ).toBe(2025);
+    expect(
+      mutation.jsonOrdered.processDataSet.modellingAndValidation.LCIMethodAndAllocation
+        .typeOfDataSet,
+    ).toBe('Unit process, single operation');
+    expect(
+      mutation.jsonOrdered.processDataSet.processInformation.technology
+        .referenceToIncludedProcesses,
+    ).toEqual([expect.objectContaining({ '@refObjectId': 'source-a', '@version': '01.00.000' })]);
+  });
+});

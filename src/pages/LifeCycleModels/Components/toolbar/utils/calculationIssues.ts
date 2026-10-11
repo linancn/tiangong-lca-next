@@ -15,6 +15,18 @@
 import type { LifeCycleModelGraphNode } from '@/services/lifeCycleModels/data';
 import type { CalculationIssue } from '@/services/lifeCycleModels/matrixCalculation/types';
 
+export const getAllocationRepairMessageId = (issue: CalculationIssue): string | undefined => {
+  if (issue.code !== 'INVALID_ALLOCATION') return undefined;
+  switch (issue.allocationReason) {
+    case 'MISSING_PRODUCT_ALLOCATION':
+      return 'pages.lifecyclemodel.calculation.repair.missingProductAllocation';
+    case 'MISSING_REFERENCE_ALLOCATION':
+      return 'pages.lifecyclemodel.calculation.repair.missingReferenceAllocation';
+    default:
+      return undefined;
+  }
+};
+
 export interface ResolvedCalculationIssue {
   issue: CalculationIssue;
   nodeId?: string;

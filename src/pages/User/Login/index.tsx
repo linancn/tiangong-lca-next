@@ -18,6 +18,7 @@ import { Footer } from '@/components';
 import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { resolveSafeLoginRedirect } from '@/services/general/publicRoutePolicy';
+import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -87,7 +88,7 @@ const Login: React.FC = () => {
   const formRefLogin = React.useRef<any>(undefined);
   const { token } = theme.useToken();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(
-    () => localStorage.getItem('isDarkMode') === 'true',
+    () => readBrowserStorage('isDarkMode') === 'true',
   );
 
   const fetchUserInfo = async () => {
@@ -168,7 +169,7 @@ const Login: React.FC = () => {
   const handleDarkModeToggle = () => {
     setIsDarkMode((prevIsDarkMode) => {
       const nextIsDarkMode = !prevIsDarkMode;
-      localStorage.setItem('isDarkMode', nextIsDarkMode.toString());
+      writeBrowserStorage('isDarkMode', nextIsDarkMode.toString());
 
       setInitialState?.((prevState: any) => {
         if (!prevState) {

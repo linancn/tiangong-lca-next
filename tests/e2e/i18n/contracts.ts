@@ -12,7 +12,7 @@ import {
   getLocaleDefinition,
   type SupportedAppLocale,
 } from '../../../src/services/general/localeRegistry';
-import { UMI_LOCALE_STORAGE_KEY } from '../../../src/services/general/runtimeLocale';
+import { MANUAL_LOCALE_STORAGE_KEY } from '../../../src/services/general/runtimeLocale';
 import { E2E_LOCALE_CATALOG_ADAPTER } from './locale-catalog-adapter';
 
 export const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
@@ -408,13 +408,13 @@ export function getLocaleMessage(locale: SupportedAppLocale, messageId: string):
 
 export async function setStoredAppLocale(page: Page, locale: SupportedAppLocale): Promise<void> {
   await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
-    key: UMI_LOCALE_STORAGE_KEY,
+    key: MANUAL_LOCALE_STORAGE_KEY,
     value: locale,
   });
 }
 
 export async function readStoredAppLocale(page: Page): Promise<string | null> {
-  return page.evaluate((key) => localStorage.getItem(key), UMI_LOCALE_STORAGE_KEY);
+  return page.evaluate((key) => localStorage.getItem(key), MANUAL_LOCALE_STORAGE_KEY);
 }
 
 async function waitForLocatorCount(
@@ -487,7 +487,7 @@ export async function selectAppLocaleThroughUi(
     await target.press('Enter');
   }
   await page.waitForFunction(({ key, value }) => localStorage.getItem(key) === value, {
-    key: UMI_LOCALE_STORAGE_KEY,
+    key: MANUAL_LOCALE_STORAGE_KEY,
     value: locale,
   });
   await page.keyboard.press('Escape');

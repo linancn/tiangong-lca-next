@@ -356,7 +356,7 @@ describe('Welcome page', () => {
     expect(screen.queryByText('Platform Walkthrough')).not.toBeInTheDocument();
   });
 
-  it('uses the default locale definition when the runtime locale is unsupported', async () => {
+  it('uses the English locale definition when the runtime locale is unsupported', async () => {
     const user = userEvent.setup();
     mockLocale = 'es-ES';
 
@@ -367,7 +367,7 @@ describe('Welcome page', () => {
 
     expect(
       await screen.findByRole('img', { name: 'TIDAS data system architecture diagram' }),
-    ).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
+    ).toHaveAttribute('src', '/images/tidas/TIDAS-en.svg');
   });
 
   it('loads ecosystem teams with thumbnails and reuses cached teams across reopen', async () => {

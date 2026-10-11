@@ -1,6 +1,7 @@
 import type { LifeCycleModel } from '@tiangong-lca/tidas-sdk/types';
 import type { LangTextValue, VersionedDataRow } from '../general/data';
 import type { ProcessExchangeData, ProcessTable } from '../processes/data';
+import type { CalculationIssue } from './matrixCalculation/types';
 
 export type LifeCycleModelTable = VersionedDataRow & {
   name: string;
@@ -343,6 +344,7 @@ export type LifeCycleModelLangNormalizationMetadata = {
 export type LifeCycleModelCalculationMetadata = {
   calculationIssues?: Array<{
     code: string;
+    allocationReason?: CalculationIssue['allocationReason'];
     instanceIndex?: string;
     nodeId?: string;
     flowId?: string;

@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "19d1630daa198e3805026c55da6eeaa9e15f6fc9465940e81e1d9c7f9162bca6",
+    "auditedInputDigest": "e020075d28c20efa14b6676163e929a2257d38a5b852ed3b2ce4ed164932d306",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "tiangong-lca/platform"
   },
@@ -69,19 +69,19 @@
   "summary": {
     "localeCount": 4,
     "localeLeafModuleCounts": { "en-US": 31, "zh-CN": 31, "de-DE": 31, "fr-FR": 31 },
-    "localeUniqueKeyCounts": { "en-US": 3528, "zh-CN": 3528, "de-DE": 3528, "fr-FR": 3528 },
-    "canonicalCandidateKeyCount": 3528,
-    "activeStaticKeyCount": 2349,
-    "activeDynamicKeyCount": 321,
-    "reservedKeyCount": 858,
-    "productionSourceFileCount": 491,
-    "literalReferenceCount": 4297,
-    "dynamicCallsiteCount": 33,
-    "dynamicCallsiteSummaryCount": 33,
-    "registeredDynamicCallsiteCount": 33,
-    "reviewedDynamicCallsiteCount": 33,
-    "dynamicFamilyCount": 16,
-    "unknownHandlingCounts": { "localizedRuntimeFallback:implemented": 8, "closedWorld": 8 },
+    "localeUniqueKeyCounts": { "en-US": 3546, "zh-CN": 3546, "de-DE": 3546, "fr-FR": 3546 },
+    "canonicalCandidateKeyCount": 3546,
+    "activeStaticKeyCount": 2353,
+    "activeDynamicKeyCount": 323,
+    "reservedKeyCount": 870,
+    "productionSourceFileCount": 499,
+    "literalReferenceCount": 4312,
+    "dynamicCallsiteCount": 37,
+    "dynamicCallsiteSummaryCount": 37,
+    "registeredDynamicCallsiteCount": 37,
+    "reviewedDynamicCallsiteCount": 37,
+    "dynamicFamilyCount": 18,
+    "unknownHandlingCounts": { "localizedRuntimeFallback:implemented": 8, "closedWorld": 10 },
     "violationCount": 0,
     "violationCounts": {
       "scanErrors": 0,
@@ -1301,7 +1301,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 271,
+          "line": 272,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Navigation Mode",
@@ -1310,7 +1310,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 473,
+          "line": 474,
           "column": 9,
           "symbol": "layout",
           "defaultMessage": "Navigation Mode",
@@ -1323,8 +1323,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 271, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 473, "column": 9, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 272, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 474, "column": 9, "kind": "formatMessage" }
           ]
         }
       ]
@@ -1448,7 +1448,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 413,
+          "line": 414,
           "column": 102,
           "symbol": "layout",
           "defaultMessage": "Page style setting",
@@ -1457,7 +1457,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 416,
+          "line": 417,
           "column": 99,
           "symbol": "layout",
           "defaultMessage": "Page style setting",
@@ -1470,8 +1470,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 413, "column": 102, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 416, "column": 99, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 414, "column": 102, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 417, "column": 99, "kind": "formatMessage" }
           ]
         }
       ]
@@ -3896,7 +3896,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 413,
+          "line": 414,
           "column": 30,
           "symbol": "layout",
           "defaultMessage": "Close",
@@ -3909,7 +3909,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 413, "column": 30, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 414, "column": 30, "kind": "formatMessage" }
           ]
         }
       ]
@@ -4564,7 +4564,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 416,
+          "line": 417,
           "column": 29,
           "symbol": "layout",
           "defaultMessage": "Open",
@@ -4577,7 +4577,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 416, "column": 29, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 417, "column": 29, "kind": "formatMessage" }
           ]
         }
       ]
@@ -13143,7 +13143,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 406,
+          "line": 370,
           "column": 29,
           "symbol": "processColumns",
           "defaultMessage": "Data contributed to the team successfully.",
@@ -13185,7 +13185,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 406,
+              "line": 370,
               "column": 29,
               "kind": "formatMessage"
             },
@@ -13377,7 +13377,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 100,
+          "line": 105,
           "column": 21,
           "symbol": "helpLabel",
           "defaultMessage": null,
@@ -13514,7 +13514,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 100,
+          "line": 105,
           "column": 21,
           "symbol": "helpLabel",
           "defaultMessage": null,
@@ -13828,7 +13828,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 376,
+          "line": 377,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13841,7 +13841,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 376, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 377, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -25766,7 +25766,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 345,
+          "line": 346,
           "column": 33,
           "symbol": "layout",
           "defaultMessage": "Account Center",
@@ -25779,7 +25779,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 345, "column": 33, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 346, "column": 33, "kind": "formatMessage" }
           ]
         }
       ]
@@ -27189,7 +27189,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 299,
+          "line": 300,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -27198,7 +27198,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 306,
+          "line": 307,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Dashboard",
@@ -27211,8 +27211,8 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 299, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 306, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 300, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 307, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
@@ -27336,7 +27336,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 319,
+          "line": 320,
           "column": 25,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -27345,7 +27345,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 326,
+          "line": 327,
           "column": 20,
           "symbol": "layout",
           "defaultMessage": "Data Processing",
@@ -27358,11 +27358,129 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 319, "column": 25, "kind": "formatMessage" },
-            { "path": "src/app.tsx", "line": 326, "column": 20, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 320, "column": 25, "kind": "formatMessage" },
+            { "path": "src/app.tsx", "line": 327, "column": 20, "kind": "formatMessage" }
           ]
         }
       ]
+    },
+    {
+      "id": "menu.datasetDisplaySettings",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["menu"],
+        "zh-CN": ["menu"],
+        "de-DE": ["menu"],
+        "fr-FR": ["menu"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Display settings",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/menu.ts",
+            "line": 112,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "zh-CN": {
+          "value": "展示配置",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/menu.ts",
+            "line": 112,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "de-DE": {
+          "value": "Anzeigeeinstellungen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/menu.ts",
+            "line": 112,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "fr-FR": {
+          "value": "Paramètres d’affichage",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/menu.ts",
+            "line": 112,
+            "column": 3,
+            "module": "menu"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "menu.displayedDatasets",
+      "category": "reserved",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["menu"],
+        "zh-CN": ["menu"],
+        "de-DE": ["menu"],
+        "fr-FR": ["menu"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Displayed datasets",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/menu.ts",
+            "line": 113,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "zh-CN": {
+          "value": "展示数据",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/menu.ts",
+            "line": 113,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "de-DE": {
+          "value": "Angezeigte Datensätze",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/menu.ts",
+            "line": 113,
+            "column": 3,
+            "module": "menu"
+          }
+        },
+        "fr-FR": {
+          "value": "Jeux de données affichés",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/menu.ts",
+            "line": 113,
+            "column": 3,
+            "module": "menu"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "menu.editor",
@@ -29700,7 +29818,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 252,
+          "line": 253,
           "column": 16,
           "symbol": "Login",
           "defaultMessage": "Login",
@@ -29709,7 +29827,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 273,
+          "line": 274,
           "column": 37,
           "symbol": "Login",
           "defaultMessage": null,
@@ -29724,7 +29842,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 252,
+              "line": 253,
               "column": 16,
               "kind": "formatMessage"
             }
@@ -32408,7 +32526,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 695,
+          "line": 620,
           "column": 13,
           "symbol": "TableList",
           "defaultMessage": "Processes",
@@ -32423,7 +32541,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 695,
+              "line": 620,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -47994,7 +48112,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2326,
+          "line": 2334,
           "column": 18,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Data Check",
@@ -48054,7 +48172,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 2326,
+              "line": 2334,
               "column": 18,
               "kind": "FormattedMessage"
             },
@@ -49317,7 +49435,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1228,
+          "line": 1234,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "Data with the same ID and version already exists.",
@@ -49377,7 +49495,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1228,
+              "line": 1234,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -51716,7 +51834,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 261,
+          "line": 262,
           "column": 12,
           "symbol": "edgeLabelText",
           "defaultMessage": "Input",
@@ -51725,7 +51843,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 309,
+          "line": 310,
           "column": 24,
           "symbol": "inputFlowTool",
           "defaultMessage": "Input",
@@ -51767,13 +51885,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 261,
+              "line": 262,
               "column": 12,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 309,
+              "line": 310,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -52678,7 +52796,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2267,
+          "line": 2273,
           "column": 13,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Delete element",
@@ -52693,7 +52811,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 2267,
+              "line": 2273,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -52903,7 +53021,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 249,
+          "line": 250,
           "column": 15,
           "symbol": "edgeLabelText",
           "defaultMessage": "Bal",
@@ -52927,7 +53045,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 249,
+              "line": 250,
               "column": 15,
               "kind": "formatMessage"
             },
@@ -53001,7 +53119,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 253,
+          "line": 254,
           "column": 14,
           "symbol": "edgeLabelText",
           "defaultMessage": "Def",
@@ -53025,7 +53143,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 253,
+              "line": 254,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -53099,7 +53217,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 257,
+          "line": 258,
           "column": 14,
           "symbol": "edgeLabelText",
           "defaultMessage": "Sur",
@@ -53123,7 +53241,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 257,
+              "line": 258,
               "column": 14,
               "kind": "formatMessage"
             },
@@ -53692,7 +53810,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 411,
+          "line": 412,
           "column": 24,
           "symbol": "refTool",
           "defaultMessage": "Reference node",
@@ -53725,7 +53843,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 411,
+              "line": 412,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -53948,7 +54066,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2286,
+          "line": 2292,
           "column": 18,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Save data",
@@ -53963,7 +54081,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 2286,
+              "line": 2292,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -54031,7 +54149,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 453,
+          "line": 454,
           "column": 24,
           "symbol": "nonRefTool",
           "defaultMessage": "Set as reference",
@@ -54046,7 +54164,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 453,
+              "line": 454,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -54687,7 +54805,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 265,
+          "line": 266,
           "column": 13,
           "symbol": "edgeLabelText",
           "defaultMessage": "Output",
@@ -54696,7 +54814,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 355,
+          "line": 356,
           "column": 24,
           "symbol": "outputFlowTool",
           "defaultMessage": "Output",
@@ -54738,13 +54856,13 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 265,
+              "line": 266,
               "column": 13,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 355,
+              "line": 356,
               "column": 24,
               "kind": "formatMessage"
             },
@@ -55115,7 +55233,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2339,
+          "line": 2347,
           "column": 20,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Submit for Review",
@@ -55139,7 +55257,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 2339,
+              "line": 2347,
               "column": 20,
               "kind": "FormattedMessage"
             },
@@ -56464,7 +56582,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2253,
+          "line": 2259,
           "column": 13,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Update Reference",
@@ -56569,7 +56687,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 2253,
+              "line": 2259,
               "column": 13,
               "kind": "FormattedMessage"
             },
@@ -82581,6 +82699,1080 @@
       "defaultMessages": []
     },
     {
+      "id": "pages.datasetDisplay.allVisibility",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "All",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 228,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "全部",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 227,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Alle",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 228,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Tous",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 228,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 243,
+          "column": 24,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "All",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "All",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 243,
+              "column": 24,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.hidden",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Not displayed",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 230,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "未展示",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 229,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Nicht angezeigt",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 230,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Non affiché",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 230,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 130,
+          "column": 11,
+          "symbol": "columns",
+          "defaultMessage": null,
+          "defaultMessageExpression": "row.isVisible ? 'Displayed' : 'Not displayed'"
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 257,
+          "column": 24,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Not displayed",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Not displayed",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 257,
+              "column": 24,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.hideSelected",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Hide selected ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 227,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "取消展示（{count}）",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 226,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Auswahl ausblenden ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 227,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Masquer la sélection ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 227,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 287,
+          "column": 13,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Hide selected ({count})",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Hide selected ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 287,
+              "column": 13,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.loadError",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Failed to load datasets. Please refresh.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 235,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "加载数据失败，请刷新重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 234,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Datensätze konnten nicht geladen werden. Bitte aktualisieren.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 235,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Échec du chargement des jeux de données. Veuillez actualiser.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 235,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 201,
+          "column": 20,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Failed to load datasets. Please refresh.",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 154,
+          "column": 13,
+          "symbol": "DisplayedDatasets",
+          "defaultMessage": "Failed to load datasets. Please refresh.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Failed to load datasets. Please refresh.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 201,
+              "column": 20,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 154,
+              "column": 13,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.search",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Search by name or UUID",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 232,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "按名称或 UUID 搜索",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 231,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Nach Name oder UUID suchen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 232,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Rechercher par nom ou UUID",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 232,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 149,
+          "column": 27,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Search by name or UUID",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 153,
+          "column": 28,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Search by name or UUID",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Search by name or UUID",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 149,
+              "column": 27,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 153,
+              "column": 28,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.settings",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Display settings",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 224,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "展示配置",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 223,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Anzeigeeinstellungen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 224,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Paramètres d’affichage",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 224,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 176,
+          "column": 11,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Display settings",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Display settings",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 176,
+              "column": 11,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.showSelected",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Show selected ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 226,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "设为展示（{count}）",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 225,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Auswahl anzeigen ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 226,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Afficher la sélection ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 226,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 276,
+          "column": 13,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Show selected ({count})",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Show selected ({count})",
+          "argumentSignature": [{ "name": "count", "type": "simple" }],
+          "placeholders": ["count"],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 276,
+              "column": 13,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.success",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Updated {count} items; {unchanged} were already configured.",
+          "argumentSignature": [
+            { "name": "count", "type": "simple" },
+            { "name": "unchanged", "type": "simple" }
+          ],
+          "placeholders": ["count", "unchanged"],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 233,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "已更新 {count} 项，{unchanged} 项无需更改。",
+          "argumentSignature": [
+            { "name": "count", "type": "simple" },
+            { "name": "unchanged", "type": "simple" }
+          ],
+          "placeholders": ["count", "unchanged"],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 232,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "{count} Einträge aktualisiert; {unchanged} waren bereits eingestellt.",
+          "argumentSignature": [
+            { "name": "count", "type": "simple" },
+            { "name": "unchanged", "type": "simple" }
+          ],
+          "placeholders": ["count", "unchanged"],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 233,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "{count} éléments mis à jour ; {unchanged} étaient déjà configurés.",
+          "argumentSignature": [
+            { "name": "count", "type": "simple" },
+            { "name": "unchanged", "type": "simple" }
+          ],
+          "placeholders": ["count", "unchanged"],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 233,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 71,
+          "column": 11,
+          "symbol": "change",
+          "defaultMessage": "Updated {count} items; {unchanged} were already configured.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Updated {count} items; {unchanged} were already configured.",
+          "argumentSignature": [
+            { "name": "count", "type": "simple" },
+            { "name": "unchanged", "type": "simple" }
+          ],
+          "placeholders": ["count", "unchanged"],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 71,
+              "column": 11,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.title",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Displayed datasets",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 225,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "展示数据",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 224,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Angezeigte Datensätze",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 225,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Jeux de données affichés",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 225,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 165,
+          "column": 11,
+          "symbol": "DisplayedDatasets",
+          "defaultMessage": "Displayed datasets",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Displayed datasets",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 165,
+              "column": 11,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.updateError",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Failed to update display settings. Please retry.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 234,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "更新展示配置失败，请重试。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 233,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Anzeigeeinstellungen konnten nicht aktualisiert werden. Bitte erneut versuchen.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 234,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Échec de la mise à jour des paramètres d’affichage. Veuillez réessayer.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 234,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 85,
+          "column": 11,
+          "symbol": "change",
+          "defaultMessage": "Failed to update display settings. Please retry.",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Failed to update display settings. Please retry.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 85,
+              "column": 11,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.visibility",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Visibility",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 231,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "展示状态",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 230,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Sichtbarkeit",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 231,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Visibilité",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 231,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 125,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Visibility",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 233,
+          "column": 25,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Visibility",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Visibility",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 125,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 233,
+              "column": 25,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.datasetDisplay.visible",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_general"],
+        "zh-CN": ["pages_general"],
+        "de-DE": ["pages_general"],
+        "fr-FR": ["pages_general"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Displayed",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_general.ts",
+            "line": 229,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "zh-CN": {
+          "value": "已展示",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_general.ts",
+            "line": 228,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "de-DE": {
+          "value": "Angezeigt",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_general.ts",
+            "line": 229,
+            "column": 3,
+            "module": "pages_general"
+          }
+        },
+        "fr-FR": {
+          "value": "Affiché",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_general.ts",
+            "line": 229,
+            "column": 3,
+            "module": "pages_general"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 130,
+          "column": 11,
+          "symbol": "columns",
+          "defaultMessage": null,
+          "defaultMessageExpression": "row.isVisible ? 'Displayed' : 'Not displayed'"
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 250,
+          "column": 24,
+          "symbol": "DatasetDisplaySettings",
+          "defaultMessage": "Displayed",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Displayed",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 250,
+              "column": 24,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pages.datasetUuidMention.empty",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -82714,9 +83906,47 @@
           "symbol": "columns",
           "defaultMessage": null,
           "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 117,
+          "column": 9,
+          "symbol": "columns",
+          "defaultMessage": "Data type",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 102,
+          "column": 9,
+          "symbol": "columns",
+          "defaultMessage": "Data type",
+          "defaultMessageExpression": null
         }
       ],
-      "defaultMessages": []
+      "defaultMessages": [
+        {
+          "value": "Data type",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 117,
+              "column": 9,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 102,
+              "column": 9,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "pages.datasetUuidMention.entityKind.unknown",
@@ -116861,7 +118091,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 66,
+          "line": 71,
           "column": 17,
           "symbol": "label",
           "defaultMessage": "Select a language",
@@ -116891,7 +118121,7 @@
             },
             {
               "path": "src/components/RightContent/index.tsx",
-              "line": 66,
+              "line": 71,
               "column": 17,
               "kind": "formatMessage"
             },
@@ -118501,7 +119731,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1950,
+          "line": 1956,
           "column": 39,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Automatically generated",
@@ -118516,7 +119746,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1950,
+              "line": 1956,
               "column": 39,
               "kind": "formatMessage"
             }
@@ -134917,7 +136147,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 336,
+            "line": 338,
             "column": 3,
             "module": "pages_model"
           }
@@ -134928,7 +136158,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 333,
+            "line": 335,
             "column": 3,
             "module": "pages_model"
           }
@@ -134939,7 +136169,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 336,
+            "line": 338,
             "column": 3,
             "module": "pages_model"
           }
@@ -134950,7 +136180,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 336,
+            "line": 338,
             "column": 3,
             "module": "pages_model"
           }
@@ -134960,7 +136190,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1070,
+          "line": 1076,
           "column": 17,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -134986,7 +136216,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 340,
+            "line": 342,
             "column": 3,
             "module": "pages_model"
           }
@@ -134997,7 +136227,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 337,
+            "line": 339,
             "column": 3,
             "module": "pages_model"
           }
@@ -135008,7 +136238,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 340,
+            "line": 342,
             "column": 3,
             "module": "pages_model"
           }
@@ -135019,7 +136249,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 340,
+            "line": 342,
             "column": 3,
             "module": "pages_model"
           }
@@ -135029,7 +136259,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2383,
+          "line": 2391,
           "column": 16,
           "symbol": "ToolbarEdit",
           "defaultMessage": null,
@@ -135055,7 +136285,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 338,
+            "line": 340,
             "column": 3,
             "module": "pages_model"
           }
@@ -135066,7 +136296,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 335,
+            "line": 337,
             "column": 3,
             "module": "pages_model"
           }
@@ -135077,7 +136307,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 338,
+            "line": 340,
             "column": 3,
             "module": "pages_model"
           }
@@ -135088,7 +136318,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 338,
+            "line": 340,
             "column": 3,
             "module": "pages_model"
           }
@@ -135098,7 +136328,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1076,
+          "line": 1082,
           "column": 21,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -135124,7 +136354,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 335,
+            "line": 337,
             "column": 3,
             "module": "pages_model"
           }
@@ -135135,7 +136365,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 332,
+            "line": 334,
             "column": 3,
             "module": "pages_model"
           }
@@ -135146,7 +136376,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 335,
+            "line": 337,
             "column": 3,
             "module": "pages_model"
           }
@@ -135157,7 +136387,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 335,
+            "line": 337,
             "column": 3,
             "module": "pages_model"
           }
@@ -135167,7 +136397,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1054,
+          "line": 1055,
           "column": 26,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -135193,7 +136423,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 337,
+            "line": 339,
             "column": 3,
             "module": "pages_model"
           }
@@ -135204,7 +136434,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 334,
+            "line": 336,
             "column": 3,
             "module": "pages_model"
           }
@@ -135215,7 +136445,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 337,
+            "line": 339,
             "column": 3,
             "module": "pages_model"
           }
@@ -135226,7 +136456,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 337,
+            "line": 339,
             "column": 3,
             "module": "pages_model"
           }
@@ -135252,7 +136482,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 339,
+            "line": 341,
             "column": 3,
             "module": "pages_model"
           }
@@ -135263,7 +136493,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 336,
+            "line": 338,
             "column": 3,
             "module": "pages_model"
           }
@@ -135274,7 +136504,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 339,
+            "line": 341,
             "column": 3,
             "module": "pages_model"
           }
@@ -135285,7 +136515,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 339,
+            "line": 341,
             "column": 3,
             "module": "pages_model"
           }
@@ -135311,7 +136541,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 320,
+            "line": 322,
             "column": 3,
             "module": "pages_model"
           }
@@ -135322,7 +136552,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 317,
+            "line": 319,
             "column": 3,
             "module": "pages_model"
           }
@@ -135333,7 +136563,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 320,
+            "line": 322,
             "column": 3,
             "module": "pages_model"
           }
@@ -135344,7 +136574,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 320,
+            "line": 322,
             "column": 3,
             "module": "pages_model"
           }
@@ -135354,7 +136584,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1562,
+          "line": 1568,
           "column": 11,
           "symbol": "ToolbarEdit",
           "defaultMessage": null,
@@ -135380,7 +136610,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 319,
+            "line": 321,
             "column": 3,
             "module": "pages_model"
           }
@@ -135391,7 +136621,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 316,
+            "line": 318,
             "column": 3,
             "module": "pages_model"
           }
@@ -135402,7 +136632,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 319,
+            "line": 321,
             "column": 3,
             "module": "pages_model"
           }
@@ -135413,7 +136643,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 319,
+            "line": 321,
             "column": 3,
             "module": "pages_model"
           }
@@ -135557,7 +136787,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 313,
+            "line": 315,
             "column": 3,
             "module": "pages_model"
           }
@@ -135568,7 +136798,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 310,
+            "line": 312,
             "column": 3,
             "module": "pages_model"
           }
@@ -135579,7 +136809,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 313,
+            "line": 315,
             "column": 3,
             "module": "pages_model"
           }
@@ -135590,7 +136820,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 313,
+            "line": 315,
             "column": 3,
             "module": "pages_model"
           }
@@ -135911,7 +137141,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 318,
+            "line": 320,
             "column": 3,
             "module": "pages_model"
           }
@@ -135922,7 +137152,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 315,
+            "line": 317,
             "column": 3,
             "module": "pages_model"
           }
@@ -135933,7 +137163,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 318,
+            "line": 320,
             "column": 3,
             "module": "pages_model"
           }
@@ -135944,7 +137174,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 318,
+            "line": 320,
             "column": 3,
             "module": "pages_model"
           }
@@ -135970,7 +137200,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 314,
+            "line": 316,
             "column": 3,
             "module": "pages_model"
           }
@@ -135981,7 +137211,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 311,
+            "line": 313,
             "column": 3,
             "module": "pages_model"
           }
@@ -135992,7 +137222,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 314,
+            "line": 316,
             "column": 3,
             "module": "pages_model"
           }
@@ -136003,7 +137233,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 314,
+            "line": 316,
             "column": 3,
             "module": "pages_model"
           }
@@ -136088,7 +137318,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 316,
+            "line": 318,
             "column": 3,
             "module": "pages_model"
           }
@@ -136099,7 +137329,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 313,
+            "line": 315,
             "column": 3,
             "module": "pages_model"
           }
@@ -136110,7 +137340,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 316,
+            "line": 318,
             "column": 3,
             "module": "pages_model"
           }
@@ -136121,7 +137351,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 316,
+            "line": 318,
             "column": 3,
             "module": "pages_model"
           }
@@ -136147,7 +137377,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 315,
+            "line": 317,
             "column": 3,
             "module": "pages_model"
           }
@@ -136158,7 +137388,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 312,
+            "line": 314,
             "column": 3,
             "module": "pages_model"
           }
@@ -136169,7 +137399,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 315,
+            "line": 317,
             "column": 3,
             "module": "pages_model"
           }
@@ -136180,7 +137410,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 315,
+            "line": 317,
             "column": 3,
             "module": "pages_model"
           }
@@ -136206,7 +137436,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 317,
+            "line": 319,
             "column": 3,
             "module": "pages_model"
           }
@@ -136217,7 +137447,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 314,
+            "line": 316,
             "column": 3,
             "module": "pages_model"
           }
@@ -136228,7 +137458,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 317,
+            "line": 319,
             "column": 3,
             "module": "pages_model"
           }
@@ -136239,7 +137469,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 317,
+            "line": 319,
             "column": 3,
             "module": "pages_model"
           }
@@ -136265,7 +137495,7 @@
           "placeholders": ["flowName"],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 332,
+            "line": 334,
             "column": 3,
             "module": "pages_model"
           }
@@ -136276,7 +137506,7 @@
           "placeholders": ["flowName"],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 329,
+            "line": 331,
             "column": 3,
             "module": "pages_model"
           }
@@ -136287,7 +137517,7 @@
           "placeholders": ["flowName"],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 332,
+            "line": 334,
             "column": 3,
             "module": "pages_model"
           }
@@ -136298,7 +137528,7 @@
           "placeholders": ["flowName"],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 332,
+            "line": 334,
             "column": 3,
             "module": "pages_model"
           }
@@ -136308,7 +137538,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1040,
+          "line": 1041,
           "column": 33,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -136334,7 +137564,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 334,
+            "line": 336,
             "column": 3,
             "module": "pages_model"
           }
@@ -136345,7 +137575,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 331,
+            "line": 333,
             "column": 3,
             "module": "pages_model"
           }
@@ -136356,7 +137586,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 334,
+            "line": 336,
             "column": 3,
             "module": "pages_model"
           }
@@ -136367,7 +137597,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 334,
+            "line": 336,
             "column": 3,
             "module": "pages_model"
           }
@@ -136393,7 +137623,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 333,
+            "line": 335,
             "column": 3,
             "module": "pages_model"
           }
@@ -136404,7 +137634,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 330,
+            "line": 332,
             "column": 3,
             "module": "pages_model"
           }
@@ -136415,7 +137645,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 333,
+            "line": 335,
             "column": 3,
             "module": "pages_model"
           }
@@ -136426,7 +137656,7 @@
           "placeholders": ["index"],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 333,
+            "line": 335,
             "column": 3,
             "module": "pages_model"
           }
@@ -136436,7 +137666,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1035,
+          "line": 1036,
           "column": 27,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -136462,7 +137692,7 @@
           "placeholders": ["processName"],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 331,
+            "line": 333,
             "column": 3,
             "module": "pages_model"
           }
@@ -136473,7 +137703,7 @@
           "placeholders": ["processName"],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 328,
+            "line": 330,
             "column": 3,
             "module": "pages_model"
           }
@@ -136484,7 +137714,7 @@
           "placeholders": ["processName"],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 331,
+            "line": 333,
             "column": 3,
             "module": "pages_model"
           }
@@ -136495,7 +137725,7 @@
           "placeholders": ["processName"],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 331,
+            "line": 333,
             "column": 3,
             "module": "pages_model"
           }
@@ -136505,13 +137735,131 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1031,
+          "line": 1032,
           "column": 27,
           "symbol": "errorModal",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
       ],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.repair.missingProductAllocation",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelAllocationRepair"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "This non-reference product has no allocation definition. Define allocation for the products in the source process, or select an already allocated product process. Update the model node to the corrected process version and recalculate. Saved results remain unchanged.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "该非参考产品没有分配说明。请在源过程中为各产品补充分配，或选择已分配的产品过程，再将模型节点更新到修复后的过程版本并重算。已保存结果保持不变。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 310,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Für dieses Nichtreferenzprodukt ist keine Zuteilung definiert. Definieren Sie die Zuteilung für die Produkte im Quellprozess oder wählen Sie einen bereits zugeteilten Produktprozess. Aktualisieren Sie den Modellknoten auf die korrigierte Prozessversion und berechnen Sie erneut. Gespeicherte Ergebnisse bleiben unverändert.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Ce produit non référent ne dispose pas de définition d’allocation. Définissez l’allocation des produits dans le processus source ou sélectionnez un processus de produit déjà alloué. Mettez le nœud du modèle à jour vers la version corrigée du processus, puis recalculez. Les résultats enregistrés restent inchangés.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 313,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
+      "defaultMessages": []
+    },
+    {
+      "id": "pages.lifecyclemodel.calculation.repair.missingReferenceAllocation",
+      "category": "active-dynamic",
+      "dynamicFamilies": ["lifecycleModelAllocationRepair"],
+      "moduleOwnership": {
+        "en-US": ["pages_model"],
+        "zh-CN": ["pages_model"],
+        "de-DE": ["pages_model"],
+        "fr-FR": ["pages_model"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "The source process declares shares for other products but none for its reference product. Specify the reference product share (0% is allowed) and ensure all product shares total 100%. Update the model node to the corrected process version and recalculate. Saved results remain unchanged.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "zh-CN": {
+          "value": "源过程已为其他产品声明分配，但参考产品没有份额。请明确填写参考产品的份额（可为 0%），并使各产品份额合计为 100%，再将模型节点更新到修复后的过程版本并重算。已保存结果保持不变。",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_model.ts",
+            "line": 311,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "de-DE": {
+          "value": "Der Quellprozess enthält Anteile für andere Produkte, aber keinen Anteil für das Referenzprodukt. Geben Sie dessen Anteil an (0 % ist zulässig) und stellen Sie sicher, dass alle Produktanteile zusammen 100 % ergeben. Aktualisieren Sie den Modellknoten auf die korrigierte Prozessversion und berechnen Sie erneut. Gespeicherte Ergebnisse bleiben unverändert.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        },
+        "fr-FR": {
+          "value": "Le processus source déclare des parts pour d’autres produits, mais aucune pour son produit de référence. Indiquez sa part (0 % est autorisé) et vérifiez que la somme des parts est de 100 %. Mettez le nœud du modèle à jour vers la version corrigée du processus, puis recalculez. Les résultats enregistrés restent inchangés.",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_model.ts",
+            "line": 314,
+            "column": 3,
+            "module": "pages_model"
+          }
+        }
+      },
+      "references": [],
       "defaultMessages": []
     },
     {
@@ -136531,7 +137879,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 321,
+            "line": 323,
             "column": 3,
             "module": "pages_model"
           }
@@ -136542,7 +137890,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 318,
+            "line": 320,
             "column": 3,
             "module": "pages_model"
           }
@@ -136553,7 +137901,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 321,
+            "line": 323,
             "column": 3,
             "module": "pages_model"
           }
@@ -136564,7 +137912,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 321,
+            "line": 323,
             "column": 3,
             "module": "pages_model"
           }
@@ -136574,7 +137922,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 2375,
+          "line": 2383,
           "column": 18,
           "symbol": "ToolbarEdit",
           "defaultMessage": null,
@@ -136600,7 +137948,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 322,
+            "line": 324,
             "column": 3,
             "module": "pages_model"
           }
@@ -136611,7 +137959,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 319,
+            "line": 321,
             "column": 3,
             "module": "pages_model"
           }
@@ -136622,7 +137970,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 322,
+            "line": 324,
             "column": 3,
             "module": "pages_model"
           }
@@ -136633,7 +137981,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 322,
+            "line": 324,
             "column": 3,
             "module": "pages_model"
           }
@@ -136643,7 +137991,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1181,
+          "line": 1187,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": null,
@@ -136669,7 +138017,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 330,
+            "line": 332,
             "column": 3,
             "module": "pages_model"
           }
@@ -136680,7 +138028,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 327,
+            "line": 329,
             "column": 3,
             "module": "pages_model"
           }
@@ -136691,7 +138039,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 330,
+            "line": 332,
             "column": 3,
             "module": "pages_model"
           }
@@ -136702,7 +138050,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 330,
+            "line": 332,
             "column": 3,
             "module": "pages_model"
           }
@@ -136712,7 +138060,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1359,
+          "line": 1365,
           "column": 17,
           "symbol": "saveData",
           "defaultMessage": null,
@@ -136721,7 +138069,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1445,
+          "line": 1451,
           "column": 17,
           "symbol": "saveData",
           "defaultMessage": null,
@@ -136747,7 +138095,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 329,
+            "line": 331,
             "column": 3,
             "module": "pages_model"
           }
@@ -136758,7 +138106,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 326,
+            "line": 328,
             "column": 3,
             "module": "pages_model"
           }
@@ -136769,7 +138117,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 329,
+            "line": 331,
             "column": 3,
             "module": "pages_model"
           }
@@ -136780,7 +138128,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 329,
+            "line": 331,
             "column": 3,
             "module": "pages_model"
           }
@@ -136830,7 +138178,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 323,
+            "line": 325,
             "column": 3,
             "module": "pages_model"
           }
@@ -136841,7 +138189,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 320,
+            "line": 322,
             "column": 3,
             "module": "pages_model"
           }
@@ -136852,7 +138200,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 323,
+            "line": 325,
             "column": 3,
             "module": "pages_model"
           }
@@ -136863,7 +138211,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 323,
+            "line": 325,
             "column": 3,
             "module": "pages_model"
           }
@@ -136873,7 +138221,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1188,
+          "line": 1194,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": null,
@@ -136899,7 +138247,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 324,
+            "line": 326,
             "column": 3,
             "module": "pages_model"
           }
@@ -136910,7 +138258,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 321,
+            "line": 323,
             "column": 3,
             "module": "pages_model"
           }
@@ -136921,7 +138269,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 324,
+            "line": 326,
             "column": 3,
             "module": "pages_model"
           }
@@ -136932,7 +138280,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 324,
+            "line": 326,
             "column": 3,
             "module": "pages_model"
           }
@@ -136942,7 +138290,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1064,
+          "line": 1070,
           "column": 16,
           "symbol": "errorModal",
           "defaultMessage": null,
@@ -136968,7 +138316,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 327,
+            "line": 329,
             "column": 3,
             "module": "pages_model"
           }
@@ -136979,7 +138327,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 324,
+            "line": 326,
             "column": 3,
             "module": "pages_model"
           }
@@ -136990,7 +138338,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 327,
+            "line": 329,
             "column": 3,
             "module": "pages_model"
           }
@@ -137001,7 +138349,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 327,
+            "line": 329,
             "column": 3,
             "module": "pages_model"
           }
@@ -137011,7 +138359,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 628,
+          "line": 629,
           "column": 9,
           "symbol": "cancelActiveCalculation",
           "defaultMessage": null,
@@ -137037,7 +138385,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 325,
+            "line": 327,
             "column": 3,
             "module": "pages_model"
           }
@@ -137048,7 +138396,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 322,
+            "line": 324,
             "column": 3,
             "module": "pages_model"
           }
@@ -137059,7 +138407,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 325,
+            "line": 327,
             "column": 3,
             "module": "pages_model"
           }
@@ -137070,7 +138418,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 325,
+            "line": 327,
             "column": 3,
             "module": "pages_model"
           }
@@ -137080,7 +138428,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1207,
+          "line": 1213,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": null,
@@ -137106,7 +138454,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 326,
+            "line": 328,
             "column": 3,
             "module": "pages_model"
           }
@@ -137117,7 +138465,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 323,
+            "line": 325,
             "column": 3,
             "module": "pages_model"
           }
@@ -137128,7 +138476,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 326,
+            "line": 328,
             "column": 3,
             "module": "pages_model"
           }
@@ -137139,7 +138487,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 326,
+            "line": 328,
             "column": 3,
             "module": "pages_model"
           }
@@ -137149,7 +138497,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1200,
+          "line": 1206,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": null,
@@ -137175,7 +138523,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/en-US/pages_model.ts",
-            "line": 328,
+            "line": 330,
             "column": 3,
             "module": "pages_model"
           }
@@ -137186,7 +138534,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/zh-CN/pages_model.ts",
-            "line": 325,
+            "line": 327,
             "column": 3,
             "module": "pages_model"
           }
@@ -137197,7 +138545,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/de-DE/pages_model.ts",
-            "line": 328,
+            "line": 330,
             "column": 3,
             "module": "pages_model"
           }
@@ -137208,7 +138556,7 @@
           "placeholders": [],
           "source": {
             "path": "src/locales/fr-FR/pages_model.ts",
-            "line": 328,
+            "line": 330,
             "column": 3,
             "module": "pages_model"
           }
@@ -137218,7 +138566,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1353,
+          "line": 1359,
           "column": 15,
           "symbol": "saveData",
           "defaultMessage": null,
@@ -137227,7 +138575,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1439,
+          "line": 1445,
           "column": 15,
           "symbol": "saveData",
           "defaultMessage": null,
@@ -137379,7 +138727,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1217,
+          "line": 1223,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "The model is missing reference process information. Complete or rebind the reference process, then try again.",
@@ -137394,7 +138742,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1217,
+              "line": 1223,
               "column": 13,
               "kind": "formatMessage"
             }
@@ -137462,7 +138810,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1880,
+          "line": 1886,
           "column": 15,
           "symbol": "ToolbarEdit",
           "defaultMessage": "Model is not public",
@@ -137486,7 +138834,7 @@
           "locations": [
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1880,
+              "line": 1886,
               "column": 15,
               "kind": "formatMessage"
             },
@@ -141000,7 +142348,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 528,
+          "line": 529,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Confirm Password",
@@ -141015,7 +142363,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 528,
+              "line": 529,
               "column": 36,
               "kind": "formatMessage"
             }
@@ -141083,7 +142431,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 536,
+          "line": 537,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please confirm your password!",
@@ -141107,7 +142455,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 536,
+              "line": 537,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -141240,7 +142588,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 335,
+          "line": 336,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -141249,7 +142597,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 416,
+          "line": 417,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -141282,13 +142630,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 335,
+              "line": 336,
               "column": 36,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 416,
+              "line": 417,
               "column": 36,
               "kind": "formatMessage"
             },
@@ -141368,7 +142716,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 352,
+          "line": 353,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -141377,7 +142725,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 433,
+          "line": 434,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -141401,13 +142749,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 352,
+              "line": 353,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 433,
+              "line": 434,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -141623,7 +142971,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 343,
+          "line": 344,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -141632,7 +142980,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 424,
+          "line": 425,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -141656,13 +143004,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 343,
+              "line": 344,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 424,
+              "line": 425,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -141736,7 +143084,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 71,
+          "line": 72,
           "column": 14,
           "symbol": "getPasswordLoginErrorMessage",
           "defaultMessage": "Login failed, please try again!",
@@ -141745,7 +143093,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 160,
+          "line": 161,
           "column": 42,
           "symbol": "defaultLoginFailureMessage",
           "defaultMessage": "Login failed, please try again!",
@@ -141760,13 +143108,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 71,
+              "line": 72,
               "column": 14,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 160,
+              "line": 161,
               "column": 42,
               "kind": "formatMessage"
             }
@@ -141834,7 +143182,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 400,
+          "line": 401,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Forgot password?",
@@ -141849,7 +143197,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 400,
+              "line": 401,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -141917,7 +143265,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 299,
+          "line": 300,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Login",
@@ -141932,7 +143280,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 299,
+              "line": 300,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -142225,7 +143573,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 549,
+          "line": 550,
           "column": 33,
           "symbol": "validator",
           "defaultMessage": "The two passwords do not match!",
@@ -142249,7 +143597,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 549,
+              "line": 550,
               "column": 33,
               "kind": "formatMessage"
             },
@@ -142504,7 +143852,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 367,
+          "line": 368,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -142513,7 +143861,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 493,
+          "line": 494,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -142528,13 +143876,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 367,
+              "line": 368,
               "column": 36,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 493,
+              "line": 494,
               "column": 36,
               "kind": "formatMessage"
             }
@@ -142602,7 +143950,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 375,
+          "line": 376,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -142611,7 +143959,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 501,
+          "line": 502,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -142635,13 +143983,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 375,
+              "line": 376,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 501,
+              "line": 502,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -142896,7 +144244,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 466,
+          "line": 467,
           "column": 33,
           "symbol": "Login",
           "defaultMessage": "Strength: Medium",
@@ -142920,7 +144268,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 466,
+              "line": 467,
               "column": 33,
               "kind": "FormattedMessage"
             },
@@ -142994,7 +144342,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 476,
+          "line": 477,
           "column": 33,
           "symbol": "Login",
           "defaultMessage": "Strength: Strong",
@@ -143018,7 +144366,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 476,
+              "line": 477,
               "column": 33,
               "kind": "FormattedMessage"
             },
@@ -143092,7 +144440,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 447,
+          "line": 448,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -143116,7 +144464,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 447,
+              "line": 448,
               "column": 27,
               "kind": "FormattedMessage"
             },
@@ -143190,7 +144538,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 485,
+          "line": 486,
           "column": 31,
           "symbol": "Login",
           "defaultMessage": "Strength: Weak",
@@ -143214,7 +144562,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 485,
+              "line": 486,
               "column": 31,
               "kind": "FormattedMessage"
             },
@@ -143288,7 +144636,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 511,
+          "line": 512,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Password is invalid!",
@@ -143312,7 +144660,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 511,
+              "line": 512,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -143469,7 +144817,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 61,
+          "line": 62,
           "column": 14,
           "symbol": "getPasswordLoginErrorMessage",
           "defaultMessage": "Confirm your email before signing in.",
@@ -143484,7 +144832,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 61,
+              "line": 62,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -143552,7 +144900,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 56,
+          "line": 57,
           "column": 14,
           "symbol": "getPasswordLoginErrorMessage",
           "defaultMessage": "Incorrect username/password",
@@ -143567,7 +144915,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 56,
+              "line": 57,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -143635,7 +144983,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 66,
+          "line": 67,
           "column": 14,
           "symbol": "getPasswordLoginErrorMessage",
           "defaultMessage": "Too many login attempts. Wait a moment and try again.",
@@ -143650,7 +144998,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 66,
+              "line": 67,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -144487,7 +145835,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 209,
+          "line": 210,
           "column": 30,
           "symbol": "privacyPolicyLabel",
           "defaultMessage": null,
@@ -144556,7 +145904,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 209,
+          "line": 210,
           "column": 30,
           "symbol": "privacyPolicyLabel",
           "defaultMessage": null,
@@ -144625,7 +145973,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 591,
+          "line": 592,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -144640,7 +145988,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 591,
+              "line": 592,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -144708,7 +146056,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 306,
+          "line": 307,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -144723,7 +146071,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 306,
+              "line": 307,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -144850,7 +146198,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 389,
+          "line": 390,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Remember me",
@@ -144865,7 +146213,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 389,
+              "line": 390,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -144933,7 +146281,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 320,
+          "line": 321,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Validation email failed to send.",
@@ -144948,7 +146296,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 320,
+              "line": 321,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -145016,7 +146364,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 127,
+          "line": 128,
           "column": 47,
           "symbol": "defaultSignUpExistedMessage",
           "defaultMessage": "This email is already registered. Try Login, or Forgot Password?",
@@ -145031,7 +146379,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 127,
+              "line": 128,
               "column": 47,
               "kind": "formatMessage"
             }
@@ -145099,7 +146447,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 113,
+          "line": 114,
           "column": 47,
           "symbol": "defaultSignUpSuccessMessage",
           "defaultMessage": "Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.",
@@ -145114,7 +146462,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 113,
+              "line": 114,
               "column": 47,
               "kind": "formatMessage"
             }
@@ -145182,7 +146530,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 199,
+          "line": 200,
           "column": 5,
           "symbol": "loginSubtitle",
           "defaultMessage": null,
@@ -145269,7 +146617,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 146,
+          "line": 147,
           "column": 46,
           "symbol": "defaultLoginSuccessMessage",
           "defaultMessage": "Login successful!",
@@ -145284,7 +146632,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 146,
+              "line": 147,
               "column": 46,
               "kind": "formatMessage"
             }
@@ -145364,7 +146712,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 566,
+          "line": 567,
           "column": 23,
           "symbol": "Login",
           "defaultMessage": "By signing up, you agree to our {termsOfService} and {privacyPolicy}",
@@ -145382,7 +146730,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 566,
+              "line": 567,
               "column": 23,
               "kind": "FormattedMessage"
             }
@@ -145450,7 +146798,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 203,
+          "line": 204,
           "column": 31,
           "symbol": "termsOfServiceLabel",
           "defaultMessage": null,
@@ -145519,7 +146867,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 203,
+          "line": 204,
           "column": 31,
           "symbol": "termsOfServiceLabel",
           "defaultMessage": null,
@@ -145828,7 +147176,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 218,
+          "line": 219,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -145846,7 +147194,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 196,
+          "line": 197,
           "column": 5,
           "symbol": "appTitle",
           "defaultMessage": null,
@@ -147667,7 +149015,7 @@
     },
     {
       "id": "pages.openData.publication.all",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -147721,36 +149069,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 60,
-          "column": 14,
-          "symbol": "publicationOptions",
-          "defaultMessage": "All publication states",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "All publication states",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 60,
-              "column": 14,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.error",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -147804,36 +149128,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 606,
-          "column": 9,
-          "symbol": "handlePublishSelected",
-          "defaultMessage": "Failed to publish selected processes.",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Failed to publish selected processes.",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 606,
-              "column": 9,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.filter",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -147887,36 +149187,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 91,
-          "column": 23,
-          "symbol": "OpenDataCatalogFilters",
-          "defaultMessage": "Publication filter",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Publication filter",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 91,
-              "column": 23,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.publishSelected",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -147970,36 +149246,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 833,
-          "column": 24,
-          "symbol": "TableList",
-          "defaultMessage": "Publish selected ({count})",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Publish selected ({count})",
-          "argumentSignature": [{ "name": "count", "type": "simple" }],
-          "placeholders": ["count"],
-          "locations": [
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 833,
-              "column": 24,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.published",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -148053,51 +149305,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 67,
-          "column": 14,
-          "symbol": "publicationOptions",
-          "defaultMessage": "Published",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 249,
-          "column": 20,
-          "symbol": "processColumns",
-          "defaultMessage": "Published",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Published",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 67,
-              "column": 14,
-              "kind": "formatMessage"
-            },
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 249,
-              "column": 20,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.status",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -148151,36 +149364,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 239,
-          "column": 20,
-          "symbol": "processColumns",
-          "defaultMessage": "Publication status",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Publication status",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 239,
-              "column": 20,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.success",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -148234,36 +149423,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 592,
-          "column": 9,
-          "symbol": "handlePublishSelected",
-          "defaultMessage": "Published {count} process versions.",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Published {count} process versions.",
-          "argumentSignature": [{ "name": "count", "type": "simple" }],
-          "placeholders": ["count"],
-          "locations": [
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 592,
-              "column": 9,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.publication.unpublished",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_general"],
@@ -148317,47 +149482,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "formatMessage",
-          "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 74,
-          "column": 14,
-          "symbol": "publicationOptions",
-          "defaultMessage": "Unpublished",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "formatMessage",
-          "path": "src/pages/Processes/index.tsx",
-          "line": 256,
-          "column": 20,
-          "symbol": "processColumns",
-          "defaultMessage": "Unpublished",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Unpublished",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 74,
-              "column": 14,
-              "kind": "formatMessage"
-            },
-            {
-              "path": "src/pages/Processes/index.tsx",
-              "line": 256,
-              "column": 20,
-              "kind": "formatMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.openData.source.all",
@@ -148419,7 +149545,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 34,
+          "line": 28,
           "column": 14,
           "symbol": "sourceOptions",
           "defaultMessage": "All data",
@@ -148434,7 +149560,7 @@
           "locations": [
             {
               "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 34,
+              "line": 28,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -148502,7 +149628,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 42,
+          "line": 36,
           "column": 14,
           "symbol": "sourceOptions",
           "defaultMessage": "Enterprise data",
@@ -148517,7 +149643,7 @@
           "locations": [
             {
               "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 42,
+              "line": 36,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -148644,7 +149770,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/OpenDataCatalogFilters/index.tsx",
-          "line": 50,
+          "line": 44,
           "column": 14,
           "symbol": "sourceOptions",
           "defaultMessage": "Literature data",
@@ -148659,7 +149785,7 @@
           "locations": [
             {
               "path": "src/components/OpenDataCatalogFilters/index.tsx",
-              "line": 50,
+              "line": 44,
               "column": 14,
               "kind": "formatMessage"
             }
@@ -171836,7 +172962,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 741,
+          "line": 655,
           "column": 30,
           "symbol": "analysisPageOption",
           "defaultMessage": "LCA Analysis",
@@ -171845,7 +172971,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 793,
+          "line": 707,
           "column": 32,
           "symbol": "mobileActions",
           "defaultMessage": "LCA Analysis",
@@ -171866,13 +172992,13 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 741,
+              "line": 655,
               "column": 30,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 793,
+              "line": 707,
               "column": 32,
               "kind": "formatMessage"
             }
@@ -179024,7 +180150,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 1003,
+          "line": 897,
           "column": 21,
           "symbol": "TableList",
           "defaultMessage": "Failed to load process list.",
@@ -179039,7 +180165,7 @@
           "locations": [
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 1003,
+              "line": 897,
               "column": 21,
               "kind": "formatMessage"
             }
@@ -179125,7 +180251,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 274,
+          "line": 238,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Location",
@@ -179152,7 +180278,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 274,
+              "line": 238,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -184712,6 +185838,172 @@
       ]
     },
     {
+      "id": "pages.process.published.climate.error",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_process"],
+        "zh-CN": ["pages_process"],
+        "de-DE": ["pages_process"],
+        "fr-FR": ["pages_process"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "Failed to load",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_process.ts",
+            "line": 930,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "zh-CN": {
+          "value": "读取失败",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_process.ts",
+            "line": 927,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "de-DE": {
+          "value": "Laden fehlgeschlagen",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_process.ts",
+            "line": 930,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "fr-FR": {
+          "value": "Échec du chargement",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_process.ts",
+            "line": 929,
+            "column": 3,
+            "module": "pages_process"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 122,
+          "column": 13,
+          "symbol": "columns",
+          "defaultMessage": "Failed to load",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "Failed to load",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 122,
+              "column": 13,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pages.process.published.climate.missing",
+      "category": "active-static",
+      "dynamicFamilies": [],
+      "moduleOwnership": {
+        "en-US": ["pages_process"],
+        "zh-CN": ["pages_process"],
+        "de-DE": ["pages_process"],
+        "fr-FR": ["pages_process"]
+      },
+      "translations": {
+        "en-US": {
+          "value": "No result for this version in the current publication",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/en-US/pages_process.ts",
+            "line": 931,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "zh-CN": {
+          "value": "当前发布包中没有此版本的结果",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/zh-CN/pages_process.ts",
+            "line": 928,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "de-DE": {
+          "value": "Kein Ergebnis für diese Version in der aktuellen Veröffentlichung",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/de-DE/pages_process.ts",
+            "line": 931,
+            "column": 3,
+            "module": "pages_process"
+          }
+        },
+        "fr-FR": {
+          "value": "Aucun résultat pour cette version dans la publication actuelle",
+          "argumentSignature": [],
+          "placeholders": [],
+          "source": {
+            "path": "src/locales/fr-FR/pages_process.ts",
+            "line": 930,
+            "column": 3,
+            "module": "pages_process"
+          }
+        }
+      },
+      "references": [
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 132,
+          "column": 17,
+          "symbol": "columns",
+          "defaultMessage": "No result for this version in the current publication",
+          "defaultMessageExpression": null
+        }
+      ],
+      "defaultMessages": [
+        {
+          "value": "No result for this version in the current publication",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 132,
+              "column": 17,
+              "kind": "FormattedMessage"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pages.process.published.table.calculationResult",
       "category": "active-static",
       "dynamicFamilies": [],
@@ -184723,9 +186015,9 @@
       },
       "translations": {
         "en-US": {
-          "value": "Calculation result",
-          "argumentSignature": [],
-          "placeholders": [],
+          "value": "Calculation result ({unit})",
+          "argumentSignature": [{ "name": "unit", "type": "simple" }],
+          "placeholders": ["unit"],
           "source": {
             "path": "src/locales/en-US/pages_process.ts",
             "line": 28,
@@ -184734,9 +186026,9 @@
           }
         },
         "zh-CN": {
-          "value": "计算结果",
-          "argumentSignature": [],
-          "placeholders": [],
+          "value": "计算结果（{unit}）",
+          "argumentSignature": [{ "name": "unit", "type": "simple" }],
+          "placeholders": ["unit"],
           "source": {
             "path": "src/locales/zh-CN/pages_process.ts",
             "line": 28,
@@ -184745,9 +186037,9 @@
           }
         },
         "de-DE": {
-          "value": "Berechnungsergebnis",
-          "argumentSignature": [],
-          "placeholders": [],
+          "value": "Berechnungsergebnis ({unit})",
+          "argumentSignature": [{ "name": "unit", "type": "simple" }],
+          "placeholders": ["unit"],
           "source": {
             "path": "src/locales/de-DE/pages_process.ts",
             "line": 28,
@@ -184756,9 +186048,9 @@
           }
         },
         "fr-FR": {
-          "value": "Résultat du calcul",
-          "argumentSignature": [],
-          "placeholders": [],
+          "value": "Résultat du calcul ({unit})",
+          "argumentSignature": [{ "name": "unit", "type": "simple" }],
+          "placeholders": ["unit"],
           "source": {
             "path": "src/locales/fr-FR/pages_process.ts",
             "line": 28,
@@ -184770,23 +186062,23 @@
       "references": [
         {
           "kind": "FormattedMessage",
-          "path": "src/pages/PublishedProcesses/index.tsx",
-          "line": 44,
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 110,
           "column": 9,
           "symbol": "columns",
-          "defaultMessage": "Calculation result",
+          "defaultMessage": "Calculation result ({unit})",
           "defaultMessageExpression": null
         }
       ],
       "defaultMessages": [
         {
-          "value": "Calculation result",
-          "argumentSignature": [],
-          "placeholders": [],
+          "value": "Calculation result ({unit})",
+          "argumentSignature": [{ "name": "unit", "type": "simple" }],
+          "placeholders": ["unit"],
           "locations": [
             {
-              "path": "src/pages/PublishedProcesses/index.tsx",
-              "line": 44,
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 110,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -184796,7 +186088,7 @@
     },
     {
       "id": "pages.process.published.table.processName",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_process"],
@@ -184850,36 +186142,12 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/PublishedProcesses/index.tsx",
-          "line": 34,
-          "column": 9,
-          "symbol": "columns",
-          "defaultMessage": "Process name",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Process name",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/PublishedProcesses/index.tsx",
-              "line": 34,
-              "column": 9,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.process.published.title",
-      "category": "active-static",
+      "category": "reserved",
       "dynamicFamilies": [],
       "moduleOwnership": {
         "en-US": ["pages_process"],
@@ -184933,32 +186201,8 @@
           }
         }
       },
-      "references": [
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/PublishedProcesses/index.tsx",
-          "line": 60,
-          "column": 11,
-          "symbol": "PublishedProcesses",
-          "defaultMessage": "Published processes",
-          "defaultMessageExpression": null
-        }
-      ],
-      "defaultMessages": [
-        {
-          "value": "Published processes",
-          "argumentSignature": [],
-          "placeholders": [],
-          "locations": [
-            {
-              "path": "src/pages/PublishedProcesses/index.tsx",
-              "line": 60,
-              "column": 11,
-              "kind": "FormattedMessage"
-            }
-          ]
-        }
-      ]
+      "references": [],
+      "defaultMessages": []
     },
     {
       "id": "pages.process.referenceYear",
@@ -185038,7 +186282,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 267,
+          "line": 231,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Reference year",
@@ -185065,7 +186309,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 267,
+              "line": 231,
               "column": 14,
               "kind": "FormattedMessage"
             }
@@ -218078,7 +219322,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 224,
+          "line": 217,
           "column": 9,
           "symbol": "processColumns",
           "defaultMessage": "Dataset type",
@@ -218126,7 +219370,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 224,
+              "line": 217,
               "column": 9,
               "kind": "FormattedMessage"
             },
@@ -233221,7 +234465,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1238,
+          "line": 1244,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "This data is open data, save failed",
@@ -233287,7 +234531,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1238,
+              "line": 1244,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -245979,7 +247223,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-          "line": 1248,
+          "line": 1254,
           "column": 13,
           "symbol": "showMutationError",
           "defaultMessage": "Data is under review, save failed",
@@ -246045,7 +247289,7 @@
             },
             {
               "path": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
-              "line": 1248,
+              "line": 1254,
               "column": 13,
               "kind": "formatMessage"
             },
@@ -247367,7 +248611,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 650,
+          "line": 575,
           "column": 23,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -247634,7 +248878,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 666,
+          "line": 591,
           "column": 15,
           "symbol": "TableList",
           "defaultMessage": "AI Recommendation",
@@ -247733,7 +248977,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 666,
+              "line": 591,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -247894,7 +249138,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 649,
+          "line": 574,
           "column": 23,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -248017,7 +249261,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 678,
+          "line": 603,
           "column": 17,
           "symbol": "TableList",
           "defaultMessage": "Reference Lookup",
@@ -248074,7 +249318,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 678,
+              "line": 603,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -248190,7 +249434,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 647,
+          "line": 572,
           "column": 21,
           "symbol": "TableList",
           "defaultMessage": null,
@@ -258416,16 +259660,39 @@
       },
       "references": [
         {
+          "kind": "formatMessage",
+          "path": "src/components/DatasetKindFilter/index.tsx",
+          "line": 31,
+          "column": 15,
+          "symbol": "all",
+          "defaultMessage": "Type of data set",
+          "defaultMessageExpression": null
+        },
+        {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 185,
+          "line": 178,
           "column": 20,
           "symbol": "typeOfDataSetFilter",
           "defaultMessage": null,
           "defaultMessageExpression": null
         }
       ],
-      "defaultMessages": []
+      "defaultMessages": [
+        {
+          "value": "Type of data set",
+          "argumentSignature": [],
+          "placeholders": [],
+          "locations": [
+            {
+              "path": "src/components/DatasetKindFilter/index.tsx",
+              "line": 31,
+              "column": 15,
+              "kind": "formatMessage"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "pages.table.filter.all.workflowStatus",
@@ -258822,7 +260089,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 212,
+          "line": 205,
           "column": 9,
           "symbol": "processColumns",
           "defaultMessage": "Classification",
@@ -258939,7 +260206,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 212,
+              "line": 205,
               "column": 9,
               "kind": "FormattedMessage"
             },
@@ -259264,6 +260531,24 @@
         },
         {
           "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 98,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Index",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 82,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Index",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
           "line": 163,
           "column": 14,
@@ -259418,18 +260703,9 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 195,
+          "line": 188,
           "column": 14,
           "symbol": "processColumns",
-          "defaultMessage": "Index",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "FormattedMessage",
-          "path": "src/pages/PublishedProcesses/index.tsx",
-          "line": 26,
-          "column": 14,
-          "symbol": "columns",
           "defaultMessage": "Index",
           "defaultMessageExpression": null
         },
@@ -259530,6 +260806,18 @@
             {
               "path": "src/pages/Contacts/index.tsx",
               "line": 247,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 98,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 82,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -259637,13 +260925,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 195,
-              "column": 14,
-              "kind": "FormattedMessage"
-            },
-            {
-              "path": "src/pages/PublishedProcesses/index.tsx",
-              "line": 26,
+              "line": 188,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -259889,6 +261171,24 @@
         },
         {
           "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 104,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Name",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 89,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Name",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
           "path": "src/pages/Flowproperties/Components/select/drawer.tsx",
           "line": 169,
           "column": 14,
@@ -260016,7 +261316,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 201,
+          "line": 194,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Name",
@@ -260098,6 +261398,18 @@
             {
               "path": "src/pages/Contacts/index.tsx",
               "line": 253,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 104,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 89,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -260187,7 +261499,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 201,
+              "line": 194,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -260462,7 +261774,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 347,
+          "line": 311,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Actions",
@@ -260663,7 +261975,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 347,
+              "line": 311,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -260842,7 +262154,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 337,
+          "line": 301,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Updated at",
@@ -260926,7 +262238,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 337,
+              "line": 301,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -261033,6 +262345,24 @@
           "line": 280,
           "column": 14,
           "symbol": "contactColumns",
+          "defaultMessage": "Version",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DatasetDisplaySettings/index.tsx",
+          "line": 110,
+          "column": 14,
+          "symbol": "columns",
+          "defaultMessage": "Version",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "FormattedMessage",
+          "path": "src/pages/DisplayedDatasets/index.tsx",
+          "line": 95,
+          "column": 14,
+          "symbol": "columns",
           "defaultMessage": "Version",
           "defaultMessageExpression": null
         },
@@ -261174,7 +262504,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Processes/index.tsx",
-          "line": 281,
+          "line": 245,
           "column": 14,
           "symbol": "processColumns",
           "defaultMessage": "Version",
@@ -261247,6 +262577,18 @@
             {
               "path": "src/pages/Contacts/index.tsx",
               "line": 280,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DatasetDisplaySettings/index.tsx",
+              "line": 110,
+              "column": 14,
+              "kind": "FormattedMessage"
+            },
+            {
+              "path": "src/pages/DisplayedDatasets/index.tsx",
+              "line": 95,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -261342,7 +262684,7 @@
             },
             {
               "path": "src/pages/Processes/index.tsx",
-              "line": 281,
+              "line": 245,
               "column": 14,
               "kind": "FormattedMessage"
             },
@@ -263566,7 +264908,7 @@
         {
           "kind": "formatMessage",
           "path": "src/components/RightContent/index.tsx",
-          "line": 133,
+          "line": 138,
           "column": 23,
           "symbol": "toggleLabel",
           "defaultMessage": "Toggle dark mode",
@@ -263581,7 +264923,7 @@
           "locations": [
             {
               "path": "src/components/RightContent/index.tsx",
-              "line": 133,
+              "line": 138,
               "column": 23,
               "kind": "formatMessage"
             }
@@ -270927,7 +272269,7 @@
     {
       "id": "pages.validationIssues.datasetType.contact",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271025,7 +272367,7 @@
     {
       "id": "pages.validationIssues.datasetType.flow",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271123,7 +272465,7 @@
     {
       "id": "pages.validationIssues.datasetType.flowproperty",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271221,7 +272563,7 @@
     {
       "id": "pages.validationIssues.datasetType.lifecyclemodel",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271319,7 +272661,7 @@
     {
       "id": "pages.validationIssues.datasetType.process",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271417,7 +272759,7 @@
     {
       "id": "pages.validationIssues.datasetType.source",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -271515,7 +272857,7 @@
     {
       "id": "pages.validationIssues.datasetType.unitgroup",
       "category": "active-dynamic",
-      "dynamicFamilies": ["datasetEntityKinds"],
+      "dynamicFamilies": ["datasetDisplayKinds", "datasetEntityKinds"],
       "moduleOwnership": {
         "en-US": ["pages_general"],
         "zh-CN": ["pages_general"],
@@ -289181,6 +290523,13 @@
         },
         "proof": "The local translation helper receives literals or descriptors from the finite command action configuration."
       },
+      "datasetDisplayKinds": {
+        "unknownHandling": {
+          "kind": "closedWorld",
+          "proof": "Unsupported kinds fail the service decoder; only the seven validated kinds reach datasetKindMessage. LCIA and ILCD are excluded."
+        },
+        "proof": "The candidate/display service validates all received kinds against the seven-type allowlist before rendering; the filter producer uses the same finite list."
+      },
       "datasetEntityKinds": {
         "unknownHandling": {
           "kind": "localizedRuntimeFallback",
@@ -289231,6 +290580,13 @@
           "proof": "The mode prop is a closed TypeScript union and every member is required by the exhaustive Record."
         },
         "proof": "A three-value mode union indexes an exhaustive Record of title, hint, and empty-state descriptors."
+      },
+      "lifecycleModelAllocationRepair": {
+        "unknownHandling": {
+          "kind": "closedWorld",
+          "proof": "Only MISSING_PRODUCT_ALLOCATION and MISSING_REFERENCE_ALLOCATION resolve to message IDs; unknown reasons resolve to undefined and the optional guidance is omitted."
+        },
+        "proof": "The calculation modal renders repair guidance only for the two recognized allocation reasons returned by getAllocationRepairMessageId. Other issues retain the localized error title and result-not-updated status."
       },
       "lifecycleModelCalculationErrors": {
         "unknownHandling": {
@@ -289306,6 +290662,16 @@
     {
       "api": "formatMessage",
       "count": 1,
+      "file": "src/components/DatasetKindFilter/index.tsx",
+      "expression": "datasetKindMessage(kind)",
+      "locations": ["45:18"],
+      "category": "active-dynamic",
+      "family": "datasetDisplayKinds",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
       "file": "src/components/DatasetUuidMentionSearch/index.tsx",
       "expression": "ENTITY_KIND_MESSAGES[value]",
       "locations": ["48:12"],
@@ -289376,11 +290742,41 @@
     {
       "api": "formatMessage",
       "count": 1,
+      "file": "src/pages/DatasetDisplaySettings/index.tsx",
+      "expression": "datasetKindMessage(row.datasetKind)",
+      "locations": ["121:27"],
+      "category": "active-dynamic",
+      "family": "datasetDisplayKinds",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/DisplayedDatasets/index.tsx",
+      "expression": "datasetKindMessage(record.datasetKind)",
+      "locations": ["104:30"],
+      "category": "active-dynamic",
+      "family": "datasetDisplayKinds",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
       "file": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
       "expression": "CALCULATION_ERROR_MESSAGE_IDS[result.code] ?? CALCULATION_ERROR_MESSAGE_IDS.CALCULATION_FAILED",
-      "locations": ["1009:28"],
+      "locations": ["1010:28"],
       "category": "active-dynamic",
       "family": "lifecycleModelCalculationErrors",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx",
+      "expression": "getAllocationRepairMessageId(item.issue)",
+      "locations": ["1062:26"],
+      "category": "active-dynamic",
+      "family": "lifecycleModelAllocationRepair",
       "reviewStatus": "reviewed"
     },
     {

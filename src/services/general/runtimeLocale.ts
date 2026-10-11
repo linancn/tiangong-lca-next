@@ -14,6 +14,7 @@ export {
   type SupportedAppLocale,
 } from './localeRegistry';
 export const UMI_LOCALE_STORAGE_KEY = 'umi_locale';
+export const MANUAL_LOCALE_STORAGE_KEY = 'tiangong_manual_locale';
 export const RUNTIME_INTL_CHANGE_EVENT = 'tiangong:runtime-intl-change';
 
 export type RuntimeIntlShapeLike = {
@@ -34,6 +35,12 @@ type RuntimeLocaleNavigator = {
   languages?: readonly string[];
 };
 
+export type RuntimeLocaleSession = {
+  manualLocale?: SupportedAppLocale;
+};
+
+const browserLocaleSession: RuntimeLocaleSession = {};
+
 type RuntimeIntlEventTarget = Pick<
   Window,
   'addEventListener' | 'dispatchEvent' | 'removeEventListener'
@@ -43,6 +50,7 @@ export type BrowserRuntimeLocaleOptions = {
   fallbackLocale?: SupportedAppLocale;
   navigator?: RuntimeLocaleNavigator | null;
   storage?: RuntimeLocaleStorage | null;
+  session?: RuntimeLocaleSession | null;
 };
 
 function getDefaultRuntimeEnv(): RuntimeLocaleEnv {
@@ -114,17 +122,23 @@ export function subscribeRuntimeIntlChange(
   return () => target.removeEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
 }
 
-function safeReadStoredLocale(storage?: RuntimeLocaleStorage | null): string | null | undefined {
+function safeReadStoredLocale(
+  storage: RuntimeLocaleStorage | null | undefined,
+  key: string,
+): string | null | undefined {
   try {
-    return storage?.getItem(UMI_LOCALE_STORAGE_KEY);
+    return storage?.getItem(key);
   } catch {
     return undefined;
   }
 }
 
-function safeRemoveStoredLocale(storage?: RuntimeLocaleStorage | null): void {
+function safeRemoveStoredLocale(
+  storage: RuntimeLocaleStorage | null | undefined,
+  key: string,
+): void {
   try {
-    storage?.removeItem(UMI_LOCALE_STORAGE_KEY);
+    storage?.removeItem(key);
   } catch {
     // Storage can be disabled by browser policy. Locale detection still works.
   }
@@ -132,20 +146,34 @@ function safeRemoveStoredLocale(storage?: RuntimeLocaleStorage | null): void {
 
 function safePersistLocale(
   storage: RuntimeLocaleStorage | null | undefined,
+  key: string,
   locale: SupportedAppLocale,
 ) {
   try {
-    storage?.setItem(UMI_LOCALE_STORAGE_KEY, locale);
+    storage?.setItem(key, locale);
   } catch {
     // Storage can be disabled by browser policy. Keep the in-memory locale.
   }
 }
 
+/** Only a deliberate language-menu selection creates a new persisted preference. */
+export function rememberManualRuntimeLocale(
+  value: string,
+  options: Pick<BrowserRuntimeLocaleOptions, 'storage' | 'session'> = {},
+): void {
+  const locale = normalizeRuntimeLocale(value);
+  if (!locale) return;
+  const session = options.session === undefined ? browserLocaleSession : options.session;
+  if (session) session.manualLocale = locale;
+  const storage = options.storage === undefined ? getDefaultBrowserStorage() : options.storage;
+  safePersistLocale(storage, MANUAL_LOCALE_STORAGE_KEY, locale);
+}
+
 /**
- * Resolves the first browser locale before Umi renders its locale provider.
- * A supported cached value wins; stale aliases are migrated to the canonical
- * product locale. Unsupported cache entries are discarded before navigator
- * preferences are considered.
+ * Manual preference wins, followed by the legacy Umi cache, ordered browser
+ * preferences and English. Legacy values have unknown provenance: preserve
+ * existing choices without promoting them to manual. Automatic detection
+ * never persists a new preference. Invalid stored values are discarded.
  */
 export function resolveBrowserRuntimeLocale(
   options: BrowserRuntimeLocaleOptions = {},
@@ -154,18 +182,22 @@ export function resolveBrowserRuntimeLocale(
   const browserNavigator =
     options.navigator === undefined ? getDefaultBrowserNavigator() : options.navigator;
   const fallbackLocale = options.fallbackLocale ?? DEFAULT_BROWSER_APP_LOCALE;
-  const storedValue = safeReadStoredLocale(storage);
+  const session = options.session === undefined ? browserLocaleSession : options.session;
+  if (session?.manualLocale) return session.manualLocale;
 
-  if (storedValue !== null && storedValue !== undefined) {
-    const storedLocale = normalizeRuntimeLocale(storedValue);
-    if (storedLocale) {
-      if (storedValue !== storedLocale) {
-        safePersistLocale(storage, storedLocale);
+  for (const key of [MANUAL_LOCALE_STORAGE_KEY, UMI_LOCALE_STORAGE_KEY]) {
+    const storedValue = safeReadStoredLocale(storage, key);
+    if (storedValue !== null && storedValue !== undefined) {
+      const storedLocale = normalizeRuntimeLocale(storedValue);
+      if (storedLocale) {
+        if (storedValue !== storedLocale) {
+          safePersistLocale(storage, key, storedLocale);
+        }
+        return storedLocale;
       }
-      return storedLocale;
-    }
 
-    safeRemoveStoredLocale(storage);
+      safeRemoveStoredLocale(storage, key);
+    }
   }
 
   const navigatorCandidates = [...(browserNavigator?.languages ?? []), browserNavigator?.language];
@@ -173,7 +205,6 @@ export function resolveBrowserRuntimeLocale(
   for (const candidate of navigatorCandidates) {
     const locale = normalizeRuntimeLocale(candidate);
     if (locale) {
-      safePersistLocale(storage, locale);
       return locale;
     }
   }

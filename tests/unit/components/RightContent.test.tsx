@@ -4,6 +4,7 @@
  */
 
 import { DarkMode, Question, SelectLang, SelectLangAction } from '@/components/RightContent';
+import { MANUAL_LOCALE_STORAGE_KEY } from '@/services/general/runtimeLocale';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
@@ -22,6 +23,14 @@ let mockLocale: string | undefined = 'zh-CN';
 let renderedLocales: Array<Record<string, unknown>> = [];
 let selectLangReload: boolean | undefined;
 let selectLangTrigger: readonly string[] | undefined;
+let selectLangOnItemClick: ((event: { key: string }) => void) | undefined;
+const mockSetIntl = jest.fn();
+const mockEmit = jest.fn();
+jest.mock('@@/plugin-locale/localeExports', () => ({
+  event: { emit: (...args: unknown[]) => mockEmit(...args) },
+  LANG_CHANGE_EVENT: 'language-change',
+  setIntl: (...args: unknown[]) => mockSetIntl(...args),
+}));
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
@@ -43,13 +52,16 @@ jest.mock('@umijs/max', () => ({
     reload,
     style,
     trigger,
+    onItemClick,
   }: {
     globalIconClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
     reload?: boolean;
     style?: Record<string, unknown>;
     trigger?: readonly string[];
+    onItemClick?: (event: { key: string }) => void;
   }) => {
+    selectLangOnItemClick = onItemClick;
     selectLangReload = reload;
     selectLangTrigger = trigger;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
@@ -94,6 +106,10 @@ afterEach(() => {
   renderedLocales = [];
   selectLangReload = undefined;
   selectLangTrigger = undefined;
+  selectLangOnItemClick = undefined;
+  mockSetIntl.mockClear();
+  mockEmit.mockClear();
+  window.localStorage.clear();
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -196,7 +212,7 @@ describe('RightContent Components', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Help' }));
 
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 
   it('opens explicitly labelled English documentation for the German app locale', () => {
@@ -238,6 +254,40 @@ describe('RightContent Components', () => {
     expect(selector).toHaveClass('tg-global-language-selector');
     expect(selectLangReload).toBe(false);
     expect(selectLangTrigger).toEqual(['click']);
+    expect(window.localStorage.getItem(MANUAL_LOCALE_STORAGE_KEY)).toBeNull();
+  });
+
+  it('records a manual selection before emitting the native Umi change', () => {
+    window.localStorage.setItem(MANUAL_LOCALE_STORAGE_KEY, 'zh-CN');
+    mockEmit.mockImplementationOnce(() => {
+      expect(window.localStorage.getItem(MANUAL_LOCALE_STORAGE_KEY)).toBe('fr-FR');
+    });
+    render(<SelectLang />);
+    selectLangOnItemClick?.({ key: 'fr-FR' });
+    expect(mockSetIntl).toHaveBeenCalledWith('fr-FR');
+    expect(mockEmit).toHaveBeenCalledWith('language-change', 'fr-FR');
+    expect(window.localStorage.getItem(MANUAL_LOCALE_STORAGE_KEY)).toBe('fr-FR');
+  });
+
+  it('records an explicit choice even when the selected locale already matches', () => {
+    render(<SelectLang />);
+    selectLangOnItemClick?.({ key: 'zh-CN' });
+    expect(window.localStorage.getItem(MANUAL_LOCALE_STORAGE_KEY)).toBe('zh-CN');
+  });
+
+  it('rejects an unsupported menu key and tolerates denied preference storage', () => {
+    render(<SelectLang />);
+    selectLangOnItemClick?.({ key: 'es-ES' });
+    expect(mockSetIntl).not.toHaveBeenCalled();
+    const setItem = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('storage denied');
+    });
+    try {
+      expect(() => selectLangOnItemClick?.({ key: 'de-DE' })).not.toThrow();
+      expect(mockSetIntl).toHaveBeenCalledWith('de-DE');
+    } finally {
+      setItem.mockRestore();
+    }
   });
 
   it('merges custom styles into the language selector', () => {

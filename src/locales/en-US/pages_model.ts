@@ -310,6 +310,8 @@ export default {
   'pages.lifecyclemodel.calculation.error.INVALID_CONNECTION': 'The connection is invalid. Check the processes and input/output flows at both ends.',
   'pages.lifecyclemodel.calculation.error.INCOMPATIBLE_FLOW': 'The flows, versions, or units at the two ends are incompatible. Use matching data and reconnect them.',
   'pages.lifecyclemodel.calculation.error.INVALID_EXCHANGE_AMOUNT': 'An exchange amount is invalid. Check the amount for the affected flow and try again.',
+  'pages.lifecyclemodel.calculation.repair.missingProductAllocation': 'This non-reference product has no allocation definition. Define allocation for the products in the source process, or select an already allocated product process. Update the model node to the corrected process version and recalculate. Saved results remain unchanged.',
+  'pages.lifecyclemodel.calculation.repair.missingReferenceAllocation': 'The source process declares shares for other products but none for its reference product. Specify the reference product share (0% is allowed) and ensure all product shares total 100%. Update the model node to the corrected process version and recalculate. Saved results remain unchanged.',
   'pages.lifecyclemodel.calculation.error.INVALID_ALLOCATION': 'Product allocation data is invalid or incomplete. Check the allocation targets and fractions, then try again.',
   'pages.lifecyclemodel.calculation.error.MODEL_NOT_SOLVABLE': 'A unique result cannot be calculated for this model. Check the process connections and amounts, then try again.',
   'pages.lifecyclemodel.calculation.error.NUMERIC_RESULT_INVALID': 'The result failed numerical validation. Check the data magnitudes and process connections, then try again.',
