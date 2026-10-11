@@ -1,0 +1,51 @@
+{
+  "id": "tiangong",
+  "displayName": "TianGong LCA",
+  "localizedName": {
+    "zh-CN": "天工",
+    "en-US": "TianGong",
+    "de-DE": "TianGong",
+    "fr-FR": "TianGong"
+  },
+  "title": {
+    "zh-CN": "天工生命周期数据平台",
+    "en-US": "TianGong LCA Data Platform",
+    "de-DE": "TianGong LCA-Datenplattform",
+    "fr-FR": "TianGong LCA Data Platform"
+  },
+  "slogan": {
+    "zh-CN": "全球最大的开放生命周期数据平台",
+    "en-US": "World's Largest Open LCA Data Platform",
+    "de-DE": "Die weltweit größte offene LCA-Datenplattform",
+    "fr-FR": "La plus grande plateforme ouverte de données d’ACV au monde"
+  },
+  "messages": {},
+  "theme": {
+    "light": {
+      "colorPrimary": "#5C246A",
+      "logo": "/logo.svg"
+    },
+    "dark": {
+      "colorPrimary": "#9e3ffd",
+      "logo": "/logo_dark.svg"
+    }
+  },
+  "favicon": "/favicon.ico",
+  "links": {
+    "homepage": "https://www.tiangong.earth",
+    "source": "https://github.com/tiangong-lca/platform",
+    "terms": "/terms_of_use.html",
+    "privacy": "/privacy_notice.html"
+  },
+  "assets": {
+    "iconDirectory": "icons",
+    "manifestThemeColor": "#002140",
+    "manifestBackgroundColor": "#001529"
+  },
+  "desktop": {
+    "appId": "earth.tiangong.lca",
+    "productName": "TianGong LCA",
+    "shortcutName": "TianGong LCA",
+    "downloadPrefix": "tiangong-lca"
+  }
+}

@@ -10,11 +10,12 @@ import userEvent from '@testing-library/user-event';
 
 const authorizationId = 'jteae32pgurfg3oqqppq2yravsyh4ezw';
 const mockReplace = jest.fn();
+const mockGetLocalizedAppTitle = jest.fn();
 const originalNodeEnv = process.env.NODE_ENV;
 let mockSearch = `?authorization_id=${authorizationId}`;
 
 jest.mock('umi', () => ({
-  Helmet: ({ children }: any) => <>{children}</>,
+  Helmet: ({ children }: any) => <span data-testid='page-title'>{children.props.children}</span>,
   history: { replace: mockReplace },
   useLocation: () => ({ pathname: '/oauth/consent', search: mockSearch }),
   useIntl: () => ({
@@ -24,6 +25,10 @@ jest.mock('umi', () => ({
         values[key] === undefined ? placeholder : String(values[key]),
       ),
   }),
+}));
+
+jest.mock('../../../../config/defaultSettings', () => ({
+  getLocalizedAppTitle: (locale?: string) => mockGetLocalizedAppTitle(locale),
 }));
 
 jest.mock('@/services/auth', () => ({
@@ -67,6 +72,7 @@ const deferred = <T,>() => {
 describe('OAuth consent page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetLocalizedAppTitle.mockReturnValue(undefined);
     process.env.NODE_ENV = originalNodeEnv;
     mockSearch = `?authorization_id=${authorizationId}`;
     mockGetVerifiedOAuthSubject.mockResolvedValue('user-1');
@@ -77,6 +83,17 @@ describe('OAuth consent page', () => {
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it('uses the configured localized app title without changing the external client identity', async () => {
+    mockGetLocalizedAppTitle.mockReturnValue('Configured ATLAS workspace');
+    render(<OAuthConsentPage />);
+
+    expect(await screen.findByText('Allow TianGong CLI to connect?')).toBeInTheDocument();
+    expect(screen.getByTestId('page-title')).toHaveTextContent(
+      'Authorize application - Configured ATLAS workspace',
+    );
+    expect(mockGetLocalizedAppTitle).toHaveBeenCalledWith('en-US');
   });
 
   it('does not revive mock data for an obsolete preview URL', async () => {

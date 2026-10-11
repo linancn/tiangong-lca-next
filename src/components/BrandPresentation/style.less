@@ -1,0 +1,362 @@
+// Atlas presentation is opt-in. TianGong never receives these selectors.
+.atlas-app-shell .ant-pro-layout-container,
+.atlas-auth-shell .ant-pro-layout-container {
+  background: var(--ant-color-bg-layout);
+}
+.atlas-auth-shell {
+  .ant-pro-layout-container > .ant-layout-content {
+    padding: 0;
+  }
+}
+.atlas-login {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  min-height: calc(100vh - 70px);
+  background: var(--ant-color-bg-container);
+}
+.atlas-introduction {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(32px, 5vw, 76px);
+  background: #06162a;
+  color: #f4f2eb;
+  border-bottom: 3px solid #e8bc47;
+}
+.atlas-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+.atlas-introduction-copy {
+  margin-block: 64px 20px;
+  position: relative;
+  z-index: 1;
+}
+.atlas-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+}
+.atlas-introduction .atlas-eyebrow {
+  color: #e8bc47;
+}
+.atlas-introduction h1 {
+  white-space: pre-line;
+  font-family: Georgia, 'Songti SC', 'SimSun', serif;
+  font-size: clamp(36px, 3.7vw, 58px);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  margin: 24px 0;
+}
+.atlas-introduction-description {
+  color: #b7c7d5;
+  max-width: 400px;
+  font-size: 16px;
+  line-height: 1.9;
+}
+.atlas-coordinate-art {
+  opacity: 0.85;
+  margin-top: 16px;
+}
+.atlas-coordinate-art svg {
+  width: 100%;
+  max-height: 200px;
+  stroke: #29445b;
+  stroke-width: 1;
+}
+.atlas-coordinate-art .atlas-coordinate-path {
+  stroke: #e8bc47;
+  stroke-width: 1.5;
+}
+.atlas-coordinate-art .atlas-coordinate-points {
+  fill: #e8bc47;
+  stroke: #06162a;
+}
+.atlas-login-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 40px 56px;
+  min-width: 0;
+  .ant-pro-form-login-container {
+    width: 100%;
+    padding-block: 0;
+  }
+  .ant-pro-form-login-top {
+    text-align: left;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+  .ant-pro-form-login-header {
+    justify-content: flex-start;
+    height: auto;
+  }
+  .ant-pro-form-login-title {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.35;
+  }
+  .ant-pro-form-login-desc {
+    margin: 12px 0 28px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+}
+.atlas-workspace {
+  max-width: 1360px;
+  margin: 12px auto;
+}
+.atlas-workspace-heading {
+  padding-block: 16px 36px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+.atlas-workspace-heading .atlas-eyebrow {
+  color: var(--ant-color-primary);
+  margin-bottom: 24px;
+}
+.atlas-workspace-heading h1 {
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  color: var(--ant-color-text);
+}
+.atlas-workspace-heading > p:last-child {
+  color: var(--ant-color-text-secondary);
+  font-size: 16px;
+}
+.atlas-workspace-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block: 32px 48px;
+  gap: 20px;
+}
+.atlas-workspace-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  color: var(--ant-color-text);
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border-secondary);
+  border-top: 3px solid var(--ant-color-primary);
+  border-radius: var(--ant-border-radius);
+  padding: 28px;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    border-color 160ms,
+    background 160ms;
+  h2 {
+    color: inherit;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 28px 0 10px;
+  }
+  p {
+    color: var(--ant-color-text-secondary);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  > .anticon {
+    margin-top: auto;
+    color: var(--ant-color-primary);
+    font-size: 20px;
+  }
+  &:hover {
+    color: var(--ant-color-text);
+    border-color: var(--ant-color-primary);
+    background: var(--ant-color-primary-bg);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ant-color-primary);
+    outline-offset: 4px;
+  }
+}
+.atlas-action-index {
+  color: var(--ant-color-text-tertiary);
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+.atlas-workspace-reference {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  border-top: 1px solid var(--ant-color-border-secondary);
+  padding-top: 24px;
+  color: var(--ant-color-text-secondary);
+}
+.atlas-workspace-reference > p {
+  max-width: 600px;
+  line-height: 1.9;
+}
+.atlas-workspace-reference > div {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 900px) {
+  .atlas-introduction {
+    padding: 32px;
+  }
+  .atlas-introduction h1 {
+    font-size: 38px;
+  }
+  .atlas-login-form {
+    padding-inline: 24px;
+  }
+  .atlas-workspace-actions {
+    gap: 12px;
+  }
+  .atlas-workspace-action {
+    padding: 20px;
+  }
+  .atlas-workspace-reference {
+    flex-direction: column;
+  }
+}
+@media (max-width: 680px) {
+  .atlas-login {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-introduction {
+    padding: 72px 28px 28px;
+  }
+  .atlas-wordmark {
+    font-size: 20px;
+  }
+  .atlas-introduction-copy {
+    margin-block: 28px 0;
+  }
+  .atlas-introduction h1 {
+    font-size: 36px;
+    margin-block: 12px;
+  }
+  .atlas-introduction-description {
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+  .atlas-coordinate-art {
+    display: none;
+  }
+  .atlas-login-form {
+    padding: 40px 28px;
+  }
+  .atlas-workspace-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-workspace-heading {
+    padding-bottom: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-workspace-action {
+    transition: none;
+  }
+}
+
+.atlas-auth-shell [data-testid='login-top-actions'] {
+  z-index: 2;
+  padding: 6px;
+  border-radius: var(--ant-border-radius);
+  background: var(--ant-color-bg-container);
+}
+.atlas-login-form .ant-pro-form-login-top {
+  width: 100%;
+}
+
+// ProLayout's side mode places actions in the sider, not the top header.
+// Keep all existing tools reachable when the configured navigation changes.
+.atlas-app-shell .ant-pro-sider {
+  .ant-pro-sider-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-block: 12px 4px;
+    border-top: 1px solid rgba(186, 202, 218, 0.2);
+  }
+  .ant-pro-sider-actions-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    gap: 4px;
+    margin-block: 0;
+    // Permission-gated actions can leave empty Space items. Do not reserve cells for them.
+    > .ant-space-item:has(> .ant-pro-sider-actions-list-item:empty) {
+      display: none;
+    }
+    .ant-pro-sider-actions-list-item {
+      padding: 0;
+    }
+    .ant-badge {
+      color: inherit;
+    }
+    [role='button'],
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 40px;
+      min-width: 0;
+    }
+    .anticon {
+      // HeaderActionIcon sets inline opacity for light headers.
+      opacity: 1 !important;
+    }
+  }
+  .ant-pro-sider-actions-list-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tg-global-header-avatar-trigger,
+  .tg-global-header-avatar-name {
+    // Inherit ProLayout's sider text token instead of the page-body text color.
+    color: inherit !important;
+  }
+  .tg-global-header-avatar-trigger {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-radius: var(--ant-border-radius);
+    text-align: start;
+  }
+  .tg-global-header-avatar-name {
+    height: auto;
+    line-height: 20px;
+    white-space: normal;
+  }
+  .tg-global-header-avatar-name-text {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+  }
+  &.ant-pro-sider-collapsed {
+    .ant-pro-sider-actions {
+      padding-inline: 0;
+    }
+    .tg-global-header-avatar-trigger {
+      justify-content: center;
+      min-height: 40px;
+      padding: 8px;
+    }
+    .tg-global-header-avatar-name {
+      gap: 0;
+    }
+    .tg-global-header-avatar-name-text {
+      display: none;
+    }
+  }
+}

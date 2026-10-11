@@ -1,3 +1,4 @@
+import { resolveBrandProfile } from '../../../config/brandProfile';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
 import { render, waitFor } from '@testing-library/react';
 
@@ -63,4 +64,23 @@ describe('AntdThemeSync', () => {
       },
     });
   });
+});
+
+it('preserves complete Atlas tokens and component settings across mode switches', () => {
+  const atlas = resolveBrandProfile('atlas');
+  const light = createAntdThemeConfig(false, '#123456', atlas);
+  const dark = createAntdThemeConfig(true, undefined, atlas);
+  expect(light.token).toMatchObject({
+    colorPrimary: '#123456',
+    borderRadius: 4,
+    colorBgContainer: '#FFFFFF',
+  });
+  expect(dark.token).toMatchObject({
+    colorPrimary: '#618BBB',
+    borderRadius: 4,
+    colorBgContainer: '#102337',
+  });
+  expect(light.components?.Table).toMatchObject({ headerBg: '#EAF0F3' });
+  expect(dark.components?.Table).toMatchObject({ headerBg: '#183047' });
+  expect(dark.components?.Divider).toEqual({ orientationMargin: 0 });
 });

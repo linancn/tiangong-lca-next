@@ -1,3 +1,4 @@
+import { resolveBrandMessage } from '@/locales/brandMessages';
 import { changeEmail, changePassword, getAccountProfile, setProfile } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import {
@@ -76,10 +77,14 @@ const Profile: FC = () => {
   const profileName =
     initData?.name?.trim() ||
     initData?.email?.split('@')[0] ||
-    intl.formatMessage({
-      id: 'pages.account.profile.fallbackName',
-      defaultMessage: 'TianGong user',
-    });
+    resolveBrandMessage(
+      intl.locale,
+      'pages.account.profile.fallbackName',
+      intl.formatMessage({
+        id: 'pages.account.profile.fallbackName',
+        defaultMessage: 'TianGong user',
+      }),
+    );
   const profileInitial = Array.from(profileName)[0]?.toUpperCase() ?? 'T';
 
   const onTabChange = (key: string) => setActiveTabKey(key);

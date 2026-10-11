@@ -21,7 +21,7 @@
     "deploy": "pnpm build && pnpm gh-pages",
     "dev": "pnpm start:dev",
     "docpact:gate": "node scripts/docpact-gate.js",
-    "dist": "pnpm build && pnpm tsc:electron && electron-builder --config electron-builder.json",
+    "dist": "node scripts/branding/package-local.cjs",
     "electron": "pnpm tsc:electron && electron dist-electron/main.js",
     "gh-pages": "gh-pages -d dist",
     "i18n:audit": "node --import tsx scripts/i18n/audit-locales.mjs --mode enforce --check",
@@ -125,7 +125,13 @@
     "push:retry": "node scripts/prepush-gate-receipt.cjs retry",
     "test:antchain": "tsx src/services/antchain/api.ts",
     "ncu": "ncu",
-    "ncu:update": "ncu -u"
+    "ncu:update": "ncu -u",
+    "start:atlas": "cross-env APP_BRAND=atlas pnpm start:dev",
+    "start:tiangong": "cross-env APP_BRAND=tiangong pnpm start:dev",
+    "build:atlas": "cross-env APP_BRAND=atlas pnpm build",
+    "build:tiangong": "cross-env APP_BRAND=tiangong pnpm build",
+    "dist:atlas": "cross-env APP_BRAND=atlas node scripts/branding/package-local.cjs",
+    "test:branding:assets": "node --test scripts/branding/branding.test.mjs"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": "pnpm lint-staged:js",
