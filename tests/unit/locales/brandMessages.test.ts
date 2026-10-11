@@ -84,6 +84,15 @@ describe.each(Object.entries(catalogs))('localized brand presentation in %s', (l
       expect(resolveBrandMessage(locale, id, catalog[id], atlas)).toBe(catalog[id]);
     });
   });
+
+  it('preserves localized marketing copy when ATLAS has no message override', () => {
+    const id = 'pages.welcome.overview.sections.architectureExtensibility.description';
+    const text = catalog[id];
+
+    expect(text).toEqual(expect.any(String));
+    expect(text).not.toBe('');
+    expect(resolveBrandMessage(locale, id, text, atlas)).toBe(text);
+  });
 });
 
 it.each(['en-US', 'de-DE', 'fr-FR'] as const)(

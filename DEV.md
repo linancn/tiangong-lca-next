@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-08
-lastReviewedCommit: f4bb5246c01397935657c6d28a2cbdb604aa0945
-lastReviewedNote: 'Reviewed Platform #1182 candidate-local frozen offline installation; bootstrap, branch policy, full-gate and exact browser closure remain unchanged.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: cf44dc626c2adfe248d721302d01037db939088a
+lastReviewedNote: 'Reviewed Platform #1188 four-locale regression proof for unchanged marketing text when ATLAS has no override. Focused 21 tests pass and brandMessages statements/lines are fully covered. Runtime, dependencies, bootstrap, coverage policy and release boundaries are unchanged; final committed full-gate evidence belongs in Issue #1188.'
 ---
 
 # Development Bootstrap

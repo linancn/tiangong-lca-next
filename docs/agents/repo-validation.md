@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-08
-lastReviewedCommit: 931e07b386611dda725a0129da01a9e26f8b31a2
-lastReviewedNote: 'Reviewed Platform #1182 current membership RPC fixture and exact POST request proof; all 13 browser product assertions and full-gate policy remain unchanged.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: cf44dc626c2adfe248d721302d01037db939088a
+lastReviewedNote: 'Reviewed Platform #1188 four-locale regression proof for unchanged marketing text when ATLAS has no override. Focused 21 tests pass and brandMessages statements/lines are fully covered. Runtime, dependencies, bootstrap, coverage policy and release boundaries are unchanged; final committed full-gate evidence belongs in Issue #1188.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

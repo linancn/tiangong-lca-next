@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-08
-lastReviewedCommit: 55dfcb2c5ebfda7bc0462734ba15c0f4f0173d6d
-lastReviewedNote: 'Reviewed Platform #1188 local brand profiles, presentation and package adapter; backend, authorization, calculation and release gates remain unchanged. Full release qualification is deferred pending local user review.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: cf44dc626c2adfe248d721302d01037db939088a
+lastReviewedNote: 'Reviewed Platform #1188 four-locale regression proof for unchanged marketing text when ATLAS has no override. Focused 21 tests pass and brandMessages statements/lines are fully covered. Runtime, dependencies, bootstrap, coverage policy and release boundaries are unchanged; final committed full-gate evidence belongs in Issue #1188.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
