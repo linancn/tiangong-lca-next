@@ -45,7 +45,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedCommit: 8a04000b497e72a5512f2f5653f96357d9febfb2
 lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: focused list/filter/race regressions and separate synthetic layout checks fit the existing risk-proportional strategy. Add configuration check paths; coverage strategy, semantic qualification and release proof ownership are unchanged.'
 ---
 

@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedCommit: 8a04000b497e72a5512f2f5653f96357d9febfb2
 lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: list/filter and complete-set regressions use existing service/component and deferred-response patterns. Add focused configuration check paths; canonical localization browser and release evidence contracts are unchanged.'
 ---
 

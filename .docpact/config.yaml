@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-10-14'
-lastReviewedCommit: '2136fc6f8f8389f47d0d5bf93a70416c35cedb31'
+lastReviewedAt: "2026-10-14"
+lastReviewedCommit: "8a04000b497e72a5512f2f5653f96357d9febfb2"
 lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: add the dedicated dataset-list Playwright configuration to existing testing ownership, coverage, routing and gate triggers; existing rule modes and required-document sets are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
