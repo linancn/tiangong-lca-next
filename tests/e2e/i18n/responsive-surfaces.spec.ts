@@ -55,6 +55,8 @@ const PROCESS_INSTANCE_SELECT = [
   'team_id',
   'user_id',
   'model_id',
+  'model_version',
+  'json->processDataSet->processInformation->dataSetInformation->classificationInformation',
 ].join(',');
 
 const contentLongText = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => {
@@ -538,7 +540,7 @@ async function installProcessTableFixture(page: Page): Promise<() => number> {
     const expectedBody = readExactAuthenticatedRpcBody(route, {
       data_source: 'my',
       page_current: 1,
-      page_size: 10,
+      page_size: 50,
       sort_by: 'modified_at',
       sort_direction: 'desc',
       state_code_filter: null,
@@ -628,7 +630,7 @@ async function installLifeCycleModelFixture(page: Page): Promise<() => number> {
     const expectedBody = readExactAuthenticatedRpcBody(route, {
       data_source: 'my',
       page_current: 1,
-      page_size: 10,
+      page_size: 50,
       sort_by: 'modified_at',
       sort_direction: 'desc',
       state_code_filter: null,
@@ -672,7 +674,10 @@ async function installLifeCycleModelFixture(page: Page): Promise<() => number> {
       method: 'GET',
       pathname: '/rest/v1/processes',
       searchParams: {
-        or: `and(id.eq.${PROCESS_ID},version.eq.${DATASET_VERSION})`,
+        or: `(and(id.eq."${PROCESS_ID}",version.eq."${DATASET_VERSION}"))`,
+        order: 'id.asc,version.asc',
+        offset: '0',
+        limit: '1',
         select: PROCESS_INSTANCE_SELECT,
       },
     });
@@ -735,9 +740,7 @@ test('process table keeps registry-derived long labels accessible through its in
             });
             expect(clippingPolicy).toEqual({ overflow: 'hidden', textOverflow: 'ellipsis' });
 
-            const scroller = tableRoot
-              .locator('.responsive-data-list-table-scroll')
-              .filter({ visible: true });
+            const scroller = tableRoot.locator('.ant-table-body').filter({ visible: true });
             await expect(scroller).toHaveCount(1);
             if (viewport.id === 'narrow') {
               await expect

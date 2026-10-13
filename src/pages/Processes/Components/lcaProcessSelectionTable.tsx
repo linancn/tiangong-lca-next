@@ -101,7 +101,6 @@ const processSelectionColumns: ColumnsType<LcaProcessOption> = [
     key: 'index',
     width: 72,
     align: 'center',
-    render: (_, __, index) => index + 1,
   },
   {
     title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
