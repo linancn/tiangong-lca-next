@@ -490,16 +490,8 @@ export async function selectAppLocaleThroughUi(
     key: MANUAL_LOCALE_STORAGE_KEY,
     value: locale,
   });
-  await page.keyboard.press('Escape');
-  await page.evaluate(() => {
-    const visibleMenuExists = [...document.querySelectorAll<HTMLElement>('[role="menu"]')].some(
-      (menu) => menu.getClientRects().length > 0 && getComputedStyle(menu).visibility !== 'hidden',
-    );
-    if (visibleMenuExists) {
-      document.querySelector<HTMLElement>('.tg-global-language-selector')?.click();
-    }
-  });
-  await page.keyboard.press('Escape');
+  // The native locale item closes its own dropdown. Scope the completion check to that menu;
+  // global Escape would also dismiss an unrelated mounted Drawer or Modal.
   await waitForLocatorCount(
     page,
     activeMenu,
