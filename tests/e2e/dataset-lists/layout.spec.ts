@@ -358,7 +358,6 @@ test('nested Flow selectors retain real metadata and usable controls in every so
       const footer = await flowDrawer.locator('.ant-drawer-footer').boundingBox();
       expect(pagination!.y + pagination!.height).toBeLessThanOrEqual(footer!.y);
       await page.mouse.move(0, 0);
-      await page.keyboard.press('Escape');
       await expect(page.locator('.ant-tabs-dropdown:visible')).toHaveCount(0);
       await page.screenshot({
         path: testInfo.outputPath(`flow-selector-tab${index}-${width}.png`),
