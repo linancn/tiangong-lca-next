@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
+lastReviewedCommit: afc33ff6d08804cd6fa3d022df2aa54c0dd304b0
 lastReviewedNote: 'Reviewed for Platform #1208: the added footer, failure-retention, and callback tests follow existing component-mock patterns without changing test conventions.'
 ---
 

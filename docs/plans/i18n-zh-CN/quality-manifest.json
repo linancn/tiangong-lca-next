@@ -3,8 +3,8 @@
   "locale": "zh-CN",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "39fb093d8981130e01ec9a82f3645da8a3b1c204c666e70cb3fbb3f9533a2a56",
-    "contextDigest": "ef5317e761986153fe988b80aafdaac93fb2c1bb048b985402424bf7e19bbfd6"
+    "sourceManifestDigest": "f64b132a616b85ae2172295504eec95b204f9aa6f7aa7ef3ffa3d96792f78753",
+    "contextDigest": "c8c24dff2e0033e91180556510141e95ca216b7efc1aea3785702257821577ed"
   },
   "catalog": {
     "messageCount": 3504,
@@ -42,8 +42,8 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-zh-CN/structural-validation.json",
-    "digest": "161eecfafc75f4baec6dac18bd3b4826f6eddfed083cb5f8101b36e2ce95a618",
-    "validationDigest": "0aa081a137024b8d8e1eb843511ec9e4ef67bff202d3bb600d961d50c27fabaf",
+    "digest": "4a674bebc338e6add6cecfd06600a152b4a0c0a30ec4448ac8d40b7b2db7c89a",
+    "validationDigest": "f94c34b90094ab3e3ab304ceaf219cf3eca341db15f51398a1e1224893ca4544",
     "laneCount": 1,
     "validatedMessageCount": 3504,
     "validatedModuleCount": 32,
@@ -53,5 +53,5 @@
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "d727414a830b575b7ced3667741192cdc7b73d795b81e71f192ec5dd61d70970"
+  "qualityDigest": "cc869c76ed68e3ee39de17ded32d76e1bb69a455815333a5e7fac6bad7d9435b"
 }
