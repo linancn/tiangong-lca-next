@@ -106,6 +106,22 @@ describe('DisplayedDatasets', () => {
     mockLocale = 'zh-CN';
     proTableProps = undefined;
   });
+  it.each([
+    ['process', 'LCI result'],
+    ['flow', 'Product flow'],
+    ['source', 'External record'],
+  ])('renders %s subtype metadata with the correct kind label', (datasetKind, typeOfDataSet) => {
+    render(<DisplayedDatasets />);
+    const column = proTableProps.columns.find((item: any) => item.dataIndex === 'datasetKind');
+    const cell = render(
+      <div data-testid='rendered-subtype'>
+        {column.render(null, { datasetKind, typeOfDataSet })}
+      </div>,
+    );
+    expect(cell.getByTestId('rendered-subtype')).toHaveTextContent(
+      `${datasetKind} · ${typeOfDataSet}`,
+    );
+  });
   it('uses the newly applied query and classification without changing dataset kind', async () => {
     render(<DisplayedDatasets />);
     fireEvent.change(screen.getByRole('combobox', { name: 'Dataset type' }), {

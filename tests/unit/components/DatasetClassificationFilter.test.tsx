@@ -55,6 +55,24 @@ describe('DatasetClassificationFilter', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it('hydrates a code-only selector and clears it through the native clear control', async () => {
+    const onChange = jest.fn();
+    const { container } = render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[{ scope: 'classification', code: 'C' }]}
+        onChange={onChange}
+      />,
+    );
+    await screen.findByText('Manufacturing');
+    const clear = container.querySelector('.ant-select-clear');
+    expect(clear).not.toBeNull();
+    fireEvent.mouseDown(clear!);
+    fireEvent.click(clear!);
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
+
   it('selects an ancestor using stable codes, then a complete descendant path', async () => {
     const onChange = jest.fn();
     render(

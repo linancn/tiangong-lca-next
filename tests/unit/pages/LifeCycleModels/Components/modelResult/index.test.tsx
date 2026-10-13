@@ -121,7 +121,7 @@ jest.mock('@ant-design/pro-components', () => {
     pageInfoRef.current = pageInfo;
     const serializedParams = JSON.stringify(params ?? {});
     const title = toText(headerTitle);
-    mockModelTableProps[title] = { columns, pagination, scroll, rowKey, params };
+    mockModelTableProps[title] = { columns, pagination, scroll, rowKey, params, request };
 
     const load = React.useCallback(async () => {
       const result = await requestRef.current({ ...pageInfoRef.current, ...paramsRef.current }, {});
@@ -628,6 +628,57 @@ describe('ModelResult', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('keeps a subproduct without returned version keyed and actionable at the model version', async () => {
+    mockGetProcessesByIdAndVersion.mockImplementation(async (items: any[], lang: string) => ({
+      data: items.map((item) => ({ id: item.id, name: `${lang}-${item.id}` })),
+      success: true,
+    }));
+    renderWithProviders(
+      <ModelResult
+        submodels={[{ id: 'sub-1', version: '01.00.000' }]}
+        modelId='main'
+        modelVersion='02.00.000'
+        lang='en'
+        actionType='view'
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    const subproduct = await screen.findByTestId('sub-1:02.00.000');
+    expect(within(subproduct).getByText('view:sub-1:02.00.000')).toBeInTheDocument();
+    expect(screen.queryByTestId('sub-1:undefined')).not.toBeInTheDocument();
+    expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith(
+      [{ id: 'sub-1', version: '01.00.000' }],
+      'en',
+      { classification: [], keyword: '' },
+    );
+  });
+
+  it('requests only an empty exact set when the subproduct request omits submodels', async () => {
+    renderWithProviders(
+      <ModelResult
+        submodels={[{ id: 'sub-1', version: '01.00.000' }]}
+        modelId='main'
+        modelVersion='02.00.000'
+        lang='en'
+        actionType='view'
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    await screen.findByText('view:sub-1:01.00.000');
+    const table = mockModelTableProps['pages.lifeCycleModel.modelResults.subProduct'];
+    const { submodels: omittedSubmodels, ...requestParams } = table.params;
+    expect(omittedSubmodels).toEqual([{ id: 'sub-1', version: '01.00.000' }]);
+    let result: any;
+    await act(async () => {
+      result = await table.request(requestParams, {});
+    });
+    expect(mockGetProcessesByIdAndVersion).toHaveBeenLastCalledWith([], 'en', {
+      classification: [],
+      keyword: '',
+    });
+    expect(result).toEqual({ data: [], success: true });
   });
 
   it('requests an empty submodel table when only the main model is present', async () => {

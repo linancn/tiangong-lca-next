@@ -120,6 +120,25 @@ describe('manager display settings page', () => {
     mockList.mockResolvedValue({ data: [mockRow], success: true, total: 1 });
     mockSetDisplay.mockResolvedValue({ changedCount: 1, unchangedCount: 0 });
   });
+  it.each([
+    ['process', 'LCI result'],
+    ['flow', 'Product flow'],
+    ['source', 'External record'],
+  ])(
+    'renders %s subtype metadata without inventing values for other kinds',
+    (datasetKind, typeOfDataSet) => {
+      render(<Page />);
+      const column = mockTableProps.columns.find((item: any) => item.dataIndex === 'datasetKind');
+      const cell = render(
+        <div data-testid='rendered-subtype'>
+          {column.render(null, { datasetKind, typeOfDataSet })}
+        </div>,
+      );
+      expect(cell.getByTestId('rendered-subtype')).toHaveTextContent(
+        `${datasetKind} · ${typeOfDataSet}`,
+      );
+    },
+  );
   it.each(['member', 'admin', ''])(
     'denies direct entry for %s without candidate or command I/O',
     (access) => {

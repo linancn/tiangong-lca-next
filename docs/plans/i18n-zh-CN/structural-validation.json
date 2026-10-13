@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "98b606e304b75dc2e6f80fd0a0589df27b3feb64d419971bdd331c7f051ddc19",
+    "auditedInputDigest": "e7887edae380e823588b295a9beac664344e97e4c70d96220a57ada42a87753c",
     "validatedMessageCount": 3546,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "84a61a6416c6bdb366ac40e9ddb9ef55fa8d25726df180124300f13a5b6063df",
-    "dossierDigest": "b35e0e11b7e9ff863ec6a1cdc7974d33990bc7e7ae3abdf56c985deb1d950928",
+    "dossierDigest": "d5546e1c89c6db509d8b0ff67038fb42bfdaeecc4a336edf8cd4c17e9c5ace37",
     "typedContentDossierDigest": "cea189a77b03f66042197c8383d684813c09e3a0356684d325e62eaf73af4c99",
-    "routeEvidenceDigest": "4700896f581e28bf78eac9f478a829d9cb85dd1b59b7fe4e39e70ca94fe2512f",
+    "routeEvidenceDigest": "cb7b938bf5defe0410eb7f8c9a50daf6960e9ba305859726e000fc75d7796300",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "a4fc9e0d5fbcf40570e5068b502a91d0b8b42732da1e1fdee118795aa47e2c21",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "b35e0e11b7e9ff863ec6a1cdc7974d33990bc7e7ae3abdf56c985deb1d950928",
+        "dossierDigest": "d5546e1c89c6db509d8b0ff67038fb42bfdaeecc4a336edf8cd4c17e9c5ace37",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "78df58994abd374bad535d1efd63a30d0908a55496643132cf30856cec92546d"
+  "validationDigest": "0c91f2096c83bd246301ef17be7bcb5221f1b20c79ddc81c4121605d0009a5a5"
 }

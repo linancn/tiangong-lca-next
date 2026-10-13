@@ -5020,6 +5020,48 @@ describe('LCA Analysis classification scope', () => {
     });
   });
   it.each(['all_data', 'public_plus_owner_draft'] as const)(
+    'normalizes a nullable external dataset-type selection for the complete %s scope',
+    async (scope) => {
+      // JavaScript callers can supply null for an unselected control even though the typed API
+      // declares a string. Undefined is already normalized by the public default parameter.
+      const nullableSelection = null as unknown as string;
+      const result = await processesApi.listProcessesForLcaAnalysis(
+        { current: 2, pageSize: 50, classification },
+        'en',
+        scope,
+        '',
+        { modifiedAt: 'ascend' },
+        {},
+        'all',
+        nullableSelection,
+      );
+
+      expect(mockAuthGetSession).toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'query_dataset_catalog',
+        expect.objectContaining({
+          p_dataset_kind: 'process',
+          p_data_source: 'all_data',
+          p_filter_condition: { typeOfDataSet: 'all', classification },
+          p_version_scope: 'all',
+          p_owner_draft_only: scope === 'public_plus_owner_draft',
+          p_page_current: 2,
+          p_page_size: 50,
+          p_sort_by: 'modified_at',
+          p_sort_direction: 'asc',
+        }),
+      );
+      expect(result).toMatchObject({
+        data: [expect.objectContaining({ id: 'catalog-id', version: '01.00.001' })],
+        success: true,
+        total: 7,
+        page: 2,
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    },
+  );
+  it.each(['all_data', 'public_plus_owner_draft'] as const)(
     'filters the entire %s version scope before count and pagination',
     async (scope) => {
       const result = await processesApi.listProcessesForLcaAnalysis(

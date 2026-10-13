@@ -19,6 +19,7 @@ jest.mock('@/components/ToolBarButton', () => ({
 }));
 
 let mockCapturedTableProps: any;
+let mockOmitClassificationParam = false;
 
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -309,7 +310,9 @@ jest.mock('antd', () => {
         <select
           aria-label={props['aria-label']}
           value={value ?? ''}
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) =>
+            onChange(props.allowClear && event.target.value === '' ? undefined : event.target.value)
+          }
         >
           <option value=''>All types</option>
           {options.map((option: any) => (
@@ -386,11 +389,9 @@ jest.mock('@ant-design/pro-components', () => {
         filter: Record<string, any> = {},
         requestParams = latestPageInfoRef.current,
       ) => {
-        const result = await latestRequestRef.current?.(
-          { ...requestParams, ...latestParamsRef.current },
-          sort,
-          filter,
-        );
+        const nextParams = { ...requestParams, ...latestParamsRef.current };
+        if (mockOmitClassificationParam) delete nextParams.classification;
+        const result = await latestRequestRef.current?.(nextParams, sort, filter);
         setRows(result?.data ?? []);
         return result;
       },
@@ -501,6 +502,7 @@ jest.mock('@ant-design/pro-components', () => {
 describe('FlowsPage', () => {
   beforeEach(() => {
     mockCapturedTableProps = undefined;
+    mockOmitClassificationParam = false;
     jest.clearAllMocks();
     mockLocation = {
       pathname: '/mydata/flows',
@@ -742,6 +744,51 @@ describe('FlowsPage', () => {
         'team-1',
       ),
     );
+  });
+
+  it('clears the selected flow type and classification when the native allowClear control reports undefined', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlowsPage />);
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+    const typeSelector = screen.getByRole('combobox', { name: 'pages.flow.flowType' });
+    await user.selectOptions(typeSelector, 'Elementary flow');
+    await user.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    await user.selectOptions(typeSelector, '');
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { current: 1, pageSize: 50, classification: [], datasetFilters: { flowType: '' } },
+        {},
+        'en',
+        'my',
+        'team-1',
+        { flowType: '' },
+        'all',
+      ),
+    );
+    expect(typeSelector).toHaveValue('');
+    expect(screen.getByTestId('dataset-classification-filter')).toHaveAttribute('data-value', '[]');
+  });
+
+  it('uses an empty classification filter when the native request omits the optional parameter', async () => {
+    mockOmitClassificationParam = true;
+    renderWithProviders(<FlowsPage />);
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { current: 1, pageSize: 50, datasetFilters: { flowType: '' } },
+        {},
+        'en',
+        'my',
+        'team-1',
+        { flowType: '' },
+        'all',
+      ),
+    );
+    expect(mockGetFlowTableAll.mock.calls.at(-1)[0]).not.toHaveProperty('classification');
   });
 
   it('passes toolbar classification and type through every table request and keeps sort mapping', async () => {

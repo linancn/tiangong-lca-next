@@ -82,6 +82,17 @@ describe('ResponsiveDataList viewport measurement', () => {
     expect(measureDataListViewport(viewport)).toEqual({ height: 572, bodyHeight: 384 });
   });
 
+  it('treats absent page and card padding as zero without losing body space', () => {
+    const viewport = makeViewport();
+    const page = document.createElement('div');
+    page.className = 'ant-pro-page-container-children-container';
+    viewport.replaceWith(page);
+    page.append(viewport);
+    (viewport.querySelector('.responsive-data-list-card-body') as HTMLElement).style.paddingBottom =
+      '';
+    expect(measureDataListViewport(viewport)).toEqual({ height: 740, bodyHeight: 576 });
+  });
+
   it('uses fullscreen root geometry without reserving the page footer or drawer controls', () => {
     const viewport = makeViewport();
     const table = viewport.firstElementChild!;

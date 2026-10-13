@@ -285,7 +285,7 @@ jest.mock('@ant-design/pro-components', () => {
       () => ({
         setPageInfo: jest.fn(),
         reload: jest.fn(async () => {
-          const filter = { flowType: flowTypeFilterRef.current ? [flowTypeFilterRef.current] : [] };
+          const filter = flowTypeFilterRef.current ? { flowType: [flowTypeFilterRef.current] } : {};
           const result = await latestRequestRef.current(
             { ...latestParamsRef.current, pageSize: 10, current: 1 },
             {},
@@ -678,6 +678,46 @@ describe('FlowsSelectDrawer', () => {
         expect(mockGetFlowTableAll.mock.calls.at(-1)?.[0].classification).toEqual([]),
       );
       expect(mockGetFlowTableAll.mock.calls.at(-1)?.[3]).toBe(scope);
+    },
+  );
+  it.each([
+    ['co', 'Business Data'],
+    ['te', 'Team Data'],
+  ])(
+    'requests unfiltered %s lists and full-text results when no header flow type is selected',
+    async (scope, label) => {
+      renderWithProviders(
+        <FlowsSelectDrawer
+          buttonType='text'
+          buttonText='Choose unfiltered flow'
+          lang='en'
+          onData={jest.fn()}
+        />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Choose unfiltered flow' }));
+      await userEvent.click(screen.getByRole('button', { name: label }));
+      await waitFor(() =>
+        expect(mockGetFlowTableAll).toHaveBeenCalledWith(
+          expect.objectContaining({ current: 1, pageSize: 10, classification: [] }),
+          {},
+          'en',
+          scope,
+          [],
+          { flowType: '', asInput: undefined },
+        ),
+      );
+      expect(screen.getByRole('combobox', { name: 'Flow type filter' })).toHaveValue('');
+      await userEvent.type(screen.getByLabelText(scope), 'unfiltered keyword');
+      await userEvent.click(screen.getByRole('button', { name: `search-${scope}` }));
+      await waitFor(() =>
+        expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
+          expect.objectContaining({ current: 1, pageSize: 10, classification: [] }),
+          'en',
+          scope,
+          'unfiltered keyword',
+          { flowType: '', asInput: undefined },
+        ),
+      );
     },
   );
 });

@@ -242,6 +242,9 @@ jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
         <button type='button' onClick={() => onSelectionChange?.([])}>
           Mock clear selected processes
         </button>
+        <button type='button' onClick={() => onSelectionChange?.(['process-removed:01.00.000'])}>
+          Mock select removed process
+        </button>
       </div>
     );
   },
@@ -2271,6 +2274,18 @@ describe('LcaAnalysisPage', () => {
     expect(
       within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
     ).toBeDisabled();
+  });
+
+  it('rejects a stale root-selection event for a process absent from the current option map', async () => {
+    render(<LcaAnalysisPage />);
+    await waitForAnalysisInitialization();
+    fireEvent.click(screen.getByTestId('tab-path'));
+    const panel = screen.getByTestId('tab-panel-path');
+    fireEvent.click(within(panel).getByRole('button', { name: 'Mock select removed process' }));
+    expect(
+      within(panel).getByRole('button', { name: 'Run contribution path analysis' }),
+    ).toBeDisabled();
+    expect(submitLcaContributionPath).not.toHaveBeenCalled();
   });
 
   it('handles contribution path snapshot-building and failed async job states', async () => {

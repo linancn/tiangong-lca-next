@@ -729,6 +729,33 @@ describe('LifeCycleModelsPage', () => {
     );
   });
 
+  it('preserves Open Data filters, classification and selected institution in tg Hybrid search', async () => {
+    mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '?tid=public-team' };
+    mockGetDataSource.mockReturnValue('tg');
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
+        {
+          pageSize: 50,
+          current: 1,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        },
+        'en',
+        'tg',
+        'steel',
+        {},
+        'all',
+        { publicationFilter: 'all', sourceFilter: 'all' },
+        'public-team',
+      ),
+    );
+    expect(mockGetLifeCycleModelTablePgroongaSearch).not.toHaveBeenCalled();
+  });
+
   it('contributes rows successfully or with logged errors and executes the delete callback prop', async () => {
     const user = userEvent.setup();
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});

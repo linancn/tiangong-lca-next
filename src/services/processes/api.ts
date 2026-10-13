@@ -1545,7 +1545,6 @@ export async function getProcessesByIdAndVersion(
       matchesProcessExactSetClassification(row.classificationInformation, filters.classification) &&
       matchesProcessExactSetKeyword(row, filters.keyword),
   );
-  const result = { data: matchedRows };
   const locations = Array.from(
     new Set(matchedRows.map((row) => row['@location']).filter(Boolean)),
   ) as string[];
@@ -1557,51 +1556,49 @@ export async function getProcessesByIdAndVersion(
 
   let data: any[] = [];
   if (lang) {
-    data =
-      result?.data?.map((i: any) => {
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          lang: lang,
-          name: genProcessName(i.name ?? {}, lang),
-          generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-          // classification,
-          typeOfDataSet: i.typeOfDataSet ?? '-',
-          referenceYear: i['common:referenceYear'] ?? '-',
-          location: locationMap.get(i['@location']) ?? i['@location'] ?? '-',
-          modifiedAt: new Date(i.modified_at),
-          teamId: i.team_id,
-          modelId: i.model_id,
-          ...toProcessModelVersionField(i.model_version),
-        };
-      }) ?? [];
+    data = matchedRows.map((i: any) => {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: genProcessName(i.name ?? {}, lang),
+        generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
+        // classification,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: locationMap.get(i['@location']) ?? i['@location'] ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i.team_id,
+        modelId: i.model_id,
+        ...toProcessModelVersionField(i.model_version),
+      };
+    });
   } else {
-    data =
-      result?.data?.map((i: any) => {
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          lang: lang,
-          name: i.name,
-          typeOfDataSet: i.typeOfDataSet ?? '-',
-          referenceYear: i['common:referenceYear'] ?? '-',
-          location: i['@location'] ?? '-',
-          modifiedAt: new Date(i.modified_at),
-          teamId: i.team_id,
-          modelId: i.model_id,
-          ...toProcessModelVersionField(i.model_version),
-          userId: i.user_id,
-        };
-      }) ?? [];
+    data = matchedRows.map((i: any) => {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        lang: lang,
+        name: i.name,
+        typeOfDataSet: i.typeOfDataSet ?? '-',
+        referenceYear: i['common:referenceYear'] ?? '-',
+        location: i['@location'] ?? '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i.team_id,
+        modelId: i.model_id,
+        ...toProcessModelVersionField(i.model_version),
+        userId: i.user_id,
+      };
+    });
   }
 
   return {
     data: data,
     success: true,
     page: 1,
-    total: result.data?.length ?? 0,
+    total: matchedRows.length,
   };
 }
 

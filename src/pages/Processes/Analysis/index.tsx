@@ -856,7 +856,7 @@ const LcaAnalysisPage = () => {
     await loadProcessOptions(keyword, dataScope, 1, { resetKnownRows: true, classification });
   };
 
-  const changeProcessPage = (nextPage: number, nextPageSize = processPageSize) => {
+  const changeProcessPage = (nextPage: number, nextPageSize: number) => {
     const current = nextPageSize !== processPageSize ? 1 : nextPage;
     setProcessPageSize(nextPageSize);
     void loadProcessOptions(appliedProcessSearchKeyword, selectedDataScope, current, {
