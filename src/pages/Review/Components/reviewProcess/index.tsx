@@ -173,10 +173,12 @@ const ReviewProcessDetail: FC<Props> = ({
   const [initData, setInitData] = useState<any>({});
   const [exchangeDataSource, setExchangeDataSource] = useState<any>([]);
   const [spinning, setSpinning] = useState(false);
+  const [mutationPending, setMutationPending] = useState(false);
   const intl = useIntl();
   const { message } = App.useApp();
   const [refCheckData, setRefCheckData] = useState<any[]>([]);
   const [rejectedComments, setRejectedComments] = useState<any>([]);
+  const mutationPendingRef = useRef(false);
 
   const handletFromData = () => {
     if (fromData?.id) {
@@ -201,6 +203,9 @@ const ReviewProcessDetail: FC<Props> = ({
   };
 
   const temporarySave = async () => {
+    if (mutationPendingRef.current) return;
+    mutationPendingRef.current = true;
+    setMutationPending(true);
     try {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
       const submitData = {
@@ -226,7 +231,12 @@ const ReviewProcessDetail: FC<Props> = ({
       }
     } catch (error) {
       console.error(error);
+      message.error(
+        intl.formatMessage({ id: 'pages.action.error', defaultMessage: 'Action failed' }),
+      );
     } finally {
+      mutationPendingRef.current = false;
+      setMutationPending(false);
       setSpinning(false);
     }
   };
@@ -392,6 +402,9 @@ const ReviewProcessDetail: FC<Props> = ({
   };
 
   const handleReject = async (reason: string) => {
+    if (mutationPendingRef.current) return false;
+    mutationPendingRef.current = true;
+    setMutationPending(true);
     try {
       setSpinning(true);
       const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -405,24 +418,28 @@ const ReviewProcessDetail: FC<Props> = ({
         },
       };
       const result = await submitReviewCommentApi(reviewId, submitData, -3);
-      if (!result.error) {
-        message.success(
-          intl.formatMessage({
-            id: 'component.rejectReview.success',
-            defaultMessage: 'Rejected successfully!',
-          }),
-        );
-        setDrawerVisible(false);
-        actionRef?.current?.reload();
-      }
+      if (result.error) throw result.error;
+      message.success(
+        intl.formatMessage({
+          id: 'component.rejectReview.success',
+          defaultMessage: 'Rejected successfully!',
+        }),
+      );
+      setDrawerVisible(false);
+      actionRef?.current?.reload();
+      return true;
     } catch (error) {
+      console.error(error);
       message.error(
         intl.formatMessage({
           id: 'component.rejectReview.error',
           defaultMessage: 'Failed to reject, please try again!',
         }),
       );
+      return false;
     } finally {
+      mutationPendingRef.current = false;
+      setMutationPending(false);
       setSpinning(false);
     }
   };
@@ -475,7 +492,7 @@ const ReviewProcessDetail: FC<Props> = ({
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         footer={
-          tabType === 'review' && !hideButton ? (
+          tabType === 'review' && type === 'edit' && !hideButton ? (
             <Space className={styles.footer_right}>
               <RejectReview
                 buttonType='text'
@@ -486,11 +503,16 @@ const ReviewProcessDetail: FC<Props> = ({
                 key={1}
                 actionRef={actionRef}
                 onOk={handleReject}
+                disabled={mutationPending}
               />
-              <Button onClick={temporarySave}>
+              <Button onClick={temporarySave} disabled={mutationPending}>
                 <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
               </Button>
-              <Button type='primary' onClick={() => formRefEdit.current?.submit()}>
+              <Button
+                type='primary'
+                onClick={() => formRefEdit.current?.submit()}
+                disabled={mutationPending}
+              >
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space>
@@ -511,6 +533,9 @@ const ReviewProcessDetail: FC<Props> = ({
                 },
               }}
               onFinish={async () => {
+                if (mutationPendingRef.current) return false;
+                mutationPendingRef.current = true;
+                setMutationPending(true);
                 try {
                   setSpinning(true);
                   const fieldsValue = formRefEdit.current?.getFieldsValue();
@@ -522,27 +547,31 @@ const ReviewProcessDetail: FC<Props> = ({
                     },
                   };
                   const isRefCheck = await updateCommentJsonRefsToUnderReview(submitData);
-                  if (!isRefCheck) {
-                    setSpinning(false);
-                    return false;
-                  }
+                  if (!isRefCheck) return false;
 
                   const result = await submitReviewCommentApi(reviewId, submitData);
-                  if (!result.error) {
-                    message.success(
-                      intl.formatMessage({
-                        id: 'pages.review.ReviewProcessDetail.edit.success',
-                        defaultMessage: 'Review submitted successfully',
-                      }),
-                    );
-                    setDrawerVisible(false);
-                    actionRef?.current?.reload();
-                    setSpinning(false);
-                    return true;
-                  }
-                } catch (err) {
-                  console.error(err);
+                  if (result.error) throw result.error;
+                  message.success(
+                    intl.formatMessage({
+                      id: 'pages.review.ReviewProcessDetail.edit.success',
+                      defaultMessage: 'Review submitted successfully',
+                    }),
+                  );
+                  setDrawerVisible(false);
+                  actionRef?.current?.reload();
+                  return true;
+                } catch (error) {
+                  console.error(error);
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.action.error',
+                      defaultMessage: 'Action failed',
+                    }),
+                  );
+                  return false;
                 } finally {
+                  mutationPendingRef.current = false;
+                  setMutationPending(false);
                   setSpinning(false);
                 }
               }}

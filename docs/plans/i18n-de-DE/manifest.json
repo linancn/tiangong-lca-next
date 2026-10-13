@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "e020075d28c20efa14b6676163e929a2257d38a5b852ed3b2ce4ed164932d306",
+    "auditedInputDigest": "8f73fe0ec094b23ce9b68ea26eba42a0b7084b7767f3a0ef2bce67906dd1066f",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "tiangong-lca/platform"
   },
@@ -75,7 +75,7 @@
     "activeDynamicKeyCount": 323,
     "reservedKeyCount": 870,
     "productionSourceFileCount": 499,
-    "literalReferenceCount": 4312,
+    "literalReferenceCount": 4317,
     "dynamicCallsiteCount": 37,
     "dynamicCallsiteSummaryCount": 37,
     "registeredDynamicCallsiteCount": 37,
@@ -16064,7 +16064,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 91,
+          "line": 98,
           "column": 18,
           "symbol": "RejectReview",
           "defaultMessage": "Reject",
@@ -16079,7 +16079,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 91,
+              "line": 98,
               "column": 18,
               "kind": "formatMessage"
             }
@@ -16147,7 +16147,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 77,
+          "line": 83,
           "column": 9,
           "symbol": "handleOk",
           "defaultMessage": "Failed to reject, please try again!",
@@ -16155,8 +16155,17 @@
         },
         {
           "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+          "line": 1697,
+          "column": 9,
+          "symbol": "handleReject",
+          "defaultMessage": "Failed to reject, please try again!",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 420,
+          "line": 434,
           "column": 9,
           "symbol": "handleReject",
           "defaultMessage": "Failed to reject, please try again!",
@@ -16171,13 +16180,19 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 77,
+              "line": 83,
+              "column": 9,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+              "line": 1697,
               "column": 9,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 420,
+              "line": 434,
               "column": 9,
               "kind": "formatMessage"
             }
@@ -16245,7 +16260,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 124,
+          "line": 141,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Cancel",
@@ -16260,7 +16275,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 124,
+              "line": 141,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -16328,7 +16343,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 118,
+          "line": 135,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Confirm Reject",
@@ -16343,7 +16358,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 118,
+              "line": 135,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -16411,7 +16426,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 108,
+          "line": 121,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Reject Review",
@@ -16435,7 +16450,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 108,
+              "line": 121,
               "column": 11,
               "kind": "FormattedMessage"
             },
@@ -16518,7 +16533,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 132,
+          "line": 149,
           "column": 15,
           "symbol": "RejectReview",
           "defaultMessage": "Reject Reason",
@@ -16548,7 +16563,7 @@
             },
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 132,
+              "line": 149,
               "column": 15,
               "kind": "FormattedMessage"
             },
@@ -16622,7 +16637,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 150,
+          "line": 168,
           "column": 19,
           "symbol": "RejectReview",
           "defaultMessage": "Reject reason cannot exceed 1000 characters!",
@@ -16637,7 +16652,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 150,
+              "line": 168,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -16705,7 +16720,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 160,
+          "line": 178,
           "column": 28,
           "symbol": "RejectReview",
           "defaultMessage": "Please provide detailed reasons for rejection so that the submitter can understand what needs to be modified...",
@@ -16720,7 +16735,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 160,
+              "line": 178,
               "column": 28,
               "kind": "formatMessage"
             }
@@ -16788,7 +16803,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 141,
+          "line": 159,
           "column": 19,
           "symbol": "RejectReview",
           "defaultMessage": "Please enter the reject reason!",
@@ -16803,7 +16818,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 141,
+              "line": 159,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -16871,7 +16886,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 68,
+          "line": 73,
           "column": 9,
           "symbol": "handleOk",
           "defaultMessage": "Rejected successfully!",
@@ -16879,9 +16894,18 @@
         },
         {
           "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+          "line": 1686,
+          "column": 9,
+          "symbol": "handleReject",
+          "defaultMessage": "Rejected successfully!",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 410,
-          "column": 11,
+          "line": 423,
+          "column": 9,
           "symbol": "handleReject",
           "defaultMessage": "Rejected successfully!",
           "defaultMessageExpression": null
@@ -16895,14 +16919,20 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 68,
+              "line": 73,
+              "column": 9,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+              "line": 1686,
               "column": 9,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 410,
-              "column": 11,
+              "line": 423,
+              "column": 9,
               "kind": "formatMessage"
             }
           ]
@@ -47045,6 +47075,42 @@
           "symbol": "activate",
           "defaultMessage": "Action failed",
           "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+          "line": 1659,
+          "column": 9,
+          "symbol": "temporarySave",
+          "defaultMessage": "Action failed",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+          "line": 1879,
+          "column": 23,
+          "symbol": "ToolbarViewInfo",
+          "defaultMessage": "Action failed",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewProcess/index.tsx",
+          "line": 235,
+          "column": 9,
+          "symbol": "temporarySave",
+          "defaultMessage": "Action failed",
+          "defaultMessageExpression": null
+        },
+        {
+          "kind": "formatMessage",
+          "path": "src/pages/Review/Components/reviewProcess/index.tsx",
+          "line": 566,
+          "column": 21,
+          "symbol": "ReviewProcessDetail",
+          "defaultMessage": "Action failed",
+          "defaultMessageExpression": null
         }
       ],
       "defaultMessages": [
@@ -47069,6 +47135,30 @@
               "path": "src/pages/Review/Components/ReviewerProfile.tsx",
               "line": 108,
               "column": 13,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+              "line": 1659,
+              "column": 9,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+              "line": 1879,
+              "column": 23,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewProcess/index.tsx",
+              "line": 235,
+              "column": 9,
+              "kind": "formatMessage"
+            },
+            {
+              "path": "src/pages/Review/Components/reviewProcess/index.tsx",
+              "line": 566,
+              "column": 21,
               "kind": "formatMessage"
             }
           ]
@@ -47716,15 +47806,6 @@
         },
         {
           "kind": "FormattedMessage",
-          "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1751,
-          "column": 17,
-          "symbol": "ToolbarViewInfo",
-          "defaultMessage": "Cancel",
-          "defaultMessageExpression": null
-        },
-        {
-          "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/SelectReviewer.tsx",
           "line": 238,
           "column": 15,
@@ -47959,12 +48040,6 @@
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/Exchange/ioPortSelect.tsx",
               "line": 268,
               "column": 15,
-              "kind": "FormattedMessage"
-            },
-            {
-              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1751,
-              "column": 17,
               "kind": "FormattedMessage"
             },
             {
@@ -51870,7 +51945,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-          "line": 96,
+          "line": 98,
           "column": 24,
           "symbol": "inputFlowTool",
           "defaultMessage": "Input",
@@ -51909,7 +51984,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-              "line": 96,
+              "line": 98,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -53392,7 +53467,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1711,
+          "line": 1774,
           "column": 16,
           "symbol": "ToolbarViewInfo",
           "defaultMessage": "Basic information",
@@ -53419,7 +53494,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1711,
+              "line": 1774,
               "column": 16,
               "kind": "FormattedMessage"
             }
@@ -53828,7 +53903,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-          "line": 188,
+          "line": 190,
           "column": 24,
           "symbol": "refTool",
           "defaultMessage": "Reference node",
@@ -53855,7 +53930,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-              "line": 188,
+              "line": 190,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -54841,7 +54916,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-          "line": 137,
+          "line": 139,
           "column": 24,
           "symbol": "outputFlowTool",
           "defaultMessage": "Output",
@@ -54880,7 +54955,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex.tsx",
-              "line": 137,
+              "line": 139,
               "column": 24,
               "kind": "formatMessage"
             }
@@ -55466,7 +55541,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1757,
+          "line": 1827,
           "column": 17,
           "symbol": "ToolbarViewInfo",
           "defaultMessage": "Save",
@@ -55475,7 +55550,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 494,
+          "line": 516,
           "column": 17,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "Save",
@@ -55634,13 +55709,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1757,
+              "line": 1827,
               "column": 17,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 494,
+              "line": 516,
               "column": 17,
               "kind": "FormattedMessage"
             },
@@ -56436,16 +56511,16 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1754,
+          "line": 1824,
           "column": 17,
           "symbol": "ToolbarViewInfo",
-          "defaultMessage": null,
+          "defaultMessage": "Temporary Save",
           "defaultMessageExpression": null
         },
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 491,
+          "line": 509,
           "column": 17,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "Temporary Save",
@@ -56459,8 +56534,14 @@
           "placeholders": [],
           "locations": [
             {
+              "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
+              "line": 1824,
+              "column": 17,
+              "kind": "FormattedMessage"
+            },
+            {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 491,
+              "line": 509,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -86506,7 +86587,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1726,
+          "line": 1789,
           "column": 11,
           "symbol": "ToolbarViewInfo",
           "defaultMessage": "Model base information",
@@ -86533,7 +86614,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1726,
+              "line": 1789,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -88955,7 +89036,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1367,
+          "line": 1378,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data set version",
@@ -88994,7 +89075,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1367,
+              "line": 1378,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -89089,7 +89170,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1403,
+          "line": 1414,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Permanent data set URI",
@@ -89122,7 +89203,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1403,
+              "line": 1414,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -118469,7 +118550,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1569,
+          "line": 1580,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Access and use restrictions",
@@ -118502,7 +118583,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1569,
+              "line": 1580,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -118588,7 +118669,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1181,
+          "line": 1192,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Commissioner and goal",
@@ -118615,7 +118696,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1181,
+              "line": 1192,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -118701,7 +118782,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1515,
+          "line": 1526,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Copyright?",
@@ -118728,7 +118809,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1515,
+              "line": 1526,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -118814,7 +118895,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1247,
+          "line": 1258,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data entry by",
@@ -118841,7 +118922,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1247,
+              "line": 1258,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -118909,7 +118990,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1345,
+          "line": 1356,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Date of last revision",
@@ -118924,7 +119005,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1345,
+              "line": 1356,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -119019,7 +119100,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1215,
+          "line": 1226,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Intended applications",
@@ -119052,7 +119133,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1215,
+              "line": 1226,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -119138,7 +119219,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1554,
+          "line": 1565,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "License type",
@@ -119165,7 +119246,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1554,
+              "line": 1565,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -119841,7 +119922,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1203,
+          "line": 1214,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Project",
@@ -119874,7 +119955,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1203,
+              "line": 1214,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -119960,7 +120041,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1331,
+          "line": 1342,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Publication and ownership",
@@ -119987,7 +120068,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1331,
+              "line": 1342,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -120073,7 +120154,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1189,
+          "line": 1200,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Commissioner of data set",
@@ -120100,7 +120181,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1189,
+              "line": 1200,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120168,7 +120249,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1290,
+          "line": 1301,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Converted original data set from:",
@@ -120183,7 +120264,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1290,
+              "line": 1301,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120269,7 +120350,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1275,
+          "line": 1286,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data set format(s)",
@@ -120296,7 +120377,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1275,
+              "line": 1286,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120364,7 +120445,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1318,
+          "line": 1329,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Official approval of data set by producer/operator:",
@@ -120379,7 +120460,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1318,
+              "line": 1329,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120465,7 +120546,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1533,
+          "line": 1544,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Entities or persons with exclusive access to this data set",
@@ -120492,7 +120573,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1533,
+              "line": 1544,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120578,7 +120659,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1494,
+          "line": 1505,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Owner of data set",
@@ -120605,7 +120686,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1494,
+              "line": 1505,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120691,7 +120772,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1305,
+          "line": 1316,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data entry by:",
@@ -120718,7 +120799,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1305,
+              "line": 1316,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120804,7 +120885,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1231,
+          "line": 1242,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data set generator / modeller",
@@ -120831,7 +120912,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1231,
+              "line": 1242,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -120899,7 +120980,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1457,
+          "line": 1468,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Registration authority",
@@ -120914,7 +120995,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1457,
+              "line": 1468,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -120982,7 +121063,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1442,
+          "line": 1453,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Unchanged re-publication of:",
@@ -120997,7 +121078,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1442,
+              "line": 1453,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -121065,7 +121146,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1478,
+          "line": 1489,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Registration number",
@@ -121080,7 +121161,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1478,
+              "line": 1489,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -121166,7 +121247,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1261,
+          "line": 1272,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Time stamp (last saved)",
@@ -121193,7 +121274,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1261,
+              "line": 1272,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -121261,7 +121342,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1425,
+          "line": 1436,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Workflow and publication status",
@@ -121276,7 +121357,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1425,
+              "line": 1436,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -121537,7 +121618,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 198,
+          "line": 209,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Base name",
@@ -121570,7 +121651,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 198,
+              "line": 209,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -121638,7 +121719,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 363,
+          "line": 374,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data set valid until:",
@@ -121653,7 +121734,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 363,
+              "line": 374,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -121721,7 +121802,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 411,
+          "line": 422,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Geographical representativeness description",
@@ -121730,7 +121811,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 449,
+          "line": 460,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Geographical representativeness description",
@@ -121745,13 +121826,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 411,
+              "line": 422,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 449,
+              "line": 460,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -121846,7 +121927,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 233,
+          "line": 244,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Quantitative product or process properties",
@@ -121879,7 +121960,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 233,
+              "line": 244,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -121992,7 +122073,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 291,
+          "line": 302,
           "column": 11,
           "symbol": "defaultTabContent",
           "defaultMessage": "General comment",
@@ -122037,7 +122118,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 291,
+              "line": 302,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -122105,7 +122186,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 254,
+          "line": 265,
           "column": 17,
           "symbol": "defaultTabContent",
           "defaultMessage": "Identifier of sub-data set",
@@ -122120,7 +122201,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 254,
+              "line": 265,
               "column": 17,
               "kind": "FormattedMessage"
             }
@@ -122188,7 +122269,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 403,
+          "line": 414,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Location",
@@ -122203,7 +122284,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 403,
+              "line": 414,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -122271,7 +122352,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 389,
+          "line": 400,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Location",
@@ -122286,7 +122367,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 389,
+              "line": 400,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -122381,7 +122462,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 221,
+          "line": 232,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Mix and location types",
@@ -122414,7 +122495,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 221,
+              "line": 232,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -122482,7 +122563,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 520,
+          "line": 531,
           "column": 11,
           "symbol": "defaultTabContent",
           "defaultMessage": "Model description",
@@ -122497,7 +122578,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 520,
+              "line": 531,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -122619,7 +122700,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 194,
+          "line": 205,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Name",
@@ -122670,7 +122751,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 194,
+              "line": 205,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -122874,7 +122955,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 304,
+          "line": 315,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data set report, background info",
@@ -122901,7 +122982,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 304,
+              "line": 315,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -122969,7 +123050,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 507,
+          "line": 518,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Flow diagram(s) or picture(s)",
@@ -122984,7 +123065,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 507,
+              "line": 518,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -123052,7 +123133,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 494,
+          "line": 505,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Technology pictogram",
@@ -123067,7 +123148,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 494,
+              "line": 505,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -123135,7 +123216,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 344,
+          "line": 355,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Reference year",
@@ -123150,7 +123231,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 344,
+              "line": 355,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -123218,7 +123299,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 427,
+          "line": 438,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Sub-location(s)",
@@ -123227,7 +123308,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 441,
+          "line": 452,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Sub-location(s)",
@@ -123242,13 +123323,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 427,
+              "line": 438,
               "column": 13,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 441,
+              "line": 452,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -123316,7 +123397,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 266,
+          "line": 277,
           "column": 11,
           "symbol": "defaultTabContent",
           "defaultMessage": "Synonyms",
@@ -123331,7 +123412,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 266,
+              "line": 277,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -123399,7 +123480,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 483,
+          "line": 494,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Technical purpose of product or process",
@@ -123414,7 +123495,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 483,
+              "line": 494,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123482,7 +123563,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 465,
+          "line": 476,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Technological representativeness",
@@ -123497,7 +123578,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 465,
+              "line": 476,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123583,7 +123664,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 318,
+          "line": 329,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Life cycle model diagram(s) or screenshot(s)",
@@ -123610,7 +123691,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 318,
+              "line": 329,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123678,7 +123759,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 472,
+          "line": 483,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Technology description including background system",
@@ -123693,7 +123774,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 472,
+              "line": 483,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123761,7 +123842,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 330,
+          "line": 341,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Time representativeness",
@@ -123776,7 +123857,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 330,
+              "line": 341,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123844,7 +123925,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 374,
+          "line": 385,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Time representativeness description",
@@ -123859,7 +123940,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 374,
+              "line": 385,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -123954,7 +124035,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 208,
+          "line": 219,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Treatment, standards, routes",
@@ -123987,7 +124068,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 208,
+              "line": 219,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -124055,7 +124136,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 532,
+          "line": 543,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Variable / parameter",
@@ -124070,7 +124151,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 532,
+              "line": 543,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -124138,7 +124219,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 689,
+          "line": 700,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Comment, units, defaults",
@@ -124153,7 +124234,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 689,
+              "line": 700,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -124221,7 +124302,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 568,
+          "line": 579,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Formula",
@@ -124236,7 +124317,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 568,
+              "line": 579,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124304,7 +124385,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 631,
+          "line": 642,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Maximum value",
@@ -124319,7 +124400,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 631,
+              "line": 642,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124387,7 +124468,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 589,
+          "line": 600,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Mean value",
@@ -124402,7 +124483,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 589,
+              "line": 600,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124470,7 +124551,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 610,
+          "line": 621,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Minimum value",
@@ -124485,7 +124566,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 610,
+              "line": 621,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124553,7 +124634,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 546,
+          "line": 557,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Name of variable",
@@ -124568,7 +124649,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 546,
+              "line": 557,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124636,7 +124717,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 674,
+          "line": 685,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Relative standard deviation (95%) in %",
@@ -124651,7 +124732,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 674,
+              "line": 685,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124719,7 +124800,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 652,
+          "line": 663,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Uncertainty distribution type",
@@ -124734,7 +124815,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 652,
+              "line": 663,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -124999,7 +125080,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 973,
+          "line": 984,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Annual supply or production volume",
@@ -125014,7 +125095,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 973,
+              "line": 984,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -125318,7 +125399,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1037,
+          "line": 1048,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Completeness",
@@ -125333,7 +125414,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1037,
+              "line": 1048,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -125578,7 +125659,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1067,
+          "line": 1078,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Completeness elementary flows, per topic",
@@ -125593,7 +125674,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1067,
+              "line": 1078,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -125661,7 +125742,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1081,
+          "line": 1092,
           "column": 21,
           "symbol": "defaultTabContent",
           "defaultMessage": "completeness type",
@@ -125676,7 +125757,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1081,
+              "line": 1092,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -125744,7 +125825,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1104,
+          "line": 1115,
           "column": 21,
           "symbol": "defaultTabContent",
           "defaultMessage": "value",
@@ -125759,7 +125840,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1104,
+              "line": 1115,
               "column": 21,
               "kind": "FormattedMessage"
             }
@@ -125827,7 +125908,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1120,
+          "line": 1131,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Completeness other problem field(s)",
@@ -125842,7 +125923,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1120,
+              "line": 1131,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -125910,7 +125991,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1051,
+          "line": 1062,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Completeness product model",
@@ -125925,7 +126006,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1051,
+              "line": 1062,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -127173,7 +127254,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 997,
+          "line": 1008,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data collection period",
@@ -127188,7 +127269,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 997,
+              "line": 1008,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127256,7 +127337,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 852,
+          "line": 863,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data cut-off and completeness principles",
@@ -127271,7 +127352,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 852,
+              "line": 863,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127339,7 +127420,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 876,
+          "line": 887,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data selection and combination principles",
@@ -127354,7 +127435,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 876,
+              "line": 887,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127422,7 +127503,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 845,
+          "line": 856,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data sources, treatment, and representativeness",
@@ -127437,7 +127518,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 845,
+              "line": 856,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127505,7 +127586,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 900,
+          "line": 911,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data treatment and extrapolations principles",
@@ -127520,7 +127601,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 900,
+              "line": 911,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127588,7 +127669,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 864,
+          "line": 875,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviation from data cut-off and completeness principles / explanations",
@@ -127603,7 +127684,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 864,
+              "line": 875,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127671,7 +127752,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 797,
+          "line": 808,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviations from LCI method approaches / explanations",
@@ -127686,7 +127767,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 797,
+              "line": 808,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127754,7 +127835,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 764,
+          "line": 775,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviation from LCI method principle / explanations",
@@ -127769,7 +127850,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 764,
+              "line": 775,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127837,7 +127918,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 817,
+          "line": 828,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviation from modelling constants / explanations",
@@ -127852,7 +127933,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 817,
+              "line": 828,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -127920,7 +128001,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 888,
+          "line": 899,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviation from data selection and combination principles / explanations",
@@ -127935,7 +128016,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 888,
+              "line": 899,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -128003,7 +128084,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 912,
+          "line": 923,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Deviation from data treatment and extrapolations principles / explanations",
@@ -128018,7 +128099,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 912,
+              "line": 923,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -128322,7 +128403,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 716,
+          "line": 727,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "LCI method and allocation",
@@ -128337,7 +128418,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 716,
+              "line": 727,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -128405,7 +128486,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 783,
+          "line": 794,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "LCI method approaches",
@@ -128420,7 +128501,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 783,
+              "line": 794,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -128488,7 +128569,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 751,
+          "line": 762,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "LCI method principle",
@@ -128503,7 +128584,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 751,
+              "line": 762,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -128807,7 +128888,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 808,
+          "line": 819,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Modelling constants",
@@ -128822,7 +128903,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 808,
+              "line": 819,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -129126,7 +129207,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 960,
+          "line": 971,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Percentage supply or production covered",
@@ -129141,7 +129222,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 960,
+              "line": 971,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -129504,7 +129585,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 926,
+          "line": 937,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data handling report",
@@ -129519,7 +129600,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 926,
+              "line": 937,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -129587,7 +129668,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 940,
+          "line": 951,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "Data source(s) used for this data set",
@@ -129602,7 +129683,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 940,
+              "line": 951,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -129670,7 +129751,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 830,
+          "line": 841,
           "column": 15,
           "symbol": "defaultTabContent",
           "defaultMessage": "LCA methodology report",
@@ -129685,7 +129766,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 830,
+              "line": 841,
               "column": 15,
               "kind": "FormattedMessage"
             }
@@ -130107,7 +130188,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 985,
+          "line": 996,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Sampling procedure",
@@ -130122,7 +130203,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 985,
+              "line": 996,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -130249,7 +130330,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 730,
+          "line": 741,
           "column": 19,
           "symbol": "defaultTabContent",
           "defaultMessage": "Type of data set",
@@ -130264,7 +130345,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 730,
+              "line": 741,
               "column": 19,
               "kind": "FormattedMessage"
             }
@@ -130332,7 +130413,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1009,
+          "line": 1020,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Uncertainty adjustments",
@@ -130347,7 +130428,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1009,
+              "line": 1020,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -130442,7 +130523,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 704,
+          "line": 715,
           "column": 11,
           "symbol": "defaultTabContent",
           "defaultMessage": "Use advice for data set",
@@ -130451,7 +130532,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1021,
+          "line": 1032,
           "column": 13,
           "symbol": "defaultTabContent",
           "defaultMessage": "Use advice for data set",
@@ -130484,13 +130565,13 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 704,
+              "line": 715,
               "column": 11,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1021,
+              "line": 1032,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -131111,7 +131192,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 149,
+          "line": 160,
           "column": 9,
           "symbol": "tabList",
           "defaultMessage": "Administrative information",
@@ -131138,7 +131219,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 149,
+              "line": 160,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -131853,7 +131934,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 164,
+          "line": 175,
           "column": 9,
           "symbol": "tabList",
           "defaultMessage": "Compliance declarations",
@@ -131874,7 +131955,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 164,
+              "line": 175,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -131978,7 +132059,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 131,
+          "line": 142,
           "column": 9,
           "symbol": "tabList",
           "defaultMessage": "Life cycle model information",
@@ -132017,7 +132098,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 131,
+              "line": 142,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -132103,7 +132184,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 140,
+          "line": 151,
           "column": 9,
           "symbol": "tabList",
           "defaultMessage": "Modelling and validation",
@@ -132130,7 +132211,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 140,
+              "line": 151,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -136101,7 +136182,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 158,
+          "line": 169,
           "column": 9,
           "symbol": "tabList",
           "defaultMessage": "Validation",
@@ -136122,7 +136203,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 158,
+              "line": 169,
               "column": 9,
               "kind": "FormattedMessage"
             }
@@ -225849,7 +225930,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/RejectReview/index.tsx",
-          "line": 100,
+          "line": 113,
           "column": 11,
           "symbol": "RejectReview",
           "defaultMessage": "Reject Review",
@@ -225864,7 +225945,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/RejectReview/index.tsx",
-              "line": 100,
+              "line": 113,
               "column": 11,
               "kind": "FormattedMessage"
             }
@@ -226109,7 +226190,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1797,
+          "line": 1868,
           "column": 23,
           "symbol": "ToolbarViewInfo",
           "defaultMessage": "Review submitted successfully",
@@ -226118,8 +226199,8 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 533,
-          "column": 23,
+          "line": 555,
+          "column": 21,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "Review submitted successfully",
           "defaultMessageExpression": null
@@ -226133,14 +226214,14 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1797,
+              "line": 1868,
               "column": 23,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 533,
-              "column": 23,
+              "line": 555,
+              "column": 21,
               "kind": "formatMessage"
             }
           ]
@@ -226207,7 +226288,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 454,
+          "line": 471,
           "column": 13,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "Review Process",
@@ -226222,7 +226303,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 454,
+              "line": 471,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -226290,7 +226371,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 459,
+          "line": 476,
           "column": 13,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "View Review",
@@ -226305,7 +226386,7 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 459,
+              "line": 476,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -226555,7 +226636,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 434,
+          "line": 451,
           "column": 18,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "Review",
@@ -226576,7 +226657,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 434,
+              "line": 451,
               "column": 18,
               "kind": "FormattedMessage"
             }
@@ -226795,7 +226876,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 441,
+          "line": 458,
           "column": 13,
           "symbol": "ReviewProcessDetail",
           "defaultMessage": "View review details",
@@ -226816,7 +226897,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 441,
+              "line": 458,
               "column": 13,
               "kind": "FormattedMessage"
             }
@@ -247020,7 +247101,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 1635,
+          "line": 1649,
           "column": 9,
           "symbol": "temporarySave",
           "defaultMessage": "Temporarily saved successfully.",
@@ -247029,7 +247110,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-          "line": 217,
+          "line": 222,
           "column": 11,
           "symbol": "temporarySave",
           "defaultMessage": "Temporarily saved successfully.",
@@ -247044,13 +247125,13 @@
           "locations": [
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 1635,
+              "line": 1649,
               "column": 9,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/Review/Components/reviewProcess/index.tsx",
-              "line": 217,
+              "line": 222,
               "column": 11,
               "kind": "formatMessage"
             }
@@ -257449,7 +257530,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-          "line": 183,
+          "line": 194,
           "column": 17,
           "symbol": "defaultTabContent",
           "defaultMessage": "ID",
@@ -257479,7 +257560,7 @@
             },
             {
               "path": "src/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo.tsx",
-              "line": 183,
+              "line": 194,
               "column": 17,
               "kind": "FormattedMessage"
             },

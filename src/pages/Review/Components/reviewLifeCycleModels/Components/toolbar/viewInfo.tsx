@@ -32,6 +32,7 @@ import ComplianceItemView from '../../../Compliance/view';
 
 import ReveiwItemForm from '../../../ReviewForm/form';
 import ReviewItemView from '../../../ReviewForm/view';
+import RejectReview from '../../../RejectReview';
 
 import { RefCheckContext, RefCheckType } from '@/contexts/refCheckContext';
 import { ReffPath, checkReferences, getAllRefObj, refDataType } from '@/pages/Utils/review';
@@ -44,6 +45,7 @@ type Props = {
   reviewId: string;
   tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   actionRef?: any;
+  onReviewComplete?: () => void;
 };
 
 const getWorkflowAndPublicationStatusOptions = (value: string) => {
@@ -89,7 +91,15 @@ const getCopyrightOptions = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actionRef }) => {
+const ToolbarViewInfo: FC<Props> = ({
+  lang,
+  data,
+  type,
+  reviewId,
+  tabType,
+  actionRef,
+  onReviewComplete,
+}) => {
   const intl = useIntl();
   const { message } = App.useApp();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -97,6 +107,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
   const [spinning, setSpinning] = useState(false);
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const formRef = useRef<ProFormInstance>(undefined);
+  const mutationPendingRef = useRef(false);
   const onTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -1620,17 +1631,20 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           ),
         };
   const temporarySave = async () => {
-    const fieldsValue = formRef.current?.getFieldsValue(true);
-    const submitData = {
-      modellingAndValidation: {
-        complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
-        validation: fieldsValue?.modellingAndValidation?.validation,
-      },
-    };
+    if (mutationPendingRef.current) return;
+    mutationPendingRef.current = true;
+    try {
+      const fieldsValue = formRef.current?.getFieldsValue(true);
+      const submitData = {
+        modellingAndValidation: {
+          complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          validation: fieldsValue?.modellingAndValidation?.validation,
+        },
+      };
 
-    setSpinning(true);
-    const result = await saveReviewCommentDraftApi(reviewId, submitData);
-    if (!result.error) {
+      setSpinning(true);
+      const result = await saveReviewCommentDraftApi(reviewId, submitData);
+      if (result.error) throw result.error;
       message.success(
         intl.formatMessage({
           id: 'pages.review.temporarySaveSuccess',
@@ -1638,9 +1652,58 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
         }),
       );
       setDrawerVisible(false);
+      onReviewComplete?.();
       actionRef?.current?.reload();
+    } catch {
+      message.error(
+        intl.formatMessage({ id: 'pages.action.error', defaultMessage: 'Action failed' }),
+      );
+    } finally {
+      mutationPendingRef.current = false;
+      setSpinning(false);
     }
-    setSpinning(false);
+  };
+
+  const handleReject = async (reason: string) => {
+    if (mutationPendingRef.current) return false;
+    mutationPendingRef.current = true;
+    setSpinning(true);
+    try {
+      const fieldsValue = formRef.current?.getFieldsValue(true);
+      const result = await submitReviewCommentApi(
+        reviewId,
+        {
+          modellingAndValidation: {
+            complianceDeclarations: fieldsValue?.modellingAndValidation?.complianceDeclarations,
+            validation: fieldsValue?.modellingAndValidation?.validation,
+          },
+          comment: { message: reason },
+        },
+        -3,
+      );
+      if (result.error) throw result.error;
+      message.success(
+        intl.formatMessage({
+          id: 'component.rejectReview.success',
+          defaultMessage: 'Rejected successfully!',
+        }),
+      );
+      setDrawerVisible(false);
+      onReviewComplete?.();
+      actionRef?.current?.reload();
+      return true;
+    } catch {
+      message.error(
+        intl.formatMessage({
+          id: 'component.rejectReview.error',
+          defaultMessage: 'Failed to reject, please try again!',
+        }),
+      );
+      return false;
+    } finally {
+      mutationPendingRef.current = false;
+      setSpinning(false);
+    }
   };
 
   const updateCommentJsonRefsToUnderReview = async (data: any) => {
@@ -1745,15 +1808,22 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           setDrawerVisible(false);
         }}
         footer={
-          tabType === 'review' ? (
-            <Space size={'middle'} className={styles.footer_right}>
-              <Button onClick={() => setDrawerVisible(false)}>
-                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+          tabType === 'review' && type === 'edit' ? (
+            <Space className={styles.footer_right}>
+              <RejectReview
+                buttonType='text'
+                isModel
+                dataId={data.id}
+                dataVersion={data.version}
+                reviewId={reviewId}
+                actionRef={actionRef}
+                onOk={handleReject}
+                disabled={spinning}
+              />
+              <Button onClick={temporarySave} disabled={spinning}>
+                <FormattedMessage id='pages.button.temporarySave' defaultMessage='Temporary Save' />
               </Button>
-              <Button onClick={temporarySave}>
-                <FormattedMessage id='pages.button.temporarySave' />
-              </Button>
-              <Button onClick={() => formRef.current?.submit()} type='primary'>
+              <Button onClick={() => formRef.current?.submit()} type='primary' disabled={spinning}>
                 <FormattedMessage id='pages.button.save' defaultMessage='Save' />
               </Button>
             </Space>
@@ -1777,22 +1847,23 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                   },
                 }}
                 onFinish={async () => {
-                  const fieldsValue = formRef.current?.getFieldsValue(true);
-                  const submitData = {
-                    modellingAndValidation: {
-                      complianceDeclarations:
-                        fieldsValue?.modellingAndValidation?.complianceDeclarations,
-                      validation: fieldsValue?.modellingAndValidation?.validation,
-                    },
-                  };
-                  setSpinning(true);
-                  const isRefCheck = await updateCommentJsonRefsToUnderReview(submitData);
-                  if (!isRefCheck) {
-                    setSpinning(false);
-                    return false;
-                  }
-                  const result = await submitReviewCommentApi(reviewId, submitData);
-                  if (!result.error) {
+                  if (mutationPendingRef.current) return false;
+                  mutationPendingRef.current = true;
+                  try {
+                    const fieldsValue = formRef.current?.getFieldsValue(true);
+                    const submitData = {
+                      modellingAndValidation: {
+                        complianceDeclarations:
+                          fieldsValue?.modellingAndValidation?.complianceDeclarations,
+                        validation: fieldsValue?.modellingAndValidation?.validation,
+                      },
+                    };
+                    setSpinning(true);
+                    const isRefCheck = await updateCommentJsonRefsToUnderReview(submitData);
+                    if (!isRefCheck) return false;
+
+                    const result = await submitReviewCommentApi(reviewId, submitData);
+                    if (result.error) throw result.error;
                     message.success(
                       intl.formatMessage({
                         id: 'pages.review.ReviewProcessDetail.edit.success',
@@ -1800,10 +1871,21 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
                       }),
                     );
                     setDrawerVisible(false);
+                    onReviewComplete?.();
                     actionRef?.current?.reload();
+                    return true;
+                  } catch {
+                    message.error(
+                      intl.formatMessage({
+                        id: 'pages.action.error',
+                        defaultMessage: 'Action failed',
+                      }),
+                    );
+                    return false;
+                  } finally {
+                    mutationPendingRef.current = false;
+                    setSpinning(false);
                   }
-                  setSpinning(false);
-                  return true;
                 }}
               >
                 {Object.keys(tabContent).map((key) => (

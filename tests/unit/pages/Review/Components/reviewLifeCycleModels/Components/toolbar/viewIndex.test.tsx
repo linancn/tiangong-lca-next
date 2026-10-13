@@ -54,13 +54,16 @@ jest.mock('antd', () => {
 
 jest.mock('@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo', () => ({
   __esModule: true,
-  default: ({ data, type, reviewId, tabType, lang }: any) => (
+  default: ({ data, type, reviewId, tabType, lang, onReviewComplete }: any) => (
     <div data-testid='toolbar-view-info'>
       {`${type}:${reviewId}:${tabType}:${lang}:${
         data?.modellingAndValidation?.validation?.review?.length ?? 0
       }:${data?.modellingAndValidation?.complianceDeclarations?.compliance?.length ?? 0}:${
         data?.administrativeInformation?.dataEntryBy?.['common:timeStamp'] ?? 'none'
       }`}
+      <button type='button' onClick={onReviewComplete}>
+        complete review
+      </button>
     </div>
   ),
 }));
@@ -295,6 +298,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
   });
 
   it('merges review comments for reviewer tabs and renders view tools', async () => {
+    const onReviewComplete = jest.fn();
     render(
       <ToolbarView
         type='edit'
@@ -304,6 +308,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
         reviewId='review-1'
         tabType='review'
         drawerVisible
+        onReviewComplete={onReviewComplete}
       />,
     );
 
@@ -336,6 +341,8 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(screen.getByTestId('edge-exchange')).toHaveTextContent('false:edge-1:en');
     expect(screen.getByTestId('target-amount')).toHaveTextContent('node-1:false:en');
     expect(screen.getByTestId('control')).toHaveTextContent('zoomOut|zoomTo|zoomIn');
+    fireEvent.click(screen.getByRole('button', { name: 'complete review' }));
+    expect(onReviewComplete).toHaveBeenCalled();
   });
 
   it('keeps base review data and appends comments for assigned tabs', async () => {

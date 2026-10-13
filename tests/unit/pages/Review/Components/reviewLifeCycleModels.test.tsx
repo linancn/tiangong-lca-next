@@ -35,9 +35,21 @@ jest.mock('@/contexts/graphContext', () => ({
 
 jest.mock('@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewIndex', () => ({
   __esModule: true,
-  default: ({ id, version, lang, drawerVisible, type, reviewId, tabType }: any) => (
+  default: ({
+    id,
+    version,
+    lang,
+    drawerVisible,
+    type,
+    reviewId,
+    tabType,
+    onReviewComplete,
+  }: any) => (
     <div data-testid='toolbar-view'>
       {JSON.stringify({ id, version, lang, drawerVisible, type, reviewId, tabType })}
+      <button type='button' onClick={onReviewComplete}>
+        complete review
+      </button>
     </div>
   ),
 }));
@@ -153,6 +165,15 @@ describe('ReviewLifeCycleModelsDetail', () => {
     expect(screen.getByTestId('drawer')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
+  it('closes the outer model drawer after a review operation completes', async () => {
+    render(<ReviewLifeCycleModelsDetail {...baseProps} type='edit' />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'audit' }));
+    await userEvent.click(screen.getByRole('button', { name: 'complete review' }));
+
     expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
   });
 });

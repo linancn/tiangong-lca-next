@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
-lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
+lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused shared-modal, Process, and Lifecycle Model tests fit the existing testing strategy without reopening the improvement plan.'
 ---
 
 # Testing Strategy
