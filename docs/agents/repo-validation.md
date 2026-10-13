@@ -43,9 +43,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
-lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused component tests, lint, build, and the unchanged managed pre-push gate remain the required validation path.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

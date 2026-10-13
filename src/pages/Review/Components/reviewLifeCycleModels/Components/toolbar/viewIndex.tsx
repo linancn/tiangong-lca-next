@@ -35,6 +35,7 @@ type Props = {
   tabType: 'assigned' | 'review' | 'reviewer-rejected' | 'admin-rejected';
   drawerVisible: boolean;
   actionRef?: any;
+  onReviewComplete?: () => void;
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
@@ -48,6 +49,7 @@ const ToolbarView: FC<Props> = ({
   reviewId,
   tabType,
   actionRef,
+  onReviewComplete,
 }) => {
   const readOnlyCursor = 'move';
   const [spinning, setSpinning] = useState(false);
@@ -615,6 +617,7 @@ const ToolbarView: FC<Props> = ({
         data={infoData}
         reviewId={reviewId}
         tabType={tabType}
+        onReviewComplete={onReviewComplete}
       />
       <ProcessView
         id={nodes.find((node) => node.selected)?.data?.id ?? ''}

@@ -5,8 +5,8 @@
     "repository": "tiangong-lca/platform",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "e2bf80c5192159ab2b629b2551130bbeb13cfbebbec318ef7e57e7e9fac0743a",
-    "auditedInputDigest": "e020075d28c20efa14b6676163e929a2257d38a5b852ed3b2ce4ed164932d306"
+    "sourceManifestDigest": "f5da473e708b73a1ba803bac56cf28c9eacf7beb3657e5a150bd7ddfb08d0d07",
+    "auditedInputDigest": "8f73fe0ec094b23ce9b68ea26eba42a0b7084b7767f3a0ef2bce67906dd1066f"
   },
   "inventory": {
     "sourceMessageCount": 3546,
@@ -47,7 +47,7 @@
     "messageCount": 3546,
     "completeCount": 3546,
     "blockedCount": 0,
-    "dossierDigest": "063a5559177a7bd59f36baf1d2111a50e654b74668ecb6df06d551459f1cad29",
+    "dossierDigest": "a88aa622c4437abfc43f8a758a260091235477a9d85419a1e9221abe7b41ea90",
     "catalogDigest": "0ef0f83a8fb096abf241b472704025f726005a2425033852d0077bec1da1845b",
     "moduleCount": 32,
     "moduleDigest": "3b4f2df2201d552cc6e09b75bcebf64a30ac3511d401d79c50d4eb6e806195d3",
@@ -94,7 +94,7 @@
   },
   "usageIndex": {
     "source": "docs/plans/i18n-de-DE/manifest.json messages[*].references/moduleOwnership/dynamicFamilies",
-    "literalReferenceCount": 4312,
+    "literalReferenceCount": 4317,
     "dynamicCallsiteCount": 37,
     "glossaryRuleScope": "full target catalog at the automated quality gate",
     "onDemandCommand": "pnpm i18n:context:dossier --locale fr-FR --message <MESSAGE_ID>"
@@ -1322,5 +1322,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "80fc4af498b750e775ed07b04204107e700c4db2e9d2a79ae62553809a46d73d"
+  "contextDigest": "85263cfb5bea102341830976dff5aeb5ac8bccd12d6c07c412eb6ec8fb2e09b0"
 }

@@ -10,9 +10,10 @@ interface RejectReviewProps {
   dataVersion: string;
   isModel: boolean;
   targetTable?: ReviewSubmitDatasetTable;
-  actionRef: any;
+  actionRef?: any;
   buttonType?: 'icon' | 'text';
-  onOk?: (reason: string) => void | Promise<void>;
+  disabled?: boolean;
+  onOk?: (reason: string) => void | boolean | Promise<void | boolean>;
 }
 
 const RejectReview: React.FC<RejectReviewProps> = ({
@@ -21,6 +22,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   targetTable,
   actionRef,
   buttonType = 'icon',
+  disabled = false,
   onOk,
 }) => {
   const { message } = App.useApp();
@@ -28,12 +30,12 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   const wasOpenRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const pendingRef = useRef(false);
   const intl = useIntl();
 
   useEffect(() => {
     if (wasOpenRef.current && !open) {
       formRef?.current?.resetFields();
-      actionRef?.current?.reload();
     }
     wasOpenRef.current = open;
   }, [open]);
@@ -47,18 +49,21 @@ const RejectReview: React.FC<RejectReviewProps> = ({
   };
 
   const handleOk = async () => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     try {
       setLoading(true);
       const values = await formRef?.current?.validateFields();
+      const reason = values.reason.trim();
       if (onOk) {
-        await onOk(values.reason);
+        if ((await onOk(reason)) === false) return;
         setOpen(false);
         return;
       }
       const result = await rejectReviewApi(
         reviewId,
         targetTable ?? (isModel ? 'lifecyclemodels' : 'processes'),
-        values.reason,
+        reason,
       );
 
       if (result.error) {
@@ -72,6 +77,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
       );
       formRef?.current?.resetFields();
       setOpen(false);
+      actionRef?.current?.reload();
     } catch (error) {
       message.error(
         intl.formatMessage({
@@ -80,6 +86,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         }),
       );
     } finally {
+      pendingRef.current = false;
       setLoading(false);
     }
   };
@@ -93,10 +100,16 @@ const RejectReview: React.FC<RejectReviewProps> = ({
             defaultMessage: 'Reject',
           })}
         >
-          <Button size='small' shape='circle' icon={<FileExcelOutlined />} onClick={handleOpen} />
+          <Button
+            size='small'
+            shape='circle'
+            icon={<FileExcelOutlined />}
+            onClick={handleOpen}
+            disabled={disabled || loading}
+          />
         </Tooltip>
       ) : (
-        <Button onClick={handleOpen}>
+        <Button onClick={handleOpen} disabled={disabled || loading}>
           <FormattedMessage
             id='pages.review.ReviewProcessDetail.assigned.reject'
             defaultMessage='Reject Review'
@@ -114,6 +127,10 @@ const RejectReview: React.FC<RejectReviewProps> = ({
         onCancel={handleCancel}
         onOk={handleOk}
         confirmLoading={loading}
+        cancelButtonProps={{ disabled: loading }}
+        closable={!loading}
+        keyboard={!loading}
+        mask={{ closable: !loading }}
         okText={
           <FormattedMessage
             id='component.rejectReview.modal.confirm'
@@ -137,6 +154,7 @@ const RejectReview: React.FC<RejectReviewProps> = ({
             rules={[
               {
                 required: true,
+                whitespace: true,
                 message: (
                   <FormattedMessage
                     id='component.rejectReview.reason.required'

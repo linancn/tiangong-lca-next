@@ -35,16 +35,20 @@ jest.mock('@/style/custom.less', () => ({
 
 let proFormApi: any;
 let proFormValues: any = {};
+let mockTemporarySaveHandler: any = null;
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled, icon, ...rest }: any) => (
-    <button type='button' onClick={disabled ? undefined : onClick} disabled={disabled} {...rest}>
-      {icon}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, onClick, disabled, icon, ...rest }: any) => {
+    if (toText(children) === 'Temporary Save') mockTemporarySaveHandler = onClick;
+    return (
+      <button type='button' onClick={disabled ? undefined : onClick} disabled={disabled} {...rest}>
+        {icon}
+        {toText(children)}
+      </button>
+    );
+  };
 
   const Tooltip = ({ children }: any) => <>{children}</>;
   const Drawer = ({ open, children, footer, extra, title, getContainer, onClose }: any) =>
@@ -134,13 +138,17 @@ jest.mock('@ant-design/pro-components', () => ({
   ProFormInstance: {},
 }));
 
+let mockRejectHandler: any = null;
 jest.mock('@/pages/Review/Components/RejectReview', () => ({
   __esModule: true,
-  default: ({ onOk }: any) => (
-    <button type='button' onClick={() => onOk?.('Need more evidence')}>
-      Reject Stub
-    </button>
-  ),
+  default: ({ onOk }: any) => {
+    mockRejectHandler = onOk;
+    return (
+      <button type='button' onClick={() => onOk?.('Need more evidence')}>
+        Reject Stub
+      </button>
+    );
+  },
 }));
 
 jest.mock('@/pages/Review/Components/reviewProcess/tabsDetail', () => ({
@@ -232,6 +240,8 @@ describe('ReviewProcessDetail component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     proFormApi = null;
+    mockRejectHandler = null;
+    mockTemporarySaveHandler = null;
     proFormValues = {
       modellingAndValidation: {
         validation: { review: [] },
@@ -298,6 +308,18 @@ describe('ReviewProcessDetail component', () => {
     });
     expect(message.success).toHaveBeenCalledWith('Temporarily saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('ignores duplicate process temporary-save requests', async () => {
+    renderComponent();
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockTemporarySaveHandler).not.toBeNull());
+
+    await act(async () => {
+      await Promise.all([mockTemporarySaveHandler(), mockTemporarySaveHandler()]);
+    });
+
+    expect(mockSaveReviewCommentDraftApi).toHaveBeenCalledTimes(1);
   });
 
   it('tracks tab-level form and exchange callbacks from TabsDetail', async () => {
@@ -368,6 +390,18 @@ describe('ReviewProcessDetail component', () => {
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
+  it('ignores duplicate process approval submissions', async () => {
+    renderComponent();
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(proFormApi).toBeDefined());
+
+    await act(async () => {
+      await Promise.all([proFormApi.submit(), proFormApi.submit()]);
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledTimes(1);
+  });
+
   it('supports header close and drawer onClose dismissal paths', async () => {
     renderComponent();
 
@@ -433,6 +467,21 @@ describe('ReviewProcessDetail component', () => {
     );
     expect(message.success).toHaveBeenCalledWith('Rejected successfully!');
     expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('ignores duplicate process rejection requests', async () => {
+    renderComponent();
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    await waitFor(() => expect(mockRejectHandler).not.toBeNull());
+
+    await act(async () => {
+      await Promise.all([
+        mockRejectHandler('Need more evidence'),
+        mockRejectHandler('Need more evidence'),
+      ]);
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledTimes(1);
   });
 
   it('blocks submission when reference checking reports under-review dependencies', async () => {
@@ -853,7 +902,7 @@ describe('ReviewProcessDetail component', () => {
   });
 
   it('opens in view mode without review footer actions', async () => {
-    renderComponent({ type: 'view', tabType: 'assigned' });
+    renderComponent({ type: 'view', tabType: 'review' });
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
@@ -1262,9 +1311,12 @@ describe('ReviewProcessDetail component', () => {
     expect(screen.getByTestId('drawer')).toBeInTheDocument();
   });
 
-  it('logs submit failures after reference checks pass', async () => {
+  it('logs submit error payloads after reference checks pass', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('submit failed'));
+    mockSubmitReviewCommentApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('submit failed'),
+    });
 
     renderComponent();
 
@@ -1279,8 +1331,11 @@ describe('ReviewProcessDetail component', () => {
     consoleSpy.mockRestore();
   });
 
-  it('shows an error when rejecting through the review command fails', async () => {
-    mockSubmitReviewCommentApi.mockRejectedValueOnce(new Error('reject failed'));
+  it('shows an error when rejection returns an error payload', async () => {
+    mockSubmitReviewCommentApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('reject failed'),
+    });
 
     renderComponent();
 

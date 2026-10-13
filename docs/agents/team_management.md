@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-10-02
-lastReviewedCommit: ef8439efebc41d182d439e7d6b30b8eba939874a
-lastReviewedNote: 'Reviewed Platform #1157 after merging current dev; reviewer workload/status behavior and current ILCD, testing, locale, service, and governance contracts remain aligned without policy changes.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: reviewer rejection remains an advisory Comment transition; team ownership and Review Admin final-decision rules are unchanged.'
 ---
 
 # Team Management Reference

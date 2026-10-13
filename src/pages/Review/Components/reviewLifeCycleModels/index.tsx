@@ -146,6 +146,7 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
                 type={type}
                 reviewId={reviewId}
                 tabType={tabType}
+                onReviewComplete={() => setDrawerVisible(false)}
               />
             </Sider>
           </Layout>
