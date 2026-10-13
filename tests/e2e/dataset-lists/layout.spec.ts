@@ -186,7 +186,15 @@ test('mixed display pages share the layout and preserve dataset-kind filtering',
           name: getLocaleMessage('zh-CN', 'pages.table.title.classification'),
         })
         .click();
-      await page.locator('.ant-cascader-menu-item').filter({ hasText: '制造业' }).first().click();
+      const popup = page.locator('.ant-cascader-dropdown:visible');
+      await expect(popup).toBeVisible();
+      await expect
+        .poll(async () => {
+          const bounds = await popup.boundingBox();
+          return Boolean(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width);
+        })
+        .toBe(true);
+      await popup.locator('.ant-cascader-menu-item').filter({ hasText: '制造业' }).first().click();
       await expect
         .poll(() => queries[queries.length - 1]?.body.p_filter_condition?.classification?.length)
         .toBe(1);

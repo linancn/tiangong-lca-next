@@ -138,6 +138,8 @@ export default function DatasetClassificationFilter({
         ) : undefined
       }
       style={{ width: 220, maxWidth: '100%' }}
+      styles={{ popup: { root: { maxWidth: 'calc(100vw - 16px)', overflowX: 'auto' } } }}
+      popupAlign={{ overflow: { adjustX: true, adjustY: true, shiftX: true } }}
     />
   );
 }
