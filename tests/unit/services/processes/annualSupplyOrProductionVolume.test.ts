@@ -186,9 +186,14 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ).toEqual(['en', 'zh', 'ja', 'fr']);
   });
 
-  it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
-    expect(normalizeAnnualSupplyVolumeText('100 kg Steel', 'Steel')).toBe('100 kg Steel');
-    expect(normalizeAnnualSupplyVolumeText('100 old suffix', 'Steel')).toBe('100 Steel');
+  it('replaces legacy context and preserves only a conforming annual unit when lookup is unavailable', () => {
+    expect(normalizeAnnualSupplyVolumeText('100 narrative kg/year', 'kg/year')).toBe('100 kg/year');
+    expect(normalizeAnnualSupplyVolumeText('100 kg/year', '', { useDefaultSuffix: false })).toBe(
+      '100 kg/year',
+    );
+    expect(normalizeAnnualSupplyVolumeText('100 kg/年', '', { useDefaultSuffix: false })).toBe(
+      '100 kg/年',
+    );
     expect(normalizeAnnualSupplyVolumeText('100 old suffix', '', { useDefaultSuffix: false })).toBe(
       '100',
     );
@@ -230,8 +235,8 @@ describe('annualSupplyOrProductionVolume helpers', () => {
       lang: 'en',
     });
 
-    expect(suffix).toBe('kg Steel slab');
-    expect(normalizeAnnualSupplyVolumeText('100 old suffix', suffix)).toBe('100 kg Steel slab');
+    expect(suffix).toBe('kg/year');
+    expect(normalizeAnnualSupplyVolumeText('100 old suffix', suffix)).toBe('100 kg/year');
     expect(ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN.test('100 kg Steel slab')).toBe(true);
   });
 
@@ -253,7 +258,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         ],
         lang: 'en',
       }),
-    ).toBe('kilogram Steel slab');
+    ).toBe('kilogram/year');
   });
 
   it('builds unit lookup rows and merges resolved flow units into exchange rows', () => {
@@ -310,7 +315,6 @@ describe('annualSupplyOrProductionVolume helpers', () => {
       },
       {
         ...exchangeRows[1],
-        refUnitRes: { refUnitName: 'm3' },
       },
     ]);
 
@@ -343,7 +347,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         ],
         lang: 'en',
       }),
-    ).toBe('kg annual output');
+    ).toBe('kg/year');
 
     expect(
       deriveAnnualSupplyVolumeSuffix({
@@ -362,7 +366,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         ],
         lang: 'en',
       }),
-    ).toBe('kg functional unit');
+    ).toBe('kg/year');
   });
 
   it('does not use an undeclared reference-flow language and leaves suffix blank when none is selected', () => {
