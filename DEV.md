@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader tests await observable close completion under the existing strict act-warning guard. Runtime, dependency, branch, release and full-gate contracts are unchanged.'
+lastReviewedCommit: edf69d6216904e48c92f36fdaf96282acaf1abc3
+lastReviewedNote: 'Reviewed Platform #432 working tree against dev 7d74edeb: exact annual units, supported use advice and Process form siblings; local capture qualification is separate from business persistence and release. Existing ownership, dependency and full-gate contracts remain.'
 ---
 
 # Development Bootstrap
@@ -120,6 +120,28 @@ pnpm e2e:env:doctor
 ```
 
 `e2e:env:doctor` is read-only and never pulls, builds, authenticates, or writes production data. A missing image exits early with the exact installer command.
+
+## Process payload capture
+
+`scripts/qualification/process-capture-start.mjs` is a local diagnostic for the native Process **All Versions → Create Version** UI. It requires a clean committed candidate and pins backend reads/authentication to that commit's tracked main environment. It captures one exact Process/source-version command and aborts it before forwarding; it never returns a created version or successful save. Qualification and evidence limits are in [repo-validation](docs/agents/repo-validation.md#process-payload-capture-qualification).
+
+Choose three unused loopback ports. For example, start the unchanged app with its backend URL pointing only at the diagnostic gateway:
+
+```bash
+PORT=7320 SUPABASE_URL=http://127.0.0.1:7321 pnpm start:no-mock
+```
+
+In another terminal, set `PROCESS_CAPTURE_PROCESS_ID`, `PROCESS_CAPTURE_SOURCE_VERSION` and `PROCESS_CAPTURE_OUTPUT` to the authorized source identity and a new absolute private output file outside this repository. The output parent directory must already exist; existing files are never overwritten. Then run:
+
+```bash
+PROCESS_CAPTURE_DEV_ORIGIN=http://127.0.0.1:7320 \
+PROCESS_CAPTURE_APP_PORT=7321 PROCESS_CAPTURE_PARENT_PORT=7322 \
+node --import tsx scripts/qualification/process-capture-start.mjs
+```
+
+Open only the printed `parentOrigin` in a separate browser tab. Its cross-origin sandbox frame contains the original app; direct navigation to the gateway app is refused. Sign in through the visible native UI. Do not copy browser auth storage, inject application state, enable the production-writing E2E setup, or reuse an existing unsaved production form. A blocked prerequisite stays a failed diagnostic; do not expand the allowlist to force a save. WebSockets/HMR are blocked, so restart the candidate after source changes. Stop both local processes after the bounded check.
+
+For credential-free transport checks, run `pnpm test:ci --runInBand --runTestsByPath tests/unit/scripts/processCaptureServer.test.ts`. The separate visible browser probe is `node --import tsx scripts/qualification/process-capture-browser-probe.mjs "$PWD/.local/e2e-release/process-capture-browser.json"` after creating `.local/e2e-release`. It uses only synthetic loopback servers and prints the diagnostic parent URL; its fake upstream report is not scientific dataset acceptance.
 
 ## Default Work Loop
 

@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: reused localized list/filter controls and a separate synthetic layout suite do not change language registries, translation semantics, reference-data provenance, canonical semantic evidence contract or the retained final production authorization boundary.'
+lastReviewedCommit: edf69d6216904e48c92f36fdaf96282acaf1abc3
+lastReviewedNote: 'Reviewed Platform #432 working tree against dev 7d74edeb: exact annual units, supported use advice and Process form siblings; local capture qualification is separate from business persistence and release. Existing ownership, dependency and full-gate contracts remain.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

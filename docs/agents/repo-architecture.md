@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Updated for Platform #1213 working tree against base 2136fc6f8: native dataset toolbars, six base columns, measured table scrolling, complete classification queries, exact Model Result sets, Analysis server paging and filtered display contracts replace the prior layout description. No deployment or validation pass is asserted.'
+lastReviewedCommit: edf69d6216904e48c92f36fdaf96282acaf1abc3
+lastReviewedNote: 'Reviewed Platform #432 working tree against dev 7d74edeb: exact annual units, supported use advice and Process form siblings; local capture qualification is separate from business persistence and release. Existing ownership, dependency and full-gate contracts remain.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -55,6 +55,7 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
 | `src/services/general/tidasScalarStorage.ts` | canonical TIDAS year/percentage scalar normalization and the Process/Flow save-boundary issue format |
+| `src/services/processes/annualSupplyOrProductionVolume.ts`, `annualSupplyVolumeUnit.ts` | numeric annual formatting and exact versioned reference-unit resolution; the Process save boundary rechecks the unit without changing the server-owned allocator |
 | `src/services/general/aiSuggestion.ts` | authenticated AI suggestion enqueue, bounded polling, terminal validation, and versioned result decoding |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
@@ -64,6 +65,7 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, deterministic closed-simulator backend profile, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `scripts/qualification/**`, `playwright.closure-download.config.ts`, `tests/browser/**` | test-only exact-commit scope-closure Next adapter and loopback browser contract accepted by the Worker provider aggregator |
+| `scripts/qualification/process-capture-*` | local Process payload diagnostic: two-origin sandbox shell, audited read/auth gateway and one captured-and-aborted create-version request; no deployed product route or business-write proxy |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `playwright.dataset-lists.config.ts`, `tests/e2e/dataset-lists/**` | separately selected synthetic Chromium layout and list-request proof; local screenshots are not production or release qualification |
 | `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
