@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
-lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: the review-footer implementation uses the existing local commands and validation loop; bootstrap and development commands are unchanged.'
 ---
 
 # Development Bootstrap

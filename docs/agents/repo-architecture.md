@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: edaf564b
-lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: Process and Lifecycle Model reviewer actions remain within the existing Review frontend module and service boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
