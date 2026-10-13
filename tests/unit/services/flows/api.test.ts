@@ -3701,8 +3701,8 @@ describe('flow server classification query contract', () => {
     datasetFilters: { datasetId: 'id-filter' },
   };
   const filters = { ...params.datasetFilters, classification: params.classification };
-  let rpc: jest.SpyInstance;
-  let session: jest.SpyInstance;
+  let rpc: jest.SpiedFunction<(...args: any[]) => any>;
+  let session: jest.SpiedFunction<(...args: any[]) => any>;
   beforeEach(() => {
     const { supabase } = jest.requireMock('@/services/supabase');
     rpc = jest.spyOn(supabase, 'rpc').mockResolvedValue({ data: [], error: null });

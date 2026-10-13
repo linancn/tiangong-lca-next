@@ -430,7 +430,7 @@ describe('Flows workflow', () => {
     expect(firstCall[4]).toBe('team-open');
 
     expect(await screen.findByText('Open flow dataset')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Flows');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(
       within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: 'Create' }),
@@ -443,3 +443,23 @@ describe('Flows workflow', () => {
     expect(screen.getByText('export')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

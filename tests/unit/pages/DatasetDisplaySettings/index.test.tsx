@@ -197,6 +197,12 @@ describe('manager display settings page', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Type' }), { target: { value: 'flow' } });
     expect(mockTableProps.rowSelection.selectedRowKeys).toEqual([]);
     select();
+    fireEvent.click(screen.getByTestId('dataset-classification-filter'));
+    expect(mockTableProps.rowSelection.selectedRowKeys).toEqual([]);
+    expect(mockTableProps.params.classification).toEqual([
+      { scope: 'classification', code: 'C', path: ['C'] },
+    ]);
+    select();
     fireEvent.change(screen.getByRole('combobox', { name: 'Visibility' }), {
       target: { value: 'hidden' },
     });

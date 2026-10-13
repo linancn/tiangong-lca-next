@@ -1318,6 +1318,59 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getByRole('button', { name: 'Load LCIA profile' })).toBeEnabled();
   });
 
+  it.each([
+    ['profile', 'query', 'reject', 'Load LCIA profile'],
+    ['compare', 'query', 'resolve', 'Run analysis'],
+    ['compare', 'query', 'reject', 'Run analysis'],
+    ['grouped', 'query', 'resolve', 'Run grouped analysis'],
+    ['grouped', 'query', 'reject', 'Run grouped analysis'],
+    ['path', 'submit', 'resolve', 'Run contribution path analysis'],
+    ['path', 'result', 'resolve', 'Run contribution path analysis'],
+    ['path', 'result', 'reject', 'Run contribution path analysis'],
+  ])(
+    'discards stale %s %s %s responses after a filter changes the selection scope',
+    async (tab, stage, outcome, buttonName) => {
+      const pending = createDeferred<any>();
+      const service =
+        stage === 'query'
+          ? queryLcaResults
+          : stage === 'submit'
+            ? submitLcaContributionPath
+            : getLcaContributionPathResult;
+      service.mockImplementationOnce(() => pending.promise);
+      render(<LcaAnalysisPage />);
+      await waitForAnalysisInitialization();
+      if (tab !== 'profile') fireEvent.click(screen.getByTestId(`tab-${tab}`));
+      await waitFor(() => expect(screen.getByRole('button', { name: buttonName })).toBeEnabled());
+      fireEvent.click(screen.getByRole('button', { name: buttonName }));
+      await waitFor(() => expect(service).toHaveBeenCalled());
+      const previousLoads = listProcessesForLcaAnalysis.mock.calls.length;
+      fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+      await waitFor(() =>
+        expect(listProcessesForLcaAnalysis.mock.calls.length).toBeGreaterThan(previousLoads),
+      );
+      await act(async () => {
+        if (outcome === 'reject') pending.reject(new Error('stale-analysis-error'));
+        else
+          pending.resolve({
+            snapshot_id: 'stale-analysis-snapshot',
+            result_id: 'old-result',
+            source: 'all_unit',
+            mode: 'cache_hit',
+            data: stage === 'result' ? contributionPathArtifact : { values: {} },
+            meta: { computed_at: '2026-03-12T12:05:00Z' },
+          });
+        await pending.promise.catch(() => undefined);
+      });
+      expect(screen.queryByText('stale-analysis-snapshot')).not.toBeInTheDocument();
+      expect(screen.queryByText('stale-analysis-error')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: buttonName })).toHaveAttribute(
+        'data-loading',
+        'false',
+      );
+    },
+  );
+
   it('uses native page size choices and forwards classification and search from the table toolbar to the complete process query', async () => {
     listProcessesForLcaAnalysis.mockImplementation(
       async (params: { classification?: unknown[] }) => ({

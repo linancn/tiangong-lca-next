@@ -1,7 +1,7 @@
 // @ts-nocheck
 import UnitgroupsPage from '@/pages/Unitgroups';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../helpers/testUtils';
 
 jest.mock('@/contexts/AntdAppContext', () => ({
   __esModule: true,
@@ -542,6 +542,10 @@ describe('UnitgroupsPage', () => {
     expect(
       mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
     ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
     await userEvent.click(screen.getByTestId('dataset-classification-filter'));
     await waitFor(() =>
       expect(mockGetUnitGroupTableAll.mock.calls.at(-1)?.[0]).toEqual(

@@ -204,18 +204,6 @@ const TableList: FC = () => {
       },
     },
     {
-      ...dataListTextColumn<ProcessTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      sorter: true,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
-    },
-    {
       ...dataListTextColumn<ProcessTable>(180, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage
@@ -572,9 +560,6 @@ const TableList: FC = () => {
             key={`process-table:${dataSource}:${tid ?? ''}`}
             {...responsiveDataListTableProps}
             scroll={scroll}
-            onChange={(pagination) =>
-              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
-            }
             toolbar={getDataListToolbar({
               search: (
                 <Search
@@ -695,6 +680,7 @@ const TableList: FC = () => {
             }
             pagination={{
               ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
               ...getReferenceLookupPaginationProps(referenceLookup),
             }}
             toolBarRender={() => {

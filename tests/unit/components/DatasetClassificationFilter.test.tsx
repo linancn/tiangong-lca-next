@@ -33,6 +33,28 @@ describe('DatasetClassificationFilter', () => {
     });
   });
 
+  it('searches taxonomy labels and codes without changing the active server filter', async () => {
+    const onChange = jest.fn();
+    render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[]}
+        onChange={onChange}
+      />,
+    );
+    await waitFor(() => expect(classification).toHaveBeenCalled());
+    const input = screen.getByRole('combobox', { name: label });
+    fireEvent.mouseDown(input);
+    fireEvent.change(input, { target: { value: 'mineral' } });
+    await waitFor(() =>
+      expect(document.querySelector('.ant-cascader-dropdown')).toHaveTextContent(
+        'Mineral products',
+      ),
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('selects an ancestor using stable codes, then a complete descendant path', async () => {
     const onChange = jest.fn();
     render(

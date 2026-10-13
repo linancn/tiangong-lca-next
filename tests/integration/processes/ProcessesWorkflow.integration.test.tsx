@@ -725,7 +725,7 @@ describe('Processes workflow integration', () => {
     expect(firstCall[4]).toBe('team-1');
 
     expect(await screen.findByText('Open process dataset')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Processes');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(screen.queryByTestId('import-data')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Create Process' })).not.toBeInTheDocument();
@@ -738,3 +738,23 @@ describe('Processes workflow integration', () => {
     expect(screen.getByRole('button', { name: 'View review process-open-1' })).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "09eaedf93d9f336da8657463581ce5ba9cebc518650d91d3fd2e0c6d49a0c6ae",
+    "auditedInputDigest": "ea14e000e3289ccd2c0d760e19229d17bc0deee54a10b8456886bfdfec75c7bf",
     "validatedMessageCount": 3546,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "ae17a38fea1232e801f0f1689b2026d6135752a496a6b9faef9b4002a7a81d9a",
-    "dossierDigest": "09fd79011fbc19b944ce24bb34537c9f925fcb066358cfbd36cff2cac177f705",
+    "dossierDigest": "3f7af64ed7dceb1c098b649d07c650858dd70ebb6fb347fce2e7dc6b710700cf",
     "typedContentDossierDigest": "93ff72bef2323e7a766f111c3945669da9e0f3fc6c961dfebe977787d5d8b158",
-    "routeEvidenceDigest": "3a45d8897b390034c0a7bfc5dc86ec17d74ed31139855de728d5ed05df8c1836",
+    "routeEvidenceDigest": "4700896f581e28bf78eac9f478a829d9cb85dd1b59b7fe4e39e70ca94fe2512f",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "a4fc9e0d5fbcf40570e5068b502a91d0b8b42732da1e1fdee118795aa47e2c21",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "09fd79011fbc19b944ce24bb34537c9f925fcb066358cfbd36cff2cac177f705",
+        "dossierDigest": "3f7af64ed7dceb1c098b649d07c650858dd70ebb6fb347fce2e7dc6b710700cf",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "2c20160cc1133e8450b26d61aa2a90f68b03c5b9c576590468741e6fe380513b"
+  "validationDigest": "a11d3c3f92b7400bc46a42df9fb2bce93c2c5bf14ab250c2fa28122dfe73937d"
 }

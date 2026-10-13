@@ -257,18 +257,6 @@ const TableList: FC = () => {
       render: (_, row) => dataListText(row.shortName),
     },
     {
-      ...dataListTextColumn<SourceTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
-    },
-    {
       ...dataListTextColumn<SourceTable>(180, DATA_LIST_COLUMN_RESPONSIVE.desktop),
       title: (
         <FormattedMessage id='pages.source.publicationType' defaultMessage='Publication type' />
@@ -370,9 +358,6 @@ const TableList: FC = () => {
             key={`sources-table:${dataSource}:${tid ?? ''}`}
             {...responsiveDataListTableProps}
             scroll={scroll}
-            onChange={(pagination) =>
-              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
-            }
             toolbar={getDataListToolbar({
               search: (
                 <Search
@@ -439,6 +424,7 @@ const TableList: FC = () => {
             options={isMobileDataList ? false : { fullScreen: true }}
             pagination={{
               ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
               ...getReferenceLookupPaginationProps(referenceLookup),
             }}
             toolBarRender={() => {

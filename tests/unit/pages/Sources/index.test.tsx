@@ -468,6 +468,10 @@ describe('SourcesPage', () => {
     expect(
       mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
     ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
     await userEvent.click(screen.getByTestId('dataset-classification-filter'));
     await waitFor(() =>
       expect(mockGetSourceTableAll.mock.calls.at(-1)?.[0]).toEqual(

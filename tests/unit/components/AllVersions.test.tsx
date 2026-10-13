@@ -460,6 +460,13 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(trigger);
     await waitFor(() => expect(calls).toBe(1));
     fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
+    const requestCount = mockGetAllVersions.mock.calls.length;
+    await expect(mockVersionTableApi?.reload()).resolves.toEqual({
+      data: [],
+      total: 0,
+      success: false,
+    });
+    expect(mockGetAllVersions).toHaveBeenCalledTimes(requestCount);
     await act(async () => {
       resolveOld({ data: [{ version: '03.00.000' }], success: true });
       await old;

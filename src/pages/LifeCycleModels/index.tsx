@@ -185,18 +185,6 @@ const TableList: FC = () => {
       },
     },
     {
-      ...dataListTextColumn<LifeCycleModelTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      sorter: true,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
-    },
-    {
       ...dataListTextColumn<LifeCycleModelTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
@@ -395,9 +383,6 @@ const TableList: FC = () => {
             key={`lifecycle-model-table:${dataSource}:${tid ?? ''}`}
             {...responsiveDataListTableProps}
             scroll={scroll}
-            onChange={(pagination) =>
-              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
-            }
             toolbar={getDataListToolbar({
               search: (
                 <Search
@@ -482,6 +467,7 @@ const TableList: FC = () => {
             options={isMobileDataList ? false : { fullScreen: true }}
             pagination={{
               ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
               ...getReferenceLookupPaginationProps(referenceLookup),
             }}
             toolBarRender={() => {

@@ -135,7 +135,7 @@ jest.mock('@/components/TableFilter', () => {
   return {
     __esModule: true,
     default: ({ onChange }: any) => (
-      <select onChange={(event) => onChange?.(event.target.value)}>
+      <select aria-label='state-filter' onChange={(event) => onChange?.(event.target.value)}>
         <option value='all'>all</option>
         <option value='100'>state 100</option>
       </select>
@@ -407,11 +407,11 @@ describe('Flowproperties workflow integration', () => {
       expect(mockUpdateFlowproperties).toHaveBeenCalledWith('fp-1', '1.0.0', { updated: true }),
     );
 
-    await user.selectOptions(screen.getByRole('combobox'), '100');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'state-filter' }), '100');
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -447,7 +447,7 @@ describe('Flowproperties workflow integration', () => {
     expect(firstCall[4]).toBe('team-open');
 
     expect(await screen.findByText('Open Water mass')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Flow Properties');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(
       within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
@@ -460,3 +460,23 @@ describe('Flowproperties workflow integration', () => {
     expect(screen.getByText('export')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

@@ -2,6 +2,8 @@
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
 
+let mockLatestDatasetSelectorTableProps: any = null;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -246,6 +248,7 @@ jest.mock('@ant-design/pro-components', () => {
     toolBarRender,
     columns = [],
     toolbar,
+    rowKey,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
@@ -269,6 +272,8 @@ jest.mock('@ant-design/pro-components', () => {
       [],
     );
 
+    mockLatestDatasetSelectorTableProps = { rowKey, rowSelection, params, api };
+
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = api;
@@ -282,7 +287,7 @@ jest.mock('@ant-design/pro-components', () => {
         {toolbar?.filter}
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
-          <div key={`${row.id}:${row.version}`}>
+          <div key={rowKey(row)}>
             {columns.map((column: any, index: number) => (
               <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
                 {column.render
@@ -544,6 +549,56 @@ describe('ContactSelectDrawer', () => {
 
     expect(screen.getByRole('dialog', { name: 'Select Contact' })).toBeInTheDocument();
   });
+  it.each([
+    ['tg', 'TianGong Data'],
+    ['co', 'Business Data'],
+    ['my', 'My Data'],
+    ['te', 'Team Data'],
+  ])(
+    'clears exact-version selection and resets the %s query when classification changes',
+    async (source, tabTitle) => {
+      const row = {
+        id: 'same-dataset',
+        version: '01.00.000',
+        name: 'Dataset row',
+        shortName: 'Dataset row',
+        classification: 'Class C',
+        email: 'dataset@example.com',
+        publicationType: 'report',
+        refUnitRes: { name: [], refUnitName: 'unit', refUnitGeneralComment: '' },
+      };
+      mockGetContactTableAll.mockResolvedValue({ data: [row], success: true });
+      const onData = jest.fn();
+      renderWithProviders(<ContactSelectDrawer buttonType='text' lang='en' onData={onData} />);
+      await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+      if (source !== 'tg') await userEvent.click(screen.getByRole('button', { name: tabTitle }));
+      await waitFor(() => expect(mockGetContactTableAll.mock.calls.at(-1)[3]).toBe(source));
+      await userEvent.click(await screen.findByRole('button', { name: 'Dataset row' }));
+      expect(mockLatestDatasetSelectorTableProps.rowSelection.selectedRowKeys).toEqual([
+        'same-dataset:01.00.000',
+      ]);
+      expect(mockLatestDatasetSelectorTableProps.rowKey(row)).toBe('same-dataset:01.00.000');
+      expect(mockLatestDatasetSelectorTableProps.rowKey({ ...row, version: '02.00.000' })).toBe(
+        'same-dataset:02.00.000',
+      );
+      const api = mockLatestDatasetSelectorTableProps.api;
+      api.setPageInfo.mockClear();
+      await userEvent.selectOptions(screen.getByLabelText('Classification'), 'C');
+      await waitFor(() =>
+        expect(mockGetContactTableAll.mock.calls.at(-1)[0].classification).toEqual([
+          { scope: 'classification', code: 'C', path: ['C'] },
+        ]),
+      );
+      expect(mockLatestDatasetSelectorTableProps.rowSelection.selectedRowKeys).toEqual([]);
+      expect(api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      expect(mockGetContactTableAll.mock.calls.at(-1)[3]).toBe(source);
+      await userEvent.selectOptions(screen.getByLabelText('Classification'), '');
+      await waitFor(() =>
+        expect(mockGetContactTableAll.mock.calls.at(-1)[0].classification).toEqual([]),
+      );
+      expect(onData).not.toHaveBeenCalled();
+    },
+  );
 });
 
 jest.mock('@/components/DatasetClassificationFilter', () => ({

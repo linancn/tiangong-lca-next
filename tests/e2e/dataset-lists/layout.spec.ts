@@ -118,12 +118,18 @@ test('classification combines with paging, full text and reference lookup on the
   await root.locator('.ant-pagination-item-2').click();
   await expect.poll(() => queries[queries.length - 1]?.body.p_page_current).toBe(2);
   await expect(root.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(26);
+  await expect(
+    root.locator('.ant-table-tbody > tr[data-row-key]').first().locator('td').first(),
+  ).toHaveText('51');
   const search = root.locator('input[type="search"]');
   await search.fill('水泥');
   await search.press('Enter');
   await expect.poll(() => queries[queries.length - 1]?.rpc).toBe('search_processes');
   expect(queries[queries.length - 1]?.body.filter_condition.classification).toHaveLength(1);
   expect(queries[queries.length - 1]?.body.page_current).toBe(1);
+  await expect(
+    root.locator('.ant-table-tbody > tr[data-row-key]').first().locator('td').first(),
+  ).toHaveText('1');
   await root
     .getByRole('checkbox', { name: getLocaleMessage('zh-CN', 'pages.search.referenceLookup') })
     .check();
@@ -133,6 +139,9 @@ test('classification combines with paging, full text and reference lookup on the
     .poll(() => queries[queries.length - 1]?.rpc)
     .toBe('search_dataset_uuid_mentions_page');
   expect(queries[queries.length - 1]?.body.p_filter_condition.classification).toHaveLength(1);
+  await expect(
+    root.locator('.ant-table-tbody > tr[data-row-key]').first().locator('td').first(),
+  ).toHaveText('1');
   await page.screenshot({
     path: testInfo.outputPath('process-classification-reference.png'),
     fullPage: true,
@@ -235,6 +244,7 @@ test('version drawer and table fullscreen recalculate their own scroll boundary'
   const drawer = page.locator('.ant-drawer:visible').last();
   await expect(drawer).toBeVisible();
   await expect(drawer.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(50);
+  await expect(drawer.locator('.ant-pagination')).toContainText('137');
   const pagination = await drawer.locator('.ant-pagination').boundingBox();
   expect(pagination!.y + pagination!.height).toBeLessThanOrEqual(900);
   await page.screenshot({ path: testInfo.outputPath('process-all-versions.png'), fullPage: true });
@@ -252,6 +262,8 @@ test('version drawer and table fullscreen recalculate their own scroll boundary'
     .toBe(true);
   await page.screenshot({ path: testInfo.outputPath('process-fullscreen.png'), fullPage: true });
   await page.evaluate(() => document.exitFullscreen());
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement === null)).toBe(true);
+  await page.setViewportSize({ width: 1152, height: 720 });
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setDeviceMetricsOverride', {
     width: 1152,
@@ -260,10 +272,14 @@ test('version drawer and table fullscreen recalculate their own scroll boundary'
     mobile: false,
   });
   await expect.poll(() => page.evaluate(() => innerHeight)).toBe(720);
+  await assertToolbarContained(root);
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1))
+    .toBe(true);
   await expect
     .poll(async () => {
       const rect = await root.locator('.ant-pagination').boundingBox();
-      return rect!.y + rect!.height <= 900;
+      return rect!.y + rect!.height <= 720 && rect!.x >= 0 && rect!.x + rect!.width <= 1152;
     })
     .toBe(true);
   await page.screenshot({ path: testInfo.outputPath('process-zoom-125.png'), fullPage: true });
@@ -342,6 +358,8 @@ test('nested Flow selectors retain real metadata and usable controls in every so
       const footer = await flowDrawer.locator('.ant-drawer-footer').boundingBox();
       expect(pagination!.y + pagination!.height).toBeLessThanOrEqual(footer!.y);
       await page.mouse.move(0, 0);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.ant-tabs-dropdown:visible')).toHaveCount(0);
       await page.screenshot({
         path: testInfo.outputPath(`flow-selector-tab${index}-${width}.png`),
         fullPage: true,
@@ -414,7 +432,64 @@ test('native toolbar remains contained with long locale labels and the dark them
     })
     .click();
   const root = page.locator('.responsive-data-list-viewport').first();
+  await expect
+    .poll(() =>
+      root.locator('.responsive-data-list-card').evaluate((card) => {
+        const background = getComputedStyle(card)
+          .backgroundColor.match(/\d+/g)
+          ?.slice(0, 3)
+          .map(Number);
+        return Boolean(background && background.every((channel) => channel < 80));
+      }),
+    )
+    .toBe(true);
   await assertToolbarContained(root);
   await page.mouse.move(0, 0);
+  await expect(page.locator('.ant-tooltip:visible')).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('process-dark.png'), fullPage: true });
+});
+
+test('analysis candidate tables retain common metadata and toolbar controls on narrow screens', async ({
+  page,
+}, testInfo) => {
+  await installDatasetListFixture(page);
+  await signInViaUi(page);
+  await selectAppLocaleThroughUi(page, 'zh-CN');
+  await page.goto('/#/mydata/processes/analysis');
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page
+      .getByRole('tab', {
+        name: getLocaleMessage('zh-CN', 'pages.process.lca.page.tab.compare'),
+        exact: true,
+      })
+      .click();
+    const table = page
+      .getByRole('tabpanel')
+      .filter({ visible: true })
+      .locator('.ant-table-wrapper')
+      .first();
+    await expect(table.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(50);
+    const headers = await table.locator('th').allTextContents();
+    const start = headers.indexOf('序号');
+    expect(headers.slice(start, start + 6)).toEqual([
+      '序号',
+      '名称',
+      '地理位置',
+      '参考年份',
+      '数据集类型',
+      '版本',
+    ]);
+    await expect(
+      table.getByRole('combobox', {
+        name: getLocaleMessage('zh-CN', 'pages.table.title.classification'),
+      }),
+    ).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1))
+      .toBe(true);
+    await table.locator('.ant-table-title').scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    await page.screenshot({ path: testInfo.outputPath(`analysis-candidates-${width}.png`) });
+  }
 });

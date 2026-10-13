@@ -313,6 +313,89 @@ describe('ModelResult', () => {
     expect(mockGetProcessesByIdAndVersion.mock.calls.at(-1)[0]).toHaveLength(70);
   });
 
+  it('applies independent main/subproduct searches and resets subproduct paging to the complete exact set', async () => {
+    const submodels = Array.from({ length: 70 }, (_, index) => ({
+      id: `sub-${index + 1}`,
+      version: '01.00.000',
+    }));
+    mockGetProcessesByIdAndVersion.mockImplementation(
+      async (references: any[], lang: string, filters: any) => {
+        const data = references
+          .filter((reference) => !filters.keyword || reference.id === filters.keyword)
+          .map((reference) => ({ ...reference, name: `${lang}-${reference.id}` }));
+        return { data, success: true, total: data.length };
+      },
+    );
+    renderWithProviders(
+      <ModelResult
+        submodels={submodels}
+        modelId='main'
+        modelVersion='02.00.000'
+        lang='en'
+        actionType='view'
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /model result/i }));
+    const main = within(
+      screen.getByRole('region', { name: 'pages.lifeCycleModel.modelResults.mainProduct' }),
+    );
+    const sub = within(
+      screen.getByRole('region', { name: 'pages.lifeCycleModel.modelResults.subProduct' }),
+    );
+    await waitFor(() => expect(main.getByText('en-main')).toBeInTheDocument());
+    await userEvent.selectOptions(main.getByLabelText('Classification'), 'C');
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith(
+        [{ id: 'main', version: '02.00.000' }],
+        'en',
+        { classification: [{ scope: 'classification', code: 'C', path: ['C'] }], keyword: '' },
+      ),
+    );
+    await userEvent.type(main.getByLabelText('Model product search'), 'main');
+    await userEvent.click(main.getByRole('button', { name: 'Search' }));
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith(
+        [{ id: 'main', version: '02.00.000' }],
+        'en',
+        { classification: [{ scope: 'classification', code: 'C', path: ['C'] }], keyword: 'main' },
+      ),
+    );
+    expect(mockModelTableProps['pages.lifeCycleModel.modelResults.subProduct'].params.keyword).toBe(
+      '',
+    );
+    await userEvent.selectOptions(main.getByLabelText('Classification'), '');
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith(
+        [{ id: 'main', version: '02.00.000' }],
+        'en',
+        { classification: [], keyword: 'main' },
+      ),
+    );
+    await userEvent.click(sub.getByRole('button', { name: 'Next page' }));
+    await waitFor(() => expect(sub.getByText('en-sub-61')).toBeInTheDocument());
+    await userEvent.type(sub.getByLabelText('Model product search'), 'sub-61');
+    await userEvent.click(sub.getByRole('button', { name: 'Search' }));
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenLastCalledWith(submodels, 'en', {
+        classification: [],
+        keyword: 'sub-61',
+      }),
+    );
+    await waitFor(() => expect(sub.getByText('en-sub-61')).toBeInTheDocument());
+    expect(sub.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
+    expect(main.getByText('en-main')).toBeInTheDocument();
+    await userEvent.clear(sub.getByLabelText('Model product search'));
+    await userEvent.click(sub.getByRole('button', { name: 'Search' }));
+    await waitFor(() =>
+      expect(mockGetProcessesByIdAndVersion).toHaveBeenLastCalledWith(submodels, 'en', {
+        classification: [],
+        keyword: '',
+      }),
+    );
+    await waitFor(() => expect(sub.getByText('en-sub-1')).toBeInTheDocument());
+    expect(sub.queryByText('en-sub-61')).not.toBeInTheDocument();
+  });
+
   it('rejects an earlier complete result when a newer classification request has already returned', async () => {
     let resolveEarlier: (value: any) => void = () => {};
     const earlier = new Promise((resolve) => {

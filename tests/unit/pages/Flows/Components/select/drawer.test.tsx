@@ -1,6 +1,6 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -11,6 +11,8 @@ const toText = (node: any): string => {
   if (node?.props?.children) return toText(node.props.children);
   return '';
 };
+
+let mockLatestFlowSelectorTableProps: any;
 
 const mockGetFlowTableAll = jest.fn(
   async (_params: any, _sort: any, _lang: string, dataSource: string) => ({
@@ -62,8 +64,6 @@ const mockFlowHybridSearch = jest.fn(
     success: true,
   }),
 );
-
-let mockNextRequestFilter: any = {};
 
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
@@ -270,8 +270,12 @@ jest.mock('@ant-design/pro-components', () => {
     toolBarRender,
     columns = [],
     toolbar,
+    rowKey,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const [flowTypeFilter, setFlowTypeFilter] = React.useState('');
+    const flowTypeFilterRef = React.useRef(flowTypeFilter);
+    flowTypeFilterRef.current = flowTypeFilter;
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
@@ -281,8 +285,7 @@ jest.mock('@ant-design/pro-components', () => {
       () => ({
         setPageInfo: jest.fn(),
         reload: jest.fn(async () => {
-          const filter = mockNextRequestFilter;
-          mockNextRequestFilter = {};
+          const filter = { flowType: flowTypeFilterRef.current ? [flowTypeFilterRef.current] : [] };
           const result = await latestRequestRef.current(
             { ...latestParamsRef.current, pageSize: 10, current: 1 },
             {},
@@ -295,20 +298,36 @@ jest.mock('@ant-design/pro-components', () => {
       [],
     );
 
+    mockLatestFlowSelectorTableProps = { rowKey, rowSelection, params, api };
+
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = api;
       }
       api.reload();
-    }, [actionRef, api, request]);
+    }, [actionRef, api, request, flowTypeFilter]);
 
     return (
       <div>
+        <select
+          aria-label='Flow type filter'
+          value={flowTypeFilter}
+          onChange={(event) => setFlowTypeFilter(event.target.value)}
+        >
+          <option value=''>All flow types</option>
+          {(columns.find((column: any) => column.dataIndex === 'flowType')?.filters ?? []).map(
+            (option: any) => (
+              <option key={option.value} value={option.value}>
+                {option.text}
+              </option>
+            ),
+          )}
+        </select>
         {toolbar?.search}
         {toolbar?.filter}
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
-          <div key={`${row.id}:${row.version}`}>
+          <div key={rowKey(row)} data-testid={`flow-selector-row-${rowKey(row)}`}>
             {columns.map((column: any, index: number) => (
               <div key={`${row.id}:${row.version}:${column.dataIndex ?? index}`}>
                 {column.render
@@ -344,7 +363,7 @@ describe('FlowsSelectDrawer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockNextRequestFilter = {};
+    mockLatestFlowSelectorTableProps = undefined;
   });
 
   it('opens, switches datasets, renders row actions, performs my-data search, and submits', async () => {
@@ -364,11 +383,14 @@ describe('FlowsSelectDrawer', () => {
         { flowType: '', asInput: undefined },
       ),
     );
-    expect(screen.getByText('Elementary flow')).toBeInTheDocument();
+    expect(screen.getByText('Elementary flow', { selector: 'div' })).toBeInTheDocument();
     expect(screen.getByText('view flow-tg:1.0.0')).toBeInTheDocument();
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /my data/i }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -396,6 +418,11 @@ describe('FlowsSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
     await screen.findByRole('dialog', { name: 'Select Flow' });
+    // The native table remounts after version selection closes the drawer.
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -406,7 +433,7 @@ describe('FlowsSelectDrawer', () => {
         'en',
         'my',
         'alpha',
-        { flowType: '', asInput: undefined },
+        { flowType: 'ELEMENTARY_FLOW', asInput: undefined },
       ),
     );
 
@@ -441,8 +468,11 @@ describe('FlowsSelectDrawer', () => {
     );
     expect(screen.getByText('view flow-tg-search:2.0.0')).toBeInTheDocument();
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /business data/i }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -465,7 +495,7 @@ describe('FlowsSelectDrawer', () => {
         'en',
         'co',
         'gamma',
-        { flowType: '', asInput: true },
+        { flowType: 'ELEMENTARY_FLOW', asInput: true },
       ),
     );
 
@@ -478,12 +508,14 @@ describe('FlowsSelectDrawer', () => {
         'en',
         'co',
         'gamma',
-        { flowType: '' },
+        { flowType: 'ELEMENTARY_FLOW' },
       ),
     );
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /tiangong data/i }));
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Flow type filter' }), '');
+    await userEvent.clear(screen.getByLabelText('tg'));
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -495,8 +527,11 @@ describe('FlowsSelectDrawer', () => {
       ),
     );
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /team data/i }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -518,12 +553,15 @@ describe('FlowsSelectDrawer', () => {
         'en',
         'te',
         'delta',
-        { flowType: '', asInput: true },
+        { flowType: 'ELEMENTARY_FLOW', asInput: true },
       ),
     );
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /my data/i }));
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -544,9 +582,12 @@ describe('FlowsSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
 
-    mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
     await screen.findByRole('dialog', { name: 'Select Flow' });
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Flow type filter' }),
+      'ELEMENTARY_FLOW',
+    );
 
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
@@ -589,6 +630,56 @@ describe('FlowsSelectDrawer', () => {
     expect(onData).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
+  it.each([
+    ['tg', 'TianGong Data'],
+    ['co', 'Business Data'],
+    ['my', 'My Data'],
+    ['te', 'Team Data'],
+  ])(
+    'clears exact-version selection and returns the %s query to the first page when classification changes',
+    async (scope, tabLabel) => {
+      const first = {
+        id: 'same-dataset',
+        version: '01.00.000',
+        name: 'Versioned flow',
+        flowType: 'ELEMENTARY_FLOW',
+      };
+      const second = { ...first, version: '02.00.000' };
+      mockGetFlowTableAll.mockResolvedValue({ data: [first, second], success: true, total: 2 });
+      renderWithProviders(
+        <FlowsSelectDrawer
+          buttonType='text'
+          buttonText='Choose versioned flow'
+          lang='en'
+          onData={jest.fn()}
+        />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Choose versioned flow' }));
+      if (scope !== 'tg') await userEvent.click(screen.getByRole('button', { name: tabLabel }));
+      await waitFor(() => expect(mockGetFlowTableAll.mock.calls.at(-1)?.[3]).toBe(scope));
+      expect(mockLatestFlowSelectorTableProps.rowKey(first)).toBe('same-dataset:01.00.000');
+      expect(mockLatestFlowSelectorTableProps.rowKey(second)).toBe('same-dataset:02.00.000');
+      const firstRow = screen.getByTestId('flow-selector-row-same-dataset:01.00.000');
+      await userEvent.click(within(firstRow).getByRole('button', { name: 'Versioned flow' }));
+      expect(mockLatestFlowSelectorTableProps.rowSelection.selectedRowKeys).toEqual([
+        'same-dataset:01.00.000',
+      ]);
+      mockLatestFlowSelectorTableProps.api.setPageInfo.mockClear();
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Classification' }), 'C');
+      await waitFor(() =>
+        expect(mockGetFlowTableAll.mock.calls.at(-1)?.[0].classification).toEqual([
+          { scope: 'classification', code: 'C', path: ['C'] },
+        ]),
+      );
+      expect(mockLatestFlowSelectorTableProps.rowSelection.selectedRowKeys).toEqual([]);
+      expect(mockLatestFlowSelectorTableProps.api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Classification' }), '');
+      await waitFor(() =>
+        expect(mockGetFlowTableAll.mock.calls.at(-1)?.[0].classification).toEqual([]),
+      );
+      expect(mockGetFlowTableAll.mock.calls.at(-1)?.[3]).toBe(scope);
+    },
+  );
 });
 
 jest.mock('@/components/DatasetClassificationFilter', () => ({

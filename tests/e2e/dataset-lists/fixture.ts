@@ -167,17 +167,24 @@ export async function installDatasetListFixture(page: Page) {
       );
       const offset = Number(url.searchParams.get('offset') ?? 0);
       const limit = Number(url.searchParams.get('limit') ?? 50);
+      const analysisPage =
+        kind === 'process' && !url.searchParams.has('id') && exactRefs.length === 0;
       const refs = exactRefs.length
         ? exactRefs.slice(offset, offset + limit)
-        : Array.from(
-            { length: allVersions ? Math.max(0, Math.min(limit, 137 - offset)) : 1 },
-            (_, index) => ({
-              id: requestedId,
-              version: allVersions
-                ? `01.00.${String(url.searchParams.get('order')?.includes('version.desc') ? 136 - offset - index : offset + index).padStart(3, '0')}`
-                : source.version,
-            }),
-          );
+        : analysisPage
+          ? Array.from({ length: Math.max(0, Math.min(limit, 137 - offset)) }, (_, index) => ({
+              id: datasetRow('process', offset + index).id,
+              version: VERSION,
+            }))
+          : Array.from(
+              { length: allVersions ? Math.max(0, Math.min(limit, 137 - offset)) : 1 },
+              (_, index) => ({
+                id: requestedId,
+                version: allVersions
+                  ? `01.00.${String(url.searchParams.get('order')?.includes('version.desc') ? 136 - offset - index : offset + index).padStart(3, '0')}`
+                  : source.version,
+              }),
+            );
       const rows = refs.map((reference, index) => {
         const numbered = datasetRow(
           kind,
@@ -215,9 +222,10 @@ export async function installDatasetListFixture(page: Page) {
       await route.fulfill({
         json: request.headers().accept?.includes('pgrst.object') ? rows[0] : rows,
         headers: {
+          'access-control-expose-headers': 'content-range',
           'content-range': exactRefs.length
             ? `${offset}-${offset + rows.length - 1}/${exactRefs.length}`
-            : allVersions
+            : allVersions || analysisPage
               ? `${offset}-${offset + rows.length - 1}/137`
               : '0-0/1',
         },

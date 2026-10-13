@@ -226,21 +226,6 @@ const TableList: FC = () => {
       },
     },
     {
-      ...dataListTextColumn<UnitGroupTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
-      title: (
-        <FormattedMessage
-          id='pages.table.title.classification'
-          defaultMessage='Classification'
-        ></FormattedMessage>
-      ),
-      dataIndex: 'classification',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
-    },
-    {
       ...dataListTextColumn<UnitGroupTable>(132),
       title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
       dataIndex: 'version',
@@ -354,9 +339,6 @@ const TableList: FC = () => {
             key={`unitgroups-table:${dataSource}:${tid ?? ''}`}
             {...responsiveDataListTableProps}
             scroll={scroll}
-            onChange={(pagination) =>
-              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
-            }
             toolbar={getDataListToolbar({
               search: (
                 <Search
@@ -428,6 +410,7 @@ const TableList: FC = () => {
             options={isMobileDataList ? false : { fullScreen: true }}
             pagination={{
               ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
               ...getReferenceLookupPaginationProps(referenceLookup),
             }}
             toolBarRender={() => {

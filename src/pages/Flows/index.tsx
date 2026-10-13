@@ -173,18 +173,6 @@ const TableList: FC = () => {
         return dataListText(row.flowType);
       },
     },
-    {
-      ...dataListTextColumn<FlowTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      search: false,
-      filterMultiple: true,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
-    },
 
     {
       ...dataListTextColumn<FlowTable>(132, DATA_LIST_COLUMN_RESPONSIVE.wide),
@@ -407,9 +395,6 @@ const TableList: FC = () => {
             key={`flows-table:${dataSource}:${tid ?? ''}`}
             {...responsiveDataListTableProps}
             scroll={scroll}
-            onChange={(pagination) =>
-              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
-            }
             toolbar={getDataListToolbar({
               search: (
                 <Search
@@ -501,6 +486,7 @@ const TableList: FC = () => {
             options={isMobileDataList ? false : { fullScreen: true }}
             pagination={{
               ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
               ...getReferenceLookupPaginationProps(referenceLookup),
             }}
             toolBarRender={() => {

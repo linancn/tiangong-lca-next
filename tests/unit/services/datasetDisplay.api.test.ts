@@ -46,6 +46,39 @@ describe('datasetDisplay transport and exact identities', () => {
     jest.clearAllMocks();
     mockGetSession.mockResolvedValue({ data: { session: { access_token: 'actor' } }, error: null });
   });
+  it('localizes returned location metadata and preserves unknown codes and source years', async () => {
+    mockRpc.mockResolvedValue({
+      data: {
+        data: [
+          { ...raw(), location: 'CN', reference_year: 2025, type_of_data_set: 'LCI result' },
+          {
+            ...raw('flow'),
+            location: 'UNKNOWN',
+            reference_year: '2024',
+            type_of_data_set: 'Product flow',
+          },
+        ],
+        total: 2,
+      },
+      error: null,
+    });
+    const result = await listDatasetDisplay(params, 'en');
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        location: 'China',
+        referenceYear: 2025,
+        typeOfDataSet: 'LCI result',
+      }),
+      expect.objectContaining({
+        location: 'UNKNOWN',
+        referenceYear: '2024',
+        typeOfDataSet: 'Product flow',
+      }),
+    ]);
+    expect(
+      jest.requireMock('@/services/locations/cache').getCachedLocationData,
+    ).toHaveBeenCalledWith('en', ['CN', 'UNKNOWN']);
+  });
   it('keeps kind and version in the key', () => {
     expect(datasetDisplayKey(item)).toBe(`process:${item.id}:01.00.000`);
   });

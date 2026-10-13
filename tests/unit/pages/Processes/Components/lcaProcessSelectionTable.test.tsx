@@ -1,6 +1,6 @@
 import LcaProcessSelectionTable from '@/pages/Processes/Components/lcaProcessSelectionTable';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { resetUmiMocks } from '../../../../mocks/umi';
+import { resetUmiMocks, umiMocks } from '../../../../mocks/umi';
 
 jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
 jest.mock('antd', () => {
@@ -134,7 +134,12 @@ describe('LcaProcessSelectionTable', () => {
         onClassificationChange={onClassificationChange}
       />,
     );
-    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'solar' } });
+    fireEvent.change(
+      screen.getByLabelText(umiMocks.useIntl().formatMessage({ id: 'pages.search.keyWord' })),
+      {
+        target: { value: 'solar' },
+      },
+    );
     expect(screen.getByText('Wind turbine maintenance')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Search' }));
     expect(onSearch).toHaveBeenCalledWith('solar');
