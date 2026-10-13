@@ -31,17 +31,19 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/typescript-native-parser.*
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - package.json
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: no new test-environment or failure-recovery procedure is required; the troubleshooting workflow is unchanged.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: list/filter race and viewport checks use existing focused diagnosis and readiness rules. Add dedicated configuration check paths; no new environment recovery or gate bypass procedure is introduced.'
 ---
 
 # Testing Troubleshooting

@@ -27,11 +27,10 @@ export function getReferenceLookupEmptyResult(current = 1) {
 export function getReferenceLookupPaginationProps(
   enabled: boolean,
 ): ReferenceLookupPaginationProps {
-  return enabled
-    ? {
-        showTotal: () => null,
-      }
-    : {};
+  // The paged RPC now returns the complete filtered count in reference mode too.
+  // Preserve the public helper signature while allowing native total rendering.
+  void enabled;
+  return {};
 }
 
 export function getReferenceLookupTeamId(tid?: string | null): string {

@@ -1,10 +1,12 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import {
   flow_hybrid_search,
   getFlowTableAll,
   getFlowTablePgroongaSearch,
   getFlowTableUuidMentionSearch,
 } from '@/services/flows/api';
-import { Card, Checkbox, Col, Input, Row, Space, App } from 'antd';
+import { Checkbox, Input, Space, App, Select } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
@@ -25,10 +27,10 @@ import {
   dataListText,
   dataListTextColumn,
   responsiveDataListTableProps,
-  responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
-  responsiveSearchPrimaryColProps,
-  responsiveSearchRowProps,
+  ResponsiveDataListViewport,
+  dataListPagination,
+  getDataListToolbar,
+  orderDataListColumns,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
@@ -37,7 +39,6 @@ import {
   getOpenDataCatalogFilterArgs,
   type OpenDataCatalogFilters as OpenDataCatalogFilterValue,
 } from '@/services/openDataCatalog/types';
-import { getCachedFlowCategorizationAll } from '@/services/classifications/cache';
 import { FlowImportData, FlowTable } from '@/services/flows/data';
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import {
@@ -60,8 +61,8 @@ import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC, ReactNode } from 'react';
-import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import type { FC } from 'react';
+import { getAllVersionsColumns } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
@@ -78,14 +79,10 @@ import { flowTypeOptions } from './Components/optiondata';
 import FlowsView from './Components/view';
 
 const { Search } = Input;
-type ClassificationFilter = {
-  scope: 'elementary' | 'classification';
-  code: string;
-};
 
 const TableList: FC = () => {
   const { message } = App.useApp();
-  const [keyWord, setKeyWord] = useState<string>('');
+  const [, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
@@ -93,9 +90,7 @@ const TableList: FC = () => {
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
-  const [classificationFilterOptions, setClassificationFilterOptions] = useState<
-    Array<{ text: ReactNode; value: string }>
-  >([]);
+  const [flowType, setFlowType] = useState('');
   const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -121,32 +116,9 @@ const TableList: FC = () => {
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
 
-  const parseClassificationFilter = (
-    values?: (string | number | boolean)[] | null,
-  ): ClassificationFilter[] => {
-    if (!values || values.length === 0) {
-      return [];
-    }
-    const result: ClassificationFilter[] = [];
-    values.forEach((item) => {
-      const raw = String(item);
-      const separatorIndex = raw.indexOf(':');
-      if (separatorIndex <= 0) {
-        return;
-      }
-      const scope = raw.slice(0, separatorIndex);
-      const code = raw.slice(separatorIndex + 1);
-      if (!code) {
-        return;
-      }
-      if (scope === 'elementary' || scope === 'classification') {
-        result.push({ scope, code });
-      }
-    });
-    return result;
-  };
-
   const actionRef = useRef<ActionType | undefined>(undefined);
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
+  const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
   const attachReviewState = async (result: {
     data?: FlowTable[];
     page?: number;
@@ -193,26 +165,12 @@ const TableList: FC = () => {
       dataIndex: 'flowType',
       sorter: false,
       search: false,
-      filters: flowTypeOptions.map((option) => ({ text: option.label, value: option.value })),
       render: (_, row) => {
         const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
         if (flowType) {
           return dataListText(flowType.label);
         }
         return dataListText(row.flowType);
-      },
-    },
-    {
-      ...dataListTextColumn<FlowTable>(260, DATA_LIST_COLUMN_RESPONSIVE.wide),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      search: false,
-      filters: classificationFilterOptions.length > 0 ? classificationFilterOptions : undefined,
-      filterMultiple: true,
-      render: (_, row) => {
-        return dataListText(row.classification);
       },
     },
 
@@ -412,40 +370,6 @@ const TableList: FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    const loadClassificationFilters = async () => {
-      try {
-        const data = await getCachedFlowCategorizationAll(lang);
-        if (!active) {
-          return;
-        }
-        const elementaryOptions = (data?.categoryElementaryFlow ?? [])
-          .filter((item: any) => item?.id)
-          .map((item: any) => ({
-            text: item?.label ?? item?.value ?? '-',
-            value: `elementary:${item?.id}`,
-          }));
-        const classificationOptions = (data?.category ?? [])
-          .filter((item: any) => item?.id)
-          .map((item: any) => ({
-            text: item?.label ?? item?.value ?? '-',
-            value: `classification:${item?.id}`,
-          }));
-        setClassificationFilterOptions([...elementaryOptions, ...classificationOptions]);
-      } catch (error) {
-        console.error(error);
-        if (active) {
-          setClassificationFilterOptions([]);
-        }
-      }
-    };
-    loadClassificationFilters();
-    return () => {
-      active = false;
-    };
-  }, [lang]);
-
   const onSearch: SearchProps['onSearch'] = (value) => {
     keyWordRef.current = value;
     setKeyWord(value);
@@ -465,244 +389,278 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card className={responsiveSearchCardClassName}>
-        <Row {...responsiveSearchRowProps}>
-          <Col {...responsiveSearchPrimaryColProps}>
-            <Search
-              size={'large'}
-              placeholder={
-                referenceLookup
-                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
-                  : openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
-              onSearch={onSearch}
-              enterButton
-            />
-          </Col>
-          <Col {...responsiveSearchExtraColProps}>
-            <Checkbox
-              checked={openAI}
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-                if (e.target.checked) {
-                  setReferenceLookup(false);
-                }
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-            </Checkbox>
-            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
-              <Checkbox
-                checked={referenceLookup}
-                onChange={(e) => {
-                  setReferenceLookup(e.target.checked);
-                  if (e.target.checked) {
-                    setOpenAI(false);
+      <ResponsiveDataListViewport>
+        {({ scroll }) => (
+          <ProTable<FlowTable, LocaleAwareTableParams>
+            key={`flows-table:${dataSource}:${tid ?? ''}`}
+            {...responsiveDataListTableProps}
+            scroll={scroll}
+            toolbar={getDataListToolbar({
+              search: (
+                <Search
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder={
+                    referenceLookup
+                      ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                      : openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
                   }
-                }}
-              >
-                <FormattedMessage
-                  id='pages.search.referenceLookup'
-                  defaultMessage='Reference Lookup'
+                  onSearch={onSearch}
+                  enterButton
                 />
-              </Checkbox>
-              <ReferenceLookupHelpIcon />
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-      <ProTable<FlowTable, LocaleAwareTableParams>
-        key={`flows-table:${dataSource}:${tid ?? ''}`}
-        {...responsiveDataListTableProps}
-        rowKey={(record) => `${record.id}-${record.version}`}
-        headerTitle={
-          <>
-            {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />
-          </>
-        }
-        actionRef={actionRef}
-        params={{
-          locale: appLocale,
-          ...(dataSource === 'tg'
-            ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-            : {}),
-        }}
-        search={false}
-        options={isMobileDataList ? false : { fullScreen: true }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-          ...getReferenceLookupPaginationProps(referenceLookup),
-        }}
-        toolBarRender={() => {
-          if (dataSource === 'my') {
-            const filters = [
-              <TableFilter
-                key={2}
-                width={isMobileDataList ? 120 : 140}
-                onChange={(val) => {
-                  stateCodeRef.current = val;
-                  setStateCode(val);
-                  actionRef.current?.reload();
-                }}
-              />,
-            ];
-            return [
-              ...filters,
-              <FlowsCreate
-                importData={importData}
-                onClose={() => setImportData(null)}
-                key={0}
-                lang={lang}
-                actionRef={actionRef}
-              />,
-              <ImportData onJsonData={handleImportData} key={1} />,
-            ];
-          }
-          return dataSource === 'tg'
-            ? [
-                <OpenDataCatalogFilters
-                  key='open-data-filters'
-                  value={openDataFilters}
-                  onChange={setOpenDataFilters}
-                />,
-              ]
-            : [];
-        }}
-        request={async (
-          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
-          sort,
-          filter,
-        ) => {
-          const {
-            locale: requestedLocale,
-            openDataFilterRevision: _openDataFilterRevision,
-            ...requestParams
-          } = params;
-          void _openDataFilterRevision;
-          return guardLocaleMaterializedTableRequest(
-            requestedLocale,
-            () => currentAppLocaleRef.current,
-            tableRequestEpochRef,
-            async ({ isCurrentRequest }) => {
-              const currentKeyWord = keyWordRef.current || keyWord;
-              const currentStateCode = stateCodeRef.current;
-              const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-              const classificationFilter = parseClassificationFilter(filter?.classification);
-              const searchFilters = {
-                flowType: flowTypeFilter,
-                ...(classificationFilter.length > 0
-                  ? { classification: classificationFilter }
-                  : {}),
-              };
-              if (referenceLookup) {
-                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-                if (!referenceLookupUuid) {
-                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
-                }
-                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
-
-                const result = await getFlowTableUuidMentionSearch(
-                  requestParams,
-                  lang,
-                  dataSource,
-                  referenceLookupUuid,
-                  currentStateCode,
-                  referenceLookupTeamId,
-                  ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                );
-                const noticeKey = [
-                  dataSource,
-                  referenceLookupUuid,
-                  currentStateCode,
-                  JSON.stringify(searchFilters),
-                  referenceLookupTeamId,
-                  requestedLocale,
-                ].join(':');
-                if (
-                  isCurrentRequest() &&
-                  result.capped &&
-                  referenceLookupLimitNoticeRef.current !== noticeKey
-                ) {
-                  referenceLookupLimitNoticeRef.current = noticeKey;
-                  showReferenceLookupLimitMessage(intl);
-                }
-                return attachReviewState(result);
+              ),
+              filter: (
+                <Space wrap>
+                  <Checkbox
+                    checked={openAI}
+                    onChange={(e) => {
+                      setOpenAI(e.target.checked);
+                      if (e.target.checked) {
+                        setReferenceLookup(false);
+                      }
+                    }}
+                  >
+                    <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+                  </Checkbox>
+                  <Space
+                    className='responsive-data-list-reference-lookup-option'
+                    size={4}
+                    align='center'
+                  >
+                    <Checkbox
+                      checked={referenceLookup}
+                      onChange={(e) => {
+                        setReferenceLookup(e.target.checked);
+                        if (e.target.checked) {
+                          setOpenAI(false);
+                        }
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.referenceLookup'
+                        defaultMessage='Reference Lookup'
+                      />
+                    </Checkbox>
+                    <ReferenceLookupHelpIcon />
+                  </Space>
+                  <Select
+                    aria-label={intl.formatMessage({ id: 'pages.flow.flowType' })}
+                    placeholder={intl.formatMessage({ id: 'pages.flow.flowType' })}
+                    allowClear
+                    value={flowType || undefined}
+                    options={flowTypeOptions}
+                    style={{ width: 180 }}
+                    onChange={(next) => {
+                      setFlowType(next ?? '');
+                      setClassification([]);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                  <DatasetClassificationFilter
+                    datasetKind='flow'
+                    flowType={flowType}
+                    lang={lang}
+                    value={classification}
+                    onChange={(next) => {
+                      setClassification(next);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                </Space>
+              ),
+            })}
+            rowKey={(record) => `${record.id}-${record.version}`}
+            headerTitle={false}
+            actionRef={actionRef}
+            params={{
+              locale: appLocale,
+              classification,
+              datasetFilters: { flowType },
+              ...(dataSource === 'tg'
+                ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
+                : {}),
+            }}
+            search={false}
+            options={isMobileDataList ? false : { fullScreen: true }}
+            pagination={{
+              ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
+              ...getReferenceLookupPaginationProps(referenceLookup),
+            }}
+            toolBarRender={() => {
+              if (dataSource === 'my') {
+                const filters = [
+                  <TableFilter
+                    key={2}
+                    width={isMobileDataList ? 120 : 140}
+                    onChange={(val) => {
+                      stateCodeRef.current = val;
+                      setStateCode(val);
+                      actionRef.current?.reload();
+                    }}
+                  />,
+                ];
+                return [
+                  ...filters,
+                  <FlowsCreate
+                    importData={importData}
+                    onClose={() => setImportData(null)}
+                    key={0}
+                    lang={lang}
+                    actionRef={actionRef}
+                  />,
+                  <ImportData onJsonData={handleImportData} key={1} />,
+                ];
               }
-              if (currentKeyWord.length > 0) {
-                let orderBy:
-                  | {
-                      key: 'common:class' | 'baseName';
-                      lang?: SupportedServiceQueryLanguage;
-                      order: 'asc' | 'desc';
+              return dataSource === 'tg'
+                ? [
+                    <OpenDataCatalogFilters
+                      key='open-data-filters'
+                      value={openDataFilters}
+                      onChange={setOpenDataFilters}
+                    />,
+                  ]
+                : [];
+            }}
+            request={async (
+              params: LocaleAwareTableParams & { pageSize?: number; current?: number },
+              sort,
+            ) => {
+              const {
+                locale: requestedLocale,
+                openDataFilterRevision: _openDataFilterRevision,
+                ...requestParams
+              } = params;
+              void _openDataFilterRevision;
+              return guardLocaleMaterializedTableRequest(
+                requestedLocale,
+                () => currentAppLocaleRef.current,
+                tableRequestEpochRef,
+                async ({ isCurrentRequest }) => {
+                  const currentKeyWord = keyWordRef.current;
+                  const currentStateCode = stateCodeRef.current;
+                  const flowTypeFilter = flowType;
+                  const classificationFilter = requestParams.classification ?? [];
+                  const searchFilters = {
+                    flowType: flowTypeFilter,
+                    ...(classificationFilter.length > 0
+                      ? { classification: classificationFilter }
+                      : {}),
+                  };
+                  if (referenceLookup) {
+                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                    if (!referenceLookupUuid) {
+                      return attachReviewState(
+                        getReferenceLookupEmptyResult(requestParams.current),
+                      );
                     }
-                  | undefined;
-                const activeSort = getActiveTableSort(sort);
-                if (activeSort) {
-                  const { field, order } = activeSort;
-                  if (field === 'name') {
-                    orderBy = {
-                      key: 'baseName',
-                      lang: getServiceQueryLanguage(lang),
-                      order: order === 'ascend' ? 'asc' : 'desc',
-                    };
-                  }
-                }
-                if (openAI) {
-                  return attachReviewState(
-                    await flow_hybrid_search(
+                    const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+
+                    const result = await getFlowTableUuidMentionSearch(
                       requestParams,
                       lang,
                       dataSource,
-                      currentKeyWord,
+                      referenceLookupUuid,
+                      currentStateCode,
+                      referenceLookupTeamId,
+                      ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                    );
+                    const noticeKey = [
+                      dataSource,
+                      referenceLookupUuid,
+                      currentStateCode,
+                      JSON.stringify(searchFilters),
+                      referenceLookupTeamId,
+                      requestedLocale,
+                    ].join(':');
+                    if (
+                      isCurrentRequest() &&
+                      result.capped &&
+                      referenceLookupLimitNoticeRef.current !== noticeKey
+                    ) {
+                      referenceLookupLimitNoticeRef.current = noticeKey;
+                      showReferenceLookupLimitMessage(intl);
+                    }
+                    return attachReviewState(result);
+                  }
+                  if (currentKeyWord.length > 0) {
+                    let orderBy:
+                      | {
+                          key: 'common:class' | 'baseName';
+                          lang?: SupportedServiceQueryLanguage;
+                          order: 'asc' | 'desc';
+                        }
+                      | undefined;
+                    const activeSort = getActiveTableSort(sort);
+                    if (activeSort) {
+                      const { field, order } = activeSort;
+                      if (field === 'name') {
+                        orderBy = {
+                          key: 'baseName',
+                          lang: getServiceQueryLanguage(lang),
+                          order: order === 'ascend' ? 'asc' : 'desc',
+                        };
+                      }
+                    }
+                    if (openAI) {
+                      return attachReviewState(
+                        await flow_hybrid_search(
+                          requestParams,
+                          lang,
+                          dataSource,
+                          currentKeyWord,
+                          searchFilters,
+                          currentStateCode,
+                          tid ?? '',
+                          ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                        ),
+                      );
+                    }
+                    return attachReviewState(
+                      await getFlowTablePgroongaSearch(
+                        requestParams,
+                        lang,
+                        dataSource,
+                        currentKeyWord,
+                        searchFilters,
+                        currentStateCode,
+                        orderBy,
+                        tid ?? '',
+                        ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                      ),
+                    );
+                  }
+
+                  const sortFields: Record<string, string> = {
+                    name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
+                  };
+
+                  const convertedSort = mapActiveTableSort(sort, sortFields);
+
+                  return attachReviewState(
+                    await getFlowTableAll(
+                      requestParams,
+                      convertedSort,
+                      lang,
+                      dataSource,
+                      tid ?? '',
                       searchFilters,
                       currentStateCode,
-                      tid ?? '',
                       ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
                     ),
                   );
-                }
-                return attachReviewState(
-                  await getFlowTablePgroongaSearch(
-                    requestParams,
-                    lang,
-                    dataSource,
-                    currentKeyWord,
-                    searchFilters,
-                    currentStateCode,
-                    orderBy,
-                    tid ?? '',
-                    ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                  ),
-                );
-              }
-
-              const sortFields: Record<string, string> = {
-                name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
-              };
-
-              const convertedSort = mapActiveTableSort(sort, sortFields);
-
-              return attachReviewState(
-                await getFlowTableAll(
-                  requestParams,
-                  convertedSort,
-                  lang,
-                  dataSource,
-                  tid ?? '',
-                  searchFilters,
-                  currentStateCode,
-                  ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                ),
+                },
               );
-            },
-          );
-        }}
-        columns={flowsColumns}
-      />
+            }}
+            columns={orderDataListColumns(flowsColumns, {
+              dataType: <FormattedMessage id='menu.tgdata.flows' />,
+              pagination: listPage,
+            })}
+          />
+        )}
+      </ResponsiveDataListViewport>
 
       {editDrawerVisible && editId && editVersion && (
         <FlowsEdit

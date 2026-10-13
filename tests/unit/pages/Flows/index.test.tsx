@@ -18,6 +18,9 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+let mockOmitClassificationParam = false;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -303,6 +306,22 @@ jest.mock('antd', () => {
       Grid: {
         useBreakpoint: () => mockBreakpointScreens,
       },
+      Select: ({ onChange, options, value, ...props }: any) => (
+        <select
+          aria-label={props['aria-label']}
+          value={value ?? ''}
+          onChange={(event) =>
+            onChange(props.allowClear && event.target.value === '' ? undefined : event.target.value)
+          }
+        >
+          <option value=''>All types</option>
+          {options.map((option: any) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ),
       Input,
       Row,
       Space,
@@ -342,14 +361,21 @@ jest.mock('@ant-design/pro-components', () => {
     actionRef,
     request,
     params = {},
+    toolbar,
     toolBarRender,
     headerTitle,
     columns,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params };
     const [rows, setRows] = React.useState<any[]>([]);
     const headerTitleText = toText(headerTitle);
-    const [pageInfo, setPageInfoState] = React.useState({ pageSize: 10, current: 1 });
+    const paramsKey = JSON.stringify(params);
+    const [pageInfo, setPageInfoState] = React.useState({
+      pageSize: 50,
+      current: 1,
+    });
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
     const latestPageInfoRef = React.useRef(pageInfo);
@@ -363,11 +389,9 @@ jest.mock('@ant-design/pro-components', () => {
         filter: Record<string, any> = {},
         requestParams = latestPageInfoRef.current,
       ) => {
-        const result = await latestRequestRef.current?.(
-          { ...latestParamsRef.current, ...requestParams },
-          sort,
-          filter,
-        );
+        const nextParams = { ...requestParams, ...latestParamsRef.current };
+        if (mockOmitClassificationParam) delete nextParams.classification;
+        const result = await latestRequestRef.current?.(nextParams, sort, filter);
         setRows(result?.data ?? []);
         return result;
       },
@@ -398,7 +422,7 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
       void api.reload();
-    }, [actionRef, api, headerTitleText, params.locale]);
+    }, [actionRef, api, headerTitleText, paramsKey]);
 
     const classificationFilters =
       columns?.find((column: any) => column.dataIndex === 'classification')?.filters ?? [];
@@ -406,7 +430,11 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <section data-testid='pro-table'>
         <div>{headerTitleText}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         <div data-testid='classification-filters'>{JSON.stringify(classificationFilters)}</div>
         <button
           type='button'
@@ -473,6 +501,8 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('FlowsPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
+    mockOmitClassificationParam = false;
     jest.clearAllMocks();
     mockLocation = {
       pathname: '/mydata/flows',
@@ -503,6 +533,38 @@ describe('FlowsPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<FlowsPage />);
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -520,7 +582,7 @@ describe('FlowsPage', () => {
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
 
     expect(mockGetFlowTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
       {},
       'en',
       'my',
@@ -530,18 +592,13 @@ describe('FlowsPage', () => {
     );
     expect(screen.getByRole('heading', { name: 'Flow Team' })).toBeInTheDocument();
     expect(screen.getByText('Flow One')).toBeInTheDocument();
-    expect(screen.getByText('Elementary flow')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('pro-table')).getAllByText('Elementary flow').length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText('UNKNOWN_FLOW')).toBeInTheDocument();
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('all-versions')).toHaveLength(2);
-    expect(screen.getByTestId('classification-filters')).toHaveTextContent('elementary:elem-1');
-    expect(screen.getByTestId('classification-filters')).toHaveTextContent('elementary:elem-empty');
-    expect(screen.getByTestId('classification-filters')).toHaveTextContent(
-      'classification:class-1',
-    );
-    expect(screen.getByTestId('classification-filters')).toHaveTextContent(
-      '"text":"-","value":"classification:class-empty"',
-    );
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getAllByTestId('flow-create-createVersion')).toHaveLength(2);
     expect(screen.getAllByTestId('flow-create-createVersion')[0]).toHaveTextContent(
@@ -580,7 +637,7 @@ describe('FlowsPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         {},
         'en',
         'my',
@@ -607,7 +664,7 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -621,17 +678,11 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-filter-sort' }));
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
-        {
-          flowType: 'ELEMENTARY_FLOW',
-          classification: [
-            { scope: 'classification', code: 'class-1' },
-            { scope: 'elementary', code: 'elem-1' },
-          ],
-        },
+        { flowType: '' },
         '20',
         { key: 'baseName', lang: 'en', order: 'asc' },
         'team-1',
@@ -641,17 +692,11 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: /request-filter-sort-desc/i }));
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
-        {
-          flowType: 'ELEMENTARY_FLOW',
-          classification: [
-            { scope: 'classification', code: 'class-1' },
-            { scope: 'elementary', code: 'elem-1' },
-          ],
-        },
+        { flowType: '' },
         '20',
         { key: 'baseName', lang: 'en', order: 'desc' },
         'team-1',
@@ -661,7 +706,7 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: /request-search-unknown-sort/i }));
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -675,7 +720,7 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: /request-inactive-sort/i }));
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -690,7 +735,7 @@ describe('FlowsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockFlowHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -701,48 +746,22 @@ describe('FlowsPage', () => {
     );
   });
 
-  it('parses classification filters, converts known sort fields, and keeps unknown sort fields on table-all requests', async () => {
+  it('clears the selected flow type and classification when the native allowClear control reports undefined', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlowsPage />);
-
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
-
-    await user.click(screen.getByRole('button', { name: 'request-filter-sort' }));
+    const typeSelector = screen.getByRole('combobox', { name: 'pages.flow.flowType' });
+    await user.selectOptions(typeSelector, 'Elementary flow');
+    await user.click(screen.getByTestId('dataset-classification-filter'));
     await waitFor(() =>
-      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
-        { 'json->flowDataSet->flowInformation->dataSetInformation->name': 'ascend' },
-        'en',
-        'my',
-        'team-1',
-        {
-          flowType: 'ELEMENTARY_FLOW',
-          classification: [
-            { scope: 'classification', code: 'class-1' },
-            { scope: 'elementary', code: 'elem-1' },
-          ],
-        },
-        'all',
-      ),
+      expect(mockGetFlowTableAll.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
     );
-
-    await user.click(screen.getByRole('button', { name: /request-unknown-sort/i }));
+    await user.selectOptions(typeSelector, '');
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
-        { modifiedAt: 'descend' },
-        'en',
-        'my',
-        'team-1',
-        { flowType: '' },
-        'all',
-      ),
-    );
-
-    await user.click(screen.getByRole('button', { name: /request-inactive-sort/i }));
-    await waitFor(() =>
-      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { current: 1, pageSize: 50, classification: [], datasetFilters: { flowType: '' } },
         {},
         'en',
         'my',
@@ -751,6 +770,56 @@ describe('FlowsPage', () => {
         'all',
       ),
     );
+    expect(typeSelector).toHaveValue('');
+    expect(screen.getByTestId('dataset-classification-filter')).toHaveAttribute('data-value', '[]');
+  });
+
+  it('uses an empty classification filter when the native request omits the optional parameter', async () => {
+    mockOmitClassificationParam = true;
+    renderWithProviders(<FlowsPage />);
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { current: 1, pageSize: 50, datasetFilters: { flowType: '' } },
+        {},
+        'en',
+        'my',
+        'team-1',
+        { flowType: '' },
+        'all',
+      ),
+    );
+    expect(mockGetFlowTableAll.mock.calls.at(-1)[0]).not.toHaveProperty('classification');
+  });
+
+  it('passes toolbar classification and type through every table request and keeps sort mapping', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlowsPage />);
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'pages.flow.flowType' }),
+      'Elementary flow',
+    );
+    await user.click(screen.getByTestId('dataset-classification-filter'));
+    await user.click(screen.getByRole('button', { name: 'request-filter-sort' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+          datasetFilters: { flowType: 'Elementary flow' },
+        }),
+        { 'json->flowDataSet->flowInformation->dataSetInformation->name': 'ascend' },
+        'en',
+        'my',
+        'team-1',
+        {
+          flowType: 'Elementary flow',
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        },
+        'all',
+      ),
+    );
+    await user.click(screen.getByRole('button', { name: 'request-unknown-sort' }));
+    expect(mockGetFlowTableAll.mock.calls.at(-1)[1]).toEqual({ modifiedAt: 'descend' });
   });
 
   it('renders my-data row actions and contributes rows successfully or with logged errors', async () => {
@@ -789,51 +858,12 @@ describe('FlowsPage', () => {
     logSpy.mockRestore();
   });
 
-  it('handles missing teams and categorization failures, and ignores late categorization responses after unmount', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
+  it('keeps classification in the shared toolbar when no team title is available', async () => {
     mockGetTeamById.mockResolvedValueOnce({ data: [] });
-    mockGetCachedFlowCategorizationAll.mockRejectedValueOnce(new Error('classification failed'));
-
     renderWithProviders(<FlowsPage />);
-
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
-    await waitFor(() =>
-      expect(screen.getByTestId('classification-filters')).toHaveTextContent('[]'),
-    );
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(Error));
-
-    let resolveCategorization: ((value: any) => void) | undefined;
-    mockGetCachedFlowCategorizationAll.mockReturnValueOnce(
-      new Promise((resolve) => {
-        resolveCategorization = resolve;
-      }),
-    );
-
-    const { unmount } = renderWithProviders(<FlowsPage />);
-    await waitFor(() => expect(mockGetCachedFlowCategorizationAll).toHaveBeenCalled());
-
-    unmount();
-    await act(async () => {
-      resolveCategorization?.({
-        categoryElementaryFlow: [{ id: 'late-elem', label: 'Late Elementary' }],
-        category: [{ id: 'late-class', label: 'Late Classification' }],
-      });
-      await Promise.resolve();
-    });
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  it('falls back to empty classification arrays when categorization payload omits both groups', async () => {
-    mockGetCachedFlowCategorizationAll.mockResolvedValueOnce({});
-
-    renderWithProviders(<FlowsPage />);
-
-    await waitFor(() =>
-      expect(screen.getByTestId('classification-filters')).toHaveTextContent('[]'),
-    );
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
   });
 
   it.each(['tg', 'ex'])(
@@ -909,7 +939,7 @@ describe('FlowsPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -925,7 +955,7 @@ describe('FlowsPage', () => {
 
     await waitFor(() =>
       expect(mockFlowHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'steel',
@@ -966,7 +996,7 @@ describe('FlowsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetFlowTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [], datasetFilters: { flowType: '' } },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -994,3 +1024,17 @@ describe('FlowsPage', () => {
     );
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

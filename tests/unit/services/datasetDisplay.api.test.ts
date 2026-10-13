@@ -46,28 +46,63 @@ describe('datasetDisplay transport and exact identities', () => {
     jest.clearAllMocks();
     mockGetSession.mockResolvedValue({ data: { session: { access_token: 'actor' } }, error: null });
   });
+  it('localizes returned location metadata and preserves unknown codes and source years', async () => {
+    mockRpc.mockResolvedValue({
+      data: {
+        data: [
+          { ...raw(), location: 'CN', reference_year: 2025, type_of_data_set: 'LCI result' },
+          {
+            ...raw('flow'),
+            location: 'UNKNOWN',
+            reference_year: '2024',
+            type_of_data_set: 'Product flow',
+          },
+        ],
+        total: 2,
+      },
+      error: null,
+    });
+    const result = await listDatasetDisplay(params, 'en');
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        location: 'China',
+        referenceYear: 2025,
+        typeOfDataSet: 'LCI result',
+      }),
+      expect.objectContaining({
+        location: 'UNKNOWN',
+        referenceYear: '2024',
+        typeOfDataSet: 'Product flow',
+      }),
+    ]);
+    expect(
+      jest.requireMock('@/services/locations/cache').getCachedLocationData,
+    ).toHaveBeenCalledWith('en', ['CN', 'UNKNOWN']);
+  });
   it('keeps kind and version in the key', () => {
     expect(datasetDisplayKey(item)).toBe(`process:${item.id}:01.00.000`);
   });
   it('uses separate bounded projection RPCs and never adds an owner/state predicate', async () => {
     mockRpc.mockResolvedValue({ data: { data: [], total: 0 }, error: null });
     expect(await listDatasetDisplay(params, 'en')).toEqual({ data: [], success: true, total: 0 });
-    expect(mockRpc).toHaveBeenLastCalledWith('list_displayed_datasets', {
+    expect(mockRpc).toHaveBeenLastCalledWith('list_displayed_datasets_filtered', {
       p_dataset_kind: 'all',
       p_query: '',
-      p_page_size: 10,
+      p_page_size: 50,
       p_page: 1,
+      p_filter_condition: { classification: [] },
     });
     await listDatasetDisplay(
       { ...params, current: 3, pageSize: 20, query: 'iron', visibility: 'hidden' },
       'en',
       true,
     );
-    expect(mockRpc).toHaveBeenLastCalledWith('list_dataset_display_candidates', {
+    expect(mockRpc).toHaveBeenLastCalledWith('list_dataset_display_candidates_filtered', {
       p_dataset_kind: 'all',
       p_query: 'iron',
       p_page_size: 20,
       p_page: 3,
+      p_filter_condition: { classification: [] },
       p_visibility: 'hidden',
     });
     await listDatasetDisplay(params, 'en', true);
@@ -123,7 +158,7 @@ describe('datasetDisplay transport and exact identities', () => {
       { data: null, total: 0 },
       { data: [], total: '0' },
       { data: [], total: -1 },
-      { data: Array.from({ length: 11 }, () => raw()), total: 11 },
+      { data: Array.from({ length: 51 }, () => raw()), total: 51 },
       { data: [null], total: 1 },
       { data: [raw('ilcd')], total: 1 },
       { data: [{ ...raw(), dataset_id: 2 }], total: 1 },
@@ -183,3 +218,7 @@ describe('datasetDisplay transport and exact identities', () => {
     }
   });
 });
+
+jest.mock('@/services/locations/cache', () => ({
+  getCachedLocationData: jest.fn(async () => [{ '@value': 'CN', '#text': 'China' }]),
+}));

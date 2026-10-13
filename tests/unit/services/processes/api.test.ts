@@ -3197,7 +3197,7 @@ describe('getProcessesByIdAndVersion', () => {
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('should handle database errors and still return empty list', async () => {
+  it('reports database errors instead of a successful incomplete list', async () => {
     const builder = createQueryBuilder({ data: null, error: { message: 'DB error' } });
     mockFrom.mockReturnValue(builder);
 
@@ -3206,9 +3206,10 @@ describe('getProcessesByIdAndVersion', () => {
       'en',
     );
 
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
     expect(result.page).toBe(1);
     expect(result.total).toBe(0);
+    expect(result.error).toEqual({ message: 'DB error' });
     expect(result.data).toEqual([]);
   });
 
@@ -3277,6 +3278,7 @@ describe('getProcessesByIdAndVersion', () => {
           generalComment: 'Formatted Comment',
           typeOfDataSet: '-',
           referenceYear: '-',
+          location: '-',
           modifiedAt: new Date('2024-06-03T00:00:00Z'),
           teamId: undefined,
           modelId: 'model-lang',
@@ -3321,6 +3323,7 @@ describe('getProcessesByIdAndVersion', () => {
           name: { en: 'Raw Name' },
           typeOfDataSet: '-',
           referenceYear: '-',
+          location: '-',
           modifiedAt: new Date('2024-06-02T00:00:00Z'),
           teamId: 'team-raw',
           modelId: 'model-raw',
@@ -3453,536 +3456,149 @@ describe('validateProcessesByIdAndVersion', () => {
 });
 
 describe('getConnectableProcessesTable', () => {
-  it('should fetch connectable processes successfully', async () => {
-    const mockData = [
-      {
-        id: sampleId,
-        name: 'Process 1',
-        version: sampleVersion,
-        exchange: [
-          {
-            exchangeDirection: 'output',
-            referenceToFlowDataSet: { '@refObjectId': 'flow123' },
-          },
-        ],
-      },
-    ];
-    const builder = createQueryBuilder({ data: mockData, error: null, count: 10 });
-    mockFrom.mockReturnValue(builder);
-    mockGetCachedLocationData.mockResolvedValue([]);
-    mockGetCachedClassificationData.mockResolvedValue([]);
-    mockJsonToList.mockReturnValue([]);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      [],
-      'flow123',
-      '1.0.0',
-    );
-
-    expect(mockFrom).toHaveBeenCalledWith('processes');
-    expect(result).toBeDefined();
+  beforeEach(() => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
   });
-
-  it('should handle my dataSource type', async () => {
-    const mockData = [
-      {
-        id: sampleId,
-        name: 'My Process',
-        version: sampleVersion,
-        team_id: 'team1',
-        user_id: 'user1',
-        exchange: [
-          {
-            exchangeDirection: 'input',
-            referenceToFlowDataSet: { '@refObjectId': 'flow456' },
-          },
-        ],
-      },
-    ];
-    const builder = createQueryBuilder({ data: mockData, error: null, count: 1 });
-    mockFrom.mockReturnValue(builder);
-    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'user1' } } } });
-    mockGetTeamIdByUserId.mockResolvedValue('team1');
-    mockGetCachedLocationData.mockResolvedValue([]);
-    mockGetCachedClassificationData.mockResolvedValue([]);
-    mockJsonToList.mockReturnValue([]);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'my',
-      [],
-      'flow456',
-      '2.0.0',
-    );
-
-    expect(mockAuthGetSession).toHaveBeenCalled();
-    expect(result).toBeDefined();
-  });
-
-  it('should return empty data on database error', async () => {
-    const builder = createQueryBuilder({ data: null, error: { message: 'DB error' }, count: null });
-    mockFrom.mockReturnValue(builder);
-    mockGetCachedLocationData.mockResolvedValue([]);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      [],
-      'port789',
-      '3.0.0',
-    );
-
-    expect(result.data).toEqual([]);
-  });
-
-  it('returns early when flow id cannot be resolved from port id', async () => {
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      [],
-      '',
-      '1.0.0',
-    );
-
-    expect(result).toEqual({ data: [], success: true });
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('returns failure for my data source when session is missing', async () => {
-    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
-    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'my',
-      [],
-      'input:flow-no-user',
-      '',
-    );
-
-    expect(result).toEqual({ data: [], success: false });
-  });
-
-  it('returns empty success for team source when team id is absent', async () => {
-    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'te',
-      [],
-      'input:flow-team',
-      '',
-    );
-
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it('filters by opposite exchange direction and marks lifecycle-linked rows', async () => {
-    const builder = createQueryBuilder({
-      data: [
-        {
-          id: sampleId,
-          version: sampleVersion,
-          modified_at: '2024-01-01T00:00:00Z',
-          team_id: 'team-link',
-          '@location': 'CN',
-          exchange: [
-            {
-              exchangeDirection: 'output',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '01.00.000' },
-            },
-          ],
+  const classification = [{ scope: 'classification' as const, code: 'C' }];
+  const row = {
+    id: sampleId,
+    version: sampleVersion,
+    modified_at: '2024-01-01T00:00:00Z',
+    total_count: 120,
+    json: {
+      processDataSet: {
+        processInformation: {
+          dataSetInformation: { name: {}, 'common:generalComment': {} },
+          geography: { locationOfOperationSupplyOrProduction: { '@location': 'CN' } },
         },
-        {
-          id: 'process-other',
-          version: sampleVersion,
-          modified_at: '2024-01-02T00:00:00Z',
-          team_id: 'team-link',
-          '@location': 'CN',
-          exchange: [
-            {
-              exchangeDirection: 'output',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '99.99.999' },
-            },
-          ],
-        },
-      ],
-      error: null,
-      count: 2,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+      },
+    },
+  };
+
+  it('filters opposite-direction exact flow references before server count and pagination', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [row], error: null });
     mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({
       data: [{ id: sampleId, version: sampleVersion }],
     });
-
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
     const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      [],
-      'input:flow-link',
-      '01.00.000',
-    );
-
-    expect(builder.filter).toHaveBeenCalledWith(
-      'json->processDataSet->exchanges->exchange',
-      'cs',
-      JSON.stringify([
-        { referenceToFlowDataSet: { '@refObjectId': 'flow-link', '@version': '01.00.000' } },
-      ]),
-    );
-    expect(result).toEqual({
-      data: [
-        {
-          key: `${sampleId}:${sampleVersion}`,
-          id: sampleId,
-          version: sampleVersion,
-          lang: 'en',
-          name: 'Process Name',
-          generalComment: 'General comment',
-          classification: 'classification-string',
-          typeOfDataSet: '-',
-          referenceYear: '-',
-          location: 'China',
-          modifiedAt: new Date('2024-01-01T00:00:00Z'),
-          teamId: 'team-link',
-          isFromLifeCycle: true,
-        },
-      ],
-      success: true,
-    });
-  });
-
-  it('supports the co data source and returns empty success when no matches remain', async () => {
-    const builder = createQueryBuilder({
-      data: [
-        {
-          id: sampleId,
-          version: sampleVersion,
-          exchange: [
-            {
-              exchangeDirection: 'input',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-co' },
-            },
-          ],
-        },
-      ],
-      error: null,
-      count: 1,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetCachedLocationData.mockResolvedValueOnce([]);
-    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'co',
-      'team-co',
-      'input:flow-co',
-      '',
-    );
-
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
-    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-co');
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it('maps zh connectable rows with translated classification and location', async () => {
-    const builder = createQueryBuilder({
-      data: [
-        {
-          id: sampleId,
-          version: sampleVersion,
-          modified_at: '2024-01-01T00:00:00Z',
-          team_id: 'team-zh',
-          '@location': 'CN',
-          exchange: [
-            {
-              exchangeDirection: 'output',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-zh' },
-            },
-          ],
-          name: { zh: '流程' },
-          'common:class': [{ '#text': 'zh-class' }],
-          'common:generalComment': { zh: '备注' },
-        },
-      ],
-      error: null,
-      count: 1,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': '中国' }]);
-    mockGetCachedClassificationData.mockResolvedValueOnce([
-      { '@value': 'zh-class', '#text': '分类' },
-    ]);
-    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'zh',
-      'tg',
-      [],
-      'input:flow-zh',
-      '',
-    );
-
-    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
-    expect(result).toEqual({
-      data: [
-        {
-          key: `${sampleId}:${sampleVersion}`,
-          id: sampleId,
-          version: sampleVersion,
-          lang: 'zh',
-          name: 'Process Name',
-          generalComment: 'General comment',
-          classification: 'classification-string',
-          typeOfDataSet: '-',
-          referenceYear: '-',
-          location: '中国',
-          modifiedAt: new Date('2024-01-01T00:00:00Z'),
-          teamId: 'team-zh',
-        },
-      ],
-      success: true,
-    });
-  });
-
-  it('maps sparse zh connectable rows with fallback values when optional fields are missing', async () => {
-    const builder = createQueryBuilder({
-      data: [
-        {
-          id: sampleId,
-          version: sampleVersion,
-          modified_at: '2024-01-03T00:00:00Z',
-          exchange: [
-            {
-              exchangeDirection: 'output',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-zh-sparse' },
-            },
-          ],
-          name: undefined,
-          'common:class': undefined,
-          'common:generalComment': undefined,
-          '@location': undefined,
-        },
-      ],
-      error: null,
-      count: 1,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetCachedLocationData.mockResolvedValueOnce([]);
-    mockGetCachedClassificationData.mockResolvedValueOnce(undefined as any);
-    mockGenClassificationZH.mockReturnValueOnce(undefined as any);
-    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'zh',
-      'tg',
-      [],
-      'input:flow-zh-sparse',
-      '',
-    );
-
-    expect(result).toEqual({
-      data: [
-        {
-          key: `${sampleId}:${sampleVersion}`,
-          id: sampleId,
-          version: sampleVersion,
-          lang: 'zh',
-          name: 'Process Name',
-          generalComment: 'General comment',
-          classification: 'classification-string',
-          typeOfDataSet: '-',
-          referenceYear: '-',
-          location: '-',
-          modifiedAt: new Date('2024-01-03T00:00:00Z'),
-          teamId: undefined,
-        },
-      ],
-      success: true,
-    });
-  });
-
-  it('falls back to id-only rows when connectable-row mapping throws', async () => {
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    const builder = createQueryBuilder({
-      data: [
-        {
-          id: sampleId,
-          version: sampleVersion,
-          modified_at: '2024-01-01T00:00:00Z',
-          exchange: [
-            {
-              exchangeDirection: 'output',
-              referenceToFlowDataSet: { '@refObjectId': 'flow-err' },
-            },
-          ],
-        },
-      ],
-      error: null,
-      count: 1,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetCachedLocationData.mockResolvedValueOnce([]);
-    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: [] });
-    mockJsonToList.mockImplementationOnce(() => {
-      throw new Error('bad connectable class');
-    });
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      [],
-      'input:flow-err',
-      '',
-    );
-
-    expect(result).toEqual({
-      data: [{ id: sampleId }],
-      success: true,
-    });
-    errorSpy.mockRestore();
-  });
-
-  it('applies the tg team filter and returns empty success when no connectable rows remain', async () => {
-    const builder = createQueryBuilder({
-      data: [],
-      error: null,
-      count: 0,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      {},
-      'en',
-      'tg',
-      'team-tg',
-      'input:flow-tg',
-      '',
-    );
-
-    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-tg');
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it.each(['team-example', '', [] as []])(
-    'keeps connectable examples fixed to -1 with optional team %p',
-    async (tid) => {
-      const builder = createQueryBuilder({ data: [], error: null, count: 0 });
-      mockFrom.mockReturnValueOnce(builder);
-      const result = await processesApi.getConnectableProcessesTable(
-        { current: 1, pageSize: 10 },
-        {},
-        'en',
-        'ex',
-        tid,
-        'input:flow-example',
-        '',
-      );
-      expect(builder.eq).toHaveBeenCalledWith('state_code', -1);
-      expect(builder.eq).not.toHaveBeenCalledWith('state_code', 100);
-      expect(builder.eq.mock.calls.filter(([column]: [string]) => column === 'team_id')).toEqual(
-        tid.length > 0 ? [['team_id', tid]] : [],
-      );
-      expect(result).toEqual({ data: [], success: true });
-    },
-  );
-
-  it('falls back to modified_at ordering when connectable sort uses a derived column', async () => {
-    const builder = createQueryBuilder({
-      data: [],
-      error: null,
-      count: 0,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
-      { classification: 'descend' },
-      'en',
-      'tg',
-      [],
-      'input:flow-derived-sort',
-      '',
-    );
-
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-    expect(result).toEqual({ data: [], success: true });
-  });
-
-  it('maps supported connectable sort aliases to database columns', async () => {
-    const builder = createQueryBuilder({
-      data: [],
-      error: null,
-      count: 0,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-
-    const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
+      {
+        current: 3,
+        pageSize: 50,
+        classification,
+        datasetFilters: { flowReference: { id: 'wrong-flow' } },
+      },
       { modifiedAt: 'ascend' },
       'en',
       'tg',
-      [],
-      'input:flow-modified-at',
-      '',
+      'team-1',
+      'input:flow-1',
+      '01.00.002',
     );
-
-    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: true });
-    expect(result).toEqual({ data: [], success: true });
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_dataset_kind: 'process',
+        p_data_source: 'tg',
+        p_team_id: 'team-1',
+        p_filter_condition: {
+          classification,
+          flowReference: { id: 'flow-1', version: '01.00.002', direction: 'Output' },
+        },
+        p_page_current: 3,
+        p_page_size: 50,
+        p_version_scope: 'all',
+        p_sort_by: 'modified_at',
+        p_sort_direction: 'asc',
+      }),
+    );
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      page: 3,
+      total: 120,
+      success: true,
+      data: [{ id: sampleId, isFromLifeCycle: true, location: 'China' }],
+    });
   });
 
-  it('applies the resolved team id for team-scope connectable queries', async () => {
-    const builder = createQueryBuilder({
-      data: [],
-      error: null,
-      count: 0,
-    });
-    mockFrom.mockReturnValueOnce(builder);
-    mockGetTeamIdByUserId.mockResolvedValueOnce('team-connect');
-
+  it('uses Input references for output ports and allows server matching any flow version when omitted', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [row], error: null });
+    mockGetLifeCyclesByIdAndVersion.mockResolvedValueOnce({ data: undefined });
     const result = await processesApi.getConnectableProcessesTable(
-      { current: 1, pageSize: 10 },
+      {},
+      { name: 'ascend' },
+      'en',
+      'my',
+      [],
+      'output:flow-2',
+      '',
+    );
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_filter_condition: { flowReference: { id: 'flow-2', version: '', direction: 'Input' } },
+        p_sort_by: 'modified_at',
+        p_sort_direction: 'asc',
+        p_page_size: 50,
+        p_page_current: 1,
+      }),
+    );
+    expect(result.data[0]).not.toHaveProperty('isFromLifeCycle');
+  });
+
+  it('uses the resolved current team instead of a caller-supplied team', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce('resolved-team');
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    const result = await processesApi.getConnectableProcessesTable(
+      {},
       {},
       'en',
       'te',
-      [],
-      'input:flow-connect',
+      'caller-team',
+      'input:flow-1',
       '',
     );
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({ p_team_id: 'resolved-team' }),
+    );
+    expect(result).toEqual({ data: [], success: true, total: 0, page: 1 });
+  });
 
-    expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-connect');
-    expect(result).toEqual({ data: [], success: true });
+  it('returns an explicit query failure without falling back to an unfiltered public table', async () => {
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'DB error' } });
+    const result = await processesApi.getConnectableProcessesTable(
+      {},
+      {},
+      'en',
+      'tg',
+      [],
+      'input:flow-1',
+      '',
+    );
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      total: 0,
+      page: 1,
+      error: { message: 'DB error' },
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('skips absent flow identities, missing personal sessions and teams', async () => {
+    expect(
+      await processesApi.getConnectableProcessesTable({}, {}, 'en', 'tg', [], '', ''),
+    ).toMatchObject({ data: [], success: true });
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    expect(
+      await processesApi.getConnectableProcessesTable({}, {}, 'en', 'my', [], 'input:flow-1', ''),
+    ).toMatchObject({ data: [], success: false });
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+    expect(
+      await processesApi.getConnectableProcessesTable({}, {}, 'en', 'te', [], 'input:flow-1', ''),
+    ).toMatchObject({ data: [], success: true });
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 });
 
@@ -4444,6 +4060,7 @@ describe('getProcessTableUuidMentionSearch', () => {
     matched_by: 'json',
     matched_entity_table: 'processes',
     rank: 1,
+    total_count: 1,
     source_entity_kind: 'process',
     source_id: 'process-ref',
     source_json: {
@@ -4481,26 +4098,9 @@ describe('getProcessTableUuidMentionSearch', () => {
     ...overrides,
   });
 
-  it('maps and filters English reference lookup rows into process table rows', async () => {
+  it('passes the dataset type to SQL before mapping a complete reference lookup page', async () => {
     mockRpc.mockResolvedValueOnce({
-      data: [
-        mentionRow(),
-        mentionRow({
-          source_id: 'process-filtered-out',
-          source_json: {
-            processDataSet: {
-              processInformation: {
-                dataSetInformation: {},
-              },
-              modellingAndValidation: {
-                LCIMethodAndAllocation: {
-                  typeOfDataSet: 'gate to gate',
-                },
-              },
-            },
-          },
-        }),
-      ],
+      data: [mentionRow()],
       error: null,
     });
     mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
@@ -4515,15 +4115,19 @@ describe('getProcessTableUuidMentionSearch', () => {
       'team-1',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
-      p_data_source: 'tg',
-      p_limit: 11,
-      p_source_entity_kinds: ['process'],
-      p_state_code_filter: 100,
-      p_team_id_filter: 'team-1',
-      p_this_user_id: 'user-id',
-      p_uuid: 'd1380000-0000-4000-8000-000000000001',
-    });
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_data_source: 'tg',
+        p_filter_condition: { typeOfDataSet: 'LCI result' },
+        p_page_size: 10,
+        p_dataset_kind: 'process',
+        p_state_code: 100,
+        p_team_id: 'team-1',
+
+        p_uuid: 'd1380000-0000-4000-8000-000000000001',
+      }),
+    );
     expect(result.data).toEqual([
       {
         key: `process-ref:${sampleVersion}`,
@@ -4649,10 +4253,10 @@ describe('getProcessTableUuidMentionSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_dataset_json_uuid_mentions',
+      'search_dataset_uuid_mentions_page',
       expect.objectContaining({
-        p_source_entity_kinds: ['process'],
-        p_team_id_filter: null,
+        p_dataset_kind: 'process',
+        p_team_id: null,
       }),
     );
     expect(result).toEqual({
@@ -5249,3 +4853,493 @@ it.each(['create', 'version', 'update'])(
     expect(call).toEqual([expected, expected]);
   },
 );
+
+describe('process server classification query contract', () => {
+  const params = {
+    current: 4,
+    pageSize: 100,
+    classification: [{ scope: 'classification' as const, code: 'C', path: ['A', 'C'] }],
+    datasetFilters: { datasetId: 'id-filter' },
+  };
+  const filters = { ...params.datasetFilters, classification: params.classification };
+  let rpc: jest.SpiedFunction<(...args: any[]) => any>;
+  let session: jest.SpiedFunction<(...args: any[]) => any>;
+  beforeEach(() => {
+    const { supabase } = jest.requireMock('@/services/supabase');
+    rpc = jest.spyOn(supabase, 'rpc').mockResolvedValue({ data: [], error: null });
+    session = jest
+      .spyOn(supabase.auth, 'getSession')
+      .mockResolvedValue({ data: { session: { user: { id: 'actor' }, access_token: 'token' } } });
+  });
+  afterEach(() => {
+    rpc.mockRestore();
+    session.mockRestore();
+  });
+
+  it('filters ordinary pages before count through the dataset catalog facade', async () => {
+    rpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'catalog-id',
+          version: '01.00.001',
+          modified_at: '2026-10-13T00:00:00Z',
+          json: {},
+          total_count: 150,
+        },
+      ],
+      error: null,
+    });
+    const api = require('@/services/processes/api');
+    const result = await api.getProcessTableAll(
+      params,
+      { modifiedAt: 'ascend' },
+      'en',
+      'my',
+      '',
+      'all',
+      'all',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_dataset_kind: 'process',
+        p_data_source: 'my',
+        p_filter_condition: { ...{ typeOfDataSet: 'all' }, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+        p_sort_by: 'modified_at',
+        p_sort_direction: 'asc',
+      }),
+    );
+    expect(result).toMatchObject({
+      success: true,
+      data: [expect.objectContaining({ id: 'catalog-id' })],
+      total: 150,
+      page: 4,
+    });
+  });
+
+  it('passes complete filters to lexical search and keeps page inputs', async () => {
+    const api = require('@/services/processes/api');
+    await api.getProcessTablePgroongaSearch(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      'all',
+      undefined,
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_processes',
+      expect.objectContaining({
+        filter_condition: filters,
+        page_size: 100,
+        page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to UUID server pagination', async () => {
+    const api = require('@/services/processes/api');
+    await api.getProcessTableUuidMentionSearch(
+      params,
+      'en',
+      'my',
+      'd1380000-0000-4000-8000-000000000001',
+      'all',
+      'all',
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_dataset_kind: 'process',
+        p_filter_condition: { ...{ typeOfDataSet: 'all' }, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to hybrid search without filtering one returned page locally', async () => {
+    const api = require('@/services/processes/api');
+    const { supabase } = jest.requireMock('@/services/supabase');
+    const invoke = jest
+      .spyOn(supabase.functions, 'invoke')
+      .mockResolvedValue({ data: [], error: null });
+    await api.process_hybrid_search(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      'all',
+      '',
+    );
+    expect(invoke).toHaveBeenCalledWith(
+      'process_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          filter_condition: filters,
+          page_size: 100,
+          page_current: 4,
+        }),
+      }),
+    );
+    invoke.mockRestore();
+  });
+
+  it('preserves open-data publication/source scope together with classification', async () => {
+    const api = require('@/services/processes/api');
+    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
+    await api.getProcessTableAll(params, {}, 'en', 'tg', '', 'all', 'all', openDataFilters);
+    expect(rpc).toHaveBeenCalledWith(
+      'search_open_data_catalog',
+      expect.objectContaining({
+        p_filter_condition: { ...{ typeOfDataSet: 'all' }, ...filters },
+        p_source_filter: 'all',
+        p_publication_filter: 'all',
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+});
+
+describe('LCA Analysis classification scope', () => {
+  const classification = [{ scope: 'classification' as const, code: 'C' }];
+  beforeEach(() => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { user: { id: 'actor' } } } });
+    mockRpc.mockResolvedValue({
+      data: [{ id: 'catalog-id', version: '01.00.001', json: {}, total_count: 7 }],
+      error: null,
+    });
+  });
+  it.each(['all_data', 'public_plus_owner_draft'] as const)(
+    'normalizes a nullable external dataset-type selection for the complete %s scope',
+    async (scope) => {
+      // JavaScript callers can supply null for an unselected control even though the typed API
+      // declares a string. Undefined is already normalized by the public default parameter.
+      const nullableSelection = null as unknown as string;
+      const result = await processesApi.listProcessesForLcaAnalysis(
+        { current: 2, pageSize: 50, classification },
+        'en',
+        scope,
+        '',
+        { modifiedAt: 'ascend' },
+        {},
+        'all',
+        nullableSelection,
+      );
+
+      expect(mockAuthGetSession).toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'query_dataset_catalog',
+        expect.objectContaining({
+          p_dataset_kind: 'process',
+          p_data_source: 'all_data',
+          p_filter_condition: { typeOfDataSet: 'all', classification },
+          p_version_scope: 'all',
+          p_owner_draft_only: scope === 'public_plus_owner_draft',
+          p_page_current: 2,
+          p_page_size: 50,
+          p_sort_by: 'modified_at',
+          p_sort_direction: 'asc',
+        }),
+      );
+      expect(result).toMatchObject({
+        data: [expect.objectContaining({ id: 'catalog-id', version: '01.00.001' })],
+        success: true,
+        total: 7,
+        page: 2,
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    },
+  );
+  it.each(['all_data', 'public_plus_owner_draft'] as const)(
+    'filters the entire %s version scope before count and pagination',
+    async (scope) => {
+      const result = await processesApi.listProcessesForLcaAnalysis(
+        { current: 3, pageSize: 50, classification },
+        'en',
+        scope,
+      );
+      expect(mockRpc).toHaveBeenCalledWith(
+        'query_dataset_catalog',
+        expect.objectContaining({
+          p_data_source: 'all_data',
+          p_filter_condition: { typeOfDataSet: 'all', classification },
+          p_version_scope: 'all',
+          p_owner_draft_only: scope === 'public_plus_owner_draft',
+          p_page_current: 3,
+          p_page_size: 50,
+        }),
+      );
+      expect(result).toMatchObject({
+        data: [expect.objectContaining({ id: 'catalog-id' })],
+        success: true,
+        total: 7,
+        page: 3,
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    },
+  );
+  it('retains classification on every rebuilt private/public keyword page', async () => {
+    await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 50, classification },
+      'en',
+      'all_data',
+      'query',
+    );
+    expect(mockRpc).toHaveBeenCalled();
+    for (const [rpcName, args] of mockRpc.mock.calls) {
+      expect(rpcName).toBe('search_processes');
+      expect(args.filter_condition.classification).toEqual(classification);
+    }
+  });
+});
+
+describe('Model Result complete exact-process collection', () => {
+  const version = '01.00.001';
+  const canonicalClass = (path: string[], system = 'ISIC') => ({
+    'common:classification': {
+      '@name': system,
+      'common:class': path.map((code, level) => ({
+        '@classId': code,
+        '@level': String(level),
+        '#text': 'Same translated classification',
+      })),
+    },
+  });
+  const exactRow = (index: number, overrides: any = {}) => ({
+    id: `process-${String(index).padStart(5, '0')}`,
+    version,
+    name: { baseName: [{ '@xml:lang': 'en', '#text': `Original process ${index}` }] },
+    'common:generalComment': [{ '@xml:lang': 'en', '#text': 'original comment' }],
+    'common:referenceYear': 2025,
+    '@location': 'CN',
+    typeOfDataSet: 'LCI result',
+    modified_at: '2026-10-14T00:00:00Z',
+    classificationInformation: canonicalClass(['A', 'B']),
+    ...overrides,
+  });
+  const reference = (row: any) => ({ id: row.id, version: row.version });
+
+  function installExactBackend(rows: any[], serverCap = 1000, withCount = true) {
+    const builders: any[] = [];
+    mockFrom.mockImplementation(() => {
+      let keys = new Set<string>();
+      let from = 0;
+      let through = 49;
+      const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+      builder.or.mockImplementation((conditions: string) => {
+        keys = new Set(
+          Array.from(
+            conditions.matchAll(/and\(id\.eq\."([^"]+)",version\.eq\."([^"]+)"\)/g),
+            (match) => `${match[1]}:${match[2]}`,
+          ),
+        );
+        return builder;
+      });
+      builder.range.mockImplementation((start: number, end: number) => {
+        from = start;
+        through = end;
+        return builder;
+      });
+      builder.then = (resolve: any, reject: any) => {
+        const visible = rows
+          .filter((row) => keys.has(`${row.id}:${row.version}`))
+          .sort((left, right) =>
+            `${left.id}:${left.version}`.localeCompare(`${right.id}:${right.version}`),
+          );
+        return Promise.resolve({
+          data: visible.slice(from, Math.min(through + 1, from + serverCap)),
+          error: null,
+          count: withCount ? visible.length : null,
+        }).then(resolve, reject);
+      };
+      builders.push(builder);
+      return builder;
+    });
+    return builders;
+  }
+
+  it('loads more than 1000 exact versions without the PostgREST cap and only then filters the complete collection', async () => {
+    const rows = Array.from({ length: 1203 }, (_, index) =>
+      exactRow(index, {
+        classificationInformation: canonicalClass(['A', index === 1202 ? 'TARGET' : 'B']),
+      }),
+    );
+    const builders = installExactBackend(rows, 1000);
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+    const result = await processesApi.getProcessesByIdAndVersion(rows.map(reference), 'en', {
+      classification: [
+        { scope: 'classification', code: 'TARGET', system: 'ISIC', path: ['A', 'TARGET'] },
+      ],
+      keyword: 'original 1202',
+    });
+    expect(builders).toHaveLength(25);
+    expect(result).toMatchObject({
+      success: true,
+      total: 1,
+      page: 1,
+      data: [
+        {
+          id: rows[1202].id,
+          version,
+          location: 'China',
+          referenceYear: 2025,
+          typeOfDataSet: 'LCI result',
+        },
+      ],
+    });
+    for (const builder of builders) {
+      expect(builder.select).toHaveBeenCalledWith(
+        expect.stringContaining('classificationInformation'),
+        { count: 'exact' },
+      );
+      expect(builder.order).toHaveBeenCalledWith('id', { ascending: true });
+      expect(builder.order).toHaveBeenCalledWith('version', { ascending: true });
+      expect(builder.or.mock.calls[0][0].match(/and\(/g).length).toBeLessThanOrEqual(50);
+    }
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN']);
+  });
+
+  it('continues smaller capped responses using exact count rather than treating the first short page as complete', async () => {
+    const rows = Array.from({ length: 70 }, (_, index) => exactRow(index));
+    const builders = installExactBackend(rows, 17);
+    const result = await processesApi.getProcessesByIdAndVersion(rows.map(reference));
+    expect(result).toMatchObject({ success: true, total: 70 });
+    expect(result.data.map((row: any) => row.key)).toEqual(
+      rows.map((row) => `${row.id}:${row.version}`),
+    );
+    expect(builders.length).toBeGreaterThan(2);
+    expect(builders[1].range).toHaveBeenCalledWith(17, 66);
+    expect(mockGetCachedLocationData).not.toHaveBeenCalled();
+    expect(result.data[0].location).toBe('CN');
+  });
+
+  it('probes to an empty page when a response count is absent instead of assuming a short server-capped page is complete', async () => {
+    const rows = Array.from({ length: 20 }, (_, index) => exactRow(index));
+    const refs = [...rows.map(reference), { id: 'inaccessible', version }];
+    const builders = installExactBackend(rows, 7, false);
+    const result = await processesApi.getProcessesByIdAndVersion(refs);
+    expect(result).toMatchObject({ success: true, total: 20 });
+    expect(builders).toHaveLength(4);
+    expect(builders[3].range).toHaveBeenCalledWith(20, 40);
+  });
+
+  it('deduplicates identical references, retains distinct exact versions, and preserves inaccessible-row RLS behavior', async () => {
+    const first = exactRow(1, { version: '01.00.000' });
+    const second = exactRow(1, { version: '01.00.002', '@location': undefined });
+    installExactBackend([first, second, exactRow(99)]);
+    const result = await processesApi.getProcessesByIdAndVersion(
+      [reference(first), reference(second), reference(first), { id: 'inaccessible', version }],
+      'en',
+    );
+    expect(result).toMatchObject({ success: true, total: 2 });
+    expect(result.data.map((row: any) => row.key)).toEqual([
+      `${first.id}:01.00.000`,
+      `${first.id}:01.00.002`,
+    ]);
+    expect(result.data[1].location).toBe('-');
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it('uses canonical systems and full paths independently of localized display names or labels', async () => {
+    const rows = [
+      exactRow(1, { classificationInformation: canonicalClass(['A', 'B'], 'ISIC') }),
+      exactRow(2, { classificationInformation: canonicalClass(['A', 'B'], 'Other') }),
+      exactRow(3, { classificationInformation: canonicalClass(['X', 'B'], 'ISIC') }),
+      exactRow(4, {
+        classificationInformation: {
+          'common:classification': [
+            { '@name': 'ISIC', 'common:class': { '@classId': 'A', '@level': '0' } },
+            { '@name': 'Other', 'common:class': { '@classId': 'B', '@level': '1' } },
+          ],
+        },
+      }),
+    ];
+    installExactBackend(rows);
+    const result = await processesApi.getProcessesByIdAndVersion(rows.map(reference), 'en', {
+      classification: [{ scope: 'classification', code: 'B', path: ['A', 'B'], system: 'ISIC' }],
+    });
+    expect(result.total).toBe(1);
+    expect(result.data[0].id).toBe(rows[0].id);
+  });
+
+  it('reports a failed later batch without presenting the first batch as the complete result', async () => {
+    const rows = Array.from({ length: 70 }, (_, index) => exactRow(index));
+    installExactBackend(rows);
+    const backend = mockFrom.getMockImplementation()!;
+    let calls = 0;
+    mockFrom.mockImplementation((...args: any[]) =>
+      calls++ === 0
+        ? backend(...args)
+        : createQueryBuilder({
+            data: null,
+            error: { message: 'second batch failed' },
+            count: null,
+          }),
+    );
+    const result = await processesApi.getProcessesByIdAndVersion(rows.map(reference), 'en');
+    expect(result).toEqual({
+      data: [],
+      success: false,
+      page: 1,
+      total: 0,
+      error: { message: 'second batch failed' },
+    });
+  });
+
+  it.each([
+    { data: [], error: null, count: 1, errorText: 'Incomplete exact-process response' },
+    { data: [exactRow(2)], error: null, count: 1, errorText: 'Unexpected exact-process identity' },
+    { data: [exactRow(1)], error: null, count: 2, errorText: 'Invalid exact-process count' },
+  ])(
+    'rejects incomplete or inconsistent exact-version responses: $errorText',
+    async ({ errorText, ...response }) => {
+      mockFrom.mockReturnValue(createQueryBuilder(response));
+      const result = await processesApi.getProcessesByIdAndVersion([reference(exactRow(1))], 'en');
+      expect(result).toMatchObject({
+        success: false,
+        total: 0,
+        data: [],
+        error: new Error(errorText),
+      });
+    },
+  );
+
+  it('fails when a backend repeats one page without advancing unique exact references', async () => {
+    const rows = [exactRow(1), exactRow(2)];
+    mockFrom.mockReturnValue(createQueryBuilder({ data: [rows[0]], error: null, count: 2 }));
+    const result = await processesApi.getProcessesByIdAndVersion(rows.map(reference), 'en');
+    expect(result).toMatchObject({
+      success: false,
+      total: 0,
+      error: new Error('Incomplete exact-process response'),
+    });
+  });
+
+  it('validates classification before issuing raw reads and quotes exact identity values', async () => {
+    const result = await processesApi.getProcessesByIdAndVersion([reference(exactRow(1))], 'en', {
+      classification: [{ scope: 'classification', code: 'B', path: ['A', 'C'] }],
+    });
+    expect(result).toMatchObject({ success: false, total: 0 });
+    expect(mockFrom).not.toHaveBeenCalled();
+    const row = exactRow(1, { id: 'quoted"identity', version: 'slash\\version' });
+    const builder = createQueryBuilder({ data: [row], error: null, count: 1 });
+    mockFrom.mockReturnValueOnce(builder);
+    await processesApi.getProcessesByIdAndVersion([reference(row)]);
+    expect(builder.or).toHaveBeenCalledWith(
+      'and(id.eq."quoted\\"identity",version.eq."slash\\\\version")',
+    );
+  });
+});

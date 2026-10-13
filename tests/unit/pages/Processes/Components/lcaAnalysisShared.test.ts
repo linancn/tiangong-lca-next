@@ -141,6 +141,35 @@ describe('lcaAnalysisShared', () => {
     );
   });
 
+  it('retains the dataset location, reference year, and type for each exact-version selection without inventing missing metadata', () => {
+    const options = buildLcaProcessOptions(
+      [
+        {
+          id: 'p1',
+          name: 'Name',
+          version: '01.00.000',
+          location: 'CN',
+          referenceYear: '2024',
+          typeOfDataSet: 'Unit process, black box',
+        } as any,
+        { id: 'p1', name: 'Name', version: '02.00.000' } as any,
+      ],
+      { dedupeByProcessId: false },
+    );
+    expect(options[0]).toEqual(
+      expect.objectContaining({
+        selectionKey: 'p1:01.00.000',
+        location: 'CN',
+        referenceYear: '2024',
+        typeOfDataSet: 'Unit process, black box',
+      }),
+    );
+    expect(options[1].selectionKey).toBe('p1:02.00.000');
+    expect(options[1]).not.toHaveProperty('location');
+    expect(options[1]).not.toHaveProperty('referenceYear');
+    expect(options[1]).not.toHaveProperty('typeOfDataSet');
+  });
+
   it('builds process options with duplicate filtering and name/version fallbacks', () => {
     expect(buildLcaProcessSelectionKey('process-1', '02.00.000')).toBe('process-1:02.00.000');
     expect(buildLcaProcessSelectionKey('process-1', '')).toBe('process-1');

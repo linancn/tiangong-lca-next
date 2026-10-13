@@ -422,7 +422,7 @@ describe('Unitgroups Workflow Integration', () => {
     await user.selectOptions(screen.getByLabelText('state-filter'), '100');
     await waitFor(() => {
       expect(getUnitGroupTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'heat',
@@ -462,7 +462,7 @@ describe('Unitgroups Workflow Integration', () => {
     expect(firstCall[4]).toBe('team-open');
 
     expect(await screen.findByText('Open unit group')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Unit Groups');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(
       within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
@@ -475,3 +475,23 @@ describe('Unitgroups Workflow Integration', () => {
     expect(screen.getByText('export')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

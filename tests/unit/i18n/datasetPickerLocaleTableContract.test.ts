@@ -118,9 +118,7 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
     expect(
       countOccurrences(source, `<ProTable<${picker.rowType}, ContentLanguageAwareTableParams>`),
     ).toBe(picker.tableCount);
-    expect(countOccurrences(source, 'params={contentLanguageAwareTableParams}')).toBe(
-      picker.tableCount,
-    );
+    expect(countOccurrences(source, '...contentLanguageAwareTableParams')).toBe(picker.tableCount);
     expect(countOccurrences(source, 'request={async (')).toBe(picker.tableCount);
     expect(countOccurrences(source, 'params: ContentLanguageAwareTableParams & {')).toBe(
       picker.tableCount,
@@ -152,10 +150,12 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
   it('keeps every selector table and reference input contained on narrow drawers', () => {
     const compactFormSource = formSource.replace(/\s+/g, ' ');
 
-    expect(countOccurrences(source, "className='tg-dataset-selector-table'")).toBe(
-      picker.tableCount,
-    );
-    expect(countOccurrences(source, "scroll={{ x: 'max-content' }}")).toBe(picker.tableCount);
+    expect(
+      countOccurrences(source, "className='responsive-data-list-table tg-dataset-selector-table'"),
+    ).toBe(picker.tableCount);
+    expect(countOccurrences(source, 'scroll={scroll}')).toBe(picker.tableCount);
+    expect(countOccurrences(source, '<ResponsiveDataListViewport>')).toBe(picker.tableCount);
+    expect(countOccurrences(source, 'pagination={dataListPagination}')).toBe(picker.tableCount);
     expect(compactFormSource).toContain('<Space {...RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS}>');
     expect(compactFormSource).toContain('style={RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE}');
     expect(compactFormSource).toContain('...RESPONSIVE_REFERENCE_SELECTOR_INPUT_STYLE');

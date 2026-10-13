@@ -18,6 +18,8 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -340,13 +342,16 @@ jest.mock('@ant-design/pro-components', () => {
     request,
     params = {},
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params };
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
-    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
+    const pageInfoRef = React.useRef({ pageSize: 50, current: 1, classification: [] });
     const [rows, setRows] = React.useState<any[]>([]);
 
     requestRef.current = request;
@@ -390,7 +395,11 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         <button type='button' onClick={() => requestWith({ name: 'ascend' })}>
           request-name-sort-asc
         </button>
@@ -437,6 +446,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('LifeCycleModelsPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
@@ -477,6 +487,38 @@ describe('LifeCycleModelsPage', () => {
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
   });
 
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    act(() => mockCapturedTableProps.pagination.onChange(1, 50));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -499,7 +541,7 @@ describe('LifeCycleModelsPage', () => {
     );
 
     expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -513,7 +555,7 @@ describe('LifeCycleModelsPage', () => {
     );
     expect(screen.getByTestId('row-model-1-1.0.0')).toBeInTheDocument();
     expect(screen.getByText('Lifecycle model 1')).toBeInTheDocument();
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('all-versions')).toHaveLength(2);
     expect(screen.getAllByTestId('lifecycle-create-createVersion')[0]).toHaveTextContent(
       '"newVersion":"02.00.000"',
@@ -559,7 +601,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -571,7 +613,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -585,7 +627,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-name-sort-asc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -599,7 +641,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-name-sort-desc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -613,7 +655,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-classification-sort-desc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -627,7 +669,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-classification-sort-asc' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -641,7 +683,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-unknown-sort' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -655,7 +697,7 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'request-inactive-sort' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -675,14 +717,43 @@ describe('LifeCycleModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
         {},
         '20',
+        undefined,
+        'team-1',
       ),
     );
+  });
+
+  it('preserves Open Data filters, classification and selected institution in tg Hybrid search', async () => {
+    mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '?tid=public-team' };
+    mockGetDataSource.mockReturnValue('tg');
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockLifeCycleModelHybridSearch).toHaveBeenCalledWith(
+        {
+          pageSize: 50,
+          current: 1,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        },
+        'en',
+        'tg',
+        'steel',
+        {},
+        'all',
+        { publicationFilter: 'all', sourceFilter: 'all' },
+        'public-team',
+      ),
+    );
+    expect(mockGetLifeCycleModelTablePgroongaSearch).not.toHaveBeenCalled();
   });
 
   it('contributes rows successfully or with logged errors and executes the delete callback prop', async () => {
@@ -743,7 +814,7 @@ describe('LifeCycleModelsPage', () => {
       );
 
       expect(mockGetLifeCycleModelTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         scope,
@@ -858,7 +929,7 @@ describe('LifeCycleModelsPage', () => {
 
     await waitFor(() =>
       expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'steel',
@@ -901,7 +972,7 @@ describe('LifeCycleModelsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetLifeCycleModelTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -930,3 +1001,17 @@ describe('LifeCycleModelsPage', () => {
     );
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

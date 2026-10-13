@@ -1,3 +1,13 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
 import {
@@ -36,6 +46,7 @@ const ConnectableProcesses: FC<Props> = ({
   onData = () => {},
   readOnly = false,
 }) => {
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
   const tgRequestEpochRef = useRef(0);
@@ -59,11 +70,25 @@ const ConnectableProcesses: FC<Props> = ({
   const activeTabKeyRef = useRef(activeTabKey);
   activeTabKeyRef.current = activeTabKey;
   const [tableLoading, setTableLoading] = useState<boolean>(false);
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    myRequestEpochRef.current += 1;
+    teRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     setActiveTabKey(key as DataTabKey);
   };
 
@@ -173,230 +198,310 @@ const ConnectableProcesses: FC<Props> = ({
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={tgActionRefSelect}
-          params={contentLanguageParams}
-          loading={tableLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            setTableLoading(true);
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async ({ isCurrentRequest }) => {
-                try {
-                  return await getConnectableProcessesTable(
-                    requestParams,
-                    sort,
-                    contentLanguage,
-                    'tg',
-                    tid ?? '',
-                    portId,
-                    flowVersion,
-                  );
-                } finally {
-                  if (isCurrentRequest() && activeTabKeyRef.current === 'tg') {
-                    setTableLoading(false);
-                  }
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                filter: (
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={classification}
+                    onChange={onClassificationChange}
+                  />
+                ),
+              })}
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              loading={tableLoading}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                setTableLoading(true);
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async ({ isCurrentRequest }) => {
+                    try {
+                      return await getConnectableProcessesTable(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'tg',
+                        tid ?? '',
+                        portId,
+                        flowVersion,
+                      );
+                    } finally {
+                      if (isCurrentRequest() && activeTabKeyRef.current === 'tg') {
+                        setTableLoading(false);
+                      }
+                    }
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={
+                !readOnly && {
+                  alwaysShowAlert: true,
+                  preserveSelectedRowKeys: true,
+                  selectedRowKeys: selectedRowKeys,
+                  onChange: onSelectChange,
                 }
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={
-            !readOnly && {
-              alwaysShowAlert: true,
-              preserveSelectedRowKeys: true,
-              selectedRowKeys: selectedRowKeys,
-              onChange: onSelectChange,
-            }
-          }
-        />
+              }
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={coActionRefSelect}
-          params={contentLanguageParams}
-          loading={tableLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            setTableLoading(true);
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async ({ isCurrentRequest }) => {
-                try {
-                  return await getConnectableProcessesTable(
-                    requestParams,
-                    sort,
-                    contentLanguage,
-                    'co',
-                    tid ?? '',
-                    portId,
-                    flowVersion,
-                  );
-                } finally {
-                  if (isCurrentRequest() && activeTabKeyRef.current === 'co') {
-                    setTableLoading(false);
-                  }
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                filter: (
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={classification}
+                    onChange={onClassificationChange}
+                  />
+                ),
+              })}
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              loading={tableLoading}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                setTableLoading(true);
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async ({ isCurrentRequest }) => {
+                    try {
+                      return await getConnectableProcessesTable(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'co',
+                        tid ?? '',
+                        portId,
+                        flowVersion,
+                      );
+                    } finally {
+                      if (isCurrentRequest() && activeTabKeyRef.current === 'co') {
+                        setTableLoading(false);
+                      }
+                    }
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={
+                !readOnly && {
+                  alwaysShowAlert: true,
+                  preserveSelectedRowKeys: true,
+                  selectedRowKeys: selectedRowKeys,
+                  onChange: onSelectChange,
                 }
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={
-            !readOnly && {
-              alwaysShowAlert: true,
-              preserveSelectedRowKeys: true,
-              selectedRowKeys: selectedRowKeys,
-              onChange: onSelectChange,
-            }
-          }
-        />
+              }
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={myActionRefSelect}
-          params={contentLanguageParams}
-          loading={tableLoading}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            setTableLoading(true);
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async ({ isCurrentRequest }) => {
-                try {
-                  return await getConnectableProcessesTable(
-                    requestParams,
-                    sort,
-                    contentLanguage,
-                    'my',
-                    tid ?? '',
-                    portId,
-                    flowVersion,
-                  );
-                } finally {
-                  if (isCurrentRequest() && activeTabKeyRef.current === 'my') {
-                    setTableLoading(false);
-                  }
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                filter: (
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={classification}
+                    onChange={onClassificationChange}
+                  />
+                ),
+              })}
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              loading={tableLoading}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                setTableLoading(true);
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async ({ isCurrentRequest }) => {
+                    try {
+                      return await getConnectableProcessesTable(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'my',
+                        tid ?? '',
+                        portId,
+                        flowVersion,
+                      );
+                    } finally {
+                      if (isCurrentRequest() && activeTabKeyRef.current === 'my') {
+                        setTableLoading(false);
+                      }
+                    }
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={
+                !readOnly && {
+                  alwaysShowAlert: true,
+                  preserveSelectedRowKeys: true,
+                  selectedRowKeys: selectedRowKeys,
+                  onChange: onSelectChange,
                 }
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={
-            !readOnly && {
-              alwaysShowAlert: true,
-              preserveSelectedRowKeys: true,
-              selectedRowKeys: selectedRowKeys,
-              onChange: onSelectChange,
-            }
-          }
-        />
+              }
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={teActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          loading={tableLoading}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            setTableLoading(true);
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              teRequestEpochRef,
-              async ({ isCurrentRequest }) => {
-                try {
-                  return await getConnectableProcessesTable(
-                    requestParams,
-                    sort,
-                    contentLanguage,
-                    'te',
-                    tid ?? '',
-                    portId,
-                    flowVersion,
-                  );
-                } finally {
-                  if (isCurrentRequest() && activeTabKeyRef.current === 'te') {
-                    setTableLoading(false);
-                  }
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                filter: (
+                  <DatasetClassificationFilter
+                    datasetKind='process'
+                    lang={lang}
+                    value={classification}
+                    onChange={onClassificationChange}
+                  />
+                ),
+              })}
+              actionRef={teActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              loading={tableLoading}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                setTableLoading(true);
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teRequestEpochRef,
+                  async ({ isCurrentRequest }) => {
+                    try {
+                      return await getConnectableProcessesTable(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'te',
+                        tid ?? '',
+                        portId,
+                        flowVersion,
+                      );
+                    } finally {
+                      if (isCurrentRequest() && activeTabKeyRef.current === 'te') {
+                        setTableLoading(false);
+                      }
+                    }
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={
+                !readOnly && {
+                  alwaysShowAlert: true,
+                  preserveSelectedRowKeys: true,
+                  selectedRowKeys: selectedRowKeys,
+                  onChange: onSelectChange,
                 }
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={
-            !readOnly && {
-              alwaysShowAlert: true,
-              preserveSelectedRowKeys: true,
-              selectedRowKeys: selectedRowKeys,
-              onChange: onSelectChange,
-            }
-          }
-        />
+              }
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -450,6 +555,8 @@ const ConnectableProcesses: FC<Props> = ({
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

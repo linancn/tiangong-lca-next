@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8f73fe0ec094b23ce9b68ea26eba42a0b7084b7767f3a0ef2bce67906dd1066f",
+    "auditedInputDigest": "e7887edae380e823588b295a9beac664344e97e4c70d96220a57ada42a87753c",
     "validatedMessageCount": 3546,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "0ef0f83a8fb096abf241b472704025f726005a2425033852d0077bec1da1845b",
-    "dossierDigest": "a88aa622c4437abfc43f8a758a260091235477a9d85419a1e9221abe7b41ea90",
+    "dossierDigest": "713504682ea01221b12d69de17079a721cc012f4e94330bd072e18be8741b3fb",
     "typedContentDossierDigest": "381b7b7af87d349151ab51d77de2402d93629029efa5ff964e45d5e00cddf454",
-    "routeEvidenceDigest": "800b2a5eff8066f6090b7a9b771793d8ffb8c6315f33cc78f69dc7c6f36d9105",
+    "routeEvidenceDigest": "cb7b938bf5defe0410eb7f8c9a50daf6960e9ba305859726e000fc75d7796300",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "a4fc9e0d5fbcf40570e5068b502a91d0b8b42732da1e1fdee118795aa47e2c21",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "a88aa622c4437abfc43f8a758a260091235477a9d85419a1e9221abe7b41ea90",
+        "dossierDigest": "713504682ea01221b12d69de17079a721cc012f4e94330bd072e18be8741b3fb",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "bc8850e91730002816082e1247cd0f9bf35db6bcb273ffd7b6ea22822a6af4cd"
+  "validationDigest": "0636486fad4c1fc54174d980185dca14fdc30f07a3a2394c6201646b0bcd8bad"
 }

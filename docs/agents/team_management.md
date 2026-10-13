@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: reviewer rejection remains an advisory Comment transition; team ownership and Review Admin final-decision rules are unchanged.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: dataset selector and classification presentation do not change membership, team roles, reviewer profile admission or Review Admin authority.'
 ---
 
 # Team Management Reference

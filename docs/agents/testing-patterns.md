@@ -28,6 +28,7 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/i18n/**
   - scripts/test-runner.cjs
   - scripts/jest-sequencer.cjs
@@ -38,13 +39,14 @@ checkPaths:
   - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - package.json
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: the added footer, failure-retention, and callback tests follow existing component-mock patterns without changing test conventions.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: list/filter and complete-set regressions use existing service/component and deferred-response patterns. Add focused configuration check paths; canonical localization browser and release evidence contracts are unchanged.'
 ---
 
 # Testing Patterns Reference

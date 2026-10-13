@@ -35,6 +35,9 @@ export type LcaProcessOption = {
   processId: string;
   name: string;
   version: string;
+  location?: string;
+  referenceYear?: string;
+  typeOfDataSet?: string;
   label: string;
 };
 
@@ -136,6 +139,9 @@ export function buildLcaProcessOptions(
       name: processName,
       version,
       label: `${processName} (${version})`,
+      ...(process.location !== undefined ? { location: process.location } : {}),
+      ...(process.referenceYear !== undefined ? { referenceYear: process.referenceYear } : {}),
+      ...(process.typeOfDataSet !== undefined ? { typeOfDataSet: process.typeOfDataSet } : {}),
     });
   });
 

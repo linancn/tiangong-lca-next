@@ -1,3 +1,13 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import { getDataListToolbar } from '@/components/ResponsiveDataList';
+import type { OpenDataDatasetKind } from '@/services/openDataCatalog/types';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
 import ContactView from '@/pages/Contacts/Components/view';
 import FlowpropertyView from '@/pages/Flowproperties/Components/view';
 import FlowView from '@/pages/Flows/Components/view';
@@ -18,7 +28,7 @@ import { getDataSource } from '@/services/general/util';
 import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
+import { Button, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key, ReactElement, ReactNode, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
@@ -61,13 +71,38 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   operationColumnWidth,
   onSelectVersion,
 }) => {
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
+  const datasetKinds: Partial<Record<string, OpenDataDatasetKind>> = {
+    lifecyclemodels: 'lifecyclemodel',
+    processes: 'process',
+    flows: 'flow',
+    flowproperties: 'flowproperty',
+    unitgroups: 'unitgroup',
+    sources: 'source',
+    contacts: 'contact',
+  };
+  const datasetKind = datasetKinds[searchTableName];
+  const datasetLabels: Partial<Record<string, ReactNode>> = {
+    lifecyclemodels: <FormattedMessage id='menu.tgdata.models' defaultMessage='Models' />,
+    processes: <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />,
+    flows: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' />,
+    flowproperties: (
+      <FormattedMessage id='menu.tgdata.flowproperties' defaultMessage='Flow Properties' />
+    ),
+    unitgroups: <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />,
+    sources: <FormattedMessage id='menu.tgdata.sources' defaultMessage='Sources' />,
+    contacts: <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />,
+  };
   const actionRef = useRef<ActionType | undefined>(undefined);
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
   const [selectedVersionRowKeys, setSelectedVersionRowKeys] = useState<Key[]>([]);
   const [selectedVersionRow, setSelectedVersionRow] = useState<VersionedDataRow | null>(null);
   const location = useLocation();
   const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
-  const tableDataRef = useRef<VersionedDataRow[]>([]);
+  const [creationBaseline, setCreationBaseline] = useState<{
+    scope: string;
+    newVersion: string;
+  } | null>(null);
   const selectable = Boolean(onSelectVersion);
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
@@ -78,8 +113,35 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
     [tableRequestEpochRef],
   );
 
+  const creationScope = JSON.stringify([
+    id,
+    searchTableName,
+    searchColume,
+    dataSource,
+    stateCode,
+    contentLanguageParams.contentLanguage,
+    Boolean(addVersionComponent),
+  ]);
+  const creationScopeRef = useRef(creationScope);
+  if (creationScopeRef.current !== creationScope) {
+    tableRequestEpochRef.current += 1;
+    creationScopeRef.current = creationScope;
+  }
+  const drawerOpenRef = useRef(showAllVersionsModal);
+  drawerOpenRef.current = showAllVersionsModal;
+
+  useEffect(
+    () => () => {
+      drawerOpenRef.current = false;
+      tableRequestEpochRef.current += 1;
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!showAllVersionsModal) {
+      setCreationBaseline(null);
+      setClassification([]);
       setSelectedVersionRowKeys([]);
       setSelectedVersionRow(null);
       return;
@@ -89,6 +151,9 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   }, [showAllVersionsModal]);
 
   const closeAllVersionsModal = () => {
+    drawerOpenRef.current = false;
+    tableRequestEpochRef.current += 1;
+    setCreationBaseline(null);
     setShowAllVersionsModal(false);
   };
 
@@ -167,10 +232,6 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
     },
   ];
 
-  const getNewVersion = (): string => {
-    return getNextDataSetVersionFromRows(tableDataRef.current);
-  };
-
   return (
     <>
       <Tooltip
@@ -211,81 +272,154 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         }
         mask={{ closable: false }}
       >
-        <Card>
-          <ProTable<any, ContentLanguageAwareTableParams>
-            rowKey='version'
-            actionRef={actionRef}
-            params={contentLanguageParams}
-            search={false}
-            options={{ fullScreen: true }}
-            scroll={{ x: 'max-content' }}
-            tableLayout='fixed'
-            pagination={{
-              showSizeChanger: false,
-              pageSize: 10,
-            }}
-            rowSelection={
-              selectable
-                ? {
-                    type: 'radio',
-                    alwaysShowAlert: true,
-                    selectedRowKeys: selectedVersionRowKeys,
-                    onChange: (newSelectedRowKeys, selectedRows) => {
-                      setSelectedVersionRowKeys(newSelectedRowKeys);
-                      setSelectedVersionRow(selectedRows?.[0] ?? null);
-                    },
-                  }
-                : undefined
-            }
-            toolBarRender={() => {
-              if (!addVersionComponent) {
-                return [];
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<any, ContentLanguageAwareTableParams & { versionScope: string }>
+              {...responsiveDataListTableProps}
+              scroll={scroll}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              actionRef={actionRef}
+              params={{ ...contentLanguageParams, classification, versionScope: creationScope }}
+              search={false}
+              options={{ fullScreen: true }}
+              toolbar={getDataListToolbar({
+                filter: datasetKind ? (
+                  <DatasetClassificationFilter
+                    datasetKind={datasetKind}
+                    lang={lang}
+                    value={classification}
+                    onChange={(value) => {
+                      tableRequestEpochRef.current += 1;
+                      setCreationBaseline(null);
+                      setClassification(value);
+                      setSelectedVersionRowKeys([]);
+                      setSelectedVersionRow(null);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                ) : undefined,
+              })}
+              pagination={dataListPagination}
+              rowSelection={
+                selectable
+                  ? {
+                      type: 'radio',
+                      alwaysShowAlert: true,
+                      selectedRowKeys: selectedVersionRowKeys,
+                      onChange: (newSelectedRowKeys, selectedRows) => {
+                        setSelectedVersionRowKeys(newSelectedRowKeys);
+                        setSelectedVersionRow(selectedRows?.[0] ?? null);
+                      },
+                    }
+                  : undefined
               }
+              toolBarRender={() => {
+                if (
+                  !addVersionComponent ||
+                  !creationBaseline ||
+                  creationBaseline.scope !== creationScope ||
+                  !showAllVersionsModal
+                ) {
+                  return [];
+                }
 
-              return [
-                <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
-                  {addVersionComponent({ newVersion: getNewVersion() })}
-                </ConfigProvider>,
-              ];
-            }}
-            request={async (
-              params: ContentLanguageAwareTableParams & {
-                pageSize?: number;
-                current?: number;
-              },
-              sort,
-            ) => {
-              const {
-                contentLanguage = contentLanguageParams.contentLanguage,
-                pageSize = 10,
-                current = 1,
-                ...restParams
-              } = params;
-              const requestParams = { ...restParams, pageSize, current };
-              const result = await guardLocaleMaterializedTableRequest(
-                contentLanguage,
-                () => currentContentLanguageRef.current,
-                tableRequestEpochRef,
-                () =>
-                  getAllVersions(
-                    searchColume,
-                    searchTableName,
-                    id,
-                    requestParams,
-                    sort,
-                    contentLanguage,
-                    dataSource,
-                    stateCode,
-                  ),
-              );
-              if (result.success !== false) {
-                tableDataRef.current = result.data ?? [];
-              }
-              return result;
-            }}
-            columns={allVersionsColumns}
-          />
-        </Card>
+                return [
+                  <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
+                    {addVersionComponent({ newVersion: creationBaseline.newVersion })}
+                  </ConfigProvider>,
+                ];
+              }}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                  versionScope?: string;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  pageSize = 50,
+                  current = 1,
+                  versionScope: _versionScope,
+                  ...restParams
+                } = params;
+                void _versionScope;
+                if (!drawerOpenRef.current) return { data: [], total: 0, success: false };
+                const requestParams = { ...restParams, pageSize, current };
+                const requestScope = JSON.stringify([
+                  id,
+                  searchTableName,
+                  searchColume,
+                  dataSource,
+                  stateCode,
+                  contentLanguage,
+                  Boolean(addVersionComponent),
+                ]);
+                if (addVersionComponent) setCreationBaseline(null);
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tableRequestEpochRef,
+                  async ({ isCurrentRequest }) => {
+                    // Creation always uses the complete scope's highest version, independent of table filters, page, or sort.
+                    const baselineRequest = addVersionComponent
+                      ? getAllVersions(
+                          searchColume,
+                          searchTableName,
+                          id,
+                          { current: 1, pageSize: 1 },
+                          { version: 'descend' },
+                          contentLanguage,
+                          dataSource,
+                          stateCode,
+                        )
+                          .then((baseline) => {
+                            if (baseline.success === false || !Array.isArray(baseline.data))
+                              return null;
+                            const versionRows = baseline.data.filter(
+                              (row: { version?: unknown }) =>
+                                typeof row.version === 'string' &&
+                                /^\d+\.\d+\.\d+$/.test(row.version),
+                            );
+                            return versionRows.length
+                              ? getNextDataSetVersionFromRows(versionRows)
+                              : null;
+                          })
+                          .catch(() => null)
+                      : Promise.resolve(null);
+                    const [result, newVersion] = await Promise.all([
+                      getAllVersions(
+                        searchColume,
+                        searchTableName,
+                        id,
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        dataSource,
+                        stateCode,
+                      ),
+                      baselineRequest,
+                    ]);
+                    if (
+                      !isCurrentRequest() ||
+                      !drawerOpenRef.current ||
+                      creationScopeRef.current !== requestScope
+                    ) {
+                      return { ...result, data: [], success: false };
+                    }
+                    if (addVersionComponent)
+                      setCreationBaseline(newVersion ? { scope: requestScope, newVersion } : null);
+                    return result;
+                  },
+                );
+              }}
+              columns={orderDataListColumns(allVersionsColumns, {
+                dataType: datasetLabels[searchTableName],
+              })}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </Drawer>
     </>
   );

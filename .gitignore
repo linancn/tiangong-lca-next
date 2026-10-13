@@ -82,3 +82,6 @@ docker/.env.deploy.local
 
 # isolated release E2E images, manifests, reports, and bounded continuation receipt
 /.local/e2e-release/
+
+# Synthetic dataset-list browser proof and local server receipts
+/.local/dataset-list-unification/

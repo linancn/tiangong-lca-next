@@ -1,3 +1,13 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { contact_hybrid_search, getContactTableAll } from '@/services/contacts/api';
@@ -50,6 +60,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const teamActionRefSelect = useRef<ActionType | undefined>(undefined);
 
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
   const tgRequestEpochRef = useRef(0);
@@ -61,6 +72,19 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
     contentLanguageAwareTableParams.contentLanguage,
     [tgRequestEpochRef, coRequestEpochRef, myRequestEpochRef, teamRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    myRequestEpochRef.current += 1;
+    teamRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teamActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -98,6 +122,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     const tabKey = key as DataTabKey;
     await setActiveTabKey(tabKey);
     if (tabKey === 'tg') {
@@ -119,6 +144,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
@@ -131,12 +157,14 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   };
 
   const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
@@ -295,223 +323,305 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<ContactTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={tgActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async () => {
-                if (tgKeyWord.length > 0) {
-                  return contact_hybrid_search(params, params.contentLanguage, 'tg', tgKeyWord, {});
-                }
-                return getContactTableAll(params, sort, params.contentLanguage, 'tg', []);
-              },
-            );
-          }}
-          columns={contactColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ContactTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='contact'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async () => {
+                    if (tgKeyWord.length > 0) {
+                      return contact_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'tg',
+                        tgKeyWord,
+                        {},
+                      );
+                    }
+                    return getContactTableAll(params, sort, params.contentLanguage, 'tg', []);
+                  },
+                );
+              }}
+              columns={orderDataListColumns(contactColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <Card>
-          <Search
-            name={'co'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={coKeyWord}
-            onChange={handleCoKeyWordChange}
-            onSearch={onCoSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<ContactTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={coActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async () => {
-                if (coKeyWord.length > 0) {
-                  return contact_hybrid_search(params, params.contentLanguage, 'co', coKeyWord, {});
-                }
-                return getContactTableAll(params, sort, params.contentLanguage, 'co', []);
-              },
-            );
-          }}
-          columns={contactColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ContactTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'co'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={coKeyWord}
+                    onChange={handleCoKeyWordChange}
+                    onSearch={onCoSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='contact'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async () => {
+                    if (coKeyWord.length > 0) {
+                      return contact_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'co',
+                        coKeyWord,
+                        {},
+                      );
+                    }
+                    return getContactTableAll(params, sort, params.contentLanguage, 'co', []);
+                  },
+                );
+              }}
+              columns={orderDataListColumns(contactColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<ContactTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={myActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async () => {
-                if (myKeyWord.length > 0) {
-                  return contact_hybrid_search(params, params.contentLanguage, 'my', myKeyWord, {});
-                }
-                return getContactTableAll(params, sort, params.contentLanguage, 'my', []);
-              },
-            );
-          }}
-          toolBarRender={() => {
-            return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
-          }}
-          columns={contactColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ContactTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='contact'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async () => {
+                    if (myKeyWord.length > 0) {
+                      return contact_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'my',
+                        myKeyWord,
+                        {},
+                      );
+                    }
+                    return getContactTableAll(params, sort, params.contentLanguage, 'my', []);
+                  },
+                );
+              }}
+              toolBarRender={() => {
+                return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
+              }}
+              columns={orderDataListColumns(contactColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <Card>
-          <Search
-            name={'te'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={teamKeyWord}
-            onChange={handleTeamKeyWordChange}
-            onSearch={onTeamSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<ContactTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={teamActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            return guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              teamRequestEpochRef,
-              async () => {
-                if (teamKeyWord.length > 0) {
-                  return contact_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'te',
-                    teamKeyWord,
-                    {},
-                  );
-                }
-                return getContactTableAll(params, sort, params.contentLanguage, 'te', '');
-              },
-            );
-          }}
-          columns={contactColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ContactTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'te'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={teamKeyWord}
+                    onChange={handleTeamKeyWordChange}
+                    onSearch={onTeamSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='contact'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={teamActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                return guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teamRequestEpochRef,
+                  async () => {
+                    if (teamKeyWord.length > 0) {
+                      return contact_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'te',
+                        teamKeyWord,
+                        {},
+                      );
+                    }
+                    return getContactTableAll(params, sort, params.contentLanguage, 'te', '');
+                  },
+                );
+              }}
+              columns={orderDataListColumns(contactColumns, {
+                dataType: <FormattedMessage id='menu.tgdata.contacts' defaultMessage='Contacts' />,
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -588,6 +698,8 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

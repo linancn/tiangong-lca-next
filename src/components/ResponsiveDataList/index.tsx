@@ -1,8 +1,11 @@
-import type { ProColumns } from '@ant-design/pro-components';
+import type { ProColumns, ProTableProps } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-components';
-import { Grid, Space, Tooltip, theme } from 'antd';
+import { Grid, Space, Tooltip, theme, type CardProps } from 'antd';
 import type { ReactNode } from 'react';
 import { Children } from 'react';
+import { FormattedMessage } from 'umi';
+
+export { ResponsiveDataListViewport } from './viewport';
 
 import './index.less';
 
@@ -34,6 +37,76 @@ export const responsiveDataListTableProps = {
     className: 'responsive-data-list-toolbar',
   },
 };
+
+export const dataListPagination = {
+  defaultPageSize: 50,
+  showSizeChanger: true,
+  pageSizeOptions: [20, 50, 100],
+};
+
+/** Keep the native tab overflow menu above the drawer that owns its trigger. */
+export const dataListTabProps: CardProps['tabProps'] = {
+  getPopupContainer: (trigger) => trigger.closest<HTMLElement>('[role="dialog"]') ?? document.body,
+};
+
+export function getDataListToolbar(toolbar: ProTableProps<any, any>['toolbar'] = {}) {
+  return { ...responsiveDataListTableProps.toolbar, ...toolbar };
+}
+
+type DataListBaseField = 'index' | 'name' | 'location' | 'referenceYear' | 'dataType' | 'version';
+
+export type DataListColumnOptions = {
+  titles?: Partial<Record<DataListBaseField, ReactNode>>;
+  dataType?: ReactNode;
+  /** Supply the server page to display an index across pages rather than within one page. */
+  pagination?: { current?: number; pageSize?: number };
+};
+
+const baseColumnDefinitions: {
+  field: DataListBaseField;
+  aliases: string[];
+  width: number;
+  title: ReactNode;
+}[] = [
+  {
+    field: 'index',
+    aliases: ['index'],
+    width: 72,
+    title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+  },
+  {
+    field: 'name',
+    aliases: ['name', 'shortName', 'baseName'],
+    width: 360,
+    title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
+  },
+  {
+    field: 'location',
+    aliases: ['location', 'locationOfSupply'],
+    width: 160,
+    title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
+  },
+  {
+    field: 'referenceYear',
+    aliases: ['referenceYear'],
+    width: 120,
+    title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
+  },
+  {
+    field: 'dataType',
+    aliases: ['dataType', 'datasetType', 'typeOfDataSet', 'flowType', 'datasetKind'],
+    width: 180,
+    title: (
+      <FormattedMessage id='pages.table.filter.all.datasetType' defaultMessage='Type of data set' />
+    ),
+  },
+  {
+    field: 'version',
+    aliases: ['version'],
+    width: 132,
+    title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
+  },
+];
 
 export const responsiveSearchCardClassName = 'responsive-data-list-search-card';
 
@@ -179,4 +252,67 @@ export function dataListText(value: ReactNode, tooltip?: ReactNode) {
       {textNode}
     </Tooltip>
   );
+}
+
+const isEmptyDataListMetadata = (value: ReactNode) =>
+  value === undefined ||
+  value === null ||
+  (typeof value === 'string' && ['', '-', '—', 'undefined'].includes(value.trim()));
+
+export const dataListMetadataText = (value: ReactNode) =>
+  dataListText(isEmptyDataListMetadata(value) ? '—' : value);
+
+/** Keep business renderers and exact-version actions while standardizing every dataset list. */
+export function orderDataListColumns<T>(
+  columns: ProColumns<T>[],
+  options: DataListColumnOptions = {},
+): ProColumns<T>[] {
+  const remaining = columns.filter((column) => column.dataIndex !== 'classification');
+  const ordered = baseColumnDefinitions.map(({ field, aliases, width, title }) => {
+    const index = remaining.findIndex(
+      (column) =>
+        aliases.includes(String(column.dataIndex)) ||
+        (field === 'index' && column.valueType === 'index'),
+    );
+    const existing = index >= 0 ? remaining.splice(index, 1)[0] : undefined;
+    const column: ProColumns<T> = {
+      ellipsis: field !== 'index',
+      ...existing,
+      title: options.titles?.[field] ?? title,
+      dataIndex: existing?.dataIndex ?? field,
+      width,
+      responsive: undefined,
+      hideInTable: false,
+      search: false,
+    };
+    if (!existing) {
+      column.sorter = false;
+      column.render = (_, row) => {
+        const record = row as Record<string, ReactNode> | null;
+        const value = aliases
+          .map((alias) => record?.[alias])
+          .find((candidate) => !isEmptyDataListMetadata(candidate));
+        return dataListMetadataText(value ?? (field === 'dataType' ? options.dataType : undefined));
+      };
+    } else if (field !== 'index' && !existing.render) {
+      column.render = (value) => dataListMetadataText(value);
+    }
+    if (field === 'index') {
+      column.align = 'center';
+      column.valueType = 'index';
+      column.render = existing?.render;
+      if (options.pagination) {
+        const { current = 1, pageSize = 50 } = options.pagination;
+        column.render = (_, __, rowIndex) => (current - 1) * pageSize + rowIndex + 1;
+      }
+    }
+    return column;
+  });
+  const isAction = (column: ProColumns<T>) =>
+    column.dataIndex === 'option' || column.dataIndex === 'action' || column.valueType === 'option';
+  return [
+    ...ordered,
+    ...remaining.filter((column) => !isAction(column)),
+    ...remaining.filter(isAction),
+  ];
 }

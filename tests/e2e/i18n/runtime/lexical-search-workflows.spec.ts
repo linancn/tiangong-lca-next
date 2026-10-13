@@ -132,7 +132,7 @@ async function installSearchContract(page: Page, scenario: SearchScenario): Prom
     expect(body).not.toHaveProperty('search_text');
     expect(body.data_source).toBe('my');
     expect(body.page_current).toBe(1);
-    expect(body.page_size).toBe(10);
+    expect(body.page_size).toBe(50);
     if (scenario.searchTarget.includes('/rest/v1/rpc/')) {
       expect(body).not.toHaveProperty('order_by');
     }

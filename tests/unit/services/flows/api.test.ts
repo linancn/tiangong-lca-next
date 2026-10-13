@@ -1909,6 +1909,7 @@ describe('getFlowTableUuidMentionSearch', () => {
     matched_by: 'json',
     matched_entity_table: 'flows',
     rank: 1,
+    total_count: 1,
     source_entity_kind: 'flow',
     source_id: 'flow-ref',
     source_json: {
@@ -1975,15 +1976,18 @@ describe('getFlowTableUuidMentionSearch', () => {
       'team-1',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
-      p_data_source: 'tg',
-      p_limit: 11,
-      p_source_entity_kinds: ['flow'],
-      p_state_code_filter: 100,
-      p_team_id_filter: 'team-1',
-      p_this_user_id: 'user-id',
-      p_uuid: 'd1380000-0000-4000-8000-000000000001',
-    });
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_data_source: 'tg',
+        p_page_size: 10,
+        p_dataset_kind: 'flow',
+        p_state_code: 100,
+        p_team_id: 'team-1',
+
+        p_uuid: 'd1380000-0000-4000-8000-000000000001',
+      }),
+    );
     expect(result.data[0]).toEqual({
       key: 'flow-ref:01.00.000',
       id: 'flow-ref',
@@ -2191,10 +2195,10 @@ describe('getFlowTableUuidMentionSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'search_dataset_json_uuid_mentions',
+      'search_dataset_uuid_mentions_page',
       expect.objectContaining({
-        p_source_entity_kinds: ['flow'],
-        p_team_id_filter: null,
+        p_dataset_kind: 'flow',
+        p_team_id: null,
       }),
     );
     expect(result).toEqual({
@@ -3686,5 +3690,194 @@ describe('getFlowStateCodeByIdsAndVersions', () => {
       data: [{ id: '77777777-7777-7777-7777-777777777777' }],
     });
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('flow server classification query contract', () => {
+  const params = {
+    current: 4,
+    pageSize: 100,
+    classification: [{ scope: 'classification' as const, code: 'C', path: ['A', 'C'] }],
+    datasetFilters: { datasetId: 'id-filter' },
+  };
+  const filters = { ...params.datasetFilters, classification: params.classification };
+  let rpc: jest.SpiedFunction<(...args: any[]) => any>;
+  let session: jest.SpiedFunction<(...args: any[]) => any>;
+  beforeEach(() => {
+    const { supabase } = jest.requireMock('@/services/supabase');
+    rpc = jest.spyOn(supabase, 'rpc').mockResolvedValue({ data: [], error: null });
+    session = jest
+      .spyOn(supabase.auth, 'getSession')
+      .mockResolvedValue({ data: { session: { user: { id: 'actor' }, access_token: 'token' } } });
+  });
+  afterEach(() => {
+    rpc.mockRestore();
+    session.mockRestore();
+  });
+
+  it('filters ordinary pages before count through the dataset catalog facade', async () => {
+    rpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'catalog-id',
+          version: '01.00.001',
+          modified_at: '2026-10-13T00:00:00Z',
+          json: {},
+          total_count: 150,
+        },
+      ],
+      error: null,
+    });
+    const api = require('@/services/flows/api');
+    const result = await api.getFlowTableAll(
+      params,
+      { modifiedAt: 'ascend' },
+      'en',
+      'my',
+      '',
+      { flowType: 'Product flow' },
+      'all',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_dataset_kind: 'flow',
+        p_data_source: 'my',
+        p_filter_condition: { ...{ flowType: 'Product flow' }, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+        p_sort_by: 'modified_at',
+        p_sort_direction: 'asc',
+      }),
+    );
+    expect(result).toMatchObject({
+      success: true,
+      data: [expect.objectContaining({ id: 'catalog-id' })],
+      total: 150,
+      page: 4,
+    });
+  });
+
+  it('passes complete filters to lexical search and keeps page inputs', async () => {
+    const api = require('@/services/flows/api');
+    await api.getFlowTablePgroongaSearch(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      undefined,
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_flows',
+      expect.objectContaining({
+        filter_condition: filters,
+        page_size: 100,
+        page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to UUID server pagination', async () => {
+    const api = require('@/services/flows/api');
+    await api.getFlowTableUuidMentionSearch(
+      params,
+      'en',
+      'my',
+      'd1380000-0000-4000-8000-000000000001',
+      'all',
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_dataset_kind: 'flow',
+        p_filter_condition: { ...{}, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to hybrid search without filtering one returned page locally', async () => {
+    const api = require('@/services/flows/api');
+    const { supabase } = jest.requireMock('@/services/supabase');
+    const invoke = jest
+      .spyOn(supabase.functions, 'invoke')
+      .mockResolvedValue({ data: [], error: null });
+    await api.flow_hybrid_search(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      '',
+      undefined,
+    );
+    expect(invoke).toHaveBeenCalledWith(
+      'flow_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          filter_condition: filters,
+          page_size: 100,
+          page_current: 4,
+        }),
+      }),
+    );
+    invoke.mockRestore();
+  });
+
+  it('preserves open-data publication/source scope together with classification', async () => {
+    const api = require('@/services/flows/api');
+    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
+    await api.getFlowTableAll(
+      params,
+      {},
+      'en',
+      'tg',
+      '',
+      { flowType: 'Product flow' },
+      'all',
+      openDataFilters,
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_open_data_catalog',
+      expect.objectContaining({
+        p_filter_condition: { ...{ flowType: 'Product flow' }, ...filters },
+        p_source_filter: 'all',
+        p_publication_filter: 'all',
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+});
+
+describe('Flow classification intersections', () => {
+  const classification = [{ scope: 'elementary' as const, code: 'air' }];
+  it('retains classification, flow type and input eligibility in UUID pagination', async () => {
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    await getFlowTableUuidMentionSearch(
+      {
+        current: 3,
+        pageSize: 50,
+        classification,
+        datasetFilters: { flowType: 'Elementary flow', asInput: true },
+      },
+      'en',
+      'my',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_filter_condition: { classification, flowType: 'Elementary flow', asInput: true },
+        p_page_current: 3,
+        p_page_size: 50,
+      }),
+    );
   });
 });

@@ -21,10 +21,12 @@ checkPaths:
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-10-11
-lastReviewedCommit: edaf564b
-lastReviewedNote: 'Reviewed Atlas PR preparation against edaf564b and Dev ab88ba57: preserve the complete branding and footer refinements alongside current display, model-provider and language-preference behavior; regenerate locale artifacts from combined sources. Dependency lock, backend contracts and release policy are unchanged. Final push validation is recorded in Issue #1188.'
+  - tests/e2e/dataset-lists/**
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: document Database #838 and Edge #477 deployment dependencies and explicit failure when filtered contracts are unavailable. Environment selection, visibility, authorization and production promotion policy are unchanged.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -89,6 +91,14 @@ Rules:
 - the authenticated production-backed semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `pnpm start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger. Closed qualification is a separate credential-free simulator and never reads tracked `main` environment configuration
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
+
+## Dataset list contract deployment dependencies
+
+Platform #1213 consumes Database #838 and Edge #477 for the unified dataset-list classification contract. Deploy the reviewed owning revisions into the selected non-production environment before integrated list/search validation or frontend rollout. This requirement does not authorize production deployment or change the existing review, promotion, visibility, membership or publication policies.
+
+The app forwards stable classification/elementary codes and paths together with existing source, state, team, dataset type, direction and exact-version scope. Database applies filters before total count and pagination. The new query facade is `query_dataset_catalog`; UUID-reference paging uses `search_dataset_uuid_mentions_page`; mixed display lists use `list_dataset_display_candidates_filtered` and `list_displayed_datasets_filtered`. Existing lexical and Hybrid searches retain their reviewed endpoints while the owning backend accepts the combined classification filter. Model Results instead reads its complete authorized exact ID/version set before app-side matching and native pagination; it never widens that set into a catalog search.
+
+Unavailable or invalid filtered RPC/Edge responses remain explicit failures. Do not recover by dropping classification, fetching an unfiltered page, applying a page-local filter, or broadening direct relation access. Frontend mocked/synthetic proof verifies request and presentation behavior only; backend migration/ACL/filter correctness and deployment identity belong to Database #838 and Edge #477.
 
 ## Common Scenarios
 

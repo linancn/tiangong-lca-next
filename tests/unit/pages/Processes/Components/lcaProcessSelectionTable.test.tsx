@@ -1,10 +1,20 @@
 import LcaProcessSelectionTable from '@/pages/Processes/Components/lcaProcessSelectionTable';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { resetUmiMocks } from '../../../../mocks/umi';
+import { resetUmiMocks, umiMocks } from '../../../../mocks/umi';
 
 jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
 jest.mock('antd', () => {
   const base = require('@/tests/mocks/antd').createAntdMock();
+
+  const Input = base.Input;
+  Input.Search = ({ value, onChange, onSearch, placeholder, 'aria-label': ariaLabel }: any) => (
+    <>
+      <input aria-label={ariaLabel} placeholder={placeholder} value={value} onChange={onChange} />
+      <button type='button' onClick={() => onSearch?.(value)}>
+        Search
+      </button>
+    </>
+  );
 
   const resolveRowKey = (row: any, rowKey: any, rowIndex: number) => {
     if (typeof rowKey === 'function') {
@@ -18,8 +28,18 @@ jest.mock('antd', () => {
 
   return {
     ...base,
-    Table: ({ columns = [], dataSource = [], rowKey, rowSelection, locale, footer }: any) => (
+    Input,
+    Table: ({
+      columns = [],
+      dataSource = [],
+      rowKey,
+      rowSelection,
+      locale,
+      footer,
+      title,
+    }: any) => (
       <div>
+        {title?.()}
         <table data-testid='table'>
           <thead>
             <tr>
@@ -98,6 +118,36 @@ const processOptions = [
 describe('LcaProcessSelectionTable', () => {
   beforeEach(() => {
     resetUmiMocks();
+  });
+
+  it('delegates a submitted search and classification to the parent query without filtering its current page', () => {
+    const onSearch = jest.fn();
+    const onClassificationChange = jest.fn();
+    render(
+      <LcaProcessSelectionTable
+        mode='compare'
+        lang='en'
+        processOptions={processOptions}
+        selectedProcessIds={[]}
+        onSelectionChange={jest.fn()}
+        onSearch={onSearch}
+        onClassificationChange={onClassificationChange}
+      />,
+    );
+    fireEvent.change(
+      screen.getByLabelText(umiMocks.useIntl().formatMessage({ id: 'pages.search.keyWord' })),
+      {
+        target: { value: 'solar' },
+      },
+    );
+    expect(screen.getByText('Wind turbine maintenance')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(onSearch).toHaveBeenCalledWith('solar');
+    fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+    expect(onClassificationChange).toHaveBeenCalledWith([
+      { scope: 'classification', code: 'C', path: ['C'] },
+    ]);
+    expect(screen.getByText('Wind turbine maintenance')).toBeInTheDocument();
   });
 
   it('filters the current view and can show selected processes from other pages', () => {
@@ -244,3 +294,27 @@ describe('LcaProcessSelectionTable', () => {
     expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));
+
+jest.mock('@ant-design/pro-components', () =>
+  require('@/tests/mocks/proComponents').createProComponentsMock(),
+);

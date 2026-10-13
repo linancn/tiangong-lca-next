@@ -642,7 +642,7 @@ describe('Sources workflow', () => {
         mockGetSourceTablePgroongaSearch.mock.calls.length - 1
       ];
     expect(lastSearchCall).toEqual([
-      expect.objectContaining({ current: 1, pageSize: 10 }),
+      expect.objectContaining({ current: 1, pageSize: 50 }),
       'en',
       'my',
       'Search Source',
@@ -684,7 +684,7 @@ describe('Sources workflow', () => {
     expect(firstCall[4]).toBe('team-open');
 
     expect(await screen.findByText('Open Source')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Sources');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(
       within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: 'Create' }),
@@ -697,3 +697,43 @@ describe('Sources workflow', () => {
     expect(screen.getByText('export')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));
+
+jest.mock('@/services/datasetUuidMentionSearch/api', () => ({
+  __esModule: true,
+  normalizeDatasetUuidSearchQuery: jest.fn((value?: string | null) => {
+    const query = (value ?? '').trim();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query)
+      ? query.toLowerCase()
+      : null;
+  }),
+  searchDatasetJsonUuidMentions: jest.fn(async () => ({ data: [], success: true })),
+  searchDatasetJsonUuidMentionPage: jest.fn(async () => ({
+    data: [],
+    total: 0,
+    page: 1,
+    success: true,
+  })),
+  mapDatasetUuidMentionRowsToListRows: jest.fn((rows: unknown[]) => rows),
+  DATASET_UUID_MENTION_PAGE_SIZE: 50,
+  DATASET_UUID_MENTION_MAX_RESULTS: 50,
+}));
