@@ -190,14 +190,14 @@ describe('RejectReview component', () => {
     expect(screen.getByTestId('icon-file')).toBeInTheDocument();
   });
 
-  it('delegates to a custom onOk handler without calling the review service', async () => {
+  it('delegates trimmed input to a custom onOk handler without calling the review service', async () => {
     const onOk = jest.fn().mockResolvedValue(undefined);
     const { reload } = renderComponent({ onOk });
     reload.mockClear();
 
     fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
     await waitFor(() => expect(formApi).not.toBeNull());
-    formApi.validateFields.mockResolvedValue({ reason: 'Custom rejection' });
+    formApi.validateFields.mockResolvedValue({ reason: '  Custom rejection  ' });
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
@@ -205,7 +205,54 @@ describe('RejectReview component', () => {
 
     expect(onOk).toHaveBeenCalledWith('Custom rejection');
     expect(mockRejectReviewApi).not.toHaveBeenCalled();
-    await waitFor(() => expect(reload).toHaveBeenCalled());
+    expect(reload).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
+  });
+
+  it('keeps the modal open when a custom rejection handler reports failure', async () => {
+    const onOk = jest.fn().mockResolvedValue(false);
+    const { reload } = renderComponent({ onOk });
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'Needs revision' });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Confirm Reject/i }));
+    });
+
+    expect(onOk).toHaveBeenCalledWith('Needs revision');
+    expect(screen.getByTestId('modal')).toBeInTheDocument();
+    expect(formApi.resetFields).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('ignores duplicate confirmations while a rejection is pending', async () => {
+    let resolveReject: (value: boolean) => void = () => {};
+    const onOk = jest.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveReject = resolve;
+        }),
+    );
+    renderComponent({ onOk });
+
+    fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
+    await waitFor(() => expect(formApi).not.toBeNull());
+    formApi.validateFields.mockResolvedValue({ reason: 'One rejection' });
+
+    const confirm = screen.getByRole('button', { name: /Confirm Reject/i });
+    await act(async () => {
+      fireEvent.click(confirm);
+      fireEvent.click(confirm);
+    });
+
+    expect(onOk).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveReject(true);
+    });
+    await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
   });
 
   it('shows an error when validation fails', async () => {
@@ -243,7 +290,7 @@ describe('RejectReview component', () => {
   });
 
   it('closes the modal from the cancel action without calling the review service', async () => {
-    renderComponent();
+    const { reload } = renderComponent();
 
     fireEvent.click(screen.getByRole('button', { name: /Reject Review/i }));
     await waitFor(() => expect(screen.getByTestId('modal')).toBeInTheDocument());
@@ -252,6 +299,7 @@ describe('RejectReview component', () => {
 
     await waitFor(() => expect(screen.queryByTestId('modal')).not.toBeInTheDocument());
     expect(mockRejectReviewApi).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
   });
 
   it('uses the default icon trigger when buttonType is omitted and tolerates missing action refs', async () => {

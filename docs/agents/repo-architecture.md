@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-09-28
-lastReviewedCommit: 924b053cf3fbaf4dc64fe51f405075591a1c7a25
-lastReviewedNote: 'Reviewed Platform #1109 after merging current dev: review action and input/output display parity use shared data-page views; the #1107 import-report behavior, repository contracts, validation, and testing policies remain unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
+lastReviewedNote: 'Reviewed for Platform #1208: Process and Lifecycle Model reviewer actions remain within the existing Review frontend module and service boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

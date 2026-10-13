@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ToolbarViewInfo from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 let proFormApi: any = null;
@@ -85,6 +85,21 @@ jest.mock('@/pages/Review/Components/ReviewForm/form', () => ({
 jest.mock('@/pages/Review/Components/ReviewForm/view', () => ({
   __esModule: true,
   default: ({ data }: any) => <div data-testid='review-view'>{JSON.stringify(data)}</div>,
+}));
+
+jest.mock('@/pages/Review/Components/RejectReview', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    return (
+      <button
+        type='button'
+        disabled={props.disabled}
+        onClick={() => props.onOk?.('Need model repair')}
+      >
+        Reject Review
+      </button>
+    );
+  },
 }));
 
 jest.mock('@/style/custom.less', () => ({
@@ -361,6 +376,7 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
 
   const renderComponent = (props: any = {}) => {
     const actionRef = { current: { reload: jest.fn() } };
+    const onReviewComplete = props.onReviewComplete ?? jest.fn();
 
     render(
       <ToolbarViewInfo
@@ -370,11 +386,12 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
         reviewId='review-1'
         tabType='review'
         actionRef={actionRef}
+        onReviewComplete={onReviewComplete}
         {...props}
       />,
     );
 
-    return { actionRef };
+    return { actionRef, onReviewComplete };
   };
 
   beforeEach(() => {
@@ -548,10 +565,10 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
   });
 
   it('temporarily saves review comments through the comment command boundary', async () => {
-    const { actionRef } = renderComponent();
+    const { actionRef, onReviewComplete } = renderComponent();
 
     await userEvent.click(screen.getByRole('button', { name: /info/i }));
-    await userEvent.click(screen.getByRole('button', { name: /pages.button.temporarySave/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
 
     expect(mockSaveReviewCommentDraftApi).toHaveBeenCalledWith('review-1', {
       modellingAndValidation: {
@@ -563,6 +580,52 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     });
     expect(mockMessage.success).toHaveBeenCalledWith('Temporarily saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(onReviewComplete).toHaveBeenCalled();
+  });
+
+  it('submits a reviewer rejection with the current model opinion metadata', async () => {
+    const { actionRef, onReviewComplete } = renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Reject Review' }));
+
+    await waitFor(() =>
+      expect(mockSubmitReviewCommentApi).toHaveBeenCalledWith(
+        'review-1',
+        {
+          modellingAndValidation: {
+            complianceDeclarations: {
+              compliance: [{ id: 'compliance-1' }],
+            },
+            validation: {},
+          },
+          comment: { message: 'Need model repair' },
+        },
+        -3,
+      ),
+    );
+    expect(mockCheckReferences).not.toHaveBeenCalled();
+    expect(mockMessage.success).toHaveBeenCalledWith('Rejected successfully!');
+    expect(actionRef.current.reload).toHaveBeenCalled();
+    expect(onReviewComplete).toHaveBeenCalled();
+  });
+
+  it('keeps the model review open when reviewer rejection fails', async () => {
+    mockSubmitReviewCommentApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('reject failed'),
+    });
+    const { actionRef, onReviewComplete } = renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Reject Review' }));
+
+    await waitFor(() =>
+      expect(mockMessage.error).toHaveBeenCalledWith('Failed to reject, please try again!'),
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(onReviewComplete).not.toHaveBeenCalled();
   });
 
   it('submits the review when reference checks pass', async () => {
@@ -651,16 +714,20 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
-  it('supports footer cancel, header close, and drawer onClose actions in review mode', async () => {
+  it('uses the unified review footer and supports header close and drawer onClose', async () => {
     renderComponent();
 
     await userEvent.click(screen.getByRole('button', { name: /info/i }));
     expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
 
-    await userEvent.click(screen.getByRole('button', { name: /^Cancel$/i }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const footer = screen.getByRole('dialog').querySelector('footer') as HTMLElement;
+    expect(
+      within(footer)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['Reject Review', 'Temporary Save', 'Save']);
+    expect(within(footer).queryByRole('button', { name: /^Cancel$/i })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /info/i }));
     await userEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
@@ -831,9 +898,7 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     await userEvent.click(screen.getByRole('button', { name: /info/i }));
 
     expect(screen.queryByRole('button', { name: /^Cancel$/i })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /pages.button.temporarySave/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Save$/i })).not.toBeInTheDocument();
   });
 });

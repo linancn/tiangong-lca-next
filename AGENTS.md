@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-09-28
-lastReviewedCommit: 38f1c1a1d1140f702a7a9c738501dfb09893b7cb
-lastReviewedNote: 'Reviewed for Platform #1111: the released TIDAS SDK 0.3.1 replaces 0.2.0 and adds mapper-independent Process review-array qualification; repository ownership, bootstrap, branch, and delivery rules are unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
+lastReviewedNote: 'Reviewed for Platform #1208: reviewer footer parity remains repository-owned frontend work; repository ownership, bootstrap, branch, and delivery rules are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

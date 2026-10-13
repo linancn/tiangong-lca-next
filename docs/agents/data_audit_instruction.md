@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-26
-lastReviewedCommit: 735da3b6957955f81e71f44d31389aa3cc6caa3f
-lastReviewedNote: 'Aligned the Review workspace with pending/submitted/completed member stages, unassigned/in-progress/completed admin stages, V5 queue facts, and batch preflight behavior.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
+lastReviewedNote: 'Documented the unified Process and Lifecycle Model Review Member footer and reviewer-opinion rejection behavior for Platform #1208.'
 ---
 
 # Audit Status Reference
@@ -126,6 +126,7 @@ Before Review Members can access their task tabs, they must publish and bind a v
 14. task names are non-interactive; the adjacent view icon opens readable data, while review actions remain in the action column and completed tasks remain read-only
 15. the Review Admin in-progress main-table progress cell shows submitted/assigned reviewer counts; hover or keyboard focus reveals approve/reject/pending reviewer-opinion totals, or an unassigned message when no reviewer is assigned
 16. the action column stays fixed on the right and centers its heading and controls during horizontal scrolling in both the top-level review table and actionable expanded Reference tables
+17. editable Process and Lifecycle Model Root opinion forms use the same footer order: `Reject Review`, `Temporary Save`, `Save`; rejection submits the current member's metadata and non-empty reason as `comments.state_code = -3`, while read-only views expose no mutation footer
 
 ## Review Queue Search
 

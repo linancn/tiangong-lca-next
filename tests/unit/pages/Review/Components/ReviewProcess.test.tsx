@@ -853,7 +853,7 @@ describe('ReviewProcessDetail component', () => {
   });
 
   it('opens in view mode without review footer actions', async () => {
-    renderComponent({ type: 'view', tabType: 'assigned' });
+    renderComponent({ type: 'view', tabType: 'review' });
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());

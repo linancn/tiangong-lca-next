@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-09-26
-lastReviewedCommit: 735da3b6957955f81e71f44d31389aa3cc6caa3f
-lastReviewedNote: 'Reviewed review input/output display parity against shared Process and LifeCycleModel data views. Audit transitions, ownership, validation requirements, and testing policy are unchanged.'
+lastReviewedAt: 2026-10-13
+lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
+lastReviewedNote: 'Reviewed for Platform #1208: reviewer rejection remains an advisory Comment transition; team ownership and Review Admin final-decision rules are unchanged.'
 ---
 
 # Team Management Reference
