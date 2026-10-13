@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
-lastReviewedNote: 'Reviewed for Platform #1208: the added footer, failure-retention, and callback tests follow existing component-mock patterns without changing test conventions.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 ---
 
 # Testing Patterns Reference
@@ -84,6 +84,8 @@ lastReviewedNote: 'Reviewed for Platform #1208: the added footer, failure-retent
 - when testing Umi config-time environment selection, model both the already-populated `process.env` and each selected env file. Prove exact main-file defaults are decontaminated for Dev, distinct and partial explicit overrides retain priority, missing selected values fall back safely, and qualification ignores ambient deployment values
 - when a Table/ProTable dependency upgrade appears to change the first request in one browser, first compare the page unit request and service fallback. If both intentionally use the same default, correct the browser fixture to that one exact RPC body; add `defaultSortOrder` only when the product truly owns a different initial order
 - when a browser assertion compares several rectangles inside an opening Drawer, Modal, or responsive toolbar, read all rectangles in one in-page evaluation and poll the complete invariant. Sort by rendered coordinates when the contract is visual order; sequential locator `boundingBox()` calls can sample different animation frames, and DOM order is not a horizontal-layout contract
+- when a hidden navigation group is rendered as a composed page title, declare the ordered catalog message IDs and separator in the route target and assert the complete exact localized title. Keep exact route/query, access, locale and page-owned message checks; do not replace them with broad substring matching or unhide product menus for a test
+- before acting in a role-selected dialog, wait for its observed opening preparation and finite Web Animations to settle; before a following confirmation, prove the preceding business mutation and dialog closure. Keep clicks actionable and preserve failure/persistence assertions. A click that returned without a DOM click event is not completion proof; forced clicks, fixed sleeps and retries must not conceal that race
 - Jest 30/jsdom 26 owns non-configurable `window` and `location` objects. Pass mock `Location` methods through `src/utils/browserNavigation.ts`, pass nullable event-target/storage/window inputs to pure runtime helpers, and use `history.pushState` for URL state; never delete or redefine the jsdom globals. jest-dom 7 style expectations use computed normalized colors such as `rgb(...)`, not named-color serialization
 - Jest 30's Babel report may add an alternate slot without source coordinates for an `if` that has no `else`. Keep Babel coverage for Umi/esbuild source-map fidelity; let Jest enforce 100% statements/functions/lines, then let `test:coverage:assert-full` exclude only that exact source-less `if` alternate shape and require 100% of every source-mapped branch. Any other missing map, mismatched path count, invalid hit count, or uncovered source-mapped branch fails closed
 - continuation receipts for the shared release/qualification controller must bind the generated `-main` or `-qualification` image tag, qualification boolean, offline policy, and external proof path. Argument-free resume reuses those values; it must finalize a resumed qualification into the same proof destination rather than returning a raw release result
@@ -112,7 +114,7 @@ Validation-specific rule:
 Toolchain-specific rule:
 
 - keep TypeScript `7.0.2` as the only direct compiler/API implementation; command-contract tests must reject a TS6 alias, a `tsc6`/compat command, or a non-repository compiler entrypoint
-- for an upgraded package that Jest maps to a test double, launch a child Node test through normal package resolution and assert the real installed manifest plus representative runtime behavior. The TIDAS SDK contract must cover all seven dataset factories, `validateEnhanced`, the normalized failure envelope, and required Process general-comment validation at exact version `0.4.0`
+- for an upgraded package that Jest maps to a test double, launch a child Node test through normal package resolution and assert the real installed manifest plus representative runtime behavior. The TIDAS SDK contract must cover all seven dataset factories, `validateEnhanced`, the normalized failure envelope, and required Process general-comment validation at the exact version pinned by package.json
 - keep every `typescript/unstable/*` import inside `scripts/typescript-native-parser.mjs` and `scripts/typescript-native-parser.d.mts`. Adapter proof must cover source replacement without stale AST state, traversal and parent/text ranges, TSX guards, syntactic diagnostics, JSON parsing, and clean process exit
 - use Oxlint for unused and deprecated API correctness and Prettier for formatting only. Keep the focused repo-local `tiangong/no-invalid-this` rule until Oxlint provides a native equivalent, and prove it rejects module-level `this`. Tests must reject reintroducing ESLint, the standalone deprecated scanner, or a Prettier organize-imports plugin
 
@@ -153,7 +155,7 @@ Special cases:
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
-14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 50-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked assertion-ID/locale/browser/cleanup contract, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
 17. keep browser proof outside the repository and identify it from behavior-affecting inputs; never maintain or imply release reuse by committing generated hashes or compatibility records
@@ -174,7 +176,7 @@ Browser semantic E2E pattern:
 - keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
-- run the complete 50-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
+- run the complete registered route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
 - keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` runs the hermetic content-addressed qualification for an operator-selected open business PR or exact SHA, while routine PR/dev/release events do not trigger or require it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
@@ -205,8 +207,10 @@ Documentation capture profile pattern:
 Scope-closure provider qualification pattern:
 
 - run `scripts/qualification/scope-closure-next-qualification.mjs` only from a clean tracked commit and let it export that commit into a temporary detached worktree
+- install the detached candidate with `pnpm install --offline --frozen-lockfile` into its own real `node_modules`; warm the pinned dependency store first, preserve reviewed dependency lifecycle scripts, and suppress only the candidate root Husky installer so shared Git hook configuration is unchanged
 - require explicit isolated-non-production confirmation and loopback frontend/backend targets; reject production fingerprints before browser startup
 - exercise the real Data Processing browser route across every relevant authenticated role plus anonymous routing, and prove all four artifact states, direct document navigation, bounded format presentation, integrity/expiry metadata, and localized expired guidance
+- mock current system membership through `qry_membership_get_mine` arrays with the exact system team and role; prove the typed membership request occurred for both allowed and denied personas so missing identity context cannot count as a valid denial
 - emit only the exact Worker-owned provider result schema and Next-owned consumer leaves; never include URLs, object locators, response payloads, credentials, cookies, or tokens
 - rerun with the same run ID and commit and require byte-identical canonical JSON before aggregator handoff
 
@@ -260,3 +264,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 ## Workflow guard fixtures (platform #1055)
 
 Inline release-admission guards stay workflow-owned. Focused tests extract the exact `run:` block from the workflow file and execute it against fixture git remotes (insteadOf-mapped bare upstream, fixture `GITHUB_*` environment) instead of re-implementing the shell logic; see `tests/unit/scripts/buildReleaseContextGuard.test.ts`.
+
+### ILCD asynchronous editor proof
+
+Run affected React form suites with `CI=true` so the existing act-warning guard matches release CI. Wait for the classification pending state to clear and the expected location option to render. Await the actual Form interaction with async `act` when assertions inspect the form store after promise-driven updates. A synchronous DOM-presence assertion does not prove resource loading has completed. Keep warnings fatal; do not add arbitrary sleeps or suppressions.

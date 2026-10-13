@@ -1410,6 +1410,100 @@ describe('publishDatasetApi', () => {
 });
 
 describe('getAllVersions', () => {
+  it.each([
+    ['processes', 'classification'],
+    ['processes', 'name'],
+    ['flows', 'name'],
+    ['lifecyclemodels', 'classification'],
+    ['contacts', 'shortName'],
+    ['sources', 'shortName'],
+    ['flowproperties', 'classification'],
+    ['unitgroups', 'name'],
+    ['processes', 'unknown'],
+  ])('keeps %s version pages readable with unsupported %s sorting', async (table, field) => {
+    let orderedField = '';
+    const builder = createQueryBuilder({ data: [], count: 0, error: null });
+    builder.order.mockImplementation((column: string) => {
+      orderedField = column;
+      return builder;
+    });
+    // Model PostgREST's production failure when a display field becomes a table column.
+    builder.then = (resolve: any) =>
+      Promise.resolve(
+        ['version', 'created_at', 'modified_at'].includes(orderedField)
+          ? { data: [], count: 0, error: null }
+          : { data: null, error: { code: '42703', message: 'column does not exist' } },
+      ).then(resolve);
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getAllVersions(
+      'name',
+      table,
+      sampleId,
+      { pageSize: 10, current: 2 },
+      { [field]: 'ascend' },
+      'en',
+      'tg',
+    );
+
+    expect(result.success).toBe(true);
+    expect(builder.order).toHaveBeenCalledWith('version', { ascending: false });
+    expect(builder.range).toHaveBeenCalledWith(10, 19);
+    expect(builder.eq).toHaveBeenCalledWith('id', sampleId);
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+  });
+
+  it.each([
+    ['version', 'version', 'ascend', true],
+    ['version', 'version', 'descend', false],
+    ['modifiedAt', 'modified_at', 'ascend', true],
+    ['modified_at', 'modified_at', 'descend', false],
+    ['createdAt', 'created_at', 'ascend', true],
+    ['created_at', 'created_at', 'descend', false],
+  ] as const)(
+    'sorts the full version query by %s %s %s',
+    async (field, column, order, ascending) => {
+      const builder = createQueryBuilder({ data: [], count: 0, error: null });
+      mockFrom.mockReturnValueOnce(builder);
+      await generalApi.getAllVersions(
+        'name',
+        'processes',
+        sampleId,
+        { pageSize: 5, current: 3 },
+        { [field]: order },
+        'en',
+        'tg',
+      );
+      expect(builder.order).toHaveBeenCalledWith(column, { ascending });
+      expect(builder.range).toHaveBeenCalledWith(10, 14);
+    },
+  );
+
+  it('keeps the backend date order instead of re-sorting a version page locally', async () => {
+    const builder = createQueryBuilder({
+      data: [
+        { id: sampleId, version: '01.00.001', modified_at: '2026-10-01T00:00:00Z' },
+        { id: sampleId, version: '01.00.003', modified_at: '2026-09-01T00:00:00Z' },
+      ],
+      count: 12,
+      error: null,
+    });
+    mockFrom.mockReturnValueOnce(builder);
+    const result = await generalApi.getAllVersions(
+      'name',
+      'contacts',
+      sampleId,
+      { pageSize: 2, current: 2 },
+      { modifiedAt: 'descend' },
+      'en',
+      'tg',
+    );
+    expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
+    expect(builder.range).toHaveBeenCalledWith(2, 3);
+    expect(result.data.map((row: any) => row.version)).toEqual(['01.00.001', '01.00.003']);
+    expect(result.total).toBe(12);
+  });
+
   it.each([undefined, -1, 100])(
     'keeps example versions at -1 despite state override %s',
     async (stateCode) => {

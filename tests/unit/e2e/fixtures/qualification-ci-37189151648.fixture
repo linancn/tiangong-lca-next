@@ -1,0 +1,393 @@
+{
+  "assertionBrowsers": {
+    "rv.account.account-profile": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.contact-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.contact-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.contact-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.contact-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.contact-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.dashboard.national-carbon": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.data-processing.build-preview-publication-tabs": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-property-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-property-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-property-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-property-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.flow-property-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.legal.privacy-notice-fallback": [
+      "chromium"
+    ],
+    "rv.legal.terms-of-use-fallback": [
+      "chromium"
+    ],
+    "rv.lifecycle-model-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.lifecycle-model-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.lifecycle-model-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.lifecycle-model-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.lifecycle-model-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.login.login-and-register": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.login.password-forgot": [
+      "chromium"
+    ],
+    "rv.login.password-reset": [
+      "chromium"
+    ],
+    "rv.manage-system.team-management": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.not-found.localized": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.oauth.consent-invalid-request": [
+      "chromium"
+    ],
+    "rv.process-analysis.process-analysis": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.process-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.process-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.process-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.process-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.process-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.published-processes.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.review.review-workbench": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.root.redirect-to-welcome": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.section-redirects.user": [
+      "chromium"
+    ],
+    "rv.source-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.source-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.source-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.source-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.source-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.team.team-membership": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.unit-group-lists.codata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.unit-group-lists.exampledata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.unit-group-lists.mydata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.unit-group-lists.tedata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.unit-group-lists.tgdata": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.welcome.carbon-footprint-guide": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "rv.welcome.overview": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ]
+  },
+  "assertionIds": [
+    "rv.account.account-profile",
+    "rv.contact-lists.codata",
+    "rv.contact-lists.exampledata",
+    "rv.contact-lists.mydata",
+    "rv.contact-lists.tedata",
+    "rv.contact-lists.tgdata",
+    "rv.dashboard.national-carbon",
+    "rv.data-processing.build-preview-publication-tabs",
+    "rv.flow-lists.codata",
+    "rv.flow-lists.exampledata",
+    "rv.flow-lists.mydata",
+    "rv.flow-lists.tedata",
+    "rv.flow-lists.tgdata",
+    "rv.flow-property-lists.codata",
+    "rv.flow-property-lists.exampledata",
+    "rv.flow-property-lists.mydata",
+    "rv.flow-property-lists.tedata",
+    "rv.flow-property-lists.tgdata",
+    "rv.legal.privacy-notice-fallback",
+    "rv.legal.terms-of-use-fallback",
+    "rv.lifecycle-model-lists.codata",
+    "rv.lifecycle-model-lists.exampledata",
+    "rv.lifecycle-model-lists.mydata",
+    "rv.lifecycle-model-lists.tedata",
+    "rv.lifecycle-model-lists.tgdata",
+    "rv.login.login-and-register",
+    "rv.login.password-forgot",
+    "rv.login.password-reset",
+    "rv.manage-system.team-management",
+    "rv.not-found.localized",
+    "rv.oauth.consent-invalid-request",
+    "rv.process-analysis.process-analysis",
+    "rv.process-lists.codata",
+    "rv.process-lists.exampledata",
+    "rv.process-lists.mydata",
+    "rv.process-lists.tedata",
+    "rv.process-lists.tgdata",
+    "rv.published-processes.tgdata",
+    "rv.review.review-workbench",
+    "rv.root.redirect-to-welcome",
+    "rv.section-redirects.codata",
+    "rv.section-redirects.exampledata",
+    "rv.section-redirects.mydata",
+    "rv.section-redirects.tedata",
+    "rv.section-redirects.tgdata",
+    "rv.section-redirects.user",
+    "rv.source-lists.codata",
+    "rv.source-lists.exampledata",
+    "rv.source-lists.mydata",
+    "rv.source-lists.tedata",
+    "rv.source-lists.tgdata",
+    "rv.team.team-membership",
+    "rv.unit-group-lists.codata",
+    "rv.unit-group-lists.exampledata",
+    "rv.unit-group-lists.mydata",
+    "rv.unit-group-lists.tedata",
+    "rv.unit-group-lists.tgdata",
+    "rv.welcome.carbon-footprint-guide",
+    "rv.welcome.overview"
+  ],
+  "browsers": {
+    "chromium": {
+      "executed": 32,
+      "skipped": 0
+    },
+    "firefox": {
+      "executed": 17,
+      "skipped": 15
+    },
+    "webkit": {
+      "executed": 17,
+      "skipped": 15
+    }
+  },
+  "canonicalBrowsers": {
+    "chromium": {
+      "executed": 28,
+      "skipped": 0
+    },
+    "firefox": {
+      "executed": 13,
+      "skipped": 15
+    },
+    "webkit": {
+      "executed": 13,
+      "skipped": 15
+    }
+  },
+  "externalRequests": 0,
+  "harnessBrowsers": {
+    "chromium": {
+      "executed": 4,
+      "skipped": 0
+    },
+    "firefox": {
+      "executed": 4,
+      "skipped": 0
+    },
+    "webkit": {
+      "executed": 4,
+      "skipped": 0
+    }
+  },
+  "productionWrites": 0,
+  "status": "passed"
+}

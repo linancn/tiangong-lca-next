@@ -191,7 +191,7 @@ const PropertyEdit: FC<Props> = ({
   }, [autoOpen]);
 
   const handletFromData = () => {
-    setFromData(formRefEdit.current?.getFieldsValue() ?? {});
+    setFromData(formRefEdit.current?.getFieldsValue(true) ?? {});
   };
 
   const onEdit = useCallback(() => {
@@ -211,7 +211,7 @@ const PropertyEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
-  useEffect(() => {
+  const applySdkFieldMessages = useCallback(() => {
     const formInstance = formRefEdit.current;
 
     if (
@@ -308,6 +308,8 @@ const PropertyEdit: FC<Props> = ({
     sdkFieldMessagesRef.current = appliedEntries;
   }, [drawerVisible, showRules, sdkFieldMessages]);
 
+  useEffect(applySdkFieldMessages, [applySdkFieldMessages]);
+
   useEffect(() => {
     const highlightedField = sdkHighlights.find(
       (detail) => !detail.presentation || detail.presentation === 'field',
@@ -381,8 +383,13 @@ const PropertyEdit: FC<Props> = ({
         <ProForm
           formRef={formRefEdit}
           initialValues={initData}
+          onInit={() => {
+            // Apply row SDK errors only after the lazy Drawer form is ready.
+            onReset();
+            applySdkFieldMessages();
+          }}
           onValuesChange={(_, allValues) => {
-            setFromData(allValues ?? {});
+            setFromData(formRefEdit.current?.getFieldsValue(true) ?? allValues ?? {});
           }}
           submitter={{
             render: () => {
@@ -390,10 +397,12 @@ const PropertyEdit: FC<Props> = ({
             },
           }}
           onFinish={async () => {
+            // Include programmatic reference updates and newly registered language fields.
+            const currentData = formRefEdit.current?.getFieldsValue(true) ?? fromData;
             onData(
               data.map((item) => {
                 if (item['@dataSetInternalID'] === id) {
-                  return fromData;
+                  return currentData;
                 }
                 return item;
               }),

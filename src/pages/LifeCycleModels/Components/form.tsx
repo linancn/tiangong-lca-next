@@ -1,3 +1,4 @@
+import TidasRepeatedField from '@/components/TidasRepeatedField';
 import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
@@ -882,13 +883,20 @@ export const LifeCycleModelForm: FC<Props> = ({
       />
     ),
     complianceDeclarations: (
-      <ComplianceItemForm
-        name={['modellingAndValidation', 'complianceDeclarations', 'compliance']}
-        lang={lang}
-        formRef={formRef}
-        onData={onData}
-        showRules={showRules}
-      />
+      <TidasRepeatedField
+        name={['modellingAndValidation', 'complianceDeclarations']}
+        onChange={onData}
+      >
+        {(itemPath) => (
+          <ComplianceItemForm
+            name={[...itemPath, 'compliance']}
+            lang={lang}
+            formRef={formRef}
+            onData={onData}
+            showRules={showRules}
+          />
+        )}
+      </TidasRepeatedField>
     ),
   };
 

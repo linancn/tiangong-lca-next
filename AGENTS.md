@@ -45,9 +45,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
-lastReviewedNote: 'Reviewed for Platform #1208: reviewer footer parity remains repository-owned frontend work; repository ownership, bootstrap, branch, and delivery rules are unchanged.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -90,6 +90,8 @@ Required principles:
 | `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
 | `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
 | `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| [Model 建模与计算说明](docs/agents/model-modeling-and-calculation.md) | product-demand modeling semantics, functional units, allocation, quantities and dataset relationships | implementation progress and runtime module contracts |
+| [Model 产品需求计算修改方案](docs/plans/model-product-demand.md) | proposed product-demand implementation, persistence mapping and acceptance cases | live delivery status |
 | `docs/agents/lcia-calculation-evidence.md` | reviewed LCIA bundle, cache trust, factor coverage, and calculation-evidence contract | Worker or Edge implementation truth |
 | `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
 
@@ -135,10 +137,11 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - scope-closure qualification uses the executable adapter at `scripts/qualification/scope-closure-next-qualification.mjs`; it exports the exact clean commit to an isolated worktree, permits loopback targets only, and emits the Worker-owned provider result schema without sensitive browser data
 - documentation screenshots use the source-bound declarative profile at `config/docs-capture/profile.v1.json`; it records only this exact source version's runtime/readiness, login/identity, auth-mutation, denial-probe, and stable-locator facts. The generic executor, credentials, dynamic origin, process lifecycle, and evidence decisions belong to workspace tooling.
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
+- browser language preference and legacy-cache compatibility follow `docs/agents/repo-architecture.md`; the product-owned browser locale bridge is the sole private Umi locale-provider adapter and requires its installed-template compatibility proof on upgrades
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
-- `tests/package-contracts/installedTidasSdk.contract.test.mjs` resolves the real installed `@tiangong-lca/tidas-sdk` `0.4.0` package outside Jest's SDK mapper and protects all seven dataset factories, the normalized `validateEnhanced` error envelope, singleton/ordered Process review acceptance, and required Process general-comment validation
+- `tests/package-contracts/installedTidasSdk.contract.test.mjs` resolves the real installed `@tiangong-lca/tidas-sdk` `0.5.0` package outside Jest's SDK mapper and protects all seven dataset factories, the normalized `validateEnhanced` error envelope, singleton/ordered Process review acceptance, and required Process general-comment validation
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - run Umi-generating focused tests, coverage, and `pnpm prepush:gate` serially; for ordinary delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change. Run manual hermetic browser qualification on the open business PR before merge or release-to-dev when the change risk warrants it, so a failure can be fixed on that same PR. Deterministic release/promotion pushes use only their repo-owned restricted profiles because the exact dev Release PR owns the non-browser release gate. The hook skips no-update and raw deletion-only pushes, accepts `HEAD` only as the current exact branch source, and rejects other ineligible checked ref shapes before any expensive gate.
 - new dependencies require human approval

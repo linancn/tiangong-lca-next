@@ -159,9 +159,11 @@ describe('Unit Group Utility Functions', () => {
         { '@xml:lang': 'en', '#text': 'Unit of currency' },
       ]);
       expect(
-        result.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-          'common:classification'
-        ]?.['common:class'],
+        (
+          result.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+          ] as { 'common:class': unknown }
+        )?.['common:class'],
       ).toEqual({ id: ['c-economy'], value: ['Economic unit groups'] });
       expect(result.unitGroupInformation?.dataSetInformation?.['common:generalComment']).toEqual([
         { '@xml:lang': 'en', '#text': 'Original comment' },

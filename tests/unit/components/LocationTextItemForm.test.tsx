@@ -32,10 +32,10 @@ jest.mock('antd', () => {
   const actual = jest.requireActual('antd');
   const React = require('react');
 
-  const Select = ({ options = [], onChange, showSearch }: any) => {
+  const Select = ({ options = [], onChange, showSearch, mode, value }: any) => {
     const [keyword, setKeyword] = React.useState('');
     const filterOption = typeof showSearch === 'object' ? showSearch.filterOption : undefined;
-    latestSelectProps = { options, filterOption };
+    latestSelectProps = { options, filterOption, mode, value };
 
     const filteredOptions = options.filter((option: any) =>
       filterOption ? filterOption(keyword, option) : true,
@@ -352,4 +352,25 @@ describe('LocationTextItemForm', () => {
 
     expect(mockGetILCDLocationAll).toHaveBeenCalledTimes(2);
   });
+});
+
+it('presents a legacy single location as a multiple selection', async () => {
+  mockGetILCDLocationAll.mockResolvedValueOnce({
+    success: true,
+    data: [{ location: [{ '@value': 'CN', '#text': 'China' }] }],
+  });
+  render(
+    <Form initialValues={{ location: 'CN' }}>
+      <LocationTextItemForm
+        lang='en'
+        name={['location']}
+        label='Location'
+        multiple
+        onData={() => {}}
+      />
+    </Form>,
+  );
+  expect(await screen.findByRole('button', { name: 'CN (China)' })).toBeInTheDocument();
+  expect(latestSelectProps.mode).toBe('multiple');
+  expect(latestSelectProps.value).toEqual(['CN']);
 });

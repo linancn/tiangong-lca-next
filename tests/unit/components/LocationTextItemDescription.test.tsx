@@ -136,3 +136,12 @@ describe('LocationTextItemDescription', () => {
     expect(screen.queryByText('stale')).not.toBeInTheDocument();
   });
 });
+
+it('renders every supplied location separately', async () => {
+  mockGetILCDLocationByValue.mockImplementation(async (_lang: string, code: string) => ({
+    data: code === 'CN' ? 'China' : 'United States',
+  }));
+  render(<LocationTextItemDescription lang='en' data={['CN', 'US']} label='Location' />);
+  await waitFor(() => expect(screen.getByText('China')).toBeInTheDocument());
+  expect(screen.getByText('United States')).toBeInTheDocument();
+});

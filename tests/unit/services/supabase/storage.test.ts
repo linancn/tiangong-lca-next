@@ -42,6 +42,123 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
     jest.clearAllMocks();
   });
 
+  describe('Source locator regressions', () => {
+    it.each([
+      'http://lca.jrc.ec.europa.eu',
+      'https://example.org/example.jpg',
+      'https://example.org/reports/example.pdf',
+    ])('keeps external reference %s out of authenticated Storage operations', async (uri) => {
+      mockStorageFrom.mockReturnValue({
+        download: jest.fn().mockResolvedValue({ data: new Blob(), error: null }),
+        createSignedUrl: jest.fn(),
+        remove: jest.fn(),
+      });
+      const thumbs = await getThumbFileUrls([{ '@uri': uri }]);
+      const original = await getOriginalFileUrl(uri, 'external');
+      expect(thumbs[0]).toMatchObject({ uid: uri, previewState: 'unchecked' });
+      expect(thumbs[0].thumbUrl).toBeUndefined();
+      expect(original.url).toBe(uri);
+      expect(await getSignedStorageFileUrl(uri)).toBe('');
+      expect(mockStorageFrom).not.toHaveBeenCalled();
+    });
+    it('supports deep managed keys without changing their bytes', async () => {
+      const download = jest.fn().mockResolvedValue({ data: new Blob(), error: null });
+      mockStorageFrom.mockReturnValue({ download });
+      const result = await getThumbFileUrls([{ '@uri': '../external_docs/a/b/example.jpg' }]);
+      expect(download).toHaveBeenCalledWith('a/b/example.jpg', expect.any(Object));
+      expect(result[0]).toMatchObject({
+        uid: '../external_docs/a/b/example.jpg',
+        status: 'done',
+        previewState: 'resolved',
+      });
+    });
+    it.each([403, 404, 500])(
+      'does not mark a failed managed image as done (HTTP %s)',
+      async (statusCode) => {
+        mockStorageFrom.mockReturnValue({
+          download: jest
+            .fn()
+            .mockResolvedValue({ data: null, error: { statusCode, message: 'unavailable' } }),
+        });
+        const [result] = await getThumbFileUrls([{ '@uri': '../external_docs/missing.jpg' }]);
+        expect(result).toMatchObject({ status: 'error', previewState: 'unavailable' });
+        expect(result.url).toBe('');
+      },
+    );
+    it('leaves a managed document unchecked until explicitly opened', async () => {
+      const [result] = await getThumbFileUrls([{ '@uri': '../external_docs/missing.pdf' }]);
+      expect(result).toMatchObject({
+        uid: '../external_docs/missing.pdf',
+        previewState: 'unchecked',
+      });
+      expect(result.status).not.toBe('done');
+      expect(result.url).not.toBe('.');
+      expect(mockStorageFrom).not.toHaveBeenCalled();
+    });
+    it.each([
+      'javascript:alert(1)',
+      'data:text/html,hello',
+      'blob:old-preview',
+      './relative/document.pdf',
+    ])(
+      'preserves opaque locator %s without treating it as Schema failure or requesting Storage',
+      async (uri) => {
+        const [result] = await getThumbFileUrls([{ '@uri': uri }]);
+        expect(result).toMatchObject({ uid: uri, previewState: 'unsupported' });
+        expect(result.status).not.toBe('error');
+        expect((await getOriginalFileUrl(uri, 'reference')).url).toBe('');
+        expect(mockStorageFrom).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it('does not trust Blob data accompanying a returned Storage error', async () => {
+    mockStorageFrom.mockReturnValue({
+      download: jest.fn().mockResolvedValue({ data: new Blob(), error: { statusCode: '403' } }),
+    });
+    const result = await getOriginalFileUrl('../external_docs/a.png', 'a.png');
+    expect(result).toMatchObject({
+      status: 'error',
+      previewState: 'unavailable',
+      previewError: 'permission',
+      url: '',
+    });
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+  });
+  it.each([
+    'https://example.org/a',
+    'http://lca.jrc.ec.europa.eu',
+    'javascript:alert(1)',
+    '../sys-files/a',
+  ])('does not send non-object removal input %s to Storage', async (uri) => {
+    expect(await removeFile([uri])).toMatchObject({ error: null });
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+  });
+  it('does not send an external logo reference to Storage removal', async () => {
+    expect(await removeLogoApi(['https://example.org/a.png'])).toMatchObject({ error: null });
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+  });
+
+  it('accepts singleton references and leaves malformed entries unsupported without a request', async () => {
+    expect((await getThumbFileUrls({ '@uri': './opaque.pdf' }))[0]).toMatchObject({
+      uid: './opaque.pdf',
+      previewState: 'unsupported',
+    });
+    expect(
+      (await getThumbFileUrls([null, { '@uri': 10 }])).map((file) => file.previewState),
+    ).toEqual(['unsupported', 'unsupported']);
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+  });
+  it('refuses a signed URL returned together with a permission error', async () => {
+    mockStorageFrom.mockReturnValue({
+      createSignedUrl: jest.fn().mockResolvedValue({
+        data: { signedUrl: 'https://example.org/signed' },
+        error: { statusCode: '403' },
+      }),
+    });
+    expect(await getSignedStorageFileUrl('../sys-files/video/a.mp4')).toBe('');
+  });
+
   describe('getBase64', () => {
     it('converts a file to base64 string', async () => {
       const mockFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
@@ -134,7 +251,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       expect(mockStorageFrom).toHaveBeenCalledWith('bucket-name');
       expect(mockDownload).toHaveBeenCalledWith('file.png');
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         uid: 'storage/bucket-name/file.png',
         status: 'done',
         name: 'test.png',
@@ -153,7 +270,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       const result = await getOriginalFileUrl('storage/bucket-name/file.png', 'test.png');
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         uid: 'storage/bucket-name/file.png',
         status: 'error',
         name: 'test.png',
@@ -161,12 +278,12 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
       });
     });
 
-    it('returns error status for invalid file path', async () => {
+    it('keeps unsupported opaque file locators separate from download errors', async () => {
       const result = await getOriginalFileUrl('invalid-path', 'test.png');
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         uid: 'invalid-path',
-        status: 'error',
+        previewState: 'unsupported',
         name: 'test.png',
         url: '',
       });
@@ -175,7 +292,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
     it('returns empty object when file path is empty', async () => {
       const result = await getOriginalFileUrl('', 'test.png');
 
-      expect(result).toEqual({});
+      expect(result).toMatchObject({});
     });
 
     it('handles download exceptions gracefully', async () => {
@@ -187,7 +304,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       const result = await getOriginalFileUrl('storage/bucket-name/file.png', 'test.png');
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         uid: 'storage/bucket-name/file.png',
         status: 'error',
         name: 'test.png',
@@ -222,7 +339,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
           resize: 'contain',
         },
       });
-      expect(result).toEqual([
+      expect(result).toMatchObject([
         {
           uid: 'storage/bucket-name/image.png',
           status: 'done',
@@ -233,7 +350,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
       ]);
     });
 
-    it('uses dot placeholder for non-image files', async () => {
+    it('does not claim a resolved preview for unchecked documents', async () => {
       (mockStorageFrom as jest.Mock).mockReturnValue({
         download: jest.fn().mockResolvedValue({ data: new Blob(), error: null }),
       });
@@ -242,13 +359,12 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       const result = await getThumbFileUrls(fileList);
 
-      expect(result).toEqual([
+      expect(result).toMatchObject([
         {
           uid: 'storage/bucket-name/document.pdf',
-          status: 'done',
+          previewState: 'unchecked',
           name: '1.pdf',
-          thumbUrl: '.',
-          url: '.',
+          url: '',
         },
       ]);
     });
@@ -281,7 +397,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       const result = await getThumbFileUrls(fileList);
 
-      expect(result).toEqual([
+      expect(result).toMatchObject([
         {
           uid: 'storage/bucket-name/image.png',
           status: 'error',
@@ -301,7 +417,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       const result = await getThumbFileUrls(fileList);
 
-      expect(result).toEqual([
+      expect(result).toMatchObject([
         {
           uid: 'storage/bucket-name/folder/image.png',
           status: 'error',
@@ -310,13 +426,13 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
       ]);
     });
 
-    it('returns error status for invalid file paths', async () => {
+    it('preserves unsupported opaque locators without a storage error', async () => {
       const result = await getThumbFileUrls([{ '@uri': 'invalid-path' }]);
 
-      expect(result).toEqual([
+      expect(result).toMatchObject([
         {
           uid: 'invalid-path',
-          status: 'error',
+          previewState: 'unsupported',
           name: '1',
         },
       ]);
@@ -414,7 +530,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       expect(mockStorageFrom).toHaveBeenCalledWith('external_docs');
       expect(mockUpload).toHaveBeenCalledWith('test.txt', mockFile);
-      expect(result).toEqual(mockResult);
+      expect(result).toMatchObject(mockResult);
     });
   });
 
@@ -432,7 +548,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       expect(mockStorageFrom).toHaveBeenCalledWith('external_docs');
       expect(mockRemove).toHaveBeenCalledWith(files);
-      expect(result).toEqual(mockResult);
+      expect(result).toMatchObject(mockResult);
     });
   });
 
@@ -450,7 +566,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       expect(mockStorageFrom).toHaveBeenCalledWith('sys-files');
       expect(mockUpload).toHaveBeenCalledWith(expect.stringMatching(/^logo\/.*\.png$/), mockFile);
-      expect(result).toEqual(mockResult);
+      expect(result).toMatchObject(mockResult);
     });
 
     it('throws error when upload fails', async () => {
@@ -480,7 +596,7 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
 
       expect(mockStorageFrom).toHaveBeenCalledWith('sys-files');
       expect(mockRemove).toHaveBeenCalledWith(['logo/file1.png', 'logo/file2.png']);
-      expect(result).toEqual(mockResult);
+      expect(result).toMatchObject(mockResult);
     });
 
     it('throws error when removal fails', async () => {

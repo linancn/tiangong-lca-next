@@ -97,7 +97,7 @@ const FlowsCreate: FC<CreateProps> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefCreate.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -239,7 +239,7 @@ const FlowsCreate: FC<CreateProps> = ({
 
     setPropertyDataSource([]);
     // formRefCreate.current?.resetFields();
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData as FormFlow);
     // });
@@ -322,7 +322,8 @@ const FlowsCreate: FC<CreateProps> = ({
                 return [];
               },
             }}
-            onValuesChange={(_, allValues) => {
+            onValuesChange={() => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               setFromData({
                 ...fromData,
                 [activeTabKey]: allValues[activeTabKey] ?? {},
@@ -338,7 +339,7 @@ const FlowsCreate: FC<CreateProps> = ({
                   return false;
                 }
                 const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
-                const fieldsValue = formRefCreate.current?.getFieldsValue();
+                const fieldsValue = formRefCreate.current?.getFieldsValue(true);
                 const flowProperties = fromData?.flowProperties;
                 // if (
                 //   !flowProperties ||

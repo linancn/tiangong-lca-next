@@ -268,7 +268,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       formRefEdit.current?.setFieldsValue({ ...res });
     };
     const handletFromData = () => {
-      const fieldsValue = formRefEdit.current?.getFieldsValue();
+      const fieldsValue = formRefEdit.current?.getFieldsValue(true);
 
       if (activeTabKey === 'complianceDeclarations') {
         setFromData({
@@ -851,7 +851,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
               <ProForm
                 formRef={formRefEdit}
                 initialValues={data}
-                onValuesChange={async (_, allValues) => {
+                onValuesChange={async (_, changedFormValues) => {
+                  const allValues = formRefEdit.current?.getFieldsValue(true) ?? changedFormValues;
                   if (activeTabKey === 'validation') {
                     await setFromData({
                       ...fromData,
@@ -865,9 +866,8 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
                       ...fromData,
                       modellingAndValidation: {
                         ...fromData?.modellingAndValidation,
-                        complianceDeclarations: {
-                          ...allValues?.modellingAndValidation?.complianceDeclarations,
-                        },
+                        complianceDeclarations:
+                          allValues?.modellingAndValidation?.complianceDeclarations,
                       },
                     });
                   } else {

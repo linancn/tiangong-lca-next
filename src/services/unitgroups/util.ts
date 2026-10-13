@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '../general/tidasRepeatedFields';
 import { FormUnitGroup } from '@/services/unitgroups/data';
 import { createUnitGroup as createTidasUnitGroup } from '@tiangong-lca/tidas-sdk/core';
 import {
@@ -48,13 +49,18 @@ export function genUnitGroupJsonOrdered(id: string, data: any) {
             data?.unitGroupInformation?.dataSetInformation?.['common:name'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToJsonList(
-                data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ),
-            },
+            ...data?.unitGroupInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : classificationToJsonList(item?.['common:class']),
+              }),
+            ),
           },
           'common:generalComment': getLangJson(
             data?.unitGroupInformation?.dataSetInformation?.['common:generalComment'],
@@ -206,13 +212,18 @@ export function genUnitGroupFromData(data: any): FormUnitGroup {
             data?.unitGroupInformation?.dataSetInformation?.['common:name'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToStringList(
-                data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ) as any,
-            },
+            ...data?.unitGroupInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : (classificationToStringList(item?.['common:class']) as any),
+              }),
+            ),
           },
           'common:generalComment': getLangList(
             data?.unitGroupInformation?.dataSetInformation?.['common:generalComment'],

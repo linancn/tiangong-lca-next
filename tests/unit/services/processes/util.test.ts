@@ -1791,3 +1791,77 @@ describe('Process Utility Functions', () => {
     });
   });
 });
+
+describe('ILCD repeated-field preservation', () => {
+  it('round-trips ordered parameters, sublocations, completeness and every reference ID', () => {
+    const parameters = [
+      { '@name': 'a', meanValue: '0' },
+      { '@name': 'b', formula: 'a + 2' },
+    ];
+    const sublocations = [{ '@subLocation': 'DE' }, { '@subLocation': 'CN' }];
+    const completeness = [
+      { '@type': 'Carbon', '@value': 'All relevant flows quantified' },
+      { '@type': 'Water', '@value': 'Relevant flows missing' },
+    ];
+    const input = {
+      processInformation: {
+        quantitativeReference: {
+          '@type': 'Reference flow(s)',
+          referenceToReferenceFlow: ['0', '1'],
+        },
+        mathematicalRelations: { variableParameter: parameters },
+        geography: { subLocationOfOperationSupplyOrProduction: sublocations },
+      },
+      modellingAndValidation: { completeness: { completenessElementaryFlows: completeness } },
+      exchanges: { exchange: [{ '@dataSetInternalID': '0' }, { '@dataSetInternalID': '1' }] },
+    };
+    const form = genProcessFromData(input);
+    expect(form.exchanges.exchange.map((entry: any) => entry.quantitativeReference)).toEqual([
+      true,
+      true,
+    ]);
+    (form.processInformation.mathematicalRelations!.variableParameter as any)[1].formula = 'a + 3';
+    const saved = genProcessJsonOrdered('test', form).processDataSet;
+    expect(saved.processInformation.mathematicalRelations.variableParameter).toMatchObject([
+      parameters[0],
+      { '@name': 'b', formula: 'a + 3' },
+    ]);
+    expect(
+      saved.processInformation.geography.subLocationOfOperationSupplyOrProduction,
+    ).toMatchObject(sublocations);
+    expect(saved.modellingAndValidation.completeness.completenessElementaryFlows).toEqual(
+      completeness,
+    );
+    expect(saved.processInformation.quantitativeReference.referenceToReferenceFlow).toEqual([
+      '0',
+      '1',
+    ]);
+    expect(input.processInformation.mathematicalRelations.variableParameter[1].formula).toBe(
+      'a + 2',
+    );
+  });
+
+  it('preserves named classification systems, class levels and source URIs', () => {
+    const systems = [
+      {
+        '@name': 'System A',
+        '@classes': 'https://example.org/a',
+        'common:class': [{ '@level': '2', '@classId': 'A2', '#text': 'A' }],
+      },
+      {
+        '@name': 'System B',
+        '@classes': 'https://example.org/b',
+        'common:class': { '@level': '0', '@classId': 'B0', '#text': 'B' },
+      },
+    ];
+    const form = genProcessFromData({
+      processInformation: {
+        dataSetInformation: { classificationInformation: { 'common:classification': systems } },
+      },
+    });
+    expect(
+      genProcessJsonOrdered('test', form).processDataSet.processInformation.dataSetInformation
+        .classificationInformation['common:classification'],
+    ).toEqual(systems);
+  });
+});

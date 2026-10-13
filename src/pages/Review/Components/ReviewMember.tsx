@@ -19,7 +19,8 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
   const [adminLoading, setAdminLoading] = useState<string | null>(null);
   const [memberLoading, setMemberLoading] = useState<string | null>(null);
   const [membersLoading, setMembersLoading] = useState(false);
-  const actionRef = useRef<any>(undefined);
+  const membersActionRef = useRef<any>(undefined);
+  const drawerActionRef = useRef<any>(undefined);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const intl = useIntl();
   const { message, modal } = App.useApp();
@@ -32,7 +33,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
 
   useEffect(() => {
     if (drawerVisible) {
-      actionRef.current?.reload();
+      drawerActionRef.current?.reload();
     }
   }, [drawerVisible]);
 
@@ -62,7 +63,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
             defaultMessage: 'Operation successful',
           }),
         );
-        actionRef.current?.reload();
+        membersActionRef.current?.reload();
       }
     } catch (error) {
       console.error(error);
@@ -95,13 +96,17 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
       dataIndex: 'pendingCount',
       key: 'pendingCount',
       render: (_, record) => {
+        const count = Number(record.pendingCount ?? 0);
+        const clickable = count > 0 && userData?.role === 'review-admin';
         return (
-          <span
-            style={{ cursor: 'pointer', color: token.colorPrimary }}
+          <Button
+            type='link'
+            disabled={!clickable}
+            style={clickable ? { color: token.colorPrimary } : undefined}
             onClick={() => handelDrawerOpen('pending', record)}
           >
             {_}
-          </span>
+          </Button>
         );
       },
     },
@@ -110,13 +115,17 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
       dataIndex: 'reviewedCount',
       key: 'reviewedCount',
       render: (_, record) => {
+        const count = Number(record.reviewedCount ?? 0);
+        const clickable = count > 0 && userData?.role === 'review-admin';
         return (
-          <span
-            style={{ cursor: 'pointer', color: token.colorPrimary }}
+          <Button
+            type='link'
+            disabled={!clickable}
+            style={clickable ? { color: token.colorPrimary } : undefined}
             onClick={() => handelDrawerOpen('reviewed', record)}
           >
             {_}
-          </span>
+          </Button>
         );
       },
     },
@@ -190,7 +199,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
                             }),
                           );
                         }
-                        actionRef.current?.reload();
+                        membersActionRef.current?.reload();
                       } catch (error) {
                         console.error(error);
                       }
@@ -304,13 +313,13 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
             setMembersLoading(false);
           }
         }}
-        actionRef={actionRef}
+        actionRef={membersActionRef}
       />
       <AddMemberModal
         open={addModalVisible}
         onCancel={() => setAddModalVisible(false)}
         onSuccess={() => {
-          actionRef.current?.reload();
+          membersActionRef.current?.reload();
         }}
       />
       <Drawer
@@ -336,7 +345,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
       >
         <AssignmentReview
           hideReviewButton={true}
-          actionRef={actionRef}
+          actionRef={drawerActionRef}
           actionFrom={'reviewMember'}
           tableType={drawerTabType}
           userData={drawerUserData}

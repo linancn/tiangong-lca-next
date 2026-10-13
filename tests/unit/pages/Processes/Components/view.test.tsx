@@ -843,7 +843,7 @@ describe('ProcessView component', () => {
         LCIMethodAndAllocation: {
           typeOfDataSet: 'LCI result',
           LCIMethodPrinciple: 'Attributional',
-          LCIMethodApproaches: 'Allocation - mass',
+          LCIMethodApproaches: ['Allocation - mass', 'unknown additional approach'],
         },
         completeness: {
           completenessProductModel: 'Relevant flows missing',

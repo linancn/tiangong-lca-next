@@ -43,9 +43,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
-lastReviewedNote: 'Reviewed for Platform #1208: focused shared-modal, Process, and Lifecycle Model tests fit the existing testing strategy without reopening the improvement plan.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 ---
 
 # Testing Strategy
@@ -58,13 +58,13 @@ lastReviewedNote: 'Reviewed for Platform #1208: focused shared-modal, Process, a
 - full closure already exists; the job is to preserve it while the codebase changes
 - dependency installation is a governed proof input: the repository pins Node `24.19.0`, pnpm `11.24.0`, and TypeScript `7.0.2`, requires a frozen lock, keeps isolated linking with only the reviewed Umi/Babel public-hoist patterns, collapses Umi fallback metadata to one exact React 19 / antd 6 / ProComponents 3 generation through narrow overrides, decides every lifecycle build explicitly, and validates clean-install plus dependency-identity drift through focused contracts before the final gate
 - CI bootstrap provenance is part of the same proof: every owned `pnpm/setup` invocation uses the reviewed peeled executable v2.0.2 commit SHA rather than an annotated-tag object or movable major tag
-- the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed `0.2.0` package and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
+- the released TIDAS SDK consumer is protected by a child Node contract outside Jest's module mapper; it resolves the real installed package at the exact version pinned by package.json and exercises all seven dataset factories plus the normalized `validateEnhanced` error envelope so mocked application suites cannot hide a package incompatibility
 - add integration-test expansion only when it reduces real product risk
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 - localization quality should combine deterministic topology, context, terminology-token, route-view, fallback, correction, and activation gates with a separately produced semantic/route/E2E proof; the deterministic structural artifact must not present itself as independent semantic review, and delivery does not create a human translation-approval state
-- the localization semantic E2E layer is deliberately bounded: 58 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and external digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes
+- the localization semantic E2E layer is deliberately bounded: the exact contract-declared stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and external digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes
 - production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; GitHub Actions provides a manually dispatched credential-free hermetic qualification for an open business PR or chosen ref when browser evidence is warranted. Host `CI`/`GITHUB_ACTIONS` rejects production-data mode before Docker; an authorized local closure still requires authenticated mode, two explicit production-write guards, a separate verified-evidence opt-in, intent before create, UUID/owner/five-field marker verification before delete, and `created=cleaned`, `leaked=0`
 - exact committed browser qualification treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
 - semantic-harness qualification is content-addressed credential-free proof run manually on the open business PR before `release:to-dev` when risk warrants it; it builds against a fixed `.invalid` backend profile and intercepts every backend request, so deployment-target `.env` is not part of the semantic identity. Canonical discovery recursively includes nested `tests/e2e/i18n/**` specs and pins the complete executed/designed-skip closure, while the key also covers shared helpers plus Git mode/type. `release:to-dev --apply` and every later release stage run no browser and write no browser proof

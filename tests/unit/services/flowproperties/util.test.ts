@@ -359,9 +359,11 @@ describe('FlowProperties Utility Functions (src/services/flowproperties/util.ts)
         { '@xml:lang': 'en', '#text': 'Mass' },
       ]);
       expect(
-        result.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-          'common:classification'
-        ]?.['common:class'],
+        (
+          result.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+            'common:classification'
+          ] as { 'common:class': unknown }
+        )?.['common:class'],
       ).toEqual(classificationOutput);
       expect(
         result.administrativeInformation?.publicationAndOwnership?.['common:permanentDataSetURI'],

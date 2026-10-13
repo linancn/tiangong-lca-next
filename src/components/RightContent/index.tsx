@@ -9,6 +9,7 @@ import {
   publishRuntimeIntlChange,
   SUPPORTED_APP_LOCALES,
 } from '@/services/general/runtimeLocale';
+import { selectBrowserRuntimeLocale } from '@/services/general/browserLocaleBridge';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import type { DropdownProps } from 'antd';
@@ -35,9 +36,13 @@ export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
 
   return (
     <UmiSelectLang
+      key={intl.locale}
       {...SELECT_LANG_DROPDOWN_PROPS}
       globalIconClassName='tg-global-language-selector'
       reload={false}
+      onItemClick={({ key }) => {
+        selectBrowserRuntimeLocale(key);
+      }}
       style={{
         padding: 4,
         ...style,

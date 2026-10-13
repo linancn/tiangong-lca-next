@@ -3,7 +3,7 @@
  * Path: src/components/LevelTextItem/form.tsx
  */
 
-import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { LevelTextItemForm } from '@/components/LevelTextItem/form';
 import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 const mockGetILCDClassification = jest.fn();

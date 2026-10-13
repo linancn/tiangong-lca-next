@@ -161,7 +161,12 @@ describe('FlowsView (src/pages/Flows/Components/view.tsx)', () => {
     });
     mockGenFlowFromData.mockReturnValue({
       id: 'flow-id',
-      flowInformation: { dataSetInformation: { name: { baseName: 'Base' } } },
+      flowInformation: {
+        dataSetInformation: {
+          name: { baseName: 'Base' },
+          classificationInformation: { 'common:classification': { 'common:class': [] } },
+        },
+      },
       modellingAndValidation: {
         LCIMethod: { typeOfDataSet: 'Product flow' },
         complianceDeclarations: {

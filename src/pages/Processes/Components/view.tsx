@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
@@ -48,6 +49,7 @@ import {
   completenessProductModelOptions,
   uncertaintyDistributionTypeOptions,
 } from './optiondata';
+import { collectReviewReportReferenceKeys } from './Review/reportReferences';
 import ReviewItemView from './Review/view';
 
 import { getExchangeColumns, PROCESS_EXCHANGE_TABLE_SCROLL } from './Exchange/column';
@@ -113,10 +115,13 @@ const getLCIMethodPrincipleOptions = (value: string) => {
   const option = LCIMethodPrincipleOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
 };
-const getLCIMethodApproachOptions = (value: string) => {
-  const option = LCIMethodApproachOptions.find((opt) => opt.value === value);
-  return option ? option.label : '-';
-};
+const getLCIMethodApproachOptions = (value: string | string[]) =>
+  mapTidasRepeated(value, (entry, index) => (
+    <div key={index}>
+      {LCIMethodApproachOptions.find((option) => option.value === entry)?.label ?? entry}
+    </div>
+  ));
+
 const getCopyrightOptions = (value: string) => {
   const option = copyrightOptions.find((opt) => opt.value === value);
   return option ? option.label : '-';
@@ -171,6 +176,7 @@ const ProcessView: FC<Props> = ({
   currentExchangeContentLanguageRef.current = exchangeTableParams.contentLanguage;
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
+  const [downloadableReviewReportKeys, setDownloadableReviewReportKeys] = useState<string[]>([]);
   const processClassification =
     initData.processInformation?.dataSetInformation?.classificationInformation?.[
       'common:classification'
@@ -382,6 +388,11 @@ const ProcessView: FC<Props> = ({
         />
         <br />
         <LevelTextItemDescription
+          systems={
+            initData?.processInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
           data={getClassificationValues(
             Array.isArray(processClassification)
               ? processClassification[0]?.['common:class']
@@ -505,43 +516,40 @@ const ProcessView: FC<Props> = ({
           />
         </Card>
         <br />
-        <Card
-          size='small'
-          title={
-            <FormattedMessage
-              id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
-              defaultMessage='Sub-location(s)'
-            />
-          }
-        >
-          <LocationTextItemDescription
-            lang={lang}
-            data={
-              initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-                '@subLocation'
-              ] ?? '-'
-            }
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
-                defaultMessage='Sub-location(s)'
+        {mapTidasRepeated(
+          initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction,
+          (item, itemIndex) => (
+            <Card
+              key={itemIndex}
+              size='small'
+              title={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+                  defaultMessage='Sub-location(s)'
+                />
+              }
+            >
+              <LocationTextItemDescription
+                lang={lang}
+                data={item?.['@subLocation'] ?? '-'}
+                label={
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+                    defaultMessage='Sub-location(s)'
+                  />
+                }
+                styles={{ label: { width: '100px' } }}
               />
-            }
-            styles={{ label: { width: '100px' } }}
-          />
-          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
-            <FormattedMessage
-              id='pages.process.view.processInformation.descriptionOfRestrictions'
-              defaultMessage='Geographical representativeness description'
-            />
-          </Divider>
-          <LangTextItemDescription
-            data={
-              initData.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
-                ?.descriptionOfRestrictions
-            }
-          />
-        </Card>
+              <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
+                <FormattedMessage
+                  id='pages.process.view.processInformation.descriptionOfRestrictions'
+                  defaultMessage='Geographical representativeness description'
+                />
+              </Divider>
+              <LangTextItemDescription data={item?.descriptionOfRestrictions} />
+            </Card>
+          ),
+        )}
         <br />
         <Card
           size='small'
@@ -608,204 +616,192 @@ const ProcessView: FC<Props> = ({
           data={initData.processInformation?.mathematicalRelations?.modelDescription}
         />
         <br />
-        <Card
-          size='small'
-          title={
-            <FormattedMessage
-              id='pages.process.view.processInformation.variableParameter'
-              defaultMessage='Variable / parameter'
-            />
-          }
-        >
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.name'
-                    defaultMessage='Name of variable'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '120px',
+        {mapTidasRepeated(
+          initData.processInformation?.mathematicalRelations?.variableParameter,
+          (item, itemIndex) => (
+            <Card
+              key={itemIndex}
+              size='small'
+              title={
+                <FormattedMessage
+                  id='pages.process.view.processInformation.variableParameter'
+                  defaultMessage='Variable / parameter'
+                />
+              }
+            >
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.name'
+                        defaultMessage='Name of variable'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    children: item?.['@name'] ?? '-',
                   },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter?.[
-                    '@name'
-                  ] ?? '-',
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.formula'
-                    defaultMessage='Formula'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '120px',
-                  },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter?.formula ??
-                  '-',
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.meanValue'
-                    defaultMessage='Mean value'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '120px',
-                  },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter
-                    ?.meanValue ?? '-',
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.minimumValue'
-                    defaultMessage='Minimum value'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '120px',
-                  },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter
-                    ?.minimumValue ?? '-',
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.maximumValue'
-                    defaultMessage='Maximum value'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '120px',
-                  },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter
-                    ?.maximumValue ?? '-',
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
-                    defaultMessage='Uncertainty distribution type'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '180px',
-                  },
-                },
-                children: getComplianceLabel(
-                  initData.processInformation?.mathematicalRelations?.variableParameter
-                    ?.uncertaintyDistributionType ?? '-',
-                ),
-              },
-            ]}
-          />
-          <br />
-          <Descriptions
-            bordered
-            size={'small'}
-            column={1}
-            items={[
-              {
-                key: 0,
-                label: (
-                  <FormattedMessage
-                    id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                    defaultMessage='Relative standard deviation (95%) in %'
-                  />
-                ),
-                styles: {
-                  label: {
-                    width: '180px',
-                  },
-                },
-                children:
-                  initData.processInformation?.mathematicalRelations?.variableParameter
-                    ?.relativeStandardDeviation95In ?? '-',
-              },
-            ]}
-          />
-
-          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
-            {
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.comment'
-                defaultMessage='Comment, units, defaults'
+                ]}
               />
-            }
-          </Divider>
-          <LangTextItemDescription
-            data={initData.processInformation?.mathematicalRelations?.variableParameter?.comment}
-          />
-        </Card>
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.formula'
+                        defaultMessage='Formula'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    children: item?.formula ?? '-',
+                  },
+                ]}
+              />
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.meanValue'
+                        defaultMessage='Mean value'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    children: item?.meanValue ?? '-',
+                  },
+                ]}
+              />
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.minimumValue'
+                        defaultMessage='Minimum value'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    children: item?.minimumValue ?? '-',
+                  },
+                ]}
+              />
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.maximumValue'
+                        defaultMessage='Maximum value'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '120px',
+                      },
+                    },
+                    children: item?.maximumValue ?? '-',
+                  },
+                ]}
+              />
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                        defaultMessage='Uncertainty distribution type'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '180px',
+                      },
+                    },
+                    children: getComplianceLabel(item?.uncertaintyDistributionType ?? '-'),
+                  },
+                ]}
+              />
+              <br />
+              <Descriptions
+                bordered
+                size={'small'}
+                column={1}
+                items={[
+                  {
+                    key: 0,
+                    label: (
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                        defaultMessage='Relative standard deviation (95%) in %'
+                      />
+                    ),
+                    styles: {
+                      label: {
+                        width: '180px',
+                      },
+                    },
+                    children: item?.relativeStandardDeviation95In ?? '-',
+                  },
+                ]}
+              />
+
+              <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
+                {
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.variableParameter.comment'
+                    defaultMessage='Comment, units, defaults'
+                  />
+                }
+              </Divider>
+              <LangTextItemDescription data={item?.comment} />
+            </Card>
+          ),
+        )}
       </>
     ),
     modellingAndValidation: (
@@ -1196,69 +1192,67 @@ const ProcessView: FC<Props> = ({
             ]}
           />
           <br />
-          <Card
-            size='small'
-            title={
-              <FormattedMessage
-                id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows'
-                defaultMessage='Completeness elementary flows, per topic'
-              />
-            }
-          >
-            <Descriptions
-              bordered
-              size={'small'}
-              column={1}
-              items={[
-                {
-                  key: 0,
-                  label: (
-                    <FormattedMessage
-                      id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
-                      defaultMessage='completeness type'
-                    />
-                  ),
-                  styles: {
-                    label: {
-                      width: '140px',
+          {mapTidasRepeated(
+            initData.modellingAndValidation?.completeness?.completenessElementaryFlows,
+            (item, itemIndex) => (
+              <Card
+                key={itemIndex}
+                size='small'
+                title={
+                  <FormattedMessage
+                    id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows'
+                    defaultMessage='Completeness elementary flows, per topic'
+                  />
+                }
+              >
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                          defaultMessage='completeness type'
+                        />
+                      ),
+                      styles: {
+                        label: {
+                          width: '140px',
+                        },
+                      },
+                      children: getCompletenessElementaryFlowsTypeOptions(item?.['@type'] ?? '-'),
                     },
-                  },
-                  children: getCompletenessElementaryFlowsTypeOptions(
-                    initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                      '@type'
-                    ] ?? '-',
-                  ),
-                },
-              ]}
-            />
-            <br />
-            <Descriptions
-              bordered
-              size={'small'}
-              column={1}
-              items={[
-                {
-                  key: 0,
-                  label: (
-                    <FormattedMessage
-                      id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
-                      defaultMessage='value'
-                    />
-                  ),
-                  styles: {
-                    label: {
-                      width: '140px',
+                  ]}
+                />
+                <br />
+                <Descriptions
+                  bordered
+                  size={'small'}
+                  column={1}
+                  items={[
+                    {
+                      key: 0,
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                          defaultMessage='value'
+                        />
+                      ),
+                      styles: {
+                        label: {
+                          width: '140px',
+                        },
+                      },
+                      children: getCompletenessElementaryFlowsValueOptions(item?.['@value'] ?? '-'),
                     },
-                  },
-                  children: getCompletenessElementaryFlowsValueOptions(
-                    initData.modellingAndValidation?.completeness?.completenessElementaryFlows?.[
-                      '@value'
-                    ] ?? '-',
-                  ),
-                },
-              ]}
-            />
-          </Card>
+                  ]}
+                />
+              </Card>
+            ),
+          )}
           <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
               id='pages.process.view.modellingAndValidation.completeness.completenessOtherProblemField'
@@ -1872,7 +1866,12 @@ const ProcessView: FC<Props> = ({
       />
     ),
     validation: (
-      <ReviewItemView data={initData?.modellingAndValidation?.validation?.review ?? []} />
+      <ReviewItemView
+        data={initData?.modellingAndValidation?.validation?.review ?? []}
+        processId={id}
+        processVersion={version}
+        downloadableReportKeys={downloadableReviewReportKeys}
+      />
     ),
     complianceDeclarations: (
       <ComplianceItemView
@@ -1891,10 +1890,18 @@ const ProcessView: FC<Props> = ({
     setActiveTabKey('processInformation');
     setSpinning(true);
     setLciaResultDataSource([]);
+    setDownloadableReviewReportKeys([]);
     getProcessDetail(id, version).then(async (result: ProcessDetailResponse) => {
       const formData = genProcessFromData(result.data?.json?.processDataSet ?? {});
       if ((result?.data?.stateCode ?? 100) < 100) {
         const rejectedCommentsRes = await getRejectedComments(id, version);
+        setDownloadableReviewReportKeys([
+          ...new Set(
+            rejectedCommentsRes.flatMap((comment: any) =>
+              collectReviewReportReferenceKeys(comment?.modellingAndValidation?.validation?.review),
+            ),
+          ),
+        ]);
         mergeCommentsToData(rejectedCommentsRes, formData);
       }
       setInitData({ ...formData, id: id });

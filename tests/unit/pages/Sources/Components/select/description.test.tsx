@@ -143,4 +143,20 @@ describe('SourceSelectDescription', () => {
     expect(screen.getByText('No version')).toBeInTheDocument();
     expect(screen.getAllByText('-')).not.toHaveLength(0);
   });
+
+  it('renders an optional action beside the existing linked view', () => {
+    renderWithProviders(
+      <SourceSelectDescription
+        title='Source'
+        lang='en'
+        data={{ '@refObjectId': 'source-action', '@version': '01.01.000' }}
+        extraAction={(item: any) => (
+          <button type='button'>{`Download ${item['@refObjectId']}`}</button>
+        )}
+      />,
+    );
+
+    expect(screen.getByTestId('source-view')).toHaveTextContent('source-action:01.01.000');
+    expect(screen.getByRole('button', { name: 'Download source-action' })).toBeInTheDocument();
+  });
 });

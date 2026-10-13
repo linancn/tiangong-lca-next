@@ -212,6 +212,28 @@ describe('SourceDelete component', () => {
     );
   });
 
+  it.each(['https://example.org/file.pdf', './relative/file.pdf', 'javascript:alert(1)'])(
+    'deletes a Source reference %s without claiming ownership of an external Storage object',
+    async (uri) => {
+      const user = userEvent.setup();
+      mockGetThumbFileUrls.mockResolvedValueOnce([{ uid: uri, name: 'reference', url: '' }]);
+      renderWithProviders(
+        <SourceDelete
+          id='source-123'
+          version='01.00.000'
+          buttonType='icon'
+          actionRef={{ current: { reload: jest.fn() } } as any}
+          setViewDrawerVisible={jest.fn()}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Delete' }));
+      const modal = await screen.findByRole('dialog', { name: 'Delete' });
+      await user.click(within(modal).getByRole('button', { name: 'Confirm' }));
+      await waitFor(() => expect(mockDeleteSource).toHaveBeenCalled());
+      expect(mockRemoveFile).not.toHaveBeenCalled();
+    },
+  );
+
   it('closes the confirmation modal when cancelled', async () => {
     const user = userEvent.setup();
 

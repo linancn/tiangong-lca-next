@@ -318,3 +318,48 @@ describe('LevelTextItemDescription', () => {
     expect(screen.queryByText('Initial class')).not.toBeInTheDocument();
   });
 });
+
+it('shows all named classification entries and their system URIs', () => {
+  render(
+    <LevelTextItemDescription
+      data={null}
+      lang='en'
+      categoryType='Process'
+      systems={[
+        {
+          '@name': 'A',
+          '@classes': 'https://example.org/a',
+          'common:class': [
+            { '@classId': 'a', '#text': 'Alpha' },
+            { '@level': '1', '#text': 'Beta' },
+          ],
+        },
+        { '@name': 'B', 'common:class': { '@classId': 'b', '#text': 'Gamma' } },
+        { '@name': 'Empty' },
+      ]}
+    />,
+  );
+  expect(screen.getByText('https://example.org/a')).toBeInTheDocument();
+  for (const value of ['Alpha', 'Beta', 'Gamma'])
+    expect(screen.getByText(value)).toBeInTheDocument();
+});
+
+it.each([
+  [{ 'common:class': { value: ['Alpha'] } }],
+  [{ 'common:class': [{ '#text': 'Alpha' }] }],
+  [{ 'common:category': { '#text': 'Alpha' } }],
+  [{}],
+  [undefined],
+])('retains the legacy taxonomy lookup for unnamed systems (%p)', async (systems) => {
+  mockGetILCDClassification.mockResolvedValue({ success: true, data: [] });
+  render(
+    <LevelTextItemDescription data={null} lang='en' categoryType='Process' systems={systems} />,
+  );
+  await waitFor(() => {
+    expect(screen.getByTestId('level-spin')).toHaveAttribute('data-spinning', 'false');
+    expect(screen.getByTestId('reference-resource-classification')).toHaveAttribute(
+      'data-reference-pending',
+      'false',
+    );
+  });
+});

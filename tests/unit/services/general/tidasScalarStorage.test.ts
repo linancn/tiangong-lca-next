@@ -139,3 +139,22 @@ describe('TIDAS scalar storage validation', () => {
     );
   });
 });
+
+it('reports the exact repeated parameter index without rejecting canonical zero values', () => {
+  const issues = validateProcessTidasScalarStorage({
+    processDataSet: {
+      processInformation: {
+        mathematicalRelations: {
+          variableParameter: [
+            { relativeStandardDeviation95In: '0' },
+            { relativeStandardDeviation95In: '1.2345' },
+          ],
+        },
+      },
+    },
+  });
+  expect(issues).toHaveLength(1);
+  expect(issues[0].path).toBe(
+    'processDataSet.processInformation.mathematicalRelations.variableParameter[1].relativeStandardDeviation95In',
+  );
+});

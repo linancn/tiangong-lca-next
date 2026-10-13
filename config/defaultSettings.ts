@@ -5,10 +5,11 @@ import {
   type SupportedAppLocale,
 } from '../src/services/general/localeRegistry';
 import { lightBrandTheme } from './branding';
+import { brandProfile } from './brandProfile';
 
-const DEFAULT_LAYOUT = 'mix';
-const DEFAULT_TITLE = 'TianGong LCA Data Platform';
-const DEFAULT_LOGIN_SUBTITLE = "World's Largest Open LCA Data Platform";
+const DEFAULT_LAYOUT = brandProfile.layout?.layout ?? 'mix';
+const DEFAULT_TITLE = brandProfile.title['en-US'];
+const DEFAULT_LOGIN_SUBTITLE = brandProfile.slogan['en-US'];
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
 
 type AppLayout = (typeof APP_LAYOUT_OPTIONS)[number];
@@ -43,17 +44,32 @@ const getLocalizedEnvValue = (
   return values[normalizedLocale];
 };
 
+// Umi replaces literal process.env accesses in the browser bundle. Dynamic
+// process.env[environment.titleKey] reads otherwise lose build-time overrides.
+const localizedBuildEnvironment: Record<string, string | undefined> = {
+  APP_TITLE_ZH_CN: process.env.APP_TITLE_ZH_CN,
+  APP_TITLE_EN_US: process.env.APP_TITLE_EN_US,
+  APP_TITLE_DE_DE: process.env.APP_TITLE_DE_DE,
+  APP_TITLE_FR_FR: process.env.APP_TITLE_FR_FR,
+  APP_LOGIN_SUBTITLE_ZH_CN: process.env.APP_LOGIN_SUBTITLE_ZH_CN,
+  APP_LOGIN_SUBTITLE_EN_US: process.env.APP_LOGIN_SUBTITLE_EN_US,
+  APP_LOGIN_SUBTITLE_DE_DE: process.env.APP_LOGIN_SUBTITLE_DE_DE,
+  APP_LOGIN_SUBTITLE_FR_FR: process.env.APP_LOGIN_SUBTITLE_FR_FR,
+};
+
 const appTitleEnvValues = Object.fromEntries(
   LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
     canonicalLocale,
-    readSettingEnv(process.env[environment.titleKey]),
+    readSettingEnv(localizedBuildEnvironment[environment.titleKey]) ??
+      brandProfile.title[canonicalLocale],
   ]),
 ) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
 const loginSubtitleEnvValues = Object.fromEntries(
   LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
     canonicalLocale,
-    readSettingEnv(process.env[environment.loginSubtitleKey]),
+    readSettingEnv(localizedBuildEnvironment[environment.loginSubtitleKey]) ??
+      brandProfile.slogan[canonicalLocale],
   ]),
 ) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
@@ -74,19 +90,18 @@ const Settings: ProLayoutProps & {
 } = {
   navTheme: lightBrandTheme.navTheme,
   colorPrimary: lightBrandTheme.colorPrimary,
-  layout: readLayoutEnv(process.env.APP_LAYOUT),
   contentWidth: 'Fluid',
   fixedHeader: false,
   fixSiderbar: true,
+  ...brandProfile.layout,
+  // Explicit deployment override wins over the profile preset.
+  layout: readLayoutEnv(process.env.APP_LAYOUT),
   colorWeak: false,
   title: defaultAppTitle,
   pwa: true,
   logo: lightBrandTheme.logo,
   iconfontUrl: '',
-  token: {
-    // 参见ts声明，demo 见文档，通过token 修改样式
-    //https://procomponents.ant.design/components/layout#%E9%80%9A%E8%BF%87-token-%E4%BF%AE%E6%94%B9%E6%A0%B7%E5%BC%8F
-  },
+  token: lightBrandTheme.token ?? {},
 };
 
 export default Settings;

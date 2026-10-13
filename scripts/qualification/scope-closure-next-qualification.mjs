@@ -7,7 +7,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  symlinkSync,
+  lstatSync,
   writeFileSync,
 } from 'node:fs';
 import net from 'node:net';
@@ -180,6 +180,27 @@ function controlledChildEnvironment(port, supabaseUrl, reportPath) {
   return environment;
 }
 
+export function installCandidateDependencies(candidate, environment, execute = spawnSync) {
+  // This detached worktree shares Git metadata with its owner. Installation must
+  // not let the root prepare script rewrite that owner's hooks configuration.
+  const installed = execute('pnpm', ['install', '--offline', '--frozen-lockfile'], {
+    cwd: candidate,
+    encoding: 'utf8',
+    env: { ...environment, HUSKY: '0' },
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (installed.status !== 0) {
+    process.stderr.write(
+      installed.stderr || installed.stdout || 'dependency installation failed\n',
+    );
+    fail('candidate dependency installation failed; no evidence was written');
+  }
+  const modules = path.join(candidate, 'node_modules');
+  if (!existsSync(modules) || !lstatSync(modules).isDirectory()) {
+    fail('candidate dependency installation must create its own modules directory');
+  }
+}
+
 async function runBrowserQualification(repo, componentSha, supabaseUrl) {
   const root = mkdtempSync(path.join(os.tmpdir(), 'next-scope-closure-'));
   const candidate = path.join(root, 'candidate');
@@ -190,13 +211,14 @@ async function runBrowserQualification(repo, componentSha, supabaseUrl) {
       stdio: 'ignore',
     });
     worktreeAdded = true;
-    symlinkSync(path.join(repo, 'node_modules'), path.join(candidate, 'node_modules'), 'dir');
     writeFileSync(
       path.join(candidate, '.env.local'),
       `SUPABASE_URL=${supabaseUrl}\nSUPABASE_PUBLISHABLE_KEY=qualification-public-placeholder\n`,
       { mode: 0o600 },
     );
     const port = await availablePort();
+    const environment = controlledChildEnvironment(port, supabaseUrl, reportPath);
+    installCandidateDependencies(candidate, environment);
     const playwright = path.join(candidate, 'node_modules', '.bin', 'playwright');
     const completed = spawnSync(
       playwright,
@@ -204,7 +226,7 @@ async function runBrowserQualification(repo, componentSha, supabaseUrl) {
       {
         cwd: candidate,
         encoding: 'utf8',
-        env: controlledChildEnvironment(port, supabaseUrl, reportPath),
+        env: environment,
         maxBuffer: 16 * 1024 * 1024,
       },
     );

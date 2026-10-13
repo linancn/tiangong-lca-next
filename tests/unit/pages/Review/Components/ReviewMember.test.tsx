@@ -63,6 +63,7 @@ jest.mock('antd', () => {
       type='button'
       aria-label={rest['aria-label'] ?? toText(icon) ?? toText(children)}
       disabled={disabled}
+      style={rest.style}
       onClick={disabled ? undefined : onClick}
     >
       {icon}
@@ -202,6 +203,9 @@ describe('ReviewMember', () => {
     render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
 
     await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+
+    expect(screen.getByRole('button', { name: '2' })).toHaveStyle({ color: '#1677ff' });
+    expect(screen.getByRole('button', { name: '5' })).toHaveStyle({ color: '#1677ff' });
 
     await userEvent.click(screen.getByRole('button', { name: 'plus' }));
     expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
@@ -448,5 +452,58 @@ describe('ReviewMember', () => {
     expect(screen.getByTestId('row-unknown@example.com')).toHaveTextContent('unknown@example.com');
     expect(screen.getByTestId('row-unknown@example.com')).not.toHaveTextContent('Admin');
     expect(screen.getByTestId('row-unknown@example.com')).not.toHaveTextContent('Member');
+  });
+
+  it('keeps zero workload counts non-interactive', async () => {
+    mockGetUserManageTableData.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          email: 'idle@example.com',
+          pendingCount: 0,
+          reviewedCount: 0,
+          display_name: 'Idle Reviewer',
+          role: 'review-member',
+          user_id: 'user-idle',
+          team_id: 'team-1',
+        },
+      ],
+      total: 1,
+    });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+    const zeroCounts = screen.getAllByRole('button', { name: '0' });
+    expect(zeroCounts).toHaveLength(2);
+    zeroCounts.forEach((count) => {
+      expect(count).toBeDisabled();
+      expect(count).not.toHaveStyle({ color: '#1677ff' });
+    });
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
+  });
+
+  it('keeps missing workload counts non-interactive', async () => {
+    mockGetUserManageTableData.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          email: 'unmeasured@example.com',
+          display_name: 'Unmeasured Reviewer',
+          role: 'review-member',
+          user_id: 'user-unmeasured',
+          team_id: 'team-1',
+        },
+      ],
+      total: 1,
+    });
+
+    render(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+
+    await waitFor(() => expect(mockGetUserManageTableData).toHaveBeenCalled());
+    const missingCounts = screen.getAllByRole('button', { name: '' });
+    expect(missingCounts).toHaveLength(2);
+    missingCounts.forEach((count) => expect(count).toBeDisabled());
+    expect(screen.queryByTestId('drawer')).not.toBeInTheDocument();
   });
 });

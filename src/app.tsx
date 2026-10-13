@@ -1,3 +1,5 @@
+import { brandProfile } from '../config/brandProfile';
+import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
   AvatarName,
@@ -32,7 +34,13 @@ import {
   type SystemStatus,
 } from '@/services/general/systemStatus';
 import { getSystemUserRoleApi } from '@/services/roles/api';
-import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
+import {
+  bindTaskCenterOwner,
+  getTaskCenterIdentityGeneration,
+  subscribeToTaskCenterAuthChanges,
+} from '@/services/auth/taskCenters';
+import { reloadBrowserPage } from '@/utils/browserNavigation';
+import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
 import styles from '@/style/custom.less';
 import { AntdAppApiRegistrar } from '@/contexts/AntdAppContext';
 import { AntdThemeSync, createAntdThemeConfig } from '@/contexts/AntdThemeSync';
@@ -56,27 +64,32 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['data_product_manager', 'data_product_manager'],
 ]);
 
+subscribeToTaskCenterAuthChanges(() => reloadBrowserPage(window.location));
+
 subscribeToPasswordRecovery(() => {
   history.replace(recoveryFormPath);
 });
 
 export const antd: RuntimeAntdConfig = (memo) => {
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const isDarkMode = readBrowserStorage('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
+  const themeConfig = createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary);
   return {
     ...memo,
     theme: {
       ...memo.theme,
-      ...createAntdThemeConfig(isDarkMode, brandTheme.colorPrimary),
+      ...themeConfig,
       token: {
         ...memo.theme?.token,
+        ...themeConfig.token,
         colorPrimary: brandTheme.colorPrimary,
       },
       components: {
         ...memo.theme?.components,
+        ...themeConfig.components,
         Divider: {
           ...memo.theme?.components?.Divider,
-          orientationMargin: 0,
+          ...themeConfig.components?.Divider,
         },
       },
     },
@@ -132,26 +145,33 @@ export async function getInitialState(): Promise<{
   systemStatus?: SystemStatus;
 }> {
   const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
-    try {
-      const msg = await queryCurrentUser();
-      if (!msg) {
-        bindTidasPackageTaskCenterOwner(null);
+    // INITIAL_SESSION can settle during the first claims lookup. Re-read once
+    // against the new epoch rather than admitting a stale or ownerless user.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const identityGeneration = getTaskCenterIdentityGeneration();
+      try {
+        const msg = await queryCurrentUser();
+        if (identityGeneration !== getTaskCenterIdentityGeneration()) continue;
+        if (!msg) {
+          bindTaskCenterOwner(null, identityGeneration);
+          history.push(LOGIN_PATH);
+          return null;
+        }
+        const access = await getSystemAccess();
+        if (identityGeneration !== getTaskCenterIdentityGeneration()) continue;
+        if (!bindTaskCenterOwner(msg.userid, identityGeneration)) return null;
+        return { ...msg, access };
+      } catch (error) {
+        if (identityGeneration !== getTaskCenterIdentityGeneration()) continue;
+        bindTaskCenterOwner(null, identityGeneration);
         history.push(LOGIN_PATH);
         return null;
       }
-      bindTidasPackageTaskCenterOwner(msg.userid);
-      return {
-        ...msg,
-        access: await getSystemAccess(),
-      };
-    } catch (error) {
-      bindTidasPackageTaskCenterOwner(null);
-      history.push(LOGIN_PATH);
     }
     return null;
   };
 
-  const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+  const isDarkMode = readBrowserStorage('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
   const updatedSettings = {
     ...defaultSettings,
@@ -162,7 +182,7 @@ export async function getInitialState(): Promise<{
   // single startup read; a browser refresh is required to check it again.
   const systemStatus = await getSystemStatus();
   if (isSystemMaintenanceActive(systemStatus)) {
-    bindTidasPackageTaskCenterOwner(null);
+    bindTaskCenterOwner(null);
     return {
       fetchUserInfo,
       settings: updatedSettings as Partial<LayoutSettings>,
@@ -182,7 +202,7 @@ export async function getInitialState(): Promise<{
       systemStatus,
     };
   }
-  bindTidasPackageTaskCenterOwner(null);
+  bindTaskCenterOwner(null);
   return {
     fetchUserInfo,
     settings: updatedSettings as Partial<LayoutSettings>,
@@ -206,7 +226,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ...prevState,
         isDarkMode: !prevState.isDarkMode,
       };
-      localStorage.setItem('isDarkMode', newState.isDarkMode.toString());
+      writeBrowserStorage('isDarkMode', newState.isDarkMode.toString());
       const brandTheme = getBrandTheme(newState.isDarkMode);
       const updatedSettings = {
         ...newState.settings,
@@ -217,6 +237,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
+    className: brandProfile.id === 'atlas' ? 'atlas-app-shell' : undefined,
     actionsRender: (headerProps = {}) => {
       if (maintenanceActive) {
         return [];
@@ -240,7 +261,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         <LocationCacheMonitor key='LocaltionCacheMonitor' />,
         <ImportTidasPackage key='ImportTidasPackage' />,
         <ExportTidasPackage key='ExportTidasPackage' />,
-        <LcaTaskCenter key='LcaTaskCenter' />,
+        <LcaTaskCenter key={`LcaTaskCenter:${initialState.currentUser.userid}`} />,
         <Notification key='Notification' />,
         ...publicActions,
       ];
@@ -456,7 +477,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         }),
         defaultDom,
       ),
-    title: appTitle,
+    title: brandProfile.presentation?.navigationTitle ?? appTitle,
   };
 };
 

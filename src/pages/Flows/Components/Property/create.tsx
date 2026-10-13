@@ -25,7 +25,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
   // const [functionalUnitOrOther, setFunctionalUnitOrOther] = useState(false);
 
   const handletFromData = () => {
-    setFromData(formRefCreate.current?.getFieldsValue() ?? {});
+    setFromData(formRefCreate.current?.getFieldsValue(true) ?? {});
   };
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
         <ProForm
           formRef={formRefCreate}
           onValuesChange={(_, allValues) => {
-            setFromData(allValues ?? {});
+            setFromData(formRefCreate.current?.getFieldsValue(true) ?? allValues ?? {});
           }}
           submitter={{
             render: () => {
@@ -97,7 +97,9 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
             },
           }}
           onFinish={async () => {
-            onData(fromData);
+            // Include programmatic reference updates and newly registered language fields.
+            const currentData = formRefCreate.current?.getFieldsValue(true) ?? fromData;
+            onData(currentData);
             formRefCreate.current?.resetFields();
             setDrawerVisible(false);
             return true;

@@ -1,3 +1,4 @@
+import type { TaskSessionGuard } from '@/services/taskCenter/sessionGuard';
 import {
   requestWorkerJobsApi,
   type WorkerJobResult,
@@ -43,7 +44,8 @@ const MAX_TASK_ITEMS = 30;
 const BUILD_TIMEOUT_MS = 20 * 60 * 1000;
 const SOLVE_TIMEOUT_MS = 20 * 60 * 1000;
 const DEFAULT_POLL_INTERVALS_MS = [1000, 2000, 3000, 5000];
-const STORAGE_KEY = 'tg_lca_task_center_v1';
+const LEGACY_STORAGE_KEY = 'tg_lca_task_center_v1';
+const STORAGE_KEY_PREFIX = 'tg_lca_task_center_v2';
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 const LCA_WORKER_JOB_STATUSES: WorkerJobStatus[] = [
@@ -57,6 +59,9 @@ const LCA_WORKER_JOB_STATUSES: WorkerJobStatus[] = [
   'cancelled',
 ];
 
+let taskOwnerId: string | null = null;
+let taskGeneration = 0;
+let activeRefresh: { generation: number; promise: Promise<LcaBackgroundTask[]> } | null = null;
 let taskSequence = 0;
 let tasks: LcaBackgroundTask[] = [];
 const listeners = new Set<() => void>();
@@ -91,8 +96,22 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
+export function getLcaTaskStorageKey(ownerId: string): string {
+  const normalized = ownerId.trim();
+  if (!normalized) throw new Error('LCA task storage requires an authenticated user id');
+  return `${STORAGE_KEY_PREFIX}:${encodeURIComponent(normalized)}`;
+}
+
+function isActiveGeneration(generation: number): boolean {
+  return taskOwnerId !== null && generation === taskGeneration;
+}
+
+function taskSessionGuard(generation: number): TaskSessionGuard {
+  return { ownerId: taskOwnerId!, isCurrent: () => isActiveGeneration(generation) };
+}
+
 function persistTasksToStorage(): void {
-  if (!canUseStorage()) {
+  if (!canUseStorage() || !taskOwnerId) {
     return;
   }
   const payload: PersistedTaskStore = {
@@ -101,13 +120,14 @@ function persistTasksToStorage(): void {
     tasks,
   };
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    window.localStorage.setItem(getLcaTaskStorageKey(taskOwnerId!), JSON.stringify(payload));
   } catch (_error) {
     // Ignore storage failures (quota/privacy mode).
   }
 }
 
-function setTasks(next: LcaBackgroundTask[]): void {
+function setTasks(next: LcaBackgroundTask[], generation = taskGeneration): void {
+  if (!isActiveGeneration(generation)) return;
   tasks = next
     .slice()
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
@@ -310,22 +330,22 @@ function normalizeTask(raw: unknown, fallbackSequence: number): LcaBackgroundTas
 }
 
 function readTasksFromStorage(): LcaBackgroundTask[] {
-  if (!canUseStorage()) {
+  if (!canUseStorage() || !taskOwnerId) {
     return [];
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(getLcaTaskStorageKey(taskOwnerId!));
     if (!raw) {
       return [];
     }
     const parsed = JSON.parse(raw) as PersistedTaskStore;
     if (!parsed || parsed.version !== STORAGE_SCHEMA_VERSION) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(getLcaTaskStorageKey(taskOwnerId!));
       return [];
     }
     const savedAtMs = Date.parse(String(parsed.savedAt ?? ''));
     if (Number.isFinite(savedAtMs) && Date.now() - savedAtMs > STORAGE_TTL_MS) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(getLcaTaskStorageKey(taskOwnerId!));
       return [];
     }
     const rawTasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
@@ -383,7 +403,8 @@ function applyTaskTimelineTransition(
   return nextTimeline;
 }
 
-function upsertTask(taskId: string, patch: Partial<LcaBackgroundTask>): void {
+function upsertTask(taskId: string, patch: Partial<LcaBackgroundTask>, generation: number): void {
+  if (!isActiveGeneration(generation)) return;
   const index = tasks.findIndex((item) => item.id === taskId);
   if (index < 0) {
     return;
@@ -594,6 +615,7 @@ async function pollWorkerJobUntilTerminal(
   workerJobId: string,
   options: {
     timeoutMs: number;
+    generation: number;
     onTick?: (job: WorkerJobResult) => void;
   },
 ): Promise<WorkerJobResult> {
@@ -601,7 +623,9 @@ async function pollWorkerJobUntilTerminal(
   let attempt = 0;
 
   while (true) {
+    if (!isActiveGeneration(options.generation)) throw new Error('task_owner_changed');
     const job = await readWorkerJob(workerJobId);
+    if (!isActiveGeneration(options.generation)) throw new Error('task_owner_changed');
     options.onTick?.(job);
 
     if (terminalWorkerJobStatus(job.status)) {
@@ -700,19 +724,25 @@ async function waitBuildSnapshot(
   taskId: string,
   buildJobId: string,
   buildWorkerJobId: string,
+  generation: number,
 ): Promise<'ok' | 'failed'> {
-  upsertTask(taskId, {
-    phase: 'building_snapshot',
-    state: 'running',
-    workerJobId: buildWorkerJobId,
-    buildJobId,
-    message: `Building snapshot (${buildJobId})`,
-  });
+  upsertTask(
+    taskId,
+    {
+      phase: 'building_snapshot',
+      state: 'running',
+      workerJobId: buildWorkerJobId,
+      buildJobId,
+      message: `Building snapshot (${buildJobId})`,
+    },
+    generation,
+  );
 
   const job = await pollWorkerJobUntilTerminal(buildWorkerJobId, {
     timeoutMs: BUILD_TIMEOUT_MS,
+    generation,
     onTick: (tick) => {
-      upsertTask(taskId, patchFromWorkerJobTick(tick, buildJobId));
+      upsertTask(taskId, patchFromWorkerJobTick(tick, buildJobId), generation);
     },
   });
 
@@ -730,7 +760,7 @@ async function waitBuildSnapshot(
     if (snapshotId) {
       failurePatch.snapshotId = snapshotId;
     }
-    upsertTask(taskId, failurePatch);
+    upsertTask(taskId, failurePatch, generation);
     return 'failed';
   }
 
@@ -744,7 +774,7 @@ async function waitBuildSnapshot(
   if (snapshotId) {
     successPatch.snapshotId = snapshotId;
   }
-  upsertTask(taskId, successPatch);
+  upsertTask(taskId, successPatch, generation);
   return 'ok';
 }
 
@@ -752,19 +782,25 @@ async function waitSolveResult(
   taskId: string,
   solveJobId: string,
   solveWorkerJobId: string,
+  generation: number,
 ): Promise<void> {
-  upsertTask(taskId, {
-    phase: 'solving',
-    state: 'running',
-    workerJobId: solveWorkerJobId,
-    solveJobId,
-    message: `Solving (${solveJobId})`,
-  });
+  upsertTask(
+    taskId,
+    {
+      phase: 'solving',
+      state: 'running',
+      workerJobId: solveWorkerJobId,
+      solveJobId,
+      message: `Solving (${solveJobId})`,
+    },
+    generation,
+  );
 
   const job = await pollWorkerJobUntilTerminal(solveWorkerJobId, {
     timeoutMs: SOLVE_TIMEOUT_MS,
+    generation,
     onTick: (tick) => {
-      upsertTask(taskId, patchFromWorkerJobTick(tick, solveJobId));
+      upsertTask(taskId, patchFromWorkerJobTick(tick, solveJobId), generation);
     },
   });
 
@@ -782,7 +818,7 @@ async function waitSolveResult(
     if (snapshotId) {
       failurePatch.snapshotId = snapshotId;
     }
-    upsertTask(taskId, failurePatch);
+    upsertTask(taskId, failurePatch, generation);
     return;
   }
 
@@ -799,7 +835,7 @@ async function waitSolveResult(
     if (snapshotId) {
       missingResultPatch.snapshotId = snapshotId;
     }
-    upsertTask(taskId, missingResultPatch);
+    upsertTask(taskId, missingResultPatch, generation);
     return;
   }
 
@@ -814,16 +850,19 @@ async function waitSolveResult(
   if (snapshotId) {
     completedPatch.snapshotId = snapshotId;
   }
-  upsertTask(taskId, completedPatch);
+  upsertTask(taskId, completedPatch, generation);
 }
 
-async function refreshLcaTasksFromWorkerJobsInternal(): Promise<LcaBackgroundTask[]> {
+async function refreshLcaTasksFromWorkerJobsInternal(
+  generation: number,
+): Promise<LcaBackgroundTask[]> {
   const result = await requestWorkerJobsApi({
     action: 'list',
     subjectType: 'lca_job',
     statuses: LCA_WORKER_JOB_STATUSES,
     limit: MAX_TASK_ITEMS,
   });
+  if (!isActiveGeneration(generation)) return tasks;
   if (result.error) {
     throw new Error(result.error.message || 'Failed to refresh LCA worker jobs');
   }
@@ -846,7 +885,7 @@ async function refreshLcaTasksFromWorkerJobsInternal(): Promise<LcaBackgroundTas
     }
   }
 
-  setTasks(merged);
+  setTasks(merged, generation);
   const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
   if (maxSequence > taskSequence) {
     taskSequence = maxSequence;
@@ -854,16 +893,31 @@ async function refreshLcaTasksFromWorkerJobsInternal(): Promise<LcaBackgroundTas
   return tasks;
 }
 
+export async function refreshLcaTasksFromWorkerJobs(): Promise<LcaBackgroundTask[]> {
+  if (!taskOwnerId) return tasks;
+  const generation = taskGeneration;
+  if (activeRefresh?.generation === generation) return activeRefresh.promise;
+  const promise = refreshLcaTasksFromWorkerJobsInternal(generation);
+  activeRefresh = { generation, promise };
+  try {
+    return await promise;
+  } finally {
+    if (activeRefresh?.promise === promise) activeRefresh = null;
+  }
+}
+
 async function resolveRunningTaskWorkerJobId(
   taskId: string,
   phase: 'building_snapshot' | 'solving',
+  generation: number,
 ): Promise<string | undefined> {
   const current = tasks.find((item) => item.id === taskId);
   if (current?.workerJobId) {
     return current.workerJobId;
   }
 
-  await refreshLcaTasksFromWorkerJobsInternal().catch(() => undefined);
+  await refreshLcaTasksFromWorkerJobs().catch(() => undefined);
+  if (!isActiveGeneration(generation)) return undefined;
   const refreshed = tasks.find((item) => item.id === taskId);
   if (refreshed?.workerJobId) {
     return refreshed.workerJobId;
@@ -884,105 +938,154 @@ async function processSubmitResponse(
   request: LcaSolveRequest,
   submit: LcaSolveSubmitResponse,
   attempt: number,
+  generation: number,
 ): Promise<void> {
+  if (!isActiveGeneration(generation)) return;
   if (submit.mode === 'cache_hit') {
-    upsertTask(taskId, {
-      phase: 'completed',
-      state: 'completed',
-      snapshotId: submit.snapshot_id,
-      resultId: submit.result_id,
-      message: `Cache hit (result ${submit.result_id})`,
-    });
+    upsertTask(
+      taskId,
+      {
+        phase: 'completed',
+        state: 'completed',
+        snapshotId: submit.snapshot_id,
+        resultId: submit.result_id,
+        message: `Cache hit (result ${submit.result_id})`,
+      },
+      generation,
+    );
     return;
   }
 
   if (submit.mode === 'snapshot_building') {
     const buildWorkerJobId = submit.build_worker_job_id ?? undefined;
-    upsertTask(taskId, {
-      workerJobId: buildWorkerJobId,
-      buildJobId: submit.build_job_id,
-      snapshotId: submit.build_snapshot_id,
-    });
-    if (!buildWorkerJobId) {
-      upsertTask(taskId, {
-        phase: 'failed',
-        state: 'failed',
+    upsertTask(
+      taskId,
+      {
+        workerJobId: buildWorkerJobId,
         buildJobId: submit.build_job_id,
         snapshotId: submit.build_snapshot_id,
-        message: 'Snapshot build worker job is missing',
-        error: 'worker_job_id_missing',
-      });
+      },
+      generation,
+    );
+    if (!buildWorkerJobId) {
+      upsertTask(
+        taskId,
+        {
+          phase: 'failed',
+          state: 'failed',
+          buildJobId: submit.build_job_id,
+          snapshotId: submit.build_snapshot_id,
+          message: 'Snapshot build worker job is missing',
+          error: 'worker_job_id_missing',
+        },
+        generation,
+      );
       return;
     }
     if (attempt >= 3) {
-      upsertTask(taskId, {
-        phase: 'failed',
-        state: 'failed',
-        buildJobId: submit.build_job_id,
-        workerJobId: buildWorkerJobId,
-        snapshotId: submit.build_snapshot_id,
-        message: 'Snapshot build retry limit reached',
-        error: 'snapshot_build_retry_limit',
-      });
+      upsertTask(
+        taskId,
+        {
+          phase: 'failed',
+          state: 'failed',
+          buildJobId: submit.build_job_id,
+          workerJobId: buildWorkerJobId,
+          snapshotId: submit.build_snapshot_id,
+          message: 'Snapshot build retry limit reached',
+          error: 'snapshot_build_retry_limit',
+        },
+        generation,
+      );
       return;
     }
-    const built = await waitBuildSnapshot(taskId, submit.build_job_id, buildWorkerJobId);
-    if (built !== 'ok') {
+    const built = await waitBuildSnapshot(
+      taskId,
+      submit.build_job_id,
+      buildWorkerJobId,
+      generation,
+    );
+    if (!isActiveGeneration(generation) || built !== 'ok') {
       return;
     }
-    const nextSubmit = await submitLcaSolve(request);
-    await processSubmitResponse(taskId, request, nextSubmit, attempt + 1);
+    const nextSubmit = await submitLcaSolve(request, { taskSession: taskSessionGuard(generation) });
+    await processSubmitResponse(taskId, request, nextSubmit, attempt + 1, generation);
     return;
   }
 
   const solveWorkerJobId = submit.worker_job_id ?? undefined;
-  upsertTask(taskId, {
-    workerJobId: solveWorkerJobId,
-    solveJobId: submit.job_id,
-    snapshotId: submit.snapshot_id,
-  });
-  if (!solveWorkerJobId) {
-    upsertTask(taskId, {
-      phase: 'failed',
-      state: 'failed',
+  upsertTask(
+    taskId,
+    {
+      workerJobId: solveWorkerJobId,
       solveJobId: submit.job_id,
       snapshotId: submit.snapshot_id,
-      message: 'Solve worker job is missing',
-      error: 'worker_job_id_missing',
-    });
-    return;
-  }
-  await waitSolveResult(taskId, submit.job_id, solveWorkerJobId);
-}
-
-async function runTask(taskId: string, request: LcaSolveRequest): Promise<void> {
-  try {
-    const submit = await submitLcaSolve(request);
-    if (submit.mode === 'queued' || submit.mode === 'in_progress') {
-      upsertTask(taskId, {
-        workerJobId: submit.worker_job_id ?? undefined,
+    },
+    generation,
+  );
+  if (!solveWorkerJobId) {
+    upsertTask(
+      taskId,
+      {
+        phase: 'failed',
+        state: 'failed',
         solveJobId: submit.job_id,
         snapshotId: submit.snapshot_id,
-      });
+        message: 'Solve worker job is missing',
+        error: 'worker_job_id_missing',
+      },
+      generation,
+    );
+    return;
+  }
+  await waitSolveResult(taskId, submit.job_id, solveWorkerJobId, generation);
+}
+
+async function runTask(
+  taskId: string,
+  request: LcaSolveRequest,
+  generation: number,
+): Promise<void> {
+  if (!isActiveGeneration(generation)) return;
+  try {
+    const submit = await submitLcaSolve(request, { taskSession: taskSessionGuard(generation) });
+    if (!isActiveGeneration(generation)) return;
+    if (submit.mode === 'queued' || submit.mode === 'in_progress') {
+      upsertTask(
+        taskId,
+        {
+          workerJobId: submit.worker_job_id ?? undefined,
+          solveJobId: submit.job_id,
+          snapshotId: submit.snapshot_id,
+        },
+        generation,
+      );
     } else if (submit.mode === 'snapshot_building') {
-      upsertTask(taskId, {
-        workerJobId: submit.build_worker_job_id ?? undefined,
-        buildJobId: submit.build_job_id,
-        snapshotId: submit.build_snapshot_id,
-      });
+      upsertTask(
+        taskId,
+        {
+          workerJobId: submit.build_worker_job_id ?? undefined,
+          buildJobId: submit.build_job_id,
+          snapshotId: submit.build_snapshot_id,
+        },
+        generation,
+      );
     }
-    await processSubmitResponse(taskId, request, submit, 0);
+    await processSubmitResponse(taskId, request, submit, 0, generation);
   } catch (error) {
-    upsertTask(taskId, {
-      phase: 'failed',
-      state: 'failed',
-      message: 'Task failed',
-      error: toErrorMessage(error),
-    });
+    upsertTask(
+      taskId,
+      {
+        phase: 'failed',
+        state: 'failed',
+        message: 'Task failed',
+        error: toErrorMessage(error),
+      },
+      generation,
+    );
   }
 }
 
-async function resumeTaskAfterReload(taskId: string): Promise<void> {
+async function resumeTaskAfterReload(taskId: string, generation: number): Promise<void> {
   const task = tasks.find((item) => item.id === taskId);
   if (!task || task.state !== 'running') {
     return;
@@ -990,90 +1093,124 @@ async function resumeTaskAfterReload(taskId: string): Promise<void> {
 
   try {
     if (task.phase === 'solving' && task.solveJobId) {
-      const workerJobId = await resolveRunningTaskWorkerJobId(task.id, 'solving');
+      const workerJobId = await resolveRunningTaskWorkerJobId(task.id, 'solving', generation);
       if (!workerJobId) {
-        upsertTask(task.id, {
-          phase: 'failed',
-          state: 'failed',
-          message: 'Task recovery failed',
-          error: 'worker_job_id_missing',
-        });
+        upsertTask(
+          task.id,
+          {
+            phase: 'failed',
+            state: 'failed',
+            message: 'Task recovery failed',
+            error: 'worker_job_id_missing',
+          },
+          generation,
+        );
         return;
       }
-      upsertTask(task.id, {
-        workerJobId,
-        message: `Resuming solve (${task.solveJobId})`,
-      });
-      await waitSolveResult(task.id, task.solveJobId, workerJobId);
+      upsertTask(
+        task.id,
+        {
+          workerJobId,
+          message: `Resuming solve (${task.solveJobId})`,
+        },
+        generation,
+      );
+      await waitSolveResult(task.id, task.solveJobId, workerJobId, generation);
       return;
     }
 
     if (task.phase === 'building_snapshot' && task.buildJobId) {
-      const workerJobId = await resolveRunningTaskWorkerJobId(task.id, 'building_snapshot');
+      const workerJobId = await resolveRunningTaskWorkerJobId(
+        task.id,
+        'building_snapshot',
+        generation,
+      );
       if (!workerJobId) {
-        upsertTask(task.id, {
-          phase: 'failed',
-          state: 'failed',
-          message: 'Task recovery failed',
-          error: 'worker_job_id_missing',
-        });
+        upsertTask(
+          task.id,
+          {
+            phase: 'failed',
+            state: 'failed',
+            message: 'Task recovery failed',
+            error: 'worker_job_id_missing',
+          },
+          generation,
+        );
         return;
       }
-      upsertTask(task.id, {
-        workerJobId,
-        message: `Resuming snapshot build (${task.buildJobId})`,
-      });
-      const built = await waitBuildSnapshot(task.id, task.buildJobId, workerJobId);
-      if (built !== 'ok') {
+      upsertTask(
+        task.id,
+        {
+          workerJobId,
+          message: `Resuming snapshot build (${task.buildJobId})`,
+        },
+        generation,
+      );
+      const built = await waitBuildSnapshot(task.id, task.buildJobId, workerJobId, generation);
+      if (!isActiveGeneration(generation) || built !== 'ok') {
         return;
       }
       const latest = tasks.find((item) => item.id === task.id);
       if (!latest?.request) {
-        upsertTask(task.id, {
-          phase: 'failed',
-          state: 'failed',
-          message: 'Reload recovery failed',
-          error: 'request_missing_after_snapshot_build',
-        });
+        upsertTask(
+          task.id,
+          {
+            phase: 'failed',
+            state: 'failed',
+            message: 'Reload recovery failed',
+            error: 'request_missing_after_snapshot_build',
+          },
+          generation,
+        );
         return;
       }
-      const nextSubmit = await submitLcaSolve(latest.request);
-      await processSubmitResponse(task.id, latest.request, nextSubmit, 0);
+      const nextSubmit = await submitLcaSolve(latest.request, {
+        taskSession: taskSessionGuard(generation),
+      });
+      await processSubmitResponse(task.id, latest.request, nextSubmit, 0, generation);
       return;
     }
 
     if (task.request) {
-      upsertTask(task.id, {
-        message: 'Resuming task after reload',
-      });
-      await runTask(task.id, task.request);
+      upsertTask(
+        task.id,
+        {
+          message: 'Resuming task after reload',
+        },
+        generation,
+      );
+      await runTask(task.id, task.request, generation);
       return;
     }
 
-    upsertTask(task.id, {
-      phase: 'failed',
-      state: 'failed',
-      message: 'Reload recovery failed',
-      error: 'request_missing',
-    });
+    upsertTask(
+      task.id,
+      {
+        phase: 'failed',
+        state: 'failed',
+        message: 'Reload recovery failed',
+        error: 'request_missing',
+      },
+      generation,
+    );
   } catch (error) {
-    upsertTask(task.id, {
-      phase: 'failed',
-      state: 'failed',
-      message: 'Task recovery failed',
-      error: toErrorMessage(error),
-    });
+    upsertTask(
+      task.id,
+      {
+        phase: 'failed',
+        state: 'failed',
+        message: 'Task recovery failed',
+        error: toErrorMessage(error),
+      },
+      generation,
+    );
   }
 }
 
-export async function refreshLcaTasksFromWorkerJobs(): Promise<LcaBackgroundTask[]> {
-  return await refreshLcaTasksFromWorkerJobsInternal();
-}
-
-function hydrateTasksFromStorage(): void {
+function hydrateTasksFromStorage(generation: number): void {
   const restored = readTasksFromStorage();
   if (restored.length > 0) {
-    setTasks(restored);
+    setTasks(restored, generation);
     const maxSequence = restored.reduce((max, item) => Math.max(max, item.sequence), 0);
     if (maxSequence > taskSequence) {
       taskSequence = maxSequence;
@@ -1082,7 +1219,7 @@ function hydrateTasksFromStorage(): void {
     restored
       .filter((item) => item.state === 'running')
       .forEach((item) => {
-        void resumeTaskAfterReload(item.id);
+        void resumeTaskAfterReload(item.id, generation);
       });
   }
 
@@ -1090,6 +1227,8 @@ function hydrateTasksFromStorage(): void {
 }
 
 export function submitLcaTask(request: LcaSolveRequest): LcaBackgroundTask {
+  if (!taskOwnerId) throw new Error('LCA task center requires an authenticated user');
+  const generation = taskGeneration;
   const createdAt = nowIso();
   const sequence = nextTaskSequence();
   const task: LcaBackgroundTask = {
@@ -1111,7 +1250,7 @@ export function submitLcaTask(request: LcaSolveRequest): LcaBackgroundTask {
     ],
   };
   setTasks([task, ...tasks]);
-  void runTask(task.id, request);
+  void runTask(task.id, request, generation);
   return task;
 }
 
@@ -1147,4 +1286,22 @@ export function subscribeLcaTaskCenterOpenRequests(listener: () => void): () => 
   };
 }
 
-hydrateTasksFromStorage();
+export function bindLcaTaskCenterOwner(ownerId: string | null | undefined): void {
+  const normalized = typeof ownerId === 'string' ? ownerId.trim() || null : null;
+  if (normalized === taskOwnerId) return;
+  taskGeneration += 1;
+  taskOwnerId = normalized;
+  tasks = [];
+  taskSequence = 0;
+  emitChange();
+  if (!normalized) return;
+  if (canUseStorage()) {
+    try {
+      // Global historical snapshots have no attributable owner.
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch {
+      /* Ignore storage failures. */
+    }
+  }
+  hydrateTasksFromStorage(taskGeneration);
+}

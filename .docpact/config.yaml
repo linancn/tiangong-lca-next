@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-10-13'
-lastReviewedCommit: '35c916d3415e88c26301558f978a70c014889993'
-lastReviewedNote: 'Reviewed for Platform #1208: the Process and Lifecycle Model review-footer change is covered by existing routing, ownership, and documentation rules; no rule semantics changed.'
+lastReviewedAt: "2026-10-11"
+lastReviewedCommit: "4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd"
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: unknown-locale presentation follows the current browser locale default; page-level tests exercise Atlas login, navigation, shared data and standard dialogs, guide routing and no-override card copy. Production behavior, dependency graph and gate thresholds are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -40,6 +40,7 @@ ownership:
           - README_CN.md
           - .docpact/**
           - docs/agents/**
+          - docs/plans/model-product-demand.md
           - docs/plans/i18n/**
           - docs/plans/i18n-*/**
           - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -106,6 +107,8 @@ coverage:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/model-modeling-and-calculation.md
+    - docs/plans/model-product-demand.md
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
@@ -277,6 +280,8 @@ routing:
         - docs/agents/lca-analysis-visualization-plan.md
         - docs/agents/public-classifications-gz-usage.md
         - docs/agents/util_calculate.md
+        - docs/agents/model-modeling-and-calculation.md
+        - docs/plans/model-product-demand.md
         - docs/agents/lcia-calculation-evidence.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
@@ -400,6 +405,8 @@ docInventory:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/model-modeling-and-calculation.md
+    - docs/plans/model-product-demand.md
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
@@ -690,6 +697,22 @@ rules:
     triggers:
       - path: config/branding.ts
         kind: app-branding
+      - path: config/brandProfile.ts
+        kind: app-branding
+      - path: config/brandAssets.ts
+        kind: app-branding
+      - path: config/brands/**
+        kind: app-branding
+      - path: src/locales/brandMessages.ts
+        kind: app-branding
+      - path: scripts/branding/**
+        kind: packaging
+      - path: electron-builder.json
+        kind: packaging
+      - path: src/manifest.json
+        kind: app-branding
+      - path: public/brands/**
+        kind: app-branding
       - path: electron/**
         kind: packaging
       - path: icons/**
@@ -926,6 +949,10 @@ rules:
         kind: domain-ui
       - path: docs/agents/util_calculate.md
         kind: domain-doc
+      - path: docs/agents/model-modeling-and-calculation.md
+        kind: domain-doc
+      - path: docs/plans/model-product-demand.md
+        kind: design-reference
       - path: docs/agents/contribution-path-analysis-design.md
         kind: design-reference
       - path: docs/agents/lca-analysis-visualization-plan.md
@@ -938,6 +965,8 @@ rules:
       - path: docs/agents/repo-architecture.md
         mode: review_or_update
       - path: docs/agents/util_calculate.md
+        mode: review_or_update
+      - path: docs/agents/model-modeling-and-calculation.md
         mode: review_or_update
       - path: docs/agents/contribution-path-analysis-design.md
         mode: review_or_update

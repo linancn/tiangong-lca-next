@@ -1,3 +1,4 @@
+import { mapTidasRepeated, hasTidasReference } from '../general/tidasRepeatedFields';
 import { normalizeAllocation } from './allocation';
 import { FormProcess } from '@/services/processes/data';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk/core';
@@ -89,11 +90,19 @@ export function genProcessJsonOrdered(id: string, data: any) {
       },
       { useDefaultSuffix: false },
     );
+  const selectedReferenceIds = exchangeList
+    .filter((item: any) => item?.quantitativeReference === true)
+    .map((item: any) => item['@dataSetInternalID']);
   const exchange = exchangeList.map((item: any) => {
     if (item?.quantitativeReference === true) {
       quantitativeReference = {
         '@type': 'Reference flow(s)',
-        referenceToReferenceFlow: item?.['@dataSetInternalID'],
+        referenceToReferenceFlow:
+          Array.isArray(
+            data?.processInformation?.quantitativeReference?.referenceToReferenceFlow,
+          ) || selectedReferenceIds.length > 1
+            ? selectedReferenceIds
+            : selectedReferenceIds[0],
         functionalUnitOrOther: getLangJson(item.functionalUnitOrOther),
       };
     }
@@ -174,13 +183,18 @@ export function genProcessJsonOrdered(id: string, data: any) {
             data?.processInformation?.dataSetInformation?.['common:synonyms'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToJsonList(
-                data?.processInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ),
-            },
+            ...data?.processInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : classificationToJsonList(item?.['common:class']),
+              }),
+            ),
           },
           'common:generalComment': getLangJson(
             data?.processInformation?.dataSetInformation?.['common:generalComment'],
@@ -236,20 +250,15 @@ export function genProcessJsonOrdered(id: string, data: any) {
                 ?.descriptionOfRestrictions,
             ),
           },
-          subLocationOfOperationSupplyOrProduction: {
-            '@subLocation':
-              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-                '@subLocation'
-              ] === 'NULL'
-                ? {}
-                : (data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-                    '@subLocation'
-                  ] ?? {}),
-            descriptionOfRestrictions: getLangJson(
-              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
-                ?.descriptionOfRestrictions,
-            ),
-          },
+          subLocationOfOperationSupplyOrProduction: mapTidasRepeated(
+            data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction,
+            (item) => ({
+              ...item,
+              '@subLocation':
+                item?.['@subLocation'] === 'NULL' ? {} : (item?.['@subLocation'] ?? {}),
+              descriptionOfRestrictions: getLangJson(item?.descriptionOfRestrictions),
+            }),
+          ),
         },
         technology: {
           referenceToIncludedProcesses: listToJson(
@@ -310,24 +319,22 @@ export function genProcessJsonOrdered(id: string, data: any) {
           modelDescription: getLangJson(
             data?.processInformation?.mathematicalRelations?.modelDescription,
           ),
-          variableParameter: {
-            '@name': data?.processInformation?.mathematicalRelations?.variableParameter?.['@name'],
-            formula: data?.processInformation?.mathematicalRelations?.variableParameter?.formula,
-            meanValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.meanValue,
-            minimumValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.minimumValue,
-            maximumValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.maximumValue,
-            uncertaintyDistributionType:
-              data?.processInformation?.mathematicalRelations?.variableParameter
-                ?.uncertaintyDistributionType,
-            relativeStandardDeviation95In: normalizeOptionalTidasPercentage(
-              data?.processInformation?.mathematicalRelations?.variableParameter
-                ?.relativeStandardDeviation95In,
-            ),
-            comment: data?.processInformation?.mathematicalRelations?.variableParameter?.comment,
-          },
+          variableParameter: mapTidasRepeated(
+            data?.processInformation?.mathematicalRelations?.variableParameter,
+            (item) => ({
+              ...item,
+              '@name': item?.['@name'],
+              formula: item?.formula,
+              meanValue: item?.meanValue,
+              minimumValue: item?.minimumValue,
+              maximumValue: item?.maximumValue,
+              uncertaintyDistributionType: item?.uncertaintyDistributionType,
+              relativeStandardDeviation95In: normalizeOptionalTidasPercentage(
+                item?.relativeStandardDeviation95In,
+              ),
+              comment: item?.comment,
+            }),
+          ),
         },
       },
       modellingAndValidation: {
@@ -458,12 +465,10 @@ export function genProcessJsonOrdered(id: string, data: any) {
         completeness: {
           completenessProductModel:
             data?.modellingAndValidation?.completeness?.completenessProductModel,
-          completenessElementaryFlows: {
-            '@type':
-              data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@type'],
-            '@value':
-              data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@value'],
-          },
+          completenessElementaryFlows: mapTidasRepeated(
+            data?.modellingAndValidation?.completeness?.completenessElementaryFlows,
+            (item) => ({ ...item, '@type': item?.['@type'], '@value': item?.['@value'] }),
+          ),
           completenessOtherProblemField: getLangJson(
             data?.modellingAndValidation?.completeness?.completenessOtherProblemField,
           ),
@@ -903,13 +908,18 @@ export function genProcessFromData(data: any): FormProcess {
             data?.processInformation?.dataSetInformation?.['common:synonyms'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToStringList(
-                data?.processInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ) as any,
-            },
+            ...data?.processInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.processInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : (classificationToStringList(item?.['common:class']) as any),
+              }),
+            ),
           },
           'common:generalComment': getLangList(
             data?.processInformation?.dataSetInformation?.['common:generalComment'],
@@ -968,16 +978,14 @@ export function genProcessFromData(data: any): FormProcess {
                 ?.descriptionOfRestrictions,
             ),
           },
-          subLocationOfOperationSupplyOrProduction: {
-            '@subLocation':
-              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction?.[
-                '@subLocation'
-              ] ?? {},
-            descriptionOfRestrictions: getLangList(
-              data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction
-                ?.descriptionOfRestrictions,
-            ),
-          },
+          subLocationOfOperationSupplyOrProduction: mapTidasRepeated(
+            data?.processInformation?.geography?.subLocationOfOperationSupplyOrProduction,
+            (item) => ({
+              ...item,
+              '@subLocation': item?.['@subLocation'] ?? {},
+              descriptionOfRestrictions: getLangList(item?.descriptionOfRestrictions),
+            }),
+          ),
         },
         technology: {
           referenceToIncludedProcesses: jsonToList(
@@ -1038,23 +1046,20 @@ export function genProcessFromData(data: any): FormProcess {
           modelDescription: getLangList(
             data?.processInformation?.mathematicalRelations?.modelDescription,
           ),
-          variableParameter: {
-            '@name': data?.processInformation?.mathematicalRelations?.variableParameter?.['@name'],
-            formula: data?.processInformation?.mathematicalRelations?.variableParameter?.formula,
-            meanValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.meanValue,
-            minimumValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.minimumValue,
-            maximumValue:
-              data?.processInformation?.mathematicalRelations?.variableParameter?.maximumValue,
-            uncertaintyDistributionType:
-              data?.processInformation?.mathematicalRelations?.variableParameter
-                ?.uncertaintyDistributionType,
-            relativeStandardDeviation95In:
-              data?.processInformation?.mathematicalRelations?.variableParameter
-                ?.relativeStandardDeviation95In,
-            comment: data?.processInformation?.mathematicalRelations?.variableParameter?.comment,
-          },
+          variableParameter: mapTidasRepeated(
+            data?.processInformation?.mathematicalRelations?.variableParameter,
+            (item) => ({
+              ...item,
+              '@name': item?.['@name'],
+              formula: item?.formula,
+              meanValue: item?.meanValue,
+              minimumValue: item?.minimumValue,
+              maximumValue: item?.maximumValue,
+              uncertaintyDistributionType: item?.uncertaintyDistributionType,
+              relativeStandardDeviation95In: item?.relativeStandardDeviation95In,
+              comment: item?.comment,
+            }),
+          ),
         },
       },
       modellingAndValidation: {
@@ -1182,12 +1187,10 @@ export function genProcessFromData(data: any): FormProcess {
         completeness: {
           completenessProductModel:
             data?.modellingAndValidation?.completeness?.completenessProductModel,
-          completenessElementaryFlows: {
-            '@type':
-              data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@type'],
-            '@value':
-              data?.modellingAndValidation?.completeness?.completenessElementaryFlows?.['@value'],
-          },
+          completenessElementaryFlows: mapTidasRepeated(
+            data?.modellingAndValidation?.completeness?.completenessElementaryFlows,
+            (item) => ({ ...item, '@type': item?.['@type'], '@value': item?.['@value'] }),
+          ),
           completenessOtherProblemField: getLangList(
             data?.modellingAndValidation?.completeness?.completenessOtherProblemField,
           ),
@@ -1549,8 +1552,10 @@ export function genProcessFromData(data: any): FormProcess {
       exchanges: {
         exchange: exchangeList?.map((item: any) => {
           if (
-            item['@dataSetInternalID'] ===
-            (data?.processInformation?.quantitativeReference?.referenceToReferenceFlow ?? '')
+            hasTidasReference(
+              data?.processInformation?.quantitativeReference?.referenceToReferenceFlow,
+              item['@dataSetInternalID'],
+            )
           ) {
             return {
               '@dataSetInternalID': item?.['@dataSetInternalID'],

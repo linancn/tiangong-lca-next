@@ -18,6 +18,8 @@ export type ReviewsTable = {
   completedReviewerCount?: number;
   approveOpinionCount?: number;
   rejectOpinionCount?: number;
+  hasRejectionInfo?: boolean;
+  actorHasRejectionInfo?: boolean;
   actorCommentStateCode?: number | null;
   actorCommentJson?: any;
   actorCommentModifiedAt?: string;

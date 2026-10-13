@@ -49,13 +49,12 @@ function assertStableErrorEnvelope(result, factoryName) {
 
 test('loads the exact released SDK from the installed package graph', () => {
   assert.equal(installedManifest.name, '@tiangong-lca/tidas-sdk');
-  assert.equal(installedManifest.version, '0.4.0');
+  assert.equal(installedManifest.version, '0.5.0');
   assert.match(resolvedCoreEntry, /node_modules/u);
 });
 
 test('the installed SDK requires the Process general comment after defaults materialize', () => {
-  const commentPath =
-    'processDataSet.processInformation.dataSetInformation.common:generalComment';
+  const commentPath = 'processDataSet.processInformation.dataSetInformation.common:generalComment';
   const commentIssues = (comment) => {
     const dataSetInformation = {};
     if (comment !== undefined) {
@@ -170,7 +169,10 @@ test('Platform form projections defer covered public rules to the installed SDK'
   const processExchange = processFormSchema.processDataSet.exchanges.exchange[0];
 
   assert.deepEqual(flowTypeRules, []);
-  assert.equal(processVersionRules.some((rule) => rule.pattern === 'dataSetVersion'), false);
+  assert.equal(
+    processVersionRules.some((rule) => rule.pattern === 'dataSetVersion'),
+    false,
+  );
   assert.deepEqual(processExchange.meanAmount.rules, []);
   assert.deepEqual(processExchange.resultingAmount.rules, []);
 
@@ -272,6 +274,68 @@ test('Flow property entry retains local field prompts for the SDK union-path gap
     issues.some((issue) =>
       ['meanValue', 'referenceToFlowPropertyDataSet'].includes(issue.path.at(-1)),
     ),
+    false,
+  );
+});
+
+test('the installed SDK retains repeated ILCD fields and validates later items', () => {
+  const schemas = require(
+    require.resolve('@tiangong-lca/tidas-sdk/schemas', { paths: [repositoryRoot] }),
+  );
+  const parameters =
+    schemas.ProcessSchema.shape.processDataSet.shape.processInformation.shape.mathematicalRelations.unwrap()
+      .shape.variableParameter;
+  const values = [
+    { '@name': 'a', meanValue: '0' },
+    { '@name': 'b', formula: 'a + 2' },
+  ];
+  assert.deepEqual(parameters.parse(values), values);
+  assert.deepEqual(parameters.parse(values[0]), values[0]);
+  assert.equal(parameters.safeParse([]).success, false);
+  assert.equal(parameters.safeParse([values[0], { meanValue: '2' }]).success, false);
+  const locations =
+    schemas.FlowSchema.shape.flowDataSet.shape.flowInformation.shape.geography.unwrap().shape
+      .locationOfSupply;
+  assert.deepEqual(locations.parse(['DE', 'CN']), ['DE', 'CN']);
+  const classifications =
+    schemas.ContactSchema.shape.contactDataSet.shape.contactInformation.shape.dataSetInformation
+      .shape.classificationInformation.shape['common:classification'];
+  const systems = ['A', 'B'].map((name) => ({
+    '@name': name,
+    '@classes': `https://example.org/${name}`,
+    'common:class': [{ '@level': '0', '@classId': name, '#text': name }],
+  }));
+  assert.deepEqual(classifications.parse(systems), systems);
+  assert.equal(classifications.safeParse([]).success, false);
+});
+
+test('the installed SDK preserves scaling aliases separately and rejects ambiguous values', () => {
+  const schemas = require(
+    require.resolve('@tiangong-lca/tidas-sdk/schemas', { paths: [repositoryRoot] }),
+  );
+  const instances =
+    schemas.LifeCycleModelSchema.shape.lifeCycleModelDataSet.shape.lifeCycleModelInformation.shape
+      .technology.shape.processes.shape.processInstance;
+  const instance = {
+    '@dataSetInternalID': '0',
+    '@multiplicationFactor': '1',
+    referenceToProcess: {
+      '@type': 'process data set',
+      '@refObjectId': '11111111-1111-1111-1111-111111111111',
+      '@version': '01.00.000',
+      '@uri': '../processes/process.xml',
+      'common:shortDescription': { '@xml:lang': 'en', '#text': 'Example process' },
+    },
+    parameters: { parameter: { '@name': 'p', '#text': '1.5' } },
+  };
+  assert.equal(instances.safeParse({ ...instance, scalingFactor: '0' }).success, true);
+  assert.equal(instances.safeParse({ ...instance, scalingFactors: '0' }).success, true);
+  assert.equal(
+    instances.safeParse({ ...instance, scalingFactor: '0', scalingFactors: '0' }).success,
+    false,
+  );
+  assert.equal(
+    instances.safeParse({ ...instance, parameters: { parameter: { '#text': '1.5' } } }).success,
     false,
   );
 });

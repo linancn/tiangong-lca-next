@@ -1,3 +1,4 @@
+import { AtlasLoginIntroduction } from '@/components/BrandPresentation';
 import { login, signUp } from '@/services/auth';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
 import { AntdThemeSync } from '@/contexts/AntdThemeSync';
@@ -17,10 +18,12 @@ import { Footer } from '@/components';
 import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { resolveSafeLoginRedirect } from '@/services/general/publicRoutePolicy';
+import { readBrowserStorage, writeBrowserStorage } from '@/services/general/browserStorage';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
 import { getBrandTheme } from '../../../../config/branding';
+import { brandProfile } from '../../../../config/brandProfile';
 import {
   defaultAppTitle,
   defaultLoginSubtitle,
@@ -85,7 +88,7 @@ const Login: React.FC = () => {
   const formRefLogin = React.useRef<any>(undefined);
   const { token } = theme.useToken();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(
-    () => localStorage.getItem('isDarkMode') === 'true',
+    () => readBrowserStorage('isDarkMode') === 'true',
   );
 
   const fetchUserInfo = async () => {
@@ -166,7 +169,7 @@ const Login: React.FC = () => {
   const handleDarkModeToggle = () => {
     setIsDarkMode((prevIsDarkMode) => {
       const nextIsDarkMode = !prevIsDarkMode;
-      localStorage.setItem('isDarkMode', nextIsDarkMode.toString());
+      writeBrowserStorage('isDarkMode', nextIsDarkMode.toString());
 
       setInitialState?.((prevState: any) => {
         if (!prevState) {
@@ -186,6 +189,7 @@ const Login: React.FC = () => {
     });
   };
 
+  const splitLogin = brandProfile.presentation?.login === 'split';
   const { status, type: loginType, errorCode } = userLoginState;
   const brandTheme = getBrandTheme(isDarkMode);
   const appTitle =
@@ -211,7 +215,7 @@ const Login: React.FC = () => {
   });
   const termsOfServiceLink = (
     <TypographyLink
-      href='/terms_of_use.html'
+      href={brandProfile.links.terms}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
@@ -222,7 +226,7 @@ const Login: React.FC = () => {
   );
   const privacyPolicyLink = (
     <TypographyLink
-      href='/privacy_notice.html'
+      href={brandProfile.links.privacy}
       hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
@@ -237,6 +241,7 @@ const Login: React.FC = () => {
       <AntdThemeSync colorPrimary={brandTheme.colorPrimary} isDarkMode={isDarkMode} />
       <ProConfigProvider hashed={false}>
         <ProLayout
+          className={splitLogin ? 'atlas-auth-shell' : undefined}
           menuRender={false}
           menuHeaderRender={false}
           headerRender={false}
@@ -254,335 +259,346 @@ const Login: React.FC = () => {
           </Helmet>
           <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
           <div
-            style={{
-              marginTop: '80px',
-            }}
+            className={splitLogin ? 'atlas-login' : undefined}
+            style={splitLogin ? undefined : { marginTop: '80px' }}
           >
-            <LoginForm
-              {...responsiveLoginFormProps}
-              formRef={formRefLogin}
-              logo={brandTheme.logo}
-              title={appTitle}
-              subTitle={loginSubtitle}
-              initialValues={{ autoLogin: true }}
-              onFinish={async (values) => {
-                if (type === 'login') {
-                  await handleSubmit(values as Auth.LoginParams);
+            {splitLogin && <AtlasLoginIntroduction logo={brandTheme.logo} />}
+            <div className={splitLogin ? 'atlas-login-form' : undefined}>
+              <LoginForm
+                {...responsiveLoginFormProps}
+                {...(splitLogin
+                  ? { contentStyle: { maxWidth: 380, minWidth: 0, width: '100%' } }
+                  : {})}
+                formRef={formRefLogin}
+                logo={splitLogin ? undefined : brandTheme.logo}
+                title={splitLogin ? intl.formatMessage({ id: 'menu.login' }) : appTitle}
+                subTitle={loginSubtitle}
+                initialValues={{ autoLogin: true }}
+                onFinish={async (values) => {
+                  if (type === 'login') {
+                    await handleSubmit(values as Auth.LoginParams);
+                  }
+                }}
+                submitter={
+                  type === 'login'
+                    ? {
+                        submitButtonProps: {
+                          loading: loading,
+                          'data-testid': 'docs-capture-login-submit',
+                        },
+                      }
+                    : false
                 }
-              }}
-              submitter={
-                type === 'login'
-                  ? {
-                      submitButtonProps: {
-                        loading: loading,
-                        'data-testid': 'docs-capture-login-submit',
-                      },
-                    }
-                  : false
-              }
-            >
-              <Tabs
-                activeKey={type}
-                onChange={setType}
-                centered
-                items={[
-                  {
-                    key: 'login',
-                    label: intl.formatMessage({
-                      id: 'pages.login.login.tab',
-                      defaultMessage: 'Login',
-                    }),
-                  },
-                  {
-                    key: 'register',
-                    label: intl.formatMessage({
-                      id: 'pages.login.register.tab',
-                      defaultMessage: 'Sign Up',
-                    }),
-                  },
-                ]}
-              />
-              {status === 'error' && loginType === 'login' && (
-                <LoginMessage
-                  content={getPasswordLoginErrorMessage(errorCode, intl.formatMessage)}
+              >
+                <Tabs
+                  activeKey={type}
+                  onChange={setType}
+                  centered
+                  items={[
+                    {
+                      key: 'login',
+                      label: intl.formatMessage({
+                        id: 'pages.login.login.tab',
+                        defaultMessage: 'Login',
+                      }),
+                    },
+                    {
+                      key: 'register',
+                      label: intl.formatMessage({
+                        id: 'pages.login.register.tab',
+                        defaultMessage: 'Sign Up',
+                      }),
+                    },
+                  ]}
                 />
-              )}
-              {status === 'error' && loginType === 'register' && (
-                <LoginMessage
-                  content={intl.formatMessage({
-                    id: 'pages.login.signUp.errorMessage',
-                    defaultMessage: 'Validation email failed to send.',
-                  })}
-                />
-              )}
-              {type === 'login' && (
-                <>
-                  <ProFormText
-                    name='email'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <MailOutlined />,
-                      'data-testid': 'docs-capture-login-email',
-                    }}
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.email.placeholder',
-                      defaultMessage: 'Email',
-                    })}
-                    rules={[
-                      {
-                        type: 'email',
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.wrong-format'
-                            defaultMessage='The email format is incorrect!'
-                          />
-                        ),
-                      },
-                      {
-                        required: true,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.required'
-                            defaultMessage='Please input your email!'
-                          />
-                        ),
-                      },
-                    ]}
+                {status === 'error' && loginType === 'login' && (
+                  <LoginMessage
+                    content={getPasswordLoginErrorMessage(errorCode, intl.formatMessage)}
                   />
-                  <ProFormText.Password
-                    name='password'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <LockOutlined />,
-                      'data-testid': 'docs-capture-login-password',
-                    }}
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.password.placeholder',
-                      defaultMessage: 'Password',
+                )}
+                {status === 'error' && loginType === 'register' && (
+                  <LoginMessage
+                    content={intl.formatMessage({
+                      id: 'pages.login.signUp.errorMessage',
+                      defaultMessage: 'Validation email failed to send.',
                     })}
-                    rules={[
-                      {
-                        required: true,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.password.required'
-                            defaultMessage='Please input your password!'
-                          />
-                        ),
-                      },
-                    ]}
                   />
-                  <div
-                    style={{
-                      marginBottom: 24,
-                    }}
-                  >
-                    <ProFormCheckbox noStyle name='autoLogin'>
-                      <FormattedMessage id='pages.login.rememberMe' defaultMessage='Remember me' />
-                    </ProFormCheckbox>
-                    <Link
-                      style={{
-                        float: 'right',
+                )}
+                {type === 'login' && (
+                  <>
+                    <ProFormText
+                      name='email'
+                      fieldProps={{
+                        size: 'middle',
+                        prefix: <MailOutlined />,
+                        'data-testid': 'docs-capture-login-email',
                       }}
-                      to='/user/login/password_forgot'
-                    >
-                      <FormattedMessage
-                        id='pages.login.forgotPassword'
-                        defaultMessage='Forgot password?'
-                      />
-                    </Link>
-                  </div>
-                </>
-              )}
-              {type === 'register' && (
-                <>
-                  <ProFormText
-                    name='email'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <MailOutlined />,
-                    }}
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.email.placeholder',
-                      defaultMessage: 'Email',
-                    })}
-                    rules={[
-                      {
-                        type: 'email',
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.wrong-format'
-                            defaultMessage='The email format is incorrect!'
-                          />
-                        ),
-                      },
-                      {
-                        required: true,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.email.required'
-                            defaultMessage='Please input your email!'
-                          />
-                        ),
-                      },
-                    ]}
-                  />
-                  <ProFormText.Password
-                    name='password'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <LockOutlined />,
-                      strengthText: (
-                        <FormattedMessage
-                          id='pages.login.password.strengthText'
-                          defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
-                        />
-                      ),
-                      statusRender: (value) => {
-                        const getStatus = () => {
-                          if (value && value.length > 12) {
-                            return 'ok';
-                          }
-                          if (value && value.length > 8) {
-                            return 'pass';
-                          }
-                          return 'poor';
-                        };
-                        const pwdStatus = getStatus();
-                        if (pwdStatus === 'pass') {
-                          return (
-                            <div style={{ color: token.colorWarning }}>
-                              <FormattedMessage
-                                id='pages.login.password.strengthMedium'
-                                defaultMessage='Strength: Medium'
-                              />
-                            </div>
-                          );
-                        }
-                        if (pwdStatus === 'ok') {
-                          return (
-                            <div style={{ color: token.colorSuccess }}>
-                              <FormattedMessage
-                                id='pages.login.password.strengthStrong'
-                                defaultMessage='Strength: Strong'
-                              />
-                            </div>
-                          );
-                        }
-                        return (
-                          <div style={{ color: token.colorError }}>
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.email.placeholder',
+                        defaultMessage: 'Email',
+                      })}
+                      rules={[
+                        {
+                          type: 'email',
+                          message: (
                             <FormattedMessage
-                              id='pages.login.password.strengthWeak'
-                              defaultMessage='Strength: Weak'
+                              id='pages.login.email.wrong-format'
+                              defaultMessage='The email format is incorrect!'
                             />
-                          </div>
-                        );
-                      },
-                    }}
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.password.placeholder',
-                      defaultMessage: 'Password',
-                    })}
-                    rules={[
-                      {
-                        required: true,
-                        message: (
+                          ),
+                        },
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.email.required'
+                              defaultMessage='Please input your email!'
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                    <ProFormText.Password
+                      name='password'
+                      fieldProps={{
+                        size: 'middle',
+                        prefix: <LockOutlined />,
+                        'data-testid': 'docs-capture-login-password',
+                      }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.password.placeholder',
+                        defaultMessage: 'Password',
+                      })}
+                      rules={[
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.password.required'
+                              defaultMessage='Please input your password!'
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                    <div
+                      style={{
+                        marginBottom: 24,
+                      }}
+                    >
+                      <ProFormCheckbox noStyle name='autoLogin'>
+                        <FormattedMessage
+                          id='pages.login.rememberMe'
+                          defaultMessage='Remember me'
+                        />
+                      </ProFormCheckbox>
+                      <Link
+                        style={{
+                          float: 'right',
+                        }}
+                        to='/user/login/password_forgot'
+                      >
+                        <FormattedMessage
+                          id='pages.login.forgotPassword'
+                          defaultMessage='Forgot password?'
+                        />
+                      </Link>
+                    </div>
+                  </>
+                )}
+                {type === 'register' && (
+                  <>
+                    <ProFormText
+                      name='email'
+                      fieldProps={{
+                        size: 'middle',
+                        prefix: <MailOutlined />,
+                      }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.email.placeholder',
+                        defaultMessage: 'Email',
+                      })}
+                      rules={[
+                        {
+                          type: 'email',
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.email.wrong-format'
+                              defaultMessage='The email format is incorrect!'
+                            />
+                          ),
+                        },
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.email.required'
+                              defaultMessage='Please input your email!'
+                            />
+                          ),
+                        },
+                      ]}
+                    />
+                    <ProFormText.Password
+                      name='password'
+                      fieldProps={{
+                        size: 'middle',
+                        prefix: <LockOutlined />,
+                        strengthText: (
                           <FormattedMessage
-                            id='pages.login.password.required'
-                            defaultMessage='Please input your password!'
+                            id='pages.login.password.strengthText'
+                            defaultMessage='Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.'
                           />
                         ),
-                      },
-                      {
-                        pattern:
-                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.password.validation'
-                            defaultMessage='Password is invalid!'
-                          />
-                        ),
-                      },
-                    ]}
-                    hasFeedback
-                  />
-                  <ProFormText.Password
-                    name='confirmPassword'
-                    fieldProps={{
-                      size: 'middle',
-                      prefix: <LockOutlined />,
-                    }}
-                    dependencies={['password']}
-                    hasFeedback
-                    placeholder={intl.formatMessage({
-                      id: 'pages.login.confirmPassword.placeholder',
-                      defaultMessage: 'Confirm Password',
-                    })}
-                    rules={[
-                      {
-                        required: true,
-                        message: (
-                          <FormattedMessage
-                            id='pages.login.confirmPassword.required'
-                            defaultMessage='Please confirm your password!'
-                          />
-                        ),
-                      },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('password') === value) {
-                            return Promise.resolve();
+                        statusRender: (value) => {
+                          const getStatus = () => {
+                            if (value && value.length > 12) {
+                              return 'ok';
+                            }
+                            if (value && value.length > 8) {
+                              return 'pass';
+                            }
+                            return 'poor';
+                          };
+                          const pwdStatus = getStatus();
+                          if (pwdStatus === 'pass') {
+                            return (
+                              <div style={{ color: token.colorWarning }}>
+                                <FormattedMessage
+                                  id='pages.login.password.strengthMedium'
+                                  defaultMessage='Strength: Medium'
+                                />
+                              </div>
+                            );
                           }
-                          return Promise.reject(
-                            new Error(
-                              intl.formatMessage({
-                                id: 'pages.login.password.confirm.error',
-                                defaultMessage: 'The two passwords do not match!',
-                              }),
-                            ),
+                          if (pwdStatus === 'ok') {
+                            return (
+                              <div style={{ color: token.colorSuccess }}>
+                                <FormattedMessage
+                                  id='pages.login.password.strengthStrong'
+                                  defaultMessage='Strength: Strong'
+                                />
+                              </div>
+                            );
+                          }
+                          return (
+                            <div style={{ color: token.colorError }}>
+                              <FormattedMessage
+                                id='pages.login.password.strengthWeak'
+                                defaultMessage='Strength: Weak'
+                              />
+                            </div>
                           );
                         },
-                      }),
-                    ]}
-                  />
-                  <div
-                    style={{
-                      marginBottom: 24,
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <FormattedMessage
-                      id='pages.login.terms'
-                      defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}'
-                      values={{
-                        termsOfService: termsOfServiceLink,
-                        privacyPolicy: privacyPolicyLink,
                       }}
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.password.placeholder',
+                        defaultMessage: 'Password',
+                      })}
+                      rules={[
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.password.required'
+                              defaultMessage='Please input your password!'
+                            />
+                          ),
+                        },
+                        {
+                          pattern:
+                            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{8,}$/,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.password.validation'
+                              defaultMessage='Password is invalid!'
+                            />
+                          ),
+                        },
+                      ]}
+                      hasFeedback
                     />
-                  </div>
-                  <div
-                    style={{
-                      marginBottom: 24,
-                    }}
-                  >
-                    <Button
-                      block
-                      type='primary'
-                      size='large'
-                      loading={loading}
-                      disabled={sendComplete}
-                      onClick={async () => {
-                        const values = await formRefLogin.current?.validateFields();
-                        await handleSubmit(values);
+                    <ProFormText.Password
+                      name='confirmPassword'
+                      fieldProps={{
+                        size: 'middle',
+                        prefix: <LockOutlined />,
+                      }}
+                      dependencies={['password']}
+                      hasFeedback
+                      placeholder={intl.formatMessage({
+                        id: 'pages.login.confirmPassword.placeholder',
+                        defaultMessage: 'Confirm Password',
+                      })}
+                      rules={[
+                        {
+                          required: true,
+                          message: (
+                            <FormattedMessage
+                              id='pages.login.confirmPassword.required'
+                              defaultMessage='Please confirm your password!'
+                            />
+                          ),
+                        },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('password') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(
+                              new Error(
+                                intl.formatMessage({
+                                  id: 'pages.login.password.confirm.error',
+                                  defaultMessage: 'The two passwords do not match!',
+                                }),
+                              ),
+                            );
+                          },
+                        }),
+                      ]}
+                    />
+                    <div
+                      style={{
+                        marginBottom: 24,
+                        justifyContent: 'center',
+                        textAlign: 'center',
                       }}
                     >
-                      <FormattedMessage id='pages.login.register.submit' defaultMessage='Sign Up' />
-                    </Button>
-                  </div>
-                </>
-              )}
-            </LoginForm>
+                      <FormattedMessage
+                        id='pages.login.terms'
+                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}'
+                        values={{
+                          termsOfService: termsOfServiceLink,
+                          privacyPolicy: privacyPolicyLink,
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        marginBottom: 24,
+                      }}
+                    >
+                      <Button
+                        block
+                        type='primary'
+                        size='large'
+                        loading={loading}
+                        disabled={sendComplete}
+                        onClick={async () => {
+                          const values = await formRefLogin.current?.validateFields();
+                          await handleSubmit(values);
+                        }}
+                      >
+                        <FormattedMessage
+                          id='pages.login.register.submit'
+                          defaultMessage='Sign Up'
+                        />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </LoginForm>
+            </div>
           </div>
           <Footer />
         </ProLayout>

@@ -1,3 +1,4 @@
+import { firstTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import FileGallery from '@/components/FileViewer/gallery';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
@@ -57,10 +58,12 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang, tooltipTitle }) 
     setActiveTabKey(key as SourceDataSetObjectKeys);
   };
 
-  const classificationValues = getClassificationValues(
+  const systems =
     initData.sourceInformation?.dataSetInformation?.classificationInformation?.[
       'common:classification'
-    ]?.['common:class'],
+    ];
+  const classificationValues = getClassificationValues(
+    firstTidasRepeated(systems)?.['common:class'],
   );
 
   const contentList: Record<SourceDataSetObjectKeys, React.ReactNode> = {
@@ -96,7 +99,16 @@ const SourceView: FC<Props> = ({ id, version, buttonType, lang, tooltipTitle }) 
           data={initData.sourceInformation?.dataSetInformation?.['common:shortName']}
         />
         <br />
-        <LevelTextItemDescription data={classificationValues} lang={lang} categoryType={'Source'} />
+        <LevelTextItemDescription
+          systems={
+            initData?.sourceInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
+          data={classificationValues}
+          lang={lang}
+          categoryType={'Source'}
+        />
         <br />
         <Descriptions
           bordered

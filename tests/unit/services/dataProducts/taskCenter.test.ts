@@ -18,12 +18,15 @@ import {
   listClosureCheckIssues,
 } from '@/services/dataProducts/closure';
 import {
+  bindDataProductTaskCenterOwner,
   decodeDataProductTaskSummary,
+  getDataProductTaskGeneration,
+  getDataProductTaskOwnerId,
   listDataProductTaskFeed,
   listDataProductTasks,
   refreshDataProductTasks,
   subscribeDataProductTasks,
-  upsertDataProductTasks,
+  upsertDataProductTasks as upsertOwnedDataProductTasks,
 } from '@/services/dataProducts/taskCenter';
 import {
   clearTaskSummaries,
@@ -33,12 +36,130 @@ import {
   upsertTaskSummaries,
 } from '@/services/taskCenter/workerJobStore';
 
+const upsertDataProductTasks = (rows: unknown[]) =>
+  upsertOwnedDataProductTasks(rows, getDataProductTaskGeneration());
+
 const databaseArtifactContract = require('../../../fixtures/contracts/20260729_scope_closure_public_artifact_contract.json');
 
 describe('Data Product TaskSummaryV2 safe projection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     clearTaskSummaries();
+    bindDataProductTaskCenterOwner('owner-a');
+  });
+
+  it('shares pending feed reads and discards a feed from the previous owner', async () => {
+    const taskCenter = require('@/services/dataProducts/taskCenter');
+    taskCenter.bindDataProductTaskCenterOwner?.('owner-a');
+    let resolve: (value: unknown) => void = () => undefined;
+    const pending = new Promise((done) => {
+      resolve = done;
+    });
+    (invokeDataProductCommand as jest.Mock).mockReturnValue(pending);
+    const first = refreshDataProductTasks();
+    const second = refreshDataProductTasks();
+    const readCount = (invokeDataProductCommand as jest.Mock).mock.calls.length;
+    taskCenter.bindDataProductTaskCenterOwner?.('owner-b');
+    resolve({
+      data: {
+        items: [
+          {
+            schemaVersion: 'task-summary.v2',
+            jobId: 'owner-a-job',
+            jobKind: 'lcia.scope_closure_check',
+            category: 'data_product',
+            workerStatus: 'running',
+            projectionUpdatedAt: '2026-10-04T00:00:00Z',
+          },
+        ],
+      },
+      error: null,
+    });
+    await Promise.all([first, second]);
+    expect(readCount).toBe(1);
+    expect(listDataProductTasks()).toEqual([]);
+  });
+
+  it('rejects late owner feeds and clears cached summaries on logout', async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    const pending = new Promise((resolve) => {
+      finish = resolve;
+    });
+    (invokeDataProductCommand as jest.Mock).mockReturnValueOnce(pending);
+    const first = refreshDataProductTasks();
+    bindDataProductTaskCenterOwner('owner-b');
+    finish({
+      data: {
+        items: [
+          {
+            schemaVersion: 'task-summary.v2',
+            jobId: 'owner-a-job',
+            jobKind: 'lcia.scope_closure_check',
+            category: 'data_product',
+            workerStatus: 'running',
+            projectionUpdatedAt: '2026-10-04T00:00:00Z',
+          },
+        ],
+      },
+      error: null,
+    });
+    await first;
+    expect(listDataProductTasks()).toEqual([]);
+    bindDataProductTaskCenterOwner(null);
+    (invokeDataProductCommand as jest.Mock).mockClear();
+    await refreshDataProductTasks();
+    expect(invokeDataProductCommand).not.toHaveBeenCalled();
+  });
+
+  it('lets a new owner refresh while old requests settle and treats blank owner ids as logout', async () => {
+    let resolveOld: (value: unknown) => void = () => undefined;
+    let resolveNew: (value: unknown) => void = () => undefined;
+    const oldPending = new Promise((resolve) => {
+      resolveOld = resolve;
+    });
+    const newPending = new Promise((resolve) => {
+      resolveNew = resolve;
+    });
+    (invokeDataProductCommand as jest.Mock)
+      .mockReturnValueOnce(oldPending)
+      .mockReturnValueOnce(newPending);
+    const oldRead = refreshDataProductTasks();
+    bindDataProductTaskCenterOwner('owner-b');
+    const newRead = refreshDataProductTasks();
+    resolveOld({ data: { items: [] }, error: null });
+    await oldRead;
+    const sharedRead = refreshDataProductTasks();
+    expect(invokeDataProductCommand).toHaveBeenCalledTimes(2);
+    resolveNew({ data: { items: [] }, error: null });
+    await Promise.all([newRead, sharedRead]);
+    bindDataProductTaskCenterOwner(' ');
+    await refreshDataProductTasks();
+    expect(invokeDataProductCommand).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects late optimistic submissions across logout and a return to the same account', () => {
+    const generation = getDataProductTaskGeneration();
+    expect(getDataProductTaskOwnerId()).toBe('owner-a');
+    bindDataProductTaskCenterOwner(null);
+    expect(getDataProductTaskOwnerId()).toBeNull();
+    expect(getDataProductTaskGeneration()).toBeNull();
+    bindDataProductTaskCenterOwner('owner-a');
+    upsertOwnedDataProductTasks(
+      [
+        {
+          schemaVersion: 'task-summary.v2',
+          jobId: 'old-submit',
+          jobKind: 'lcia_result.package_build',
+          category: 'data_product',
+          workerStatus: 'queued',
+          projectionUpdatedAt: '2026-10-04T00:00:00Z',
+        },
+      ],
+      generation,
+    );
+    expect(listDataProductTasks()).toEqual([]);
+    bindDataProductTaskCenterOwner(null);
+    upsertOwnedDataProductTasks([], null);
   });
 
   it('keeps worker status and certificate validity separate without accepting raw result fields', () => {
@@ -565,6 +686,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     unsubscribe();
 
     clearTaskSummaries();
+    bindDataProductTaskCenterOwner('owner-a');
     (invokeDataProductCommand as jest.Mock).mockResolvedValueOnce({
       data: { items: 'invalid' },
       error: null,
@@ -639,6 +761,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
 
     unsubscribe();
     clearTaskSummaries();
+    bindDataProductTaskCenterOwner('owner-a');
     expect(listener).toHaveBeenCalledTimes(2);
     expect(unregister()).toBe(true);
   });

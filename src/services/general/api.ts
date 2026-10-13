@@ -3,6 +3,12 @@ import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
+import {
+  assertTaskSession,
+  createTaskSessionClient,
+  TaskSessionChangedError,
+  type TaskSessionGuard,
+} from '@/services/taskCenter/sessionGuard';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
 import { FunctionRegion } from '@supabase/supabase-js';
 import type { SortOrder } from 'antd/es/table/interface';
@@ -25,7 +31,7 @@ import {
   TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from './contentLanguageRegistry';
 import { getRuntimeLocale } from './runtimeLocale';
-import { resolveTableSort } from './tableSort';
+import { resolveAllVersionsSort } from './tableSort';
 import { sortDataSetVersionRows } from './version';
 
 const NO_TEAM_MESSAGE_ID = 'teams.modal.noTeam.title';
@@ -407,18 +413,32 @@ export type ExportTidasPackageRequest = {
   roots?: TidasPackageRoot[];
 };
 
-async function invokeTidasPackageFunction<T>(name: string, body?: any) {
+type TidasTaskOptions = { taskSession?: TaskSessionGuard };
+
+async function getTidasTaskClient(taskSession?: TaskSessionGuard) {
+  if (taskSession && !taskSession.isCurrent()) throw new TaskSessionChangedError();
   const session = await supabase.auth.getSession();
-  if (!session.data.session) {
+  const token = session.data.session?.access_token ?? '';
+  if (taskSession) await assertTaskSession(token, taskSession);
+  return {
+    session: session.data.session,
+    token,
+    client: taskSession ? createTaskSessionClient(token, taskSession) : supabase,
+  };
+}
+
+async function invokeTidasPackageFunction<T>(name: string, body?: any, options?: TidasTaskOptions) {
+  const { session, token, client } = await getTidasTaskClient(options?.taskSession);
+  if (!session) {
     return {
       data: null,
       error: new Error('Unauthorized'),
     };
   }
 
-  const result = await supabase.functions.invoke<T>(name, {
+  const result = await client.functions.invoke<T>(name, {
     headers: {
-      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+      Authorization: `Bearer ${token}`,
     },
     body,
     region: FunctionRegion.UsEast1,
@@ -435,35 +455,42 @@ async function invokeTidasPackageFunction<T>(name: string, body?: any) {
   return result;
 }
 
-export async function queueExportTidasPackageApi(request: ExportTidasPackageRequest = {}) {
+export async function queueExportTidasPackageApi(
+  request: ExportTidasPackageRequest = {},
+  options?: TidasTaskOptions,
+) {
   return await invokeTidasPackageFunction<ExportTidasPackageQueueResponse>(
     'export_tidas_package',
     request,
+    options,
   );
 }
 
-export async function prepareImportTidasPackageUploadApi(file: {
-  filename: string;
-  byte_size: number;
-  content_type: string;
-}) {
+export async function prepareImportTidasPackageUploadApi(
+  file: { filename: string; byte_size: number; content_type: string },
+  options?: TidasTaskOptions,
+) {
   return await invokeTidasPackageFunction<PrepareImportTidasPackageResponse>(
     'import_tidas_package',
     {
       action: 'prepare_upload',
       ...file,
     },
+    options,
   );
 }
 
-export async function enqueueImportTidasPackageApi(request: {
-  job_id: string;
-  source_artifact_id: string;
-  artifact_sha256: string | null;
-  artifact_byte_size: number;
-  filename: string;
-  content_type: string;
-}) {
+export async function enqueueImportTidasPackageApi(
+  request: {
+    job_id: string;
+    source_artifact_id: string;
+    artifact_sha256: string | null;
+    artifact_byte_size: number;
+    filename: string;
+    content_type: string;
+  },
+  options?: TidasTaskOptions,
+) {
   return await invokeTidasPackageFunction<EnqueueImportTidasPackageResponse>(
     'import_tidas_package',
     {
@@ -471,6 +498,7 @@ export async function enqueueImportTidasPackageApi(request: {
       ...request,
       import_policy: 'root_closure_v2',
     },
+    options,
   );
 }
 
@@ -617,8 +645,10 @@ async function computeSha256Hex(file: Blob): Promise<string | null> {
 async function uploadTidasPackageToSignedUrl(
   upload: PrepareImportTidasPackageResponse['upload'],
   file: File,
+  taskSession?: TaskSessionGuard,
 ) {
-  const result = await supabase.storage
+  const client = taskSession ? (await getTidasTaskClient(taskSession)).client : supabase;
+  const result = await client.storage
     .from(upload.bucket)
     .uploadToSignedUrl(upload.path, upload.token, file, {
       cacheControl: '3600',
@@ -739,13 +769,12 @@ export async function downloadReadyTidasPackageExportApi(
   }
 }
 
-export async function queueImportTidasPackageApi(file: File) {
+export async function queueImportTidasPackageApi(file: File, options?: TidasTaskOptions) {
   const contentType = file.type || 'application/zip';
-  const prepared = await prepareImportTidasPackageUploadApi({
-    filename: file.name,
-    byte_size: file.size,
-    content_type: contentType,
-  });
+  const prepared = await prepareImportTidasPackageUploadApi(
+    { filename: file.name, byte_size: file.size, content_type: contentType },
+    options,
+  );
 
   if (prepared.error || !prepared.data?.ok) {
     return {
@@ -757,16 +786,19 @@ export async function queueImportTidasPackageApi(file: File) {
   try {
     const artifactSha256 = await computeSha256Hex(file);
     if (!artifactSha256) throw new Error('Import requires a verified SHA-256 checksum');
-    await uploadTidasPackageToSignedUrl(prepared.data.upload, file);
+    await uploadTidasPackageToSignedUrl(prepared.data.upload, file, options?.taskSession);
 
-    const queued = await enqueueImportTidasPackageApi({
-      job_id: prepared.data.job_id,
-      source_artifact_id: prepared.data.source_artifact_id,
-      artifact_sha256: artifactSha256,
-      artifact_byte_size: file.size,
-      filename: file.name,
-      content_type: contentType,
-    });
+    const queued = await enqueueImportTidasPackageApi(
+      {
+        job_id: prepared.data.job_id,
+        source_artifact_id: prepared.data.source_artifact_id,
+        artifact_sha256: artifactSha256,
+        artifact_byte_size: file.size,
+        filename: file.name,
+        content_type: contentType,
+      },
+      options,
+    );
 
     if (queued.error || !queued.data?.ok) {
       throw queued.error ?? new Error((queued.data as any)?.message ?? 'Import failed');
@@ -1264,7 +1296,7 @@ export async function getAllVersions(
   dataSource: string,
   stateCode?: number,
 ) {
-  const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'version');
+  const { field: sortBy, order: orderBy } = resolveAllVersionsSort(sort);
 
   let query = publicEntity(tableName)
     .select(

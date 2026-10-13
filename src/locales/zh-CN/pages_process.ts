@@ -25,7 +25,7 @@ export default {
   'pages.process.list.loadError': '加载过程列表失败。',
   'pages.process.published.title': '已发布过程',
   'pages.process.published.table.processName': '过程名称',
-  'pages.process.published.table.calculationResult': '计算结果',
+  'pages.process.published.table.calculationResult': '计算结果（{unit}）',
   'pages.process.referenceYear': '参考年份',
   'pages.process.location': '地理位置',
   'pages.process.lca.toolbar.tooltip': '运行 LCA',
@@ -538,6 +538,9 @@ export default {
   'pages.process.view.exchange.selectadirection': '请选择方向',
   'processExchange.dataDerivationTypeStatus': '数据推导类型/状态',
   'pages.process.view.modellingAndValidation.referenceToCompleteReviewReport': '完整审查报告',
+  'pages.process.reviewReport.download': '下载报告',
+  'pages.process.reviewReport.downloadFailed': '审查报告下载失败。',
+  'pages.process.reviewReport.noAttachments': '审查报告当前没有附件。',
   'pages.process.view.modellingAndValidation.validation.otherReviewDetails': '其他审查详情',
 
   'pages.process.modellingAndValidation.validation.review.scope': '审查范围',
@@ -921,4 +924,6 @@ export default {
   'pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source': '系统收到了互相冲突的方法覆盖证据。',
   'pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch': '方法级覆盖缺失，或与已审核来源不一致。',
   'pages.process.lca.evidence.reason.unknown': '该证据未通过校验。',
+  'pages.process.published.climate.error': '读取失败',
+  'pages.process.published.climate.missing': '当前发布包中没有此版本的结果',
 };

@@ -313,7 +313,7 @@ const ProcessExchangeEdit: FC<Props> = ({
     onReset();
   }, [drawerVisible]);
 
-  useEffect(() => {
+  const applySdkFieldMessages = useCallback(() => {
     const formInstance = formRefEdit.current;
     if (
       !drawerVisible ||
@@ -410,6 +410,8 @@ const ProcessExchangeEdit: FC<Props> = ({
     sdkFieldMessagesRef.current = appliedEntries;
   }, [drawerVisible, showRules, sdkFieldMessages]);
 
+  useEffect(applySdkFieldMessages, [applySdkFieldMessages]);
+
   return (
     <>
       <Tooltip title={<FormattedMessage id='pages.button.edit' defaultMessage='Edit' />}>
@@ -473,6 +475,11 @@ const ProcessExchangeEdit: FC<Props> = ({
         <ProForm
           formRef={formRefEdit}
           initialValues={initData}
+          onInit={() => {
+            // Drawer mounts its children lazily, after the opening effects may have run.
+            onReset();
+            applySdkFieldMessages();
+          }}
           onValuesChange={(_, allValues) => {
             setFromData(allValues ?? {});
             setFunctionalUnitOrOther(allValues?.quantitativeReference ?? false);

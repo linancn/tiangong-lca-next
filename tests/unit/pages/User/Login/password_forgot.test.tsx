@@ -71,6 +71,13 @@ jest.mock('@umijs/max', () => {
   };
 });
 
+// Password recovery owns form and auth behavior; the Umi locale-provider adapter is
+// exercised by its own bridge tests, rather than bootstrapping the real app here.
+jest.mock('@/services/general/browserLocaleBridge', () => ({
+  __esModule: true,
+  selectBrowserRuntimeLocale: jest.fn(),
+}));
+
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const LoginForm = ({ children, onFinish, submitter, initialValues, title, subTitle }: any) => (

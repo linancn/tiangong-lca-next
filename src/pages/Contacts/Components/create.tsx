@@ -73,7 +73,7 @@ const ContactCreate: FC<CreateProps> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefCreate.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -147,7 +147,7 @@ const ContactCreate: FC<CreateProps> = ({
     // const newId = v4();
     setInitData(newData as FormContact);
     // formRefCreate.current?.resetFields();
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData as FormContact);
   }, [drawerVisible]);
@@ -225,7 +225,8 @@ const ContactCreate: FC<CreateProps> = ({
           <ProForm<FormContact>
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
+            onValuesChange={() => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               setFromData({
                 ...fromData,
                 [activeTabKey]: allValues[activeTabKey] ?? {},
@@ -240,7 +241,7 @@ const ContactCreate: FC<CreateProps> = ({
               setSpinning(true);
               try {
                 const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
-                const formFieldsValue = formRefCreate.current?.getFieldsValue();
+                const formFieldsValue = formRefCreate.current?.getFieldsValue(true);
                 const result: SupabaseMutationResult<unknown> =
                   actionType === 'createVersion'
                     ? await createContactVersion(id ?? '', version ?? '', formFieldsValue)

@@ -95,7 +95,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     if (fromData?.id)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefCreate.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -178,7 +178,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
     };
 
     setInitData(newData as FormFlowProperty);
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData as FormFlowProperty);
   }, [drawerVisible]);
@@ -262,7 +262,8 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
+            onValuesChange={() => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               setFromData({
                 ...fromData,
                 [activeTabKey]: allValues[activeTabKey] ?? {},
@@ -277,7 +278,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               setSpinning(true);
               try {
                 const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
-                const formFieldsValue = formRefCreate.current?.getFieldsValue();
+                const formFieldsValue = formRefCreate.current?.getFieldsValue(true);
                 const result: SupabaseMutationResult<unknown> =
                   actionType === 'createVersion'
                     ? await createFlowpropertiesVersion(id ?? '', version ?? '', formFieldsValue)

@@ -356,6 +356,13 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang, tooltipTitle }) =
           />
           <br />
           <LevelTextItemDescription
+            systems={
+              initData?.flowInformation?.dataSetInformation?.classificationInformation?.[
+                initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
+                  ? 'common:elementaryFlowCategorization'
+                  : 'common:classification'
+              ]
+            }
             data={
               initData?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow'
                 ? initData?.flowInformation?.dataSetInformation?.classificationInformation?.[

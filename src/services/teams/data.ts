@@ -6,6 +6,8 @@ export type TeamMemberTable = {
   role: string;
   display_name?: string;
   email: string;
+  pendingCount?: number;
+  reviewedCount?: number;
 };
 
 export type TeamJson = {

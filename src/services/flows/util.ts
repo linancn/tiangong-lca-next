@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '../general/tidasRepeatedFields';
 import { FormFlow } from '@/services/flows/data';
 import { createFlow as createTidasFlow } from '@tiangong-lca/tidas-sdk/core';
 import type { Flow } from '@tiangong-lca/tidas-sdk/types';
@@ -70,23 +71,29 @@ export function genFlowJsonOrdered(id: string, data: any) {
   let classificationInformation = {};
   if (data?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
     classificationInformation = {
-      'common:elementaryFlowCategorization': {
-        'common:category': classificationToJsonList(
-          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-            'common:elementaryFlowCategorization'
-          ]?.['common:category'],
-        ),
-      },
+      'common:elementaryFlowCategorization': mapTidasRepeated(
+        data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+          'common:elementaryFlowCategorization'
+        ],
+        (item) => ({
+          ...item,
+          'common:category': classificationToJsonList(item?.['common:category'], true),
+        }),
+      ),
     };
   } else {
     classificationInformation = {
-      'common:classification': {
-        'common:class': classificationToJsonList(
-          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
-          ]?.['common:class'],
-        ),
-      },
+      'common:classification': mapTidasRepeated(
+        data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+          'common:classification'
+        ],
+        (item) => ({
+          ...item,
+          'common:class': item?.['@name']
+            ? item?.['common:class']
+            : classificationToJsonList(item?.['common:class']),
+        }),
+      ),
     };
   }
 
@@ -327,23 +334,29 @@ export function genFlowFromData(data: any): FormFlow {
     {};
   if (data?.modellingAndValidation?.LCIMethod?.typeOfDataSet === 'Elementary flow') {
     classificationInformation = {
-      'common:elementaryFlowCategorization': {
-        'common:category': classificationToStringList(
-          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-            'common:elementaryFlowCategorization'
-          ]?.['common:category'],
-        ),
-      },
+      'common:elementaryFlowCategorization': mapTidasRepeated(
+        data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+          'common:elementaryFlowCategorization'
+        ],
+        (item) => ({
+          ...item,
+          'common:category': classificationToStringList(item?.['common:category'], true),
+        }),
+      ),
     };
   } else {
     classificationInformation = {
-      'common:classification': {
-        'common:class': classificationToStringList(
-          data?.flowInformation?.dataSetInformation?.classificationInformation?.[
-            'common:classification'
-          ]?.['common:class'],
-        ),
-      },
+      'common:classification': mapTidasRepeated(
+        data?.flowInformation?.dataSetInformation?.classificationInformation?.[
+          'common:classification'
+        ],
+        (item) => ({
+          ...item,
+          'common:class': item?.['@name']
+            ? item?.['common:class']
+            : classificationToStringList(item?.['common:class']),
+        }),
+      ),
     };
   }
 

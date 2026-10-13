@@ -1,6 +1,6 @@
 import { signInViaUi } from './auth';
 import { routeToCandidateUrl, selectAppLocaleThroughUi } from './contracts';
-import { expect, test } from './fixtures';
+import { expect, test, type Locator } from './fixtures';
 import { makeMinimalProcessJson, readProductionDataLedger } from './production-data-ledger';
 
 // This fixture is exclusively in-memory on the reserved qualification origin.
@@ -130,6 +130,33 @@ test('Process allocation survives deletion, batch editing and save/reopen', asyn
   );
   await signInViaUi(page);
   await selectAppLocaleThroughUi(page, 'en-US');
+  const waitForDialogReady = async (dialog: Locator) => {
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(() =>
+        dialog.evaluate(async (node) => {
+          // Motion prepares its classes before registering the opening animation.
+          // Sample after rendered frames, then require both preparations and finite motion to end.
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          });
+          const preparingOrMoving = Array.from(node.classList).some((name) =>
+            /-(?:appear|enter|leave)(?:-|$)/.test(name),
+          );
+          return (
+            !preparingOrMoving &&
+            node.getAnimations().every((animation) => {
+              const endTime = animation.effect?.getComputedTiming().endTime;
+              return (
+                !Number.isFinite(endTime) ||
+                (!animation.pending && animation.playState !== 'running')
+              );
+            })
+          );
+        }),
+      )
+      .toBe(true);
+  };
   const open = async () => {
     await page.goto(
       routeToCandidateUrl(
@@ -151,32 +178,47 @@ test('Process allocation survives deletion, batch editing and save/reopen', asyn
     return drawer;
   };
   let drawer = await open();
+  const deleteDialog = page.getByRole('dialog', {
+    name: 'Delete',
+    exact: true,
+    includeHidden: true,
+  });
   const disposable = drawer.getByRole('row').filter({ hasText: 'Disposable input' });
   await expect(disposable).toHaveCount(1);
   await disposable
     .getByRole('button')
     .filter({ has: page.locator('[aria-label="delete"]') })
     .click();
-  await page.getByRole('dialog').getByRole('button', { name: 'OK', exact: true }).click();
+  await waitForDialogReady(deleteDialog);
+  await deleteDialog.getByRole('button', { name: 'OK', exact: true }).click();
+  await expect(disposable).toHaveCount(0);
+  // The first confirmation must finish closing before the next one can own the OK action.
+  await expect(deleteDialog).toBeHidden();
   const product = drawer.getByRole('row').filter({ hasText: 'Product A' });
   await product
     .getByRole('button')
     .filter({ has: page.locator('[aria-label="delete"]') })
     .click();
-  await page.getByRole('dialog').getByRole('button', { name: 'OK', exact: true }).click();
+  await waitForDialogReady(deleteDialog);
+  await deleteDialog.getByRole('button', { name: 'OK', exact: true }).click();
   await expect(page.getByText(/This product is used by allocations/)).toContainText('Electricity');
-  await page
-    .getByRole('dialog', { name: 'Delete', exact: true })
-    .getByRole('button', { name: 'Cancel', exact: true })
-    .click();
+  await expect(product).toHaveCount(1);
+  await deleteDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(deleteDialog).toBeHidden();
   await drawer.getByRole('button', { name: 'Batch allocation', exact: true }).click();
-  const batch = page.getByRole('dialog', { name: 'Batch allocation', exact: true });
+  const batch = page.getByRole('dialog', {
+    name: 'Batch allocation',
+    exact: true,
+    includeHidden: true,
+  });
+  await waitForDialogReady(batch);
   await batch.getByRole('row').filter({ hasText: 'Raw material' }).getByRole('checkbox').check();
   await batch.getByRole('button', { name: 'Add product allocation', exact: true }).click();
   await batch.getByRole('combobox', { name: 'Target product' }).click();
   await page.getByText('Product B (#2)', { exact: true }).last().click();
   await batch.getByRole('spinbutton').fill('100');
   await batch.getByRole('button', { name: 'OK', exact: true }).click();
+  await expect(batch).toBeHidden();
   await drawer.getByRole('button', { name: 'Save', exact: true }).click();
   await expect.poll(() => writes.length).toBe(1);
   const saved = writes[0].jsonOrdered.processDataSet.exchanges.exchange;

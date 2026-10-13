@@ -1,3 +1,4 @@
+import { firstTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
@@ -55,10 +56,12 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType, tooltipTitle })
     setActiveTabKey(key as ContactDataSetObjectKeys);
   };
 
-  const classificationValues = getClassificationValues(
+  const systems =
     initData.contactInformation?.dataSetInformation?.classificationInformation?.[
       'common:classification'
-    ]?.['common:class'],
+    ];
+  const classificationValues = getClassificationValues(
+    firstTidasRepeated(systems)?.['common:class'],
   );
 
   const contactList: Record<ContactDataSetObjectKeys, React.ReactNode> = {
@@ -95,6 +98,11 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType, tooltipTitle })
         />
         <br />
         <LevelTextItemDescription
+          systems={
+            initData?.contactInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
           data={classificationValues}
           lang={lang}
           categoryType={'Contact'}

@@ -265,7 +265,7 @@ const ProcessEdit: FC<Props> = ({
       return undefined;
     }
 
-    const fieldsValue = formRefEdit.current?.getFieldsValue() ?? {};
+    const fieldsValue = formRefEdit.current?.getFieldsValue(true) ?? {};
     const currentData = {
       ...baseData,
       ...fieldsValue,
@@ -289,7 +289,7 @@ const ProcessEdit: FC<Props> = ({
           ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
         },
       };
-    } else {
+    } else if (activeTabKey !== 'exchanges') {
       currentData[activeTabKey] = fieldsValue?.[activeTabKey] ?? baseData?.[activeTabKey];
     }
 
@@ -337,7 +337,7 @@ const ProcessEdit: FC<Props> = ({
   };
   const handletFromData = async () => {
     if (fromData?.id) {
-      const fieldsValue = formRefEdit.current?.getFieldsValue();
+      const fieldsValue = formRefEdit.current?.getFieldsValue(true);
       if (activeTabKey === 'validation') {
         await setFromData({
           ...fromData,
@@ -1287,7 +1287,8 @@ const ProcessEdit: FC<Props> = ({
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
-              onValuesChange={async (changedValues, allValues) => {
+              onValuesChange={async (changedValues, changedFormValues) => {
+                const allValues = formRefEdit.current?.getFieldsValue(true) ?? changedFormValues;
                 dismissChangedSdkValidationFields(changedValues);
                 if (activeTabKey === 'validation') {
                   await setFromData({

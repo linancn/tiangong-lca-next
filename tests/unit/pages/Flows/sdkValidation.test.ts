@@ -63,6 +63,30 @@ describe('Flows sdkValidation', () => {
     });
   });
 
+  it('does not assign an unindexed array diagnostic to an arbitrary property row', () => {
+    const details = normalizeFlowSdkValidationDetails(
+      [
+        {
+          code: 'required_missing',
+          path: ['flowDataSet', 'flowProperties', 'flowProperty', 'meanValue'],
+        },
+      ],
+      {
+        flowDataSet: {
+          flowProperties: {
+            flowProperty: [{ '@dataSetInternalID': '7' }, { '@dataSetInternalID': '9' }],
+          },
+        },
+      },
+    );
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath: 'flowProperties.flowProperty.meanValue',
+        formName: ['flowProperties', 'flowProperty', 'meanValue'],
+      }),
+    ]);
+  });
+
   it('filters derived reference-flow-property sdk issues out of flow ui consumption', () => {
     const referenceFlowPropertyIssue = {
       code: 'required_missing',

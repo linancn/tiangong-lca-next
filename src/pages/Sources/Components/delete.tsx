@@ -3,6 +3,7 @@ import type { SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import type { SupabaseDeleteResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
+import { getManagedFileRemovalKeys } from '@/services/supabase/fileLocator';
 import { getThumbFileUrls, removeFile } from '@/services/supabase/storage';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
@@ -61,10 +62,12 @@ const SourceDelete: FC<Props> = ({
         dataSet.sourceInformation?.dataSetInformation?.referenceToDigitalFile,
       )) as UploadFile[];
 
-      if (initFile.length > 0) {
-        const { error } = await removeFile(
-          initFile.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
-        );
+      const removalKeys = getManagedFileRemovalKeys(
+        initFile.map((file) => file.uid),
+        supabaseStorageBucket,
+      );
+      if (removalKeys.length > 0) {
+        const { error } = await removeFile(removalKeys);
         if (error) {
           message.error(error.message);
           return;

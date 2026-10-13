@@ -1941,3 +1941,39 @@ describe('process sdk validation mapping', () => {
     );
   });
 });
+
+it.each([[{ '@name': 'Custom' }], { '@name': 'Custom' }])(
+  'preserves the exact named classification validation path',
+  (systems) => {
+    const path = [
+      'processDataSet',
+      'processInformation',
+      'dataSetInformation',
+      'classificationInformation',
+      'common:classification',
+      0,
+      'common:class',
+      0,
+      '#text',
+    ];
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing class label',
+          path,
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          processInformation: {
+            dataSetInformation: { classificationInformation: { 'common:classification': systems } },
+          },
+        },
+      },
+    );
+    expect(details[0].formName).toEqual(path.slice(1));
+  },
+);

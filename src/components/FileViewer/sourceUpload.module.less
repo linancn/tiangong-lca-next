@@ -1,0 +1,7 @@
+// Six classes outrank AntD's five-class picture-card rule without affecting other Uploads.
+// Include the footer in each wrapping row's height so mouse targets cannot overlap the next row.
+.sourceUpload.sourceUpload:global(.ant-upload-wrapper)
+  :global(.ant-upload-list.ant-upload-list-picture-card)
+  :global(.ant-upload-list-item-container) {
+  height: auto;
+}

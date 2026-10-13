@@ -5,6 +5,7 @@ import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
   data: any;
+  systems?: any;
   lang: string;
   categoryType: string;
   flowType?: string;
@@ -106,4 +107,53 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
   );
 };
 
-export default LevelTextItemDescription;
+const ClassificationSystemsDescription: FC<Props> = (props) => {
+  if (props.systems === undefined) return <LevelTextItemDescription {...props} />;
+  const systems = Array.isArray(props.systems) ? props.systems : [props.systems];
+  return (
+    <>
+      {systems.map((system: any, index: number) => {
+        const classes = system?.['common:class'] ?? system?.['common:category'];
+        if (!system?.['@name']) {
+          const values =
+            classes?.value ??
+            (Array.isArray(classes)
+              ? classes.map((item: any) => item?.['#text'])
+              : classes?.['#text']
+                ? [classes['#text']]
+                : undefined);
+          return <LevelTextItemDescription key={index} {...props} data={values} />;
+        }
+        const entries = Array.isArray(classes) ? classes : classes ? [classes] : [];
+        return (
+          <Descriptions
+            key={index}
+            bordered
+            size='small'
+            column={1}
+            title={system['@name']}
+            items={[
+              {
+                key: 'uri',
+                label: (
+                  <FormattedMessage
+                    id='pages.classification.systemUri'
+                    defaultMessage='Classification system URI'
+                  />
+                ),
+                children: system['@classes'] ?? '-',
+              },
+              ...entries.map((item: any, row: number) => ({
+                key: row,
+                label: item['@classId'] ?? item['@catId'] ?? item['@level'],
+                children: item['#text'],
+              })),
+            ]}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+export default ClassificationSystemsDescription;

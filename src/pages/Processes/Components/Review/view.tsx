@@ -10,15 +10,26 @@ import { reviewTypeOptions } from '../optiondata';
 
 import DataQualityIndicatorItemView from './DataQualityIndicator/view';
 import ScopeItemView from './Scope/view';
+import ReviewReportDownloadButton from './reportDownloadButton';
+import { reviewReportReferenceKey } from './reportReferences';
 
 type Props = {
   data: ProcessReviewItem | ProcessReviewItem[];
+  processId?: string;
+  processVersion?: string;
+  downloadableReportKeys?: readonly string[];
 };
 
-const ReviewItemView: FC<Props> = ({ data = [] }) => {
+const ReviewItemView: FC<Props> = ({
+  data = [],
+  processId,
+  processVersion,
+  downloadableReportKeys = [],
+}) => {
   const intl = useIntl();
   const lang = getLang(intl.locale);
   const reviewData = jsonToList(data) as ProcessReviewItem[];
+  const downloadableReportKeySet = new Set(downloadableReportKeys);
   return (
     <>
       {reviewData.map((item, index: number) => {
@@ -126,6 +137,22 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                 }
                 data={item?.['common:referenceToCompleteReviewReport']}
                 lang={lang}
+                extraAction={(report) =>
+                  report?.['@refObjectId'] &&
+                  report?.['@version'] &&
+                  processId &&
+                  processVersion &&
+                  downloadableReportKeySet.has(
+                    reviewReportReferenceKey(report['@refObjectId'], report['@version']) as string,
+                  ) ? (
+                    <ReviewReportDownloadButton
+                      processId={processId}
+                      processVersion={processVersion}
+                      sourceId={report['@refObjectId']}
+                      sourceVersion={report['@version']}
+                    />
+                  ) : null
+                }
               />
             </Space>
           </Card>

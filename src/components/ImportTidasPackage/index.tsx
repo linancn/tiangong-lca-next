@@ -1,12 +1,16 @@
 import HeaderActionIcon from '@/components/HeaderActionIcon';
 import { useAntdAppApi } from '@/contexts/AntdAppContext';
-import { submitTidasPackageImportTask } from '@/services/tidasPackage/taskCenter';
+import {
+  getTidasPackageTaskGeneration,
+  getTidasPackageTaskOwnerId,
+  submitTidasPackageImportTask,
+} from '@/services/tidasPackage/taskCenter';
 import { getDocumentationUrl } from '@/services/general/runtimeLocale';
 import { CloudUploadOutlined, InboxOutlined } from '@ant-design/icons';
 import { Alert, Flex, Modal, Typography, Upload, theme } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
@@ -22,6 +26,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported }) => {
   const { message } = useAntdAppApi();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const importSequenceRef = useRef(0);
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
   const { token } = theme.useToken();
@@ -38,9 +43,17 @@ const ImportTidasPackage: FC<Props> = ({ onImported }) => {
       return;
     }
 
+    const generation = getTidasPackageTaskGeneration();
+    const ownerId = getTidasPackageTaskOwnerId();
+    const sequence = ++importSequenceRef.current;
+    const isCurrent = () =>
+      sequence === importSequenceRef.current &&
+      generation === getTidasPackageTaskGeneration() &&
+      ownerId === getTidasPackageTaskOwnerId();
     try {
       setLoading(true);
       await submitTidasPackageImportTask(fileList[0], onImported);
+      if (!isCurrent()) return;
       message.success(
         intl.formatMessage({
           id: 'component.tidasPackage.import.queued',
@@ -50,6 +63,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported }) => {
       setOpen(false);
       setFileList([]);
     } catch (_error) {
+      if (!isCurrent()) return;
       message.error(
         intl.formatMessage({
           id: 'component.tidasPackage.import.error',
@@ -57,7 +71,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported }) => {
         }),
       );
     } finally {
-      setLoading(false);
+      if (sequence === importSequenceRef.current) setLoading(false);
     }
   };
 

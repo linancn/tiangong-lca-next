@@ -27,10 +27,18 @@ jest.mock('@/pages/Contacts/Components/select/description', () => ({
 
 jest.mock('@/pages/Sources/Components/select/description', () => ({
   __esModule: true,
-  default: ({ title, data, lang }: any) => (
+  default: ({ title, data, lang, extraAction }: any) => (
     <div data-testid='source-description'>
       {`${lang}:${data?.['@refObjectId']}:${title?.props?.defaultMessage ?? title}`}
+      {extraAction?.(data)}
     </div>
+  ),
+}));
+
+jest.mock('@/pages/Processes/Components/Review/reportDownloadButton', () => ({
+  __esModule: true,
+  default: ({ processId, processVersion, sourceId, sourceVersion }: any) => (
+    <button type='button'>{`download:${processId}:${processVersion}:${sourceId}:${sourceVersion}`}</button>
   ),
 }));
 
@@ -93,6 +101,9 @@ describe('ProcessReviewView', () => {
   it('renders mapped review type, nested scope and indicator views, and reviewer references', () => {
     render(
       <ReviewItemView
+        processId='process-1'
+        processVersion='01.01.000'
+        downloadableReportKeys={['source-1:02.03.004']}
         data={{
           '@type': 'critical-review',
           'common:scope': { '@name': 'scope-a' },
@@ -106,6 +117,7 @@ describe('ProcessReviewView', () => {
           },
           'common:referenceToCompleteReviewReport': {
             '@refObjectId': 'source-1',
+            '@version': '02.03.004',
           },
         }}
       />,
@@ -120,6 +132,11 @@ describe('ProcessReviewView', () => {
     expect(screen.getByTestId('source-description')).toHaveTextContent(
       'en:source-1:Complete review report',
     );
+    expect(
+      screen.getByRole('button', {
+        name: 'download:process-1:01.01.000:source-1:02.03.004',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getAllByTestId('lang-description')).toHaveLength(2);
   });
 

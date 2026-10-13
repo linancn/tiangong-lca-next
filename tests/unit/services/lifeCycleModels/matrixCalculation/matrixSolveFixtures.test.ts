@@ -363,9 +363,9 @@ describe('matrix calculation golden fixtures', () => {
 
     const result = okResult(payload);
 
-    // 原实例倍率 = 1（P 参考视图 2 / 参考量 2）；死端 E 倍率 = 1
-    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
-    expect(result.instanceMultipliers.nE).toBeCloseTo(1, 9);
+    // 主情景只需求 P；Q 与终端 E 的活动量为零，独立副情景另行求解。
+    expect(result.instanceMultipliers.nPQ).toBeUndefined();
+    expect(result.instanceMultipliers.nE).toBeUndefined();
 
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const byFlow = new Map(
@@ -566,13 +566,13 @@ describe('matrix calculation golden fixtures', () => {
 
     const result = okResult(payload);
 
-    // 原实例倍率映射：A 2、B 4/3、C 16/3（与手算一致，视图间经联动保持一致）
+    // 主情景 A 需要 B 的第一种产品 4；B 的另一产品和终端 C 无主情景需求。
     expect(result.instanceMultipliers.nodeA).toBeCloseTo(2, 9);
-    expect(result.instanceMultipliers.nodeB).toBeCloseTo(4 / 3, 9);
-    expect(result.instanceMultipliers.nodeC).toBeCloseTo(16 / 3, 9);
+    expect(result.instanceMultipliers.nodeB).toBeUndefined();
+    expect(result.instanceMultipliers.nodeC).toBeUndefined();
 
     expect(result.edgeAmounts['nodeB->nodeA:flow-B-to-A']).toBeCloseTo(4, 9);
-    expect(result.edgeAmounts['nodeB->nodeC:flow-B-to-C']).toBeCloseTo(16 / 3, 9);
+    expect(result.edgeAmounts['nodeB->nodeC:flow-B-to-C']).toBe(0);
 
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const byFlow = new Map(
@@ -588,10 +588,10 @@ describe('matrix calculation golden fixtures', () => {
     const secondaryByFlow = new Map(
       secondary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
     );
-    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-C-final')!.amount, 16 / 3, 9);
+    expectCloseTo(secondaryByFlow.get('OUTPUT:flow-C-final')!.amount, 1, 9);
     expect(secondaryByFlow.get('OUTPUT:flow-C-final')!.quantitativeReference).toBe(true);
-    // B 的 C 产品归因原料：7 × 0.4 / 4 × 16/3 = 3.7333…
-    expectCloseTo(secondaryByFlow.get('INPUT:flow-raw')!.amount, -(28 / 3) * 0.4, 9);
+    // C 独立情景需求 1，原料负荷为 7 × 0.4 / 4 = 0.7。
+    expectCloseTo(secondaryByFlow.get('INPUT:flow-raw')!.amount, -0.7, 9);
     expect(secondary.refProcesses).toEqual(
       expect.arrayContaining([
         { id: 'procB', version: '1' },
@@ -775,9 +775,9 @@ describe('matrix calculation golden fixtures', () => {
     };
 
     const result = okResult(payload);
-    expect(result.instanceMultipliers.n0).toBeCloseTo(1, 9);
-    // n1 同时服务 e0 情景（0.99 归属）与 u0 情景（0.01 归属）：x_n1 = 2e-8，倍率 = 2
-    expect(result.instanceMultipliers.n1).toBeCloseTo(2, 9);
+    expect(result.instanceMultipliers.n0).toBeUndefined();
+    // 主情景只归属 e0 的 99% 输入：n1 活动量为 1.98e-8。
+    expect(result.instanceMultipliers.n1).toBeCloseTo(1.98, 9);
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const byFlow = new Map(
       primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
@@ -914,9 +914,9 @@ describe('matrix calculation golden fixtures', () => {
     };
 
     const result = okResult(payload);
-    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
-    expect(result.instanceMultipliers.nR).toBeCloseTo(10, 9);
-    expect(result.instanceMultipliers.nE).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nPQ).toBeUndefined();
+    expect(result.instanceMultipliers.nR).toBeCloseTo(6, 9);
+    expect(result.instanceMultipliers.nE).toBeUndefined();
 
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const primaryByFlow = new Map(
@@ -973,7 +973,7 @@ describe('matrix calculation golden fixtures', () => {
     };
 
     const result = okResult(payload);
-    expect(result.instanceMultipliers.nPQ).toBeCloseTo(1, 9);
+    expect(result.instanceMultipliers.nPQ).toBeUndefined();
 
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const primaryByFlow = new Map(
@@ -1151,8 +1151,8 @@ describe('matrix calculation golden fixtures', () => {
 
     const result = okResult(buildPayload());
     expect(result.instanceMultipliers.nodeE).toBeCloseTo(1, 9);
-    // 需求经 Q 驱动 B：x_Q = 1，x_P = 2，倍率 1
-    expect(result.instanceMultipliers.nodeB).toBeCloseTo(1, 9);
+    // 主情景只需求 Q：x_Q = 1，x_P = 0，无共同倍率。
+    expect(result.instanceMultipliers.nodeB).toBeUndefined();
     const primary = result.groups.find((group) => group.type === 'primary')!;
     const byFlow = new Map(
       primary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
@@ -1186,7 +1186,7 @@ describe('matrix calculation golden fixtures', () => {
       permutedPrimary.exchanges.map((entry) => [`${entry.direction}:${entry.flowId}`, entry]),
     );
     expectCloseTo(permutedByFlow.get('INPUT:flow-raw')!.amount, -4, 9);
-    expect(permutedResult.instanceMultipliers.nodeB).toBeCloseTo(1, 9);
+    expect(permutedResult.instanceMultipliers.nodeB).toBeUndefined();
   });
 
   it('preserves small positive activities so material upstream loads are not lost', () => {
@@ -1382,8 +1382,8 @@ describe('matrix calculation golden fixtures', () => {
 });
 
 describe('per-exchange product allocation requirements', () => {
-  it('keeps undeclared burden on an unconnected reference product when another output drives production', () => {
-    const result = okResult({
+  it('rejects a used coproduct without an explicit allocation', () => {
+    const result = failCode({
       refInstanceIndex: 'consumer',
       targetAmount: 1,
       instances: [
@@ -1425,14 +1425,7 @@ describe('per-exchange product allocation requirements', () => {
         },
       ],
     });
-    const primary = result.groups.find((group) => group.type === 'primary')!;
-    expect(primary.exchanges.some((entry) => entry.flowId === 'raw')).toBe(false);
-    const referenceResult = result.groups.find((group) => group.pivotFlowId === 'A')!;
-    expect(referenceResult.exchanges.find((entry) => entry.flowId === 'raw')?.amount).toBeCloseTo(
-      -100,
-    );
-    expect(referenceResult.exchanges.find((entry) => entry.flowId === 'A')?.amount).toBeCloseTo(2);
-    expect(result.instanceMultipliers.supplier).toBeCloseTo(1);
+    expect(result).toBe('INVALID_ALLOCATION');
   });
 
   it('attributes electricity, raw material and emissions independently, then reuses allocated inventories', () => {

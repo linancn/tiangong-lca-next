@@ -1,3 +1,4 @@
+import { firstTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -87,12 +88,13 @@ const FlowpropertyView: FC<Props> = ({
     },
   ];
 
-  const classificationValues =
-    getClassificationValues(
-      initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-        'common:classification'
-      ]?.['common:class'],
-    ) ?? [];
+  const systems =
+    initData.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ];
+  const classificationValues = getClassificationValues(
+    firstTidasRepeated(systems)?.['common:class'],
+  );
 
   const compliance = listToJson(
     initData?.modellingAndValidation?.complianceDeclarations?.compliance,
@@ -157,6 +159,11 @@ const FlowpropertyView: FC<Props> = ({
 
         <br />
         <LevelTextItemDescription
+          systems={
+            initData?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
           data={classificationValues}
           lang={lang}
           categoryType={'FlowProperty'}

@@ -25,6 +25,8 @@ import {
   type LciaResultSetV1,
 } from '@/services/dataProducts';
 import {
+  getDataProductTaskGeneration,
+  getDataProductTaskOwnerId,
   listDataProductTasks,
   refreshDataProductTasks,
   subscribeDataProductTasks,
@@ -806,6 +808,7 @@ const DataProcessing = () => {
   const [activeTabKey, setActiveTabKey] = useState<string>(deepLink.activeTabKey);
   const [commandStatus, setCommandStatus] = useState<CommandStatus | null>(null);
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
+  const commandSequenceRef = useRef(0);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const dataProductTasks = useSyncExternalStore(
@@ -1464,20 +1467,24 @@ const DataProcessing = () => {
   const runCommand = async <T,>(
     action: CommandAction,
     command: () => Promise<{ data: T | null; error: { message?: string; code?: string } | null }>,
+    isCurrent: () => boolean = () => true,
   ) => {
+    const commandSequence = ++commandSequenceRef.current;
     setSubmittingAction(action);
     try {
       const result = await command();
+      if (!isCurrent()) return null;
       showResult(action, result);
       return result;
     } catch (error) {
+      if (!isCurrent()) return null;
       setCommandStatus({
         kind: 'error',
         message: error instanceof Error ? error.message : String(error),
       });
       return null;
     } finally {
-      setSubmittingAction(null);
+      if (commandSequence === commandSequenceRef.current) setSubmittingAction(null);
     }
   };
 
@@ -1561,7 +1568,15 @@ const DataProcessing = () => {
   };
 
   const handleCreateBuild = async () => {
+    const taskGeneration = getDataProductTaskGeneration();
+    const taskOwnerId = getDataProductTaskOwnerId();
     const values = await buildForm.validateFields();
+    if (
+      !taskOwnerId ||
+      taskGeneration === null ||
+      taskGeneration !== getDataProductTaskGeneration()
+    )
+      return;
     const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
     const lciaMethodSet = reviewedLciaMethodSet(impactCategoryOptions);
     if (lciaMethodSet.length === 0) {
@@ -1589,24 +1604,37 @@ const DataProcessing = () => {
       });
       return;
     }
-    const result = await runCommand('createBuild', () =>
-      createLciaResultBuildRequest({
-        name: selectedResultSet?.name ?? values.name,
-        coverageMode: values.coverageMode || 'global_eligible',
-        ...(values.defaultImpactCategory
-          ? { defaultImpactCategory: values.defaultImpactCategory }
-          : {}),
-        lciaMethodSet,
-        closureCheckId: closureCheck.closureCheckId,
-        requestedScopeHash: closureCheck.requestedScopeHash,
-        policyFingerprint: closureCheck.policyFingerprint,
-      }),
+    const isCurrent = () => taskGeneration === getDataProductTaskGeneration();
+    const result = await runCommand(
+      'createBuild',
+      () =>
+        createLciaResultBuildRequest(
+          {
+            name: selectedResultSet?.name ?? values.name,
+            coverageMode: values.coverageMode || 'global_eligible',
+            ...(values.defaultImpactCategory
+              ? { defaultImpactCategory: values.defaultImpactCategory }
+              : {}),
+            lciaMethodSet,
+            closureCheckId: closureCheck.closureCheckId,
+            requestedScopeHash: closureCheck.requestedScopeHash,
+            policyFingerprint: closureCheck.policyFingerprint,
+          },
+          {
+            taskSession: {
+              ownerId: taskOwnerId,
+              isCurrent,
+            },
+          },
+        ),
+      isCurrent,
     );
 
+    if (taskGeneration !== getDataProductTaskGeneration()) return;
     if (result && !result.error) {
       const submittedTask = createSubmittedBuildTask(result.data);
       if (submittedTask) {
-        upsertDataProductTasks([submittedTask]);
+        upsertDataProductTasks([submittedTask], taskGeneration);
       }
       void loadBuildJobs();
     }

@@ -582,6 +582,14 @@ const getProcessSdkIssueRootFormName = (
       'processInformation.dataSetInformation.classificationInformation.common:classification',
     )
   ) {
+    const systems = getValueAtPath(orderedJson, [
+      'processDataSet',
+      'processInformation',
+      'dataSetInformation',
+      'classificationInformation',
+      'common:classification',
+    ]);
+    if (Array.isArray(systems) || systems?.['@name']) return rootPath;
     return [
       'processInformation',
       'dataSetInformation',

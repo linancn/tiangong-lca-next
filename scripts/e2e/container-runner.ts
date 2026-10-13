@@ -20,6 +20,12 @@ import {
   readProductionDataResult,
 } from '../../tests/e2e/i18n/production-data-ledger';
 import { assertProductionDataWriteAuthorization } from '../../tests/e2e/i18n/production-data-safety';
+import {
+  loadQualificationClosureContract,
+  qualificationReportFailures,
+  readQualificationReportReceipt,
+} from './qualification-closure.cjs';
+import { handoffOutputOwnership } from './output-ownership.cjs';
 
 type CheckStatus = 'failed' | 'passed' | 'skipped';
 
@@ -661,68 +667,17 @@ async function main(): Promise<number> {
         phase,
       });
     }
-    let qualification: Record<string, unknown> | undefined;
+    let qualification: unknown;
+    let qualificationReportSha256: string | undefined;
     if (process.env.E2E_QUALIFICATION === 'true') {
-      qualification = await readJson<Record<string, unknown>>(
+      const receipt = readQualificationReportReceipt(
         process.env.E2E_QUALIFICATION_RESULT_PATH ||
           '/e2e-output/semantic-harness-qualification.json',
       );
-      const assertionIds = qualification.assertionIds;
-      const assertionBrowsers = qualification.assertionBrowsers;
-      const canonicalBrowsers = qualification.canonicalBrowsers;
-      const harnessBrowsers = qualification.harnessBrowsers;
-      const expectedCriticalAssertionIds = [
-        'rv.login.login-and-register',
-        'rv.process-lists.mydata',
-        'rv.team.team-membership',
-      ];
-      const expectedBrowsers = ['chromium', 'firefox', 'webkit'];
-      const countTotals = (value: unknown): { executed: number; skipped: number } | undefined => {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-        const counts = Object.values(value as Record<string, unknown>);
-        if (
-          counts.length !== 3 ||
-          counts.some(
-            (entry) =>
-              !entry ||
-              typeof entry !== 'object' ||
-              Array.isArray(entry) ||
-              typeof (entry as Record<string, unknown>).executed !== 'number' ||
-              typeof (entry as Record<string, unknown>).skipped !== 'number',
-          )
-        ) {
-          return undefined;
-        }
-        return counts.reduce<{ executed: number; skipped: number }>(
-          (total, entry) => ({
-            executed: total.executed + Number((entry as Record<string, unknown>).executed),
-            skipped: total.skipped + Number((entry as Record<string, unknown>).skipped),
-          }),
-          { executed: 0, skipped: 0 },
-        );
-      };
-      const canonicalTotals = countTotals(canonicalBrowsers);
-      const harnessTotals = countTotals(harnessBrowsers);
-      const hasExactBrowserApplicability =
-        assertionBrowsers &&
-        typeof assertionBrowsers === 'object' &&
-        !Array.isArray(assertionBrowsers) &&
-        assertionIds instanceof Array &&
-        assertionIds.every((assertionId) => {
-          const observed = (assertionBrowsers as Record<string, unknown>)[String(assertionId)];
-          if (
-            !Array.isArray(observed) ||
-            observed.length === 0 ||
-            observed.some((browser) => !expectedBrowsers.includes(String(browser))) ||
-            !observed.includes('chromium')
-          ) {
-            return false;
-          }
-          return (
-            !expectedCriticalAssertionIds.includes(String(assertionId)) ||
-            expectedBrowsers.every((browser) => observed.includes(browser))
-          );
-        });
+      qualification = receipt.qualification;
+      qualificationReportSha256 = receipt.qualificationReportSha256;
+      const contract = loadQualificationClosureContract(process.cwd());
+      const closureFailures = qualificationReportFailures(qualification, contract);
       const canonicalCheck = spawnSync(
         process.execPath,
         [
@@ -734,23 +689,19 @@ async function main(): Promise<number> {
         ],
         { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
       );
-      if (
-        canonicalCheck.status !== 0 ||
-        !Array.isArray(assertionIds) ||
-        assertionIds.length !== 50 ||
-        canonicalTotals?.executed !== 51 ||
-        canonicalTotals?.skipped !== 30 ||
-        harnessTotals?.executed !== 12 ||
-        harnessTotals?.skipped !== 0 ||
-        !hasExactBrowserApplicability ||
-        qualification.externalRequests !== 0 ||
-        qualification.productionWrites !== 0
-      ) {
-        throw new RunnerError('Semantic harness qualification closure is incomplete.', {
-          exitCode: EXIT.BROWSER,
-          failureCode: 'E2E_QUALIFICATION_INCOMPLETE',
-          phase,
-        });
+      if (canonicalCheck.status !== 0) closureFailures.push('canonical-evidence-format');
+      if (closureFailures.length > 0) {
+        process.stderr.write(
+          `Qualification closure failed checks: ${closureFailures.join(', ')}\n`,
+        );
+        throw new RunnerError(
+          `Semantic harness qualification closure is incomplete: ${closureFailures.join(', ')}.`,
+          {
+            exitCode: EXIT.BROWSER,
+            failureCode: 'E2E_QUALIFICATION_INCOMPLETE',
+            phase,
+          },
+        );
       }
     }
 
@@ -779,6 +730,7 @@ async function main(): Promise<number> {
       finishedAt: new Date(finishedAtMs).toISOString(),
       fixtureIntentCreated,
       qualification,
+      qualificationReportSha256,
       phase,
       preflight: { checks: checks.length, status: 'passed' },
       startedAt: new Date(startedAtMs).toISOString(),
@@ -859,4 +811,28 @@ main()
     }).catch(() => undefined);
     process.stderr.write(`E2E_CONTAINER_FATAL_FAILURE: ${redactString(String(error))}\n`);
     process.exitCode = EXIT.FINALIZATION;
+  })
+  .finally(async () => {
+    try {
+      handoffOutputOwnership(OUTPUT_DIRECTORY, process.env.E2E_RECOVERY_LEDGER_PATH);
+    } catch (error) {
+      // A partial ownership transfer can leave the result readable. Keep its
+      // machine-readable status aligned with the failing container exit code.
+      await readFile(RUN_RESULT_PATH, 'utf8')
+        .then((value) => JSON.parse(value))
+        .then((result) =>
+          writePrivateJson(RUN_RESULT_PATH, {
+            ...result,
+            error: { chain: errorChain(error), message: 'E2E artifact ownership handoff failed.' },
+            exitCode: EXIT.FINALIZATION,
+            failureCode: 'E2E_OUTPUT_HANDOFF_FAILED',
+            nextCommand: undefined,
+            phase: 'artifact-handoff',
+            status: 'failed',
+          }),
+        )
+        .catch(() => undefined);
+      process.stderr.write(`E2E_OUTPUT_HANDOFF_FAILED: ${redactString(String(error))}\n`);
+      process.exitCode = EXIT.FINALIZATION;
+    }
   });

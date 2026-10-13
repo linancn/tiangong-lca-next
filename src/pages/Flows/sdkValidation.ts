@@ -92,7 +92,7 @@ const isFlowPropertyFieldDetail = (detail: ValidationIssueSdkDetail) => {
     Array.isArray(detail.formName) &&
     detail.formName[0] === 'flowProperties' &&
     detail.formName[1] === 'flowProperty' &&
-    typeof detail.formName[2] === 'number'
+    detail.formName.length > 2
   );
 };
 
@@ -105,13 +105,17 @@ const toFlowPropertyFieldDetail = (
   }
 
   const formName = detail.formName!;
-  const flowPropertyIndex = Number(formName[2]);
-  const flowProperty = toFlowPropertyList(orderedJson?.flowDataSet?.flowProperties?.flowProperty)[
-    flowPropertyIndex
-  ];
+  const flowPropertySource = orderedJson?.flowDataSet?.flowProperties?.flowProperty;
+  const hasItemIndex = typeof formName[2] === 'number';
+  if (!hasItemIndex && Array.isArray(flowPropertySource)) {
+    return detail;
+  }
+  const flowPropertyIndex = hasItemIndex ? Number(formName[2]) : 0;
+  const flowProperty = toFlowPropertyList(flowPropertySource)[flowPropertyIndex];
   const flowPropertyInternalId = normalizeString(flowProperty?.['@dataSetInternalID']);
-  const strippedFormName = formName.slice(3);
-  const fallbackFieldPath = detail.fieldPath.split('.').slice(3).join('.');
+  const fieldOffset = hasItemIndex ? 3 : 2;
+  const strippedFormName = formName.slice(fieldOffset);
+  const fallbackFieldPath = detail.fieldPath.split('.').slice(fieldOffset).join('.');
   const serializedFieldPath =
     strippedFormName.length > 0 ? strippedFormName.map(String).join('.') : fallbackFieldPath;
   const fieldPathPrefix = flowPropertyInternalId

@@ -838,6 +838,7 @@ export const FlowForm: FC<Props> = ({
               />
             }
             name={['flowInformation', 'geography', 'locationOfSupply']}
+            multiple
             lang={lang}
             onData={onData}
             rules={

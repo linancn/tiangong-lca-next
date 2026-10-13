@@ -179,7 +179,7 @@ describe('ReviewProgress read-only drawer', () => {
     const commentRender = latestColumns.find((column) => column.dataIndex === 'comment').render;
 
     expect(toText(statusRender(null, { state_code: -3 }))).toBe('Rejected');
-    expect(toText(statusRender(null, { state_code: 1 }))).toBe('Reviewed');
+    expect(toText(statusRender(null, { state_code: 1 }))).toBe('Approved');
     expect(toText(statusRender(null, { state_code: 99 }))).toBe('Unknown Status');
     expect(
       commentRender(null, { state_code: 0, json: { comment: { message: 'ignored' } } }),
@@ -195,6 +195,9 @@ describe('ReviewProgress read-only drawer', () => {
         commentRender(null, { state_code: -3, json: { comment: { message: 'Object note' } } }),
       ),
     ).toContain('Object note');
+    expect(
+      toText(commentRender(null, { state_code: -3, json: { reason: 'Simple review note' } })),
+    ).toContain('Simple review note');
     expect(commentRender(null, { state_code: -3, json: { comment: '{}' } })).toBeNull();
     expect(commentRender(null, { state_code: -3, json: { comment: {} } })).toBeNull();
     expect(commentRender(null, { state_code: -3, json: { comment: 'invalid json' } })).toBeNull();

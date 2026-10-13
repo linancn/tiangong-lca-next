@@ -95,7 +95,7 @@ const ProcessCreate: FC<CreateProps> = ({
   const importedId = getImportedId(importData?.[0]);
 
   const handletFromData = async () => {
-    const fieldsValue = formRefCreate.current?.getFieldsValue();
+    const fieldsValue = formRefCreate.current?.getFieldsValue(true);
     // if (fromData?.id)
     if (activeTabKey === 'validation') {
       await setFromData({
@@ -230,7 +230,7 @@ const ProcessCreate: FC<CreateProps> = ({
     const newId = v4();
     setInitData({ ...newData, id: newId } as FormProcessWithId);
     // formRefCreate.current?.resetFields();
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData({ ...newData, id: newId } as FormProcessWithId);
     setExchangeDataSource([]);
@@ -314,7 +314,8 @@ const ProcessCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={async (_, allValues) => {
+            onValuesChange={async () => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               if (activeTabKey === 'validation') {
                 await setFromData({
                   ...fromData,

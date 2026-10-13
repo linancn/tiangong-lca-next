@@ -470,12 +470,12 @@ describe('FlowpropertiesPage', () => {
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
-  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+  it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
     renderWithProviders(<FlowpropertiesPage />);
 
-    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('en-US'));
   });
 
   it('loads existing my-data flow properties as read-only for non-admin users', async () => {

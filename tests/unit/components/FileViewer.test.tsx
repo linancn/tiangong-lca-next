@@ -131,10 +131,127 @@ describe('FileGallery component', () => {
     });
   });
 
+  it.each(['http://lca.jrc.ec.europa.eu', 'https://example.org/example.jpg'])(
+    'shows an unchecked external reference as a native link without loading a remote thumbnail: %s',
+    async (uri) => {
+      mockedGetThumbFileUrls.mockResolvedValue([
+        { uid: uri, name: 'external', url: uri, previewState: 'unchecked' },
+      ]);
+      mockedIsImage.mockReturnValue(true);
+      render(<FileGallery data={[{ '@uri': uri }]} />);
+      const label = await screen.findByText('external');
+      expect(label.closest('a')).toHaveAttribute('href', uri);
+      expect(label.closest('a')).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(screen.getByText('File access not checked')).toBeInTheDocument();
+      expect(screen.queryByTestId('file-gallery-image')).not.toBeInTheDocument();
+      expect(mockedGetOriginalFileUrl).not.toHaveBeenCalled();
+    },
+  );
+  it.each(['javascript:alert(1)', 'blob:expired', './opaque.pdf'])(
+    'keeps opaque %s visible without an active link or false Schema error',
+    async (uri) => {
+      mockedGetThumbFileUrls.mockResolvedValue([
+        { uid: uri, name: 'reference', url: '', previewState: 'unsupported' },
+      ]);
+      render(<FileGallery data={[{ '@uri': uri }]} />);
+      const label = await screen.findByText('reference');
+      expect(label.closest('a')).toBeNull();
+      expect(label.closest('button')).toBeNull();
+      expect(screen.getByText('Preview not supported for this reference')).toBeInTheDocument();
+      expect(screen.queryByTestId('file-gallery-image')).not.toBeInTheDocument();
+      expect(mockedGetOriginalFileUrl).not.toHaveBeenCalled();
+    },
+  );
+  it('reports a failed document lookup without opening an empty URL', async () => {
+    mockedGetThumbFileUrls.mockResolvedValue([
+      { uid: '../external_docs/missing.pdf', name: 'missing', url: '', previewState: 'unchecked' },
+    ]);
+    mockedGetOriginalFileUrl.mockResolvedValue({
+      uid: '../external_docs/missing.pdf',
+      name: 'missing',
+      url: '',
+      status: 'error',
+      previewState: 'unavailable',
+    });
+    const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+    render(<FileGallery data={[{ '@uri': '../external_docs/missing.pdf' }]} />);
+    fireEvent.click((await screen.findByText('missing')).closest('button')!);
+    expect(await screen.findByText('File preview unavailable')).toBeInTheDocument();
+    expect(open).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it('shows a preview failure when the resolver rejects instead of leaving a perpetual spinner', async () => {
+    mockedGetThumbFileUrls.mockRejectedValueOnce(new Error('unavailable'));
+    render(<FileGallery data={[{ '@uri': '../external_docs/a.pdf' }]} />);
+    expect(await screen.findByText('File preview unavailable')).toBeInTheDocument();
+    expect(screen.getByTestId('file-gallery-spin')).toHaveAttribute('data-spinning', 'false');
+  });
+  it.each(['resolve', 'reject'] as const)(
+    'ignores a stale %s after the reference list changes',
+    async (outcome) => {
+      let resolve: (value: any) => void = () => {};
+      let reject: (error: Error) => void = () => {};
+      mockedGetThumbFileUrls.mockReturnValueOnce(
+        new Promise((yes, no) => {
+          resolve = yes;
+          reject = no;
+        }),
+      );
+      const { rerender } = render(<FileGallery data={[{ '@uri': '../external_docs/old.pdf' }]} />);
+      mockedGetThumbFileUrls.mockResolvedValueOnce([]);
+      rerender(<FileGallery data={[]} />);
+      if (outcome === 'resolve')
+        resolve([{ uid: '../external_docs/old.pdf', name: 'stale', previewState: 'unchecked' }]);
+      else reject(new Error('old failure'));
+      await waitFor(() => expect(screen.getByText('-')).toBeInTheDocument());
+      expect(screen.queryByText('stale')).not.toBeInTheDocument();
+      expect(screen.queryByText('File preview unavailable')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    [{ '@uri': '../external_docs/a.pdf' }, 'File preview unavailable'],
+    [{ '@uri': 'https://example.org/a.pdf' }, 'File access not checked'],
+    [{}, 'Preview not supported for this reference'],
+  ])(
+    'reports singleton resolver outcomes without changing URI meaning',
+    async (reference, label) => {
+      mockedGetThumbFileUrls.mockRejectedValueOnce(new Error('resolver unavailable'));
+      render(<FileGallery data={reference} />);
+      expect(await screen.findByText(label)).toBeInTheDocument();
+      expect(screen.queryByTestId('file-gallery-image')).not.toBeInTheDocument();
+    },
+  );
+  it('updates only the opened attachment and reports its resolved preview', async () => {
+    mockedGetThumbFileUrls.mockResolvedValueOnce([
+      { uid: '../external_docs/a.pdf', name: 'first', url: '', previewState: 'unchecked' },
+      { uid: '../external_docs/b.pdf', name: 'second', url: '', previewState: 'unchecked' },
+    ]);
+    mockedGetOriginalFileUrl.mockResolvedValueOnce({
+      uid: '../external_docs/a.pdf',
+      name: 'first',
+      status: 'done',
+      url: 'blob:resolved',
+      previewState: 'resolved',
+    });
+    const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+    render(
+      <FileGallery
+        data={[{ '@uri': '../external_docs/a.pdf' }, { '@uri': '../external_docs/b.pdf' }]}
+      />,
+    );
+    fireEvent.click((await screen.findByText('first')).closest('button')!);
+    expect(await screen.findByText('File preview ready')).toBeInTheDocument();
+    expect(screen.getByText('File access not checked')).toBeInTheDocument();
+    expect(open).toHaveBeenCalledWith('blob:resolved', '_blank', 'noopener,noreferrer');
+    open.mockRestore();
+  });
+
   it('renders image thumbnails and updates preview URL when opened', async () => {
-    const digitalFiles = [{ '@uri': '../bucket/file.png' }];
+    const digitalFiles = [{ '@uri': '../external_docs/file.png' }];
     const thumbEntry = {
-      uid: '../bucket/file.png',
+      uid: '../external_docs/file.png',
       name: '1.png',
       thumbUrl: 'thumb-url',
       url: 'thumb-url',
@@ -184,9 +301,9 @@ describe('FileGallery component', () => {
   });
 
   it('opens files with window.open for non-image entries', async () => {
-    const digitalFiles = [{ '@uri': '../bucket/file.pdf' }];
+    const digitalFiles = [{ '@uri': '../external_docs/file.pdf' }];
     const thumbEntry = {
-      uid: '../bucket/file.pdf',
+      uid: '../external_docs/file.pdf',
       name: '1.pdf',
       thumbUrl: '.',
       url: '.',
@@ -210,7 +327,7 @@ describe('FileGallery component', () => {
     });
 
     const linkLabel = await screen.findByText(thumbEntry.name);
-    const link = linkLabel.closest('a');
+    const link = linkLabel.closest('button');
     expect(link).not.toBeNull();
     expect(link).toHaveAttribute('title', 'Download file');
     fireEvent.click(link!);
@@ -220,19 +337,24 @@ describe('FileGallery component', () => {
     });
 
     await waitFor(() => {
-      expect(windowOpenSpy).toHaveBeenCalledWith('https://example.com/file.pdf', '_blank');
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://example.com/file.pdf',
+        '_blank',
+        'noopener,noreferrer',
+      );
     });
 
     windowOpenSpy.mockRestore();
   });
 
-  it('renders a fallback image when a thumbnail entry does not have a url', async () => {
-    const digitalFiles = [{ '@uri': '../bucket/broken-file.bin' }];
+  it('shows an unavailable managed preview without issuing a fake image request', async () => {
+    const digitalFiles = [{ '@uri': '../external_docs/broken-file.bin' }];
 
     mockedGetThumbFileUrls.mockResolvedValue([
       {
-        uid: '../bucket/broken-file.bin',
+        uid: '../external_docs/broken-file.bin',
         name: 'broken-file.bin',
+        previewState: 'unavailable',
         thumbUrl: '',
         url: '',
       },
@@ -244,7 +366,8 @@ describe('FileGallery component', () => {
       expect(mockedGetThumbFileUrls).toHaveBeenCalledWith(digitalFiles);
     });
 
-    expect(screen.getByTestId('file-gallery-image')).toHaveAttribute('data-thumb-src', 'error');
+    expect(screen.queryByTestId('file-gallery-image')).not.toBeInTheDocument();
+    expect(screen.getByText('File preview unavailable')).toBeInTheDocument();
   });
 });
 

@@ -1,4 +1,13 @@
 export default {
+  'pages.file.preview.open': 'Open file',
+  'pages.file.preview.retry': 'Retry preview',
+
+  'pages.file.preview.resolved': 'File preview ready',
+
+  'pages.file.preview.unchecked': 'File access not checked',
+  'pages.file.preview.unavailable': 'File preview unavailable',
+  'pages.file.preview.unsupported': 'Preview not supported for this reference',
+
   'pages.source.publicationType': 'Publication type',
   'pages.source.refObjectId': 'Reference source data set identifier',
   'pages.source.drawer.title.create': 'Create Source',

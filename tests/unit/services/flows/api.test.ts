@@ -753,7 +753,7 @@ describe('getFlowTableAll', () => {
           referenceToFlowPropertyDataSet: {
             '@refObjectId': 'prop-2',
           },
-          locationOfSupply: 'CN',
+          locationOfSupply: ['CN', 'US'],
         },
       ],
       count: 1,
@@ -775,9 +775,9 @@ describe('getFlowTableAll', () => {
       '',
     );
 
-    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN']);
-    expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['CN']);
-    expect(result.data[0].locationOfSupply).toBe('China');
+    expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['CN', 'US']);
+    expect(mockGetILCDLocationByValues).toHaveBeenCalledWith('en', ['CN', 'US']);
+    expect(result.data[0].locationOfSupply).toBe('China; US');
   });
 
   it('falls back to the raw location code when location lookups return no normalized rows', async () => {

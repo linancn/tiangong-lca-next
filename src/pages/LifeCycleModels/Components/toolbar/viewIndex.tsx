@@ -710,10 +710,12 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         disabled={false}
       /> */}
       <ModelResult
-        submodels={(jsonTg?.submodels ?? []).map((submodel) => ({
-          id: submodel.id,
-          version: submodel.version ?? version,
-        }))}
+        submodels={(jsonTg?.submodels ?? [])
+          .filter((submodel) => submodel.type !== 'allocated')
+          .map((submodel) => ({
+            id: submodel.id,
+            version: submodel.version ?? version,
+          }))}
         modelId={id}
         modelVersion={version}
         lang={lang}

@@ -203,7 +203,7 @@ const UnitGroupEdit: FC<Props> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefEdit.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -315,7 +315,7 @@ const UnitGroupEdit: FC<Props> = ({
 
     const units = fromData?.units;
     const formFieldsValue = {
-      ...formRefEdit.current?.getFieldsValue(),
+      ...formRefEdit.current?.getFieldsValue(true),
       units,
     };
     const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
@@ -676,7 +676,8 @@ const UnitGroupEdit: FC<Props> = ({
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
-              onValuesChange={(_, allValues) => {
+              onValuesChange={(_, changedFormValues) => {
+                const allValues = formRefEdit.current?.getFieldsValue(true) ?? changedFormValues;
                 setFromData({
                   ...fromData,
                   [activeTabKey]: allValues[activeTabKey] ?? {},

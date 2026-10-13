@@ -1,13 +1,22 @@
 import { FunctionRegion } from '@supabase/supabase-js';
 
 const mockAuthGetSession = jest.fn();
+const mockAuthGetClaims = jest.fn();
 const mockFunctionsInvoke = jest.fn();
+
+jest.mock('@supabase/supabase-js', () => ({
+  ...jest.requireActual('@supabase/supabase-js'),
+  createClient: () => ({
+    functions: { invoke: (...args: any[]) => mockFunctionsInvoke(...args) },
+  }),
+}));
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
   supabase: {
     auth: {
       getSession: (...args: any[]) => mockAuthGetSession(...args),
+      getClaims: (...args: any[]) => mockAuthGetClaims(...args),
     },
     functions: {
       invoke: (...args: any[]) => mockFunctionsInvoke(...args),
@@ -22,12 +31,30 @@ import {
   previewLciaResultPackage,
   publishLciaResultPackage,
   queryPublishedLciaResults,
+  queryExactPublishedLciaResults,
   unpublishLciaResultPublication,
 } from '@/services/dataProducts/api';
 
 describe('dataProducts api', () => {
+  it('sends the opt-in exact public batch mode without requiring a session', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: { ok: true, data: { mode: 'processes_one_impact_exact' } },
+      error: null,
+    });
+    const request = {
+      impactCategoryId: '6209b35f-9447-40b5-b68c-a1099e3674a0',
+      processes: [{ id: 'process-a', version: '01.00.000' }],
+    };
+    expect((await queryExactPublishedLciaResults(request)).error).toBeNull();
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', {
+      body: { mode: 'processes_one_impact_exact', ...request },
+      region: FunctionRegion.UsEast1,
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthGetClaims.mockResolvedValue({ data: { claims: { sub: 'owner-a' } }, error: null });
     mockAuthGetSession.mockResolvedValue({
       data: {
         session: {
@@ -35,6 +62,109 @@ describe('dataProducts api', () => {
         },
       },
     });
+  });
+
+  it('does not send an old-owner build after a deferred session lookup changes the generation', async () => {
+    let finish: (value: any) => void = () => undefined;
+    let active = true;
+    mockAuthGetSession.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    mockFunctionsInvoke.mockResolvedValue({ data: null, error: null });
+    const result = (createLciaResultBuildRequest as any)(
+      { name: 'Old owner build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      {
+        taskSession: { ownerId: 'owner-a', isCurrent: () => active },
+      },
+    );
+    active = false;
+    finish({ data: { session: { access_token: 'token-b', user: { id: 'owner-b' } } } });
+    await result;
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('does not send an old-owner build under a different verified token actor even before an auth broadcast', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-b' } } });
+    mockAuthGetClaims.mockResolvedValueOnce({ data: { claims: { sub: 'owner-b' } }, error: null });
+    mockFunctionsInvoke.mockResolvedValue({ data: null, error: null });
+    await (createLciaResultBuildRequest as any)(
+      { name: 'Old owner build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      {
+        taskSession: { ownerId: 'owner-a', isCurrent: () => true },
+      },
+    );
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('allows one guarded build for the verified admitted bearer actor', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { buildId: 'build-a' }, error: null });
+    const result = await createLciaResultBuildRequest(
+      { name: 'Owned build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      { taskSession: { ownerId: 'owner-a', isCurrent: () => true } },
+    );
+    expect(result.error).toBeNull();
+    expect(mockAuthGetClaims).toHaveBeenCalledWith('access-token');
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).not.toHaveProperty('taskSession');
+  });
+
+  it('rejects an already-invalid build without even reading a session and preserves ordinary session errors', async () => {
+    const result = await createLciaResultBuildRequest(
+      { name: 'Old build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      { taskSession: { ownerId: 'owner-a', isCurrent: () => false } },
+    );
+    expect(result.error?.code).toBe('AUTH_REQUIRED');
+    expect(mockAuthGetSession).not.toHaveBeenCalled();
+    mockAuthGetSession.mockRejectedValueOnce(new Error('session lookup unavailable'));
+    await expect(
+      createLciaResultBuildRequest({
+        name: 'New build',
+        coverageMode: 'global_eligible',
+        lciaMethodSet: [],
+      }),
+    ).rejects.toThrow('session lookup unavailable');
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('fences a session invalidated after claims verification but before sending the build', async () => {
+    let active = true;
+    let finish: (value: any) => void = () => undefined;
+    const pendingClaims = new Promise((resolve) => {
+      finish = resolve;
+    });
+    mockAuthGetClaims.mockReturnValueOnce(
+      pendingClaims.then((claims) => {
+        void Promise.resolve().then(() =>
+          Promise.resolve().then(() => {
+            active = false;
+          }),
+        );
+        return claims;
+      }),
+    );
+    const result = createLciaResultBuildRequest(
+      { name: 'Old build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      { taskSession: { ownerId: 'owner-a', isCurrent: () => active } },
+    );
+    finish({ data: { claims: { sub: 'owner-a' } }, error: null });
+    expect((await result).error?.code).toBe('AUTH_REQUIRED');
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('discards a guarded build response invalidated after transport began', async () => {
+    let active = true;
+    mockFunctionsInvoke.mockImplementationOnce(async () => {
+      active = false;
+      return { data: { buildId: 'old-build' }, error: null };
+    });
+    const result = await createLciaResultBuildRequest(
+      { name: 'Owned build', coverageMode: 'global_eligible', lciaMethodSet: [] },
+      { taskSession: { ownerId: 'owner-a', isCurrent: () => active } },
+    );
+    expect(result.error?.code).toBe('AUTH_REQUIRED');
+    expect(result.data).toBeNull();
   });
 
   it('creates LCIA result build requests through app_data_product_commands', async () => {

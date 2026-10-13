@@ -22,6 +22,8 @@ import {
   updateTeamNotificationTime,
 } from '@/services/auth/api';
 import { supabase } from '@/services/supabase';
+import { bindLcaTaskCenterOwner } from '@/services/lca/taskCenter';
+import { bindDataProductTaskCenterOwner } from '@/services/dataProducts/taskCenter';
 import { bindTidasPackageTaskCenterOwner } from '@/services/tidasPackage/taskCenter';
 
 jest.mock('@/services/supabase', () => ({
@@ -39,6 +41,10 @@ jest.mock('@/services/supabase', () => ({
   },
 }));
 
+jest.mock('@/services/lca/taskCenter', () => ({ bindLcaTaskCenterOwner: jest.fn() }));
+jest.mock('@/services/dataProducts/taskCenter', () => ({
+  bindDataProductTaskCenterOwner: jest.fn(),
+}));
 jest.mock('@/services/tidasPackage/taskCenter', () => ({
   bindTidasPackageTaskCenterOwner: jest.fn(),
 }));
@@ -182,6 +188,8 @@ describe('Auth API service (src/services/auth/api.ts)', () => {
       const result = await logout();
 
       expect(bindTidasPackageTaskCenterOwner).toHaveBeenCalledWith(null);
+      expect(bindLcaTaskCenterOwner).toHaveBeenCalledWith(null);
+      expect(bindDataProductTaskCenterOwner).toHaveBeenCalledWith(null);
       expect(authMock.signOut).toHaveBeenCalledTimes(1);
       expect(result).toBeNull();
     });

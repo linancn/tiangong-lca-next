@@ -59,12 +59,15 @@ function normalizeLocationData(response: any): any[] {
   return [];
 }
 
-async function fetchLocationLookup(lang: string, locations: Array<string | null | undefined>) {
+async function fetchLocationLookup(
+  lang: string,
+  locations: Array<string | string[] | null | undefined>,
+) {
   const codes = Array.from(
     new Set(
-      locations.filter(
-        (code): code is string => typeof code === 'string' && code.trim().length > 0,
-      ),
+      locations
+        .flat()
+        .filter((code): code is string => typeof code === 'string' && code.trim().length > 0),
     ),
   );
 
@@ -84,14 +87,15 @@ async function fetchLocationLookup(lang: string, locations: Array<string | null 
 }
 
 function resolveLocationOfSupply(
-  code: string | undefined,
+  code: string | string[] | undefined,
   locationData: Array<Record<string, any>>,
 ) {
   if (!code) {
     return '-';
   }
-  const match = locationData.find((item) => item?.['@value'] === code);
-  return match?.['#text'] ?? code;
+  return (Array.isArray(code) ? code : [code])
+    .map((value) => locationData.find((item) => item?.['@value'] === value)?.['#text'] ?? value)
+    .join('; ');
 }
 
 type FlowClassificationFilter = {

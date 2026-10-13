@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
-lastReviewedNote: 'Reviewed for Platform #1208: the review-footer implementation uses the existing local commands and validation loop; bootstrap and development commands are unchanged.'
+lastReviewedAt: 2026-10-11
+lastReviewedCommit: 4f7a7bb1361e360a8632e1750ecff1d8f2ef63cd
+lastReviewedNote: 'Reviewed Atlas regression completion against 6a48ba7e: current browser locale fallback and shared login, navigation, data, standard and guide behavior are covered. Production behavior, dependency graph and required gate thresholds are unchanged.'
 ---
 
 # Development Bootstrap
@@ -62,6 +62,30 @@ lastReviewedNote: 'Reviewed for Platform #1208: the review-footer implementation
 - deciding branch policy
 - deciding minimum proof for a change
 - deciding which document owns a rule
+
+## Local brand preview and builds
+
+Brand selection is independent of the backend environment. `APP_BRAND` accepts `tiangong` (default) or `atlas`; unknown values fail before startup/build. Both brands share the same routes, services, permissions and calculation behavior.
+
+```bash
+pnpm start:atlas       # ATLAS UI, existing non-production dev environment
+pnpm start:tiangong    # TianGong UI, same dev environment
+pnpm build:atlas      # selected web bundle in dist/
+pnpm build:tiangong   # replaces dist/ with the TianGong bundle
+pnpm dist:atlas --dir # local unpacked desktop build; publication disabled
+```
+
+Run Umi dev/build/test commands serially in one checkout because they share generated files and caches. Use `PORT=<free-port> pnpm start:atlas` to choose another local port. Stop an earlier process before switching brands. A local preview does not need a Git tag, deployment, or a production configuration change.
+
+Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans, footer/legal links, light/dark theme, favicon, static manifest and desktop identity. ATLAS has independent four-locale product copy and a local application-home link; source and legal links retain their factual destinations. Existing `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_FAVICON`, `APP_TITLE_<LOCALE>` and `APP_LOGIN_SUBTITLE_<LOCALE>` overrides take precedence over the selected profile. Restart/rebuild after changing build-time settings.
+
+`APP_BRAND=atlas` selects the complete presentation: navy side navigation, ocean-blue light/dark interaction colors, component tokens, split login and task-oriented welcome. TianGong keeps its existing `mix` layout and component defaults. `APP_LAYOUT=side|top|mix` overrides the selected profile's navigation mode. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `splitMenus` (mix only), and `contentWidth` (top only). Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens); the same resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes.
+
+`presentation.login` selects `standard|split`, and `presentation.welcome` selects `overview|workspace`. Optional `presentation.navigationTitle` gives navigation a short label while localized product titles remain available to page consumers. Presentation copy must cover every supported locale. Layout variants only compose the shared auth forms and existing business routes; they do not select permissions or datasets. Atlas workspace omits TianGong's promotional counters instead of claiming them as Atlas statistics. Dataset source labels, TIDAS descriptions and legal/operator identities retain their actual attribution.
+
+Brand settings are build inputs. Build once for each brand before uploading static assets; changing a hosting environment variable after a manual upload does not rewrite the uploaded bundle. For local visual proof, build with `APP_BRAND=<brand> REACT_APP_ENV=qualification pnpm build`, serve that bundle on loopback, then run `E2E_BRAND=<brand> E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:<port> pnpm exec playwright test --config=playwright.branding.config.ts`. This suite uses only the existing semantic backend simulator and is not hosted/release qualification. Ordinary `pnpm start:atlas` retains the configured dev backend for user preview.
+
+`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Release workflows still use the existing canonical version tag and TianGong deployment configuration; this local preview capability does not enable ATLAS publication. A future reviewed release change must bind brand, exact source commit and deployment destination explicitly.
 
 ## Prerequisites
 
@@ -172,7 +196,7 @@ If no push will occur and a standalone handoff needs final evidence, run `pnpm d
 
 The repository has one TypeScript track: the direct `typescript` dependency is exact-pinned to `7.0.2`, and every compiler entry uses that package. There is no TypeScript 6 alias or `tsc6` fallback. Repository-owned source analysis uses `scripts/typescript-native-parser.mjs`; that file and `scripts/typescript-native-parser.d.mts` are the only places allowed to import `typescript/unstable/*`. Run the adapter contract tests after every TypeScript upgrade.
 
-The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.4.0`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
+The TIDAS consumer is exact-pinned to released `@tiangong-lca/tidas-sdk` `0.4.1`. The focused installed-package contract launches Node outside the Jest module mapper, exercises all seven dataset factories, and verifies `validateEnhanced`, its normalized failure envelope, singleton/ordered Process review acceptance, and required Process general-comment validation; keep that proof with dependency/toolchain upgrades so the SDK mock cannot hide a package incompatibility.
 
 Both application and release-E2E Node container sources retain exact Node `24.19.0` tags plus immutable multi-architecture digests. The E2E environment contract and candidate manifest additionally bind the pinned Node image reference; never replace either digest with a movable tag-only source.
 

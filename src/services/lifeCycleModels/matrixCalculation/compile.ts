@@ -182,8 +182,6 @@ export interface CompiledInstance {
   allocationTargetIds: Set<string>;
   /** zh-CN: 已连接输出的流 UUID 集合。en-US: Flow UUIDs of connected output exchanges. */
   connectedOutputFlowIds: Set<string>;
-  /** zh-CN: 未声明输出的隐含份额（1 − 已声明份额之和）。en-US: Implicit share for undeclared outputs (1 − sum of declared shares). */
-  implicitShare: number;
   /** zh-CN: 本实例相关的全部连接（入边+出边）。en-US: All connections touching this instance. */
   connections: MatrixConnectionPayload[];
   /** zh-CN: 出边（本实例的输出连接）。en-US: Outgoing connections. */
@@ -205,11 +203,7 @@ export interface CompiledView {
   pivotAmount: number;
   isReference: boolean;
   isDeadEnd: boolean;
-  rowKind: 'anchor' | 'production' | 'linkage' | 'passThrough';
-  /** zh-CN: linkage 行的主视图 ID；passThrough 行的供应视图 ID。en-US: Primary view id for linkage rows; supplier view id for pass-through rows. */
-  rowLinkedViewId?: string;
-  /** zh-CN: linkage 行系数 q_v/q_primary 或 passThrough 行系数 1/attr。en-US: Linkage coefficient q_v/q_primary or pass-through coefficient 1/attr. */
-  rowCoefficient?: number;
+  rowKind: 'anchor' | 'production';
   columnIndex: number;
 }
 
@@ -253,15 +247,14 @@ export const resolveFraction = (
   exchange: CompiledExchange,
 ): number => {
   if (instance.allocationShape === 'single') {
-    return view.pivotExchangeId === instance.refExchangeId ? 1 : 0;
+    return 1;
   }
   if (instance.allocationShape === 'legacy') {
     const pivotExchange = instance.exchangeById.get(view.pivotExchangeId);
     if (pivotExchange?.allocation.kind === 'legacyShare') return pivotExchange.allocation.fraction!;
-    // 参考视图采用未声明参考默认（全额归属）；未声明的非参考边界产品视图
-    // 携带剩余份额（已声明份额闭合后通常为 0，即无负担运输）。
-    if (view.pivotExchangeId === instance.refExchangeId) return 1;
-    return instance.implicitShare;
+    // Closed legacy shares give an undeclared non-reference product zero burden.
+    // Input quantitative references represent the treatment service itself.
+    return view.pivotExchangeId === instance.refExchangeId ? 1 : 0;
   }
   // standard：按目标产品选择该交换的分配项；未声明分配的交换整体归属于
   // 实例自己的定量参考视图（与 Worker 合同一致），其余视图为稀疏零。
@@ -379,13 +372,6 @@ export const compileModel = (payload: {
         }
       }
     }
-    let declaredShareSum = 0;
-    for (const exchangeId of outputExchangeIds) {
-      const exchange = exchangeById.get(exchangeId);
-      if (exchange?.allocation.kind === 'legacyShare')
-        declaredShareSum += exchange.allocation.fraction!;
-    }
-    const implicitShare = Math.min(1, Math.max(0, 1 - declaredShareSum));
 
     return {
       instanceIndex: instance.instanceIndex,
@@ -400,7 +386,6 @@ export const compileModel = (payload: {
       allocationShape,
       allocationTargetIds,
       connectedOutputFlowIds: new Set<string>(),
-      implicitShare,
       connections: instance.connections,
       outgoing: [],
       incomingByInputFlow: new Map<string, MatrixConnectionPayload[]>(),
@@ -436,7 +421,7 @@ export const compileModel = (payload: {
 
   const instanceByIndex = new Map(instances.map((instance) => [instance.instanceIndex, instance]));
 
-  // 2) legacy 形态校验：全部输出必须带份额且闭合；输入不得带份额
+  // 2) legacy 形态校验：已声明产品份额闭合；输入不得带份额
   for (const instance of instances) {
     if (instance.allocationShape !== 'legacy') continue;
     if (instance.outputExchangeIds.length <= 1) continue;
@@ -579,7 +564,7 @@ export const compileModel = (payload: {
     }
     // Undeclared exchanges belong to the reference product, including when only
     // another output is connected. Keep that boundary result so its load is not
-    // lost. Dead ends are added below with their pass-through semantics intact.
+    // lost. Terminal reference views are added below.
     if (
       instance.allocationShape !== 'legacy' &&
       instance.outgoing.length > 0 &&
@@ -599,7 +584,7 @@ export const compileModel = (payload: {
     }
   }
 
-  // 死端实例：有入边、无出边、非参考实例 → 参考视图作为直通变量
+  // Terminal references provide independent result scenarios.
   for (const instance of instances) {
     if (instance.instanceIndex === payload.refInstanceIndex) continue;
     const hasIncoming = allConnections.some(
@@ -613,79 +598,41 @@ export const compileModel = (payload: {
 
   if (issues.length > 0) fail();
 
-  // 5) 行分配
+  // Retain a source-instance identity for its reference product; every product
+  // has its own demand equation.
   const primaryViewIdByInstance = new Map<string, string>();
   for (const instance of instances) {
-    const instanceViewIds = views
-      .filter((view) => view.instanceIndex === instance.instanceIndex)
-      .map((view) => view.id);
-    if (instanceViewIds.length === 0) continue;
-    const refViewId = instance.refExchangeId
-      ? viewId(instance.instanceIndex, instance.refExchangeId)
-      : '';
-    // 行主视图必须承载真实需求方程：参考交换视图连通（或实例完全无连通
-    // 输出）时优先；参考产品是未连接边界视图而其他输出连通时，改用第一个
-    // 连通视图承担生产行，否则无消费者的边界主行会把整个实例强制为 0。
-    // 全局参考视图锚定目标需求，即使未连接也必须保持行主。
-    const isConnectedView = (viewId: string): boolean => {
-      const view = viewById.get(viewId);
-      return !!view && instance.outgoing.some((c) => c.outputFlowId === view.pivotFlowId);
-    };
-    let primaryId = instanceViewIds.includes(refViewId) ? refViewId : instanceViewIds[0];
-    const primaryIsGlobalReference = !!viewById.get(primaryId)?.isReference;
-    if (!primaryIsGlobalReference && !isConnectedView(primaryId)) {
-      const connectedViewId = instanceViewIds.find((id) => isConnectedView(id));
-      if (connectedViewId) primaryId = connectedViewId;
-    }
-    primaryViewIdByInstance.set(instance.instanceIndex, primaryId);
-  }
-
-  for (const view of views) {
-    if (view.isReference) continue;
-    const primaryId = primaryViewIdByInstance.get(view.instanceIndex);
-    if (primaryId && primaryId !== view.id) {
-      const primaryView = viewById.get(primaryId)!;
-      view.rowKind = 'linkage';
-      view.rowLinkedViewId = primaryId;
-      view.rowCoefficient = view.pivotAmount / primaryView.pivotAmount;
-    } else {
-      view.rowKind = 'production';
+    const instanceViews = views.filter((view) => view.instanceIndex === instance.instanceIndex);
+    const primary =
+      instanceViews.find((view) => view.pivotExchangeId === instance.refExchangeId) ??
+      instanceViews[0];
+    if (primary) primaryViewIdByInstance.set(instance.instanceIndex, primary.id);
+    for (const view of instanceViews) {
+      // Standard vectors are exchange-local: a product omitted from a closed
+      // vector receives zero, even when omitted from every declared vector.
+      if (
+        (instance.allocationShape === 'single' &&
+          view.pivotExchangeId !== instance.refExchangeId) ||
+        (instance.allocationShape === 'legacy' &&
+          view.pivotDirection === 'OUTPUT' &&
+          view.pivotExchangeId === instance.refExchangeId &&
+          !instance.allocationTargetIds.has(view.pivotExchangeId))
+      ) {
+        issues.push({
+          code: 'INVALID_ALLOCATION',
+          allocationReason:
+            instance.allocationShape === 'single'
+              ? 'MISSING_PRODUCT_ALLOCATION'
+              : 'MISSING_REFERENCE_ALLOCATION',
+          instanceIndex: instance.instanceIndex,
+          nodeId: instance.nodeId,
+          flowId: view.pivotFlowId,
+          exchangeInternalId: view.pivotExchangeId,
+        });
+      }
     }
   }
-
-  for (const view of views) {
-    if (!view.isDeadEnd) continue;
-    const instance = instanceByIndex.get(view.instanceIndex)!;
-    // 死端视图仅在存在入边时创建，firstIncoming 必然存在；上游输出交换已在
-    // 视图构建阶段校验，必然可解析并持有视图。
-    const firstIncoming = instance.exchanges
-      .map((exchange) => instance.incomingByInputFlow.get(exchange.payload.flowId))
-      .find((list) => list && list.length > 0)![0];
-    const upstreamInstance = instanceByIndex.get(firstIncoming.upstreamIndex);
-    if (!upstreamInstance) {
-      issues.push({
-        code: 'INVALID_CONNECTION',
-        instanceIndex: instance.instanceIndex,
-        nodeId: instance.nodeId,
-        edgeId: firstIncoming.edgeId,
-      });
-      continue;
-    }
-    // 上游输出交换与供应视图已在视图构建阶段校验并创建
-    const upstreamExchange = upstreamInstance.exchanges.find(
-      (exchange) =>
-        exchange.payload.direction === 'OUTPUT' &&
-        exchange.payload.flowId === firstIncoming.outputFlowId,
-    )!;
-    const supplierViewId = viewId(
-      upstreamInstance.instanceIndex,
-      upstreamExchange.payload.internalId,
-    );
-    const attr = resolveConsumption(instance, view, firstIncoming.inputFlowId);
-    view.rowKind = 'passThrough';
-    view.rowLinkedViewId = supplierViewId;
-    view.rowCoefficient = attr > 0 ? 1 / attr : 0;
-  }
+  if (issues.length > 0) fail();
 
   // 6) 归属系数表
   const fractionsByView = new Map<string, Map<string, number>>();
@@ -706,12 +653,6 @@ export const compileModel = (payload: {
     const key = `${row}\u0000${col}`;
     entryMap.set(key, (entryMap.get(key) ?? 0) + value);
   };
-
-  const isSystemConsumer = (view: CompiledView): boolean => !view.isDeadEnd;
-  // 只有供应行为锚定行/生产行时，边平衡才写入供应行；联动行的平衡交给
-  // 求解后的端口平衡检查。
-  const supplierRowTakesBalance = (view: CompiledView): boolean =>
-    view.rowKind === 'anchor' || view.rowKind === 'production';
 
   for (const connection of allConnections) {
     {
@@ -739,39 +680,11 @@ export const compileModel = (payload: {
         if (view.instanceIndex !== instance.instanceIndex) continue;
         const attr = resolveConsumption(instance, view, connection.inputFlowId);
         consumptions.push({ viewId: view.id, amount: attr });
-        if (isSystemConsumer(view) && supplierRowTakesBalance(supplierView)) {
-          addEntry(supplierView.columnIndex, view.columnIndex, attr);
-          balanceInSystem = true;
-        }
+        addEntry(supplierView.columnIndex, view.columnIndex, attr);
+        balanceInSystem = true;
       }
       edges.push({ connection, supplierViewId, consumptions, inSystem: balanceInSystem });
     }
-  }
-
-  // 死端直通行：attr_d * x_d = x_s - Σ(attr_w * x_w)（供应方扣除需求驱动消费后的余量）
-  // 写成 M = I - A 的行：A[d, s] = 1/attr_d；A[d, w] = -attr_w/attr_d。
-  for (const view of views) {
-    if (view.rowKind !== 'passThrough') continue;
-    const supplierView = viewById.get(view.rowLinkedViewId!)!;
-    const attrD = view.rowCoefficient ? 1 / view.rowCoefficient : 0;
-    if (attrD > 0) {
-      addEntry(view.columnIndex, supplierView.columnIndex, 1 / attrD);
-      for (const edge of edges) {
-        if (edge.supplierViewId !== supplierView.id) continue;
-        for (const consumption of edge.consumptions) {
-          const consumerView = viewById.get(consumption.viewId);
-          if (!consumerView || consumerView.isDeadEnd) continue;
-          addEntry(view.columnIndex, consumerView.columnIndex, -consumption.amount / attrD);
-        }
-      }
-    }
-  }
-
-  // 联动行：x_v = (q_v / q_primary) * x_primary
-  for (const view of views) {
-    if (view.rowKind !== 'linkage') continue;
-    const primaryView = viewById.get(view.rowLinkedViewId!)!;
-    addEntry(view.columnIndex, primaryView.columnIndex, view.rowCoefficient!);
   }
 
   if (issues.length > 0) fail();

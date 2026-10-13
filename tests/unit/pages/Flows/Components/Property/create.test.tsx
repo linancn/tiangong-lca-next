@@ -20,6 +20,7 @@ const toText = (node: any): string => {
 };
 
 let lastFormApi: any = null;
+let mockSnapshotUnavailable = false;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -98,7 +99,7 @@ jest.mock('@ant-design/pro-components', () => {
       formRef.current = {
         submit: async () => onFinish?.(),
         resetFields: () => setValues({}),
-        getFieldsValue: () => values,
+        getFieldsValue: () => (mockSnapshotUnavailable ? undefined : values),
         setFieldsValue: (next: any) => {
           if (next === undefined) {
             onValuesChange?.({}, undefined);
@@ -193,6 +194,7 @@ describe('FlowPropertyCreate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     lastFormApi = null;
+    mockSnapshotUnavailable = false;
   });
 
   it('submits the newly created property and closes the drawer', async () => {
@@ -224,6 +226,22 @@ describe('FlowPropertyCreate', () => {
         }),
       ),
     );
+    expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();
+  });
+
+  it('retains received edits when the form snapshot is temporarily unavailable', async () => {
+    const onData = jest.fn();
+    renderWithProviders(<PropertyCreate lang='en' onData={onData} />);
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+    const edited = {
+      referenceToFlowPropertyDataSet: { '@refObjectId': 'fp-1', '@version': '03.00.003' },
+      meanValue: '0',
+    };
+    mockSnapshotUnavailable = true;
+    await act(async () => lastFormApi.setFieldsValue(edited));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(onData).toHaveBeenCalledWith(edited));
     expect(screen.queryByRole('dialog', { name: /create flow property/i })).not.toBeInTheDocument();
   });
 
@@ -259,7 +277,7 @@ describe('FlowPropertyCreate', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /create/i }));
     await waitFor(() => expect(lastFormApi).not.toBeNull());
-    lastFormApi.getFieldsValue = jest.fn(() => undefined);
+    mockSnapshotUnavailable = true;
 
     await userEvent.click(screen.getByRole('button', { name: /select-flowproperty/i }));
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -276,6 +294,7 @@ describe('FlowPropertyCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /create/i }));
     await waitFor(() => expect(lastFormApi).not.toBeNull());
 
+    mockSnapshotUnavailable = true;
     await act(async () => {
       lastFormApi.setFieldsValue(undefined);
     });

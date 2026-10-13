@@ -1,4 +1,12 @@
 // @ts-nocheck
+let mockBrand = 'tiangong';
+jest.mock('../../../../../config/brandProfile', () => ({
+  ...jest.requireActual('../../../../../config/brandProfile'),
+  get brandProfile() {
+    return jest.requireActual('../../../../../config/brandProfile').resolveBrandProfile(mockBrand);
+  },
+}));
+
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
@@ -334,6 +342,7 @@ const LoginPage = require('@/pages/User/Login').default;
 
 describe('Login page', () => {
   beforeEach(() => {
+    mockBrand = 'tiangong';
     jest.clearAllMocks();
     mockPasswordFields = {};
     mockGetLocalizedAppTitle.mockReset();
@@ -350,6 +359,25 @@ describe('Login page', () => {
       fetchUserInfo: jest.fn().mockResolvedValue({ name: 'Current User' }),
     };
     mockUseModelState.setInitialState = (...args: any[]) => mockSetInitialState(...args);
+  });
+
+  it('uses the Atlas split presentation while retaining the shared login flow', async () => {
+    mockBrand = 'atlas';
+    const { container } = render(<LoginPage />);
+    expect(container.querySelector('.atlas-login')).toBeInTheDocument();
+    expect(container.querySelector('.atlas-login-form')).toBeInTheDocument();
+    expect(container.querySelector('.atlas-introduction')).toHaveTextContent('ATLAS');
+    expect(container.querySelector('.atlas-introduction')).not.toHaveTextContent(/TianGong|天工/);
+    fireEvent.click(screen.getByTestId('login-submit'));
+    await waitFor(() =>
+      expect(mockLogin).toHaveBeenCalledWith({
+        email: 'user@test.com',
+        password: 'Secret123!',
+        autoLogin: true,
+        type: 'login',
+      }),
+    );
+    await waitFor(() => expect(mockHistory.push).toHaveBeenCalledWith('/'));
   });
 
   it('submits the login flow successfully and redirects after fetching user info', async () => {

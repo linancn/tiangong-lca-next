@@ -3,33 +3,11 @@ import path from 'path';
 import { v4 } from 'uuid';
 import { supabase } from '../supabase';
 import { supabaseStorageBucket } from '../supabase/key';
+import { isStorageObjectKey, resolveFileLocator } from './fileLocator';
 
 const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg'];
 
 export type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
-
-const resolveStorageFilePath = (file: string) => {
-  if (!file) {
-    return null;
-  }
-
-  const filePaths = file.split('/');
-  if (filePaths.length === 3) {
-    return {
-      bucketName: filePaths[1],
-      filePath: filePaths[2],
-    };
-  }
-
-  if (filePaths.length >= 4) {
-    return {
-      bucketName: filePaths[1],
-      filePath: filePaths.slice(2).join('/'),
-    };
-  }
-
-  return null;
-};
 
 export const getBase64 = (file: FileType): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -40,122 +18,131 @@ export const getBase64 = (file: FileType): Promise<string> =>
   });
 
 export const isImage = (file: UploadFile) => {
-  return imageExtensions.includes(path.extname(file.name));
+  return imageExtensions.includes(path.extname(file.name).toLowerCase());
 };
 
-export async function getOriginalFileUrl(file: string, name: string) {
-  if (!file) {
-    return {};
+export type FilePreviewState = 'unchecked' | 'resolved' | 'unavailable' | 'unsupported';
+export type StorageFilePreview = UploadFile & {
+  previewState?: FilePreviewState;
+  previewError?: 'permission' | 'not-found' | 'transport' | 'unknown';
+};
+
+// A completed thumbnail is created only after downloading Blob bytes and always has a URL.
+export type StorageFileThumbnail =
+  | (StorageFilePreview & { status: 'done'; thumbUrl: string })
+  | (StorageFilePreview & { status?: Exclude<UploadFile['status'], 'done'> });
+
+const previewErrorKind = (error: unknown): StorageFilePreview['previewError'] => {
+  const status = String((error as { statusCode?: unknown } | null)?.statusCode ?? '');
+  if (status === '401' || status === '403') return 'permission';
+  if (status === '404') return 'not-found';
+  return error instanceof Error ? 'transport' : 'unknown';
+};
+
+export async function getOriginalFileUrl(
+  file: string,
+  name: string,
+): Promise<Partial<StorageFilePreview>> {
+  if (!file) return {};
+  const locator = resolveFileLocator(file);
+  if (locator.kind === 'external') {
+    return { uid: file, name, url: locator.url, previewState: 'unchecked' };
   }
-  const storageFile = resolveStorageFilePath(file);
-  if (storageFile) {
-    try {
-      const originalFile = await supabase.storage
-        .from(storageFile.bucketName)
-        .download(storageFile.filePath);
-
-      if (!originalFile.data) {
-        return { uid: file, status: 'error', name: name, url: '' };
-      }
-
-      const originalFileUrl = URL.createObjectURL(originalFile.data);
+  if (locator.kind === 'opaque') {
+    return { uid: file, name, url: '', previewState: 'unsupported' };
+  }
+  try {
+    const { data, error } = await supabase.storage
+      .from(locator.bucketName)
+      .download(locator.filePath);
+    if (error || !data) {
       return {
         uid: file,
-        status: 'done',
-        name: name,
-        url: originalFileUrl,
+        status: 'error',
+        name,
+        url: '',
+        previewState: 'unavailable',
+        previewError: previewErrorKind(error),
       };
-    } catch (e) {
-      return { uid: file, status: 'error', name: name, url: '' };
     }
+    return {
+      uid: file,
+      status: 'done',
+      name,
+      url: URL.createObjectURL(data),
+      previewState: 'resolved',
+    };
+  } catch (error) {
+    return {
+      uid: file,
+      status: 'error',
+      name,
+      url: '',
+      previewState: 'unavailable',
+      previewError: previewErrorKind(error),
+    };
   }
-  return { uid: file, status: 'error', name: name, url: '' };
 }
 
-export async function getThumbFileUrls(fileList: any) {
-  if (!fileList) {
-    return [];
-  }
-
-  const urls = await Promise.all(
-    fileList.map(async (fileJson: any, index: number) => {
-      const file = fileJson?.['@uri'];
-      if (file) {
-        const filePaths = file.split('/');
-        if (filePaths.length === 3) {
-          try {
-            let thumbFileUrl = '.';
-            if (imageExtensions.includes(path.extname(file))) {
-              const thumbFile = await supabase.storage.from(filePaths[1]).download(filePaths[2], {
-                transform: {
-                  width: 100,
-                  height: 100,
-                  resize: 'contain',
-                },
-              });
-              if (thumbFile.data) {
-                thumbFileUrl = URL.createObjectURL(thumbFile.data);
-              }
-            }
-            return {
-              uid: file,
-              status: 'done',
-              name: `${index + 1}${path.extname(file)}`,
-              thumbUrl: thumbFileUrl,
-              url: thumbFileUrl,
-            };
-          } catch (e) {
-            return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
-          }
+export async function getThumbFileUrls(fileList: any): Promise<StorageFileThumbnail[]> {
+  if (!fileList) return [];
+  const files = Array.isArray(fileList) ? fileList : [fileList];
+  return Promise.all(
+    files.map(async (fileJson: any, index: number): Promise<StorageFileThumbnail> => {
+      const file = typeof fileJson?.['@uri'] === 'string' ? fileJson['@uri'] : '';
+      const locator = resolveFileLocator(file);
+      const extension = path
+        .extname(locator.kind === 'external' ? new URL(locator.url).pathname : file)
+        .toLowerCase();
+      const name = `${index + 1}${extension}`;
+      if (locator.kind === 'external')
+        return { uid: file, name, url: locator.url, previewState: 'unchecked' };
+      if (locator.kind === 'opaque')
+        return { uid: file, name, url: '', previewState: 'unsupported' };
+      // Documents are checked on explicit open; a placeholder must not claim a successful download.
+      if (!imageExtensions.includes(extension))
+        return { uid: file, name, url: '', previewState: 'unchecked' };
+      try {
+        const { data, error } = await supabase.storage
+          .from(locator.bucketName)
+          .download(locator.filePath, {
+            transform: { width: 100, height: 100, resize: 'contain' },
+          });
+        if (error || !data) {
+          return {
+            uid: file,
+            status: 'error',
+            name,
+            url: '',
+            previewState: 'unavailable',
+            previewError: previewErrorKind(error),
+          };
         }
-        if (filePaths.length === 4) {
-          try {
-            let thumbFileUrl = '.';
-            if (imageExtensions.includes(path.extname(file))) {
-              const bucketName = filePaths[1];
-              const filePath = `${filePaths[2]}/${filePaths[3]}`;
-              const thumbFile = await supabase.storage.from(bucketName).download(filePath, {
-                transform: {
-                  width: 100,
-                  height: 100,
-                  resize: 'contain',
-                },
-              });
-              if (thumbFile.data) {
-                thumbFileUrl = URL.createObjectURL(thumbFile.data);
-              }
-            }
-            return {
-              uid: file,
-              status: 'done',
-              name: `${index + 1}${path.extname(file)}`,
-              thumbUrl: thumbFileUrl,
-              url: thumbFileUrl,
-            };
-          } catch (e) {
-            return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
-          }
-        }
+        const url = URL.createObjectURL(data);
+        return { uid: file, status: 'done', name, thumbUrl: url, url, previewState: 'resolved' };
+      } catch (error) {
+        return {
+          uid: file,
+          status: 'error',
+          name,
+          url: '',
+          previewState: 'unavailable',
+          previewError: previewErrorKind(error),
+        };
       }
-      return { uid: file, status: 'error', name: `${index + 1}${path.extname(file)}` };
     }),
   );
-  return urls;
 }
 
 export async function getSignedStorageFileUrl(file: string, expiresIn = 60 * 60) {
-  const storageFile = resolveStorageFilePath(file);
-  if (!storageFile) {
-    return '';
-  }
-
+  const locator = resolveFileLocator(file);
+  if (locator.kind !== 'managed') return '';
   try {
-    const { data } = await supabase.storage
-      .from(storageFile.bucketName)
-      .createSignedUrl(storageFile.filePath, expiresIn);
-
-    return data?.signedUrl ?? '';
-  } catch (e) {
+    const { data, error } = await supabase.storage
+      .from(locator.bucketName)
+      .createSignedUrl(locator.filePath, expiresIn);
+    return error ? '' : (data?.signedUrl ?? '');
+  } catch {
     return '';
   }
 }
@@ -166,8 +153,9 @@ export async function uploadFile(name: string, file: any) {
 }
 
 export async function removeFile(files: string[]) {
-  const result = await supabase.storage.from(supabaseStorageBucket).remove(files);
-  return result;
+  const keys = files.filter(isStorageObjectKey);
+  if (!keys.length) return { data: [], error: null };
+  return supabase.storage.from(supabaseStorageBucket).remove(keys);
 }
 
 export async function uploadLogoApi(name: string, file: File, suffix: string) {
@@ -185,7 +173,9 @@ export async function removeLogoApi(files: string[]) {
     formattedPath = formattedPath.replace(/^\/+/, '');
     return formattedPath;
   });
-  const res = await supabase.storage.from('sys-files').remove(formattedFiles);
+  const keys = formattedFiles.filter(isStorageObjectKey);
+  if (!keys.length) return { data: [], error: null };
+  const res = await supabase.storage.from('sys-files').remove(keys);
   if (res.error) {
     throw res.error;
   } else {

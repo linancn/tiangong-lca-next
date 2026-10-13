@@ -1,4 +1,10 @@
 export default {
+  'pages.classification.systemName': 'Klassifikationssystem',
+  'pages.classification.systemUri': 'URI des Klassifikationssystems',
+  'pages.classification.level': 'Ebene',
+  'pages.classification.code': 'Code',
+  'pages.classification.label': 'Klassenname',
+
   'pages.theme.toggleDarkMode': 'Dunkelmodus umschalten',
   'pages.table.title.index': 'Nr.',
   'pages.table.title.name': 'Bezeichnung',
@@ -215,4 +221,16 @@ export default {
   'pages.button.confirm': 'Bestätigen',
 
   'pages.pagination.showTotal': 'Einträge {start}–{end} von {total}',
+  'pages.datasetDisplay.settings': 'Anzeigeeinstellungen',
+  'pages.datasetDisplay.title': 'Angezeigte Datensätze',
+  'pages.datasetDisplay.showSelected': 'Auswahl anzeigen ({count})',
+  'pages.datasetDisplay.hideSelected': 'Auswahl ausblenden ({count})',
+  'pages.datasetDisplay.allVisibility': 'Alle',
+  'pages.datasetDisplay.visible': 'Angezeigt',
+  'pages.datasetDisplay.hidden': 'Nicht angezeigt',
+  'pages.datasetDisplay.visibility': 'Sichtbarkeit',
+  'pages.datasetDisplay.search': 'Nach Name oder UUID suchen',
+  'pages.datasetDisplay.success': '{count} Einträge aktualisiert; {unchanged} waren bereits eingestellt.',
+  'pages.datasetDisplay.updateError': 'Anzeigeeinstellungen konnten nicht aktualisiert werden. Bitte erneut versuchen.',
+  'pages.datasetDisplay.loadError': 'Datensätze konnten nicht geladen werden. Bitte aktualisieren.',
 };

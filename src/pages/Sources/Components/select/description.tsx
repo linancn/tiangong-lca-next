@@ -9,9 +9,10 @@ type Props = {
   title: ReactNode | string;
   lang: string;
   data?: ReferenceItem | ReferenceItem[];
+  extraAction?: (item: ReferenceItem) => ReactNode;
 };
 
-const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
+const SourceSelectDescription: FC<Props> = ({ title, lang, data, extraAction }) => {
   const dataList: ReferenceItem[] = Array.isArray(data) ? data : data ? [data] : [];
   return (
     <Space orientation='vertical' style={{ width: '100%' }}>
@@ -76,6 +77,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                     lang={lang}
                   />
                 )}
+                {extraAction?.(item)}
               </Space>
               <br />
               <br />

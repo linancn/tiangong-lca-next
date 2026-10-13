@@ -119,12 +119,14 @@ export function validateProcessTidasScalarStorage(payload: any): TidasScalarStor
     });
   });
 
-  addPercentageIssue(
-    issues,
-    'processDataSet.processInformation.mathematicalRelations.variableParameter.relativeStandardDeviation95In',
-    processDataSet?.processInformation?.mathematicalRelations?.variableParameter
-      ?.relativeStandardDeviation95In,
-  );
+  const parameters = processDataSet?.processInformation?.mathematicalRelations?.variableParameter;
+  toList(parameters).forEach((parameter, index) => {
+    addPercentageIssue(
+      issues,
+      `processDataSet.processInformation.mathematicalRelations.variableParameter${Array.isArray(parameters) ? `[${index}]` : ''}.relativeStandardDeviation95In`,
+      parameter?.relativeStandardDeviation95In,
+    );
+  });
 
   return issues;
 }

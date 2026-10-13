@@ -1,4 +1,13 @@
 export default {
+  'pages.file.preview.open': 'Datei öffnen',
+  'pages.file.preview.retry': 'Vorschau erneut versuchen',
+
+  'pages.file.preview.resolved': 'Dateivorschau bereit',
+
+  'pages.file.preview.unchecked': 'Dateizugriff nicht geprüft',
+  'pages.file.preview.unavailable': 'Dateivorschau nicht verfügbar',
+  'pages.file.preview.unsupported': 'Vorschau für diese Referenz nicht unterstützt',
+
   'pages.source.publicationType': 'Publikationsart',
   'pages.source.refObjectId': 'Kennung des referenzierten Quelldatensatzes',
   'pages.source.drawer.title.create': 'Quelldatensatz erstellen',

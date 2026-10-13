@@ -87,7 +87,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefCreate.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -181,7 +181,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
       },
     };
     setInitData(newData as FormUnitGroup);
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData as FormUnitGroup);
     setUnitDataSource([]);
@@ -282,7 +282,8 @@ const UnitGroupCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
+            onValuesChange={() => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               const nextSlice = allValues[activeTabKey] ?? {};
               const applyUpdate = () => {
                 setFromData(
@@ -311,7 +312,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
                 const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
                 const units = fromData?.units;
                 const formFieldsValue = {
-                  ...formRefCreate.current?.getFieldsValue(),
+                  ...formRefCreate.current?.getFieldsValue(true),
                   units,
                 };
                 const result =

@@ -87,10 +87,10 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
       case 1:
         return {
           text: intl.formatMessage({
-            id: 'pages.review.progress.status.reviewed',
-            defaultMessage: 'Reviewed',
+            id: 'pages.review.result.approved',
+            defaultMessage: 'Approved',
           }),
-          color: 'blue',
+          color: 'green',
         };
       default:
         return {
@@ -141,19 +141,17 @@ export default function ReviewProgress({ reviewId }: ReviewProgressProps) {
       width: 300,
       render: (_, record) => {
         if (record.state_code !== -3) return null;
-        let msg = '';
+        let msg = typeof record.json?.reason === 'string' ? record.json.reason : '';
         const comment = record.json?.comment;
         try {
-          if (!comment) {
-            msg = '';
-          } else if (typeof comment === 'string') {
+          if (!msg && typeof comment === 'string') {
             const parsed = JSON.parse(comment);
             msg = parsed?.message ?? '';
-          } else if (typeof comment === 'object') {
+          } else if (!msg && typeof comment === 'object') {
             msg = (comment as any)?.message ?? '';
           }
         } catch (e) {
-          msg = '';
+          msg = msg || '';
         }
         if (!msg) return null;
         return (

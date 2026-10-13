@@ -13,6 +13,7 @@ import {
   syncLocaleMaterializedTableRequestEpochs,
   VersionedDataRow,
 } from '@/services/general/data';
+import { getAllVersionsSortField } from '@/services/general/tableSort';
 import { getDataSource } from '@/services/general/util';
 import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
@@ -101,7 +102,13 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   };
 
   const allVersionsColumns: ProColumns<any>[] = [
-    ...columns,
+    ...columns.map((column) => {
+      const sortable = Boolean(getAllVersionsSortField(column.dataIndex));
+      return {
+        ...column,
+        ...(!sortable ? { sorter: false, defaultSortOrder: undefined, sortOrder: undefined } : {}),
+      };
+    }),
 
     {
       title: (

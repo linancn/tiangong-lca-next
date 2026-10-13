@@ -67,5 +67,21 @@ jobs:
           path: |
             .local/e2e-release/qualification-proof.json
             .local/e2e-release/qualification-controller-report.json
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: semantic-qualification-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/e2e-release/qualification-controller-report.json
+            .local/e2e-release/runs/**/run-result.json
+            .local/e2e-release/runs/**/preflight-report.json
+            .local/e2e-release/runs/**/semantic-harness-qualification.json
+            .local/e2e-release/runs/**/qualification-evidence-roundtrip.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

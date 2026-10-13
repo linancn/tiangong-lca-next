@@ -12,6 +12,7 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 
 jest.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({ functions: require('@/services/supabase').supabase.functions }),
   FunctionRegion: {
     UsEast1: 'us-east-1',
   },
@@ -21,6 +22,7 @@ jest.mock('@/services/supabase', () => ({
   supabase: {
     auth: {
       getSession: jest.fn(),
+      getClaims: jest.fn(),
     },
     functions: {
       invoke: jest.fn(),
@@ -31,6 +33,7 @@ jest.mock('@/services/supabase', () => ({
 type LcaMockSupabase = {
   auth: {
     getSession: jest.Mock;
+    getClaims: jest.Mock;
   };
   functions: {
     invoke: jest.Mock;
@@ -57,6 +60,77 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
   });
 
   describe('isTerminalJobStatus', () => {
+    it('does not submit a solve after an owner changes during deferred session retrieval', async () => {
+      let finish: (value: any) => void = () => undefined;
+      let active = true;
+      supabaseMock.auth.getSession.mockReturnValueOnce(
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+      );
+      const pending = submitLcaSolve(
+        { demand_mode: 'all_unit' },
+        { taskSession: { ownerId: 'owner-a', isCurrent: () => active } },
+      );
+      active = false;
+      finish({ data: { session: { access_token: 'token-b' } } });
+      await expect(pending).rejects.toThrow('task_owner_changed');
+      expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
+    });
+
+    it('does not begin a session lookup for an already-invalid solve intent', async () => {
+      await expect(
+        submitLcaSolve(
+          { demand_mode: 'all_unit' },
+          { taskSession: { ownerId: 'owner-a', isCurrent: () => false } },
+        ),
+      ).rejects.toThrow('task_owner_changed');
+      expect(supabaseMock.auth.getSession).not.toHaveBeenCalled();
+      expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
+    });
+
+    it('fences an owner invalidated after token verification before solve invocation', async () => {
+      let active = true;
+      let finish: (value: any) => void = () => undefined;
+      const claims = new Promise((resolve) => {
+        finish = resolve;
+      });
+      supabaseMock.auth.getClaims.mockReturnValueOnce(
+        claims.then((value) => {
+          void Promise.resolve().then(() =>
+            Promise.resolve().then(() => {
+              active = false;
+            }),
+          );
+          return value;
+        }),
+      );
+      const result = submitLcaSolve(
+        { demand_mode: 'all_unit' },
+        { taskSession: { ownerId: 'owner-a', isCurrent: () => active } },
+      );
+      finish({ data: { claims: { sub: 'owner-a' } }, error: null });
+      await expect(result).rejects.toThrow('task_owner_changed');
+      expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();
+    });
+
+    it('binds a task solve to verified claims from the exact bearer token', async () => {
+      supabaseMock.auth.getClaims.mockResolvedValueOnce({
+        data: { claims: { sub: 'owner-a' } },
+        error: null,
+      });
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: { mode: 'cache_hit', result_id: 'result-a' },
+        error: null,
+      });
+      await submitLcaSolve(
+        { demand_mode: 'all_unit' },
+        { taskSession: { ownerId: 'owner-a', isCurrent: () => true } },
+      );
+      expect(supabaseMock.auth.getClaims).toHaveBeenCalledWith('token-123');
+      expect(supabaseMock.functions.invoke).toHaveBeenCalledTimes(1);
+    });
+
     it('returns true for terminal statuses', () => {
       expect(isTerminalJobStatus('ready')).toBe(true);
       expect(isTerminalJobStatus('completed')).toBe(true);

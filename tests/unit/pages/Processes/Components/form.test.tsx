@@ -2,6 +2,11 @@
 import { ProcessForm } from '@/pages/Processes/Components/form';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
+jest.mock('@/components/TidasRepeatedField', () => ({
+  __esModule: true,
+  default: ({ name, children }: any) => children(name),
+}));
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -328,7 +333,8 @@ jest.mock('antd', () => {
   );
 
   const FormComponent = ({ children }: any) => <form>{children}</form>;
-  const FormItem = ({ children, name }: any) => {
+  const FormItem = ({ children, name, getValueProps }: any) => {
+    getValueProps?.(undefined);
     const [, forceRender] = React.useState(0);
     const notifyRef = React.useRef<() => void>();
     const listeners = ((globalThis as any).__TEST_PROCESS_FORM_LISTENERS__ ??= new Set<

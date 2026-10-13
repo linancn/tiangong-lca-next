@@ -650,6 +650,43 @@ describe('SourceEdit component', () => {
     );
   });
 
+  it.each(['https://example.org/file.pdf', './relative/file.pdf', '../sources/file-existing.pdf'])(
+    'preserves canonical locator %s instead of its blob preview during edit',
+    async (uri) => {
+      const user = userEvent.setup();
+      mockGetThumbFileUrls.mockResolvedValueOnce([
+        { uid: uri, name: 'reference', url: 'blob:preview' },
+      ]);
+      renderWithProviders(
+        <SourceEdit
+          id='source-123'
+          version='01.00.000'
+          lang='en'
+          buttonType='icon'
+          actionRef={{ current: { reload: jest.fn() } } as any}
+          setViewDrawerVisible={jest.fn()}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      const drawer = await screen.findByRole('dialog', { name: 'Edit Source' });
+      await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+      await waitFor(() =>
+        expect(mockUpdateSource).toHaveBeenCalledWith(
+          'source-123',
+          '01.00.000',
+          expect.objectContaining({
+            sourceInformation: expect.objectContaining({
+              dataSetInformation: expect.objectContaining({
+                referenceToDigitalFile: [{ '@uri': uri }],
+              }),
+            }),
+          }),
+        ),
+      );
+      expect(mockRemoveFile).not.toHaveBeenCalled();
+    },
+  );
+
   it('removes deleted existing files before saving', async () => {
     const user = userEvent.setup();
 

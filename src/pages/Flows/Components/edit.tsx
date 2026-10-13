@@ -268,7 +268,7 @@ const FlowsEdit: FC<Props> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefEdit.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -355,7 +355,7 @@ const FlowsEdit: FC<Props> = ({
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
 
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const fieldsValue = formRefEdit.current?.getFieldsValue(true);
     const flowProperties = fromData?.flowProperties;
     const nextFlowData = {
       ...fieldsValue,
@@ -474,7 +474,7 @@ const FlowsEdit: FC<Props> = ({
       ? isRuleVerificationPassed(updateResult?.data?.[0]?.rule_verification)
       : true;
     const pathRef = new ReffPath(rootRef, rootRuleVerification, false);
-    const fieldsValue = formRefEdit.current?.getFieldsValue();
+    const fieldsValue = formRefEdit.current?.getFieldsValue(true);
     const jsonData = {
       ...fieldsValue,
       flowProperties: validationDraft?.flowProperties ?? fromData?.flowProperties,
@@ -743,7 +743,8 @@ const FlowsEdit: FC<Props> = ({
                 await handleSubmit(true);
                 return true;
               }}
-              onValuesChange={(_, allValues) => {
+              onValuesChange={(_, changedFormValues) => {
+                const allValues = formRefEdit.current?.getFieldsValue(true) ?? changedFormValues;
                 setFromData({
                   ...fromData,
                   [activeTabKey]: allValues[activeTabKey] ?? {},

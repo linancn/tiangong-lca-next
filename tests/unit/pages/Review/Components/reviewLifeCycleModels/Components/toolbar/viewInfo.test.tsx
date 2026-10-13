@@ -5,6 +5,18 @@ import userEvent from '@testing-library/user-event';
 
 let proFormApi: any = null;
 
+jest.mock('@/components/TidasRepeatedField', () => ({
+  __esModule: true,
+  default: ({ name, children, onChange }: any) => (
+    <div>
+      {children(name)}
+      <button type='button' onClick={onChange}>
+        Repeated change
+      </button>
+    </div>
+  ),
+}));
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
@@ -560,6 +572,7 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
     await userEvent.click(screen.getByTestId('compliance-form'));
+    await userEvent.click(screen.getByRole('button', { name: 'Repeated change' }));
   });
 
   it('falls back to dash labels when mapped option fields are omitted entirely', async () => {
@@ -926,6 +939,7 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /compliance declarations/i }));
     await userEvent.click(screen.getByTestId('compliance-form'));
+    await userEvent.click(screen.getByRole('button', { name: 'Repeated change' }));
 
     expect(screen.getByTestId('review-form')).toBeInTheDocument();
     expect(screen.getByTestId('compliance-form')).toBeInTheDocument();

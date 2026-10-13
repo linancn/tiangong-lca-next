@@ -1,5 +1,14 @@
-import { FileType, getBase64, getOriginalFileUrl, isImage } from '@/services/supabase/storage';
-import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
+import {
+  FileType,
+  getBase64,
+  getOriginalFileUrl,
+  isImage,
+  type StorageFilePreview,
+} from '@/services/supabase/storage';
+import { resolveFileLocator } from '@/services/supabase/fileLocator';
+import { filePreviewLabel } from '@/components/FileViewer/preview';
+import fileViewerStyles from '@/components/FileViewer/sourceUpload.module.less';
+import { Button, Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { FC, useMemo, useState } from 'react';
 
 import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
@@ -74,20 +83,35 @@ export const SourceForm: FC<Props> = ({
     [validationIssueTabNames],
   );
   const handlePreview = async (file: UploadFile) => {
+    if (file.originFileObj && isImage(file)) {
+      const preview = file.preview || (await getBase64(file.originFileObj as FileType));
+      setPreviewImage(preview);
+      setPreviewOpen(true);
+      return;
+    }
+    const locator = resolveFileLocator(file.uid);
+    if (locator.kind === 'external') {
+      window.open(locator.url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (locator.kind !== 'managed') return;
+    const result = await getOriginalFileUrl(file.uid, file.name);
+    setFileList((files) =>
+      files.map((entry) =>
+        entry.uid === file.uid
+          ? {
+              ...entry,
+              ...result,
+            }
+          : entry,
+      ),
+    );
+    if (!result.url) return;
     if (isImage(file)) {
-      if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj as FileType);
-        setPreviewImage(file.preview);
-      } else {
-        getOriginalFileUrl(file.uid, file.name).then((res) => {
-          setPreviewImage(res?.url ?? '');
-        });
-      }
+      setPreviewImage(result.url);
       setPreviewOpen(true);
     } else {
-      getOriginalFileUrl(file.uid, file.name).then((res) => {
-        window.open(res.url, '_blank');
-      });
+      window.open(result.url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -259,6 +283,57 @@ export const SourceForm: FC<Props> = ({
         >
           <Upload
             name='avatar'
+            className={fileViewerStyles.sourceUpload}
+            styles={{ item: { height: 104 } }}
+            isImageUrl={(file) =>
+              (Boolean(file.originFileObj) || resolveFileLocator(file.uid).kind === 'managed') &&
+              isImage(file)
+            }
+            showUploadList={{
+              showPreviewIcon: (file) =>
+                (Boolean(file.originFileObj) && isImage(file)) ||
+                resolveFileLocator(file.uid).kind !== 'opaque',
+            }}
+            itemRender={(node, file) => {
+              const state = (file as StorageFilePreview).previewState;
+              const needsManagedAction =
+                resolveFileLocator(file.uid).kind === 'managed' &&
+                (state === 'unavailable' || (!file.url && !file.thumbUrl));
+              const actionLabel =
+                state === 'unavailable'
+                  ? intl.formatMessage({
+                      id: 'pages.file.preview.retry',
+                      defaultMessage: 'Retry preview',
+                    })
+                  : intl.formatMessage({
+                      id: 'pages.file.preview.open',
+                      defaultMessage: 'Open file',
+                    });
+              return (
+                <div>
+                  {node}
+                  <div style={{ position: 'relative', zIndex: 2, flex: 'none' }}>
+                    <div>{filePreviewLabel(state, intl.formatMessage)}</div>
+                    {needsManagedAction && (
+                      <Button
+                        type='link'
+                        size='small'
+                        aria-label={`${actionLabel}: ${file.name}`}
+                        style={{
+                          maxWidth: '100%',
+                          height: 'auto',
+                          whiteSpace: 'normal',
+                          paddingInline: 0,
+                        }}
+                        onClick={() => void handlePreview(file)}
+                      >
+                        {actionLabel}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            }}
             listType='picture-card'
             fileList={fileList}
             onPreview={handlePreview}

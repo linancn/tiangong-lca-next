@@ -8,21 +8,23 @@ import {
   getRuntimeLocale,
   normalizeRuntimeLocale,
   publishRuntimeIntlChange,
+  rememberManualRuntimeLocale,
+  MANUAL_LOCALE_STORAGE_KEY,
   resolveBrowserRuntimeLocale,
   RUNTIME_INTL_CHANGE_EVENT,
   subscribeRuntimeIntlChange,
   UMI_LOCALE_STORAGE_KEY,
 } from '@/services/general/runtimeLocale';
 
-const createStorage = (initialValue: string | null = null) => {
-  let value = initialValue;
+const createStorage = (initialValue: string | null = null, key = UMI_LOCALE_STORAGE_KEY) => {
+  const values = new Map(initialValue === null ? [] : [[key, initialValue]]);
   return {
-    getItem: jest.fn(() => value),
-    removeItem: jest.fn(() => {
-      value = null;
+    getItem: jest.fn((key: string) => values.get(key) ?? null),
+    removeItem: jest.fn((key: string) => {
+      values.delete(key);
     }),
-    setItem: jest.fn((_key: string, nextValue: string) => {
-      value = nextValue;
+    setItem: jest.fn((key: string, nextValue: string) => {
+      values.set(key, nextValue);
     }),
   };
 };
@@ -262,6 +264,7 @@ describe('runtimeLocale', () => {
       }),
     ).toBe('fr-FR');
     expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'fr-FR');
+    expect(storage.setItem).not.toHaveBeenCalledWith(MANUAL_LOCALE_STORAGE_KEY, 'fr-FR');
   });
 
   it('uses the default browser storage and navigator before the first render', () => {
@@ -315,7 +318,7 @@ describe('runtimeLocale', () => {
       }),
     ).toBe('fr-FR');
     expect(storage.removeItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY);
-    expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'fr-FR');
+    expect(storage.setItem).not.toHaveBeenCalled();
   });
 
   it('uses the browser default when cache and navigator do not contain a supported locale', () => {
@@ -325,6 +328,72 @@ describe('runtimeLocale', () => {
         navigator: { language: 'es-ES', languages: ['es-ES'] },
       }),
     ).toBe(DEFAULT_BROWSER_APP_LOCALE);
+    expect(DEFAULT_BROWSER_APP_LOCALE).toBe('en-US');
+  });
+
+  it('does not cache automatic language detection when browser preferences change', () => {
+    const storage = createStorage();
+    expect(
+      resolveBrowserRuntimeLocale({ storage, navigator: { languages: ['es-ES', 'fr-CA'] } }),
+    ).toBe('fr-FR');
+    expect(
+      resolveBrowserRuntimeLocale({ storage, navigator: { languages: ['de-AT', 'fr-CA'] } }),
+    ).toBe('de-DE');
+    expect(storage.setItem).not.toHaveBeenCalled();
+  });
+
+  it('persists only manual choices, overriding both legacy and browser preferences on reopen', () => {
+    const storage = createStorage('zh-CN');
+    const session = {};
+    rememberManualRuntimeLocale('fr-CA', { storage, session });
+    expect(storage.setItem).toHaveBeenCalledWith(MANUAL_LOCALE_STORAGE_KEY, 'fr-FR');
+    expect(storage.getItem(UMI_LOCALE_STORAGE_KEY)).toBe('zh-CN');
+    expect(
+      resolveBrowserRuntimeLocale({ storage, session: {}, navigator: { language: 'en-US' } }),
+    ).toBe('fr-FR');
+  });
+
+  it('retains a supported legacy choice without upgrading its unknown source to manual', () => {
+    const storage = createStorage('de-DE');
+    expect(resolveBrowserRuntimeLocale({ storage, navigator: { language: 'fr-FR' } })).toBe(
+      'de-DE',
+    );
+    expect(storage.getItem(MANUAL_LOCALE_STORAGE_KEY)).toBeNull();
+    expect(storage.setItem).not.toHaveBeenCalled();
+  });
+
+  it('canonicalizes manual aliases and discards invalid manual entries before legacy detection', () => {
+    const storage = createStorage('fr_CA', MANUAL_LOCALE_STORAGE_KEY);
+    expect(resolveBrowserRuntimeLocale({ storage, navigator: null })).toBe('fr-FR');
+    expect(storage.setItem).toHaveBeenCalledWith(MANUAL_LOCALE_STORAGE_KEY, 'fr-FR');
+    storage.setItem(MANUAL_LOCALE_STORAGE_KEY, 'es-ES');
+    storage.setItem(UMI_LOCALE_STORAGE_KEY, 'de-DE');
+    expect(resolveBrowserRuntimeLocale({ storage, navigator: null })).toBe('de-DE');
+    expect(storage.removeItem).toHaveBeenCalledWith(MANUAL_LOCALE_STORAGE_KEY);
+  });
+
+  it('keeps a manual choice in the current document when storage writes fail', () => {
+    const storage = createStorage();
+    storage.setItem.mockImplementation(() => {
+      throw new Error('quota exceeded');
+    });
+    const session = {};
+    rememberManualRuntimeLocale('de-AT', { storage, session });
+    expect(
+      resolveBrowserRuntimeLocale({ storage, session, navigator: { language: 'fr-FR' } }),
+    ).toBe('de-DE');
+    expect(
+      resolveBrowserRuntimeLocale({ storage, session: {}, navigator: { language: 'fr-FR' } }),
+    ).toBe('fr-FR');
+  });
+
+  it('supports memory-only manual choices and ignores unsupported choices', () => {
+    const session = {};
+    rememberManualRuntimeLocale('es-ES', { storage: null, session });
+    expect(session).toEqual({});
+    rememberManualRuntimeLocale('fr-FR', { storage: null, session });
+    expect(resolveBrowserRuntimeLocale({ session, storage: null, navigator: null })).toBe('fr-FR');
+    rememberManualRuntimeLocale('de-DE', { session: null, storage: null });
   });
 
   it('keeps locale bootstrap safe when storage access is denied', () => {
@@ -349,7 +418,7 @@ describe('runtimeLocale', () => {
   });
 
   it('routes German, French, and English app locales to English docs without fake routes', () => {
-    expect(getDocumentationUrl()).toBe('https://docs.tiangong.earth');
+    expect(getDocumentationUrl()).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('de-DE')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('de-CH')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('en-US')).toBe('https://docs.tiangong.earth/en');

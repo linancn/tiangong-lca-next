@@ -1,4 +1,12 @@
 // @ts-nocheck
+let mockBrand = 'tiangong';
+jest.mock('../../../config/brandProfile', () => ({
+  ...jest.requireActual('../../../config/brandProfile'),
+  get brandProfile() {
+    return jest.requireActual('../../../config/brandProfile').resolveBrandProfile(mockBrand);
+  },
+}));
+
 import Welcome from '@/pages/Welcome';
 import { getLang, getLangText } from '@/services/general/util';
 import { getSignedStorageFileUrl, getThumbFileUrls } from '@/services/supabase/storage';
@@ -41,6 +49,11 @@ jest.mock('react-countup', () => ({
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: (props: any) => mockFormatMessage(props),
+  Link: ({ to, children, ...props }: any) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
   history: {
     push: (...args: any[]) => mockHistoryPush(...args),
   },
@@ -102,6 +115,7 @@ const teamsPayload = [
 
 describe('Welcome page', () => {
   beforeEach(() => {
+    mockBrand = 'tiangong';
     jest.clearAllMocks();
     mockHistoryPush.mockReset();
     localStorage.clear();
@@ -125,6 +139,36 @@ describe('Welcome page', () => {
       'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
     );
     mockGetThumbFileUrls.mockResolvedValue([{ status: 'done', thumbUrl: 'thumb-url' }]);
+  });
+
+  it('connects the Atlas workspace actions to the shared data, standard and guide views', async () => {
+    mockBrand = 'atlas';
+    const user = userEvent.setup();
+    renderWithProviders(<Welcome />);
+    expect(screen.getByRole('heading', { name: 'Your work starts here' })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Manage data/ })).toHaveAttribute(
+      'href',
+      '/mydata/processes',
+    );
+    expect(screen.getByRole('link', { name: /Build models/ })).toHaveAttribute(
+      'href',
+      '/mydata/models',
+    );
+    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeVisible());
+    expect(
+      screen.getByRole('img', { name: 'TIDAS data system architecture diagram' }),
+    ).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /close/i }));
+    await user.click(screen.getByRole('button', { name: 'Data contributors' }));
+    await waitFor(() => expect(screen.getByText('Team Alpha')).toBeVisible());
+    await user.click(screen.getByRole('button', { name: /close/i }));
+    await user.click(screen.getByRole('button', { name: /Data preparation guide/ }));
+    expect(mockHistoryPush).toHaveBeenCalledWith('/welcome?view=carbon-footprint');
+    expect(screen.getByText('Platform Walkthrough')).toBeVisible();
+    expect(
+      screen.queryByRole('heading', { name: 'Your work starts here' }),
+    ).not.toBeInTheDocument();
   });
 
   it('loads the team count on mount and opens the TIDAS architecture modal', async () => {
@@ -356,7 +400,7 @@ describe('Welcome page', () => {
     expect(screen.queryByText('Platform Walkthrough')).not.toBeInTheDocument();
   });
 
-  it('uses the default locale definition when the runtime locale is unsupported', async () => {
+  it('uses the English locale definition when the runtime locale is unsupported', async () => {
     const user = userEvent.setup();
     mockLocale = 'es-ES';
 
@@ -367,7 +411,7 @@ describe('Welcome page', () => {
 
     expect(
       await screen.findByRole('img', { name: 'TIDAS data system architecture diagram' }),
-    ).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
+    ).toHaveAttribute('src', '/images/tidas/TIDAS-en.svg');
   });
 
   it('loads ecosystem teams with thumbnails and reuses cached teams across reopen', async () => {

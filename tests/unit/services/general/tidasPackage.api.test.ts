@@ -14,11 +14,20 @@ import { FunctionRegion } from '@supabase/supabase-js';
 
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
+const mockAuthGetClaims = jest.fn();
 const mockFunctionsInvoke = jest.fn();
 const mockStorageFrom = jest.fn();
 const mockUploadToSignedUrl = jest.fn();
 const mockGetLocale = jest.fn(() => 'en-US');
 const originalSupabaseUrl = process.env.SUPABASE_URL;
+
+jest.mock('@supabase/supabase-js', () => ({
+  ...jest.requireActual('@supabase/supabase-js'),
+  createClient: () => ({
+    functions: { invoke: (...args: any[]) => mockFunctionsInvoke(...args) },
+    storage: { from: (...args: any[]) => mockStorageFrom(...args) },
+  }),
+}));
 
 jest.mock('@/services/supabase', () => ({
   __esModule: true,
@@ -26,6 +35,7 @@ jest.mock('@/services/supabase', () => ({
     from: (...args: any[]) => mockFrom(...args),
     auth: {
       getSession: (...args: any[]) => mockAuthGetSession(...args),
+      getClaims: (...args: any[]) => mockAuthGetClaims(...args),
     },
     functions: {
       invoke: (...args: any[]) => mockFunctionsInvoke(...args),
@@ -163,6 +173,9 @@ describe('general/api TIDAS package helpers', () => {
 
     mockFrom.mockReset();
     mockAuthGetSession.mockReset();
+    mockAuthGetClaims
+      .mockReset()
+      .mockResolvedValue({ data: { claims: { sub: 'owner-a' } }, error: null });
     mockFunctionsInvoke.mockReset();
     mockStorageFrom.mockReset();
     mockUploadToSignedUrl.mockReset();
@@ -216,6 +229,138 @@ describe('general/api TIDAS package helpers', () => {
     }
 
     delete process.env.SUPABASE_URL;
+  });
+
+  it('does not queue an old-owner export after deferred session retrieval changes actors', async () => {
+    let finish: (value: any) => void = () => undefined;
+    let active = true;
+    mockAuthGetSession.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { ok: true, job_id: 'foreign-job' },
+      error: null,
+    });
+    const result = (queueExportTidasPackageApi as any)(
+      { scope: 'current_user' },
+      { taskSession: { ownerId: 'owner-a', isCurrent: () => active } },
+    );
+    active = false;
+    finish({ data: { session: { access_token: 'token-b' } } });
+    await result.catch(() => undefined);
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
+  it('does not upload or enqueue an import after the captured owner is invalidated during hashing', async () => {
+    let finish: (value: any) => void = () => undefined;
+    let active = true;
+    mockDigest.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          job_id: 'job-a',
+          source_artifact_id: 'artifact-a',
+          upload: {
+            bucket: 'tidas',
+            path: 'a.zip',
+            token: 'signed-a',
+            content_type: 'application/zip',
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: { ok: true, job_id: 'foreign-job' }, error: null });
+    const result = (queueImportTidasPackageApi as any)(createZipFile(), {
+      taskSession: { ownerId: 'owner-a', isCurrent: () => active },
+    });
+    for (let i = 0; i < 24; i += 1) await Promise.resolve();
+    expect(mockDigest).toHaveBeenCalledTimes(1);
+    active = false;
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-b' } } });
+    finish(new Uint8Array(32).buffer);
+    await result;
+    expect(mockUploadToSignedUrl).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps guarded exports owned by the verified bearer and rejects a foreign actor before sending', async () => {
+    const options = { taskSession: { ownerId: 'owner-a', isCurrent: () => true } };
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: { ok: true, job_id: 'owned' }, error: null });
+    const result = await queueExportTidasPackageApi({ scope: 'current_user' }, options);
+    expect(result.error).toBeNull();
+    expect(mockAuthGetClaims).toHaveBeenCalledWith('token-123');
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).toEqual({ scope: 'current_user' });
+    mockAuthGetClaims.mockResolvedValueOnce({ data: { claims: { sub: 'owner-b' } }, error: null });
+    await expect(queueExportTidasPackageApi({}, options)).rejects.toThrow('task_owner_changed');
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not enqueue after an already-sent signed upload finishes under an invalidated owner', async () => {
+    let active = true;
+    let finishUpload: (value: any) => void = () => undefined;
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        job_id: 'job-a',
+        source_artifact_id: 'artifact-a',
+        upload: {
+          bucket: 'tidas',
+          path: 'a.zip',
+          token: 'signed-a',
+          content_type: 'application/zip',
+        },
+      },
+      error: null,
+    });
+    mockDigest.mockResolvedValueOnce(new Uint8Array(32).buffer);
+    mockUploadToSignedUrl.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishUpload = resolve;
+      }),
+    );
+    const pending = queueImportTidasPackageApi(createZipFile(), {
+      taskSession: { ownerId: 'owner-a', isCurrent: () => active },
+    });
+    for (let i = 0; i < 40; i++) await Promise.resolve();
+    expect(mockUploadToSignedUrl).toHaveBeenCalledTimes(1);
+    active = false;
+    finishUpload({ error: null });
+    const result = await pending;
+    expect(result.error.message).toBe('task_owner_changed');
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+  });
+
+  it('revalidates the upload bearer actor after hashing even before an auth broadcast', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        job_id: 'job-a',
+        source_artifact_id: 'artifact-a',
+        upload: {
+          bucket: 'tidas',
+          path: 'a.zip',
+          token: 'signed-a',
+          content_type: 'application/zip',
+        },
+      },
+      error: null,
+    });
+    mockDigest.mockResolvedValueOnce(new Uint8Array(32).buffer);
+    mockAuthGetClaims.mockResolvedValueOnce({ data: { claims: { sub: 'owner-a' } }, error: null });
+    mockAuthGetClaims.mockResolvedValueOnce({ data: { claims: { sub: 'owner-b' } }, error: null });
+    const result = await queueImportTidasPackageApi(createZipFile(), {
+      taskSession: { ownerId: 'owner-a', isCurrent: () => true },
+    });
+    expect(result.error.message).toBe('task_owner_changed');
+    expect(mockUploadToSignedUrl).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
   });
 
   it('returns unauthorized when queueing an export without a session', async () => {

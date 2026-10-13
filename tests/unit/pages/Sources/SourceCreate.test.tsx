@@ -712,44 +712,82 @@ describe('SourceCreate component', () => {
     await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
   });
 
-  it('keeps already-uploaded file urls when saving a copied record', async () => {
-    const user = userEvent.setup();
-    mockGetThumbFileUrls.mockResolvedValueOnce([
-      {
-        uid: '../sources/existing.pdf',
-        name: 'existing.pdf',
-        url: '../sources/existing.pdf',
-      },
-    ]);
+  it.each([
+    ['copy', 'blob:preview'],
+    ['copy', '.'],
+    ['createVersion', 'blob:preview'],
+    ['createVersion', ''],
+  ] as const)(
+    'preserves canonical attachment uid during %s with UI url %s',
+    async (actionType, previewUrl) => {
+      const user = userEvent.setup();
+      mockGetThumbFileUrls.mockResolvedValueOnce([
+        {
+          uid: '../sources/existing.pdf',
+          name: 'existing.pdf',
+          url: previewUrl,
+        },
+      ]);
 
-    renderWithProviders(
-      <SourceCreate
-        lang='en'
-        actionRef={{ current: { reload: jest.fn() } } as any}
-        actionType='copy'
-        id='source-1'
-        version='1.0.0'
-      />,
-    );
+      renderWithProviders(
+        <SourceCreate
+          lang='en'
+          actionRef={{ current: { reload: jest.fn() } } as any}
+          actionType={actionType}
+          id='source-1'
+          version='1.0.0'
+        />,
+      );
 
-    await user.click(screen.getByRole('button', { name: 'Copy' }));
-    const drawer = await screen.findByRole('dialog', { name: 'Copy Source' });
-    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+      await user.click(
+        screen.getByRole('button', { name: actionType === 'copy' ? 'Copy' : 'Create Version' }),
+      );
+      const drawer = await screen.findByRole('dialog', {
+        name: actionType === 'copy' ? 'Copy Source' : 'Create Version',
+      });
+      await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
-    await waitFor(() =>
-      expect(mockCreateSource).toHaveBeenCalledWith(
-        'uuid-source-create',
-        expect.objectContaining({
-          sourceInformation: expect.objectContaining({
-            dataSetInformation: expect.objectContaining({
-              referenceToDigitalFile: [{ '@uri': '../sources/existing.pdf' }],
+      await waitFor(() =>
+        expect(
+          actionType === 'copy' ? mockCreateSource : mockCreateSourceVersion,
+        ).toHaveBeenCalledWith(
+          actionType === 'copy' ? 'uuid-source-create' : 'source-1',
+          ...(actionType === 'copy' ? [] : ['1.0.0']),
+          expect.objectContaining({
+            sourceInformation: expect.objectContaining({
+              dataSetInformation: expect.objectContaining({
+                referenceToDigitalFile: [{ '@uri': '../sources/existing.pdf' }],
+              }),
             }),
           }),
-        }),
-      ),
-    );
-    expect(mockUploadFile).not.toHaveBeenCalled();
-  });
+        ),
+      );
+      expect(mockUploadFile).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['https://example.org/file.pdf', './relative/file.pdf', 'javascript:alert(1)'])(
+    'removes reference %s from a copied Source without deleting a Storage object',
+    async (uri) => {
+      const user = userEvent.setup();
+      mockGetThumbFileUrls.mockResolvedValueOnce([{ uid: uri, name: 'reference', url: '' }]);
+      renderWithProviders(
+        <SourceCreate
+          lang='en'
+          actionRef={{ current: { reload: jest.fn() } } as any}
+          actionType='copy'
+          id='source-1'
+          version='1.0.0'
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      const drawer = await screen.findByRole('dialog', { name: 'Copy Source' });
+      await user.click(within(drawer).getByRole('button', { name: 'clear-files' }));
+      await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(mockCreateSource).toHaveBeenCalled());
+      expect(mockRemoveFile).not.toHaveBeenCalled();
+    },
+  );
 
   it('removes deleted original files and surfaces storage removal errors', async () => {
     const user = userEvent.setup();

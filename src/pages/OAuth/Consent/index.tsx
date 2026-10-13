@@ -1,3 +1,4 @@
+import { resolveBrandMessage } from '@/locales/brandMessages';
 import {
   buildOAuthLoginPath,
   decideOAuthAuthorization,
@@ -17,6 +18,7 @@ import { Alert, Avatar, Button, Card, Empty, Space, Spin, Typography, theme } fr
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Helmet, history, useIntl, useLocation } from 'umi';
 import styles from './index.less';
+import { getLocalizedAppTitle } from '../../../../config/defaultSettings';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -28,13 +30,18 @@ const formatScopeMessage = (
     descriptor: { id: string; defaultMessage: string },
     values?: Record<string, string>,
   ) => string,
+  locale?: string,
 ) => {
   switch (scope) {
     case 'openid':
-      return formatMessage({
-        id: 'pages.oauth.consent.scope.openid',
-        defaultMessage: 'Confirm your TianGong LCA identity',
-      });
+      return resolveBrandMessage(
+        locale,
+        'pages.oauth.consent.scope.openid',
+        formatMessage({
+          id: 'pages.oauth.consent.scope.openid',
+          defaultMessage: 'Confirm your TianGong LCA identity',
+        }),
+      );
     case 'email':
       return formatMessage({
         id: 'pages.oauth.consent.scope.email',
@@ -146,10 +153,16 @@ export default function OAuthConsentPage() {
     id: 'pages.oauth.consent.title',
     defaultMessage: 'Authorize application',
   });
-  const appTitle = intl.formatMessage({
-    id: 'pages.name',
-    defaultMessage: 'TianGong LCA Data Platform',
-  });
+  const appTitle =
+    getLocalizedAppTitle(intl.locale) ??
+    resolveBrandMessage(
+      intl.locale,
+      'pages.name',
+      intl.formatMessage({
+        id: 'pages.name',
+        defaultMessage: 'TianGong LCA Data Platform',
+      }),
+    );
 
   const errorMessage =
     error === 'unsafe_redirect'
@@ -212,10 +225,14 @@ export default function OAuthConsentPage() {
             <Title level={2}>{title}</Title>
             <Alert type='error' showIcon title={errorMessage} />
             <Button onClick={() => history.replace('/account')}>
-              {intl.formatMessage({
-                id: 'pages.oauth.consent.return',
-                defaultMessage: 'Return to TianGong LCA',
-              })}
+              {resolveBrandMessage(
+                intl.locale,
+                'pages.oauth.consent.return',
+                intl.formatMessage({
+                  id: 'pages.oauth.consent.return',
+                  defaultMessage: 'Return to TianGong LCA',
+                }),
+              )}
             </Button>
           </Space>
         ) : (
@@ -264,7 +281,7 @@ export default function OAuthConsentPage() {
                       <li className={styles.scopeItem} key={scope}>
                         <CheckOutlined className={styles.scopeCheck} />
                         <Text className={styles.scopeLabel}>
-                          {formatScopeMessage(scope, intl.formatMessage)}
+                          {formatScopeMessage(scope, intl.formatMessage, intl.locale)}
                         </Text>
                       </li>
                     );

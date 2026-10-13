@@ -1,4 +1,13 @@
 export default {
+  'pages.file.preview.open': '打开文件',
+  'pages.file.preview.retry': '重试预览',
+
+  'pages.file.preview.resolved': '文件预览已就绪',
+
+  'pages.file.preview.unchecked': '尚未检查文件访问',
+  'pages.file.preview.unavailable': '文件预览不可用',
+  'pages.file.preview.unsupported': '此引用不支持预览',
+
   'pages.source.publicationType': '出版类型',
   'pages.source.refObjectId': '引用数据源标识符',
   'pages.source.drawer.title.create': '创建数据源',

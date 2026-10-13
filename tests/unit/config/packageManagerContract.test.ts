@@ -74,9 +74,9 @@ describe('pnpm package-manager contract', () => {
     const packageJson = JSON.parse(read('package.json'));
     const lockfile = read('pnpm-lock.yaml');
 
-    expect(packageJson.dependencies['@tiangong-lca/tidas-sdk']).toBe('0.4.0');
+    expect(packageJson.dependencies['@tiangong-lca/tidas-sdk']).toBe('0.5.0');
     expect(packageJson.devDependencies.typescript).toBe('7.0.2');
-    expect(lockfile).toMatch(/^\s{2}'?@tiangong-lca\/tidas-sdk@0\.4\.0'?\s*:/mu);
+    expect(lockfile).toMatch(/^\s{2}'?@tiangong-lca\/tidas-sdk@0\.5\.0'?\s*:/mu);
     expect(lockfile).toMatch(/^\s{2}typescript@7\.0\.2\s*:/mu);
     expect(lockfile).not.toMatch(/^\s{2}typescript@[0-6]\./mu);
     expect(lockfile).not.toMatch(/^\s{2}(?:'@typescript\/vfs|ts-to-zod)@/mu);
@@ -126,7 +126,9 @@ describe('pnpm package-manager contract', () => {
       '@umijs/request-record': '1.1.4',
     });
     expect(packageJson.devDependencies).not.toHaveProperty('umi-presets-pro');
-    expect(config).toContain("plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record']");
+    expect(config).toContain(
+      "plugins: ['@umijs/max-plugin-openapi', '@umijs/request-record', './config/brandAssets']",
+    );
     expect(config).not.toContain('root-entry-name');
     expect(config).not.toContain('umi-presets-pro');
     expect(lockfile).not.toMatch(/(?:^|\W)antd@(?:4|5)\./mu);

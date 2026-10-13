@@ -22,6 +22,7 @@ import { ConfigProvider } from 'antd';
 
 let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
 let mockOmitProTableRequestParams = false;
+let mockLatestVersionColumns: any[] = [];
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({
@@ -123,6 +124,7 @@ jest.mock('@ant-design/pro-components', () => {
     rowSelection,
     toolBarRender,
   }: any) => {
+    mockLatestVersionColumns = columns;
     const [rows, setRows] = React.useState([] as any[]);
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
@@ -286,6 +288,7 @@ describe('AllVersionsList Component', () => {
     jest.clearAllMocks();
     mockLatestProTableRequestParams = null;
     mockOmitProTableRequestParams = false;
+    mockLatestVersionColumns = [];
     mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
@@ -296,6 +299,45 @@ describe('AllVersionsList Component', () => {
       success: true,
       total: 2,
     });
+  });
+
+  it.each([
+    'processes',
+    'flows',
+    'lifecyclemodels',
+    'contacts',
+    'sources',
+    'flowproperties',
+    'unitgroups',
+  ])('limits %s version drawer sort controls to database version/date fields', async (table) => {
+    const columns = [
+      { title: 'Name', dataIndex: 'name', sorter: true },
+      {
+        title: 'Classification',
+        dataIndex: 'classification',
+        sorter: true,
+        defaultSortOrder: 'ascend' as const,
+        sortOrder: 'descend' as const,
+      },
+      { title: 'Version', dataIndex: 'version', sorter: true },
+      { title: 'Modified', dataIndex: 'modifiedAt', sorter: false },
+      { title: 'Created', dataIndex: 'createdAt', sorter: true },
+    ];
+    render(<AllVersionsList {...defaultProps} searchTableName={table} columns={columns} />);
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockLatestVersionColumns).toHaveLength(6));
+    expect(mockLatestVersionColumns.map((column) => column.sorter)).toEqual([
+      false,
+      false,
+      true,
+      false,
+      true,
+      undefined,
+    ]);
+    expect(mockLatestVersionColumns[1].defaultSortOrder).toBeUndefined();
+    expect(mockLatestVersionColumns[1].sortOrder).toBeUndefined();
+    expect(columns[0].sorter).toBe(true);
+    expect(columns[2].sorter).toBe(true);
   });
 
   it('should render correctly with given props', () => {

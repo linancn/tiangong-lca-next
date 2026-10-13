@@ -158,6 +158,8 @@ jest.mock('@/pages/Sources/sources_schema.json', () => ({
 
 const mockSchema = jest.requireMock('@/pages/Sources/sources_schema.json').default;
 
+let mockUploadPreviewOptions: any;
+
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -191,7 +193,9 @@ jest.mock('antd', () => {
 
   const Input = (props: any) => <input {...props} />;
 
-  const Upload = ({ fileList = [], beforeUpload, onPreview, onChange, children }: any) => {
+  const Upload = (props: any) => {
+    const { fileList = [], beforeUpload, onPreview, onChange, children } = props;
+    mockUploadPreviewOptions = props;
     const [internalList, setInternalList] = React.useState(fileList);
 
     React.useEffect(() => {
@@ -382,13 +386,22 @@ describe('SourceForm component', () => {
 
   it('loads the original file url when previewing an existing image', async () => {
     renderForm({
-      fileList: [{ uid: 'existing-image', name: 'existing.png', url: 'https://cdn/existing.png' }],
+      fileList: [
+        {
+          uid: '../external_docs/existing.png',
+          name: 'existing.png',
+          url: 'https://cdn/existing.png',
+        },
+      ],
     });
 
     fireEvent.click(screen.getByTestId('preview-trigger'));
 
     await waitFor(() => {
-      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('existing-image', 'existing.png');
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith(
+        '../external_docs/existing.png',
+        'existing.png',
+      );
     });
     expect(mockGetBase64).not.toHaveBeenCalled();
   });
@@ -397,13 +410,22 @@ describe('SourceForm component', () => {
     mockGetOriginalFileUrl.mockResolvedValueOnce({});
 
     renderForm({
-      fileList: [{ uid: 'existing-image', name: 'existing.png', url: 'https://cdn/existing.png' }],
+      fileList: [
+        {
+          uid: '../external_docs/existing.png',
+          name: 'existing.png',
+          url: 'https://cdn/existing.png',
+        },
+      ],
     });
 
     fireEvent.click(screen.getByTestId('preview-trigger'));
 
     await waitFor(() => {
-      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('existing-image', 'existing.png');
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith(
+        '../external_docs/existing.png',
+        'existing.png',
+      );
     });
     expect(screen.queryByRole('button', { name: 'open-preview' })).not.toBeInTheDocument();
   });
@@ -413,19 +435,101 @@ describe('SourceForm component', () => {
     mockIsImage.mockReturnValue(false);
 
     renderForm({
-      fileList: [{ uid: 'doc-1', name: 'document.pdf', url: 'https://cdn/document.pdf' }],
+      fileList: [
+        {
+          uid: '../external_docs/document.pdf',
+          name: 'document.pdf',
+          url: 'https://cdn/document.pdf',
+        },
+      ],
     });
 
     fireEvent.click(screen.getByTestId('preview-trigger'));
 
     await waitFor(() => {
-      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith('doc-1', 'document.pdf');
+      expect(mockGetOriginalFileUrl).toHaveBeenCalledWith(
+        '../external_docs/document.pdf',
+        'document.pdf',
+      );
     });
     await waitFor(() => {
-      expect(openSpy).toHaveBeenCalledWith('https://example.com/file', '_blank');
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://example.com/file',
+        '_blank',
+        'noopener,noreferrer',
+      );
     });
 
     openSpy.mockRestore();
+  });
+
+  it('opens an external reference only on explicit preview, without Storage lookup', async () => {
+    const open = jest.spyOn(window, 'open').mockImplementation(() => null as any);
+    renderForm({
+      fileList: [
+        { uid: 'https://example.org/a.jpg', name: 'a.jpg', url: 'https://example.org/a.jpg' },
+      ],
+    });
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+    expect(open).toHaveBeenCalledWith('https://example.org/a.jpg', '_blank', 'noopener,noreferrer');
+    expect(mockGetOriginalFileUrl).not.toHaveBeenCalled();
+    expect(mockGetBase64).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+  it('does not activate an opaque unsafe URI or attempt Storage access', () => {
+    const open = jest.spyOn(window, 'open').mockImplementation(() => null as any);
+    renderForm({ fileList: [{ uid: 'javascript:alert(1)', name: 'reference' }] });
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+    expect(open).not.toHaveBeenCalled();
+    expect(mockGetOriginalFileUrl).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it('disables remote thumbnails and unsafe preview affordances while retaining managed/local image previews', () => {
+    renderForm();
+    const external = { uid: 'https://example.org/image.jpg', name: 'image.jpg' };
+    const opaque = { uid: 'javascript:alert(1)', name: 'image.jpg' };
+    const managed = { uid: '../external_docs/image.jpg', name: 'image.jpg' };
+    const local = { uid: 'pending', name: 'image.jpg', originFileObj: {} };
+    expect(mockUploadPreviewOptions.isImageUrl(external)).toBe(false);
+    expect(mockUploadPreviewOptions.isImageUrl(opaque)).toBe(false);
+    expect(mockUploadPreviewOptions.isImageUrl(managed)).toBe(true);
+    expect(mockUploadPreviewOptions.isImageUrl(local)).toBe(true);
+    expect(mockUploadPreviewOptions.showUploadList.showPreviewIcon(opaque)).toBe(false);
+    expect(mockUploadPreviewOptions.showUploadList.showPreviewIcon(external)).toBe(true);
+    expect(mockUploadPreviewOptions.showUploadList.showPreviewIcon(managed)).toBe(true);
+    expect(mockUploadPreviewOptions.showUploadList.showPreviewIcon(local)).toBe(true);
+    mockIsImage.mockReturnValue(false);
+    expect(mockUploadPreviewOptions.isImageUrl(managed)).toBe(false);
+    expect(mockUploadPreviewOptions.showUploadList.showPreviewIcon(local)).toBe(false);
+    render(
+      mockUploadPreviewOptions.itemRender(<span>Reference</span>, {
+        ...opaque,
+        previewState: 'unsupported',
+      }),
+    );
+    expect(screen.getByText('Preview not supported for this reference')).toBeInTheDocument();
+    render(mockUploadPreviewOptions.itemRender(<span>Pending upload</span>, local));
+    expect(screen.getByText('Pending upload')).toBeInTheDocument();
+    expect(screen.queryByText('File preview ready')).not.toBeInTheDocument();
+  });
+  it('keeps the canonical uid and other attachments intact when an original lookup fails', async () => {
+    const file = { uid: '../external_docs/a.png', name: 'a.png', url: 'blob:thumbnail' };
+    const other = { uid: './opaque.pdf', name: 'other' };
+    const setFileList = jest.fn();
+    mockGetOriginalFileUrl.mockResolvedValueOnce({
+      uid: file.uid,
+      url: '',
+      status: 'error',
+      previewState: 'unavailable',
+    });
+    renderForm({ fileList: [file], setFileList });
+    fireEvent.click(screen.getByTestId('preview-trigger'));
+    await waitFor(() => expect(setFileList).toHaveBeenCalled());
+    const updated = setFileList.mock.calls[0][0]([file, other]);
+    expect(updated[0]).toMatchObject({ uid: file.uid, url: '', previewState: 'unavailable' });
+    expect(updated[1]).toBe(other);
+    expect(screen.queryByRole('button', { name: 'open-preview' })).not.toBeInTheDocument();
   });
 
   it('does not inject the default source name outside create mode', () => {

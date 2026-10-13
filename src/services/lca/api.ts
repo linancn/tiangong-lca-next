@@ -1,3 +1,9 @@
+import {
+  assertTaskSession,
+  createTaskSessionClient,
+  TaskSessionChangedError,
+  type TaskSessionGuard,
+} from '@/services/taskCenter/sessionGuard';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import type { LcaScope } from './scope';
@@ -308,12 +314,14 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
-async function getAccessToken(): Promise<string> {
+async function getAccessToken(taskSession?: TaskSessionGuard): Promise<string> {
+  if (taskSession && !taskSession.isCurrent()) throw new TaskSessionChangedError();
   const session = await supabase.auth.getSession();
   const token = session.data.session?.access_token ?? '';
   if (!token) {
     throw new Error('unauthorized');
   }
+  if (taskSession) await assertTaskSession(token, taskSession);
   return token;
 }
 
@@ -360,9 +368,12 @@ async function invokeLcaFn<T>(
   fnName: LcaFunctionName,
   body: Record<string, unknown>,
   extraHeaders: Record<string, string> = {},
+  taskSession?: TaskSessionGuard,
 ): Promise<T> {
-  const accessToken = await getAccessToken();
-  const { data, error } = await supabase.functions.invoke(fnName, {
+  const accessToken = await getAccessToken(taskSession);
+  if (taskSession && !taskSession.isCurrent()) throw new TaskSessionChangedError();
+  const client = taskSession ? createTaskSessionClient(accessToken, taskSession) : supabase;
+  const { data, error } = await client.functions.invoke(fnName, {
     method: 'POST',
     body,
     headers: {
@@ -389,13 +400,18 @@ export function isTerminalJobStatus(status: LcaJobStatus): boolean {
 
 export async function submitLcaSolve(
   request: LcaSolveRequest,
-  options?: { idempotencyKey?: string },
+  options?: { idempotencyKey?: string; taskSession?: TaskSessionGuard },
 ): Promise<LcaSolveSubmitResponse> {
   const idempotencyKey = options?.idempotencyKey ?? fallbackIdempotencyKey();
   try {
-    return await invokeLcaFn<LcaSolveSubmitResponse>('lca_solve', request, {
-      'X-Idempotency-Key': idempotencyKey,
-    });
+    return await invokeLcaFn<LcaSolveSubmitResponse>(
+      'lca_solve',
+      request,
+      {
+        'X-Idempotency-Key': idempotencyKey,
+      },
+      options?.taskSession,
+    );
   } catch (error) {
     if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
       const buildJobId =

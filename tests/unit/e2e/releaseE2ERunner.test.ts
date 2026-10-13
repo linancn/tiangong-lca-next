@@ -28,6 +28,10 @@ const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
     runDirectory: string,
     runtimeInputs: Record<string, any>,
   ) => string[];
+  finalizeQualification: (
+    result: Record<string, any>,
+    options: Record<string, any>,
+  ) => Record<string, any>;
   loadEnvironmentContractFromWorkingTree: (root?: string) => {
     contract: Record<string, any>;
     raw: string;
@@ -152,7 +156,11 @@ describe('release E2E controller contracts', () => {
     );
   });
 
-  it('fails release qualification closed unless all 50 IDs ran with exact case closure', () => {
+  it('fails release qualification closed unless the current exact inventory is complete', () => {
+    const contract =
+      require('../../../scripts/e2e/qualification-closure.cjs').loadQualificationClosureContract(
+        process.cwd(),
+      );
     const identity = {
       inputSha256: 'a'.repeat(64),
       environmentContractSha256: 'b'.repeat(64),
@@ -164,26 +172,62 @@ describe('release E2E controller contracts', () => {
         version: '1.62.1',
       })),
       cleanup: { cleaned: 0, created: 0, leaked: 0 },
-      coverage: {
-        contractAssertionCount: 50,
-        discoveredCases: 81,
-        executedCases: 51,
-        harnessControlCases: 12,
-        liveAssertionCount: 50,
-        qualificationDiscoveredCases: 93,
-        skippedCases: 30,
-      },
+      assertionIds: contract.assertionIds,
+      assertionBrowsers: Object.fromEntries(
+        contract.assertionIds.map((id: string) => [id, contract.browsers]),
+      ),
+      coverage: contract.coverage,
       externalRequests: 0,
       productionWrites: 0,
       candidate: { commit: 'd'.repeat(40), tree: 'e'.repeat(40) },
       qualificationInputSha256: identity.inputSha256,
+      generatedAt: '2026-10-04T00:00:00.000Z',
       environmentContractSha256: identity.environmentContractSha256,
       environmentManifestSha256: 'a'.repeat(64),
       proofKey: identity.proofKey,
       schemaVersion: controller.QUALIFICATION_PROOF_SCHEMA_VERSION,
+      diagnostics: {
+        retainedOutsideGit: true,
+        runResultSha256: 'a'.repeat(64),
+        qualificationReportSha256: 'b'.repeat(64),
+      },
       status: 'qualified',
     };
     expect(controller.validateQualificationProof(proof, identity)).toBe(proof);
+    expect(() =>
+      controller.validateQualificationProof(
+        { ...proof, schemaVersion: 'tiangong.semantic-harness-qualification.v5' },
+        identity,
+      ),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() =>
+      controller.validateQualificationProof({ ...proof, browsers: [null, null, null] }, identity),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() =>
+      controller.validateQualificationProof({ ...proof, browsers: {} }, identity),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() =>
+      controller.validateQualificationProof(
+        {
+          ...proof,
+          coverage: {
+            ...proof.coverage,
+            contractAssertionCount: 50,
+            discoveredCases: 81,
+            executedCases: 51,
+            liveAssertionCount: 50,
+            qualificationDiscoveredCases: 93,
+          },
+        },
+        identity,
+      ),
+    ).toThrow('missing, stale, or incomplete');
+    expect(() =>
+      controller.validateQualificationProof(
+        { ...proof, assertionIds: ['rv.substituted', ...proof.assertionIds.slice(1)] },
+        identity,
+      ),
+    ).toThrow('missing, stale, or incomplete');
     expect(() =>
       controller.validateQualificationProof(
         {
@@ -202,6 +246,97 @@ describe('release E2E controller contracts', () => {
         inputSha256: 'f'.repeat(64),
       }),
     ).toThrow('missing, stale, or incomplete');
+  });
+
+  it('assembles a v6 fixture proof only after bound report, discovery and cleanup closure', () => {
+    const contract =
+      require('../../../scripts/e2e/qualification-closure.cjs').loadQualificationClosureContract(
+        process.cwd(),
+      );
+    const directory = makeTemporaryDirectory();
+    const preflightReport = path.join(directory, 'preflight-report.json');
+    const containerResult = path.join(directory, 'run-result.json');
+    const qualificationReport = path.join(directory, 'semantic-harness-qualification.json');
+    const proof = path.join(directory, 'fixture-proof.json');
+    const candidate = { commit: 'd'.repeat(40), tree: 'e'.repeat(40) };
+    const preflight = {
+      kind: 'tiangong-next-release-e2e-preflight-report',
+      schemaVersion: 2,
+      candidate,
+      status: 'passed',
+      checks: [
+        {
+          id: 'environment.playwright-discovery',
+          summary: { fullListedTests: 84, listedTests: 96 },
+        },
+      ],
+    };
+    const qualification = {
+      assertionIds: contract.assertionIds,
+      assertionBrowsers: Object.fromEntries(
+        contract.assertionIds.map((id: string) => [id, contract.browsers]),
+      ),
+      browsers: {
+        chromium: { executed: 32, skipped: 0 },
+        firefox: { executed: 17, skipped: 15 },
+        webkit: { executed: 17, skipped: 15 },
+      },
+      canonicalBrowsers: contract.canonicalBrowsers,
+      harnessBrowsers: contract.harnessBrowsers,
+      externalRequests: 0,
+      productionWrites: 0,
+      status: 'passed',
+    };
+    const writeResults = (cleanup = { created: 0, cleaned: 0, leaked: 0 }) => {
+      fs.writeFileSync(preflightReport, JSON.stringify(preflight));
+      fs.writeFileSync(qualificationReport, JSON.stringify(qualification));
+      const { qualificationReportSha256 } =
+        require('../../../scripts/e2e/qualification-closure.cjs').readQualificationReportReceipt(
+          qualificationReport,
+        );
+      fs.writeFileSync(
+        containerResult,
+        JSON.stringify({
+          kind: 'tiangong-next-release-e2e-run-result',
+          schemaVersion: 2,
+          status: 'passed',
+          exitCode: 0,
+          preflight: { status: 'passed' },
+          candidate,
+          qualification: controller.sanitize(qualification),
+          qualificationReportSha256,
+          cleanup,
+        }),
+      );
+    };
+    const result = {
+      artifacts: { preflightReport, containerResult },
+      candidate,
+      runDirectory: directory,
+      environment: {
+        manifestSha256: 'f'.repeat(64),
+        environmentBrowsers: { chromium: '1', firefox: '2', webkit: '3' },
+      },
+    };
+    writeResults();
+    expect(controller.finalizeQualification(result, { proof }).qualificationProof).toBe(proof);
+    const fixtureProof = JSON.parse(fs.readFileSync(proof, 'utf8'));
+    expect(
+      controller.validateQualificationProof(fixtureProof, controller.qualificationIdentity()),
+    ).toEqual(fixtureProof);
+    fs.rmSync(proof);
+    preflight.checks[0].summary.listedTests -= 1;
+    writeResults();
+    expect(() => controller.finalizeQualification(result, { proof })).toThrow(
+      'closure is incomplete',
+    );
+    expect(fs.existsSync(proof)).toBe(false);
+    preflight.checks[0].summary.listedTests += 1;
+    writeResults({ created: 0, cleaned: 0, leaked: 1 });
+    expect(() => controller.finalizeQualification(result, { proof })).toThrow(
+      'closure is incomplete',
+    );
+    expect(fs.existsSync(proof)).toBe(false);
   });
 
   it('keeps proof identity stable for version-only changes and invalidates shipped inputs', () => {
@@ -576,6 +711,23 @@ describe('release E2E controller contracts', () => {
     );
     expect(args).toContain('E2E_RECOVERY_LEDGER_PATH=/e2e-recovery/custom-ledger.json');
     expect(args).toContain('/host/recovery:/e2e-recovery');
+  });
+
+  it('keeps authenticated credentials and backend inputs read-only during output handoff', () => {
+    const args = controller.dockerRunArguments(
+      { imageTag: 'candidate:test' },
+      controller.parseOptions('run', ['--authenticated']),
+      '/host/run',
+      {
+        recoveryLedger: '/host/recovery/ledger.json',
+        trackedMainEnvironmentPath: '/host/input/main.env',
+        usersEnvFile: '/host/private/users.env',
+      },
+    );
+    expect(args).toContain('/host/private/users.env:/e2e-input/users.env:ro');
+    expect(args).toContain('/host/input/main.env:/e2e-input/tracked-main.env:ro');
+    expect(args).not.toContain('--user');
+    expect(args.some((value) => value.startsWith('E2E_OUTPUT_OWNER_'))).toBe(false);
   });
 
   it('pins the Playwright image digest and never mounts the parent workspace', () => {

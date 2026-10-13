@@ -1,4 +1,13 @@
 export default {
+  'pages.file.preview.open': 'Ouvrir le fichier',
+  'pages.file.preview.retry': 'Réessayer l’aperçu',
+
+  'pages.file.preview.resolved': 'Aperçu du fichier prêt',
+
+  'pages.file.preview.unchecked': 'Accès au fichier non vérifié',
+  'pages.file.preview.unavailable': 'Aperçu du fichier indisponible',
+  'pages.file.preview.unsupported': 'Aperçu non pris en charge pour cette référence',
+
   'pages.source.publicationType': 'Type de publication',
   'pages.source.refObjectId': 'Identifiant du jeu de données source de référence',
   'pages.source.drawer.title.create': 'Créer une source',

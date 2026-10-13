@@ -15,6 +15,7 @@ import {
 import { genSourceFromData } from '@/services/sources/util';
 import type { SupabaseMutationResult } from '@/services/supabase/data';
 import { supabaseStorageBucket } from '@/services/supabase/key';
+import { getManagedFileRemovalKeys } from '@/services/supabase/fileLocator';
 import { getThumbFileUrls, removeFile, uploadFile } from '@/services/supabase/storage';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -83,7 +84,7 @@ const SourceCreate: FC<CreateProps> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefCreate.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefCreate.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -102,10 +103,12 @@ const SourceCreate: FC<CreateProps> = ({
         const nonExistentFiles = fileList0.filter(
           (file0) => !fileList.some((file) => file.uid === file0.uid),
         );
-        if (nonExistentFiles.length > 0) {
-          const { error } = await removeFile(
-            nonExistentFiles.map((file) => file.uid.replace(`../${supabaseStorageBucket}/`, '')),
-          );
+        const removalKeys = getManagedFileRemovalKeys(
+          nonExistentFiles.map((file) => file.uid),
+          supabaseStorageBucket,
+        );
+        if (removalKeys.length > 0) {
+          const { error } = await removeFile(removalKeys);
           if (error) {
             message.error(error.message);
           }
@@ -117,8 +120,8 @@ const SourceCreate: FC<CreateProps> = ({
       if (fileList.length > 0) {
         fileListWithUUID = fileList.map((file) => {
           const isInFileList0 = fileList0.some((file0) => file0.uid === file.uid);
-          if (isInFileList0 && file.url) {
-            filePaths.push({ '@uri': file.url });
+          if (isInFileList0) {
+            filePaths.push({ '@uri': file.uid });
             return file;
           } else {
             const fileExtension = path.extname(file.name);
@@ -130,7 +133,7 @@ const SourceCreate: FC<CreateProps> = ({
       }
 
       const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
-      const formFieldsValue = formRefCreate.current?.getFieldsValue();
+      const formFieldsValue = formRefCreate.current?.getFieldsValue(true);
       const sourcePayload = {
         ...formFieldsValue,
         sourceInformation: {
@@ -269,7 +272,7 @@ const SourceCreate: FC<CreateProps> = ({
     };
     setInitData(newData as FormSource);
     // formRefCreate.current?.resetFields();
-    const currentData = formRefCreate.current?.getFieldsValue();
+    const currentData = formRefCreate.current?.getFieldsValue(true);
     formRefCreate.current?.setFieldsValue({ ...currentData, ...newData });
     setFromData(newData as FormSource);
     setFileList0([]);
@@ -357,7 +360,8 @@ const SourceCreate: FC<CreateProps> = ({
           <ProForm
             formRef={formRefCreate}
             initialValues={initData}
-            onValuesChange={(_, allValues) => {
+            onValuesChange={() => {
+              const allValues = formRefCreate.current!.getFieldsValue(true);
               setFromData({
                 ...fromData,
                 [activeTabKey]: allValues[activeTabKey] ?? {},

@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '../general/tidasRepeatedFields';
 import { FormContact } from '@/services/contacts/data';
 import { createContact as createTidasContact } from '@tiangong-lca/tidas-sdk/core';
 import {
@@ -31,13 +32,18 @@ export function genContactJsonOrdered(id: string, data: any) {
           ),
           'common:name': getLangJson(data?.contactInformation?.dataSetInformation?.['common:name']),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToJsonList(
-                data?.contactInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ),
-            },
+            ...data?.contactInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.contactInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : classificationToJsonList(item?.['common:class']),
+              }),
+            ),
           },
           contactAddress: getLangJson(data?.contactInformation?.dataSetInformation?.contactAddress),
           telephone: data?.contactInformation?.dataSetInformation?.telephone,
@@ -177,13 +183,18 @@ export function genContactFromData(data: any): FormContact | undefined {
           ),
           'common:name': getLangList(data?.contactInformation?.dataSetInformation?.['common:name']),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToStringList(
-                data?.contactInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ) as any,
-            },
+            ...data?.contactInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.contactInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : (classificationToStringList(item?.['common:class']) as any),
+              }),
+            ),
           },
           contactAddress: getLangList(data?.contactInformation?.dataSetInformation?.contactAddress),
           telephone: data?.contactInformation?.dataSetInformation?.telephone,

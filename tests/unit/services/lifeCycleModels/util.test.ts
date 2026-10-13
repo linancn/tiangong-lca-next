@@ -905,11 +905,10 @@ describe('genLifeCycleModelInfoFromData', () => {
     const reviewList = Array.isArray(result.modellingAndValidation.validation.review)
       ? result.modellingAndValidation.validation.review
       : [result.modellingAndValidation.validation.review];
-    const complianceList = Array.isArray(
-      result.modellingAndValidation.complianceDeclarations.compliance,
-    )
-      ? result.modellingAndValidation.complianceDeclarations.compliance
-      : [result.modellingAndValidation.complianceDeclarations.compliance];
+    const complianceValue = (
+      result.modellingAndValidation.complianceDeclarations as { compliance: unknown }
+    ).compliance;
+    const complianceList = Array.isArray(complianceValue) ? complianceValue : [complianceValue];
     const review = reviewList[0] as any;
     const compliance = complianceList[0] as any;
 
@@ -1240,5 +1239,38 @@ describe('genEdgeExchangeTableData', () => {
   it('should return empty array when input is nullish', () => {
     expect(genEdgeExchangeTableData(undefined, 'en')).toEqual([]);
     expect(genEdgeExchangeTableData(null, 'en')).toEqual([]);
+  });
+});
+
+describe('ILCD model instance metadata preservation', () => {
+  it('keeps parameters, scaling and group declarations when saving graph edits', () => {
+    const instance = {
+      '@dataSetInternalID': '7',
+      scalingFactor: '0',
+      parameters: { parameter: [{ '@name': 'x', '#text': '1.5' }] },
+      groups: { memberOf: { '@groupId': 'g' } },
+    };
+    const groupDeclarations = { group: { '@id': 'g', name: 'Group' } };
+    const data = JSON.parse(JSON.stringify(baseModelData)) as any;
+    data.lifeCycleModelInformation.technology = {
+      ...data.lifeCycleModelInformation.technology,
+      groupDeclarations,
+      processes: { processInstance: instance },
+    };
+    const form = genLifeCycleModelInfoFromData(data) as any;
+    form.model = {
+      nodes: [
+        {
+          id: 'node',
+          data: { index: '7', id: 'process', version: '01.00.000', quantitativeReference: '1' },
+        },
+      ],
+      edges: [],
+    };
+    const saved = genLifeCycleModelJsonOrdered('model', form).lifeCycleModelDataSet;
+    expect(saved.lifeCycleModelInformation.technology.groupDeclarations).toEqual(groupDeclarations);
+    expect(saved.lifeCycleModelInformation.technology.processes.processInstance).toMatchObject(
+      instance,
+    );
   });
 });

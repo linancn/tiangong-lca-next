@@ -2,6 +2,7 @@ import { expect, test, type BrowserContext, type Page, type Route } from '@playw
 
 const closureCheckId = 'closure-browser';
 const userId = '11111111-1111-4111-8111-111111111111';
+const systemTeamId = '00000000-0000-0000-0000-000000000000';
 const baseURL = process.env.QUALIFICATION_BASE_URL ?? 'http://127.0.0.1:8011';
 const supabaseUrl = process.env.QUALIFICATION_SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const supabaseOrigin = new URL(supabaseUrl).origin;
@@ -123,6 +124,7 @@ async function configureBrowser(
   }
 
   const commandRequests: Array<Record<string, unknown>> = [];
+  const membershipRequests: Array<{ method: string; body: unknown }> = [];
   const bufferedDownloadRequests: Array<{ resourceType: string; role: string }> = [];
   const unexpectedOrigins = new Set<string>();
 
@@ -155,10 +157,21 @@ async function configureBrowser(
       });
       return;
     }
-    if (target.pathname === '/rest/v1/roles') {
+    if (target.pathname === '/rest/v1/rpc/qry_membership_get_mine') {
+      membershipRequests.push({ method: request.method(), body: request.postDataJSON() });
       await route.fulfill({
-        body: JSON.stringify({ role: options.persona, user_id: userId }),
-        contentType: 'application/vnd.pgrst.object+json',
+        body: JSON.stringify(
+          options.persona === 'anonymous'
+            ? []
+            : [
+                {
+                  role: options.persona === 'standard_user' ? 'member' : options.persona,
+                  team_id: systemTeamId,
+                  user_id: userId,
+                },
+              ],
+        ),
+        contentType: 'application/json',
         status: 200,
       });
       return;
@@ -246,7 +259,7 @@ async function configureBrowser(
     await route.fulfill({ body: '[]', contentType: 'application/json', status: 200 });
   });
 
-  return { bufferedDownloadRequests, commandRequests, unexpectedOrigins };
+  return { bufferedDownloadRequests, commandRequests, membershipRequests, unexpectedOrigins };
 }
 
 test.describe('role routing', () => {
@@ -263,6 +276,10 @@ test.describe('role routing', () => {
       const observed = await configureBrowser(context, page, { persona });
       await page.goto(`/#/data-processing?closureCheckId=${closureCheckId}`);
       await expect(page.getByTestId('access-denied')).toBeVisible();
+      expect(observed.membershipRequests.length).toBeGreaterThan(0);
+      expect(observed.membershipRequests).toEqual(
+        expect.arrayContaining([{ method: 'POST', body: {} }]),
+      );
       expect(
         observed.commandRequests.filter((request) =>
           ['create_closure_report_download', 'get_closure_check'].includes(String(request.action)),
@@ -277,6 +294,10 @@ test.describe('role routing', () => {
     await page.goto(`/#/data-processing?closureCheckId=${closureCheckId}`);
     await expect(page.getByTestId('closure-artifacts')).toBeVisible();
     await expect(page.getByTestId('access-denied')).toHaveCount(0);
+    expect(observed.membershipRequests.length).toBeGreaterThan(0);
+    expect(observed.membershipRequests).toEqual(
+      expect.arrayContaining([{ method: 'POST', body: {} }]),
+    );
     expect([...observed.unexpectedOrigins]).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import ImportTidasPackage from '@/components/ImportTidasPackage';
 import { submitTidasPackageImportTask } from '@/services/tidasPackage/taskCenter';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { message } from 'antd';
 
 type ReactNode = import('react').ReactNode;
@@ -12,6 +12,7 @@ type ModalProps = {
   children?: ReactNode;
   onOk?: () => void;
   onCancel?: () => void;
+  confirmLoading?: boolean;
 };
 
 type UploadDraggerProps = {
@@ -25,6 +26,8 @@ const MODAL_OK_TEST_ID = 'import-modal-ok';
 const PICK_FILE_TEST_ID = 'import-pick-file';
 const PICK_BAD_FILE_TEST_ID = 'import-pick-bad-file';
 let mockLocale: string | undefined = 'zh-CN';
+let mockGeneration: number | null = 1;
+let mockOwnerId: string | null = 'owner-a';
 
 jest.mock('@ant-design/icons', () => ({
   CloudUploadOutlined: ({
@@ -90,10 +93,15 @@ jest.mock('antd', () => {
   };
 
   const Tooltip = ({ children }: { children?: ReactNode }) => <>{children}</>;
-  const ModalComponent = ({ open, children, onOk, onCancel }: ModalProps) =>
+  const ModalComponent = ({ open, children, onOk, onCancel, confirmLoading }: ModalProps) =>
     open ? (
       <div data-testid='import-modal'>
-        <button type='button' data-testid={MODAL_OK_TEST_ID} onClick={onOk} />
+        <button
+          type='button'
+          data-testid={MODAL_OK_TEST_ID}
+          data-loading={confirmLoading}
+          onClick={onOk}
+        />
         <button type='button' data-testid='import-modal-cancel' onClick={onCancel} />
         {children}
       </div>
@@ -149,6 +157,8 @@ jest.mock('antd', () => {
 
 jest.mock('@/services/tidasPackage/taskCenter', () => ({
   submitTidasPackageImportTask: jest.fn(),
+  getTidasPackageTaskGeneration: () => mockGeneration,
+  getTidasPackageTaskOwnerId: () => mockOwnerId,
 }));
 
 const mockedImportTidasPackageApi = jest.mocked(submitTidasPackageImportTask);
@@ -158,6 +168,8 @@ describe('ImportTidasPackage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocale = 'zh-CN';
+    mockGeneration = 1;
+    mockOwnerId = 'owner-a';
   });
 
   it('warns when import is triggered without selecting a file', async () => {
@@ -232,7 +244,7 @@ describe('ImportTidasPackage Component', () => {
     );
   });
 
-  it('falls back to the default docs link when locale is missing', () => {
+  it('falls back to the English docs link when locale is missing', () => {
     mockLocale = undefined;
 
     render(<ImportTidasPackage />);
@@ -241,7 +253,7 @@ describe('ImportTidasPackage Component', () => {
 
     expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
       'href',
-      'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
+      'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
     );
   });
 
@@ -301,5 +313,84 @@ describe('ImportTidasPackage Component', () => {
       expect(mockMessage.error).toHaveBeenCalledWith('Failed to import TIDAS package'),
     );
     expect(screen.getByTestId('import-modal')).toBeInTheDocument();
+  });
+  it.each(['success', 'error'])(
+    'ignores a stale %s callback after another owner is admitted',
+    async (outcome) => {
+      let resolve: () => void = () => undefined;
+      let reject: (error: Error) => void = () => undefined;
+      mockedImportTidasPackageApi.mockReturnValueOnce(
+        new Promise((yes, no) => {
+          resolve = yes;
+          reject = no;
+        }),
+      );
+      render(<ImportTidasPackage />);
+      fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+      fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+      fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+      mockGeneration = 2;
+      mockOwnerId = 'owner-b';
+      await act(async () => {
+        if (outcome === 'success') resolve();
+        else reject(new Error('old owner upload failed'));
+      });
+      expect(mockMessage.success).not.toHaveBeenCalled();
+      expect(mockMessage.error).not.toHaveBeenCalled();
+      expect(screen.getByTestId('import-modal')).toBeInTheDocument();
+      mockedImportTidasPackageApi.mockResolvedValueOnce(undefined);
+      fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+      await waitFor(() => expect(mockMessage.success).toHaveBeenCalledTimes(1));
+    },
+  );
+
+  it('rejects an old callback even after the same owner returns in a later generation', async () => {
+    let resolve: () => void = () => undefined;
+    mockedImportTidasPackageApi.mockReturnValueOnce(
+      new Promise((yes) => {
+        resolve = yes;
+      }),
+    );
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+    mockGeneration = 3;
+    await act(async () => {
+      resolve();
+    });
+    expect(mockMessage.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId('import-modal')).toBeInTheDocument();
+  });
+  it('keeps a newer pending import busy when an older callback finishes', async () => {
+    let finishOld: () => void = () => undefined;
+    let finishNew: () => void = () => undefined;
+    mockedImportTidasPackageApi
+      .mockReturnValueOnce(
+        new Promise((yes) => {
+          finishOld = yes;
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((yes) => {
+          finishNew = yes;
+        }),
+      );
+    render(<ImportTidasPackage />);
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+    fireEvent.click(screen.getByTestId(PICK_FILE_TEST_ID));
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+    mockGeneration = 2;
+    mockOwnerId = 'owner-b';
+    fireEvent.click(screen.getByTestId(MODAL_OK_TEST_ID));
+    await act(async () => {
+      finishOld();
+    });
+    expect(mockMessage.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId(MODAL_OK_TEST_ID)).toHaveAttribute('data-loading', 'true');
+    await act(async () => {
+      finishNew();
+    });
+    expect(mockMessage.success).toHaveBeenCalledTimes(1);
   });
 });

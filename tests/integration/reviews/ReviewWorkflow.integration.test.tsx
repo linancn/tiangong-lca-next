@@ -11,6 +11,7 @@ import React from 'react';
 jest.mock('@/services/reviews/api', () => ({
   getReviewsTableDataOfReviewAdmin: jest.fn(),
   getReviewsTableDataOfReviewMember: jest.fn(),
+  getReviewsTableDataOfReviewerWorkload: jest.fn(),
 }));
 
 jest.mock('@/services/reviewerContacts/api', () => ({
@@ -364,6 +365,7 @@ import ReviewMember from '@/pages/Review/Components/ReviewMember';
 import {
   getReviewsTableDataOfReviewAdmin,
   getReviewsTableDataOfReviewMember,
+  getReviewsTableDataOfReviewerWorkload,
 } from '@/services/reviews/api';
 import { getReviewerContactStatus } from '@/services/reviewerContacts/api';
 import {
@@ -384,6 +386,9 @@ import {
 
 const mockGetReviewsTableDataOfReviewAdmin = jest.mocked(getReviewsTableDataOfReviewAdmin);
 const mockGetReviewsTableDataOfReviewMember = jest.mocked(getReviewsTableDataOfReviewMember);
+const mockGetReviewsTableDataOfReviewerWorkload = jest.mocked(
+  getReviewsTableDataOfReviewerWorkload,
+);
 const mockGetReviewerContactStatus = jest.mocked(getReviewerContactStatus);
 const mockGetReviewUserRoleApi = jest.mocked(getReviewUserRoleApi);
 const mockGetUserManageTableData = jest.mocked(getUserManageTableData);
@@ -399,6 +404,11 @@ describe('Review workflow integration', () => {
       total: 0,
     } as any);
     mockGetReviewsTableDataOfReviewMember.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    } as any);
+    mockGetReviewsTableDataOfReviewerWorkload.mockResolvedValue({
       data: [],
       success: true,
       total: 0,
@@ -487,12 +497,9 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableDataOfReviewMember.mock.calls.some(
-          ([, , type, lang, filter]) =>
-            type === 'pending' &&
-            lang === 'en' &&
-            typeof filter === 'object' &&
-            filter?.user_id === userData.user_id,
+        mockGetReviewsTableDataOfReviewerWorkload.mock.calls.some(
+          ([, , type, lang, reviewerId]) =>
+            type === 'pending' && lang === 'en' && reviewerId === userData.user_id,
         ),
       ).toBe(true);
     });
@@ -560,12 +567,9 @@ describe('Review workflow integration', () => {
 
     await waitFor(() => {
       expect(
-        mockGetReviewsTableDataOfReviewMember.mock.calls.some(
-          ([, , type, lang, filter]) =>
-            type === 'reviewed' &&
-            lang === 'en' &&
-            typeof filter === 'object' &&
-            filter?.user_id === memberRecord.user_id,
+        mockGetReviewsTableDataOfReviewerWorkload.mock.calls.some(
+          ([, , type, lang, reviewerId]) =>
+            type === 'reviewed' && lang === 'en' && reviewerId === memberRecord.user_id,
         ),
       ).toBe(true);
     });
@@ -740,48 +744,53 @@ describe('Review workflow integration', () => {
     });
   });
 
-  test.failing(
-    'reloading members table after opening drawer keeps main table action ref intact',
-    async () => {
-      const memberRecord = {
-        email: 'member@example.com',
-        pendingCount: 3,
-        reviewedCount: 5,
-        display_name: 'Reviewer Zero',
-        role: 'review-member',
-        user_id: 'member-123',
-        team_id: 'team-xyz',
-      };
+  it('reloading members table after opening drawer keeps main table action ref intact', async () => {
+    const memberRecord = {
+      email: 'member@example.com',
+      pendingCount: 3,
+      reviewedCount: 5,
+      display_name: 'Reviewer Zero',
+      role: 'review-member',
+      user_id: 'member-123',
+      team_id: 'team-xyz',
+    };
 
-      mockGetUserManageTableData.mockResolvedValueOnce({
-        data: [memberRecord],
-        success: true,
-        total: 1,
-      } as any);
+    mockGetUserManageTableData.mockResolvedValueOnce({
+      data: [memberRecord],
+      success: true,
+      total: 1,
+    } as any);
+    mockUpdateRoleApi.mockResolvedValue({ error: null } as any);
 
-      renderWithProviders(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
+    renderWithProviders(<ReviewMember userData={{ user_id: 'admin-1', role: 'review-admin' }} />);
 
-      await waitFor(() => {
-        expect(mockGetUserManageTableData).toHaveBeenCalledTimes(1);
-      });
+    await waitFor(() => {
+      expect(mockGetUserManageTableData).toHaveBeenCalledTimes(1);
+    });
 
-      const pendingCell = await screen.findByTestId(
-        'pro-table-cell-pendingCount-member@example.com',
-      );
-      fireEvent.click(within(pendingCell).getByText('3'));
+    const pendingCell = await screen.findByTestId('pro-table-cell-pendingCount-member@example.com');
+    fireEvent.click(within(pendingCell).getByText('3'));
 
-      await waitFor(() => {
-        expect(
-          mockGetReviewsTableDataOfReviewMember.mock.calls.some(
-            ([, , type, lang, filter]) =>
-              type === 'pending' && lang === 'en' && filter?.user_id === memberRecord.user_id,
-          ),
-        ).toBe(true);
-      });
+    await waitFor(() => {
+      expect(
+        mockGetReviewsTableDataOfReviewerWorkload.mock.calls.some(
+          ([, , type, lang, reviewerId]) =>
+            type === 'pending' && lang === 'en' && reviewerId === memberRecord.user_id,
+        ),
+      ).toBe(true);
+    });
 
-      await waitFor(() => {
-        expect(mockGetUserManageTableData).toHaveBeenCalledTimes(2);
-      });
-    },
-  );
+    await waitFor(() => {
+      expect(mockGetUserManageTableData).toHaveBeenCalledTimes(1);
+    });
+
+    const memberRow = screen.getByTestId('pro-table-row-member@example.com');
+    await act(async () => {
+      fireEvent.click(within(memberRow).getByTestId('icon-crown').closest('button')!);
+    });
+
+    await waitFor(() => {
+      expect(mockGetUserManageTableData).toHaveBeenCalledTimes(2);
+    });
+  });
 });

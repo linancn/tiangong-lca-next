@@ -522,6 +522,67 @@ describe('ProcessEdit component', () => {
     });
   });
 
+  it.each(['exchanges', 'processInformation'])(
+    'persists edited input/output amounts and derivation status when saving from %s',
+    async (saveTab) => {
+      const originalExchanges = [
+        {
+          ...processDataset.exchanges.exchange[0],
+          meanAmount: '1',
+          resultingAmount: '1',
+          dataDerivationTypeStatus: 'Measured',
+        },
+        {
+          '@dataSetInternalID': '1',
+          exchangeDirection: 'INPUT',
+          quantitativeReference: false,
+          meanAmount: '10',
+          resultingAmount: '10',
+          dataDerivationTypeStatus: 'Measured',
+        },
+      ];
+      mockGenProcessFromData.mockReturnValue({
+        ...processDataset,
+        exchanges: { exchange: originalExchanges },
+      });
+      render(<ProcessEdit {...baseProps} />);
+      fireEvent.click(screen.getByRole('button'));
+      await waitFor(() =>
+        expect(latestProcessFormProps.exchangeDataSource).toEqual(originalExchanges),
+      );
+      await act(async () => {
+        latestProcessFormProps.onTabChange('exchanges');
+      });
+
+      const editedExchanges = originalExchanges.map((exchange, index) => ({
+        ...exchange,
+        meanAmount: index === 0 ? '0' : '12.5',
+        resultingAmount: index === 0 ? '0' : '13',
+        dataDerivationTypeStatus: 'Estimated',
+      }));
+      await act(async () => {
+        latestProcessFormProps.onExchangeData(editedExchanges);
+      });
+      await waitFor(() =>
+        expect(latestProcessFormProps.exchangeDataSource).toEqual(editedExchanges),
+      );
+      if (saveTab !== 'exchanges') {
+        await act(async () => {
+          latestProcessFormProps.onTabChange(saveTab);
+        });
+      }
+      await act(async () => {
+        await proFormApi?.submit();
+      });
+
+      expect(mockUpdateProcess).toHaveBeenCalledWith(
+        'process-1',
+        '1.0.0',
+        expect.objectContaining({ exchanges: { exchange: editedExchanges } }),
+      );
+    },
+  );
+
   it('saves successfully when updateNodeCb falls back to the default no-op handler', async () => {
     const propsWithoutNodeCb = { ...baseProps };
     delete propsWithoutNodeCb.updateNodeCb;

@@ -25,7 +25,7 @@ export default {
   'pages.process.list.loadError': 'Échec du chargement de la liste des processus.',
   'pages.process.published.title': 'Procédés publiés',
   'pages.process.published.table.processName': 'Nom du procédé',
-  'pages.process.published.table.calculationResult': 'Résultat du calcul',
+  'pages.process.published.table.calculationResult': 'Résultat du calcul ({unit})',
   'pages.process.referenceYear': 'Année de référence',
   'pages.process.location': 'Localisation',
   'pages.process.lca.toolbar.tooltip': 'Exécuter le calcul d’ACV',
@@ -541,6 +541,9 @@ export default {
   'pages.process.view.exchange.selectadirection': 'Sélectionner un sens',
   'processExchange.dataDerivationTypeStatus': 'Type/statut d’obtention des données',
   'pages.process.view.modellingAndValidation.referenceToCompleteReviewReport': 'Rapport complet de revue critique',
+  'pages.process.reviewReport.download': 'Télécharger le rapport',
+  'pages.process.reviewReport.downloadFailed': 'Échec du téléchargement du rapport de revue.',
+  'pages.process.reviewReport.noAttachments': 'Le rapport de revue ne contient actuellement aucune pièce jointe.',
   'pages.process.view.modellingAndValidation.validation.otherReviewDetails': 'Autres détails de la revue critique',
 
   'pages.process.modellingAndValidation.validation.review.scope': 'Portée',
@@ -923,4 +926,6 @@ export default {
   'pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source': 'Des preuves de couverture de méthode contradictoires ont été fournies.',
   'pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch': 'La couverture au niveau des méthodes est manquante ou ne correspond pas à la source vérifiée.',
   'pages.process.lca.evidence.reason.unknown': 'Les preuves n’ont pas passé la validation.',
+  'pages.process.published.climate.error': 'Échec du chargement',
+  'pages.process.published.climate.missing': 'Aucun résultat pour cette version dans la publication actuelle',
 };

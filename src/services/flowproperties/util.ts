@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '../general/tidasRepeatedFields';
 import { FormFlowProperty } from '@/services/flowproperties/data';
 import { createFlowProperty as createTidasFlowProperty } from '@tiangong-lca/tidas-sdk/core';
 import {
@@ -34,13 +35,18 @@ export function genFlowpropertyJsonOrdered(id: string, data: any) {
             data?.flowPropertiesInformation?.dataSetInformation?.['common:synonyms'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToJsonList(
-                data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ),
-            },
+            ...data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : classificationToJsonList(item?.['common:class']),
+              }),
+            ),
           },
           'common:generalComment': getLangJson(
             data?.flowPropertiesInformation?.dataSetInformation?.['common:generalComment'],
@@ -222,13 +228,18 @@ export function genFlowpropertyFromData(data: any): FormFlowProperty {
             data?.flowPropertiesInformation?.dataSetInformation?.['common:synonyms'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToStringList(
-                data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ) as any,
-            },
+            ...data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.flowPropertiesInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : (classificationToStringList(item?.['common:class']) as any),
+              }),
+            ),
           },
           'common:generalComment': getLangList(
             data?.flowPropertiesInformation?.dataSetInformation?.['common:generalComment'],

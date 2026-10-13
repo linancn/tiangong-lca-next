@@ -7,6 +7,8 @@
  * 副产品 ID 复用、倍率回写、边数值与错误映射。
  */
 
+import { writeFileSync } from 'node:fs';
+import { genProcessJsonOrdered } from '@/services/processes/util';
 import { getSharedMatrixCalculationClient } from '@/services/lifeCycleModels/matrixCalculation/workerClient';
 import { CalculationOperation } from '@/services/lifeCycleModels/matrixCalculation/types';
 import { genLifeCycleModelProcesses } from '@/services/lifeCycleModels/util_calculate';
@@ -394,7 +396,7 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       );
 
     expect(lciaIncomplete).toBe(false);
-    expect(lifeCycleModelProcesses).toHaveLength(2);
+    expect(lifeCycleModelProcesses).toHaveLength(4);
 
     const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
     const secondary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'secondary');
@@ -413,7 +415,7 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
     const primaryRaw = primary?.data?.processDataSet?.exchanges?.exchange?.find(
       (exchange: any) => exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-raw',
     );
-    expect(Number(primaryRaw?.meanAmount)).toBeCloseTo(-5.6, 9);
+    expect(Number(primaryRaw?.meanAmount)).toBeCloseTo(5.6, 9);
 
     expect(secondary).toBeDefined();
     expect(secondary?.option).toBe('update');
@@ -434,16 +436,16 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       { '@xml:lang': 'fr', '#text': '[Sous-produit : Produit C] Processus de référence' },
     ]);
 
-    // 副模型边界：C 终产品 16/3 与 B 的 C 产品归因原料 7 × 0.4 / 4 × 16/3
+    // 副情景以 C 的参考量 1 为需求，原料负荷为 7 × 0.4 / 4。
     const secondaryExchanges = secondary?.data?.processDataSet?.exchanges?.exchange ?? [];
     const secondaryFinal = secondaryExchanges.find(
       (exchange: any) => exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-C-final',
     );
-    expect(Number(secondaryFinal?.meanAmount)).toBeCloseTo(16 / 3, 9);
+    expect(Number(secondaryFinal?.meanAmount)).toBeCloseTo(1, 9);
     const secondaryRaw = secondaryExchanges.find(
       (exchange: any) => exchange?.referenceToFlowDataSet?.['@refObjectId'] === 'flow-raw',
     );
-    expect(Number(secondaryRaw?.meanAmount)).toBeCloseTo(-(28 / 3) * 0.4, 9);
+    expect(Number(secondaryRaw?.meanAmount)).toBeCloseTo(0.7, 9);
 
     for (const generated of lifeCycleModelProcesses) {
       const entries = generated.data.processDataSet.exchanges.exchange;
@@ -453,7 +455,7 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
 
     expect(mockLCIAResultCalculation).toHaveBeenCalledTimes(2);
 
-    // 倍率回写：A 2、B 4/3、C 16/3
+    // 标准实例引用单位产品清单：A 倍率 2，B 的第一产品需求 4，C 主情景活动为 0。
     const processInstance =
       data.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes.processInstance;
     const multiplierByIndex = new Map(
@@ -463,14 +465,14 @@ describe('genLifeCycleModelProcesses (matrix calculation)', () => {
       ]),
     );
     expect(multiplierByIndex.get('nodeA')).toBe('2');
-    expect(Number(multiplierByIndex.get('nodeB'))).toBeCloseTo(4 / 3, 9);
-    expect(Number(multiplierByIndex.get('nodeC'))).toBeCloseTo(16 / 3, 9);
+    expect(Number(multiplierByIndex.get('nodeB'))).toBeCloseTo(4, 9);
+    expect(Number(multiplierByIndex.get('nodeC'))).toBe(0);
 
     // 边数值：成功求解下全部平衡
     const edgeByFlow = new Map(up2DownEdges.map((edge) => [edge.flowUUID, edge]));
     expect(edgeByFlow.get('flow-B-to-A')?.exchangeAmount).toBeCloseTo(4, 9);
     expect(edgeByFlow.get('flow-B-to-A')?.isBalanced).toBe(true);
-    expect(edgeByFlow.get('flow-B-to-C')?.exchangeAmount).toBeCloseTo(16 / 3, 9);
+    expect(edgeByFlow.get('flow-B-to-C')?.exchangeAmount).toBe(0);
     expect(edgeByFlow.get('flow-B-to-C')?.upstreamNodeId).toBe('graph-node-b');
     expect(edgeByFlow.get('flow-B-to-C')?.downstreamNodeId).toBe('graph-node-c');
   });
@@ -1145,5 +1147,166 @@ it('rejects invalid inherited allocations before solving and identifies the sour
     issues: expect.arrayContaining([
       expect.objectContaining({ instanceIndex: 'nodeB', exchangeInternalId: 'exB_out_toA' }),
     ]),
+  });
+});
+
+describe('Worker allocation materialization contract', () => {
+  it('persists direction-aware primary and coproduct amounts and exports the exact Worker fixture', async () => {
+    const timestamp = jest
+      .spyOn(Date.prototype, 'toISOString')
+      .mockReturnValue('2026-09-29T00:00:00.000Z');
+    try {
+      const processId = '11111111-1111-4111-8111-111111111111';
+      const modelId = '22222222-2222-4222-8222-222222222222';
+      const flowIds = [1, 2, 3, 4, 5].map(
+        (id) => `33333333-3333-4333-8333-${String(id).padStart(12, '0')}`,
+      );
+      const version = '01.00.000';
+      const vector = (a: number) => ({
+        allocation: [
+          { '@internalReferenceToCoProduct': '1', '@allocatedFraction': a },
+          { '@internalReferenceToCoProduct': '2', '@allocatedFraction': 100 - a },
+        ],
+      });
+      mockFrom.mockImplementation((table: string) =>
+        table === 'flows'
+          ? {
+              select: () => ({
+                in: () => ({
+                  order: async () => ({
+                    data: flowIds
+                      .slice(0, 2)
+                      .map((id) => ({ id, version, typeOfDataSet: 'Product flow' })),
+                  }),
+                }),
+              }),
+            }
+          : { select: mockSelect },
+      );
+      const cases: any[] = [];
+      for (const legacy of [false, true]) {
+        const rows = [2, 1, 100, 50, 10].map((amount, index) => ({
+          '@dataSetInternalID': String(index + 1),
+          exchangeDirection: index === 2 || index === 3 ? 'Input' : 'Output',
+          meanAmount: String(amount),
+          resultingAmount: String(amount),
+          referenceToFlowDataSet: {
+            '@refObjectId': flowIds[index],
+            '@version': version,
+            '@type': 'flow data set',
+          },
+          ...(legacy
+            ? index < 2
+              ? {
+                  allocations: {
+                    allocation: { '@allocatedFraction': index === 0 ? '70%' : '30%' },
+                  },
+                }
+              : {}
+            : index >= 2
+              ? { allocations: vector([70, 40, 80][index - 2]) }
+              : {}),
+        }));
+        // The first read is the Process; subsequent reads verify exact Product Flow identities.
+        mockOr.mockResolvedValueOnce({
+          data: [
+            {
+              id: processId,
+              version,
+              exchange: rows,
+              quantitativeReference: { referenceToReferenceFlow: '1' },
+            },
+          ],
+        });
+        mockOr.mockResolvedValue({
+          data: flowIds.slice(0, 2).map((id) => ({ id, version, typeOfDataSet: 'Product flow' })),
+        });
+        mockLCIAResultCalculation.mockResolvedValue([]);
+        const data = {
+          lifeCycleModelDataSet: {
+            lifeCycleModelInformation: {
+              quantitativeReference: { referenceToReferenceProcess: 'p' },
+              dataSetInformation: {
+                name: { baseName: [{ '@xml:lang': 'en', '#text': 'Allocation parity' }] },
+              },
+              technology: {
+                processes: {
+                  processInstance: [
+                    {
+                      '@dataSetInternalID': 'p',
+                      referenceToProcess: { '@refObjectId': processId, '@version': version },
+                    },
+                  ],
+                },
+              },
+            },
+            administrativeInformation: {
+              publicationAndOwnership: { 'common:dataSetVersion': version },
+            },
+          },
+        };
+        const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+          modelId,
+          [{ id: 'p', data: { index: 'p', quantitativeReference: '1', targetAmount: 2 } }] as any,
+          data,
+          [],
+        );
+        expect(lifeCycleModelProcesses).toHaveLength(4);
+        for (const record of lifeCycleModelProcesses.filter(
+          (item) => item.modelInfo.type !== 'allocated',
+        )) {
+          const primary = record.modelInfo.type === 'primary';
+          const id = primary ? modelId : '44444444-4444-4444-8444-444444444444';
+          const persisted = genProcessJsonOrdered(id, record.data.processDataSet);
+          const dataset = persisted.processDataSet;
+          const entries = Array.isArray(dataset.exchanges.exchange)
+            ? dataset.exchanges.exchange
+            : [dataset.exchanges.exchange];
+          const reference =
+            dataset.processInformation.quantitativeReference.referenceToReferenceFlow;
+          const pivot = entries.find((entry: any) => entry['@dataSetInternalID'] === reference)!;
+          expect(pivot.referenceToFlowDataSet['@refObjectId']).toBe(flowIds[primary ? 0 : 1]);
+          const expected = legacy
+            ? primary
+              ? [70, 35, 7]
+              : [30, 15, 3]
+            : primary
+              ? [70, 20, 8]
+              : [30, 30, 2];
+          const balances = expected.map((amount, index) => {
+            const flowId = flowIds[index + 2];
+            const entry = entries.find(
+              (entry: any) => entry.referenceToFlowDataSet['@refObjectId'] === flowId,
+            )!;
+            expect(entry.exchangeDirection).toBe(index < 2 ? 'Input' : 'Output');
+            expect(Number(entry.resultingAmount)).toBeCloseTo(amount, 9);
+            expect(Number(entry.meanAmount)).toBeCloseTo(amount, 9);
+            return {
+              flowId,
+              signedAmountPerReference:
+                (index < 2 ? -amount : amount) / Number(pivot.resultingAmount),
+            };
+          });
+          for (const entry of entries) expect(entry.allocations).toBeUndefined();
+          cases.push({
+            name: `${legacy ? 'legacy' : 'targeted'}-${record.modelInfo.type}`,
+            id,
+            version,
+            process: persisted,
+            balances,
+          });
+        }
+      }
+      // Optional local cross-repository qualification artifact; no network or DB writes.
+      if (process.env.ALLOCATION_PARITY_OUTPUT) {
+        writeFileSync(
+          process.env.ALLOCATION_PARITY_OUTPUT,
+          JSON.stringify({ schema: 'platform-worker-allocation-fixture.v1', cases }, null, 2) +
+            '\n',
+        );
+      }
+    } finally {
+      timestamp.mockRestore();
+    }
   });
 });

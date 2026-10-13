@@ -43,3 +43,27 @@ export function mapActiveTableSort(
     [fieldMap[activeSort.field] ?? activeSort.field]: activeSort.order,
   };
 }
+
+// Version drawers query core entity tables; localized names and classifications are display fields.
+export function getAllVersionsSortField(field: unknown): string | undefined {
+  switch (field) {
+    case 'version':
+      return 'version';
+    case 'createdAt':
+    case 'created_at':
+      return 'created_at';
+    case 'modifiedAt':
+    case 'modified_at':
+      return 'modified_at';
+    default:
+      return undefined;
+  }
+}
+
+export function resolveAllVersionsSort(sort: TableSortState | null | undefined): ActiveTableSort {
+  const activeSort = getActiveTableSort(sort);
+  const field = getAllVersionsSortField(activeSort?.field);
+  return activeSort && field
+    ? { field, order: activeSort.order }
+    : { field: 'version', order: 'descend' };
+}

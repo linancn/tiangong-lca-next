@@ -306,13 +306,32 @@ describe('tidasPackage/taskCenter', () => {
     expect(taskCenter.listTidasPackageTasks()).toEqual([]);
   });
 
+  it.each([null, 'user-b'])(
+    'does not enqueue if a local subscriber invalidates export intent (%s)',
+    async (owner) => {
+      const center = loadTaskCenterModule('user-a');
+      const unsubscribe = center.subscribeTidasPackageTasks(() => {
+        unsubscribe();
+        center.bindTidasPackageTaskCenterOwner(owner);
+      });
+      center.submitTidasPackageExportTask({ scope: 'current_user' });
+      await flushPromises();
+      expect(mockQueueExportTidasPackageApi).not.toHaveBeenCalled();
+      expect(center.listTidasPackageTasks()).toEqual([]);
+    },
+  );
+
   it('ignores queue rejection updates after the authenticated user changes', async () => {
     const queue = createDeferred<any>();
     mockQueueExportTidasPackageApi.mockReturnValueOnce(queue.promise);
 
     const taskCenter = loadTaskCenterModule('user-a');
     taskCenter.submitTidasPackageExportTask({ scope: 'current_user' });
+    const guard = mockQueueExportTidasPackageApi.mock.calls[0][1].taskSession;
+    expect(guard.ownerId).toBe('user-a');
+    expect(guard.isCurrent()).toBe(true);
     taskCenter.bindTidasPackageTaskCenterOwner('user-b');
+    expect(guard.isCurrent()).toBe(false);
 
     queue.reject(new Error('stale queue rejection'));
     await flushPromises();
@@ -1930,6 +1949,38 @@ describe('tidasPackage/taskCenter', () => {
     pending.resolve({ data: { ok: true, job_id: 'old' }, error: null });
     await submit;
     expect(center.listTidasPackageTasks()).toEqual([]);
+  });
+
+  it.each(['error', 'rejection'])(
+    'drops an import admission %s after the owner changes',
+    async (outcome) => {
+      const center = loadTaskCenterModule('user-a');
+      const pending = createDeferred<any>();
+      mockQueueImportTidasPackageApi.mockReturnValueOnce(pending.promise);
+      const submit = center.submitTidasPackageImportTask(new File(['zip'], 'a.zip'));
+      const guard = mockQueueImportTidasPackageApi.mock.calls[0][1].taskSession;
+      expect(guard.ownerId).toBe('user-a');
+      expect(guard.isCurrent()).toBe(true);
+      center.bindTidasPackageTaskCenterOwner('user-b');
+      expect(guard.isCurrent()).toBe(false);
+      if (outcome === 'error') pending.resolve({ data: null, error: new Error('stale upload') });
+      else pending.reject(new Error('stale session'));
+      await expect(submit).resolves.toBeUndefined();
+      expect(center.listTidasPackageTasks()).toEqual([]);
+    },
+  );
+
+  it('exposes the admitted owner generation and preserves current-owner import rejection', async () => {
+    const center = loadUnboundTaskCenterModule();
+    expect(center.getTidasPackageTaskGeneration()).toBeNull();
+    expect(center.getTidasPackageTaskOwnerId()).toBeNull();
+    center.bindTidasPackageTaskCenterOwner('user-a');
+    expect(center.getTidasPackageTaskGeneration()).not.toBeNull();
+    expect(center.getTidasPackageTaskOwnerId()).toBe('user-a');
+    mockQueueImportTidasPackageApi.mockRejectedValueOnce(new Error('current owner upload failed'));
+    await expect(center.submitTidasPackageImportTask(new File(['zip'], 'a.zip'))).rejects.toThrow(
+      'current owner upload failed',
+    );
   });
 
   it('restores validated partial outcome and rejects invalid persisted counts', () => {

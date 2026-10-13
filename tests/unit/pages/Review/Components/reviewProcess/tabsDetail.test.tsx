@@ -527,7 +527,7 @@ describe('Review process TabsDetail', () => {
               LCIMethodAndAllocation: {
                 typeOfDataSet: 'process-a',
                 LCIMethodPrinciple: 'principle-a',
-                LCIMethodApproaches: 'approach-a',
+                LCIMethodApproaches: ['approach-a'],
               },
               completeness: {
                 completenessProductModel: 'product-a',

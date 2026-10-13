@@ -19,8 +19,8 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: 2f9c9cde1bc874f52d5aaf09ab4d65c56c1278f6
-lastReviewedNote: 'Documented the unified Process and Lifecycle Model Review Member footer and reviewer-opinion rejection behavior for Platform #1208.'
+lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedNote: 'Documented the unified Process and Lifecycle Model Review Member footer and reviewer-opinion rejection behavior for Platform #1208 after merging current dev.'
 ---
 
 # Audit Status Reference

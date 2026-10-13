@@ -185,7 +185,7 @@ const ContactEdit: FC<Props> = ({
     if (fromData)
       setFromData({
         ...fromData,
-        [activeTabKey]: formRefEdit.current?.getFieldsValue()?.[activeTabKey] ?? {},
+        [activeTabKey]: formRefEdit.current?.getFieldsValue(true)?.[activeTabKey] ?? {},
       });
   };
 
@@ -302,7 +302,7 @@ const ContactEdit: FC<Props> = ({
     const silent = options?.silent ?? false;
     if (autoClose) setSpinning(true);
     await updateReferenceDescription();
-    const formFieldsValue = formRefEdit.current?.getFieldsValue();
+    const formFieldsValue = formRefEdit.current?.getFieldsValue(true);
     const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
     const updateResult: UpdateContactResult | undefined = langOptions
       ? await updateContact(id, version, formFieldsValue, langOptions)
@@ -799,7 +799,8 @@ const ContactEdit: FC<Props> = ({
           <RefCheckContext.Provider value={refCheckContextValue}>
             <ProForm
               formRef={formRefEdit}
-              onValuesChange={(_, allValues) => {
+              onValuesChange={(_, changedFormValues) => {
+                const allValues = formRefEdit.current?.getFieldsValue(true) ?? changedFormValues;
                 setFromData({
                   ...fromData,
                   [activeTabKey]: allValues[activeTabKey] ?? {},

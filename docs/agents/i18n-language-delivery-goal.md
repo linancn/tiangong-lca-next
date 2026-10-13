@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-09-28
-lastReviewedCommit: 66d8f709266e3297f403b1039b0c3a2cde0ce2af
-lastReviewedNote: 'Reviewed Platform #1109 follow-up: shared review views remove one duplicate ProTable and locale-materialized implementation surface; generated locale artifacts were refreshed idempotently, while language, validation, gate, and testing policy remain unchanged.'
+lastReviewedAt: 2026-10-09
+lastReviewedCommit: bce938c009c8ec02236158ab18361c31f2b1af34
+lastReviewedNote: 'Platform #1194: seven-type manager display configuration, 60 assertions / 57 routes, explicit audited display read RPCs, and PageContainer17 / ProTable69 inventory are synchronized. Immutable historical route proof is rejected; 52 route-proof tests, 125 surface/request contract assertions and 30 service/search regressions pass. Original Open Data search filters and Process result lookup are preserved. Full checked-push remains required; Database800 / Edge470 precede rollout. No merge or deployment.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -567,6 +567,7 @@ CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二
 
 - 复用 `UmiSelectLang` 的原生 locale 数据和渲染，保留其 `icon` 国旗；
 - 共享 Header 的 Umi `SelectLang` 必须使用 `reload={false}`，在当前 document 内更新 locale，而不是以整页 reload 掩盖挂载态刷新或旧请求竞态；
+- 浏览器自动选择、手选偏好、英文默认及旧版缓存兼容遵循 `docs/agents/repo-architecture.md` 的浏览器入口合同；新增语言必须覆盖有序浏览器候选及地区别名、手选后重开、自动选择不持久化，以及存储 getter/写入被禁止时的当前页切换；
 - 菜单项精确显示“国旗 + 语言原生名称”，例如当前基线的 `🇨🇳 简体中文`、`🇺🇸 English`、`🇩🇪 Deutsch`；
 - label 不附加国家名或地区限定；必要时只规范化 label，不删除或替换 Umi `icon`；
 - 国旗由 canonical locale 的 Umi metadata 决定，只是视觉标识，不表示建立同一语言的国家/地区变体；
@@ -691,7 +692,7 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 | C1 source/context | source SHA、message inventory、route-view matrix、参考资源 edition/source/structure digest、context schema/digest | source/route/resource delta/context 闭包 |
 | C2 autonomous catalog | target catalog/reference overlay digest、零 blocked、100% resource coverage、quality report | 变化 message/resource/rule 闭包 |
 | C3 existing-locale repair | 全语言 capability audit、correction ledger/resource repair digest | 新发现或变化闭包 |
-| C4 runtime activation | activation manifest、capability/reference-data gates、50-ID semantic E2E closure、focused proof | 运行时影响范围 |
+| C4 runtime activation | activation manifest、capability/reference-data gates、contract-declared assertion-ID semantic E2E closure、focused proof | 运行时影响范围 |
 | C5 delivery freeze | immutable SHA、clean proof、full gate | 受控 tracked 变化 |
 | C6 dev delivery | 三个 feature PR/dev merge SHAs | 远端实际未完成阶段 |
 | C7 release candidate | promote PR/version/batch digest | 变化的线上候选 |
@@ -817,7 +818,7 @@ browser proof 不进入 Git。手动 workflow 使用行为输入与浏览器环�
 - 日常 PR/`dev` push 不自动触发 semantic browser E2E；按风险在业务 PR 仍开放时通过 `workflow_dispatch` 对其分支或 exact SHA 运行无生产凭据、无写入的 hermetic qualification，覆盖 Chromium 全矩阵及 Firefox/WebKit 关键场景；该证明不参与 release proof；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `pnpm start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
-- semantic evidence 必须绑定 route contract、50-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
+- semantic evidence 必须绑定 route contract、contract-declared assertion-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
 - 只有真实角色条件分支才扩大角色 smoke；共享路径不重复 Member/Reviewer/Admin；
 - 原生国旗 selector、长文案、明暗主题、窄屏和 RTL 条件 visual smoke。
 
@@ -830,7 +831,7 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
 3. 选择/确认唯一 package version，但此阶段不手工修改；最终 version bump 由阶段 I 的确定性 `release:to-dev` 命令一次完成。
-4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `pnpm i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `pnpm i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、50-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `pnpm i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
+4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `pnpm i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `pnpm i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、contract-declared assertion-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `pnpm i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使本阶段失败，不得进入 `release:to-dev`。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
    - 使用当前受支持 Node；
@@ -940,7 +941,7 @@ pnpm push:retry
 | glossary/style/context rule 变化 | usage index 求跨 locale 闭包 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
-| Playwright config/spec、50-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
+| Playwright config/spec、contract-declared assertion-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
 | 仅 root release version metadata 变化 | restricted release-candidate push 跑 Docpact/static preflight；dev Release PR 生成非浏览器 release proof | 永不需要 | 本地不跑；dev full gate 一次 | browser evidence 不失效；release proof 仍绑定 exact candidate |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
@@ -1116,7 +1117,7 @@ pnpm push:retry
 - package/tag：<VERSION / TAG>
 - 三个交付 Issue：<LANGUAGE PLATFORM / REFERENCE LOCALIZATION / PAGE SWEEP E2E + PR/SHA>
 - 硬编码门禁：<ZERO VIOLATIONS / ALLOWLIST>
-- Semantic E2E：<50-ID CLOSURE / CHROMIUM FULL MATRIX / THREE-BROWSER CRITICAL / EVIDENCE DIGEST / CREATED=CLEANED, LEAKED=0>
+- Semantic E2E：<CONTRACT ASSERTION-ID CLOSURE / CHROMIUM FULL MATRIX / THREE-BROWSER CRITICAL / EVIDENCE DIGEST / CREATED=CLEANED, LEAKED=0>
 - Next dev：<THREE FEATURE PRS / SHA>
 - 最终发布确认：<CONFIRMED RELEASE TUPLE>
 - 线上生效动作：<PRODUCTION_EFFECTIVE_ACTION>

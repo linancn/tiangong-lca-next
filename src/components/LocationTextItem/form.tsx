@@ -1,3 +1,4 @@
+import { toTidasMultiSelectValue } from '@/services/general/tidasRepeatedFields';
 import { getILCDLocationAll } from '@/services/locations/api';
 import { Form, Select, Space } from 'antd';
 import { FC, useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ type Props = {
   onData: () => void;
   rules?: any[];
   showRequiredLable?: boolean;
+  multiple?: boolean;
 };
 
 const LocationTextItemForm: FC<Props> = ({
@@ -18,6 +20,7 @@ const LocationTextItemForm: FC<Props> = ({
   onData,
   rules,
   showRequiredLable = false,
+  multiple = false,
 }) => {
   const [locationData, setLocationData] = useState<any>([]);
 
@@ -64,9 +67,13 @@ const LocationTextItemForm: FC<Props> = ({
         required={false}
         label={showRequiredLable ? <RequiredMark label={label} showError={false} /> : label}
         name={name}
+        getValueProps={(value) => ({
+          value: multiple ? toTidasMultiSelectValue(value) : value,
+        })}
         rules={rules}
       >
         <Select
+          mode={multiple ? 'multiple' : undefined}
           classNames={{
             root: 'tg-location-reference-select',
             popup: {

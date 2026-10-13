@@ -6,6 +6,14 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const {
+  loadQualificationClosureContract,
+  qualificationAssertionFailures,
+  qualificationCleanupFailures,
+  qualificationCoverageFailures,
+  qualificationReportFailures,
+  readQualificationReportReceipt,
+} = require('./qualification-closure.cjs');
 
 const REPOSITORY_ROOT = path.resolve(__dirname, '../..');
 const RUNTIME_ROOT = path.join(REPOSITORY_ROOT, '.local/e2e-release');
@@ -16,7 +24,7 @@ const RECEIPT_KEY_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.key');
 const INVOCATION_LOCK_PATH = path.join(RUNTIME_ROOT, 'invocation.lock');
 const ENVIRONMENT_MANIFEST_PATH = path.join(RUNTIME_ROOT, 'environment-manifest.json');
 const DEFAULT_QUALIFICATION_PROOF_PATH = path.join(RUNTIME_ROOT, 'qualification-proof.json');
-const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v4';
+const QUALIFICATION_PROOF_SCHEMA_VERSION = 'tiangong.semantic-harness-qualification.v6';
 const ENVIRONMENT_CONTRACT_RELATIVE_PATH = 'docker/e2e/environment.json';
 const DOCKERFILE_RELATIVE_PATH = 'docker/e2e/Dockerfile';
 const QUALIFICATION_ENVIRONMENT_RELATIVE_PATH = 'docker/e2e/qualification.env';
@@ -1265,30 +1273,75 @@ function assertExternalProofPath(proofPath) {
 }
 
 function validateQualificationProof(proof, expectedIdentity = qualificationIdentity()) {
+  const contract = loadQualificationClosureContract(REPOSITORY_ROOT);
+  const exactKeys = (value, keys) =>
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === keys.length &&
+    keys.every((key) => Object.hasOwn(value, key));
+  const closureFailures = [
+    ...qualificationCoverageFailures(proof?.coverage, contract),
+    ...qualificationAssertionFailures(proof, contract),
+    ...qualificationCleanupFailures(proof?.cleanup),
+  ];
+  if (
+    !exactKeys(proof, [
+      'schemaVersion',
+      'status',
+      'generatedAt',
+      'proofKey',
+      'candidate',
+      'qualificationInputSha256',
+      'environmentContractSha256',
+      'environmentManifestSha256',
+      'browsers',
+      'assertionIds',
+      'assertionBrowsers',
+      'coverage',
+      'cleanup',
+      'externalRequests',
+      'productionWrites',
+      'diagnostics',
+    ]) ||
+    !exactKeys(proof?.candidate, ['commit', 'tree']) ||
+    !exactKeys(proof?.coverage, Object.keys(contract.coverage)) ||
+    !exactKeys(proof?.cleanup, ['created', 'cleaned', 'leaked']) ||
+    !exactKeys(proof?.diagnostics, [
+      'retainedOutsideGit',
+      'runResultSha256',
+      'qualificationReportSha256',
+    ])
+  ) {
+    closureFailures.push('proof-shape');
+  }
   if (
     proof?.schemaVersion !== QUALIFICATION_PROOF_SCHEMA_VERSION ||
     proof.status !== 'qualified' ||
-    proof.coverage?.discoveredCases !== 81 ||
-    proof.coverage?.contractAssertionCount !== 50 ||
-    proof.coverage?.liveAssertionCount !== 50 ||
-    proof.coverage?.executedCases !== 51 ||
-    proof.coverage?.skippedCases !== 30 ||
-    proof.coverage?.harnessControlCases !== 12 ||
-    proof.coverage?.qualificationDiscoveredCases !== 93 ||
+    typeof proof.generatedAt !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(proof.generatedAt) ||
+    !Number.isFinite(Date.parse(proof.generatedAt)) ||
+    closureFailures.length > 0 ||
     proof.productionWrites !== 0 ||
     proof.externalRequests !== 0 ||
-    proof.cleanup?.created !== 0 ||
-    proof.cleanup?.cleaned !== 0 ||
-    proof.cleanup?.leaked !== 0 ||
     proof.qualificationInputSha256 !== expectedIdentity.inputSha256 ||
     proof.environmentContractSha256 !== expectedIdentity.environmentContractSha256 ||
     proof.proofKey !== expectedIdentity.proofKey ||
     !/^[0-9a-f]{64}$/u.test(proof.environmentManifestSha256 || '') ||
     !/^[0-9a-f]{40}$/u.test(proof.candidate?.commit || '') ||
     !/^[0-9a-f]{40}$/u.test(proof.candidate?.tree || '') ||
-    JSON.stringify(proof.browsers?.map(({ name }) => name)) !==
-      JSON.stringify(['chromium', 'firefox', 'webkit']) ||
-    proof.browsers.some(({ version }) => typeof version !== 'string' || version.length === 0)
+    proof.diagnostics?.retainedOutsideGit !== true ||
+    !/^[0-9a-f]{64}$/u.test(proof.diagnostics?.runResultSha256 || '') ||
+    !/^[0-9a-f]{64}$/u.test(proof.diagnostics?.qualificationReportSha256 || '') ||
+    !Array.isArray(proof.browsers) ||
+    proof.browsers.length !== contract.browsers.length ||
+    proof.browsers.some(
+      (browser, index) =>
+        !exactKeys(browser, ['name', 'version']) ||
+        browser.name !== contract.browsers[index] ||
+        typeof browser?.version !== 'string' ||
+        !/^\d+(?:\.\d+){0,3}$/u.test(browser.version),
+    )
   ) {
     throw new ReleaseE2EError(
       'The external semantic qualification proof is missing, stale, or incomplete.',
@@ -1296,6 +1349,7 @@ function validateQualificationProof(proof, expectedIdentity = qualificationIdent
         exitCode: EXIT.CANDIDATE,
         failureCode: 'E2E_QUALIFICATION_PROOF_INVALID',
         phase: 'candidate',
+        details: { closureFailures },
         nextCommand: 'pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json',
       },
     );
@@ -1314,7 +1368,19 @@ function readQualificationProof(options) {
       nextCommand: `pnpm e2e:qualify --proof ${proofPath}`,
     });
   }
-  const proof = validateQualificationProof(readJson(proofPath));
+  let proofInput;
+  try {
+    proofInput = readJson(proofPath);
+  } catch (error) {
+    throw new ReleaseE2EError('The external semantic qualification proof cannot be read.', {
+      exitCode: EXIT.CANDIDATE,
+      failureCode: 'E2E_QUALIFICATION_PROOF_INVALID',
+      phase: 'candidate',
+      details: { errorCode: error instanceof SyntaxError ? 'INVALID_JSON' : error?.code },
+      nextCommand: 'pnpm e2e:qualify --proof .local/e2e-release/qualification-proof.json',
+    });
+  }
+  const proof = validateQualificationProof(proofInput);
   const currentCandidate = {
     commit: git(['rev-parse', 'HEAD^{commit}']),
     tree: git(['rev-parse', 'HEAD^{tree}']),
@@ -1612,11 +1678,18 @@ function dockerRunArguments(context, options, runDirectory, runtimeInputs) {
 
 function readContainerResult(runDirectory) {
   const resultPath = path.join(runDirectory, 'run-result.json');
-  if (!fs.existsSync(resultPath)) return undefined;
   try {
     return readJson(resultPath);
-  } catch {
-    return undefined;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return undefined;
+    const errorCode = error instanceof SyntaxError ? 'INVALID_JSON' : error?.code;
+    throw new ReleaseE2EError('The isolated E2E result could not be read by the host operator.', {
+      cause: new Error(errorCode || 'READ_FAILED'),
+      details: { containerResult: resultPath, errorCode },
+      exitCode: EXIT.FINALIZATION,
+      failureCode: 'E2E_CONTAINER_RESULT_UNREADABLE',
+      phase: 'artifact-handoff',
+    });
   }
 }
 
@@ -1742,6 +1815,9 @@ function runRelease(options, state = {}) {
       artifacts: {
         containerResult: path.join(runDirectory, 'run-result.json'),
         preflightReport: path.join(runDirectory, 'preflight-report.json'),
+        qualificationReport: options.qualification
+          ? path.join(runDirectory, 'semantic-harness-qualification.json')
+          : undefined,
         releaseEvidence: options.writeVerifiedEvidence
           ? path.join(runDirectory, 'semantic-e2e-evidence.json')
           : undefined,
@@ -1789,44 +1865,81 @@ function runRelease(options, state = {}) {
 }
 
 function finalizeQualification(result, options) {
-  const preflight = readJson(result.artifacts.preflightReport);
-  const discovery = preflight.checks.find(
+  const runDirectory = path.resolve(result.runDirectory);
+  const qualificationReportPath = path.join(runDirectory, 'semantic-harness-qualification.json');
+  let preflight;
+  let containerResult;
+  let receipt;
+  try {
+    if (!fs.lstatSync(runDirectory).isDirectory())
+      throw new Error('Artifact run is not a directory.');
+    for (const [filePath, basename] of [
+      [result.artifacts.preflightReport, 'preflight-report.json'],
+      [result.artifacts.containerResult, 'run-result.json'],
+      [qualificationReportPath, 'semantic-harness-qualification.json'],
+    ]) {
+      if (
+        path.resolve(filePath) !== path.join(runDirectory, basename) ||
+        !fs.lstatSync(filePath).isFile()
+      ) {
+        throw new Error('Qualification artifacts must be regular files from the same run.');
+      }
+    }
+    preflight = readJson(result.artifacts.preflightReport);
+    containerResult = readJson(result.artifacts.containerResult);
+    receipt = readQualificationReportReceipt(qualificationReportPath);
+  } catch (error) {
+    throw new ReleaseE2EError('The canonical semantic qualification artifacts are unavailable.', {
+      exitCode: EXIT.FINALIZATION,
+      failureCode: 'E2E_QUALIFICATION_ARTIFACT_INVALID',
+      phase: 'finalization',
+      details: { errorCode: error?.code || 'INVALID_ARTIFACT' },
+    });
+  }
+  const discovery = preflight.checks?.find?.(
     ({ id }) => id === 'environment.playwright-discovery',
   )?.summary;
-  const coverage = readJson(path.join(REPOSITORY_ROOT, 'docs/plans/i18n/route-view-coverage.json'));
-  const assertionCount = Object.keys(coverage.executableTargets ?? {}).length;
-  const containerResult = readJson(result.artifacts.containerResult);
-  const cleanup = containerResult.cleanup;
-  const qualification = containerResult.qualification;
-  const totalCounts = (browserCounts) =>
-    Object.values(browserCounts ?? {}).reduce(
-      (total, counts) => ({
-        executed: total.executed + Number(counts?.executed ?? 0),
-        skipped: total.skipped + Number(counts?.skipped ?? 0),
-      }),
-      { executed: 0, skipped: 0 },
-    );
-  const canonicalCounts = totalCounts(qualification?.canonicalBrowsers);
-  const harnessCounts = totalCounts(qualification?.harnessBrowsers);
-  if (
-    discovery?.fullListedTests !== 81 ||
-    discovery?.listedTests !== 93 ||
-    assertionCount !== 50 ||
-    qualification?.assertionIds?.length !== 50 ||
-    canonicalCounts.executed !== 51 ||
-    canonicalCounts.skipped !== 30 ||
-    harnessCounts.executed !== 12 ||
-    harnessCounts.skipped !== 0 ||
-    qualification?.externalRequests !== 0 ||
-    qualification?.productionWrites !== 0 ||
-    cleanup?.created !== 0 ||
-    cleanup?.cleaned !== 0 ||
-    cleanup?.leaked !== 0
-  ) {
+  const contract = loadQualificationClosureContract(REPOSITORY_ROOT);
+  const cleanup = Object.fromEntries(
+    ['created', 'cleaned', 'leaked'].map((key) => [key, containerResult?.cleanup?.[key]]),
+  );
+  const qualification = receipt.qualification;
+  const closureFailures = [
+    ...qualificationReportFailures(qualification, contract),
+    ...qualificationCleanupFailures(cleanup),
+  ];
+  if (containerResult?.qualificationReportSha256 !== receipt.qualificationReportSha256) {
+    closureFailures.push('qualification-report-digest');
+  }
+  for (const [name, artifact, kind] of [
+    ['run-result', containerResult, 'tiangong-next-release-e2e-run-result'],
+    ['preflight', preflight, 'tiangong-next-release-e2e-preflight-report'],
+  ]) {
+    if (
+      artifact?.kind !== kind ||
+      artifact?.schemaVersion !== 2 ||
+      artifact?.status !== 'passed' ||
+      artifact?.candidate?.commit !== result.candidate.commit ||
+      artifact?.candidate?.tree !== result.candidate.tree
+    ) {
+      closureFailures.push(`${name}-identity-status`);
+    }
+  }
+  if (containerResult?.exitCode !== 0 || containerResult?.preflight?.status !== 'passed') {
+    closureFailures.push('run-result-exit-preflight');
+  }
+  if (discovery?.fullListedTests !== contract.coverage.discoveredCases) {
+    closureFailures.push('discovery-canonical-cases');
+  }
+  if (discovery?.listedTests !== contract.coverage.qualificationDiscoveredCases) {
+    closureFailures.push('discovery-qualification-cases');
+  }
+  if (closureFailures.length > 0) {
     throw new ReleaseE2EError('Semantic harness qualification closure is incomplete.', {
       exitCode: EXIT.FINALIZATION,
       failureCode: 'E2E_QUALIFICATION_INCOMPLETE',
       phase: 'finalization',
+      details: { closureFailures },
     });
   }
   const identity = qualificationIdentity();
@@ -1846,21 +1959,16 @@ function finalizeQualification(result, options) {
       name,
       version: result.environment.environmentBrowsers[name],
     })),
-    coverage: {
-      contractAssertionCount: assertionCount,
-      discoveredCases: discovery.fullListedTests,
-      executedCases: canonicalCounts.executed,
-      harnessControlCases: harnessCounts.executed,
-      liveAssertionCount: qualification.assertionIds.length,
-      qualificationDiscoveredCases: discovery.listedTests,
-      skippedCases: canonicalCounts.skipped,
-    },
+    assertionIds: qualification.assertionIds,
+    assertionBrowsers: qualification.assertionBrowsers,
+    coverage: contract.coverage,
     cleanup,
     externalRequests: qualification.externalRequests,
     productionWrites: qualification.productionWrites,
     diagnostics: {
       retainedOutsideGit: true,
       runResultSha256: sha256(fs.readFileSync(result.artifacts.containerResult)),
+      qualificationReportSha256: receipt.qualificationReportSha256,
     },
   };
   const proofPath = resolveQualificationProofPath(options.proof);
@@ -2197,11 +2305,13 @@ module.exports = {
   commandHelp,
   createReceipt,
   dockerRunArguments,
+  finalizeQualification,
   jsonText,
   loadEnvironmentContractFromWorkingTree,
   lockedDependencyVersion,
   parseOptions,
   playwrightArguments,
+  readContainerResult,
   redactString,
   sanitize,
   sha256,

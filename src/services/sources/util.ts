@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '../general/tidasRepeatedFields';
 import { FormSource } from '@/services/sources/data';
 import { createSource as createTidasSource } from '@tiangong-lca/tidas-sdk/core';
 import {
@@ -32,13 +33,18 @@ export function genSourceJsonOrdered(id: string, data: any) {
             data?.sourceInformation?.dataSetInformation?.['common:shortName'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToJsonList(
-                data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ),
-            },
+            ...data?.sourceInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : classificationToJsonList(item?.['common:class']),
+              }),
+            ),
           },
           sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation ?? {},
           publicationType: data?.sourceInformation?.dataSetInformation?.publicationType ?? {},
@@ -175,13 +181,18 @@ export function genSourceFromData(data: any): FormSource {
             data?.sourceInformation?.dataSetInformation?.['common:shortName'],
           ),
           classificationInformation: {
-            'common:classification': {
-              'common:class': classificationToStringList(
-                data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
-                  'common:classification'
-                ]?.['common:class'],
-              ) as any,
-            },
+            ...data?.sourceInformation?.dataSetInformation?.classificationInformation,
+            'common:classification': mapTidasRepeated(
+              data?.sourceInformation?.dataSetInformation?.classificationInformation?.[
+                'common:classification'
+              ],
+              (item) => ({
+                ...item,
+                'common:class': item?.['@name']
+                  ? item?.['common:class']
+                  : (classificationToStringList(item?.['common:class']) as any),
+              }),
+            ),
           },
           sourceCitation: data?.sourceInformation?.dataSetInformation?.sourceCitation,
           publicationType: data?.sourceInformation?.dataSetInformation?.publicationType,

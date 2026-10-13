@@ -1,3 +1,5 @@
+import { toTidasMultiSelectValue } from '@/services/general/tidasRepeatedFields';
+import TidasRepeatedField from '@/components/TidasRepeatedField';
 import AllocationBatch from './Exchange/allocationBatch';
 import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
@@ -1251,42 +1253,41 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <LocationTextItemForm
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
-                defaultMessage='Sub-location(s)'
-              />
-            }
-            name={[
-              'processInformation',
-              'geography',
-              'subLocationOfOperationSupplyOrProduction',
-              '@subLocation',
-            ]}
-            lang={lang}
-            onData={onData}
-          />
-          <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
-            <FormattedMessage
-              id='pages.process.view.processInformation.descriptionOfRestrictions'
-              defaultMessage='Geographical representativeness description'
-            />
-          </Divider>
-          <LangTextItemForm
-            name={[
-              'processInformation',
-              'geography',
-              'subLocationOfOperationSupplyOrProduction',
-              'descriptionOfRestrictions',
-            ]}
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.descriptionOfRestrictions'
-                defaultMessage='Geographical representativeness description'
-              />
-            }
-          />
+          <TidasRepeatedField
+            name={['processInformation', 'geography', 'subLocationOfOperationSupplyOrProduction']}
+            onChange={onData}
+          >
+            {(itemPath) => (
+              <>
+                <LocationTextItemForm
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+                      defaultMessage='Sub-location(s)'
+                    />
+                  }
+                  name={[...itemPath, '@subLocation']}
+                  lang={lang}
+                  onData={onData}
+                />
+                <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
+                  <FormattedMessage
+                    id='pages.process.view.processInformation.descriptionOfRestrictions'
+                    defaultMessage='Geographical representativeness description'
+                  />
+                </Divider>
+                <LangTextItemForm
+                  name={[...itemPath, 'descriptionOfRestrictions']}
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.descriptionOfRestrictions'
+                      defaultMessage='Geographical representativeness description'
+                    />
+                  }
+                />
+              </>
+            )}
+          </TidasRepeatedField>
         </Card>
 
         <Card
@@ -1402,122 +1403,111 @@ export const ProcessForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.name'
-                defaultMessage='Name of variable'
-              />
-            }
-            name={['processInformation', 'mathematicalRelations', 'variableParameter', '@name']}
+          <TidasRepeatedField
+            name={['processInformation', 'mathematicalRelations', 'variableParameter']}
+            onChange={onData}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.formula'
-                defaultMessage='Formula'
-              />
-            }
-            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'formula']}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.meanValue'
-                defaultMessage='Mean value'
-              />
-            }
-            name={['processInformation', 'mathematicalRelations', 'variableParameter', 'meanValue']}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.minimumValue'
-                defaultMessage='Minimum value'
-              />
-            }
-            name={[
-              'processInformation',
-              'mathematicalRelations',
-              'variableParameter',
-              'minimumValue',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.maximumValue'
-                defaultMessage='Maximum value'
-              />
-            }
-            name={[
-              'processInformation',
-              'mathematicalRelations',
-              'variableParameter',
-              'maximumValue',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
-                defaultMessage='Uncertainty distribution type'
-              />
-            }
-            name={[
-              'processInformation',
-              'mathematicalRelations',
-              'variableParameter',
-              'uncertaintyDistributionType',
-            ]}
-          >
-            <Select options={uncertaintyDistributionTypeOptions} />
-          </Form.Item>
-          <Form.Item
-            label={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                defaultMessage='Relative standard deviation (95%) in %'
-              />
-            }
-            name={[
-              'processInformation',
-              'mathematicalRelations',
-              'variableParameter',
-              'relativeStandardDeviation95In',
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Card
-            size='small'
-            title={
-              <FormattedMessage
-                id='pages.process.view.processInformation.variableParameter.comment'
-                defaultMessage='Comment, units, defaults'
-              />
-            }
-          >
-            <LangTextItemForm
-              name={['processInformation', 'mathematicalRelations', 'variableParameter', 'comment']}
-              label={
-                <FormattedMessage
-                  id='pages.process.view.processInformation.variableParameter.comment'
-                  defaultMessage='Comment, units, defaults'
-                />
-              }
-            />
-          </Card>
+            {(itemPath) => (
+              <>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.name'
+                      defaultMessage='Name of variable'
+                    />
+                  }
+                  name={[...itemPath, '@name']}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.formula'
+                      defaultMessage='Formula'
+                    />
+                  }
+                  name={[...itemPath, 'formula']}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.meanValue'
+                      defaultMessage='Mean value'
+                    />
+                  }
+                  name={[...itemPath, 'meanValue']}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.minimumValue'
+                      defaultMessage='Minimum value'
+                    />
+                  }
+                  name={[...itemPath, 'minimumValue']}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.maximumValue'
+                      defaultMessage='Maximum value'
+                    />
+                  }
+                  name={[...itemPath, 'maximumValue']}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.uncertaintyDistributionType'
+                      defaultMessage='Uncertainty distribution type'
+                    />
+                  }
+                  name={[...itemPath, 'uncertaintyDistributionType']}
+                >
+                  <Select options={uncertaintyDistributionTypeOptions} />
+                </Form.Item>
+                <Form.Item
+                  label={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
+                      defaultMessage='Relative standard deviation (95%) in %'
+                    />
+                  }
+                  name={[...itemPath, 'relativeStandardDeviation95In']}
+                >
+                  <Input />
+                </Form.Item>
+                <Card
+                  size='small'
+                  title={
+                    <FormattedMessage
+                      id='pages.process.view.processInformation.variableParameter.comment'
+                      defaultMessage='Comment, units, defaults'
+                    />
+                  }
+                >
+                  <LangTextItemForm
+                    name={[...itemPath, 'comment']}
+                    label={
+                      <FormattedMessage
+                        id='pages.process.view.processInformation.variableParameter.comment'
+                        defaultMessage='Comment, units, defaults'
+                      />
+                    }
+                  />
+                </Card>
+              </>
+            )}
+          </TidasRepeatedField>
         </Card>
       </Space>
     ),
@@ -1590,8 +1580,11 @@ export const ProcessForm: FC<Props> = ({
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'LCIMethodApproaches']}
+            getValueProps={(value) => ({
+              value: toTidasMultiSelectValue(value),
+            })}
           >
-            <Select options={LCIMethodApproachOptions} />
+            <Select mode='multiple' options={LCIMethodApproachOptions} />
           </Form.Item>
           <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage
@@ -2068,38 +2061,37 @@ export const ProcessForm: FC<Props> = ({
               />
             }
           >
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
-                  defaultMessage='completeness type'
-                />
-              }
-              name={[
-                'modellingAndValidation',
-                'completeness',
-                'completenessElementaryFlows',
-                '@type',
-              ]}
+            <TidasRepeatedField
+              name={['modellingAndValidation', 'completeness', 'completenessElementaryFlows']}
+              onChange={onData}
             >
-              <Select options={completenessElementaryFlowsTypeOptions} />
-            </Form.Item>
-            <Form.Item
-              label={
-                <FormattedMessage
-                  id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
-                  defaultMessage='value'
-                />
-              }
-              name={[
-                'modellingAndValidation',
-                'completeness',
-                'completenessElementaryFlows',
-                '@value',
-              ]}
-            >
-              <Select options={completenessElementaryFlowsValueOptions} />
-            </Form.Item>
+              {(itemPath) => (
+                <>
+                  <Form.Item
+                    label={
+                      <FormattedMessage
+                        id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.type'
+                        defaultMessage='completeness type'
+                      />
+                    }
+                    name={[...itemPath, '@type']}
+                  >
+                    <Select options={completenessElementaryFlowsTypeOptions} />
+                  </Form.Item>
+                  <Form.Item
+                    label={
+                      <FormattedMessage
+                        id='pages.process.view.modellingAndValidation.completeness.completenessElementaryFlows.value'
+                        defaultMessage='value'
+                      />
+                    }
+                    name={[...itemPath, '@value']}
+                  >
+                    <Select options={completenessElementaryFlowsValueOptions} />
+                  </Form.Item>
+                </>
+              )}
+            </TidasRepeatedField>
           </Card>
           <Divider titlePlacement='start' styles={{ content: { margin: 0 } }} plain>
             <FormattedMessage

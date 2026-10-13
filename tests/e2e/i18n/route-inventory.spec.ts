@@ -197,8 +197,24 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
               }
 
               await expect(assertionPage.getByTestId('access-denied')).toHaveCount(0);
+              const composedTitle = target.visible.separator;
+              if (composedTitle !== undefined) {
+                // Hidden catalog menus still render their scope and dataset type together
+                // in the page title. Prove that exact title rather than separate menu nodes.
+                await test.step(`title ${target.visible.messageIds.join(' + ')}`, async () => {
+                  await expectExactVisibleText(
+                    assertionPage,
+                    target.visible.messageIds
+                      .map((messageId) => getLocaleMessage(locale, messageId))
+                      .join(composedTitle),
+                  );
+                });
+              }
               for (const messageId of [
-                ...new Set([...target.visible.messageIds, ...assertion.pageOwnedMessageIds]),
+                ...new Set([
+                  ...(composedTitle === undefined ? target.visible.messageIds : []),
+                  ...assertion.pageOwnedMessageIds,
+                ]),
               ]) {
                 await test.step(`message ${messageId}`, async () => {
                   await expectExactVisibleText(assertionPage, getLocaleMessage(locale, messageId));

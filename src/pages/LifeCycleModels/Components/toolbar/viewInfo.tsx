@@ -1,3 +1,4 @@
+import { mapTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -167,6 +168,11 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
         <Descriptions bordered size={'small'} column={1}></Descriptions>
 
         <LevelTextItemDescription
+          systems={
+            data?.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
           data={classificationValues}
           lang={lang}
           categoryType={'LifeCycleModel'}
@@ -498,10 +504,9 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
       </>
     ),
     validation: <ReviewItemView data={data?.modellingAndValidation?.validation?.review ?? []} />,
-    complianceDeclarations: (
-      <ComplianceItemView
-        data={data?.modellingAndValidation?.complianceDeclarations?.compliance ?? []}
-      />
+    complianceDeclarations: mapTidasRepeated(
+      data?.modellingAndValidation?.complianceDeclarations,
+      (item, index) => <ComplianceItemView key={index} data={item?.compliance ?? []} />,
     ),
   };
 

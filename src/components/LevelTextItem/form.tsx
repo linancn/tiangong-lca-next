@@ -1,3 +1,5 @@
+import { classificationToJsonList, classificationToStringList } from '@/services/general/util';
+import TidasRepeatedField from '@/components/TidasRepeatedField';
 import RequiredMark from '@/components/RequiredMark';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { Cascader, Form, Input, TreeSelect } from 'antd';
@@ -18,7 +20,7 @@ type Props = {
   validationStatus?: 'success' | 'warning' | 'error' | 'validating';
 };
 
-const LevelTextItemForm: FC<Props> = ({
+export const LevelTextItemForm: FC<Props> = ({
   name,
   lang,
   dataType,
@@ -259,4 +261,103 @@ const LevelTextItemForm: FC<Props> = ({
   );
 };
 
-export default LevelTextItemForm;
+const ClassificationSystemsForm: FC<Props> = (props) => {
+  const form = Form.useFormInstance();
+  const systemPath = props.name.slice(0, -1);
+  const classKey = props.name[props.name.length - 1];
+  const value =
+    Form.useWatch(systemPath, { form, preserve: true }) ?? form.getFieldValue(systemPath);
+  // Category selectors use the same repeated-system boundary as classification selectors.
+  return (
+    <TidasRepeatedField name={systemPath} onChange={props.onData}>
+      {(itemPath) => {
+        const item =
+          itemPath.length === systemPath.length ? value : value?.[itemPath[itemPath.length - 1]];
+        return (
+          <>
+            {classKey !== 'common:category' && (
+              <>
+                <Form.Item
+                  name={[...itemPath, '@name']}
+                  label={
+                    <FormattedMessage
+                      id='pages.classification.systemName'
+                      defaultMessage='Classification system'
+                    />
+                  }
+                >
+                  <Input
+                    onChange={(event) => {
+                      const classPath = [...itemPath, classKey];
+                      const classes = form.getFieldValue(classPath);
+                      if (event.target.value && classes?.value) {
+                        form.setFieldValue(classPath, classificationToJsonList(classes));
+                      } else if (!event.target.value && !classes?.value) {
+                        form.setFieldValue(classPath, classificationToStringList(classes));
+                      }
+                      props.onData();
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name={[...itemPath, '@classes']}
+                  label={
+                    <FormattedMessage
+                      id='pages.classification.systemUri'
+                      defaultMessage='Classification system URI'
+                    />
+                  }
+                >
+                  <Input />
+                </Form.Item>
+              </>
+            )}
+            {classKey !== 'common:category' && item?.['@name'] ? (
+              <TidasRepeatedField
+                name={[...itemPath, classKey]}
+                onChange={props.onData}
+                arrayOnly={Array.isArray(value)}
+              >
+                {(classPath) => (
+                  <>
+                    <Form.Item
+                      name={[...classPath, '@level']}
+                      label={
+                        <FormattedMessage id='pages.classification.level' defaultMessage='Level' />
+                      }
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name={[...classPath, '@classId']}
+                      label={
+                        <FormattedMessage id='pages.classification.code' defaultMessage='Code' />
+                      }
+                    >
+                      <Input />
+                    </Form.Item>
+                    <Form.Item
+                      name={[...classPath, '#text']}
+                      label={
+                        <FormattedMessage
+                          id='pages.classification.label'
+                          defaultMessage='Class name'
+                        />
+                      }
+                    >
+                      <Input />
+                    </Form.Item>
+                  </>
+                )}
+              </TidasRepeatedField>
+            ) : (
+              <LevelTextItemForm {...props} name={[...itemPath, classKey]} />
+            )}
+          </>
+        );
+      }}
+    </TidasRepeatedField>
+  );
+};
+
+export default ClassificationSystemsForm;

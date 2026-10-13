@@ -2,6 +2,16 @@
 import LcaTaskCenter from '@/components/LcaTaskCenter';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
+let mockTaskIdentity = 0;
+const mockIdentityListeners = new Set<() => void>();
+jest.mock('@/services/auth/taskCenters', () => ({
+  getTaskCenterIdentityGeneration: () => mockTaskIdentity,
+  subscribeTaskCenterIdentity: (listener: () => void) => {
+    mockIdentityListeners.add(listener);
+    return () => mockIdentityListeners.delete(listener);
+  },
+}));
+
 let mockTasks: any[] = [];
 let mockPackageTasks: any[] = [];
 let mockDataProductTasks: any[] = [];
@@ -254,6 +264,7 @@ const { message } = jest.requireMock('antd') as {
 describe('LcaTaskCenter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTaskIdentity = 0;
     mockTasks = [];
     mockPackageTasks = [];
     mockDataProductTasks = [];
@@ -669,6 +680,160 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
   });
 
+  it('does not overlap refresh cycles while a task source is still pending', async () => {
+    jest.useFakeTimers();
+    let resolve: () => void = () => undefined;
+    mockRefreshLcaTasksFromWorkerJobs.mockReturnValue(
+      new Promise<void>((done) => {
+        resolve = done;
+      }),
+    );
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {
+      jest.advanceTimersByTime(20000);
+    });
+    expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolve();
+    });
+    view.unmount();
+    jest.useRealTimers();
+  });
+
+  it('discovers remote jobs at idle cadence and refreshes immediately on focus and open', async () => {
+    jest.useFakeTimers();
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {});
+    await act(async () => {
+      jest.advanceTimersByTime(29999);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(3);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(4);
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(5);
+    view.unmount();
+    await act(async () => {
+      jest.advanceTimersByTime(60000);
+      window.dispatchEvent(new Event('focus'));
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(5);
+    jest.useRealTimers();
+  });
+
+  it('pauses hidden idle discovery and restores freshness on visibility', async () => {
+    jest.useFakeTimers();
+    const visibility = jest.spyOn(document, 'visibilityState', 'get');
+    visibility.mockReturnValue('visible');
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {});
+    visibility.mockReturnValue('hidden');
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      jest.advanceTimersByTime(90000);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1);
+    visibility.mockReturnValue('visible');
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2);
+    view.unmount();
+    visibility.mockRestore();
+    jest.useRealTimers();
+  });
+
+  it('keeps active progress fast while visible and bounded while hidden', async () => {
+    jest.useFakeTimers();
+    mockDataProductTasks = [{ runState: 'active', jobId: 'active-job', category: 'data_product' }];
+    const visibility = jest.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {});
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2);
+    visibility.mockReturnValue('hidden');
+    await act(async () => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(29999);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(3);
+    view.unmount();
+    visibility.mockRestore();
+    jest.useRealTimers();
+  });
+
+  it('waits for slow sources after an early failure, including repeated focus/open requests', async () => {
+    jest.useFakeTimers();
+    let finish: () => void = () => undefined;
+    mockRefreshLcaTasksFromWorkerJobs.mockRejectedValue(new Error('read failed'));
+    mockRefreshDataProductTasks.mockReturnValue(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+      fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+      jest.advanceTimersByTime(20000);
+    });
+    expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      finish();
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+    expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(2);
+    view.unmount();
+    jest.useRealTimers();
+  });
+
+  it('starts new-owner discovery immediately while an old-owner cycle remains pending', async () => {
+    let finish: () => void = () => undefined;
+    mockRefreshDataProductTasks.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const view = render(<LcaTaskCenter />);
+    await act(async () => {});
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      mockTaskIdentity += 1;
+      mockIdentityListeners.forEach((listener) => listener());
+    });
+    expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      finish();
+    });
+    view.unmount();
+  });
+
   it('refreshes worker-backed task families on mount, timer, open request, and manual refresh failures', async () => {
     jest.useFakeTimers();
     let openRequestListener: (() => void) | undefined;
@@ -687,7 +852,7 @@ describe('LcaTaskCenter', () => {
     );
 
     await act(async () => {
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(30000);
     });
     await waitFor(() => expect(mockRefreshDataProductTasks).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(2));

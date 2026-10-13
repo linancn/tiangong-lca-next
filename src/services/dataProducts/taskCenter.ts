@@ -7,6 +7,7 @@ import {
   type TaskSummaryV2,
 } from '@/services/taskCenter/types';
 import {
+  clearTaskSummaries,
   listTaskSummaries,
   registerTaskSummaryPresenter,
   subscribeTaskSummaries,
@@ -32,6 +33,9 @@ export type DataProductTaskFeedPage = {
 };
 
 const DATA_PRODUCT_JOB_KINDS = ['lcia.scope_closure_check', 'lcia_result.package_build'];
+let taskOwnerId: string | null = null;
+let taskGeneration = 0;
+let activeRefresh: { generation: number; promise: Promise<TaskSummaryV2[]> } | null = null;
 let taskSummarySource: TaskSummaryV2[] | undefined;
 let dataProductSummaries: TaskSummaryV2[] = [];
 
@@ -205,7 +209,16 @@ export function listDataProductTasks(): TaskSummaryV2[] {
   return dataProductSummaries;
 }
 
-export function upsertDataProductTasks(rows: unknown[]): void {
+export function getDataProductTaskOwnerId(): string | null {
+  return taskOwnerId;
+}
+
+export function getDataProductTaskGeneration(): number | null {
+  return taskOwnerId ? taskGeneration : null;
+}
+
+export function upsertDataProductTasks(rows: unknown[], generation: number | null): void {
+  if (generation === null || generation !== taskGeneration || !taskOwnerId) return;
   upsertTaskSummaries(
     rows
       .map(decodeDataProductTaskSummary)
@@ -213,10 +226,32 @@ export function upsertDataProductTasks(rows: unknown[]): void {
   );
 }
 
-export async function refreshDataProductTasks(): Promise<TaskSummaryV2[]> {
+export function bindDataProductTaskCenterOwner(ownerId: string | null | undefined): void {
+  const normalized = typeof ownerId === 'string' ? ownerId.trim() || null : null;
+  if (normalized === taskOwnerId) return;
+  taskGeneration += 1;
+  taskOwnerId = normalized;
+  clearTaskSummaries();
+}
+
+async function refreshActiveDataProductTasks(generation: number): Promise<TaskSummaryV2[]> {
   const result = await listDataProductTaskFeed();
+  if (generation !== taskGeneration || !taskOwnerId) return listDataProductTasks();
   if (result.error) throw new Error(result.error.message);
   const page = record(result.data);
-  upsertDataProductTasks(Array.isArray(page?.items) ? page.items : []);
+  upsertDataProductTasks(Array.isArray(page?.items) ? page.items : [], generation);
   return listDataProductTasks();
+}
+
+export async function refreshDataProductTasks(): Promise<TaskSummaryV2[]> {
+  if (!taskOwnerId) return listDataProductTasks();
+  const generation = taskGeneration;
+  if (activeRefresh?.generation === generation) return activeRefresh.promise;
+  const promise = refreshActiveDataProductTasks(generation);
+  activeRefresh = { generation, promise };
+  try {
+    return await promise;
+  } finally {
+    if (activeRefresh?.promise === promise) activeRefresh = null;
+  }
 }

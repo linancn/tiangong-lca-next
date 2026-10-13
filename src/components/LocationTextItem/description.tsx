@@ -66,4 +66,12 @@ const LocationTextItemDescription: FC<Props> = ({ lang, data, label, styles }) =
   );
 };
 
-export default LocationTextItemDescription;
+const RepeatedLocationDescription: FC<Props> = (props) => (
+  <>
+    {(Array.isArray(props.data) ? props.data : [props.data]).map((data, index) => (
+      <LocationTextItemDescription key={index} {...props} data={data} />
+    ))}
+  </>
+);
+
+export default RepeatedLocationDescription;

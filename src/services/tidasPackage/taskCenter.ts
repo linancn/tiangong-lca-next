@@ -1024,7 +1024,11 @@ async function runExportTask(
 ): Promise<void> {
   let activeTaskId = taskId;
   try {
-    const queued = await queueExportTidasPackageApi(request);
+    const ownerId = taskOwnerId;
+    if (!ownerId || !isActiveGeneration(generation)) return;
+    const queued = await queueExportTidasPackageApi(request, {
+      taskSession: { ownerId, isCurrent: () => isActiveGeneration(generation) },
+    });
     if (!isActiveGeneration(generation)) {
       return;
     }
@@ -1269,6 +1273,14 @@ export function submitTidasPackageExportTask(
   return task;
 }
 
+export function getTidasPackageTaskOwnerId(): string | null {
+  return taskOwnerId;
+}
+
+export function getTidasPackageTaskGeneration(): number | null {
+  return taskOwnerId ? taskGeneration : null;
+}
+
 /** Upload and enqueue only. Closing the dialog does not cancel backend work. */
 export async function submitTidasPackageImportTask(
   file: File,
@@ -1276,9 +1288,18 @@ export async function submitTidasPackageImportTask(
 ): Promise<void> {
   if (!taskOwnerId) throw new Error('TIDAS package task center requires an authenticated user');
   const generation = taskGeneration;
-  const queued = await queueImportTidasPackageApi(file);
-  if (queued.error || !queued.data?.ok) throw queued.error ?? new Error('Import enqueue failed');
+  const ownerId = taskOwnerId;
+  let queued;
+  try {
+    queued = await queueImportTidasPackageApi(file, {
+      taskSession: { ownerId, isCurrent: () => isActiveGeneration(generation) },
+    });
+  } catch (error) {
+    if (!isActiveGeneration(generation)) return;
+    throw error;
+  }
   if (!isActiveGeneration(generation)) return;
+  if (queued.error || !queued.data?.ok) throw queued.error ?? new Error('Import enqueue failed');
   const createdAt = nowIso();
   const sequence = nextTaskSequence();
   const task: TidasPackageBackgroundTask = {

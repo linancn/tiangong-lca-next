@@ -1,3 +1,8 @@
+jest.mock('@/components/TidasRepeatedField', () => ({
+  __esModule: true,
+  default: ({ name, children }: any) => children(name),
+}));
+
 // @ts-nocheck
 import { LifeCycleModelForm } from '@/pages/LifeCycleModels/Components/form';
 import userEvent from '@testing-library/user-event';

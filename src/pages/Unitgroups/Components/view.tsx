@@ -1,3 +1,4 @@
+import { firstTidasRepeated } from '@/services/general/tidasRepeatedFields';
 import { toSuperscript } from '@/components/AlignedNumber';
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
@@ -201,10 +202,12 @@ const ContactView: FC<Props> = ({
     { key: 'units', tab: <FormattedMessage id='pages.unitgroup.units' defaultMessage='Units' /> },
   ];
 
-  const classificationValues = getClassificationValues(
+  const systems =
     initData.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
       'common:classification'
-    ]?.['common:class'],
+    ];
+  const classificationValues = getClassificationValues(
+    firstTidasRepeated(systems)?.['common:class'],
   );
   const complianceRecord = initData.modellingAndValidation?.complianceDeclarations?.compliance as
     Record<string, unknown> | undefined;
@@ -237,6 +240,11 @@ const ContactView: FC<Props> = ({
         />
         <br />
         <LevelTextItemDescription
+          systems={
+            initData?.unitGroupInformation?.dataSetInformation?.classificationInformation?.[
+              'common:classification'
+            ]
+          }
           data={classificationValues}
           lang={lang}
           categoryType={'UnitGroup'}
