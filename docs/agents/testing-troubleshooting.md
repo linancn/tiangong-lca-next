@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: list/filter race and viewport checks use existing focused diagnosis and readiness rules. Add dedicated configuration check paths; no new environment recovery or gate bypass procedure is introduced.'
+lastReviewedCommit: 8a04000b497e72a5512f2f5653f96357d9febfb2
+lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
 ---
 
 # Testing Troubleshooting

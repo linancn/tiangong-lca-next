@@ -1,6 +1,7 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: jest.fn(),
@@ -74,6 +75,7 @@ describe('DatasetClassificationFilter', () => {
   });
 
   it('selects an ancestor using stable codes, then a complete descendant path', async () => {
+    const user = userEvent.setup();
     const onChange = jest.fn();
     render(
       <DatasetClassificationFilter
@@ -84,28 +86,33 @@ describe('DatasetClassificationFilter', () => {
       />,
     );
     await waitFor(() => expect(classification).toHaveBeenCalledWith('Process', 'en', ['all']));
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: label }));
-    fireEvent.click(await screen.findByText('Manufacturing'));
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    await user.click(await screen.findByText('Manufacturing'));
     expect(onChange).toHaveBeenLastCalledWith([
       { scope: 'classification', code: 'C', path: ['C'] },
     ]);
-    fireEvent.click(await screen.findByText('Mineral products'));
+    await user.click(await screen.findByText('Mineral products'));
     expect(onChange).toHaveBeenLastCalledWith([
       { scope: 'classification', code: '23', path: ['C', '23'] },
     ]);
+    await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
   });
 
   it('offers both flow scopes without mixing localized labels into the query', async () => {
+    const user = userEvent.setup();
     const onChange = jest.fn();
     render(
       <DatasetClassificationFilter datasetKind='flow' lang='zh' value={[]} onChange={onChange} />,
     );
     await waitFor(() => expect(elementary).toHaveBeenCalledWith('zh', ['all']));
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: label }));
-    fireEvent.click(await screen.findByText('Emissions to air'));
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    await user.click(await screen.findByText('Emissions to air'));
     expect(onChange).toHaveBeenLastCalledWith([
       { scope: 'elementary', code: 'air', path: ['air'] },
     ]);
+    await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
   });
 
   it('does not load CPC options for an elementary-only selector', async () => {

@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Updated for Platform #1213 working tree against base 2136fc6f8: focused list/filter, complete exact-set, server-page and race proof requirements plus separately selected synthetic Chromium layout evidence. Existing final gate and production evidence policy remain unchanged; actual execution belongs in Issue/PR records.'
+lastReviewedCommit: 8a04000b497e72a5512f2f5653f96357d9febfb2
+lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
