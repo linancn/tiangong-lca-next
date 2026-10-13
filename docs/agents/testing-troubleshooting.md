@@ -40,7 +40,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
 lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: no new test-environment or failure-recovery procedure is required; the troubleshooting workflow is unchanged.'
 ---
 

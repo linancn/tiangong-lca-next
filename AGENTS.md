@@ -46,7 +46,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
+lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
 lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: reviewer footer parity remains repository-owned frontend work; repository ownership, bootstrap, branch, and delivery rules are unchanged.'
 related:
   - .docpact/config.yaml
