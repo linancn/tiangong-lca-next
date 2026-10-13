@@ -1410,6 +1410,141 @@ describe('publishDatasetApi', () => {
 });
 
 describe('getAllVersions', () => {
+  const classification = [{ scope: 'classification' as const, code: 'C' }];
+  it.each([
+    ['contacts', 'contact', 'contactDataSet', 'contactInformation'],
+    ['sources', 'source', 'sourceDataSet', 'sourceInformation'],
+    ['unitgroups', 'unitgroup', 'unitGroupDataSet', 'unitGroupInformation'],
+    ['flowproperties', 'flowproperty', 'flowPropertyDataSet', 'flowPropertiesInformation'],
+    ['flows', 'flow', 'flowDataSet', 'flowInformation'],
+    ['processes', 'process', 'processDataSet', 'processInformation'],
+    ['lifecyclemodels', 'lifecyclemodel', 'lifeCycleModelDataSet', 'lifeCycleModelInformation'],
+  ])(
+    'filters all versions of %s on the server and preserves timestamps and state',
+    async (table, kind, root, information) => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: sampleId,
+            version: '01.00.002',
+            total_count: 150,
+            state_code: 100,
+            created_at: '2026-10-13T00:00:00Z',
+            modified_at: '2026-10-13T01:00:00Z',
+            json: { [root]: { [information]: { dataSetInformation: {} } } },
+          },
+        ],
+        error: null,
+      });
+      const result = await generalApi.getAllVersions(
+        '',
+        table,
+        sampleId,
+        {
+          current: 3,
+          pageSize: 50,
+          classification,
+          datasetFilters: { datasetId: 'other-dataset' },
+        },
+        { name: 'ascend' },
+        'en',
+        'tg',
+      );
+      expect(mockRpc).toHaveBeenCalledWith(
+        'query_dataset_catalog',
+        expect.objectContaining({
+          p_dataset_kind: kind,
+          p_filter_condition: { classification, datasetId: sampleId },
+          p_version_scope: 'all',
+          p_page_current: 3,
+          p_page_size: 50,
+          p_sort_by: 'version',
+          p_sort_direction: 'desc',
+        }),
+      );
+      expect(result).toMatchObject({
+        success: true,
+        page: 3,
+        total: 150,
+        data: [
+          {
+            id: sampleId,
+            version: '01.00.002',
+            stateCode: 100,
+            createdAt: new Date('2026-10-13T00:00:00Z'),
+          },
+        ],
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    },
+  );
+
+  it('keeps filtered personal and team version scopes closed when session or membership is absent', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'my',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'te',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    expect(mockRpc).not.toHaveBeenCalledWith('query_dataset_catalog', expect.anything());
+  });
+
+  it('preserves current actor/team scope and explicitly reports an unavailable filtered-version facade', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { user: { id: 'actor' } } } });
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'RPC missing' } });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'my',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    mockRpc.mockResolvedValueOnce({
+      data: [{ team_id: 'actual-team', role: 'member' }],
+      error: null,
+    });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    await generalApi.getAllVersions('', 'processes', sampleId, { classification }, {}, 'en', 'te');
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({ p_team_id: 'actual-team' }),
+    );
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'unsupported',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'tg',
+      ),
+    ).toMatchObject({ success: false, error: 'unsupported_dataset_kind' });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['processes', 'classification'],
     ['processes', 'name'],

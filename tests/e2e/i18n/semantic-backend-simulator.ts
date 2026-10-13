@@ -186,8 +186,8 @@ async function responseFor(
   if (target.pathname.startsWith('/rest/v1/rpc/')) {
     if (
       [
-        '/rest/v1/rpc/list_dataset_display_candidates',
-        '/rest/v1/rpc/list_displayed_datasets',
+        '/rest/v1/rpc/list_dataset_display_candidates_filtered',
+        '/rest/v1/rpc/list_displayed_datasets_filtered',
       ].includes(target.pathname)
     )
       return { data: [], total: 0 };

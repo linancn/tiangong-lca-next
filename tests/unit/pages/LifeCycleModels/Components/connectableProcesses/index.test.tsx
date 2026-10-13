@@ -109,7 +109,15 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const { toText } = require('../../../../../helpers/nodeToText');
 
-  const ProTable = ({ actionRef, params, request, rowSelection, columns = [], loading }: any) => {
+  const ProTable = ({
+    actionRef,
+    params,
+    request,
+    rowSelection,
+    columns = [],
+    loading,
+    toolbar,
+  }: any) => {
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
     const hasObservedInitialParamsRef = React.useRef(false);
@@ -128,7 +136,7 @@ jest.mock('@ant-design/pro-components', () => {
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
         const requestParams = mockOmitContentLanguageRequestParam
-          ? { pageSize: 10, current: 1 }
+          ? { pageSize: 10, current: 1, classification: paramsRef.current.classification }
           : { pageSize: 10, current: 1, ...paramsRef.current };
         mockLatestProTableRequestParams = requestParams;
         const result = await requestRef.current(requestParams, {});
@@ -155,6 +163,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div data-testid='pro-table'>
+        {toolbar?.search}
+        {toolbar?.filter}
         {rows.map((row, rowIndex) => (
           <div key={row.id ?? row.key ?? rowIndex}>
             {columns.map((column: any, columnIndex: number) => {
@@ -237,7 +247,7 @@ describe('ConnectableProcesses', () => {
 
     await waitFor(() =>
       expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'tg',
@@ -255,7 +265,7 @@ describe('ConnectableProcesses', () => {
       await userEvent.click(screen.getByRole('button', { name: tabName }));
       await waitFor(() =>
         expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
-          { pageSize: 10, current: 1 },
+          { pageSize: 10, current: 1, classification: [] },
           {},
           'en',
           dataSource,
@@ -524,7 +534,7 @@ describe('ConnectableProcesses', () => {
 
     await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
     expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       {},
       'en',
       'tg',
@@ -543,3 +553,23 @@ describe('ConnectableProcesses', () => {
     });
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

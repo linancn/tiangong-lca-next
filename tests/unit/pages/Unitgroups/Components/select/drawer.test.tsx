@@ -209,7 +209,14 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, params = {}, rowSelection, columns = [] }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    params = {},
+    rowSelection,
+    columns = [],
+    toolbar,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
@@ -241,6 +248,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div>
+        {toolbar?.search}
+        {toolbar?.filter}
         {rows.map((row) => (
           <div key={`${row.id}:${row.version}`}>
             {columns.map((column: any, index: number) => (
@@ -585,3 +594,23 @@ describe('UnitgroupsSelectDrawer', () => {
     expect(await screen.findByText('sup:-')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

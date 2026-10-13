@@ -252,7 +252,15 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const TableDropdown = () => <span>table-dropdown</span>;
 
-  const ProTable = ({ actionRef, params, request, rowSelection, columns, toolBarRender }: any) => {
+  const ProTable = ({
+    actionRef,
+    params,
+    request,
+    rowSelection,
+    columns,
+    toolBarRender,
+    toolbar,
+  }: any) => {
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
     const serializedParams = JSON.stringify(params ?? {});
@@ -287,6 +295,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div data-testid='pro-table'>
+        {toolbar?.search}
+        {toolbar?.filter}
         <div>{toolBarRender?.()}</div>
       </div>
     );
@@ -318,7 +328,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockGetProcessTableAll).toHaveBeenCalled();
     });
     expect(mockGetProcessTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       {},
       'en',
       'tg',
@@ -349,7 +359,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockProcessHybridSearch).toHaveBeenCalled();
     });
     expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'tg',
       'solar',
@@ -382,10 +392,18 @@ describe('ModelToolbarAdd', () => {
 
     render(
       <>
-        {latestProTableProps.columns[1].render?.(null, sampleRow)}
-        {latestProTableProps.columns[3].render?.(null, sampleRow)}
-        {latestProTableProps.columns[6].render?.(null, sampleRow)}
-        {latestProTableProps.columns[8].render?.(null, sampleRow)}
+        {latestProTableProps.columns
+          .find((column: any) => column.dataIndex === 'name')
+          .render?.(null, sampleRow)}
+        {latestProTableProps.columns
+          .find((column: any) => column.dataIndex === 'typeOfDataSet')
+          .render?.(null, sampleRow)}
+        {latestProTableProps.columns
+          .find((column: any) => column.dataIndex === 'version')
+          .render?.(null, sampleRow)}
+        {latestProTableProps.columns
+          .find((column: any) => column.dataIndex === 'option')
+          .render?.(null, sampleRow)}
       </>,
     );
 
@@ -424,7 +442,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
     await waitFor(() => {
       expect(mockGetProcessTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'tg',
@@ -435,7 +453,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -450,7 +468,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() => {
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         'en',
         'co',
         'cement',
@@ -461,7 +479,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'tg',
@@ -476,7 +494,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() => {
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         'en',
         'tg',
         'solar',
@@ -500,7 +518,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -517,7 +535,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalled();
     });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'my',
       'battery',
@@ -549,7 +567,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() => {
       expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         'en',
         'my',
         'battery',
@@ -560,7 +578,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'te',
@@ -575,7 +593,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() => {
       expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         'en',
         'te',
         'steam',
@@ -598,7 +616,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'te',
@@ -615,7 +633,7 @@ describe('ModelToolbarAdd', () => {
 
     await waitFor(() => {
       expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         'en',
         'te',
         'steam',
@@ -638,7 +656,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -657,7 +675,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockProcessHybridSearch).toHaveBeenCalled();
     });
     expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'co',
       'cement',
@@ -718,7 +736,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Team Data' }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'te',
@@ -735,7 +753,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalled();
     });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'te',
       'steam',
@@ -778,3 +796,23 @@ describe('ModelToolbarAdd', () => {
     expect(screen.queryByRole('dialog', { name: 'Add process' })).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

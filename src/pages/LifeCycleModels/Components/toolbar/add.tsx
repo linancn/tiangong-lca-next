@@ -1,3 +1,13 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import ProcessCreate from '@/pages/Processes/Components/create';
@@ -19,7 +29,7 @@ import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, Checkbox, Col, Drawer, Input, Row, Space, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Drawer, Input, Space, Tooltip } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -50,6 +60,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const coActionRefSelect = useRef<ActionType>(undefined);
 
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
   const tgRequestEpochRef = useRef(0);
@@ -61,6 +72,19 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     contentLanguageParams.contentLanguage,
     [tgRequestEpochRef, coRequestEpochRef, myRequestEpochRef, teRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    myRequestEpochRef.current += 1;
+    teRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -114,6 +138,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     await setActiveTabKey(key as DataTabKey);
     if (key === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -134,24 +159,28 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
   const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
 
   const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
@@ -282,349 +311,445 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'tg'}
-                size={'large'}
-                placeholder={
-                  openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-                }
-                value={tgKeyWord}
-                onChange={handleTgKeyWordChange}
-                onSearch={onTgSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={tgActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async () => {
-                let result;
-                if (tgKeyWord.length > 0) {
-                  if (openAI) {
-                    return process_hybrid_search(
-                      requestParams,
-                      contentLanguage,
-                      'tg',
-                      tgKeyWord,
-                      {},
-                    );
-                  }
-                  result = await getProcessTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  );
-                } else {
-                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'tg', []);
-                }
-                return result || { data: [], success: false };
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            alwaysShowAlert: true,
-            preserveSelectedRowKeys: true,
-            selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={
+                      openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                    }
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      onChange={(e) => {
+                        setOpenAI(e.target.checked);
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='process'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async () => {
+                    let result;
+                    if (tgKeyWord.length > 0) {
+                      if (openAI) {
+                        return process_hybrid_search(
+                          requestParams,
+                          contentLanguage,
+                          'tg',
+                          tgKeyWord,
+                          {},
+                        );
+                      }
+                      result = await getProcessTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'tg',
+                        tgKeyWord,
+                        {},
+                      );
+                    } else {
+                      result = await getProcessTableAll(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'tg',
+                        [],
+                      );
+                    }
+                    return result || { data: [], success: false };
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                alwaysShowAlert: true,
+                preserveSelectedRowKeys: true,
+                selectedRowKeys: selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'co'}
-                size={'large'}
-                placeholder={
-                  openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-                }
-                value={coKeyWord}
-                onChange={handleCoKeyWordChange}
-                onSearch={onCoSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={coActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async () => {
-                let result;
-                if (coKeyWord.length > 0) {
-                  if (openAI) {
-                    return process_hybrid_search(
-                      requestParams,
-                      contentLanguage,
-                      'co',
-                      coKeyWord,
-                      {},
-                    );
-                  }
-                  result = await getProcessTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {},
-                  );
-                } else {
-                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'co', []);
-                }
-                return result || { data: [], success: false };
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            alwaysShowAlert: true,
-            preserveSelectedRowKeys: true,
-            selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'co'}
+                    placeholder={
+                      openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                    }
+                    value={coKeyWord}
+                    onChange={handleCoKeyWordChange}
+                    onSearch={onCoSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      onChange={(e) => {
+                        setOpenAI(e.target.checked);
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='process'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async () => {
+                    let result;
+                    if (coKeyWord.length > 0) {
+                      if (openAI) {
+                        return process_hybrid_search(
+                          requestParams,
+                          contentLanguage,
+                          'co',
+                          coKeyWord,
+                          {},
+                        );
+                      }
+                      result = await getProcessTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'co',
+                        coKeyWord,
+                        {},
+                      );
+                    } else {
+                      result = await getProcessTableAll(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'co',
+                        [],
+                      );
+                    }
+                    return result || { data: [], success: false };
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                alwaysShowAlert: true,
+                preserveSelectedRowKeys: true,
+                selectedRowKeys: selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     my: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'my'}
-                size={'large'}
-                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-                value={myKeyWord}
-                onChange={handleMyKeyWordChange}
-                onSearch={onMySearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={myActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          toolBarRender={() => {
-            return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async () => {
-                let result;
-                if (myKeyWord.length > 0) {
-                  if (openAI) {
-                    return process_hybrid_search(
-                      requestParams,
-                      contentLanguage,
-                      'my',
-                      myKeyWord,
-                      {},
-                    );
-                  }
-                  result = await getProcessTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {},
-                  );
-                } else {
-                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'my', []);
-                }
-                return result || { data: [], success: false };
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            alwaysShowAlert: true,
-            preserveSelectedRowKeys: true,
-            selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      onChange={(e) => {
+                        setOpenAI(e.target.checked);
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='process'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              toolBarRender={() => {
+                return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+              }}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async () => {
+                    let result;
+                    if (myKeyWord.length > 0) {
+                      if (openAI) {
+                        return process_hybrid_search(
+                          requestParams,
+                          contentLanguage,
+                          'my',
+                          myKeyWord,
+                          {},
+                        );
+                      }
+                      result = await getProcessTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'my',
+                        myKeyWord,
+                        {},
+                      );
+                    } else {
+                      result = await getProcessTableAll(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'my',
+                        [],
+                      );
+                    }
+                    return result || { data: [], success: false };
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                alwaysShowAlert: true,
+                preserveSelectedRowKeys: true,
+                selectedRowKeys: selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <Card>
-          <Row align={'middle'}>
-            <Col flex='auto' style={{ marginRight: '10px' }}>
-              <Search
-                name={'te'}
-                size={'large'}
-                placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-                value={teKeyWord}
-                onChange={handleTeKeyWordChange}
-                onSearch={onTeSearch}
-                enterButton
-              />
-            </Col>
-            <Col flex='100px'>
-              <Checkbox
-                onChange={(e) => {
-                  setOpenAI(e.target.checked);
-                }}
-              >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-              </Checkbox>
-            </Col>
-          </Row>
-        </Card>
-        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
-          actionRef={teActionRefSelect}
-          params={contentLanguageParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) => {
-            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
-              params;
-            return guardLocaleMaterializedTableRequest(
-              contentLanguage,
-              () => currentContentLanguageRef.current,
-              teRequestEpochRef,
-              async () => {
-                let result;
-                if (teKeyWord.length > 0) {
-                  if (openAI) {
-                    return process_hybrid_search(
-                      requestParams,
-                      contentLanguage,
-                      'te',
-                      teKeyWord,
-                      {},
-                    );
-                  }
-                  result = await getProcessTablePgroongaSearch(
-                    requestParams,
-                    contentLanguage,
-                    'te',
-                    teKeyWord,
-                    {},
-                  );
-                } else {
-                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'te', []);
-                }
-                return result || { data: [], success: false };
-              },
-            );
-          }}
-          columns={processColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            alwaysShowAlert: true,
-            preserveSelectedRowKeys: true,
-            selectedRowKeys: selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<ProcessTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'te'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={teKeyWord}
+                    onChange={handleTeKeyWordChange}
+                    onSearch={onTeSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <Checkbox
+                      onChange={(e) => {
+                        setOpenAI(e.target.checked);
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.openAI'
+                        defaultMessage='AI Recommendation'
+                      />
+                    </Checkbox>
+                    <DatasetClassificationFilter
+                      datasetKind='process'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              actionRef={teActionRefSelect}
+              params={{ ...contentLanguageParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) => {
+                const {
+                  contentLanguage = contentLanguageParams.contentLanguage,
+                  ...requestParams
+                } = params;
+                return guardLocaleMaterializedTableRequest(
+                  contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teRequestEpochRef,
+                  async () => {
+                    let result;
+                    if (teKeyWord.length > 0) {
+                      if (openAI) {
+                        return process_hybrid_search(
+                          requestParams,
+                          contentLanguage,
+                          'te',
+                          teKeyWord,
+                          {},
+                        );
+                      }
+                      result = await getProcessTablePgroongaSearch(
+                        requestParams,
+                        contentLanguage,
+                        'te',
+                        teKeyWord,
+                        {},
+                      );
+                    } else {
+                      result = await getProcessTableAll(
+                        requestParams,
+                        sort,
+                        contentLanguage,
+                        'te',
+                        [],
+                      );
+                    }
+                    return result || { data: [], success: false };
+                  },
+                );
+              }}
+              columns={orderDataListColumns(processColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.processes' defaultMessage='Processes' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                alwaysShowAlert: true,
+                preserveSelectedRowKeys: true,
+                selectedRowKeys: selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -700,6 +825,8 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

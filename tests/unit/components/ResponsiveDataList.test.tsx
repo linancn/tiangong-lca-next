@@ -7,6 +7,10 @@ import {
   dataListIndexColumn,
   dataListText,
   dataListTextColumn,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
   responsiveSearchExtraColProps,
@@ -16,6 +20,12 @@ import {
 } from '@/components/ResponsiveDataList';
 import { render, screen } from '@testing-library/react';
 import { Grid } from 'antd';
+
+jest.mock('umi', () => ({
+  FormattedMessage: ({ id, defaultMessage }: any) => (
+    <span data-message={id}>{defaultMessage}</span>
+  ),
+}));
 
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockUseBreakpoint = jest.fn(() => mockBreakpointScreens);
@@ -55,6 +65,22 @@ describe('ResponsiveDataList helpers', () => {
   beforeEach(() => {
     mockBreakpointScreens = {};
     mockUseBreakpoint.mockClear();
+  });
+
+  it('keeps collapsed native tabs in the closest dialog stacking context', () => {
+    const outer = document.createElement('div');
+    outer.setAttribute('role', 'dialog');
+    const inner = document.createElement('div');
+    inner.setAttribute('role', 'dialog');
+    const trigger = document.createElement('button');
+    inner.append(trigger);
+    outer.append(inner);
+    document.body.append(outer);
+    expect(dataListTabProps?.getPopupContainer?.(trigger)).toBe(inner);
+    outer.remove();
+    expect(dataListTabProps?.getPopupContainer?.(document.createElement('button'))).toBe(
+      document.body,
+    );
   });
 
   it('provides shared responsive table and search props', () => {
@@ -122,6 +148,187 @@ describe('ResponsiveDataList helpers', () => {
       search: false,
       width: 224,
     });
+  });
+
+  it('uses server pagination with larger selectable pages and native toolbar filters', () => {
+    expect(dataListPagination).toEqual({
+      defaultPageSize: 50,
+      showSizeChanger: true,
+      pageSizeOptions: [20, 50, 100],
+    });
+    const onSearch = jest.fn();
+    const filter = <button type='button'>Classification</button>;
+    expect(getDataListToolbar({ search: { onSearch }, filter })).toEqual({
+      className: 'responsive-data-list-toolbar',
+      search: { onSearch },
+      filter,
+    });
+    expect(getDataListToolbar()).toEqual(responsiveDataListTableProps.toolbar);
+  });
+
+  it('orders dataset aliases, removes classification and preserves exact version renderers', () => {
+    const versionRenderer = jest.fn();
+    const columns: any[] = [
+      { dataIndex: 'option', valueType: 'option' },
+      { dataIndex: 'CASNumber' },
+      { dataIndex: 'version', render: versionRenderer },
+      { dataIndex: 'classification' },
+      { dataIndex: 'flowType', responsive: ['lg'] },
+      { dataIndex: 'locationOfSupply', responsive: ['xl'] },
+      { dataIndex: 'shortName' },
+      { valueType: 'index' },
+    ];
+    const ordered = orderDataListColumns<any>(columns, {
+      pagination: { current: 3, pageSize: 20 },
+      titles: { name: 'Dataset name' },
+    });
+    expect(ordered.map((column) => column.dataIndex)).toEqual([
+      'index',
+      'shortName',
+      'locationOfSupply',
+      'referenceYear',
+      'flowType',
+      'version',
+      'CASNumber',
+      'option',
+    ]);
+    expect(ordered[1].title).toBe('Dataset name');
+    expect(ordered[2].responsive).toBeUndefined();
+    expect(ordered[5].render).toBe(versionRenderer);
+    expect(ordered[0].render?.(null, {}, 4, {} as any, {} as any)).toBe(45);
+    expect(columns).toHaveLength(8);
+  });
+
+  it('adds explicit unavailable fields and an entity type without guessing missing metadata', () => {
+    const ordered = orderDataListColumns<any>([{ dataIndex: 'name' }], { dataType: 'Model' });
+    render(
+      <>
+        {ordered[2].render?.(null, {}, 0, {} as any, {} as any)}
+        {ordered[3].render?.(null, {}, 0, {} as any, {} as any)}
+        {ordered[4].render?.(null, {}, 0, {} as any, {} as any)}
+        {ordered[1].render?.('-', {}, 0, {} as any, {} as any)}
+      </>,
+    );
+    expect(screen.getAllByText('—')).toHaveLength(3);
+    expect(screen.getByText('Model')).toBeInTheDocument();
+    const defaults = orderDataListColumns<any>([]);
+    const { container } = render(<>{defaults[4].render?.(null, {}, 0, {} as any, {} as any)}</>);
+    expect(container).toHaveTextContent('—');
+    expect(defaults[0].render).toBeUndefined();
+    const paged = orderDataListColumns<any>([], { pagination: {} });
+    expect(paged[0].render?.(null, {}, 2, {} as any, {} as any)).toBe(3);
+  });
+
+  it('renders actual Flow selector metadata when the caller has omitted its base columns', () => {
+    const ordered = orderDataListColumns<any>([], { dataType: 'Flow' });
+    const row = {
+      shortName: 'Short flow name',
+      baseName: 'Base flow name',
+      locationOfSupply: 'China',
+      referenceYear: 2025,
+      typeOfDataSet: 'Product flow',
+      datasetKind: 'flow',
+      version: '01.00.002',
+    };
+    render(
+      <>
+        {ordered.slice(1).map((column, index) => (
+          <div key={String(column.dataIndex)}>
+            {column.render?.('-', row, index, {} as any, {} as any) as React.ReactNode}
+          </div>
+        ))}
+      </>,
+    );
+    expect(screen.getByText('Short flow name')).toBeInTheDocument();
+    expect(screen.queryByText('Base flow name')).not.toBeInTheDocument();
+    expect(screen.getByText('China')).toBeInTheDocument();
+    expect(screen.getByText('2025')).toBeInTheDocument();
+    expect(screen.getByText('Product flow')).toBeInTheDocument();
+    expect(screen.queryByText('Flow')).not.toBeInTheDocument();
+    expect(screen.getByText('01.00.002')).toBeInTheDocument();
+  });
+
+  it('reads synthesized aliases in priority order while preserving the caller primary name column', () => {
+    const synthesized = orderDataListColumns<any>([]);
+    const row = {
+      name: 'Full contact name',
+      shortName: 'Contact abbreviation',
+      location: 'Germany',
+      locationOfSupply: 'China',
+      dataType: 'Primary type',
+      datasetType: 'Other type',
+      typeOfDataSet: 'Business type',
+      flowType: 'Flow subtype',
+    };
+    const nameRenderer = jest.fn(() => <span>Caller short name</span>);
+    const versionRenderer = jest.fn(() => <button type='button'>Exact version action</button>);
+    const preserved = orderDataListColumns<any>([
+      { dataIndex: 'shortName', render: nameRenderer },
+      { dataIndex: 'name' },
+      { dataIndex: 'version', render: versionRenderer },
+    ]);
+    render(
+      <>
+        {synthesized[1].render?.('-', row, 0, {} as any, {} as any)}
+        {synthesized[2].render?.('-', row, 0, {} as any, {} as any)}
+        {synthesized[4].render?.('-', row, 0, {} as any, {} as any)}
+      </>,
+    );
+    expect(screen.getByText('Full contact name')).toBeInTheDocument();
+    expect(screen.queryByText('Contact abbreviation')).not.toBeInTheDocument();
+    expect(screen.getByText('Germany')).toBeInTheDocument();
+    expect(screen.queryByText('China')).not.toBeInTheDocument();
+    expect(screen.getByText('Primary type')).toBeInTheDocument();
+    expect(preserved[1].dataIndex).toBe('shortName');
+    expect(preserved[1].render).toBe(nameRenderer);
+    expect(preserved[5].render).toBe(versionRenderer);
+  });
+
+  it.each(['', ' ', '-', '—', 'undefined', null, undefined])(
+    'treats %s as absent metadata and uses later aliases or explicit fallbacks',
+    (missing) => {
+      const ordered = orderDataListColumns<any>([], { dataType: 'Model' });
+      const row = {
+        name: missing,
+        shortName: missing,
+        baseName: 'Usable name',
+        location: missing,
+        locationOfSupply: 'Usable location',
+        referenceYear: missing,
+        dataType: missing,
+        typeOfDataSet: missing,
+        version: missing,
+      };
+      render(
+        <>
+          {ordered.slice(1).map((column, index) => (
+            <div key={String(column.dataIndex)}>
+              {column.render?.('-', row, index, {} as any, {} as any) as React.ReactNode}
+            </div>
+          ))}
+        </>,
+      );
+      expect(screen.getByText('Usable name')).toBeInTheDocument();
+      expect(screen.getByText('Usable location')).toBeInTheDocument();
+      expect(screen.getByText('Model')).toBeInTheDocument();
+      expect(screen.getAllByText('—')).toHaveLength(2);
+    },
+  );
+
+  it('keeps numeric zero and alternate synthesized type values available', () => {
+    const ordered = orderDataListColumns<any>([]);
+    const { rerender } = render(
+      <>
+        {ordered[3].render?.('-', { referenceYear: 0 }, 0, {} as any, {} as any)}
+        {ordered[4].render?.('-', { flowType: 'Elementary flow' }, 0, {} as any, {} as any)}
+      </>,
+    );
+    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText('Elementary flow')).toBeInTheDocument();
+    rerender(<>{ordered[4].render?.('-', { datasetKind: 'contact' }, 0, {} as any, {} as any)}</>);
+    expect(screen.getByText('contact')).toBeInTheDocument();
+    rerender(<>{ordered[4].render?.('-', null, 0, {} as any, {} as any)}</>);
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
   it('detects mobile data-list breakpoints defensively', () => {

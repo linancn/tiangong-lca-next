@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8f73fe0ec094b23ce9b68ea26eba42a0b7084b7767f3a0ef2bce67906dd1066f",
+    "auditedInputDigest": "f1ecb59f0eae5533ebfb5d5fe3ee61ae9689a350dd31e0958c10684aeaf9e83f",
     "validatedMessageCount": 3546,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "4d209548c6c05661d2ac8b65d7dd51c2b17615ea584b7f0c0ede7543687ed1e0",
-    "dossierDigest": "9317a920a910eb270d6fb65951c93c28f356d1081c4ce361973107c2ea7b4a6b",
+    "dossierDigest": "1b6dd7ac5fc1b730abf5628ae18664bad26aede60b8cd7aad6bfd1fc5ce737a4",
     "typedContentDossierDigest": "3d7e2672b67b20ef5b25fd6d3bbc0bd1c5cfcf2c39d33a3fdec372de137582d3",
-    "routeEvidenceDigest": "800b2a5eff8066f6090b7a9b771793d8ffb8c6315f33cc78f69dc7c6f36d9105",
+    "routeEvidenceDigest": "66ace47fb8a133c8742dbe9b315bfec1612a8a7bd70f3a6f6111f4a060d89795",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "a4fc9e0d5fbcf40570e5068b502a91d0b8b42732da1e1fdee118795aa47e2c21",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "9317a920a910eb270d6fb65951c93c28f356d1081c4ce361973107c2ea7b4a6b",
+        "dossierDigest": "1b6dd7ac5fc1b730abf5628ae18664bad26aede60b8cd7aad6bfd1fc5ce737a4",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "fc3680b25f8f32885f7058a1c7ebc804c967df0d160e0124f2afc7826a2f2249"
+  "validationDigest": "b16a108ed9dc8a2f9091a3b184a253856d383a229cf42817437f04fc62101362"
 }

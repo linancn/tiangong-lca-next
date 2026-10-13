@@ -9,6 +9,8 @@ jest.mock('@/contexts/AntdAppContext', () => ({
     action(jest.requireMock('antd').App.useApp()),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -381,13 +383,16 @@ jest.mock('@ant-design/pro-components', () => {
     actionRef,
     request,
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     optionsRender,
     rowKey,
     rowSelection,
     params,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params };
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
@@ -402,14 +407,14 @@ jest.mock('@ant-design/pro-components', () => {
 
     const reload = React.useCallback(async () => {
       const result = await requestRef.current?.(
-        { pageSize: 10, current: 1, ...paramsRef.current },
+        { pageSize: 50, current: 1, ...paramsRef.current },
         {},
       );
       setRows(result?.data ?? []);
       return result;
     }, []);
     const reloadAndRest = React.useCallback(
-      async () => requestRef.current?.({ pageSize: 10, current: 1, ...paramsRef.current }, {}),
+      async () => requestRef.current?.({ pageSize: 50, current: 1, ...paramsRef.current }, {}),
       [],
     );
 
@@ -445,7 +450,11 @@ jest.mock('@ant-design/pro-components', () => {
           ])}
         </div>
         <div data-testid='options-with-undefined'>{optionsRender?.({}, undefined)}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row: any, rowIndex: number) => (
           <div key={rowKey ? rowKey(row) : `${row.id}-${rowIndex}`}>
             {rowSelection && (
@@ -459,7 +468,9 @@ jest.mock('@ant-design/pro-components', () => {
             )}
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id ?? 'row'}-${columnIndex}`}>
-                {column.render ? column.render(undefined, row) : row[column.dataIndex]}
+                {column.render
+                  ? column.render(row[column.dataIndex], row, rowIndex)
+                  : row[column.dataIndex]}
               </div>
             ))}
           </div>
@@ -480,6 +491,7 @@ const { message } = require('antd');
 
 describe('ProcessesPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     latestRequest = null;
     mockLocation = {
@@ -524,6 +536,34 @@ describe('ProcessesPage', () => {
     message.error.mockReset();
   });
 
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<ProcessesPage />);
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetProcessTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -544,7 +584,7 @@ describe('ProcessesPage', () => {
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
 
     expect(mockGetProcessTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -558,7 +598,8 @@ describe('ProcessesPage', () => {
         (_content, element) => element?.textContent === 'General commentCement process',
       ).length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText('Materials')).toBeInTheDocument();
+    expect(screen.queryByText('Materials')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
     expect(screen.getByText('2024')).toBeInTheDocument();
     expect(screen.getByText('CN')).toBeInTheDocument();
     const desktopCalcActions = screen.getAllByTestId('lca-solve-toolbar');
@@ -632,7 +673,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /dataset-filter/i }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -645,7 +686,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -663,7 +704,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /dataset-filter/i }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -676,7 +717,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -689,7 +730,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'cement',
@@ -705,7 +746,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockProcessHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'cement',
@@ -731,9 +772,9 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() => expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalled());
 
-    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { name: 'ascend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       'en',
       'my',
       'cement',
@@ -744,9 +785,9 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { name: 'descend' });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { name: 'descend' });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       'en',
       'my',
       'cement',
@@ -757,9 +798,12 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { classification: 'descend' });
+    await requestTable(
+      { pageSize: 50, current: 1, classification: [] },
+      { classification: 'descend' },
+    );
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       'en',
       'my',
       'cement',
@@ -770,9 +814,12 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { classification: 'ascend' });
+    await requestTable(
+      { pageSize: 50, current: 1, classification: [] },
+      { classification: 'ascend' },
+    );
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       'en',
       'my',
       'cement',
@@ -783,9 +830,9 @@ describe('ProcessesPage', () => {
       'team-1',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { name: undefined });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { name: undefined });
     expect(mockGetProcessTablePgroongaSearch).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       'en',
       'my',
       'cement',
@@ -803,9 +850,9 @@ describe('ProcessesPage', () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
-    await requestTable({ pageSize: 10, current: 1 }, { name: 'ascend' });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { name: 'ascend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {
         'json->processDataSet->processInformation->dataSetInformation->name': 'ascend',
       },
@@ -816,9 +863,9 @@ describe('ProcessesPage', () => {
       'all',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { location: 'descend' });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { location: 'descend' });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       { location: 'descend' },
       'en',
       'my',
@@ -827,9 +874,9 @@ describe('ProcessesPage', () => {
       'all',
     );
 
-    await requestTable({ pageSize: 10, current: 1 }, { name: undefined });
+    await requestTable({ pageSize: 50, current: 1, classification: [] }, { name: undefined });
     expect(mockGetProcessTableAll).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -1117,7 +1164,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'tg',
         'cement',
@@ -1147,7 +1194,7 @@ describe('ProcessesPage', () => {
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith(''));
     await waitFor(() =>
       expect(mockGetProcessTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -1161,7 +1208,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'cement',
@@ -1228,7 +1275,7 @@ describe('ProcessesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetProcessTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -1267,3 +1314,17 @@ describe('ProcessesPage', () => {
     expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

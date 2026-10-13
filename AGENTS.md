@@ -31,6 +31,7 @@ checkPaths:
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - scripts/release/**
@@ -42,12 +43,13 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: reviewer footer parity remains repository-owned frontend work; repository ownership, bootstrap, branch, and delivery rules are unchanged.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: dataset-list UI and classification request changes remain frontend-owned; add the focused browser configuration check paths. Branch, authorization, release and full-gate contracts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

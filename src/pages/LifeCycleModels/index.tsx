@@ -1,3 +1,5 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
 import OpenDataCatalogFilters from '@/components/OpenDataCatalogFilters';
 import ContributeData from '@/components/ContributeData';
@@ -15,10 +17,10 @@ import {
   dataListText,
   dataListTextColumn,
   responsiveDataListTableProps,
-  responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
-  responsiveSearchPrimaryColProps,
-  responsiveSearchRowProps,
+  ResponsiveDataListViewport,
+  dataListPagination,
+  getDataListToolbar,
+  orderDataListColumns,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
@@ -58,12 +60,12 @@ import type {
 import { getTeamById } from '@/services/teams/api';
 import type { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { App, Card, Checkbox, Col, Input, Row, Space } from 'antd';
+import { App, Checkbox, Input, Space } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
-import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import { getAllVersionsColumns } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
@@ -126,6 +128,8 @@ const TableList: FC = () => {
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType>(undefined);
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
+  const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
   const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: LifeCycleModelTable[];
@@ -385,240 +389,266 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card className={responsiveSearchCardClassName}>
-        <Row {...responsiveSearchRowProps}>
-          <Col {...responsiveSearchPrimaryColProps}>
-            <Search
-              size={'large'}
-              placeholder={
-                referenceLookup
-                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
-                  : openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
-              }
-              onSearch={onSearch}
-              enterButton
-            />
-          </Col>
-          <Col {...responsiveSearchExtraColProps}>
-            <Checkbox
-              checked={openAI}
-              onChange={(e) => {
-                setOpenAI(e.target.checked);
-                if (e.target.checked) {
-                  setReferenceLookup(false);
-                }
-              }}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-            </Checkbox>
-            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
-              <Checkbox
-                checked={referenceLookup}
-                onChange={(e) => {
-                  setReferenceLookup(e.target.checked);
-                  if (e.target.checked) {
-                    setOpenAI(false);
+      <ResponsiveDataListViewport>
+        {({ scroll }) => (
+          <ProTable<LifeCycleModelTable, LifeCycleModelTableRequestParams>
+            key={`lifecycle-model-table:${dataSource}:${tid ?? ''}`}
+            {...responsiveDataListTableProps}
+            scroll={scroll}
+            onChange={(pagination) =>
+              setListPage({ current: pagination.current ?? 1, pageSize: pagination.pageSize ?? 50 })
+            }
+            toolbar={getDataListToolbar({
+              search: (
+                <Search
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder={
+                    referenceLookup
+                      ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                      : openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
                   }
-                }}
-              >
-                <FormattedMessage
-                  id='pages.search.referenceLookup'
-                  defaultMessage='Reference Lookup'
+                  onSearch={onSearch}
+                  enterButton
                 />
-              </Checkbox>
-              <ReferenceLookupHelpIcon />
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-      <ProTable<LifeCycleModelTable, LifeCycleModelTableRequestParams>
-        key={`lifecycle-model-table:${dataSource}:${tid ?? ''}`}
-        {...responsiveDataListTableProps}
-        rowKey={(record) => `${record.id}-${record.version}`}
-        headerTitle={
-          <>
-            {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id='menu.tgdata.products' defaultMessage='Product Models' />
-          </>
-        }
-        actionRef={actionRef}
-        dataSource={tableDataSource}
-        onDataSourceChange={setTableDataSource}
-        params={{
-          locale: appLocale,
-          dataSource,
-          teamId: tid ?? '',
-          keyword: keyWord,
-          searchRevision,
-          searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
-          stateCode,
-          ...(dataSource === 'tg'
-            ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-            : {}),
-        }}
-        search={false}
-        options={isMobileDataList ? false : { fullScreen: true }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-          ...getReferenceLookupPaginationProps(referenceLookup),
-        }}
-        toolBarRender={() => {
-          if (dataSource === 'my') {
-            const filters = [
-              <TableFilter
-                key={2}
-                width={isMobileDataList ? 120 : 140}
-                onChange={(val) => {
-                  setStateCode(val);
-                }}
-              />,
-            ];
-            return [
-              ...filters,
-              <LifeCycleModelCreate
-                importData={importData}
-                onClose={() => setImportData(null)}
-                key={0}
-                lang={lang}
-                actionRef={actionRef}
-                buttonType={'icon'}
-              />,
-              <ImportData onJsonData={handleImportData} key={1} />,
-            ];
-          }
-          return dataSource === 'tg'
-            ? [
-                <OpenDataCatalogFilters
-                  key='open-data-filters'
-                  value={openDataFilters}
-                  onChange={setOpenDataFilters}
-                />,
-              ]
-            : [];
-        }}
-        request={async (
-          params: LifeCycleModelTableRequestParams & { pageSize?: number; current?: number },
-          sort,
-        ) => {
-          const {
-            locale: requestedLocale,
-            dataSource: requestedDataSource,
-            teamId: requestedTeamId,
-            keyword: requestedKeyword,
-            searchRevision: _searchRevision,
-            searchMode,
-            stateCode: requestedStateCode,
-            openDataFilterRevision: _openDataFilterRevision,
-            ...requestParams
-          } = params;
-          void _searchRevision;
-          void _openDataFilterRevision;
-          setTableDataSource([]);
-          return guardLocaleMaterializedTableRequest(
-            requestedLocale,
-            () => currentAppLocaleRef.current,
-            tableRequestEpochRef,
-            async ({ isCurrentRequest }) => {
-              if (searchMode === 'reference') {
-                const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
-                if (!referenceLookupUuid) {
-                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
-                }
-                const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
-
-                const result = await getLifeCycleModelTableUuidMentionSearch(
-                  requestParams,
-                  lang,
-                  requestedDataSource,
-                  referenceLookupUuid,
-                  requestedStateCode,
-                  referenceLookupTeamId,
-                  ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
-                );
-                const noticeKey = [
-                  requestedDataSource,
-                  referenceLookupUuid,
-                  requestedStateCode,
-                  referenceLookupTeamId,
-                  requestedLocale,
-                ].join(':');
-                if (
-                  isCurrentRequest() &&
-                  result.capped &&
-                  referenceLookupLimitNoticeRef.current !== noticeKey
-                ) {
-                  referenceLookupLimitNoticeRef.current = noticeKey;
-                  showReferenceLookupLimitMessage(intl);
-                }
-                return attachReviewState(result);
+              ),
+              filter: (
+                <Space wrap>
+                  <Checkbox
+                    checked={openAI}
+                    onChange={(e) => {
+                      setOpenAI(e.target.checked);
+                      if (e.target.checked) {
+                        setReferenceLookup(false);
+                      }
+                    }}
+                  >
+                    <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+                  </Checkbox>
+                  <Space
+                    className='responsive-data-list-reference-lookup-option'
+                    size={4}
+                    align='center'
+                  >
+                    <Checkbox
+                      checked={referenceLookup}
+                      onChange={(e) => {
+                        setReferenceLookup(e.target.checked);
+                        if (e.target.checked) {
+                          setOpenAI(false);
+                        }
+                      }}
+                    >
+                      <FormattedMessage
+                        id='pages.search.referenceLookup'
+                        defaultMessage='Reference Lookup'
+                      />
+                    </Checkbox>
+                    <ReferenceLookupHelpIcon />
+                  </Space>
+                  <DatasetClassificationFilter
+                    datasetKind='lifecyclemodel'
+                    lang={lang}
+                    value={classification}
+                    onChange={(next) => {
+                      setClassification(next);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                </Space>
+              ),
+            })}
+            rowKey={(record) => `${record.id}-${record.version}`}
+            headerTitle={false}
+            actionRef={actionRef}
+            dataSource={tableDataSource}
+            onDataSourceChange={setTableDataSource}
+            params={{
+              locale: appLocale,
+              classification,
+              dataSource,
+              teamId: tid ?? '',
+              keyword: keyWord,
+              searchRevision,
+              searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
+              stateCode,
+              ...(dataSource === 'tg'
+                ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
+                : {}),
+            }}
+            search={false}
+            options={isMobileDataList ? false : { fullScreen: true }}
+            pagination={{
+              ...dataListPagination,
+              ...getReferenceLookupPaginationProps(referenceLookup),
+            }}
+            toolBarRender={() => {
+              if (dataSource === 'my') {
+                const filters = [
+                  <TableFilter
+                    key={2}
+                    width={isMobileDataList ? 120 : 140}
+                    onChange={(val) => {
+                      setStateCode(val);
+                    }}
+                  />,
+                ];
+                return [
+                  ...filters,
+                  <LifeCycleModelCreate
+                    importData={importData}
+                    onClose={() => setImportData(null)}
+                    key={0}
+                    lang={lang}
+                    actionRef={actionRef}
+                    buttonType={'icon'}
+                  />,
+                  <ImportData onJsonData={handleImportData} key={1} />,
+                ];
               }
-              if (requestedKeyword.length > 0) {
-                let orderBy:
-                  | {
-                      key: 'common:class' | 'baseName';
-                      lang?: SupportedServiceQueryLanguage;
-                      order: 'asc' | 'desc';
+              return dataSource === 'tg'
+                ? [
+                    <OpenDataCatalogFilters
+                      key='open-data-filters'
+                      value={openDataFilters}
+                      onChange={setOpenDataFilters}
+                    />,
+                  ]
+                : [];
+            }}
+            request={async (
+              params: LifeCycleModelTableRequestParams & { pageSize?: number; current?: number },
+              sort,
+            ) => {
+              const {
+                locale: requestedLocale,
+                dataSource: requestedDataSource,
+                teamId: requestedTeamId,
+                keyword: requestedKeyword,
+                searchRevision: _searchRevision,
+                searchMode,
+                stateCode: requestedStateCode,
+                openDataFilterRevision: _openDataFilterRevision,
+                ...requestParams
+              } = params;
+              void _searchRevision;
+              void _openDataFilterRevision;
+              setTableDataSource([]);
+              return guardLocaleMaterializedTableRequest(
+                requestedLocale,
+                () => currentAppLocaleRef.current,
+                tableRequestEpochRef,
+                async ({ isCurrentRequest }) => {
+                  if (searchMode === 'reference') {
+                    const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
+                    if (!referenceLookupUuid) {
+                      return attachReviewState(
+                        getReferenceLookupEmptyResult(requestParams.current),
+                      );
                     }
-                  | undefined;
-                const activeSort = getActiveTableSort(sort);
-                if (activeSort) {
-                  const { field, order } = activeSort;
-                  if (field === 'name') {
-                    orderBy = {
-                      key: 'baseName',
-                      lang: getServiceQueryLanguage(lang),
-                      order: order === 'ascend' ? 'asc' : 'desc',
-                    };
-                  } else if (field === 'classification') {
-                    orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
-                  }
-                }
-                if (searchMode === 'ai') {
-                  return attachReviewState(
-                    await lifeCycleModel_hybrid_search(
+                    const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
+
+                    const result = await getLifeCycleModelTableUuidMentionSearch(
                       requestParams,
                       lang,
                       requestedDataSource,
-                      requestedKeyword,
-                      {},
+                      referenceLookupUuid,
+                      requestedStateCode,
+                      referenceLookupTeamId,
+                      ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                    );
+                    const noticeKey = [
+                      requestedDataSource,
+                      referenceLookupUuid,
+                      requestedStateCode,
+                      referenceLookupTeamId,
+                      requestedLocale,
+                    ].join(':');
+                    if (
+                      isCurrentRequest() &&
+                      result.capped &&
+                      referenceLookupLimitNoticeRef.current !== noticeKey
+                    ) {
+                      referenceLookupLimitNoticeRef.current = noticeKey;
+                      showReferenceLookupLimitMessage(intl);
+                    }
+                    return attachReviewState(result);
+                  }
+                  if (requestedKeyword.length > 0) {
+                    let orderBy:
+                      | {
+                          key: 'common:class' | 'baseName';
+                          lang?: SupportedServiceQueryLanguage;
+                          order: 'asc' | 'desc';
+                        }
+                      | undefined;
+                    const activeSort = getActiveTableSort(sort);
+                    if (activeSort) {
+                      const { field, order } = activeSort;
+                      if (field === 'name') {
+                        orderBy = {
+                          key: 'baseName',
+                          lang: getServiceQueryLanguage(lang),
+                          order: order === 'ascend' ? 'asc' : 'desc',
+                        };
+                      } else if (field === 'classification') {
+                        orderBy = {
+                          key: 'common:class',
+                          order: order === 'ascend' ? 'asc' : 'desc',
+                        };
+                      }
+                    }
+                    if (searchMode === 'ai') {
+                      return attachReviewState(
+                        await lifeCycleModel_hybrid_search(
+                          requestParams,
+                          lang,
+                          requestedDataSource,
+                          requestedKeyword,
+                          {},
+                          requestedStateCode,
+                          requestedDataSource === 'tg' ? openDataFilters : undefined,
+                          requestedTeamId,
+                        ),
+                      );
+                    }
+                    return attachReviewState(
+                      await getLifeCycleModelTablePgroongaSearch(
+                        requestParams,
+                        lang,
+                        requestedDataSource,
+                        requestedKeyword,
+                        {},
+                        requestedStateCode,
+                        orderBy,
+                        requestedTeamId,
+                        ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                      ),
+                    );
+                  }
+                  return attachReviewState(
+                    await getLifeCycleModelTableAll(
+                      requestParams,
+                      sort,
+                      lang,
+                      requestedDataSource,
+                      requestedTeamId,
                       requestedStateCode,
                       ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
                     ),
                   );
-                }
-                return attachReviewState(
-                  await getLifeCycleModelTablePgroongaSearch(
-                    requestParams,
-                    lang,
-                    requestedDataSource,
-                    requestedKeyword,
-                    {},
-                    requestedStateCode,
-                    orderBy,
-                    requestedTeamId,
-                    ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
-                  ),
-                );
-              }
-              return attachReviewState(
-                await getLifeCycleModelTableAll(
-                  requestParams,
-                  sort,
-                  lang,
-                  requestedDataSource,
-                  requestedTeamId,
-                  requestedStateCode,
-                  ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
-                ),
+                },
               );
-            },
-          );
-        }}
-        columns={processColumns}
-      />
+            }}
+            columns={orderDataListColumns(processColumns, {
+              dataType: <FormattedMessage id='menu.tgdata.models' />,
+              pagination: listPage,
+            })}
+          />
+        )}
+      </ResponsiveDataListViewport>
 
       {editDrawerVisible && editId && editVersion && (
         <LifeCycleModelEdit

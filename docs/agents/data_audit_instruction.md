@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: b24c6b538cf812aa65584dd1a5e21556cbbc04da
-lastReviewedNote: 'Documented the unified Process and Lifecycle Model Review Member footer and reviewer-opinion rejection behavior for Platform #1208 after merging current dev.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: reviewer-model exchange selector presentation retains existing domain columns and exact references; audit codes, advisory opinions, submission and final-decision authority are unchanged.'
 ---
 
 # Audit Status Reference

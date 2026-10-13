@@ -269,6 +269,7 @@ jest.mock('@ant-design/pro-components', () => {
     rowSelection,
     toolBarRender,
     columns = [],
+    toolbar,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
@@ -303,6 +304,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div>
+        {toolbar?.search}
+        {toolbar?.filter}
         <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
           <div key={`${row.id}:${row.version}`}>
@@ -587,3 +590,23 @@ describe('FlowsSelectDrawer', () => {
     expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

@@ -1,3 +1,5 @@
+import { datasetCatalogRpcArgs } from '../datasetCatalog/api';
+
 export type DatasetUuidMentionEntityKind =
   'flow' | 'process' | 'lifecyclemodel' | 'source' | 'contact' | 'unitgroup' | 'flowproperty';
 
@@ -14,6 +16,7 @@ export type DatasetUuidMentionRow = {
   source_name?: string | null;
   source_team_id?: string | null;
   source_version: string;
+  total_count?: number | string | null;
 };
 
 type SearchDatasetJsonUuidMentionsOptions = {
@@ -35,6 +38,10 @@ export type SearchDatasetJsonUuidMentionPageOptions = Omit<
   SearchDatasetJsonUuidMentionsOptions,
   'limit'
 > & {
+  filterCondition?: Record<string, unknown>;
+  ownerDraftOnly?: boolean;
+  versionScope?: 'latest' | 'all';
+  /** Retained for source compatibility; server pagination has no synthetic result cap. */
   maxResults?: number;
   pageCurrent?: number;
   pageSize?: number;
@@ -46,7 +53,7 @@ export type SearchDatasetJsonUuidMentionPageResult = SearchDatasetJsonUuidMentio
   total: number;
 };
 
-export const DATASET_UUID_MENTION_PAGE_SIZE = 10;
+export const DATASET_UUID_MENTION_PAGE_SIZE = 50;
 export const DATASET_UUID_MENTION_MAX_RESULTS = 50;
 
 const DATASET_UUID_QUERY_PATTERN =
@@ -65,7 +72,7 @@ async function getDatasetUuidMentionTeamFilter(
     const { getTeamIdByUserId } = require('../general/api') as typeof import('../general/api');
     return (await getTeamIdByUserId()) ?? null;
   }
-  if (dataSource === 'tg' || dataSource === 'co') {
+  if (dataSource === 'tg' || dataSource === 'co' || dataSource === 'ex') {
     return normalizeOptionalTeamId(teamId);
   }
   return null;
@@ -149,58 +156,63 @@ export async function searchDatasetJsonUuidMentions({
 }
 
 export async function searchDatasetJsonUuidMentionPage({
-  maxResults = DATASET_UUID_MENTION_MAX_RESULTS,
   pageCurrent = 1,
   pageSize = DATASET_UUID_MENTION_PAGE_SIZE,
-  ...options
+  dataSource,
+  filterCondition = {},
+  ownerDraftOnly,
+  sourceEntityKinds,
+  stateCode,
+  teamId,
+  uuid,
+  versionScope,
 }: SearchDatasetJsonUuidMentionPageOptions): Promise<SearchDatasetJsonUuidMentionPageResult> {
   const normalizedPageSize = Math.max(1, Math.floor(pageSize));
   const normalizedPage = Math.max(1, Math.floor(pageCurrent));
-  const normalizedMaxResults = Math.min(
-    DATASET_UUID_MENTION_MAX_RESULTS,
-    Math.max(1, Math.floor(maxResults)),
-  );
-  const pageStart = (normalizedPage - 1) * normalizedPageSize;
-
-  if (pageStart >= normalizedMaxResults) {
-    return {
-      capped: true,
-      data: [],
-      page: normalizedPage,
-      success: true,
-      total: normalizedMaxResults,
-    };
-  }
-
-  const fetchLimit = Math.min(normalizedMaxResults, pageStart + normalizedPageSize + 1);
-  const result = await searchDatasetJsonUuidMentions({
-    ...options,
-    limit: fetchLimit,
-  });
-
-  if (!result.success) {
-    return {
-      ...result,
-      capped: false,
-      page: normalizedPage,
-      total: 0,
-    };
-  }
-
-  const pageRows = result.data.slice(pageStart, pageStart + normalizedPageSize);
-  const hasNextPage = result.data.length > pageStart + normalizedPageSize;
-  const capped = fetchLimit >= normalizedMaxResults && result.data.length >= normalizedMaxResults;
-  const total = Math.min(
-    normalizedMaxResults,
-    hasNextPage ? pageStart + pageRows.length + 1 : pageStart + pageRows.length,
-  );
-
-  return {
-    ...result,
-    capped,
-    data: pageRows,
+  const emptyPage = {
+    capped: false,
+    data: [] as DatasetUuidMentionRow[],
     page: normalizedPage,
-    total,
+    success: true,
+    total: 0,
+  };
+  const normalizedUuid = normalizeDatasetUuidSearchQuery(uuid);
+  if (!normalizedUuid || sourceEntityKinds.length === 0) {
+    return emptyPage;
+  }
+  const { supabase } = require('@/services/supabase') as typeof import('@/services/supabase');
+  const session = await supabase.auth.getSession();
+  if (!session.data.session) {
+    return { ...emptyPage, success: false, error: 'not_authenticated' };
+  }
+  const teamIdFilter = await getDatasetUuidMentionTeamFilter(dataSource, teamId);
+  if (dataSource === 'te' && !teamIdFilter) {
+    return emptyPage;
+  }
+  const result = await supabase.rpc('search_dataset_uuid_mentions_page', {
+    ...datasetCatalogRpcArgs({
+      datasetKind: sourceEntityKinds[0],
+      dataSource,
+      filterCondition:
+        sourceEntityKinds.length > 1 ? { ...filterCondition, sourceEntityKinds } : filterCondition,
+      pageCurrent: normalizedPage,
+      pageSize: normalizedPageSize,
+      ownerDraftOnly,
+      stateCode: normalizeDatasetUuidMentionStateCode(stateCode),
+      teamId: teamIdFilter,
+      versionScope,
+    }),
+    p_dataset_kind: sourceEntityKinds.length > 1 ? 'all' : sourceEntityKinds[0],
+    p_uuid: normalizedUuid,
+  });
+  if (result.error) {
+    return { ...emptyPage, success: false, error: result.error.message };
+  }
+  const rows = (result.data ?? []) as DatasetUuidMentionRow[];
+  return {
+    ...emptyPage,
+    data: rows,
+    total: Number(rows[0]?.total_count ?? 0) || 0,
   };
 }
 

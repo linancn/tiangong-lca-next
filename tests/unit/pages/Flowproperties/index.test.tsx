@@ -18,6 +18,8 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -276,7 +278,7 @@ jest.mock('antd', () => {
   const Col = ({ children }: any) => <div>{children}</div>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <div>{children}</div>;
+  const Tooltip = ({ children, title }: any) => <div title={toText(title)}>{children}</div>;
   const Search = ({ disabled, onSearch, placeholder }: any) => (
     <div>
       <input aria-label='search-input' disabled={disabled} placeholder={placeholder} />
@@ -358,13 +360,17 @@ jest.mock('@ant-design/pro-components', () => {
     actionRef,
     request,
     params = {},
+    toolbar,
     toolBarRender,
     headerTitle,
     columns,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params };
     const [rows, setRows] = React.useState<any[]>([]);
     const headerTitleText = toText(headerTitle);
+    const paramsKey = JSON.stringify(params);
     const latestRequestRef = React.useRef(request);
     const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
@@ -374,7 +380,7 @@ jest.mock('@ant-design/pro-components', () => {
       () => ({
         reload: jest.fn(async () => {
           const result = await latestRequestRef.current?.(
-            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            { ...latestParamsRef.current, pageSize: 50, current: 1 },
             {},
           );
           setRows(result?.data ?? []);
@@ -390,12 +396,16 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
       void api.reload();
-    }, [actionRef, api, headerTitleText, params.locale]);
+    }, [actionRef, api, headerTitleText, paramsKey]);
 
     return (
       <section data-testid='pro-table'>
         <div>{headerTitleText}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row: any, rowIndex: number) => (
           <div
             data-testid='pro-row'
@@ -426,6 +436,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('FlowpropertiesPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     mockLocation = {
       pathname: '/mydata/flowproperties',
@@ -470,6 +481,34 @@ describe('FlowpropertiesPage', () => {
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -487,7 +526,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
 
     expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -495,7 +534,7 @@ describe('FlowpropertiesPage', () => {
       'all',
     );
     expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
-    expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
+    expect(screen.getByTitle('pages.flowproperty.title.tips')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
     expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"disabled":true');
@@ -513,7 +552,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
 
     expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -544,7 +583,7 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'AI Recommendation' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).not.toBeDisabled();
-    expect(screen.queryByText(/contact an administrator/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle('pages.flowproperty.title.tips')).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(screen.getByTestId('flowproperty-create')).toHaveTextContent('"importCount":1');
@@ -593,7 +632,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -610,7 +649,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -622,7 +661,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -650,7 +689,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockFlowpropertyHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -680,7 +719,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockFlowpropertyHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -710,7 +749,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -753,7 +792,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith(''));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'co',
@@ -761,14 +800,15 @@ describe('FlowpropertiesPage', () => {
         'all',
       ),
     );
-    expect(screen.getByText('Impact category')).toBeInTheDocument();
+    expect(screen.queryByText('Impact category')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
     expect(screen.getByText('sup:')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'co',
         'climate',
@@ -793,7 +833,7 @@ describe('FlowpropertiesPage', () => {
 
     await waitFor(() =>
       expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'climate',
@@ -855,7 +895,7 @@ describe('FlowpropertiesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetFlowpropertyTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -925,3 +965,17 @@ describe('FlowpropertiesPage', () => {
     );
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

@@ -18,6 +18,8 @@ jest.mock('@/components/ToolBarButton', () => ({
   ),
 }));
 
+let mockCapturedTableProps: any;
+
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -351,14 +353,17 @@ jest.mock('@ant-design/pro-components', () => {
     request,
     params = {},
     columns = [],
+    toolbar,
     toolBarRender,
     headerTitle,
     rowKey,
+    pagination,
   }: any) => {
+    mockCapturedTableProps = { columns, pagination, params };
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
-    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
+    const pageInfoRef = React.useRef({ pageSize: 50, current: 1, classification: [] });
 
     requestRef.current = request;
     paramsRef.current = params;
@@ -395,12 +400,18 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <section data-testid='pro-table'>
         <div>{toText(headerTitle)}</div>
-        <div>{toolBarRender?.()}</div>
+        <div>
+          {toolbar?.search}
+          {toolbar?.filter}
+          {toolBarRender?.()}
+        </div>
         {rows.map((row: any, rowIndex: number) => (
           <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>
             {columns.map((column: any, columnIndex: number) => (
               <div key={`${row.id}-${columnIndex}`}>
-                {column.render ? column.render(undefined, row) : row[column.dataIndex]}
+                {column.render
+                  ? column.render(row[column.dataIndex], row, rowIndex)
+                  : row[column.dataIndex]}
               </div>
             ))}
           </div>
@@ -419,6 +430,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 describe('SourcesPage', () => {
   beforeEach(() => {
+    mockCapturedTableProps = undefined;
     jest.clearAllMocks();
     latestReloadMock = null;
     mockLocation = {
@@ -440,6 +452,34 @@ describe('SourcesPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
+  it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
+    renderWithProviders(<SourcesPage />);
+    await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalled());
+    expect(mockCapturedTableProps.pagination).toEqual(
+      expect.objectContaining({
+        defaultPageSize: 50,
+        showSizeChanger: true,
+        pageSizeOptions: [20, 50, 100],
+      }),
+    );
+    expect(
+      mockCapturedTableProps.columns.slice(0, 6).map((column: any) => toText(column.title)),
+    ).toEqual(['Index', 'Name', 'Location', 'Reference year', 'Type of data set', 'Version']);
+    expect(
+      mockCapturedTableProps.columns.some((column: any) => column.dataIndex === 'classification'),
+    ).toBe(false);
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetSourceTableAll.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 50,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+      ),
+    );
+  });
+
   it('falls back to the English browser locale when the runtime locale is unsupported', async () => {
     mockIntlLocale = 'unsupported-locale';
 
@@ -455,7 +495,7 @@ describe('SourcesPage', () => {
     await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalled());
 
     expect(mockGetSourceTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 50, current: 1, classification: [] },
       {},
       'en',
       'my',
@@ -525,7 +565,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetSourceTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -548,7 +588,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'iso',
@@ -567,7 +607,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'iso',
@@ -595,7 +635,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockSourceHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'iso',
@@ -625,7 +665,7 @@ describe('SourcesPage', () => {
 
     await waitFor(() =>
       expect(mockSourceHybridSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'iso',
@@ -645,7 +685,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
       expect(mockGetSourceTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -740,7 +780,7 @@ describe('SourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
     await waitFor(() =>
       expect(mockGetSourceTableUuidMentionSearch).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1, classification: [] },
         'en',
         'my',
         'd1380000-0000-4000-8000-000000000001',
@@ -768,7 +808,7 @@ describe('SourcesPage', () => {
     );
   });
 
-  it('renders a dash when classification is missing or invalid', async () => {
+  it('renders missing base metadata without a row classification column', async () => {
     mockGetSourceTableAll.mockResolvedValue({
       data: [{ ...baseSourceRow, classification: 'undefined' }],
       success: true,
@@ -776,6 +816,20 @@ describe('SourcesPage', () => {
 
     renderWithProviders(<SourcesPage />);
 
-    expect(await screen.findByText('-')).toBeInTheDocument();
+    expect((await screen.findAllByText('—')).length).toBeGreaterThan(0);
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

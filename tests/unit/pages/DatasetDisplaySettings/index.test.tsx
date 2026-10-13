@@ -39,12 +39,12 @@ jest.mock('@/components/DatasetKindFilter', () => ({
 jest.mock('umi', () => ({
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage }: any, v: any = {}) =>
-      defaultMessage.replace(/\{(\w+)\}/g, (_: string, k: string) => String(v[k])),
+    formatMessage: ({ defaultMessage, id }: any, v: any = {}) =>
+      (defaultMessage ?? id).replace(/\{(\w+)\}/g, (_: string, k: string) => String(v[k])),
   }),
   useModel: () => ({ initialState: { currentUser: mockRole ? { access: mockRole } : undefined } }),
-  FormattedMessage: ({ defaultMessage, values = {} }: any) => (
-    <>{defaultMessage.replace(/\{(\w+)\}/g, (_: string, k: string) => String(values[k]))}</>
+  FormattedMessage: ({ defaultMessage, id, values = {} }: any) => (
+    <>{(defaultMessage ?? id).replace(/\{(\w+)\}/g, (_: string, k: string) => String(values[k]))}</>
   ),
 }));
 jest.mock('antd', () => {
@@ -81,6 +81,8 @@ jest.mock('@ant-design/pro-components', () => ({
     return (
       <section>
         {p.headerTitle}
+        {p.toolbar?.search}
+        {p.toolbar?.filter}
         {p.toolBarRender?.()}
         <button
           type='button'
@@ -135,7 +137,14 @@ describe('manager display settings page', () => {
       await mockTableProps.request({ current: 2, pageSize: 10 });
     });
     expect(mockList).toHaveBeenCalledWith(
-      { current: 2, pageSize: 10, datasetKind: 'all', visibility: 'all', query: '' },
+      {
+        current: 2,
+        pageSize: 10,
+        datasetKind: 'all',
+        visibility: 'all',
+        query: '',
+        classification: [],
+      },
       'en',
       true,
     );
@@ -250,15 +259,17 @@ describe('manager display settings page', () => {
   it('renders configured visibility and ignores disabled or stale action callbacks', async () => {
     const view = render(<Page />);
     const columns = mockTableProps.columns;
-    const visible = columns[4].render(null, { ...mockRow, isVisible: true });
+    const visible = columns
+      .find((c: any) => c.dataIndex === 'isVisible')
+      .render(null, { ...mockRow, isVisible: true });
     expect(render(visible).container).toHaveTextContent('Displayed');
-    await act(async () => mockTableProps.toolBarRender()[2].props.onClick());
+    await act(async () => mockTableProps.toolBarRender()[0].props.children[2].props.onClick());
     expect(mockSetDisplay).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Select row' }));
     const pending = deferred();
     mockSetDisplay.mockReturnValueOnce(pending.promise);
     fireEvent.click(screen.getByRole('button', { name: /Show selected \(1\)/ }));
-    await act(async () => mockTableProps.toolBarRender()[3].props.onClick());
+    await act(async () => mockTableProps.toolBarRender()[0].props.children[3].props.onClick());
     expect(mockSetDisplay).toHaveBeenCalledTimes(1);
     await act(async () => pending.resolve({ changedCount: 1, unchangedCount: 0 }));
     view.unmount();
@@ -317,3 +328,17 @@ describe('manager display settings page', () => {
     },
   );
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ onChange, value }: any) => (
+    <button
+      type='button'
+      data-testid='dataset-classification-filter'
+      data-value={JSON.stringify(value)}
+      onClick={() => onChange([{ scope: 'classification', code: 'C', path: ['C'] }])}
+    >
+      Filter classification
+    </button>
+  ),
+}));

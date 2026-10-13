@@ -1,4 +1,47 @@
+.responsive-data-list-viewport {
+  min-width: 0;
+  min-height: 0;
+
+  .responsive-data-list-table,
+  .responsive-data-list-card,
+  .responsive-data-list-card-body {
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .ant-table-body {
+    min-height: var(--data-list-body-height);
+  }
+
+  .responsive-data-list-table:fullscreen {
+    height: 100vh;
+  }
+}
+
 .responsive-data-list-table {
+  // ProTable does not expose sizing props for the two inner toolbar containers.
+  // Permit the native search control to shrink within a narrow card or drawer.
+  .responsive-data-list-toolbar
+    .ant-pro-table-list-toolbar-left:has(.ant-pro-table-list-toolbar-search) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .responsive-data-list-toolbar
+    .ant-pro-table-list-toolbar-left
+    .ant-pro-table-list-toolbar-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .responsive-data-list-toolbar
+    .ant-pro-table-list-toolbar-right
+    .ant-pro-table-list-toolbar-search {
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .responsive-data-list-cell-text {
     display: block;
     max-width: 100%;

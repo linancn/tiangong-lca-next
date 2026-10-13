@@ -1,3 +1,13 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import {
+  ResponsiveDataListViewport,
+  dataListPagination,
+  dataListTabProps,
+  getDataListToolbar,
+  orderDataListColumns,
+  responsiveDataListTableProps,
+} from '@/components/ResponsiveDataList';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
@@ -43,6 +53,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const myActionRefSelect = useRef<ActionType | undefined>(undefined);
   const teActionRefSelect = useRef<ActionType | undefined>(undefined);
   const intl = useIntl();
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
   const myRequestEpochRef = useRef(0);
@@ -54,6 +65,19 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     contentLanguageAwareTableParams.contentLanguage,
     [myRequestEpochRef, tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef],
   );
+  const onClassificationChange = (value: DatasetClassificationFilterValue[]) => {
+    myRequestEpochRef.current += 1;
+    tgRequestEpochRef.current += 1;
+    coRequestEpochRef.current += 1;
+    teRequestEpochRef.current += 1;
+    setClassification(value);
+    setSelectedRowKeys([]);
+    tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    coActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+  };
+
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -91,6 +115,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   };
 
   const onTabChange = async (key: string) => {
+    setSelectedRowKeys([]);
     const tabKey = key as DataTabKey;
     await setActiveTabKey(tabKey);
     if (tabKey === 'tg') {
@@ -112,24 +137,28 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
   const onCoSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
   const onMySearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
 
   const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    setSelectedRowKeys([]);
     await setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
@@ -275,239 +304,311 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const databaseList: Record<DataTabKey, ReactNode> = {
     my: (
       <>
-        <Card>
-          <Search
-            name={'my'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={myKeyWord}
-            onChange={handleMyKeyWordChange}
-            onSearch={onMySearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={myActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              myRequestEpochRef,
-              async () => {
-                if (myKeyWord.length > 0) {
-                  return unitgroup_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {},
-                    0,
-                  );
-                }
-                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'my', [], 0);
-              },
-            )
-          }
-          columns={unitGroupColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'my'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={myKeyWord}
+                    onChange={handleMyKeyWordChange}
+                    onSearch={onMySearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='unitgroup'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={myActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  myRequestEpochRef,
+                  async () => {
+                    if (myKeyWord.length > 0) {
+                      return unitgroup_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'my',
+                        myKeyWord,
+                        {},
+                        0,
+                      );
+                    }
+                    return getUnitGroupTableAll(params, sort, params.contentLanguage, 'my', [], 0);
+                  },
+                )
+              }
+              columns={orderDataListColumns(unitGroupColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     tg: (
       <>
-        <Card>
-          <Search
-            name={'tg'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={tgKeyWord}
-            onChange={handleTgKeyWordChange}
-            onSearch={onTgSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={tgActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              tgRequestEpochRef,
-              async () => {
-                if (tgKeyWord.length > 0) {
-                  return unitgroup_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  );
-                }
-                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'tg', []);
-              },
-            )
-          }
-          columns={unitGroupColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'tg'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={tgKeyWord}
+                    onChange={handleTgKeyWordChange}
+                    onSearch={onTgSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='unitgroup'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={tgActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  tgRequestEpochRef,
+                  async () => {
+                    if (tgKeyWord.length > 0) {
+                      return unitgroup_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'tg',
+                        tgKeyWord,
+                        {},
+                      );
+                    }
+                    return getUnitGroupTableAll(params, sort, params.contentLanguage, 'tg', []);
+                  },
+                )
+              }
+              columns={orderDataListColumns(unitGroupColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     co: (
       <>
-        <Card>
-          <Search
-            name={'co'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={coKeyWord}
-            onChange={handleCoKeyWordChange}
-            onSearch={onCoSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={coActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              coRequestEpochRef,
-              async () => {
-                if (coKeyWord.length > 0) {
-                  return unitgroup_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {},
-                  );
-                }
-                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'co', []);
-              },
-            )
-          }
-          columns={unitGroupColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'co'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={coKeyWord}
+                    onChange={handleCoKeyWordChange}
+                    onSearch={onCoSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='unitgroup'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={coActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  coRequestEpochRef,
+                  async () => {
+                    if (coKeyWord.length > 0) {
+                      return unitgroup_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'co',
+                        coKeyWord,
+                        {},
+                      );
+                    }
+                    return getUnitGroupTableAll(params, sort, params.contentLanguage, 'co', []);
+                  },
+                )
+              }
+              columns={orderDataListColumns(unitGroupColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
     te: (
       <>
-        <Card>
-          <Search
-            name={'te'}
-            size={'large'}
-            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-            value={teKeyWord}
-            onChange={handleTeKeyWordChange}
-            onSearch={onTeSearch}
-            enterButton
-          />
-        </Card>
-        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
-          className='tg-dataset-selector-table'
-          scroll={{ x: 'max-content' }}
-          actionRef={teActionRefSelect}
-          params={contentLanguageAwareTableParams}
-          search={false}
-          pagination={{
-            showSizeChanger: false,
-            pageSize: 10,
-          }}
-          request={async (
-            params: ContentLanguageAwareTableParams & {
-              pageSize?: number;
-              current?: number;
-            },
-            sort,
-          ) =>
-            guardLocaleMaterializedTableRequest(
-              params.contentLanguage,
-              () => currentContentLanguageRef.current,
-              teRequestEpochRef,
-              async () => {
-                if (teKeyWord.length > 0) {
-                  return unitgroup_hybrid_search(
-                    params,
-                    params.contentLanguage,
-                    'te',
-                    teKeyWord,
-                    {},
-                  );
-                }
-                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'te', '');
-              },
-            )
-          }
-          columns={unitGroupColumns}
-          tableAlertOptionRender={tableAlertOptionRender}
-          rowSelection={{
-            type: 'radio',
-            alwaysShowAlert: true,
-            selectedRowKeys,
-            onChange: onSelectChange,
-          }}
-        />
+        <ResponsiveDataListViewport>
+          {({ scroll }) => (
+            <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
+              {...responsiveDataListTableProps}
+              rowKey={(row) => `${row.id}:${row.version}`}
+              scroll={scroll}
+              toolbar={getDataListToolbar({
+                search: (
+                  <Search
+                    name={'te'}
+                    placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+                    value={teKeyWord}
+                    onChange={handleTeKeyWordChange}
+                    onSearch={onTeSearch}
+                    enterButton
+                  />
+                ),
+                filter: (
+                  <Space wrap>
+                    <DatasetClassificationFilter
+                      datasetKind='unitgroup'
+                      lang={lang}
+                      value={classification}
+                      onChange={onClassificationChange}
+                    />
+                  </Space>
+                ),
+              })}
+              className='responsive-data-list-table tg-dataset-selector-table'
+              actionRef={teActionRefSelect}
+              params={{ ...contentLanguageAwareTableParams, classification }}
+              search={false}
+              pagination={dataListPagination}
+              request={async (
+                params: ContentLanguageAwareTableParams & {
+                  pageSize?: number;
+                  current?: number;
+                },
+                sort,
+              ) =>
+                guardLocaleMaterializedTableRequest(
+                  params.contentLanguage,
+                  () => currentContentLanguageRef.current,
+                  teRequestEpochRef,
+                  async () => {
+                    if (teKeyWord.length > 0) {
+                      return unitgroup_hybrid_search(
+                        params,
+                        params.contentLanguage,
+                        'te',
+                        teKeyWord,
+                        {},
+                      );
+                    }
+                    return getUnitGroupTableAll(params, sort, params.contentLanguage, 'te', '');
+                  },
+                )
+              }
+              columns={orderDataListColumns(unitGroupColumns, {
+                dataType: (
+                  <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+                ),
+              })}
+              tableAlertOptionRender={tableAlertOptionRender}
+              rowSelection={{
+                type: 'radio',
+                alwaysShowAlert: true,
+                selectedRowKeys,
+                onChange: onSelectChange,
+              }}
+            />
+          )}
+        </ResponsiveDataListViewport>
       </>
     ),
   };
@@ -577,6 +678,8 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         <Card
           style={{ width: '100%' }}
           tabList={tabList}
+          tabProps={dataListTabProps}
+          styles={{ body: { padding: 0 } }}
           activeTabKey={activeTabKey}
           onTabChange={onTabChange}
         >

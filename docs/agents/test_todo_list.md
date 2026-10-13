@@ -25,10 +25,12 @@ checkPaths:
   - tsconfig*.json
   - jest.config.cjs
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - scripts/e2e/**
   - scripts/release/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - .github/workflows/i18n-semantic-e2e.yml
   - tests/**
   - scripts/test-runner.cjs
@@ -40,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: the review-footer behavior is covered in the existing component suites and does not add a testing backlog item.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: the dataset-list proof surface fits full-closure maintenance; add focused configuration check paths. The checked-in historical baseline is retained, and no current full-gate pass or new verified suite counts are asserted.'
 ---
 
 # Testing Execution State

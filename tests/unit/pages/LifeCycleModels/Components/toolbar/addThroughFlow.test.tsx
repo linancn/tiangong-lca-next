@@ -208,7 +208,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, params, request, rowSelection, columns }: any) => {
+  const ProTable = ({ actionRef, params, request, rowSelection, columns, toolbar }: any) => {
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
     const serializedParams = JSON.stringify(params ?? {});
@@ -225,7 +225,7 @@ jest.mock('@ant-design/pro-components', () => {
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
         const requestParams = mockOmitContentLanguageRequestParam
-          ? { pageSize: 10, current: 1 }
+          ? { pageSize: 10, current: 1, classification: paramsRef.current.classification }
           : { pageSize: 10, current: 1, ...paramsRef.current };
         await requestRef.current(requestParams, {});
       }
@@ -244,7 +244,12 @@ jest.mock('@ant-design/pro-components', () => {
       void reload();
     }, [reload, serializedParams]);
 
-    return <div data-testid='pro-table' />;
+    return (
+      <div data-testid='pro-table'>
+        {toolbar?.search}
+        {toolbar?.filter}
+      </div>
+    );
   };
 
   return {
@@ -262,6 +267,18 @@ beforeEach(() => {
 });
 
 describe('ModelToolbarAddThroughFlow', () => {
+  it('renders the localized flow type and missing metadata from the shared column order', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={jest.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    const dataTypeColumn = latestProTableProps.columns.find(
+      (column: any) => column.dataIndex === 'flowType',
+    );
+    const localized = dataTypeColumn.render(null, { flowType: 'Elementary flow' });
+    expect(localized.props.defaultMessage).toBe('Elementary flow');
+    expect(dataTypeColumn.render(null, { flowType: '' })).toBe('—');
+  });
+
   it('loads default TianGong flow list on open', async () => {
     mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
     const onData = jest.fn();
@@ -272,7 +289,7 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
     expect(mockGetFlowTableAll).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       {},
       'en',
       'tg',
@@ -289,7 +306,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'tg',
@@ -300,7 +317,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -327,7 +344,7 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await waitFor(() => expect(mockFlowHybridSearch).toHaveBeenCalled());
     expect(mockFlowHybridSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'tg',
       'hydrogen',
@@ -351,7 +368,7 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await waitFor(() => expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalled());
     expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'tg',
       'oxygen',
@@ -373,7 +390,7 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -388,7 +405,7 @@ describe('ModelToolbarAddThroughFlow', () => {
 
     await waitFor(() => expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalled());
     expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       'en',
       'my',
       'water',
@@ -410,7 +427,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalledTimes(3));
     expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       {},
       'en',
       'tg',
@@ -430,7 +447,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'my',
@@ -471,27 +488,33 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
     expect(await screen.findByRole('dialog', { name: 'Select Flow' })).toBeInTheDocument();
 
-    expect(latestProTableProps?.columns).toHaveLength(8);
-    const nameCell = latestProTableProps.columns[1].render(null, {
-      id: 'flow-1',
-      version: '01.00.000',
-      name: 'Hydrogen',
-      synonyms: 'H2',
-    });
+    expect(latestProTableProps?.columns).toHaveLength(9);
+    const nameCell = latestProTableProps.columns
+      .find((column: any) => column.dataIndex === 'name')
+      .render(null, {
+        id: 'flow-1',
+        version: '01.00.000',
+        name: 'Hydrogen',
+        synonyms: 'H2',
+      });
     expect(String(nameCell[0].props.children)).toContain('Hydrogen');
 
-    const optionCell = latestProTableProps.columns[7].render(null, {
-      id: 'flow-1',
-      version: '01.00.000',
-    });
+    const optionCell = latestProTableProps.columns
+      .find((column: any) => column.dataIndex === 'option')
+      .render(null, {
+        id: 'flow-1',
+        version: '01.00.000',
+      });
     expect(optionCell).toHaveLength(1);
 
     render(
       <>
-        {latestProTableProps.columns[5].render(null, {
-          id: 'flow-1',
-          version: '01.00.000',
-        })}
+        {latestProTableProps.columns
+          .find((column: any) => column.dataIndex === 'version')
+          .render(null, {
+            id: 'flow-1',
+            version: '01.00.000',
+          })}
       </>,
     );
     expect(screen.getByTestId('all-versions-flow-1')).toBeInTheDocument();
@@ -517,3 +540,23 @@ describe('ModelToolbarAddThroughFlow', () => {
     expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

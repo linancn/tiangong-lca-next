@@ -7,6 +7,11 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
+import { hasDatasetCatalogFilters, queryMappedDatasetCatalog } from '../datasetCatalog/api';
+import {
+  withDatasetClassification,
+  type DatasetTableParams,
+} from '../general/datasetClassification';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import type { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
@@ -269,10 +274,7 @@ export async function deleteContact(id: string, version: string) {
 }
 
 export async function getContactTableAll(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
@@ -280,11 +282,13 @@ export async function getContactTableAll(
   stateCode?: string | number,
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'contact',
+        filterCondition,
         filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
@@ -310,6 +314,24 @@ export async function getContactTableAll(
       data: [],
       success: true,
     });
+  }
+
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'contact',
+        dataSource,
+        filterCondition,
+        stateCode,
+        teamId,
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeContactSortBy(sortBy),
+        sortDirection: normalizeContactSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapContactListRows(rows, lang),
+    );
   }
 
   const result = await supabase.rpc('get_latest_contact_versions', {
@@ -351,19 +373,17 @@ export async function getContactTableAll(
 }
 
 export async function getContactTablePgroongaSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
   tid: string | [] = [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
@@ -425,15 +445,16 @@ export async function getContactTablePgroongaSearch(
 }
 
 export async function contact_hybrid_search(
-  params: { current?: number; pageSize?: number },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: unknown,
+  rawFilterCondition: unknown,
   stateCode?: string | number,
   tid: string | [] = [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
   return invokeFoundationHybridSearch({
     dataSource,
     filterCondition,
@@ -449,10 +470,7 @@ export async function contact_hybrid_search(
 }
 
 export async function getContactTableUuidMentionSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   uuid: string,
@@ -460,10 +478,12 @@ export async function getContactTableUuidMentionSearch(
   tid?: string | [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, {});
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'contact',
+        filterCondition,
         filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
@@ -475,6 +495,7 @@ export async function getContactTableUuidMentionSearch(
   }
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
+    filterCondition,
     pageCurrent: params.current,
     pageSize: params.pageSize,
     sourceEntityKinds: ['contact'],

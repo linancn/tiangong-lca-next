@@ -29,9 +29,11 @@ checkPaths:
   - tsconfig*.json
   - jest.config.cjs
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
@@ -42,9 +44,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused review-component tests cover the footer behavior; pre-push ownership, trigger policy, and gate thresholds are unchanged.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
+lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: dedicated synthetic dataset-list Chromium checks remain focused evidence outside the existing full gate and release qualification; add configuration check paths without changing trigger policy or thresholds.'
 ---
 
 # Pre-Push Gate Policy
