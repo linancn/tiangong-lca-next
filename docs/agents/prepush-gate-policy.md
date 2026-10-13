@@ -43,7 +43,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: afc33ff6d08804cd6fa3d022df2aa54c0dd304b0
+lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
 lastReviewedNote: 'Reviewed for Platform #1208: focused review-component tests cover the footer behavior; pre-push ownership and trigger policy are unchanged.'
 ---
 

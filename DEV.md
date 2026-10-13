@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-13
-lastReviewedCommit: afc33ff6d08804cd6fa3d022df2aa54c0dd304b0
+lastReviewedCommit: 35c916d3415e88c26301558f978a70c014889993
 lastReviewedNote: 'Reviewed for Platform #1208: the review-footer implementation uses the existing local commands and validation loop; bootstrap and development commands are unchanged.'
 ---
 

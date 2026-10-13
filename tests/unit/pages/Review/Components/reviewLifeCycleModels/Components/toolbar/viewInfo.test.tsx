@@ -1,6 +1,6 @@
 // @ts-nocheck
 import ToolbarViewInfo from '@/pages/Review/Components/reviewLifeCycleModels/Components/toolbar/viewInfo';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 let proFormApi: any = null;
@@ -87,9 +87,11 @@ jest.mock('@/pages/Review/Components/ReviewForm/view', () => ({
   default: ({ data }: any) => <div data-testid='review-view'>{JSON.stringify(data)}</div>,
 }));
 
+let mockRejectHandler: any = null;
 jest.mock('@/pages/Review/Components/RejectReview', () => ({
   __esModule: true,
   default: (props: any) => {
+    mockRejectHandler = props.onOk;
     return (
       <button
         type='button'
@@ -172,6 +174,7 @@ const toText = (node: any): string => {
   return '';
 };
 
+let mockTemporarySaveHandler: any = null;
 jest.mock('antd', () => {
   const React = require('react');
 
@@ -182,17 +185,20 @@ jest.mock('antd', () => {
 
   const App = { useApp: () => ({ message }) };
 
-  const Button = ({ children, onClick, disabled = false, icon, type }: any) => (
-    <button
-      type='button'
-      data-button-type={type}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
-    >
-      {icon}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, onClick, disabled = false, icon, type }: any) => {
+    if (toText(children) === 'Temporary Save') mockTemporarySaveHandler = onClick;
+    return (
+      <button
+        type='button'
+        data-button-type={type}
+        disabled={disabled}
+        onClick={disabled ? undefined : onClick}
+      >
+        {icon}
+        {toText(children)}
+      </button>
+    );
+  };
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
@@ -397,6 +403,8 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     proFormApi = null;
+    mockRejectHandler = null;
+    mockTemporarySaveHandler = null;
     mockGetUserDetail.mockResolvedValue({
       data: {
         contact: {
@@ -469,6 +477,26 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
           '@version': '1.0.0',
         },
       ),
+    );
+  });
+
+  it('keeps an existing validation review instead of replacing it with a default row', async () => {
+    renderComponent({
+      data: {
+        ...baseData,
+        modellingAndValidation: {
+          ...baseData.modellingAndValidation,
+          validation: { review: [{ id: 'existing-review' }] },
+        },
+      },
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
+
+    expect(proFormApi.setFieldValue).not.toHaveBeenCalledWith(
+      ['modellingAndValidation', 'validation', 'review'],
+      [{ 'common:scope': [{}] }],
     );
   });
 
@@ -583,6 +611,33 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     expect(onReviewComplete).toHaveBeenCalled();
   });
 
+  it('keeps the model review open when temporary save fails', async () => {
+    mockSaveReviewCommentDraftApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('draft failed'),
+    });
+    const { actionRef, onReviewComplete } = renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'Temporary Save' }));
+
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Action failed'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(onReviewComplete).not.toHaveBeenCalled();
+  });
+
+  it('ignores duplicate model temporary-save requests', async () => {
+    renderComponent();
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    await act(async () => {
+      await Promise.all([mockTemporarySaveHandler(), mockTemporarySaveHandler()]);
+    });
+
+    expect(mockSaveReviewCommentDraftApi).toHaveBeenCalledTimes(1);
+  });
+
   it('submits a reviewer rejection with the current model opinion metadata', async () => {
     const { actionRef, onReviewComplete } = renderComponent();
 
@@ -628,6 +683,20 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     expect(onReviewComplete).not.toHaveBeenCalled();
   });
 
+  it('ignores duplicate model rejection requests', async () => {
+    renderComponent();
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    await act(async () => {
+      await Promise.all([
+        mockRejectHandler('Need model repair'),
+        mockRejectHandler('Need model repair'),
+      ]);
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledTimes(1);
+  });
+
   it('submits the review when reference checks pass', async () => {
     const { actionRef } = renderComponent();
 
@@ -646,6 +715,33 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
     });
     expect(mockMessage.success).toHaveBeenCalledWith('Review submitted successfully');
     expect(actionRef.current.reload).toHaveBeenCalled();
+  });
+
+  it('keeps the model review open when approval submission fails', async () => {
+    mockSubmitReviewCommentApi.mockResolvedValueOnce({
+      data: [],
+      error: new Error('submit failed'),
+    });
+    const { actionRef, onReviewComplete } = renderComponent();
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Action failed'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(actionRef.current.reload).not.toHaveBeenCalled();
+    expect(onReviewComplete).not.toHaveBeenCalled();
+  });
+
+  it('ignores duplicate model approval submissions', async () => {
+    renderComponent();
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    await act(async () => {
+      await Promise.all([proFormApi.submit(), proFormApi.submit()]);
+    });
+
+    expect(mockSubmitReviewCommentApi).toHaveBeenCalledTimes(1);
   });
 
   it('blocks submit when reference checks report under-review items', async () => {
