@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: dataset-list UI and classification request changes remain frontend-owned; add the focused browser configuration check paths. Branch, authorization, release and full-gate contracts are unchanged.'
+lastReviewedCommit: 8a04000b497e72a5512f2f5653f96357d9febfb2
+lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader tests await observable close completion under the existing strict act-warning guard. Runtime, dependency, branch, release and full-gate contracts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
