@@ -110,6 +110,12 @@ describe('responsive surface evidence contract', () => {
     const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
     const keyboardActivation = helperSource.indexOf("await target.press('Enter')");
     const localeWriteWait = helperSource.indexOf('await page.waitForFunction(');
+    const scopedTriggerToggle = helperSource.indexOf('await trigger.evaluate(', localeWriteWait);
+    const nativeOpenCheck = helperSource.indexOf(
+      "localeTrigger.classList.contains('ant-dropdown-open')",
+      scopedTriggerToggle,
+    );
+    const scopedTriggerClick = helperSource.indexOf('localeTrigger.click()', nativeOpenCheck);
     const scopedMenuClosedWait = helperSource.indexOf('    activeMenu,\n    0,');
     expect(spinnerWait).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait);
@@ -120,7 +126,11 @@ describe('responsive surface evidence contract', () => {
     expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
     expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
     expect(localeWriteWait).toBeGreaterThan(keyboardActivation);
-    expect(scopedMenuClosedWait).toBeGreaterThan(localeWriteWait);
+    expect(scopedTriggerToggle).toBeGreaterThan(localeWriteWait);
+    expect(nativeOpenCheck).toBeGreaterThan(scopedTriggerToggle);
+    expect(scopedTriggerClick).toBeGreaterThan(nativeOpenCheck);
+    expect(scopedMenuClosedWait).toBeGreaterThan(scopedTriggerClick);
+    expect(helperSource).not.toContain('if ((await activeMenu.count())');
     expect(helperSource).not.toContain('page.keyboard.press(');
     expect(helperSource).not.toContain('document.querySelectorAll');
     expect(helperSource).not.toContain('document.querySelector<HTMLElement>');

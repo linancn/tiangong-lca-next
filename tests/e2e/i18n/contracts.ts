@@ -490,8 +490,12 @@ export async function selectAppLocaleThroughUi(
     key: MANUAL_LOCALE_STORAGE_KEY,
     value: locale,
   });
-  // The native locale item closes its own dropdown. Scope the completion check to that menu;
-  // global Escape would also dismiss an unrelated mounted Drawer or Modal.
+  // A closing popup remains visible during native leave motion. Check the trigger's actual
+  // open state atomically so cleanup cannot reopen it or dismiss an unrelated overlay.
+  await trigger.evaluate((element) => {
+    const localeTrigger = element as HTMLElement;
+    if (localeTrigger.classList.contains('ant-dropdown-open')) localeTrigger.click();
+  });
   await waitForLocatorCount(
     page,
     activeMenu,
