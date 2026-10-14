@@ -468,13 +468,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     ...initialState?.settings,
-    collapsedButtonRender: (_, defaultDom) =>
+    collapsedButtonRender: (collapsed, defaultDom) =>
       renderAccessibleCollapsedButton(
         formatMessage({
           id: 'app.setting.navigationmode',
           defaultMessage: 'Navigation Mode',
         }),
         defaultDom,
+        collapsed,
       ),
     title: brandProfile.presentation?.navigationTitle ?? appTitle,
   };

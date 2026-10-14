@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
-lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
+lastReviewedCommit: 732b55351e9b2b19391ebbacf2885d481e3fba85
+lastReviewedNote: 'Reviewed Platform #1229 against Dev732b55351e9b2b19391ebbacf2885d481e3fba85: preserve the native ProLayout collapse element and layout ownership while adding accessible keyboard/state decoration. Real installed-component and registry-driven browser geometry tests cover collapse, expansion and mobile navigation; existing ownership, gate thresholds, locale capabilities and release policy remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

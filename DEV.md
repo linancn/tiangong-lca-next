@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
-lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
+lastReviewedCommit: 732b55351e9b2b19391ebbacf2885d481e3fba85
+lastReviewedNote: 'Reviewed Platform #1229 native sidebar collapse repair against Dev732b55351: existing serial Umi build/test workflow, isolated qualification configuration and supported native layout presets remain applicable; no bootstrap, dependency or release command changes.'
 ---
 
 # Development Bootstrap
