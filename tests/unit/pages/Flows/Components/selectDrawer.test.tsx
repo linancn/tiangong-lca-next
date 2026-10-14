@@ -117,6 +117,8 @@ jest.mock('@ant-design/pro-components', () => {
     return (
       <div data-testid={`pro-table-${proTableInstances.length - 1}`}>
         {toolbar}
+        {props.toolbar?.search}
+        {props.toolbar?.filter}
         {(props.columns || []).map((col: any, index: number) => {
           if (typeof col.render !== 'function') return null;
           return (
@@ -215,3 +217,23 @@ describe('FlowsSelectDrawer (src/pages/Flows/Components/select/drawer.tsx)', () 
     expect(screen.getByTestId('flows-create')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

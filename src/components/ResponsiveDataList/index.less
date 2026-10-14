@@ -1,4 +1,104 @@
+.responsive-data-list-viewport {
+  min-width: 0;
+  min-height: 0;
+
+  .responsive-data-list-table,
+  .responsive-data-list-card,
+  .responsive-data-list-card-body {
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .ant-table-body {
+    min-height: var(--data-list-body-height);
+  }
+
+  .responsive-data-list-table:fullscreen {
+    height: 100vh;
+  }
+}
+
 .responsive-data-list-table {
+  .responsive-data-list-toolbar {
+    // Native ProTable exposes the controls but no sizing props for its inner flex containers.
+    // Keep controls at their natural width and give the remaining row to contextual search.
+    .ant-pro-table-list-toolbar-container {
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .ant-pro-table-list-toolbar-left {
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 100%;
+      margin-block-end: 0;
+
+      &:has(.ant-pro-table-list-toolbar-search) {
+        flex: 1 1 180px;
+        width: auto;
+        max-width: 100%;
+      }
+
+      .ant-pro-table-list-toolbar-search {
+        width: 100%;
+      }
+    }
+
+    .ant-pro-table-list-toolbar-search {
+      flex: 1 1 180px;
+      width: auto;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .ant-pro-table-list-toolbar-right {
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 100%;
+      align-items: center;
+
+      &:has(.ant-pro-table-list-toolbar-search) {
+        flex: 1 1 180px;
+      }
+
+      > .ant-pro-table-list-toolbar-filter {
+        min-width: 0;
+        max-width: 100%;
+        margin-inline-end: 0;
+      }
+
+      // The native action wrapper is an inline-styled div; permit its controls to wrap too.
+      > div:not(.ant-pro-table-list-toolbar-setting-items) {
+        max-width: 100%;
+        flex-wrap: wrap;
+      }
+
+      > .ant-pro-table-list-toolbar-setting-items {
+        flex: 0 0 auto;
+      }
+    }
+
+    .ant-pro-table-list-toolbar-container-mobile {
+      align-items: stretch;
+
+      > .ant-pro-table-list-toolbar-left,
+      > .ant-pro-table-list-toolbar-right {
+        width: 100%;
+      }
+
+      > .ant-pro-table-list-toolbar-right {
+        justify-content: flex-start;
+      }
+
+      > .ant-pro-table-list-toolbar-left:has(.ant-pro-table-list-toolbar-search) {
+        flex: 0 1 auto;
+        max-width: 100%;
+      }
+    }
+  }
+
   .responsive-data-list-cell-text {
     display: block;
     max-width: 100%;
@@ -53,6 +153,27 @@
 }
 
 @media (max-width: 768px) {
+  .responsive-data-list-table .responsive-data-list-toolbar {
+    .ant-pro-table-list-toolbar-container {
+      align-items: stretch;
+    }
+
+    .ant-pro-table-list-toolbar-left,
+    .ant-pro-table-list-toolbar-right {
+      width: 100%;
+    }
+
+    .ant-pro-table-list-toolbar-right {
+      justify-content: flex-start;
+    }
+
+    .ant-pro-table-list-toolbar-left:has(.ant-pro-table-list-toolbar-search) {
+      flex: 0 1 auto;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
   .responsive-data-list-search-card {
     margin-bottom: 16px;
 

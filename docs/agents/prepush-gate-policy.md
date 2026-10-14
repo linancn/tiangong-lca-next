@@ -29,9 +29,11 @@ checkPaths:
   - tsconfig*.json
   - jest.config.cjs
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
@@ -42,9 +44,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused review-component tests cover the footer behavior; pre-push ownership, trigger policy, and gate thresholds are unchanged.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 ---
 
 # Pre-Push Gate Policy

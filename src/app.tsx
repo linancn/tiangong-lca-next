@@ -5,7 +5,6 @@ import {
   AvatarName,
   DarkMode,
   ExportTidasPackage,
-  Footer,
   HeaderActionIcon,
   ImportTidasPackage,
   LcaTaskCenter,
@@ -358,7 +357,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             },
           }
         : undefined,
-    footerRender: maintenanceActive ? undefined : () => <Footer />,
+    footerRender: false,
     onPageChange: () => {
       if (maintenanceActive) {
         return;

@@ -1,5 +1,9 @@
+import { flowTypeOptions } from '@/pages/Flows/Components/optiondata';
+import { processtypeOfDataSetOptions } from '@/pages/Processes/Components/optiondata';
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import { useEffect, useRef, useState, type Key } from 'react';
-import { App, Button, Card, Input, Result, Select, Row, Col, Tag, theme } from 'antd';
+import { App, Button, Input, Result, Select, Space, Tag, Tooltip } from 'antd';
 import {
   PageContainer,
   ProTable,
@@ -11,9 +15,10 @@ import DatasetKindFilter, { datasetKindMessage } from '@/components/DatasetKindF
 import {
   dataListIndexColumn,
   responsiveDataListTableProps,
-  responsiveSearchCardClassName,
-  responsiveSearchRowProps,
-  responsiveSearchPrimaryColProps,
+  ResponsiveDataListViewport,
+  dataListPagination,
+  getDataListToolbar,
+  orderDataListColumns,
 } from '@/components/ResponsiveDataList';
 import { getLang } from '@/services/general/util';
 import {
@@ -27,7 +32,6 @@ import {
 
 export default function DatasetDisplaySettings() {
   const intl = useIntl();
-  const { token } = theme.useToken();
   const lang = getLang(intl.locale);
   const { message, modal } = App.useApp();
   const { initialState } = useModel('@@initialState');
@@ -36,6 +40,7 @@ export default function DatasetDisplaySettings() {
   const epoch = useRef(0);
   const mounted = useRef(true);
   const [datasetKind, setDatasetKind] = useState<Kind>('all');
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const [visibility, setVisibility] = useState<VisibilityFilter>('all');
   const [query, setQuery] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
@@ -112,13 +117,41 @@ export default function DatasetDisplaySettings() {
       search: false,
     },
     {
+      dataIndex: 'location',
+      title: <FormattedMessage id='pages.process.location' />,
+    },
+    {
+      dataIndex: 'referenceYear',
+      title: <FormattedMessage id='pages.process.referenceYear' />,
+    },
+    {
       dataIndex: 'datasetKind',
       title: (
         <FormattedMessage id='pages.datasetUuidMention.entityKind' defaultMessage='Data type' />
       ),
       width: 150,
       search: false,
-      render: (_, row) => intl.formatMessage(datasetKindMessage(row.datasetKind)),
+      render: (_, row) => {
+        const options =
+          row.datasetKind === 'process'
+            ? processtypeOfDataSetOptions
+            : row.datasetKind === 'flow'
+              ? flowTypeOptions
+              : [];
+        const subtype =
+          options.find((option) => option.value === row.typeOfDataSet)?.label ?? row.typeOfDataSet;
+        const content = (
+          <>
+            {intl.formatMessage(datasetKindMessage(row.datasetKind))}
+            {subtype ? <> · {subtype}</> : null}
+          </>
+        );
+        return (
+          <Tooltip title={content} placement='topLeft'>
+            <span>{content}</span>
+          </Tooltip>
+        );
+      },
     },
     {
       dataIndex: 'isVisible',
@@ -137,161 +170,178 @@ export default function DatasetDisplaySettings() {
   ];
   return (
     <PageContainer header={{ breadcrumb: {}, title: false }}>
-      <Card className={responsiveSearchCardClassName} style={{ marginBottom: 0 }}>
-        <Row
-          {...responsiveSearchRowProps}
-          // Match the catalog search row height without adding its optional controls.
-          style={{ minHeight: token.fontSize * token.lineHeight * 2 }}
-        >
-          <Col {...responsiveSearchPrimaryColProps} style={{ marginRight: 0, marginBottom: 0 }}>
-            <Input.Search
-              size='large'
-              aria-label={intl.formatMessage({
-                id: 'pages.datasetDisplay.search',
-                defaultMessage: 'Search by name or UUID',
-              })}
-              placeholder={intl.formatMessage({
-                id: 'pages.datasetDisplay.search',
-                defaultMessage: 'Search by name or UUID',
-              })}
-              allowClear
-              disabled={pending}
-              maxLength={128}
-              enterButton
-              onSearch={(value) => {
-                epoch.current += 1;
-                clearSelection();
-                setQuery(value.trim());
-                actionRef.current?.reloadAndRest?.();
-              }}
-            />
-          </Col>
-        </Row>
-      </Card>
-      <ProTable<DatasetDisplayRow>
-        {...responsiveDataListTableProps}
-        actionRef={actionRef}
-        columns={columns}
-        headerTitle={
-          <FormattedMessage id='pages.datasetDisplay.settings' defaultMessage='Display settings' />
-        }
-        options={{ fullScreen: true }}
-        pagination={{ pageSize: 10, showSizeChanger: false }}
-        params={{ datasetKind, visibility, query, locale: intl.locale }}
-        rowKey={datasetDisplayKey}
-        search={false}
-        request={async (params) => {
-          const token = ++epoch.current;
-          const result = await listDatasetDisplay(
-            {
-              current: params.current,
-              pageSize: params.pageSize,
-              datasetKind,
-              visibility,
-              query,
-            },
-            lang,
-            true,
-          ).catch(() => ({ data: [], success: false, total: 0 }));
-          if (!mounted.current || epoch.current !== token)
-            return { data: [], success: false, total: 0 };
-          if (result.success) return result;
-          clearSelection();
-          modal.error({
-            title: intl.formatMessage({
-              id: 'pages.datasetDisplay.loadError',
-              defaultMessage: 'Failed to load datasets. Please refresh.',
-            }),
-          });
-          // ProTable retains prior rows when success is false. Report the error above,
-          // then let the table consume the empty result and reset its total.
-          return { data: [], success: true, total: 0 };
-        }}
-        rowSelection={{
-          selectedRowKeys: selectedKeys,
-          preserveSelectedRowKeys: false,
-          onChange: (keys, rows) => {
-            setSelectedKeys(keys);
-            setSelectedRows(rows);
-          },
-          getCheckboxProps: () => ({ disabled: pending }),
-        }}
-        onChange={() => clearSelection()}
-        toolBarRender={() => [
-          <DatasetKindFilter
-            key='kind'
-            value={datasetKind}
-            disabled={pending}
-            onChange={(kind) => {
-              epoch.current += 1;
-              clearSelection();
-              setDatasetKind(kind);
-            }}
-          />,
-          <Select<VisibilityFilter>
-            key='visibility'
-            aria-label={intl.formatMessage({
-              id: 'pages.datasetDisplay.visibility',
-              defaultMessage: 'Visibility',
+      <ResponsiveDataListViewport columns={columns}>
+        {({ scroll }) => (
+          <ProTable<DatasetDisplayRow>
+            {...responsiveDataListTableProps}
+            scroll={scroll}
+            toolbar={getDataListToolbar({
+              search: (
+                <Input.Search
+                  style={{ width: '100%' }}
+                  aria-label={intl.formatMessage({
+                    id: 'pages.datasetDisplay.search',
+                    defaultMessage: 'Search by name or UUID',
+                  })}
+                  placeholder={intl.formatMessage({
+                    id: 'pages.datasetDisplay.search',
+                    defaultMessage: 'Search by name or UUID',
+                  })}
+                  allowClear
+                  disabled={pending}
+                  maxLength={128}
+                  enterButton
+                  onSearch={(value) => {
+                    epoch.current += 1;
+                    clearSelection();
+                    setQuery(value.trim());
+                    actionRef.current?.reloadAndRest?.();
+                  }}
+                />
+              ),
+              filter:
+                datasetKind === 'all' ? undefined : (
+                  <DatasetClassificationFilter
+                    datasetKind={datasetKind}
+                    lang={lang}
+                    value={classification}
+                    onChange={(next) => {
+                      epoch.current += 1;
+                      setClassification(next);
+                      clearSelection();
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                ),
             })}
-            style={{ minWidth: 150 }}
-            value={visibility}
-            disabled={pending}
-            options={[
-              {
-                value: 'all',
-                label: intl.formatMessage({
-                  id: 'pages.datasetDisplay.allVisibility',
-                  defaultMessage: 'All',
-                }),
-              },
-              {
-                value: 'visible',
-                label: intl.formatMessage({
-                  id: 'pages.datasetDisplay.visible',
-                  defaultMessage: 'Displayed',
-                }),
-              },
-              {
-                value: 'hidden',
-                label: intl.formatMessage({
-                  id: 'pages.datasetDisplay.hidden',
-                  defaultMessage: 'Not displayed',
-                }),
-              },
-            ]}
-            onChange={(value) => {
-              epoch.current += 1;
+            actionRef={actionRef}
+            columns={orderDataListColumns(columns)}
+            headerTitle={false}
+            options={{ fullScreen: true }}
+            pagination={dataListPagination}
+            params={{ datasetKind, visibility, query, classification, locale: intl.locale }}
+            rowKey={datasetDisplayKey}
+            search={false}
+            request={async (params) => {
+              const token = ++epoch.current;
+              const result = await listDatasetDisplay(
+                {
+                  current: params.current,
+                  pageSize: params.pageSize,
+                  datasetKind,
+                  classification,
+                  visibility,
+                  query,
+                },
+                lang,
+                true,
+              ).catch(() => ({ data: [], success: false, total: 0 }));
+              if (!mounted.current || epoch.current !== token)
+                return { data: [], success: false, total: 0 };
+              if (result.success) return result;
               clearSelection();
-              setVisibility(value);
+              modal.error({
+                title: intl.formatMessage({
+                  id: 'pages.datasetDisplay.loadError',
+                  defaultMessage: 'Failed to load datasets. Please refresh.',
+                }),
+              });
+              // ProTable retains prior rows when success is false. Report the error above,
+              // then let the table consume the empty result and reset its total.
+              return { data: [], success: true, total: 0 };
             }}
-          />,
-          <Button
-            key='show'
-            type='primary'
-            loading={pending}
-            disabled={!selectedRows.length || pending}
-            onClick={() => void change(true)}
-          >
-            <FormattedMessage
-              id='pages.datasetDisplay.showSelected'
-              defaultMessage='Show selected ({count})'
-              values={{ count: selectedRows.length }}
-            />
-          </Button>,
-          <Button
-            key='hide'
-            disabled={!selectedRows.length || pending}
-            onClick={() => void change(false)}
-          >
-            <FormattedMessage
-              id='pages.datasetDisplay.hideSelected'
-              defaultMessage='Hide selected ({count})'
-              values={{ count: selectedRows.length }}
-            />
-          </Button>,
-        ]}
-      />
+            rowSelection={{
+              selectedRowKeys: selectedKeys,
+              preserveSelectedRowKeys: false,
+              onChange: (keys, rows) => {
+                setSelectedKeys(keys);
+                setSelectedRows(rows);
+              },
+              getCheckboxProps: () => ({ disabled: pending }),
+            }}
+            onChange={() => clearSelection()}
+            toolBarRender={() => [
+              <Space key='display-actions' wrap>
+                {[
+                  <DatasetKindFilter
+                    key='kind'
+                    value={datasetKind}
+                    disabled={pending}
+                    onChange={(kind) => {
+                      epoch.current += 1;
+                      clearSelection();
+                      setClassification([]);
+                      setDatasetKind(kind);
+                    }}
+                  />,
+                  <Select<VisibilityFilter>
+                    key='visibility'
+                    aria-label={intl.formatMessage({
+                      id: 'pages.datasetDisplay.visibility',
+                      defaultMessage: 'Visibility',
+                    })}
+                    style={{ minWidth: 150 }}
+                    value={visibility}
+                    disabled={pending}
+                    options={[
+                      {
+                        value: 'all',
+                        label: intl.formatMessage({
+                          id: 'pages.datasetDisplay.allVisibility',
+                          defaultMessage: 'All',
+                        }),
+                      },
+                      {
+                        value: 'visible',
+                        label: intl.formatMessage({
+                          id: 'pages.datasetDisplay.visible',
+                          defaultMessage: 'Displayed',
+                        }),
+                      },
+                      {
+                        value: 'hidden',
+                        label: intl.formatMessage({
+                          id: 'pages.datasetDisplay.hidden',
+                          defaultMessage: 'Not displayed',
+                        }),
+                      },
+                    ]}
+                    onChange={(value) => {
+                      epoch.current += 1;
+                      clearSelection();
+                      setVisibility(value);
+                    }}
+                  />,
+                  <Button
+                    key='show'
+                    type='primary'
+                    loading={pending}
+                    disabled={!selectedRows.length || pending}
+                    onClick={() => void change(true)}
+                  >
+                    <FormattedMessage
+                      id='pages.datasetDisplay.showSelected'
+                      defaultMessage='Show selected ({count})'
+                      values={{ count: selectedRows.length }}
+                    />
+                  </Button>,
+                  <Button
+                    key='hide'
+                    disabled={!selectedRows.length || pending}
+                    onClick={() => void change(false)}
+                  >
+                    <FormattedMessage
+                      id='pages.datasetDisplay.hideSelected'
+                      defaultMessage='Hide selected ({count})'
+                      values={{ count: selectedRows.length }}
+                    />
+                  </Button>,
+                ]}
+              </Space>,
+            ]}
+          />
+        )}
+      </ResponsiveDataListViewport>
     </PageContainer>
   );
 }

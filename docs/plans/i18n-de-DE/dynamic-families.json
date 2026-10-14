@@ -783,7 +783,7 @@
       "api": "formatMessage",
       "count": 1,
       "file": "src/pages/DisplayedDatasets/index.tsx",
-      "expression": "datasetKindMessage(record.datasetKind)",
+      "expression": "datasetKindMessage(row.datasetKind)",
       "family": "datasetDisplayKinds"
     },
     {

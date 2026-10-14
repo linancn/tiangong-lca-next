@@ -386,7 +386,11 @@ export function normalizeMethodFactorCoverageMatrix(
 ): LciaMethodFactorCoverageMatrix<
   LcaUncharacterizedEvidenceArtifactV1 | LcaUncharacterizedEvidenceArtifactV2
 > | null {
-  if (!isRecord(raw) || raw.schema_version !== 'lcia.method_factor_coverage.matrix.v1') {
+  if (
+    !isRecord(raw) ||
+    (raw.schema_version !== 'lcia.method_factor_coverage.matrix.v1' &&
+      !(artifactVersion === 'v2' && raw.schema_version === 'lcia.method_factor_coverage.matrix.v2'))
+  ) {
     return null;
   }
   const sourceSnapshotSha256 = normalizeSha256(raw.source_snapshot_sha256);
@@ -403,7 +407,9 @@ export function normalizeMethodFactorCoverageMatrix(
       : artifactVersion === 'v2'
         ? normalizeArtifact<LcaUncharacterizedEvidenceArtifactV2>(
             raw.uncharacterized_evidence,
-            'lcia-uncharacterized-jsonl:v2',
+            raw.schema_version === 'lcia.method_factor_coverage.matrix.v2'
+              ? 'lcia-coverage-replay-snapshot:v1'
+              : 'lcia-uncharacterized-jsonl:v2',
           )
         : normalizeArtifact<LcaUncharacterizedEvidenceArtifactV1>(
             raw.uncharacterized_evidence,
@@ -505,7 +511,7 @@ export function normalizeMethodFactorCoverageMatrix(
   }
 
   return {
-    schema_version: 'lcia.method_factor_coverage.matrix.v1',
+    schema_version: raw.schema_version,
     source_snapshot_sha256: sourceSnapshotSha256,
     method_manifest_sha256: methodManifestSha256,
     method_identity_manifest_sha256: methodIdentityManifestSha256,

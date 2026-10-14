@@ -434,6 +434,28 @@ describe('reviewed LCIA calculation and evidence', () => {
     });
   });
 
+  it('accepts replay coverage without treating a snapshot as a legacy gap file', () => {
+    const matrix = completeMatrix() as LciaMethodFactorCoverageMatrix<any>;
+    matrix.schema_version = 'lcia.method_factor_coverage.matrix.v2';
+    matrix.coverage_status = 'incomplete_coverage';
+    matrix.counts = { ...emptyCounts(), matched: methods.length - 1, unmatched: 1 };
+    matrix.by_method[0].counts = { ...emptyCounts(), unmatched: 1 };
+    matrix.uncharacterized_evidence = {
+      artifact_url: 's3://private/release.json.zst',
+      artifact_format: 'lcia-coverage-replay-snapshot:v1',
+      artifact_sha256: 'e'.repeat(64),
+      record_count: 1,
+    };
+    expect(resolveServiceLciaStatus(evidence(matrix), undefined).status).toBe(
+      'incomplete_coverage',
+    );
+    expect(normalizeMethodFactorCoverageMatrix(matrix)).toBeNull();
+    matrix.schema_version = 'lcia.method_factor_coverage.matrix.v1';
+    expect(resolveServiceLciaStatus(evidence(matrix), undefined).status).toBe(
+      'method_source_drift',
+    );
+  });
+
   it('rejects a conflicting parallel matrix and round-trips static report evidence', async () => {
     const matrix = completeMatrix();
     const conflicting = { ...matrix, factor_manifest_sha256: 'f'.repeat(64) };

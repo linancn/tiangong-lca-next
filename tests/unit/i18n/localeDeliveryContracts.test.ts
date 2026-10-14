@@ -42,6 +42,90 @@ describe('shared locale delivery contracts', () => {
     ).toContain('"artifactGenerations":2');
   }, 190_000);
 
+  it('binds dataset route markers to shared table copy without requiring removed titles or placeholder input text', () => {
+    const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
+    const baseMarkers = [
+      'pages.table.title.index',
+      'pages.table.title.name',
+      'pages.process.location',
+      'pages.process.referenceYear',
+      'pages.table.filter.all.datasetType',
+      'pages.table.title.version',
+    ];
+    const listFamilyIds = [
+      'lifecycle-model-lists',
+      'process-lists',
+      'flow-lists',
+      'flow-property-lists',
+      'unit-group-lists',
+      'source-lists',
+      'contact-lists',
+    ];
+    const datasetFamilies = coverage.routeFamilies.filter(({ id }: any) =>
+      [...listFamilyIds, 'section-redirects', 'displayed-datasets'].includes(id),
+    );
+    expect(datasetFamilies).toHaveLength(9);
+    for (const family of datasetFamilies.filter(({ id }: any) => listFamilyIds.includes(id))) {
+      expect(family.routes).toHaveLength(5);
+      expect(family.pageOwnedMessageIds).toContain('pages.table.title.classification');
+    }
+    for (const family of datasetFamilies) {
+      expect(family.copySources.sourcePaths).toEqual(
+        expect.arrayContaining([
+          'src/components/ResponsiveDataList/index.tsx',
+          'src/components/DatasetClassificationFilter/index.tsx',
+        ]),
+      );
+      expect(family.pageOwnedMessageIds).toEqual(expect.arrayContaining(baseMarkers));
+      for (const route of family.routes) {
+        const target = coverage.executableTargets[family.executableAssertionIds[route]];
+        expect(target.session).toBe('authenticated');
+        expect(target.navigate.hashPath).toBe(route);
+        expect(target.expected.hashPath).toBe(
+          family.id === 'section-redirects' ? `${route}/models` : route,
+        );
+        expect(target.visible).not.toHaveProperty('separator');
+        expect(target.visible.messageIds).toEqual(expect.arrayContaining(baseMarkers));
+        expect(target.visible.messageIds.some((id: string) => id.startsWith('menu.'))).toBe(false);
+        expect(target.visible.messageIds).not.toContain('pages.datasetDisplay.title');
+        expect(target.visible.messageIds).not.toContain('pages.datasetUuidMention.entityKind');
+        expect(target.visible.messageIds).not.toContain('pages.search.keyWord');
+        expect(family.pageOwnedMessageIds).not.toContain('pages.search.keyWord');
+      }
+    }
+    const managerFamily = coverage.routeFamilies.find(
+      ({ id }: any) => id === 'dataset-display-settings',
+    );
+    expect(managerFamily.pageOwnedMessageIds).toEqual(
+      expect.arrayContaining([
+        ...baseMarkers,
+        'pages.datasetDisplay.visibility',
+        'pages.datasetDisplay.showSelected',
+        'pages.datasetDisplay.hideSelected',
+      ]),
+    );
+    expect(managerFamily.pageOwnedMessageIds).not.toContain('pages.datasetDisplay.settings');
+    expect(managerFamily.copySources.sourcePaths).toContain(
+      'src/components/ResponsiveDataList/index.tsx',
+    );
+    expect(coverage.executableTargets['rv.dataset-display-settings']).toEqual(
+      expect.objectContaining({
+        kind: 'role-boundary',
+        session: 'authenticated',
+        boundary: {
+          selector: "[data-testid='access-denied']",
+          messageIds: ['pages.accessDenied.message'],
+        },
+      }),
+    );
+    expect(coverage.executableTargets['rv.section-redirects.user']).toEqual(
+      expect.objectContaining({
+        session: 'anonymous',
+        visible: { kind: 'locale-messages', messageIds: ['pages.login.login.tab'] },
+      }),
+    );
+  });
+
   it('covers every registry locale and mandatory route view without granting anonymous access', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);

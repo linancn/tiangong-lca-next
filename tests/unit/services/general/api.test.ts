@@ -1410,6 +1410,212 @@ describe('publishDatasetApi', () => {
 });
 
 describe('getAllVersions', () => {
+  const classification = [{ scope: 'classification' as const, code: 'C' }];
+
+  it('sends supported ascending date sorting to the filtered full-version query', async () => {
+    const rows = [
+      { version: '01.00.003', created_at: '2026-10-01T00:00:00Z' },
+      { version: '01.00.001', created_at: '2026-10-02T00:00:00Z' },
+    ];
+    mockRpc.mockResolvedValueOnce({
+      data: rows.map((row) => ({
+        ...row,
+        id: sampleId,
+        total_count: 12,
+        state_code: 100,
+        json: { contactDataSet: { contactInformation: { dataSetInformation: {} } } },
+      })),
+      error: null,
+    });
+
+    const result = await generalApi.getAllVersions(
+      '',
+      'contacts',
+      sampleId,
+      { current: 2, pageSize: 2, classification },
+      { createdAt: 'ascend' },
+      'en',
+      'tg',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_dataset_kind: 'contact',
+        p_data_source: 'tg',
+        p_filter_condition: { classification, datasetId: sampleId },
+        p_version_scope: 'all',
+        p_page_current: 2,
+        p_page_size: 2,
+        p_sort_by: 'created_at',
+        p_sort_direction: 'asc',
+      }),
+    );
+    expect(result).toMatchObject({ success: true, page: 2, total: 12 });
+    expect(result.data.map((row: any) => [row.version, row.createdAt, row.stateCode])).toEqual(
+      rows.map((row) => [row.version, new Date(row.created_at), 100]),
+    );
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('normalizes absent rows for an allowlisted generic version table without inventing metadata', async () => {
+    const builder = createQueryBuilder({ data: null, count: 0, error: null });
+    mockFrom.mockReturnValueOnce(builder);
+
+    const result = await generalApi.getAllVersions(
+      'name',
+      'lciamethods',
+      sampleId,
+      { current: 2, pageSize: 50 },
+      { version: 'ascend' },
+      'en',
+      'tg',
+    );
+
+    expect(mockFrom).toHaveBeenCalledWith('lciamethods');
+    expect(builder.eq).toHaveBeenCalledWith('id', sampleId);
+    expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+    expect(builder.order).toHaveBeenCalledWith('version', { ascending: true });
+    expect(builder.range).toHaveBeenCalledWith(50, 99);
+    expect(result).toEqual({ data: [], success: true, page: 2, total: 0 });
+    expect(mockGetILCDClassification).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['contacts', 'contact', 'contactDataSet', 'contactInformation'],
+    ['sources', 'source', 'sourceDataSet', 'sourceInformation'],
+    ['unitgroups', 'unitgroup', 'unitGroupDataSet', 'unitGroupInformation'],
+    ['flowproperties', 'flowproperty', 'flowPropertyDataSet', 'flowPropertiesInformation'],
+    ['flows', 'flow', 'flowDataSet', 'flowInformation'],
+    ['processes', 'process', 'processDataSet', 'processInformation'],
+    ['lifecyclemodels', 'lifecyclemodel', 'lifeCycleModelDataSet', 'lifeCycleModelInformation'],
+  ])(
+    'filters all versions of %s on the server and preserves timestamps and state',
+    async (table, kind, root, information) => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: sampleId,
+            version: '01.00.002',
+            total_count: 150,
+            state_code: 100,
+            created_at: '2026-10-13T00:00:00Z',
+            modified_at: '2026-10-13T01:00:00Z',
+            json: { [root]: { [information]: { dataSetInformation: {} } } },
+          },
+        ],
+        error: null,
+      });
+      const result = await generalApi.getAllVersions(
+        '',
+        table,
+        sampleId,
+        {
+          current: 3,
+          pageSize: 50,
+          classification,
+          datasetFilters: { datasetId: 'other-dataset' },
+        },
+        { name: 'ascend' },
+        'en',
+        'tg',
+      );
+      expect(mockRpc).toHaveBeenCalledWith(
+        'query_dataset_catalog',
+        expect.objectContaining({
+          p_dataset_kind: kind,
+          p_filter_condition: { classification, datasetId: sampleId },
+          p_version_scope: 'all',
+          p_page_current: 3,
+          p_page_size: 50,
+          p_sort_by: 'version',
+          p_sort_direction: 'desc',
+        }),
+      );
+      expect(result).toMatchObject({
+        success: true,
+        page: 3,
+        total: 150,
+        data: [
+          {
+            id: sampleId,
+            version: '01.00.002',
+            stateCode: 100,
+            createdAt: new Date('2026-10-13T00:00:00Z'),
+          },
+        ],
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    },
+  );
+
+  it('keeps filtered personal and team version scopes closed when session or membership is absent', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'my',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'te',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    expect(mockRpc).not.toHaveBeenCalledWith('query_dataset_catalog', expect.anything());
+  });
+
+  it('preserves current actor/team scope and explicitly reports an unavailable filtered-version facade', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: { user: { id: 'actor' } } } });
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'RPC missing' } });
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'processes',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'my',
+      ),
+    ).toMatchObject({ success: false, total: 0 });
+    mockRpc.mockResolvedValueOnce({
+      data: [{ team_id: 'actual-team', role: 'member' }],
+      error: null,
+    });
+    mockRpc.mockResolvedValueOnce({ data: [], error: null });
+    await generalApi.getAllVersions('', 'processes', sampleId, { classification }, {}, 'en', 'te');
+    expect(mockRpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({ p_team_id: 'actual-team' }),
+    );
+    expect(
+      await generalApi.getAllVersions(
+        '',
+        'unsupported',
+        sampleId,
+        { classification },
+        {},
+        'en',
+        'tg',
+      ),
+    ).toMatchObject({ success: false, error: 'unsupported_dataset_kind' });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['processes', 'classification'],
     ['processes', 'name'],

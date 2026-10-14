@@ -109,7 +109,16 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const { toText } = require('../../../../../helpers/nodeToText');
 
-  const ProTable = ({ actionRef, params, request, rowSelection, columns = [], loading }: any) => {
+  const ProTable = ({
+    actionRef,
+    params,
+    request,
+    rowSelection,
+    columns = [],
+    loading,
+    toolbar,
+    rowKey,
+  }: any) => {
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
     const hasObservedInitialParamsRef = React.useRef(false);
@@ -122,13 +131,13 @@ jest.mock('@ant-design/pro-components', () => {
     paramsRef.current = params;
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, params, request, rowSelection, loading };
+      latestProTableProps = { actionRef, params, request, rowSelection, loading, rowKey };
     }, [actionRef, loading, params, request, rowSelection]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
         const requestParams = mockOmitContentLanguageRequestParam
-          ? { pageSize: 10, current: 1 }
+          ? { pageSize: 10, current: 1, classification: paramsRef.current.classification }
           : { pageSize: 10, current: 1, ...paramsRef.current };
         mockLatestProTableRequestParams = requestParams;
         const result = await requestRef.current(requestParams, {});
@@ -155,6 +164,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div data-testid='pro-table'>
+        {toolbar?.search}
+        {toolbar?.filter}
         {rows.map((row, rowIndex) => (
           <div key={row.id ?? row.key ?? rowIndex}>
             {columns.map((column: any, columnIndex: number) => {
@@ -237,7 +248,7 @@ describe('ConnectableProcesses', () => {
 
     await waitFor(() =>
       expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
-        { pageSize: 10, current: 1 },
+        { pageSize: 10, current: 1, classification: [] },
         {},
         'en',
         'tg',
@@ -255,7 +266,7 @@ describe('ConnectableProcesses', () => {
       await userEvent.click(screen.getByRole('button', { name: tabName }));
       await waitFor(() =>
         expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
-          { pageSize: 10, current: 1 },
+          { pageSize: 10, current: 1, classification: [] },
           {},
           'en',
           dataSource,
@@ -524,7 +535,7 @@ describe('ConnectableProcesses', () => {
 
     await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
     expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      { pageSize: 10, current: 1, classification: [] },
       {},
       'en',
       'tg',
@@ -542,4 +553,62 @@ describe('ConnectableProcesses', () => {
       expect(screen.getByText('DataType')).toBeInTheDocument();
     });
   });
+  it.each([
+    ['tg', 'TianGong Data'],
+    ['co', 'Business Data'],
+    ['my', 'My Data'],
+    ['te', 'Team Data'],
+  ])(
+    'keeps exact identities and resets the %s selection/page when classification changes',
+    async (source, tabTitle) => {
+      mockGetConnectableProcessesTable.mockResolvedValue({ data: [], success: true });
+      render(<ConnectableProcesses {...baseProps} />);
+      if (source !== 'tg') await userEvent.click(screen.getByRole('button', { name: tabTitle }));
+      await waitFor(() =>
+        expect(mockGetConnectableProcessesTable.mock.calls.at(-1)[3]).toBe(source),
+      );
+      const row = { id: 'same-dataset', version: '01.00.000' };
+      expect(latestProTableProps.rowKey(row)).toBe('same-dataset:01.00.000');
+      expect(latestProTableProps.rowKey({ ...row, version: '02.00.000' })).toBe(
+        'same-dataset:02.00.000',
+      );
+      await act(async () => latestProTableProps.rowSelection.onChange(['same-dataset:01.00.000']));
+      expect(latestProTableProps.rowSelection.selectedRowKeys).toEqual(['same-dataset:01.00.000']);
+      const api = latestProTableProps.actionRef.current;
+      api.setPageInfo.mockClear();
+      await userEvent.selectOptions(screen.getByLabelText('Classification'), 'C');
+      await waitFor(() =>
+        expect(mockGetConnectableProcessesTable.mock.calls.at(-1)[0].classification).toEqual([
+          { scope: 'classification', code: 'C', path: ['C'] },
+        ]),
+      );
+      expect(latestProTableProps.rowSelection.selectedRowKeys).toEqual([]);
+      expect(api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      expect(mockGetConnectableProcessesTable.mock.calls.at(-1)[3]).toBe(source);
+      await userEvent.selectOptions(screen.getByLabelText('Classification'), '');
+      await waitFor(() =>
+        expect(mockGetConnectableProcessesTable.mock.calls.at(-1)[0].classification).toEqual([]),
+      );
+    },
+  );
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

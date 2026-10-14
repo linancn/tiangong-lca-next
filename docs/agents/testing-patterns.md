@@ -28,6 +28,7 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - scripts/i18n/**
   - scripts/test-runner.cjs
   - scripts/jest-sequencer.cjs
@@ -38,13 +39,14 @@ checkPaths:
   - scripts/release/**
   - docker/e2e/**
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - package.json
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: the added footer, failure-retention, and callback tests follow existing component-mock patterns without changing test conventions.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 ---
 
 # Testing Patterns Reference

@@ -112,9 +112,9 @@ describe.each(MAIN_DATASET_TABLES)('$file locale-aware ProTable contract', (tabl
     expect(paramsStart).toBeGreaterThan(tableStart);
     expect(paramsStart).toBeLessThan(requestStart);
     expect(paramsSource).toMatch(/\blocale:\s*appLocale\b/u);
-    expect(
-      source.slice(requestStart, source.indexOf('\n        columns={', requestStart)),
-    ).toContain('guardLocaleMaterializedTableRequest(');
+    expect(source.slice(requestStart, source.indexOf('columns={', requestStart))).toContain(
+      'guardLocaleMaterializedTableRequest(',
+    );
     expect(source).toContain('() => currentAppLocaleRef.current');
     expect(source).toContain('tableRequestEpochRef,');
     expect(source).toContain('async ({ isCurrentRequest }) => {');
@@ -128,7 +128,7 @@ describe.each(MAIN_DATASET_TABLES)('$file locale-aware ProTable contract', (tabl
 
   it('keeps every main-table service path content-language aware', () => {
     const requestStart = source.indexOf('request={async (');
-    const requestEnd = source.indexOf('\n        columns={', requestStart);
+    const requestEnd = source.indexOf('columns={', requestStart);
     const requestSource = source.slice(requestStart, requestEnd);
 
     expect(requestStart).toBeGreaterThanOrEqual(0);

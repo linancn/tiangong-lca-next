@@ -490,16 +490,12 @@ export async function selectAppLocaleThroughUi(
     key: MANUAL_LOCALE_STORAGE_KEY,
     value: locale,
   });
-  await page.keyboard.press('Escape');
-  await page.evaluate(() => {
-    const visibleMenuExists = [...document.querySelectorAll<HTMLElement>('[role="menu"]')].some(
-      (menu) => menu.getClientRects().length > 0 && getComputedStyle(menu).visibility !== 'hidden',
-    );
-    if (visibleMenuExists) {
-      document.querySelector<HTMLElement>('.tg-global-language-selector')?.click();
-    }
+  // A closing popup remains visible during native leave motion. Check the trigger's actual
+  // open state atomically so cleanup cannot reopen it or dismiss an unrelated overlay.
+  await trigger.evaluate((element) => {
+    const localeTrigger = element as HTMLElement;
+    if (localeTrigger.classList.contains('ant-dropdown-open')) localeTrigger.click();
   });
-  await page.keyboard.press('Escape');
   await waitForLocatorCount(
     page,
     activeMenu,

@@ -6,6 +6,7 @@ import {
   type SupportedContentLanguage,
 } from './contentLanguageRegistry';
 import type { SupportedAppLocale } from './localeRegistry';
+import type { DatasetTableParams } from './datasetClassification';
 
 export type ListPagination = {
   total: number;
@@ -17,7 +18,7 @@ export type ListPagination = {
  * External parameters that participate in ProTable's request lifecycle.
  * Changing the canonical locale forces locale-materialized rows to refetch.
  */
-export type LocaleAwareTableParams = {
+export type LocaleAwareTableParams = DatasetTableParams & {
   locale: SupportedAppLocale;
   openDataFilterRevision?: string;
 };
@@ -27,7 +28,7 @@ export type LocaleAwareTableParams = {
  * content. Keep this distinct from the UI locale: future UI locales may share
  * one declared content-language capability.
  */
-export type ContentLanguageAwareTableParams = {
+export type ContentLanguageAwareTableParams = DatasetTableParams & {
   contentLanguage: SupportedContentLanguage;
 };
 

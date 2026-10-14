@@ -18,15 +18,16 @@ export function getDataTitle(dataSource: string) {
   return '';
 }
 
-export function getAllVersionsColumns(columns: ProColumns<any>[], versionIndex: number) {
-  const newColumns = [...columns];
-  newColumns[versionIndex] = {
-    ...newColumns[versionIndex],
-    render: undefined,
-  };
-
-  newColumns.pop();
-  return newColumns;
+export function getAllVersionsColumns(columns: ProColumns<any>[], _versionIndex?: number) {
+  void _versionIndex;
+  return columns
+    .filter(
+      (column) =>
+        column.dataIndex !== 'option' &&
+        column.dataIndex !== 'action' &&
+        column.valueType !== 'option',
+    )
+    .map((column) => (column.dataIndex === 'version' ? { ...column, render: undefined } : column));
 }
 
 export function getRules(rules: any[]) {

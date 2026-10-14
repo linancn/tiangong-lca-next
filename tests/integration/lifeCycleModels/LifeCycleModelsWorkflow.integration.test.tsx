@@ -1039,7 +1039,7 @@ describe('LifeCycleModels workflows', () => {
     expect(firstCall[4]).toBe('team-open');
 
     expect(await screen.findByText('Open Model')).toBeInTheDocument();
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('Open Data / Product Models');
+    expect(screen.getByTestId('pro-table-header')).toBeEmptyDOMElement();
 
     expect(screen.queryByText('import')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
@@ -1091,3 +1091,23 @@ describe('LifeCycleModels workflows', () => {
     expect(await screen.findByText('Latest Model Snapshot')).toBeInTheDocument();
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Dataset classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

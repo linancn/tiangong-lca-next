@@ -1,10 +1,68 @@
 import LcaAnalysisPage from '@/pages/Processes/Analysis';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { resetAntdToken, setAntdToken } from '../../../../mocks/antd';
 import { resetUmiMocks, setUmiLocation, umiMocks } from '../../../../mocks/umi';
 
 jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
-jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
+jest.mock('antd', () => {
+  const base = require('@/tests/mocks/antd').createAntdMock();
+  const Pagination = ({
+    current = 1,
+    pageSize = 50,
+    total = 0,
+    onChange,
+    showTotal,
+    disabled,
+    pageSizeOptions = [],
+  }: any) => (
+    <div>
+      {showTotal?.(total, [
+        total ? (current - 1) * pageSize + 1 : 0,
+        Math.min(total, current * pageSize),
+      ])}
+      <button
+        type='button'
+        disabled={disabled || current <= 1}
+        onClick={() => onChange?.(current - 1, pageSize)}
+      >
+        Previous page
+      </button>
+      <button
+        type='button'
+        disabled={disabled || current * pageSize >= total}
+        onClick={() => onChange?.(current + 1, pageSize)}
+      >
+        Next page
+      </button>
+      <select
+        aria-label='Page size'
+        value={pageSize}
+        onChange={(event) => onChange?.(1, Number(event.target.value))}
+      >
+        {pageSizeOptions.map((value: number) => (
+          <option key={value} value={value}>
+            {value}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+  return {
+    ...base,
+    Pagination,
+    Flex: ({ children, align, gap, wrap, vertical, ...rest }: any) => (
+      <div
+        {...rest}
+        data-flex-align={align}
+        data-flex-gap={gap}
+        data-flex-wrap={String(Boolean(wrap))}
+        data-flex-vertical={String(Boolean(vertical))}
+      >
+        {children}
+      </div>
+    ),
+  };
+});
 jest.mock('@ant-design/icons', () =>
   require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
 );
@@ -140,19 +198,33 @@ jest.mock('@/pages/Processes/Components/lcaCalculationEvidenceNotice', () => ({
 
 jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
   __esModule: true,
-  default: ({
+  default: function MockLcaProcessSelectionTable({
     processOptions = [],
     selectedProcessIds = [],
     selectionType = 'checkbox',
     onSelectionChange,
     titleMessage,
+    tablePagination,
+    searchKeyword,
+    onSearch,
+    classification,
+    onClassificationChange,
   }: {
     processOptions?: Array<{ value?: string; selectionKey?: string }>;
     selectedProcessIds?: string[];
     selectionType?: 'checkbox' | 'radio';
     onSelectionChange?: (selectedProcessIds: string[]) => void;
     titleMessage?: { defaultMessage?: string };
-  }) => {
+    tablePagination?: any;
+    searchKeyword?: string;
+    onSearch?: (value: string) => void;
+    classification?: any[];
+    onClassificationChange?: (value: any[]) => void;
+  }) {
+    const React = require('react');
+    const { Input, Pagination } = require('antd');
+    const ClassificationFilter = require('@/components/DatasetClassificationFilter').default;
+    const [keyword, setKeyword] = React.useState(searchKeyword ?? '');
     const allIds = processOptions
       .map((item) => String(item?.selectionKey ?? item?.value ?? ''))
       .filter(Boolean);
@@ -167,6 +239,13 @@ jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
     return (
       <div data-testid={`mock-process-selection-${titleMessage?.defaultMessage ?? 'selection'}`}>
         <div>{titleMessage?.defaultMessage ?? 'Process selection'}</div>
+        <Input.Search
+          value={keyword}
+          onChange={(event: any) => setKeyword(event.target.value)}
+          onSearch={onSearch}
+        />
+        <ClassificationFilter value={classification} onChange={onClassificationChange} />
+        <Pagination {...tablePagination} />
         <div data-testid='mock-selected-process-ids'>{selectedProcessIds.join(',')}</div>
         <button type='button' onClick={() => onSelectionChange?.(primarySelection)}>
           Mock select primary process
@@ -176,6 +255,9 @@ jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
         </button>
         <button type='button' onClick={() => onSelectionChange?.([])}>
           Mock clear selected processes
+        </button>
+        <button type='button' onClick={() => onSelectionChange?.(['process-removed:01.00.000'])}>
+          Mock select removed process
         </button>
       </div>
     );
@@ -608,6 +690,22 @@ describe('LcaAnalysisPage', () => {
     });
   });
 
+  it('keeps labeled profile scope, search and classification in one wrapping native control strip', async () => {
+    const { container } = render(<LcaAnalysisPage />);
+    await screen.findByText('3 process rows are currently available for analysis.');
+    const toolbar = container.querySelector('.lca-analysis-input-toolbar') as HTMLElement;
+    expect(toolbar).toHaveAttribute('data-flex-align', 'flex-end');
+    expect(toolbar).toHaveAttribute('data-flex-wrap', 'true');
+    expect(within(toolbar).getByText('Data scope')).toBeInTheDocument();
+    expect(within(toolbar).getByText('Process search')).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText('Data scope')).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText('Classification')).toBeInTheDocument();
+    expect(
+      within(toolbar).getByPlaceholderText('Search processes in the selected data scope'),
+    ).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: /search/i })).toBeInTheDocument();
+  });
+
   it('loads a process profile and renders the chart summary', async () => {
     render(<LcaAnalysisPage />);
 
@@ -697,7 +795,8 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -1230,6 +1329,160 @@ describe('LcaAnalysisPage', () => {
     expect(await screen.findByText('Showing 1-50 on page 1 of 3.')).toBeInTheDocument();
   });
 
+  it('discards a completed LCIA request after a classification change clears the previous analysis selection', async () => {
+    const delayedProfile = createDeferred<any>();
+    queryLcaResults.mockImplementationOnce(() => delayedProfile.promise);
+    render(<LcaAnalysisPage />);
+    fireEvent.click(await waitForAnalysisInitialization());
+    await waitFor(() => expect(queryLcaResults).toHaveBeenCalled());
+    fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+    await waitForAnalysisInitialization();
+    await act(async () => {
+      delayedProfile.resolve({
+        snapshot_id: 'stale-profile-snapshot',
+        result_id: 'old-result',
+        source: 'all_unit',
+        data: { values: [] },
+        meta: { computed_at: '2026-03-12T12:05:00Z' },
+      });
+      await delayedProfile.promise;
+    });
+    expect(screen.queryByText('stale-profile-snapshot')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Load LCIA profile' })).toBeEnabled();
+  });
+
+  it.each([
+    ['profile', 'query', 'reject', 'Load LCIA profile'],
+    ['compare', 'query', 'resolve', 'Run analysis'],
+    ['compare', 'query', 'reject', 'Run analysis'],
+    ['grouped', 'query', 'resolve', 'Run grouped analysis'],
+    ['grouped', 'query', 'reject', 'Run grouped analysis'],
+    ['path', 'submit', 'resolve', 'Run contribution path analysis'],
+    ['path', 'result', 'resolve', 'Run contribution path analysis'],
+    ['path', 'result', 'reject', 'Run contribution path analysis'],
+  ])(
+    'discards stale %s %s %s responses after a filter changes the selection scope',
+    async (tab, stage, outcome, buttonName) => {
+      const pending = createDeferred<any>();
+      const service =
+        stage === 'query'
+          ? queryLcaResults
+          : stage === 'submit'
+            ? submitLcaContributionPath
+            : getLcaContributionPathResult;
+      service.mockImplementationOnce(() => pending.promise);
+      render(<LcaAnalysisPage />);
+      await waitForAnalysisInitialization();
+      if (tab !== 'profile') fireEvent.click(screen.getByTestId(`tab-${tab}`));
+      await waitFor(() => expect(screen.getByRole('button', { name: buttonName })).toBeEnabled());
+      fireEvent.click(screen.getByRole('button', { name: buttonName }));
+      await waitFor(() => expect(service).toHaveBeenCalled());
+      const previousLoads = listProcessesForLcaAnalysis.mock.calls.length;
+      fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+      await waitFor(() =>
+        expect(listProcessesForLcaAnalysis.mock.calls.length).toBeGreaterThan(previousLoads),
+      );
+      await act(async () => {
+        if (outcome === 'reject') pending.reject(new Error('stale-analysis-error'));
+        else
+          pending.resolve({
+            snapshot_id: 'stale-analysis-snapshot',
+            result_id: 'old-result',
+            source: 'all_unit',
+            mode: 'cache_hit',
+            data: stage === 'result' ? contributionPathArtifact : { values: {} },
+            meta: { computed_at: '2026-03-12T12:05:00Z' },
+          });
+        await pending.promise.catch(() => undefined);
+      });
+      expect(screen.queryByText('stale-analysis-snapshot')).not.toBeInTheDocument();
+      expect(screen.queryByText('stale-analysis-error')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: buttonName })).toHaveAttribute(
+        'data-loading',
+        'false',
+      );
+    },
+  );
+
+  it('uses native page size choices and forwards classification and search from the table toolbar to the complete process query', async () => {
+    listProcessesForLcaAnalysis.mockImplementation(
+      async (params: { classification?: unknown[] }) => ({
+        data: [buildProcess('process-filtered', 'Matching process', '02.00.000')],
+        success: true,
+        total: params.classification?.length ? 120 : 200,
+      }),
+    );
+    render(<LcaAnalysisPage />);
+    await waitForAnalysisInitialization();
+    fireEvent.change(screen.getByLabelText('Page size'), { target: { value: '20' } });
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        { current: 1, pageSize: 20 },
+        'en',
+        'public_plus_owner_draft',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 1,
+          pageSize: 20,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        },
+        'en',
+        'public_plus_owner_draft',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          current: 2,
+          pageSize: 20,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+        'en',
+        'public_plus_owner_draft',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    const search = within(screen.getByTestId('search-input'));
+    fireEvent.change(search.getByRole('textbox'), { target: { value: 'matching' } });
+    fireEvent.click(search.getByRole('button', { name: 'Search' }));
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          current: 1,
+          pageSize: 20,
+          classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+        }),
+        'en',
+        'public_plus_owner_draft',
+        'matching',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+  });
+
   it('preserves the original process version selection after paging to a different version of the same id', async () => {
     listProcessesForLcaAnalysis.mockImplementation(async (params: { current?: number }) => ({
       data:
@@ -1307,7 +1560,8 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
@@ -1340,7 +1594,8 @@ describe('LcaAnalysisPage', () => {
       ),
     );
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
@@ -1369,7 +1624,8 @@ describe('LcaAnalysisPage', () => {
         'all',
       ),
     );
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
         scope: 'full_library',
@@ -1423,7 +1679,8 @@ describe('LcaAnalysisPage', () => {
     );
 
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
@@ -1493,7 +1750,8 @@ describe('LcaAnalysisPage', () => {
     expect(await screen.findByText('published profile unavailable')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
     expect(await screen.findByText('published compare unavailable')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-grouped'));
@@ -1548,7 +1806,8 @@ describe('LcaAnalysisPage', () => {
     expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
     expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-grouped'));
@@ -1860,7 +2119,8 @@ describe('LcaAnalysisPage', () => {
 
     fireEvent.click(screen.getByTestId('tab-compare'));
     queryLcaResults.mockRejectedValueOnce('unexpected-compare-failure');
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
     expect(await screen.findByText('Failed to run impact analysis.')).toBeInTheDocument();
   });
 
@@ -1877,7 +2137,8 @@ describe('LcaAnalysisPage', () => {
 
     await waitForAnalysisInitialization();
     fireEvent.click(screen.getByTestId('tab-compare'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Run analysis' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
     expect(await screen.findByText('snapshot-compare')).toBeInTheDocument();
 
     let activePanel = screen.getByTestId('tab-panel-compare');
@@ -2043,6 +2304,18 @@ describe('LcaAnalysisPage', () => {
     expect(
       within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
     ).toBeDisabled();
+  });
+
+  it('rejects a stale root-selection event for a process absent from the current option map', async () => {
+    render(<LcaAnalysisPage />);
+    await waitForAnalysisInitialization();
+    fireEvent.click(screen.getByTestId('tab-path'));
+    const panel = screen.getByTestId('tab-panel-path');
+    fireEvent.click(within(panel).getByRole('button', { name: 'Mock select removed process' }));
+    expect(
+      within(panel).getByRole('button', { name: 'Run contribution path analysis' }),
+    ).toBeDisabled();
+    expect(submitLcaContributionPath).not.toHaveBeenCalled();
   });
 
   it('handles contribution path snapshot-building and failed async job states', async () => {
@@ -3235,3 +3508,23 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

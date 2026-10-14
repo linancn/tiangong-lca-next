@@ -49,12 +49,12 @@ describe('reference lookup page helpers', () => {
     expect(getReferenceLookupTeamId()).toBe('');
   });
 
-  it('hides total text only while reference lookup pagination is active', () => {
+  it('keeps native total text for complete server-paged reference lookup', () => {
     expect(getReferenceLookupPaginationProps(false)).toEqual({});
 
     const paginationProps = getReferenceLookupPaginationProps(true);
 
-    expect(paginationProps.showTotal?.(24, [1, 10])).toBeNull();
+    expect(paginationProps).toEqual({});
   });
 
   it('shows localized reference lookup messages', () => {

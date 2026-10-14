@@ -27,10 +27,12 @@ checkPaths:
   - jsconfig.json
   - tsconfig*.json
   - playwright.config.ts
+  - playwright.dataset-lists.config.ts
   - config/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
+  - tests/e2e/dataset-lists/**
   - jest.config.cjs
   - Dockerfile.app
   - .husky/pre-commit
@@ -43,9 +45,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: 26a07f668bf094916388d4871eaa070b6f3c5170
-lastReviewedNote: 'Reviewed for Platform #1208 after merging current dev: focused component tests, lint, build, and the unchanged managed pre-push gate remain the required validation path.'
+lastReviewedAt: 2026-10-14
+lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -220,7 +222,27 @@ All new package import helpers must enqueue `root_closure_v2` and reject unavail
 
 For Platform #1136, prove multi-target object/array round trips and zero shares in the Process utility suite, exact Flow-revision product checks in `allocationTargets.test.ts`, and real Ant Design Form/Select/Table interactions in `Exchange/allocation.test.tsx`. Matrix fixtures must verify independent electricity/raw/emission splits, preservation of an unconnected reference product's burden, equivalent-scale reuse, and existing cycles/treatment/legacy behavior. Process create/edit tests must reject new or changed invalid vectors without injecting untargeted default shares into generated results, preserve unchanged inherited problems only as unverified repair drafts, and block validation/review fallback. Protect stable exchange IDs, referenced-product deletion, located diagnostics and strict Model source validation. The hermetic `process-allocation.spec.ts` exercises the actual Process drawer against in-memory reserved-origin records; it is frontend workflow evidence, not deployed Worker import/export or production persistence evidence. Existing full gate and browser-proof boundaries are unchanged.
 
-Dataset-display configuration changes require focused service, manager-page, displayed-page, route, Process/catalog and type-filter tests, locale audits, type/lint checks and a production build before the final checked push. Cover manager-only menu and direct-route denial, exact multi-type identities, filters/page selection reset, successful/failed set and cancel, no legacy route/writer, missing versus zero, non-Process values, stale Process-result responses, candidate-load failure after populated results (error dialog, empty rows/total/selection), retry recovery and ignored stale/unmounted list completions. Backend read/write contract proof belongs to the paired Database and Edge tasks. Browser qualification uses loopback/synthetic interception only. Compare Display Settings and the Process catalog in the same built frontend for search-card bounds/radius, search-control height/position and list start; retain zero card gap at narrow widths and search/error/retry behavior without optional recommendation/reference controls. No production display configuration is changed by validation.
+Dataset-display configuration changes require focused service, manager-page, displayed-page, route, Process/catalog and type-filter tests, locale audits, type/lint checks and a production build before the final checked push. Cover manager-only menu and direct-route denial, exact multi-type identities, filters/page selection reset, successful/failed set and cancel, no legacy route/writer, missing versus zero, non-Process values, stale Process-result responses, candidate-load failure after populated results (error dialog, empty rows/total/selection), retry recovery and ignored stale/unmounted list completions. Backend read/write contract proof belongs to the paired Database and Edge tasks. Browser qualification uses loopback/synthetic interception only. Compare Display Settings and the Process catalog in the same built frontend for native toolbar search/filter containment, six-column order, 50-row paging and table-body scrolling at desktop and narrow widths; retain search/error/retry behavior without optional recommendation/reference controls. No production display configuration is changed by validation.
+
+### Unified dataset-list proof
+
+For Platform #1213, focused proof covers shared column aliases and missing metadata, classification resources and stable filter values, viewport measurement, all seven catalogs and their dataset selectors, AllVersions, Model Results, mixed display pages, UUID-reference lookup and Process Analysis candidate services/pages. Assert native 50-row defaults and 20/50/100 choices; the base sequence is index, name, location, reference year, dataset type and version before business/action columns. Flow selectors and version drawers must display real location metadata. Exchange/unit/calculation result tables keep their domain columns.
+
+Service assertions must bind source/state/team, exact-version scope, classification and existing business filters to the complete server query before count/page, including empty keyword, lexical, Hybrid and UUID-reference paths. Unavailable filtered RPCs fail explicitly without an unfiltered fallback. Model Results proof covers the complete exact referenced set across backend batch/page caps, a matching subproduct beyond the first UI page, native paging after filtering, and stale-filter response rejection. Analysis proof covers native page-size changes, server search/classification forwarding, selected rows across pages, and rejection of stale candidate/error and LCIA completions after selection resets. Backend correctness and deployment proof remain in Database #838 and Edge #477.
+
+`playwright.dataset-lists.config.ts` selects the separate `tests/e2e/dataset-lists/**` Chromium suite against a loopback qualification frontend with synthetic requests intercepted at the reserved `semantic-harness.invalid` backend origin. With that frontend already running, use:
+
+```bash
+E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:8000 pnpm exec playwright test --config playwright.dataset-lists.config.ts --project chromium
+```
+
+The configured suite exercises all seven Open Data catalogs, desktop/narrow layouts, six-column order, default paging, internal body scrolling, toolbar containment, combined classification/full-text/reference query bodies, mixed display filters, AllVersions/fullscreen/zoom geometry and nested Flow selectors. Its screenshots and run output live under ignored `.local/dataset-list-unification/`; fixture credentials and synthetic records never reach a live backend. It is focused frontend/layout evidence, not deployed filter/ACL proof, canonical semantic localization evidence, authenticated production persistence proof or release qualification. Record actual commands and results in the delivery Issue/PR; this guide does not claim those checks have run. Existing full-gate and production-authorization boundaries remain unchanged.
+
+Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots, and obtain the user's requested interface confirmation before any further production publication.
+
+The follow-up width refinement must prove that metadata widths stay bounded as the viewport grows while the name column and search input receive the extra room. Include all active locales, long unbroken names, header/value hover, formatted timestamps and usable version actions. Classification tests must distinguish draft navigation/clear from confirmation: no list query while drafting or cancelling, one query for a changed confirmation, no request for unchanged confirmation, and no stale draft after an external scope change. Show the actual classification popup in an isolated synthetic test instance for the requested user review; explicitly record ownership and retention of its server/browser processes.
+
+Capture an open classification popup within the current viewport after asserting its bounds. Chromium's beyond-viewport capture has been observed to briefly resize the page to one pixel and remount responsive controls, invalidating the pending state being tested. Retain all confirmation, cancellation and request-count assertions; changing the capture method must not hide a failed interaction.
 
 ### Model product-provider persistence qualification
 

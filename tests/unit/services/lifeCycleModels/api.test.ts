@@ -3115,6 +3115,7 @@ describe('table/search helpers', () => {
       matched_by: 'json',
       matched_entity_table: 'lifecyclemodels',
       rank: 1,
+      total_count: 1,
       source_entity_kind: 'lifecyclemodel',
       source_id: sampleModelId,
       source_json: {
@@ -3162,15 +3163,18 @@ describe('table/search helpers', () => {
         'team-1',
       );
 
-      expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
-        p_data_source: 'tg',
-        p_limit: 11,
-        p_source_entity_kinds: ['lifecyclemodel'],
-        p_state_code_filter: 100,
-        p_team_id_filter: 'team-1',
-        p_this_user_id: sampleUserId,
-        p_uuid: 'd1380000-0000-4000-8000-000000000001',
-      });
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_dataset_uuid_mentions_page',
+        expect.objectContaining({
+          p_data_source: 'tg',
+          p_page_size: 10,
+          p_dataset_kind: 'lifecyclemodel',
+          p_state_code: 100,
+          p_team_id: 'team-1',
+
+          p_uuid: 'd1380000-0000-4000-8000-000000000001',
+        }),
+      );
       expect(result.data).toEqual([
         {
           key: sampleModelId,
@@ -3329,10 +3333,10 @@ describe('table/search helpers', () => {
       );
 
       expect(mockRpc).toHaveBeenCalledWith(
-        'search_dataset_json_uuid_mentions',
+        'search_dataset_uuid_mentions_page',
         expect.objectContaining({
-          p_source_entity_kinds: ['lifecyclemodel'],
-          p_team_id_filter: null,
+          p_dataset_kind: 'lifecyclemodel',
+          p_team_id: null,
         }),
       );
       expect(result).toEqual({
@@ -4118,5 +4122,220 @@ describe('calculation mutation mapping', () => {
       { hasModelChanged: () => true },
     );
     expect(discarded).toMatchObject({ ok: false, code: 'RESULT_DISCARDED' });
+  });
+});
+
+describe('lifecyclemodel server classification query contract', () => {
+  const params = {
+    current: 4,
+    pageSize: 100,
+    classification: [{ scope: 'classification' as const, code: 'C', path: ['A', 'C'] }],
+    datasetFilters: { datasetId: 'id-filter' },
+  };
+  const filters = { ...params.datasetFilters, classification: params.classification };
+  let rpc: jest.SpiedFunction<(...args: any[]) => any>;
+  let session: jest.SpiedFunction<(...args: any[]) => any>;
+  beforeEach(() => {
+    const { supabase } = jest.requireMock('@/services/supabase');
+    rpc = jest.spyOn(supabase, 'rpc').mockResolvedValue({ data: [], error: null });
+    session = jest
+      .spyOn(supabase.auth, 'getSession')
+      .mockResolvedValue({ data: { session: { user: { id: 'actor' }, access_token: 'token' } } });
+  });
+  afterEach(() => {
+    rpc.mockRestore();
+    session.mockRestore();
+  });
+
+  it('filters ordinary pages before count through the dataset catalog facade', async () => {
+    rpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'catalog-id',
+          version: '01.00.001',
+          modified_at: '2026-10-13T00:00:00Z',
+          json: {},
+          total_count: 150,
+        },
+      ],
+      error: null,
+    });
+    const api = require('@/services/lifeCycleModels/api');
+    const result = await api.getLifeCycleModelTableAll(
+      params,
+      { modifiedAt: 'ascend' },
+      'en',
+      'my',
+      '',
+      'all',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'query_dataset_catalog',
+      expect.objectContaining({
+        p_dataset_kind: 'lifecyclemodel',
+        p_data_source: 'my',
+        p_filter_condition: { ...{}, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+        p_sort_by: 'modified_at',
+        p_sort_direction: 'asc',
+      }),
+    );
+    expect(result).toMatchObject({
+      success: true,
+      data: [expect.objectContaining({ id: 'catalog-id' })],
+      total: 150,
+      page: 4,
+    });
+  });
+
+  it('passes complete filters to lexical search and keeps page inputs', async () => {
+    const api = require('@/services/lifeCycleModels/api');
+    await api.getLifeCycleModelTablePgroongaSearch(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      undefined,
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_lifecyclemodels',
+      expect.objectContaining({
+        filter_condition: filters,
+        page_size: 100,
+        page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to UUID server pagination', async () => {
+    const api = require('@/services/lifeCycleModels/api');
+    await api.getLifeCycleModelTableUuidMentionSearch(
+      params,
+      'en',
+      'my',
+      'd1380000-0000-4000-8000-000000000001',
+      'all',
+      '',
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'search_dataset_uuid_mentions_page',
+      expect.objectContaining({
+        p_dataset_kind: 'lifecyclemodel',
+        p_filter_condition: { ...{}, ...filters },
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+
+  it('passes complete filters to hybrid search without filtering one returned page locally', async () => {
+    const api = require('@/services/lifeCycleModels/api');
+    const { supabase } = jest.requireMock('@/services/supabase');
+    const invoke = jest
+      .spyOn(supabase.functions, 'invoke')
+      .mockResolvedValue({ data: [], error: null });
+    await api.lifeCycleModel_hybrid_search(
+      params,
+      'en',
+      'my',
+      'query',
+      { datasetId: 'old' },
+      'all',
+      undefined,
+      '',
+    );
+    expect(invoke).toHaveBeenCalledWith(
+      'lifecyclemodel_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          filter_condition: filters,
+          page_size: 100,
+          page_current: 4,
+        }),
+      }),
+    );
+    invoke.mockRestore();
+  });
+
+  it('preserves open-data publication/source scope together with classification', async () => {
+    const api = require('@/services/lifeCycleModels/api');
+    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
+    await api.getLifeCycleModelTableAll(params, {}, 'en', 'tg', '', 'all', openDataFilters);
+    expect(rpc).toHaveBeenCalledWith(
+      'search_open_data_catalog',
+      expect.objectContaining({
+        p_filter_condition: { ...{}, ...filters },
+        p_source_filter: 'all',
+        p_publication_filter: 'all',
+        p_page_size: 100,
+        p_page_current: 4,
+      }),
+    );
+  });
+});
+
+describe('Lifecycle Model hybrid visibility context', () => {
+  it('uses the current team and forwards its exact state filter', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce('actual-team');
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: [], error: null });
+    await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      { current: 2, pageSize: 50 },
+      'en',
+      'te',
+      'query',
+      {},
+      0,
+      undefined,
+      'caller-team',
+    );
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'lifecyclemodel_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          team_id: 'actual-team',
+          state_code: 0,
+          page_current: 2,
+          page_size: 50,
+        }),
+      }),
+    );
+  });
+  it('returns an empty team page when current membership is absent', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+    const result = await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      {},
+      'en',
+      'te',
+      'query',
+      {},
+      undefined,
+      undefined,
+      'caller-team',
+    );
+    expect(result).toEqual({ data: [], success: true, page: 1, total: 0 });
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+  it.each(['tg', 'co'])('retains an explicit %s catalog team filter', async (source) => {
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: [], error: null });
+    await lifeCycleModelsApi.lifeCycleModel_hybrid_search(
+      {},
+      'en',
+      source,
+      'query',
+      {},
+      undefined,
+      undefined,
+      'selected-team',
+    );
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'lifecyclemodel_hybrid_search',
+      expect.objectContaining({
+        body: expect.objectContaining({ team_id: 'selected-team' }),
+      }),
+    );
   });
 });

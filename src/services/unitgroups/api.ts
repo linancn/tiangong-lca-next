@@ -7,6 +7,11 @@ import {
 } from '../general/util';
 
 import { supabase } from '@/services/supabase';
+import { hasDatasetCatalogFilters, queryMappedDatasetCatalog } from '../datasetCatalog/api';
+import {
+  withDatasetClassification,
+  type DatasetTableParams,
+} from '../general/datasetClassification';
 import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
 import type { SortOrder } from 'antd/es/table/interface';
@@ -278,10 +283,7 @@ export async function deleteUnitGroup(id: string, version: string) {
 }
 
 export async function getUnitGroupTableAll(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
@@ -289,11 +291,13 @@ export async function getUnitGroupTableAll(
   stateCode?: string | number,
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'unitgroup',
+        filterCondition,
         filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
@@ -319,6 +323,24 @@ export async function getUnitGroupTableAll(
       data: [],
       success: true,
     });
+  }
+
+  if (hasDatasetCatalogFilters(params)) {
+    return queryMappedDatasetCatalog(
+      {
+        datasetKind: 'unitgroup',
+        dataSource,
+        filterCondition,
+        stateCode,
+        teamId,
+        pageCurrent: params.current,
+        pageSize: params.pageSize,
+        sortBy: normalizeUnitGroupSortBy(sortBy),
+        sortDirection: normalizeUnitGroupSortDirection(orderBy),
+      },
+      // eslint-disable-next-line no-use-before-define
+      (rows) => mapUnitGroupListRows(rows, lang),
+    );
   }
 
   const result = await supabase.rpc('get_latest_unitgroup_versions', {
@@ -360,19 +382,17 @@ export async function getUnitGroupTableAll(
 }
 
 export async function getUnitGroupTablePgroongaSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   // sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: any,
+  rawFilterCondition: any,
   stateCode?: string | number,
   tid: string | [] = [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
@@ -448,15 +468,16 @@ export async function getUnitGroupTablePgroongaSearch(
 }
 
 export async function unitgroup_hybrid_search(
-  params: { current?: number; pageSize?: number },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   queryText: string,
-  filterCondition: unknown,
+  rawFilterCondition: unknown,
   stateCode?: string | number,
   tid: string | [] = [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, rawFilterCondition);
   return invokeFoundationHybridSearch({
     dataSource,
     filterCondition,
@@ -472,10 +493,7 @@ export async function unitgroup_hybrid_search(
 }
 
 export async function getUnitGroupTableUuidMentionSearch(
-  params: {
-    current?: number;
-    pageSize?: number;
-  },
+  params: DatasetTableParams,
   lang: string,
   dataSource: string,
   uuid: string,
@@ -483,10 +501,12 @@ export async function getUnitGroupTableUuidMentionSearch(
   tid?: string | [],
   openDataFilters?: OpenDataCatalogFilters,
 ) {
+  const filterCondition = withDatasetClassification(params, {});
   if (dataSource === 'tg' && openDataFilters) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'unitgroup',
+        filterCondition,
         filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
@@ -498,6 +518,7 @@ export async function getUnitGroupTableUuidMentionSearch(
   }
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
+    filterCondition,
     pageCurrent: params.current,
     pageSize: params.pageSize,
     sourceEntityKinds: ['unitgroup'],

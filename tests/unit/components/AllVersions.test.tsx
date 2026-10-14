@@ -23,6 +23,9 @@ import { ConfigProvider } from 'antd';
 let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
 let mockOmitProTableRequestParams = false;
 let mockLatestVersionColumns: any[] = [];
+let mockVersionRequestOverrides: Record<string, unknown> = {};
+let mockVersionSort: Record<string, 'ascend' | 'descend'> = {};
+let mockVersionTableApi: { reload: () => Promise<unknown> } | null = null;
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({
@@ -123,6 +126,7 @@ jest.mock('@ant-design/pro-components', () => {
     rowKey = 'id',
     rowSelection,
     toolBarRender,
+    toolbar,
   }: any) => {
     mockLatestVersionColumns = columns;
     const [rows, setRows] = React.useState([] as any[]);
@@ -136,9 +140,9 @@ jest.mock('@ant-design/pro-components', () => {
     const loadRows = React.useCallback(async () => {
       const requestParams = mockOmitProTableRequestParams
         ? {}
-        : { pageSize: 10, current: 1, ...latestParamsRef.current };
+        : { pageSize: 10, current: 1, ...mockVersionRequestOverrides, ...latestParamsRef.current };
       mockLatestProTableRequestParams = requestParams;
-      const result = await latestRequestRef.current?.(requestParams, {});
+      const result = await latestRequestRef.current?.(requestParams, mockVersionSort);
       if (result?.success !== false) {
         setRows(result?.data ?? []);
       }
@@ -148,8 +152,11 @@ jest.mock('@ant-design/pro-components', () => {
     React.useLayoutEffect(() => {
       const api = {
         reload: loadRows,
-        setPageInfo: jest.fn(),
+        setPageInfo: jest.fn((value) => {
+          mockVersionRequestOverrides = { ...mockVersionRequestOverrides, ...value };
+        }),
       };
+      mockVersionTableApi = api;
       if (actionRef) {
         actionRef.current = api;
       }
@@ -165,6 +172,8 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div data-testid='pro-table'>
+        {toolbar?.search}
+        {toolbar?.filter}
         <div>{toolBarRender?.()}</div>
         {rowSelection ? (
           <button
@@ -289,6 +298,9 @@ describe('AllVersionsList Component', () => {
     mockLatestProTableRequestParams = null;
     mockOmitProTableRequestParams = false;
     mockLatestVersionColumns = [];
+    mockVersionRequestOverrides = {};
+    mockVersionSort = {};
+    mockVersionTableApi = null;
     mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
@@ -299,6 +311,283 @@ describe('AllVersionsList Component', () => {
       success: true,
       total: 2,
     });
+  });
+
+  it('uses a fresh independent highest-version baseline when quick classification overtakes the initial unfiltered request', async () => {
+    let resolveOldTable: (value: any) => void = () => {};
+    let resolveOldBaseline: (value: any) => void = () => {};
+    const oldTable = new Promise((resolve) => {
+      resolveOldTable = resolve;
+    });
+    const oldBaseline = new Promise((resolve) => {
+      resolveOldBaseline = resolve;
+    });
+    let baselineCalls = 0;
+    mockGetAllVersions.mockImplementation(
+      (_column: string, _table: string, _id: string, params: any) => {
+        if (params.pageSize === 1) {
+          baselineCalls += 1;
+          return baselineCalls === 1
+            ? oldBaseline
+            : Promise.resolve({ data: [{ id: 'test-id', version: '03.00.000' }], success: true });
+        }
+        return params.classification?.length
+          ? Promise.resolve({
+              data: [{ id: 'test-id', version: '01.00.005', name: 'Filtered older row' }],
+              success: true,
+            })
+          : oldTable;
+      },
+    );
+    render(<AllVersionsList {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(baselineCalls).toBe(1));
+    expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+    await waitFor(() => expect(screen.getByTestId('children')).toHaveTextContent('03.00.001'));
+    expect(screen.getByText('Filtered older row')).toBeInTheDocument();
+    const baselineRequests = mockGetAllVersions.mock.calls.filter(
+      (args: any[]) => args[3].pageSize === 1,
+    );
+    expect(baselineRequests.map((args: any[]) => args[3])).toEqual([
+      { current: 1, pageSize: 1 },
+      { current: 1, pageSize: 1 },
+    ]);
+    expect(baselineRequests.map((args: any[]) => args[4])).toEqual([
+      { version: 'descend' },
+      { version: 'descend' },
+    ]);
+    await act(async () => {
+      resolveOldBaseline({ data: [{ id: 'test-id', version: '04.00.000' }], success: true });
+      resolveOldTable({
+        data: [{ id: 'test-id', version: '04.00.000', name: 'Stale unfiltered row' }],
+        success: true,
+      });
+      await Promise.all([oldTable, oldBaseline]);
+    });
+    expect(screen.getByTestId('children')).toHaveTextContent('03.00.001');
+    expect(screen.queryByText('Stale unfiltered row')).not.toBeInTheDocument();
+    expect(
+      mockAddVersionComponent.mock.calls.every(([props]) => props.newVersion !== '00.00.000'),
+    ).toBe(true);
+  });
+
+  it('keeps the complete scope maximum when table paging or ascending sort returns older versions', async () => {
+    mockGetAllVersions.mockImplementation(
+      async (_column: string, _table: string, _id: string, params: any) => ({
+        data: [{ id: 'test-id', version: params.pageSize === 1 ? '03.00.000' : '01.00.005' }],
+        success: true,
+      }),
+    );
+    render(<AllVersionsList {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(screen.getByTestId('children')).toHaveTextContent('03.00.001'));
+    mockVersionRequestOverrides = { current: 2, pageSize: 20 };
+    mockVersionSort = { version: 'ascend' };
+    await act(async () => {
+      await mockVersionTableApi?.reload();
+    });
+    expect(mockGetAllVersions).toHaveBeenCalledWith(
+      'id',
+      'processes',
+      'test-id',
+      { current: 1, pageSize: 1 },
+      { version: 'descend' },
+      'en',
+      'test-datasource',
+      undefined,
+    );
+    expect(mockGetAllVersions).toHaveBeenLastCalledWith(
+      'id',
+      'processes',
+      'test-id',
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+      { version: 'ascend' },
+      'en',
+      'test-datasource',
+      undefined,
+    );
+    expect(screen.getByTestId('children')).toHaveTextContent('03.00.001');
+  });
+
+  it.each(['failure', 'empty', 'missing', 'invalid', 'rejection'])(
+    'does not guess a create-version value when the independent baseline is %s',
+    async (mode) => {
+      mockGetAllVersions.mockImplementation(
+        async (_column: string, _table: string, _id: string, params: any) => {
+          if (params.pageSize !== 1)
+            return {
+              data: [{ id: 'test-id', version: '01.00.005', name: 'Table remains usable' }],
+              success: true,
+            };
+          if (mode === 'rejection') throw new Error('baseline failed');
+          return mode === 'failure'
+            ? { data: [], success: false }
+            : mode === 'missing'
+              ? { success: true }
+              : mode === 'invalid'
+                ? { data: [{ version: 'not-a-version' }], success: true }
+                : { data: [], success: true };
+        },
+      );
+      render(<AllVersionsList {...defaultProps} />);
+      fireEvent.click(screen.getByRole('button'));
+      await screen.findByText('Table remains usable');
+      expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+      expect(mockAddVersionComponent).not.toHaveBeenCalled();
+    },
+  );
+
+  it('clears and invalidates a pending creation baseline on close and obtains a fresh value after reopening', async () => {
+    let resolveOld: (value: any) => void = () => {};
+    const old = new Promise((resolve) => {
+      resolveOld = resolve;
+    });
+    let calls = 0;
+    mockGetAllVersions.mockImplementation(
+      (_column: string, _table: string, _id: string, params: any) => {
+        if (params.pageSize === 1) {
+          calls += 1;
+          return calls === 1
+            ? old
+            : Promise.resolve({ data: [{ version: '05.00.000' }], success: true });
+        }
+        return Promise.resolve({ data: [{ id: 'test-id', version: '01.00.005' }], success: true });
+      },
+    );
+    render(<AllVersionsList {...defaultProps} />);
+    const trigger = screen.getByRole('button');
+    fireEvent.click(trigger);
+    await waitFor(() => expect(calls).toBe(1));
+    fireEvent.click(screen.getByRole('button', { name: 'drawer-close-handler' }));
+    const requestCount = mockGetAllVersions.mock.calls.length;
+    await expect(mockVersionTableApi?.reload()).resolves.toEqual({
+      data: [],
+      total: 0,
+      success: false,
+    });
+    expect(mockGetAllVersions).toHaveBeenCalledTimes(requestCount);
+    await act(async () => {
+      resolveOld({ data: [{ version: '03.00.000' }], success: true });
+      await old;
+    });
+    expect(mockAddVersionComponent).not.toHaveBeenCalled();
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByTestId('children')).toHaveTextContent('05.00.001'));
+  });
+
+  it('rejects a pending baseline after changing the dataset identity and source scope', async () => {
+    let resolveOld: (value: any) => void = () => {};
+    const old = new Promise((resolve) => {
+      resolveOld = resolve;
+    });
+    mockGetAllVersions.mockImplementation(
+      (_column: string, _table: string, datasetId: string, params: any) => {
+        if (params.pageSize === 1 && datasetId === 'test-id') return old;
+        return Promise.resolve({
+          data: [{ id: datasetId, version: datasetId === 'new-id' ? '02.00.000' : '01.00.005' }],
+          success: true,
+        });
+      },
+    );
+    const view = render(<AllVersionsList {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetAllVersions).toHaveBeenCalledTimes(2));
+    view.rerender(
+      <AllVersionsList
+        {...defaultProps}
+        id='new-id'
+        searchTableName='flows'
+        dataSource='te'
+        stateCode={20}
+      />,
+    );
+    await waitFor(() => expect(screen.getByTestId('children')).toHaveTextContent('02.00.001'));
+    expect(mockGetAllVersions).toHaveBeenCalledWith(
+      'id',
+      'flows',
+      'new-id',
+      { current: 1, pageSize: 1 },
+      { version: 'descend' },
+      'en',
+      'te',
+      20,
+    );
+    await act(async () => {
+      resolveOld({ data: [{ version: '09.00.000' }], success: true });
+      await old;
+    });
+    expect(screen.getByTestId('children')).toHaveTextContent('02.00.001');
+  });
+
+  it('recovers the creation baseline after a failed load and refreshes it after reload', async () => {
+    let version: string | null = null;
+    mockGetAllVersions.mockImplementation(
+      async (_column: string, _table: string, _id: string, params: any) => {
+        if (params.pageSize === 1)
+          return version ? { data: [{ version }], success: true } : { success: false };
+        return {
+          data: [{ id: 'test-id', version: '01.00.005', name: 'Reloadable table' }],
+          success: true,
+        };
+      },
+    );
+    render(<AllVersionsList {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByText('Reloadable table');
+    expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+    version = '03.00.000';
+    await act(async () => {
+      await mockVersionTableApi?.reload();
+    });
+    expect(screen.getByTestId('children')).toHaveTextContent('03.00.001');
+    version = '04.00.000';
+    await act(async () => {
+      await mockVersionTableApi?.reload();
+    });
+    expect(screen.getByTestId('children')).toHaveTextContent('04.00.001');
+  });
+
+  it('forwards classification to the complete version query, clears selection, and retains the unfiltered new-version baseline', async () => {
+    const baseline = { id: 'test-id', version: '03.00.000', name: 'Newest' };
+    const older = { id: 'test-id', version: '01.00.000', name: 'Older match' };
+    mockGetAllVersions.mockImplementation(
+      async (
+        _column: string,
+        _table: string,
+        _id: string,
+        params: { classification?: unknown[] },
+      ) => ({
+        data: params.classification?.length ? [older] : [baseline],
+        total: 1,
+        success: true,
+      }),
+    );
+    render(<AllVersionsList {...defaultProps} onSelectVersion={jest.fn()} />);
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() =>
+      expect(screen.getByLabelText('select-version-03.00.000')).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByLabelText('select-version-03.00.000'));
+    expect(screen.getByRole('button', { name: 'Submit' })).not.toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Classification'), { target: { value: 'C' } });
+    await waitFor(() =>
+      expect(screen.getByLabelText('select-version-01.00.000')).toBeInTheDocument(),
+    );
+    expect(mockGetAllVersions).toHaveBeenLastCalledWith(
+      'id',
+      'processes',
+      'test-id',
+      expect.objectContaining({
+        classification: [{ scope: 'classification', code: 'C', path: ['C'] }],
+      }),
+      expect.any(Object),
+      'en',
+      'test-datasource',
+      undefined,
+    );
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '03.00.001' });
   });
 
   it.each([
@@ -325,17 +614,30 @@ describe('AllVersionsList Component', () => {
     ];
     render(<AllVersionsList {...defaultProps} searchTableName={table} columns={columns} />);
     fireEvent.click(screen.getByRole('button'));
-    await waitFor(() => expect(mockLatestVersionColumns).toHaveLength(6));
-    expect(mockLatestVersionColumns.map((column) => column.sorter)).toEqual([
-      false,
-      false,
-      true,
-      false,
-      true,
-      undefined,
+    await waitFor(() => expect(mockLatestVersionColumns).toHaveLength(9));
+    expect(mockLatestVersionColumns.slice(0, 6).map((column) => column.dataIndex)).toEqual([
+      'index',
+      'name',
+      'location',
+      'referenceYear',
+      'dataType',
+      'version',
     ]);
-    expect(mockLatestVersionColumns[1].defaultSortOrder).toBeUndefined();
-    expect(mockLatestVersionColumns[1].sortOrder).toBeUndefined();
+    expect(mockLatestVersionColumns.some((column) => column.dataIndex === 'classification')).toBe(
+      false,
+    );
+    expect(mockLatestVersionColumns.find((column) => column.dataIndex === 'name')?.sorter).toBe(
+      false,
+    );
+    expect(mockLatestVersionColumns.find((column) => column.dataIndex === 'version')?.sorter).toBe(
+      true,
+    );
+    expect(
+      mockLatestVersionColumns.find((column) => column.dataIndex === 'modifiedAt')?.sorter,
+    ).toBe(false);
+    expect(
+      mockLatestVersionColumns.find((column) => column.dataIndex === 'createdAt')?.sorter,
+    ).toBe(true);
     expect(columns[0].sorter).toBe(true);
     expect(columns[2].sorter).toBe(true);
   });
@@ -404,7 +706,7 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(button);
 
     expect(screen.getByText('All Versions')).toBeInTheDocument();
-    expect(screen.getByTestId('children')).toBeInTheDocument();
+    expect(await screen.findByTestId('children')).toBeInTheDocument();
     await waitFor(() => {
       expect(mockGetAllVersions).toHaveBeenCalled();
     });
@@ -670,7 +972,7 @@ describe('AllVersionsList Component', () => {
         'id',
         'processes',
         'test-id',
-        { pageSize: 10, current: 1 },
+        { pageSize: 50, current: 1 },
         {},
         'en',
         'test-datasource',
@@ -751,7 +1053,7 @@ describe('AllVersionsList Component', () => {
 
     const { rerender } = render(
       <ConfigProvider>
-        <AllVersionsList {...defaultProps} />
+        <AllVersionsList {...defaultProps} addVersionComponent={undefined} />
       </ConfigProvider>,
     );
 
@@ -760,7 +1062,7 @@ describe('AllVersionsList Component', () => {
 
     rerender(
       <ConfigProvider>
-        <AllVersionsList {...defaultProps} lang='fr' />
+        <AllVersionsList {...defaultProps} addVersionComponent={undefined} lang='fr' />
       </ConfigProvider>,
     );
     await waitFor(() => expect(resolveFrench).toBeDefined());
@@ -918,7 +1220,7 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(mockGetAllVersions).toHaveBeenCalled();
+      expect(mockGetAllVersions).toHaveBeenCalledTimes(1);
     });
     expect(screen.queryByTestId('children')).not.toBeInTheDocument();
     expect(mockAddVersionComponent).not.toHaveBeenCalled();
@@ -935,7 +1237,7 @@ describe('AllVersionsList Component', () => {
   });
 
   it('should compute the next version from the highest loaded version after reopening', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+    mockGetAllVersions.mockResolvedValue({
       data: [
         { id: '1', version: '01.00.001', name: 'Older Version' },
         { id: '2', version: '01.00.010', name: 'Latest Version' },
@@ -967,7 +1269,7 @@ describe('AllVersionsList Component', () => {
   });
 
   it('should roll over patch and minor versions when the current max version reaches limits', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+    mockGetAllVersions.mockResolvedValue({
       data: [{ id: '1', version: '01.99.999', name: 'Boundary Version' }],
       success: true,
       total: 1,
@@ -995,7 +1297,7 @@ describe('AllVersionsList Component', () => {
   });
 
   it('should keep the current max version when later rows compare lower than the first version', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+    mockGetAllVersions.mockResolvedValue({
       data: [
         { id: '1', version: '03.00.000', name: 'Highest Version' },
         { id: '2', version: '02.99.999', name: 'Lower Version' },
@@ -1026,7 +1328,7 @@ describe('AllVersionsList Component', () => {
   });
 
   it('should keep the same max version when later rows compare equal before incrementing the patch', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+    mockGetAllVersions.mockResolvedValue({
       data: [
         { id: '1', version: '03.00.000', name: 'Duplicate Highest Version A' },
         { id: '2', version: '3.0.0', name: 'Duplicate Highest Version B' },
@@ -1057,7 +1359,7 @@ describe('AllVersionsList Component', () => {
   });
 
   it('should roll over only the patch version into the next minor version when needed', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+    mockGetAllVersions.mockResolvedValue({
       data: [{ id: '1', version: '01.02.999', name: 'Patch Boundary Version' }],
       success: true,
       total: 1,
@@ -1084,8 +1386,8 @@ describe('AllVersionsList Component', () => {
     });
   });
 
-  it('should fall back to 00.00.000 when no versions are returned', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+  it('hides creation when the global source has no version rows', async () => {
+    mockGetAllVersions.mockResolvedValue({
       data: [],
       success: true,
       total: 0,
@@ -1101,12 +1403,14 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(openButton);
 
     await waitFor(() => {
-      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '00.00.000' });
+      expect(mockGetAllVersions).toHaveBeenCalled();
+      expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+      expect(mockAddVersionComponent).not.toHaveBeenCalled();
     });
   });
 
-  it('should tolerate version requests that omit the data array', async () => {
-    mockGetAllVersions.mockResolvedValueOnce({
+  it('hides creation when the global version response omits its data array', async () => {
+    mockGetAllVersions.mockResolvedValue({
       success: true,
       total: 0,
     });
@@ -1120,7 +1424,29 @@ describe('AllVersionsList Component', () => {
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(mockAddVersionComponent).toHaveBeenLastCalledWith({ newVersion: '00.00.000' });
+      expect(mockGetAllVersions).toHaveBeenCalled();
+      expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+      expect(mockAddVersionComponent).not.toHaveBeenCalled();
     });
   });
 });
+
+jest.mock('@/components/DatasetClassificationFilter', () => ({
+  __esModule: true,
+  default: ({ value = [], onChange }: any) => (
+    <select
+      aria-label='Classification'
+      value={value[0]?.code ?? ''}
+      onChange={(event) =>
+        onChange(
+          event.target.value
+            ? [{ scope: 'classification', code: event.target.value, path: [event.target.value] }]
+            : [],
+        )
+      }
+    >
+      <option value=''>All classifications</option>
+      <option value='C'>Classification C</option>
+    </select>
+  ),
+}));

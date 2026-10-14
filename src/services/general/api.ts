@@ -1,6 +1,13 @@
 import { dispatchAntdAppAction } from '@/contexts/AntdAppContext';
 import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
+import {
+  hasDatasetCatalogFilters,
+  queryDatasetCatalog,
+  toDatasetVersionSelectRow,
+} from '../datasetCatalog/api';
+import { withDatasetClassification, type DatasetTableParams } from './datasetClassification';
+import type { OpenDataDatasetKind } from '../openDataCatalog/types';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { publicEntity } from '@/services/supabase/public';
 import {
@@ -1290,7 +1297,7 @@ export async function getAllVersions(
   nameColume: string,
   tableName: string,
   id: string,
-  params: { pageSize: number; current: number },
+  params: DatasetTableParams,
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
@@ -1298,60 +1305,104 @@ export async function getAllVersions(
 ) {
   const { field: sortBy, order: orderBy } = resolveAllVersionsSort(sort);
 
-  let query = publicEntity(tableName)
-    .select(
-      `
-    id,
-    ${nameColume}, 
-    version, 
-    created_at, 
-    modified_at`,
-      { count: 'exact' },
-    )
-    .eq('id', id)
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  const hasExactStateCode = typeof stateCode === 'number';
-
-  if (dataSource === 'my') {
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-        total: 0,
-      });
+  let result: any;
+  if (hasDatasetCatalogFilters(params)) {
+    const kindByTable: Record<string, OpenDataDatasetKind> = {
+      processes: 'process',
+      flows: 'flow',
+      lifecyclemodels: 'lifecyclemodel',
+      flowproperties: 'flowproperty',
+      unitgroups: 'unitgroup',
+      sources: 'source',
+      contacts: 'contact',
+    };
+    const datasetKind = kindByTable[tableName];
+    if (!datasetKind) {
+      return { data: [], success: false, total: 0, error: 'unsupported_dataset_kind' };
     }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-        total: 0,
-      });
+    if (dataSource === 'my') {
+      const session = await supabase.auth.getSession();
+      if (!session.data.session) {
+        return { data: [], success: false, total: 0 };
+      }
     }
-  }
+    const teamId = dataSource === 'te' ? await getTeamIdByUserId() : null;
+    if (dataSource === 'te' && !teamId) {
+      return { data: [], success: false, total: 0 };
+    }
+    const catalog = await queryDatasetCatalog({
+      datasetKind,
+      dataSource,
+      filterCondition: { ...withDatasetClassification(params), datasetId: id },
+      stateCode,
+      teamId,
+      versionScope: 'all',
+      pageCurrent: params.current,
+      pageSize: params.pageSize,
+      sortBy,
+      sortDirection: orderBy === 'ascend' ? 'asc' : 'desc',
+    });
+    result = {
+      ...catalog,
+      count: Number(catalog.data?.[0]?.total_count ?? 0) || 0,
+      data: (catalog.data ?? []).map((row: any) => toDatasetVersionSelectRow(tableName, row)),
+    };
+  } else {
+    let query = publicEntity(tableName)
+      .select(
+        `
+      id,
+      ${nameColume},
+      version,
+      created_at,
+      modified_at`,
+        { count: 'exact' },
+      )
+      .eq('id', id)
+      .order(sortBy, { ascending: orderBy === 'ascend' })
+      .range(
+        ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
+        (params.current ?? 1) * (params.pageSize ?? 10) - 1,
+      );
 
-  if (dataSource === 'ex') {
-    query = query.eq('state_code', -1);
-  } else if (hasExactStateCode) {
-    query = query.eq('state_code', stateCode);
-  } else if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-  }
+    const hasExactStateCode = typeof stateCode === 'number';
 
-  const result = await query;
+    if (dataSource === 'my') {
+      const session = await supabase.auth.getSession();
+      if (session.data.session) {
+        query = query.eq('user_id', session?.data?.session?.user?.id);
+      } else {
+        return Promise.resolve({
+          data: [],
+          success: false,
+          total: 0,
+        });
+      }
+    } else if (dataSource === 'te') {
+      const teamId = await getTeamIdByUserId();
+      if (teamId) {
+        query = query.eq('team_id', teamId);
+      } else {
+        return Promise.resolve({
+          data: [],
+          success: false,
+          total: 0,
+        });
+      }
+    }
+
+    if (dataSource === 'ex') {
+      query = query.eq('state_code', -1);
+    } else if (hasExactStateCode) {
+      query = query.eq('state_code', stateCode);
+    } else if (dataSource === 'tg') {
+      query = query.eq('state_code', 100);
+    } else if (dataSource === 'co') {
+      query = query.eq('state_code', 200);
+    }
+
+    result = await query;
+  }
   let data: any[] = result?.data ?? [];
   if (!result.error) {
     switch (tableName) {
@@ -1630,6 +1681,14 @@ export async function getAllVersions(
         break;
       }
     }
+
+    const sourceMetadata = new Map<string, any>(
+      (result.data ?? []).map((row: any) => [`${row.id}:${row.version}`, row]),
+    );
+    data = data.map((row) => {
+      const source = sourceMetadata.get(`${row.id}:${row.version}`);
+      return source?.created_at ? { ...row, createdAt: new Date(source.created_at) } : row;
+    });
 
     const versionSortedData =
       sortBy === 'version'

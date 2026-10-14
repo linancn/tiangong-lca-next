@@ -1,3 +1,5 @@
+import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import {
   flowproperty_hybrid_search,
   getFlowpropertyTableAll,
@@ -26,7 +28,7 @@ import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, theme } from 'antd';
+import { Checkbox, Input, Space, Tooltip } from 'antd';
 import type { FC, RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -47,10 +49,10 @@ import {
   dataListText,
   dataListTextColumn,
   responsiveDataListTableProps,
-  responsiveSearchCardClassName,
-  responsiveSearchExtraColProps,
-  responsiveSearchPrimaryColProps,
-  responsiveSearchRowProps,
+  ResponsiveDataListViewport,
+  dataListPagination,
+  getDataListToolbar,
+  orderDataListColumns,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
@@ -59,7 +61,7 @@ import {
   getOpenDataCatalogFilterArgs,
   type OpenDataCatalogFilters as OpenDataCatalogFilterValue,
 } from '@/services/openDataCatalog/types';
-import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import { getAllVersionsColumns } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
@@ -77,7 +79,7 @@ import FlowpropertyView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [keyWord, setKeyWord] = useState<string>('');
+  const [, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
@@ -92,7 +94,6 @@ const TableList: FC = () => {
   const [openDataFilters, setOpenDataFilters] = useState<OpenDataCatalogFilterValue>({
     ...DEFAULT_OPEN_DATA_FILTERS,
   });
-  const { token } = theme.useToken();
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
@@ -109,6 +110,8 @@ const TableList: FC = () => {
   const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType | undefined>(undefined);
+  const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
+  const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
@@ -222,18 +225,6 @@ const TableList: FC = () => {
       dataIndex: 'name',
       sorter: false,
       render: (_, row) => dataListText(row.name, row.generalComment),
-    },
-    {
-      ...dataListTextColumn<FlowpropertyTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
-      title: (
-        <FormattedMessage id='pages.table.title.classification' defaultMessage='Classification' />
-      ),
-      dataIndex: 'classification',
-      sorter: false,
-      search: false,
-      render: (_, row) => {
-        return dataListText(row.classification);
-      },
     },
     {
       ...dataListTextColumn<FlowpropertyTable>(260, DATA_LIST_COLUMN_RESPONSIVE.desktop),
@@ -365,216 +356,220 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <Card className={responsiveSearchCardClassName}>
-        <Row {...responsiveSearchRowProps}>
-          <Col {...responsiveSearchPrimaryColProps}>
-            <Search
-              size={'large'}
-              placeholder={
-                referenceLookup
-                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
-                  : openAI
-                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                    : intl.formatMessage({ id: 'pages.search.keyWord' })
+      <ResponsiveDataListViewport columns={flowpropertiesColumns}>
+        {({ scroll }) => (
+          <ProTable<FlowpropertyTable, LocaleAwareTableParams>
+            key={`flowproperties-table:${dataSource}:${tid ?? ''}`}
+            {...responsiveDataListTableProps}
+            scroll={scroll}
+            toolbar={getDataListToolbar({
+              search: (
+                <Search
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder={
+                    referenceLookup
+                      ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                      : openAI
+                        ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                        : intl.formatMessage({ id: 'pages.search.keyWord' })
+                  }
+                  onSearch={onSearch}
+                  enterButton
+                />
+              ),
+              filter: (
+                <Space wrap>
+                  <Checkbox
+                    checked={openAI}
+                    onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+                  >
+                    <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
+                  </Checkbox>
+                  <Space
+                    className='responsive-data-list-reference-lookup-option'
+                    size={4}
+                    align='center'
+                  >
+                    <Checkbox
+                      checked={referenceLookup}
+                      onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
+                    >
+                      <FormattedMessage
+                        id='pages.search.referenceLookup'
+                        defaultMessage='Reference Lookup'
+                      />
+                    </Checkbox>
+                    <ReferenceLookupHelpIcon />
+                  </Space>
+                  {shouldShowFlowpropertyTip && (
+                    <Tooltip title={<FormattedMessage id='pages.flowproperty.title.tips' />}>
+                      <InfoCircleOutlined />
+                    </Tooltip>
+                  )}
+                  <DatasetClassificationFilter
+                    datasetKind='flowproperty'
+                    lang={lang}
+                    value={classification}
+                    onChange={(next) => {
+                      setClassification(next);
+                      actionRef.current?.setPageInfo?.({ current: 1 });
+                    }}
+                  />
+                </Space>
+              ),
+            })}
+            rowKey={(record) => `${record.id}-${record.version}`}
+            headerTitle={false}
+            actionRef={actionRef}
+            params={{
+              locale: appLocale,
+              classification,
+              ...(dataSource === 'tg'
+                ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
+                : {}),
+            }}
+            search={false}
+            options={isMobileDataList ? false : { fullScreen: true }}
+            pagination={{
+              ...dataListPagination,
+              onChange: (current, pageSize) => setListPage({ current, pageSize }),
+              ...getReferenceLookupPaginationProps(referenceLookup),
+            }}
+            toolBarRender={() => {
+              if (dataSource === 'my') {
+                return [
+                  <TableFilter
+                    key={2}
+                    width={isMobileDataList ? 120 : 140}
+                    onChange={(val) => {
+                      stateCodeRef.current = val;
+                      setStateCode(val);
+                      actionRef.current?.reload();
+                    }}
+                  />,
+                  <FlowpropertiesCreate
+                    disabled={!isSystemAdmin}
+                    importData={importData}
+                    onClose={() => setImportData(null)}
+                    lang={lang}
+                    key={0}
+                    actionRef={actionRef}
+                  />,
+                  <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
+                ];
               }
-              onSearch={onSearch}
-              enterButton
-            />
-          </Col>
-          <Col {...responsiveSearchExtraColProps}>
-            <Checkbox
-              checked={openAI}
-              onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
-            >
-              <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
-            </Checkbox>
-            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
-              <Checkbox
-                checked={referenceLookup}
-                onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
-              >
-                <FormattedMessage
-                  id='pages.search.referenceLookup'
-                  defaultMessage='Reference Lookup'
-                />
-              </Checkbox>
-              <ReferenceLookupHelpIcon />
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-      <ProTable<FlowpropertyTable, LocaleAwareTableParams>
-        key={`flowproperties-table:${dataSource}:${tid ?? ''}`}
-        {...responsiveDataListTableProps}
-        rowKey={(record) => `${record.id}-${record.version}`}
-        headerTitle={
-          <Space size={8} align='center' wrap>
-            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-              {getDataTitle(dataSource)} /{' '}
-              <FormattedMessage id='menu.tgdata.flowproperties' defaultMessage='Flow Properties' />
-            </span>
-            {shouldShowFlowpropertyTip && (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: token.marginXXS,
-                  color: token.colorTextDescription,
-                  fontSize: token.fontSizeSM,
-                  fontWeight: 400,
-                  lineHeight: 1,
-                }}
-              >
-                <InfoCircleOutlined />
-                <FormattedMessage
-                  id='pages.flowproperty.title.tips'
-                  defaultMessage='Need to add or supplement flow properties? Contact an administrator.'
-                />
-              </span>
-            )}
-          </Space>
-        }
-        actionRef={actionRef}
-        params={{
-          locale: appLocale,
-          ...(dataSource === 'tg'
-            ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-            : {}),
-        }}
-        search={false}
-        options={isMobileDataList ? false : { fullScreen: true }}
-        pagination={{
-          showSizeChanger: false,
-          pageSize: 10,
-          ...getReferenceLookupPaginationProps(referenceLookup),
-        }}
-        toolBarRender={() => {
-          if (dataSource === 'my') {
-            return [
-              <TableFilter
-                key={2}
-                width={isMobileDataList ? 120 : 140}
-                onChange={(val) => {
-                  stateCodeRef.current = val;
-                  setStateCode(val);
-                  actionRef.current?.reload();
-                }}
-              />,
-              <FlowpropertiesCreate
-                disabled={!isSystemAdmin}
-                importData={importData}
-                onClose={() => setImportData(null)}
-                lang={lang}
-                key={0}
-                actionRef={actionRef}
-              />,
-              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
-            ];
-          }
-          return dataSource === 'tg'
-            ? [
-                <OpenDataCatalogFilters
-                  key='open-data-filters'
-                  value={openDataFilters}
-                  onChange={setOpenDataFilters}
-                />,
-              ]
-            : [];
-        }}
-        request={async (
-          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
-          sort,
-        ) => {
-          const {
-            locale: requestedLocale,
-            openDataFilterRevision: _openDataFilterRevision,
-            ...requestParams
-          } = params;
-          void _openDataFilterRevision;
-          return guardLocaleMaterializedTableRequest(
-            requestedLocale,
-            () => currentAppLocaleRef.current,
-            tableRequestEpochRef,
-            async ({ isCurrentRequest }) => {
-              const currentKeyWord = keyWordRef.current || keyWord;
-              const currentStateCode = stateCodeRef.current;
-              if (referenceLookup) {
-                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-                if (!referenceLookupUuid) {
-                  return attachRefUnitData(getReferenceLookupEmptyResult(requestParams.current));
-                }
-                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+              return dataSource === 'tg'
+                ? [
+                    <OpenDataCatalogFilters
+                      key='open-data-filters'
+                      value={openDataFilters}
+                      onChange={setOpenDataFilters}
+                    />,
+                  ]
+                : [];
+            }}
+            request={async (
+              params: LocaleAwareTableParams & { pageSize?: number; current?: number },
+              sort,
+            ) => {
+              const {
+                locale: requestedLocale,
+                openDataFilterRevision: _openDataFilterRevision,
+                ...requestParams
+              } = params;
+              void _openDataFilterRevision;
+              return guardLocaleMaterializedTableRequest(
+                requestedLocale,
+                () => currentAppLocaleRef.current,
+                tableRequestEpochRef,
+                async ({ isCurrentRequest }) => {
+                  const currentKeyWord = keyWordRef.current;
+                  const currentStateCode = stateCodeRef.current;
+                  if (referenceLookup) {
+                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                    if (!referenceLookupUuid) {
+                      return attachRefUnitData(
+                        getReferenceLookupEmptyResult(requestParams.current),
+                      );
+                    }
+                    const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-                const result = await getFlowpropertyTableUuidMentionSearch(
-                  requestParams,
-                  lang,
-                  dataSource,
-                  referenceLookupUuid,
-                  currentStateCode,
-                  referenceLookupTeamId,
-                  ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                );
-                const noticeKey = [
-                  dataSource,
-                  referenceLookupUuid,
-                  currentStateCode,
-                  referenceLookupTeamId,
-                  requestedLocale,
-                ].join(':');
-                if (
-                  isCurrentRequest() &&
-                  result.capped &&
-                  referenceLookupLimitNoticeRef.current !== noticeKey
-                ) {
-                  referenceLookupLimitNoticeRef.current = noticeKey;
-                  showReferenceLookupLimitMessage(intl);
-                }
-                return attachRefUnitData(result);
-              }
-              if (currentKeyWord.length > 0) {
-                if (openAI) {
-                  return attachRefUnitData(
-                    await flowproperty_hybrid_search(
+                    const result = await getFlowpropertyTableUuidMentionSearch(
                       requestParams,
                       lang,
                       dataSource,
-                      currentKeyWord,
-                      {},
+                      referenceLookupUuid,
                       currentStateCode,
+                      referenceLookupTeamId,
+                      ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                    );
+                    const noticeKey = [
+                      dataSource,
+                      referenceLookupUuid,
+                      currentStateCode,
+                      referenceLookupTeamId,
+                      requestedLocale,
+                    ].join(':');
+                    if (
+                      isCurrentRequest() &&
+                      result.capped &&
+                      referenceLookupLimitNoticeRef.current !== noticeKey
+                    ) {
+                      referenceLookupLimitNoticeRef.current = noticeKey;
+                      showReferenceLookupLimitMessage(intl);
+                    }
+                    return attachRefUnitData(result);
+                  }
+                  if (currentKeyWord.length > 0) {
+                    if (openAI) {
+                      return attachRefUnitData(
+                        await flowproperty_hybrid_search(
+                          requestParams,
+                          lang,
+                          dataSource,
+                          currentKeyWord,
+                          {},
+                          currentStateCode,
+                          tid ?? '',
+                          ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                        ),
+                      );
+                    }
+                    return attachRefUnitData(
+                      await getFlowpropertyTablePgroongaSearch(
+                        requestParams,
+                        lang,
+                        dataSource,
+                        currentKeyWord,
+                        {},
+                        currentStateCode,
+                        tid ?? '',
+                        ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
+                      ),
+                    );
+                  }
+                  return attachRefUnitData(
+                    await getFlowpropertyTableAll(
+                      requestParams,
+                      sort,
+                      lang,
+                      dataSource,
                       tid ?? '',
+                      currentStateCode,
                       ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
                     ),
                   );
-                }
-                return attachRefUnitData(
-                  await getFlowpropertyTablePgroongaSearch(
-                    requestParams,
-                    lang,
-                    dataSource,
-                    currentKeyWord,
-                    {},
-                    currentStateCode,
-                    tid ?? '',
-                    ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                  ),
-                );
-              }
-              return attachRefUnitData(
-                await getFlowpropertyTableAll(
-                  requestParams,
-                  sort,
-                  lang,
-                  dataSource,
-                  tid ?? '',
-                  currentStateCode,
-                  ...getOpenDataCatalogFilterArgs(dataSource, openDataFilters),
-                ),
+                },
               );
-            },
-          );
-        }}
-        columns={flowpropertiesColumns}
-      />
+            }}
+            columns={orderDataListColumns(flowpropertiesColumns, {
+              dataType: <FormattedMessage id='menu.tgdata.flowproperties' />,
+              pagination: listPage,
+            })}
+          />
+        )}
+      </ResponsiveDataListViewport>
 
       {viewDrawerVisible && viewId && viewVersion && (
         <FlowpropertyView
