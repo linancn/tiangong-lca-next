@@ -8,6 +8,7 @@ import {
   formatAnnualSupplyVolumeText,
   getAnnualSupplyVolumeDisplayNumericText,
   getAnnualSupplyVolumeLanguages,
+  getAnnualSupplyVolumeStoredSuffix,
   mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
@@ -406,5 +407,81 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         lang: 'en',
       }),
     ).toBe('');
+  });
+});
+
+describe('annual unit display and stored-value boundaries', () => {
+  it.each([
+    ['kilogram', 'kilogram/year'],
+    [{ '#text': 'kilogram' }, 'kilogram/year'],
+    [123, ''],
+    [undefined, ''],
+  ])(
+    'handles supported and malformed unit display shapes %# without borrowing Flow or FU text',
+    (name, expected) => {
+      expect(
+        deriveAnnualSupplyVolumeSuffix({
+          exchangeDataSource: [
+            {
+              quantitativeReference: true,
+              referenceToFlowDataSet: {
+                'common:shortDescription': [
+                  { '@xml:lang': 'en', '#text': 'Full product description' },
+                ],
+              },
+              refUnitRes: { name },
+              functionalUnitOrOther: { '#text': 'Complete functional unit' },
+            },
+          ],
+          lang: 'en',
+        }),
+      ).toBe(expected);
+    },
+  );
+  it('keeps an existing unsupported language only under its exact stored tag', () => {
+    const annual = { '@xml:lang': 'ja', '#text': '100 kg/year' };
+    expect(getAnnualSupplyVolumeStoredSuffix(annual, 'ja')).toBe('kg/year');
+    expect(getAnnualSupplyVolumeStoredSuffix(annual, 'de-DE')).toBe('');
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            quantitativeReference: true,
+            referenceToFlowDataSet: {},
+            refUnitRes: { refUnitName: 'kg' },
+          },
+        ],
+        lang: 'ja',
+      }),
+    ).toBe('');
+  });
+});
+
+describe('schema-compatible annualized suffix preservation', () => {
+  it('preserves a multiword unit when unavailable, but an exact unit overrides it', () => {
+    expect(
+      normalizeAnnualSupplyVolumeText('100 metric ton/year', '', { useDefaultSuffix: false }),
+    ).toBe('100 metric ton/year');
+    expect(
+      getAnnualSupplyVolumeStoredSuffix(
+        [{ '@xml:lang': 'en', '#text': '100 metric ton/year' }],
+        'en',
+      ),
+    ).toBe('metric ton/year');
+    expect(
+      normalizeAnnualSupplyVolumeText('100 metric ton/year', 'MJ/year', {
+        useDefaultSuffix: false,
+      }),
+    ).toBe('100 MJ/year');
+  });
+  it.each([
+    '100 kg full functional unit description',
+    '100 metric ton',
+    '100 unit\ncontinued/year',
+  ])('does not preserve unannualized or multiline narrative %s', (value) => {
+    expect(normalizeAnnualSupplyVolumeText(value, '', { useDefaultSuffix: false })).toBe('100');
+    expect(getAnnualSupplyVolumeStoredSuffix([{ '@xml:lang': 'en', '#text': value }], 'en')).toBe(
+      '',
+    );
   });
 });

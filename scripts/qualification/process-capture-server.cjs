@@ -186,6 +186,10 @@ async function startProcessCaptureServers(config) {
           : 'api'
         : 'ui';
       const referer = request.headers.referer;
+      const candidateFrame =
+        request.headers['sec-fetch-dest'] === 'iframe' &&
+        (referer === `${parentOrigin}/` ||
+          (typeof referer === 'string' && referer.startsWith(`${appOrigin}/`)));
       if (backend) {
         // The browser uses this same-origin gateway; no backend CORS preflight is needed.
         // In particular, never forward a preflight to an otherwise unreviewed command path.
@@ -200,8 +204,7 @@ async function startProcessCaptureServers(config) {
         if (!['GET', 'HEAD'].includes(request.method)) return deny(response);
         if (request.headers['sec-fetch-dest'] === 'document') return deny(response);
         if (request.headers['sec-fetch-dest'] === 'iframe') {
-          if (referer !== `${parentOrigin}/` || target.pathname !== '/' || target.search)
-            return deny(response);
+          if (!candidateFrame || target.pathname !== '/' || target.search) return deny(response);
         } else if (!(typeof referer === 'string' && referer.startsWith(`${appOrigin}/`)))
           return deny(response);
         if (target.pathname.startsWith('/api/') || target.pathname.startsWith('/__'))
@@ -288,12 +291,7 @@ async function startProcessCaptureServers(config) {
       });
       if (result.status >= 300 && result.status < 400) return deny(response);
       const contentType = result.headers.get('content-type') || 'application/octet-stream';
-      if (
-        !backend &&
-        contentType.includes('text/html') &&
-        (request.headers['sec-fetch-dest'] !== 'iframe' || referer !== `${parentOrigin}/`)
-      )
-        return deny(response);
+      if (!backend && contentType.includes('text/html') && !candidateFrame) return deny(response);
       const resultHeaders = {
         'content-type': contentType,
         'content-security-policy': appCsp(),

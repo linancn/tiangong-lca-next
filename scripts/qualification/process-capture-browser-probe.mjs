@@ -81,6 +81,7 @@ document.getElementById('navigation').onclick = () => {
 document.getElementById('form').onclick = () => { const form = document.createElement('form'); form.method = 'POST'; form.action = sink + '/form'; document.body.appendChild(form); form.submit(); };
 document.getElementById('frame').onclick = () => { const frame = document.createElement('iframe'); frame.src = sink + '/nested-frame'; document.body.appendChild(frame); };
 document.getElementById('navigate').onclick = () => { location.href = sink + '/frame-navigation'; };
+document.getElementById('reload').onclick = () => { location.reload(); };
 `;
 const dev = http.createServer((request, response) => {
   if (request.url === '/probe.js') {
@@ -90,7 +91,7 @@ const dev = http.createServer((request, response) => {
   }
   response.writeHead(200, { 'content-type': 'text/html' });
   response.end(
-    '<!doctype html><html><head><title>Synthetic capture isolation probes</title></head><body><h1>Synthetic capture isolation probes</h1><p>No production data or credentials.</p><button id="read">Permitted read</button><button id="capture">Capture synthetic payload</button><button id="writes">Try denied writes</button><button id="network">Try external network requests</button><button id="navigation">Try popup and top navigation</button><button id="frame">Try nested frame</button><button id="form">Try external form</button><button id="navigate">Try frame navigation last</button><pre id="results"></pre><script src="/probe.js"></script></body></html>',
+    '<!doctype html><html><head><title>Synthetic capture isolation probes</title></head><body><h1>Synthetic capture isolation probes</h1><p>No production data or credentials.</p><button id="reload">Reload embedded app</button><button id="read">Permitted read</button><button id="capture">Capture synthetic payload</button><button id="writes">Try denied writes</button><button id="network">Try external network requests</button><button id="navigation">Try popup and top navigation</button><button id="frame">Try nested frame</button><button id="form">Try external form</button><button id="navigate">Try frame navigation last</button><pre id="results"></pre><script src="/probe.js"></script></body></html>',
   );
 });
 const devOrigin = await listen(dev);

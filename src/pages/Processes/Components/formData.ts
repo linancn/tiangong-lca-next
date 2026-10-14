@@ -39,7 +39,12 @@ const mergeFieldValue = (previous: unknown, current: unknown, path: string): unk
 
   const merged: Record<string, unknown> = isFormObject(previous) ? { ...previous } : {};
   Object.entries(current).forEach(([key, value]) => {
-    merged[key] = mergeFieldValue(merged[key], value, `${path}.${key}`);
+    Object.defineProperty(merged, key, {
+      value: mergeFieldValue(merged[key], value, `${path}.${key}`),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   });
   return merged;
 };
@@ -51,7 +56,12 @@ export const mergeProcessFormValues = <T extends object>(
 ): T => {
   const merged = { ...previous } as Record<string, unknown>;
   Object.entries(current ?? {}).forEach(([key, value]) => {
-    merged[key] = mergeFieldValue(merged[key], value, key);
+    Object.defineProperty(merged, key, {
+      value: mergeFieldValue(merged[key], value, key),
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   });
   return merged as T;
 };

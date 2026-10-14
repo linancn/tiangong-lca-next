@@ -10,6 +10,7 @@ import {
   genProcessName,
   genProcessNameJson,
 } from '@/services/processes/util';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 
 // Mock dependencies
 jest.mock('@/services/general/util', () => ({
@@ -796,12 +797,35 @@ describe('Process Utility Functions', () => {
       ).toEqual([{ '@xml:lang': 'en', '#text': '100' }]);
     });
 
-    it.each([
-      ['en', 'year'],
-      ['zh', '年'],
-      ['de', 'Jahr'],
-      ['fr', 'an'],
-    ])('serializes the exact unit with the %s annual time unit', (language, timeUnit) => {
+    it('preserves an annualized multiword unit until an exact resolved unit replaces it', () => {
+      const data = {
+        ...mockProcessData,
+        modellingAndValidation: {
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [
+              { '@xml:lang': 'en', '#text': '12.5 metric ton/year' },
+            ],
+          },
+        },
+      };
+      const preserved = genProcessJsonOrdered('test-id', data);
+      expect(
+        preserved.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '12.5 metric ton/year' }]);
+      const resolved = genProcessJsonOrdered('test-id', data, { annualSupplyVolumeUnit: 'MJ' });
+      expect(
+        resolved.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+          .annualSupplyOrProductionVolume,
+      ).toEqual([{ '@xml:lang': 'en', '#text': '12.5 MJ/year' }]);
+    });
+
+    it.each(
+      CONTENT_LANGUAGE_REGISTRY.map(({ languageCode, generatedContent }) => [
+        languageCode,
+        generatedContent.annualSupplyTimeUnit,
+      ]),
+    )('serializes the exact unit with the %s annual time unit', (language, timeUnit) => {
       const data = {
         ...mockProcessData,
         exchanges: {

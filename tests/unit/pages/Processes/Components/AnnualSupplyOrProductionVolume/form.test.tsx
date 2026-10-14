@@ -7,6 +7,13 @@ jest.mock('@/services/processes/annualSupplyVolumeUnit', () => ({
   getAnnualSupplyVolumeUnitRows: (...args: any[]) => mockGetUnitData(...args),
 }));
 const mockFormItems: any[] = [];
+const defaultThemeTokens = {
+  colorError: '#ff4d4f',
+  fontSizeSM: 12,
+  lineHeightSM: 1.5,
+  marginXXS: 4,
+};
+let mockThemeTokens = defaultThemeTokens;
 
 const findFormItem = (name: Array<string | number>) => {
   return [...mockFormItems]
@@ -101,12 +108,7 @@ jest.mock('antd', () => {
     Space,
     theme: {
       useToken: () => ({
-        token: {
-          colorError: '#ff4d4f',
-          fontSizeSM: 12,
-          lineHeightSM: 1.5,
-          marginXXS: 4,
-        },
+        token: mockThemeTokens,
       }),
     },
   };
@@ -661,5 +663,90 @@ describe('annual unit resolution lifecycle', () => {
     );
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('m3/year');
     expect(form.setFieldValue).toHaveBeenCalledTimes(callsAfterCurrent);
+  });
+});
+
+describe('annual form reference and unavailable-form boundaries', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFormItems.length = 0;
+    mockThemeTokens = defaultThemeTokens;
+  });
+  afterEach(() => {
+    mockThemeTokens = defaultThemeTokens;
+  });
+  it('resolves an array-shaped reference descriptor through the same exact identity', async () => {
+    const exchange = {
+      quantitativeReference: true,
+      referenceToFlowDataSet: [{ '@refObjectId': 'flow-array', '@version': '02.00.000' }],
+    };
+    mockGetUnitData.mockResolvedValueOnce([
+      {
+        referenceToFlowDataSetId: 'flow-array',
+        referenceToFlowDataSetVersion: '02.00.000',
+        refUnitRes: { refUnitName: 'MJ' },
+      },
+    ]);
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 kg/year' }]);
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[exchange]}
+        formRef={{ current: form }}
+        label='Annual'
+        lang='en'
+        name={['annualSupply']}
+        onData={jest.fn()}
+      />,
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('MJ/year'),
+    );
+    expect(mockGetUnitData).toHaveBeenCalledWith([exchange]);
+    expect(form.setFieldValue).toHaveBeenLastCalledWith(
+      ['annualSupply'],
+      [{ '@xml:lang': 'en', '#text': '100 MJ/year' }],
+    );
+  });
+  it.each(['getFieldValue', 'setFieldValue'])(
+    'does not synchronize or report data when %s is missing',
+    (missing) => {
+      const onData = jest.fn();
+      const setFieldValue = jest.fn();
+      const getFieldValue = jest.fn(() => [{ '@xml:lang': 'en', '#text': '100 legacy narrative' }]);
+      const form = missing === 'getFieldValue' ? { setFieldValue } : { getFieldValue };
+      render(
+        <AnnualSupplyOrProductionVolumeForm
+          exchangeDataSource={[]}
+          formRef={{ current: form }}
+          label='Annual'
+          lang='en'
+          name={['annualSupply']}
+          onData={onData}
+        />,
+      );
+      expect(onData).not.toHaveBeenCalled();
+      expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+      expect(setFieldValue).not.toHaveBeenCalled();
+    },
+  );
+  it('renders readable context-error help when optional compact theme tokens are missing', () => {
+    mockThemeTokens = { colorError: '#ff4d4f' };
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        contextErrorMessage='Select a reference flow'
+        exchangeDataSource={[]}
+        formRef={{ current: undefined }}
+        label='Annual'
+        lang='en'
+        name={['annualSupply']}
+        onData={jest.fn()}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Select a reference flow');
+    expect(screen.getByRole('alert')).toHaveStyle({
+      fontSize: '12px',
+      lineHeight: '1.5',
+      marginTop: '4px',
+    });
   });
 });

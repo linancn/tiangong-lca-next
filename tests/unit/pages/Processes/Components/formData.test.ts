@@ -157,4 +157,30 @@ describe('Process form data overlay', () => {
     });
     expect(mergeProcessFormValues(undefined, { added: 'value' })).toEqual({ added: 'value' });
   });
+
+  it('treats imported JSON keys as own data rather than prototype mutations', () => {
+    const current = JSON.parse(
+      '{"__proto__":{"inherited":"unexpected"},"modellingAndValidation":{"__proto__":{"inherited":"unexpected"}}}',
+    );
+    const merged = mergeProcessFormValues({ modellingAndValidation: {} }, current);
+    expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+    expect(Object.getPrototypeOf(merged.modellingAndValidation)).toBe(Object.prototype);
+    expect(Object.getOwnPropertyDescriptor(merged, '__proto__')).toBeDefined();
+    expect(
+      Object.getOwnPropertyDescriptor(merged.modellingAndValidation, '__proto__'),
+    ).toBeDefined();
+  });
+
+  it('accepts null-prototype form containers without sharing their mutable fields', () => {
+    const container = Object.assign(Object.create(null), { validation: { review: ['updated'] } });
+    const merged = mergeProcessFormValues(
+      { modellingAndValidation: { completeness: { completenessProductModel: 'retained' } } },
+      { modellingAndValidation: container },
+    );
+    expect(merged.modellingAndValidation).toEqual({
+      completeness: { completenessProductModel: 'retained' },
+      validation: { review: ['updated'] },
+    });
+    expect(merged.modellingAndValidation).not.toBe(container);
+  });
 });

@@ -140,7 +140,7 @@ export const normalizeAnnualSupplyVolumeSuffix = (
 };
 
 const isAnnualSupplyVolumeSuffix = (value: string) => {
-  const matched = value.match(/^([^\s]+)\/([^/]+)$/u);
+  const matched = value.match(/^([^\r\n]+)\/([^/\r\n]+)$/u);
   return Boolean(
     matched &&
     CONTENT_LANGUAGE_REGISTRY.some(
@@ -224,7 +224,11 @@ export const normalizeAnnualSupplyVolumeText = (
   const { numericText, suffixText } = parseAnnualSupplyVolumeText(value);
   return formatAnnualSupplyVolumeText(
     numericText,
-    resolveAnnualSupplyVolumeSuffix(suffixText, suffix, options),
+    resolveAnnualSupplyVolumeSuffix(
+      /[\r\n]/u.test(normalizeText(value)) ? '' : suffixText,
+      suffix,
+      options,
+    ),
     options,
   );
 };
@@ -406,7 +410,7 @@ export const deriveAnnualSupplyVolumeSuffix = ({
   return unitName && timeUnit ? `${unitName}/${timeUnit}` : '';
 };
 
-/** Only a compact unit/time suffix is reusable when the exact unit is unavailable. */
+/** An annualized single-line suffix is reusable when the exact unit is unavailable; it does not attest its unit. */
 export const getAnnualSupplyVolumeStoredSuffix = (value: unknown, lang: string) => {
   const language = normalizeSupportedContentLanguage(lang) ?? lang.trim().toLowerCase();
   const items = Array.isArray(value) ? value : [value];
@@ -416,6 +420,7 @@ export const getAnnualSupplyVolumeStoredSuffix = (value: unknown, lang: string) 
       typeof entry === 'object' &&
       normalizeText(entry['@xml:lang']).toLowerCase() === language,
   );
-  const { suffixText } = parseAnnualSupplyVolumeText(item?.['#text']);
-  return isAnnualSupplyVolumeSuffix(suffixText) ? suffixText : '';
+  const text = normalizeText(item?.['#text']);
+  const { suffixText } = parseAnnualSupplyVolumeText(text);
+  return !/[\r\n]/u.test(text) && isAnnualSupplyVolumeSuffix(suffixText) ? suffixText : '';
 };

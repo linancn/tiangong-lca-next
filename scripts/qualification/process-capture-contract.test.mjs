@@ -135,6 +135,27 @@ for (const dest of ['document', 'empty', 'iframe'])
     );
     assert.deepEqual(received, []);
   });
+test('allows a native app reload inside the same constrained parent without opening top-level access', async () => {
+  const result = await request(`${runtime.appOrigin}/`, 'GET', undefined, {
+    referer: `${runtime.appOrigin}/`,
+    'sec-fetch-dest': 'iframe',
+  });
+  assert.equal(result.status, 200);
+  assert.ok(
+    result.headers['content-security-policy'].includes(`frame-ancestors ${runtime.parentOrigin}`),
+  );
+  assert.equal(
+    (
+      await request(`${runtime.appOrigin}/`, 'GET', undefined, {
+        referer: `${runtime.appOrigin}/`,
+        'sec-fetch-dest': 'document',
+      })
+    ).status,
+    403,
+  );
+  assert.deepEqual(received, []);
+});
+
 test('captures complete command once and aborts without upstream/success response', async () => {
   const body = captureBody();
   await assert.rejects(request(captureTarget(), 'POST', body, apiHeaders()));

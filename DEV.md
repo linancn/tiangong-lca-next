@@ -125,23 +125,27 @@ pnpm e2e:env:doctor
 
 `scripts/qualification/process-capture-start.mjs` is a local diagnostic for the native Process **All Versions → Create Version** UI. It requires a clean committed candidate and pins backend reads/authentication to that commit's tracked main environment. It captures one exact Process/source-version command and aborts it before forwarding; it never returns a created version or successful save. Qualification and evidence limits are in [repo-validation](docs/agents/repo-validation.md#process-payload-capture-qualification).
 
-Choose three unused loopback ports. For example, start the unchanged app with its backend URL pointing only at the diagnostic gateway:
+Build the unchanged app with its backend URL pointing only at the diagnostic gateway. The pinned Umi development server calls `listen(port)` without binding `HOST`, so this diagnostic uses the repository's existing loopback static-candidate server. With a clean commit and unused gateway port, create a new build receipt:
 
 ```bash
-PORT=7320 SUPABASE_URL=http://127.0.0.1:7321 pnpm start:no-mock
+mkdir -p .local/e2e-release
+export PROCESS_CAPTURE_APP_PORT=7321
+export PROCESS_CAPTURE_BUILD_RECEIPT="$PWD/.local/e2e-release/process-capture-build.json"
+node scripts/qualification/process-capture-build.mjs
 ```
 
-In another terminal, set `PROCESS_CAPTURE_PROCESS_ID`, `PROCESS_CAPTURE_SOURCE_VERSION` and `PROCESS_CAPTURE_OUTPUT` to the authorized source identity and a new absolute private output file outside this repository. The output parent directory must already exist; existing files are never overwritten. Then run:
+The builder exports exact HEAD and runs `pnpm build` using the pinned Node/pnpm and installed dependencies. Only the exported `.env` receives the explicit main/TianGong/loopback profile with normal runtime-status admission enabled; Umi otherwise overwrites shell environment values when loading dotenv. Local dotenv overrides are refused and ambient frontend flags are removed. The original checkout configuration stays unchanged. The receipt binds source/effective environment hashes, HEAD, tree, lock, gateway origin and a read-only copied bundle digest.
+
+Set `PROCESS_CAPTURE_PROCESS_ID`, `PROCESS_CAPTURE_SOURCE_VERSION` and `PROCESS_CAPTURE_OUTPUT` to the authorized source identity and a new absolute private output file outside this repository. The output parent directory must already exist; existing files are never overwritten. Then run in the same terminal:
 
 ```bash
-PROCESS_CAPTURE_DEV_ORIGIN=http://127.0.0.1:7320 \
-PROCESS_CAPTURE_APP_PORT=7321 PROCESS_CAPTURE_PARENT_PORT=7322 \
+PROCESS_CAPTURE_PARENT_PORT=7322 \
 node --import tsx scripts/qualification/process-capture-start.mjs
 ```
 
-Open only the printed `parentOrigin` in a separate browser tab. Its cross-origin sandbox frame contains the original app; direct navigation to the gateway app is refused. Sign in through the visible native UI. Do not copy browser auth storage, inject application state, enable the production-writing E2E setup, or reuse an existing unsaved production form. A blocked prerequisite stays a failed diagnostic; do not expand the allowlist to force a save. WebSockets/HMR are blocked, so restart the candidate after source changes. Stop both local processes after the bounded check.
+The launcher verifies the build receipt and bundle before binding every listener to `127.0.0.1`. Open only the printed `parentOrigin` in a separate browser tab. Its cross-origin sandbox frame contains the original app; direct navigation to the gateway app is refused. Sign in through the visible native UI. Do not copy browser auth storage, inject application state, enable the production-writing E2E setup, or reuse an existing unsaved production form. A blocked prerequisite stays a failed diagnostic; do not expand the allowlist to force a save. Rebuild and restart after source changes. Stop the diagnostic process after the bounded check.
 
-For credential-free transport checks, run `pnpm test:ci --runInBand --runTestsByPath tests/unit/scripts/processCaptureServer.test.ts`. The separate visible browser probe is `node --import tsx scripts/qualification/process-capture-browser-probe.mjs "$PWD/.local/e2e-release/process-capture-browser.json"` after creating `.local/e2e-release`. It uses only synthetic loopback servers and prints the diagnostic parent URL; its fake upstream report is not scientific dataset acceptance.
+For credential-free transport and build/launch checks, run `pnpm test:ci --runInBand --runTestsByPath tests/unit/scripts/processCaptureServer.test.ts tests/unit/scripts/processCaptureBuild.test.ts`. The separate visible browser probe is `node --import tsx scripts/qualification/process-capture-browser-probe.mjs "$PWD/.local/e2e-release/process-capture-browser.json"` after creating `.local/e2e-release`. It uses only synthetic loopback servers and prints the diagnostic parent URL; its fake upstream report is not scientific dataset acceptance.
 
 ## Default Work Loop
 
