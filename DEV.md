@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 732b55351e9b2b19391ebbacf2885d481e3fba85
+lastReviewedCommit: 7cc6f1fac9c9533802059488d289c0482d6c8d64
 lastReviewedNote: 'Reviewed Platform #1229 native sidebar collapse repair against Dev732b55351: existing serial Umi build/test workflow, isolated qualification configuration and supported native layout presets remain applicable; no bootstrap, dependency or release command changes.'
 ---
 

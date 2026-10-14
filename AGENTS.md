@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 732b55351e9b2b19391ebbacf2885d481e3fba85
+lastReviewedCommit: 7cc6f1fac9c9533802059488d289c0482d6c8d64
 lastReviewedNote: 'Reviewed Platform #1229 against Dev732b55351e9b2b19391ebbacf2885d481e3fba85: preserve the native ProLayout collapse element and layout ownership while adding accessible keyboard/state decoration. Real installed-component and registry-driven browser geometry tests cover collapse, expansion and mobile navigation; existing ownership, gate thresholds, locale capabilities and release policy remain unchanged.'
 related:
   - .docpact/config.yaml
