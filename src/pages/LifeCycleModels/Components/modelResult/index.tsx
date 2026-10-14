@@ -1,7 +1,9 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListTooltipContent,
   dataListPagination,
+  getDataListScrollX,
   dataListMetadataText,
   getDataListToolbar,
   orderDataListColumns,
@@ -100,7 +102,11 @@ const ModelResult: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.generalComment)}
+          >
             {row.name}
           </Tooltip>,
         ];
@@ -228,6 +234,7 @@ const ModelResult: FC<Props> = ({
         ) : null}
         <ProTable<ProcessTable, ModelResultTableParams>
           {...responsiveDataListTableProps}
+          scroll={{ x: getDataListScrollX(columns) }}
           rowKey={(row) => `${row.id}:${row.version ?? modelVersion}`}
           search={false}
           params={{
@@ -284,7 +291,7 @@ const ModelResult: FC<Props> = ({
           }}
           columns={orderDataListColumns(columns)}
         />
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={columns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ModelResultTableParams>
               {...responsiveDataListTableProps}

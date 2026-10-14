@@ -357,7 +357,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={contactColumns}>
         {({ scroll }) => (
           <ProTable<ContactTable, LocaleAwareTableParams>
             key={`contacts-table:${dataSource}:${tid ?? ''}`}

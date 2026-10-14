@@ -554,7 +554,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={processColumns}>
         {({ scroll }) => (
           <ProTable<ProcessTable, ProcessTableRequestParams>
             key={`process-table:${dataSource}:${tid ?? ''}`}

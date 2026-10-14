@@ -3,7 +3,7 @@
   "locale": "zh-CN",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "8ecc7963601f6100e21024604eac53bf2ea701efb2fe9cb0a8a3d0bc6fbccac1",
+    "auditedInputDigest": "d33e172f3e165a665fa5c0a6c239ad2c63f1ecf4ed28ea5f259d7a5a5786cab5",
     "validatedMessageCount": 3547,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "0d439a5a1de318501982cdea097f5232b722f69cb3f67fc05525685e23a8d12f",
-    "dossierDigest": "badbd53c2cd59d8c796b1b1f029b5edde1036e95fd5780b20c6836def351bd14",
+    "dossierDigest": "9dec545ee588ebb0e1fb57154224ac7d9c57f933b8a7745aaa8b7b2071520814",
     "typedContentDossierDigest": "cea189a77b03f66042197c8383d684813c09e3a0356684d325e62eaf73af4c99",
-    "routeEvidenceDigest": "2c06557aebd6d188bc3c6b2d01ba9478e83fd7d7428e076dc183ad009ee3c730",
+    "routeEvidenceDigest": "23961ce90fb19780f1cf1084489b8a1323da89549a6ad10503da0247e0853f9c",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "592bfb30e044267bf298dbd48ebe9d5b2ca397db6e859f5101cfbf3aa3ecaeab",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "badbd53c2cd59d8c796b1b1f029b5edde1036e95fd5780b20c6836def351bd14",
+        "dossierDigest": "9dec545ee588ebb0e1fb57154224ac7d9c57f933b8a7745aaa8b7b2071520814",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "48bd76deaedd3d9219e12c23253df8a2dbcfde67b99735a37f7418c5a59aa31e"
+  "validationDigest": "d18a42a89e472e73ff6085bae201a2d1a45f78809a41f91136ab2b503ebaae00"
 }

@@ -352,7 +352,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={sourceColumns}>
         {({ scroll }) => (
           <ProTable<SourceTable, LocaleAwareTableParams>
             key={`sources-table:${dataSource}:${tid ?? ''}`}

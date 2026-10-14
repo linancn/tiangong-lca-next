@@ -3,7 +3,7 @@ import { processtypeOfDataSetOptions } from '@/pages/Processes/Components/option
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import { useEffect, useRef, useState, type Key } from 'react';
-import { App, Button, Input, Result, Select, Space, Tag } from 'antd';
+import { App, Button, Input, Result, Select, Space, Tag, Tooltip } from 'antd';
 import {
   PageContainer,
   ProTable,
@@ -140,11 +140,16 @@ export default function DatasetDisplaySettings() {
               : [];
         const subtype =
           options.find((option) => option.value === row.typeOfDataSet)?.label ?? row.typeOfDataSet;
-        return (
+        const content = (
           <>
             {intl.formatMessage(datasetKindMessage(row.datasetKind))}
             {subtype ? <> · {subtype}</> : null}
           </>
+        );
+        return (
+          <Tooltip title={content} placement='topLeft'>
+            <span>{content}</span>
+          </Tooltip>
         );
       },
     },
@@ -165,7 +170,7 @@ export default function DatasetDisplaySettings() {
   ];
   return (
     <PageContainer header={{ breadcrumb: {}, title: false }}>
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={columns}>
         {({ scroll }) => (
           <ProTable<DatasetDisplayRow>
             {...responsiveDataListTableProps}

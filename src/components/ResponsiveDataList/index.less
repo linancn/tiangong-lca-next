@@ -21,10 +21,8 @@
 
 .responsive-data-list-table {
   .responsive-data-list-toolbar {
-    --data-list-search-width: clamp(180px, 22vw, 400px);
-
     // Native ProTable exposes the controls but no sizing props for its inner flex containers.
-    // Give the search its own budget and let filters, actions and settings use the remaining row.
+    // Keep controls at their natural width and give the remaining row to contextual search.
     .ant-pro-table-list-toolbar-container {
       align-items: center;
       flex-wrap: wrap;
@@ -40,7 +38,7 @@
       &:has(.ant-pro-table-list-toolbar-search) {
         flex: 1 1 180px;
         width: auto;
-        max-width: var(--data-list-search-width);
+        max-width: 100%;
       }
 
       .ant-pro-table-list-toolbar-search {
@@ -49,17 +47,21 @@
     }
 
     .ant-pro-table-list-toolbar-search {
-      flex: 0 1 auto;
-      width: var(--data-list-search-width);
+      flex: 1 1 180px;
+      width: auto;
       min-width: 0;
       max-width: 100%;
     }
 
     .ant-pro-table-list-toolbar-right {
-      flex: 1 1 auto;
+      flex: 0 1 auto;
       min-width: 0;
       max-width: 100%;
       align-items: center;
+
+      &:has(.ant-pro-table-list-toolbar-search) {
+        flex: 1 1 180px;
+      }
 
       > .ant-pro-table-list-toolbar-filter {
         min-width: 0;

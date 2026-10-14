@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
-lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
+lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
+lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: compact metadata, fluid names/search and confirmed classification drafts change presentation and query timing; ownership, authorization, branches and delivery gates are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

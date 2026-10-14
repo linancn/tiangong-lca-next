@@ -1,6 +1,8 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
@@ -216,7 +218,11 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.generalComment)}
+          >
             {row.name}
           </Tooltip>,
         ];
@@ -241,7 +247,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       sorter: false,
       search: false,
       render: (_, row) => {
-        return getProcesstypeOfDataSetOptions(row.typeOfDataSet);
+        return dataListMetadataText(getProcesstypeOfDataSetOptions(row.typeOfDataSet));
       },
     },
     {
@@ -311,7 +317,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -423,7 +429,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -535,7 +541,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -646,7 +652,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

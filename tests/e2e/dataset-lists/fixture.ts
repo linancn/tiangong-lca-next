@@ -53,6 +53,8 @@ export const routeNames: Record<Kind, string> = { ...tables, lifecyclemodel: 'mo
 export const USER_ID = '70400000-0000-4000-8000-000000000704';
 export const TEAM_ID = '70400000-0000-4000-8000-000000000705';
 const VERSION = '01.00.000';
+export const LONG_PROCESS_NAME =
+  '水泥生产；新型干法回转窑工艺；中国华东地区；包含石灰石开采、原料制备、熟料烧成、水泥粉磨及厂内运输；采用区域电网混合电力和煤炭供热；工厂大门边界；2020年代表性生产数据';
 const langText = (text: string) =>
   ['zh', 'en', 'de', 'fr'].map((lang) => ({
     '@xml:lang': lang,
@@ -77,7 +79,10 @@ export function datasetRow(kind: Kind, index: number) {
   const info = root[infoNames[kind]];
   const data = info.dataSetInformation;
   const id = `12130000-0000-4000-8${kinds.indexOf(kind)}00-${String(index + 1).padStart(12, '0')}`;
-  const name = `${labels[kind]} ${String(index + 1).padStart(3, '0')}`;
+  const name =
+    kind === 'process' && index === 0
+      ? LONG_PROCESS_NAME
+      : `${labels[kind]} ${String(index + 1).padStart(3, '0')}`;
   data['common:UUID'] = id;
   data.name = { baseName: langText(name) };
   data['common:name'] = langText(name);

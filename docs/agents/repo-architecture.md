@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
-lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
+lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
+lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: updated the shared columnSizing/viewport presentation budget, fluid names/search, full hover content and explicit classification draft confirmation. Exact references, backend filtering/counts and stored calculation results are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -138,9 +138,13 @@ The seven dataset catalogs reuse the same layout across `tg`, `co`, `ex`, `my`, 
 
 Search and the native filter/action/settings area share the complete toolbar width instead of reserving equal halves. Wide layouts keep their visible controls on one aligned row; constrained pages and drawers reflow controls without clipping or hiding their actions. The common rule applies to every consumer of the shared list toolbar.
 
+Search expands into the space left by the controls, without a desktop maximum-width cap. Dataset names are the single fluid table column; compact metadata and business/action columns retain explicit widths. `ResponsiveDataList/columnSizing.ts` owns this presentation budget, and each viewport receives its actual column definition to derive native horizontal scrolling. Extra screen width therefore goes to names instead of stretching years or versions. Headers and truncated values retain full hover content, including the original name description, formatted dates and exact-version controls.
+
 Catalogs, dataset selectors, AllVersions and mixed display lists default to 50 rows with native 20/50/100 choices. `ResponsiveDataListViewport` measures the enclosing page, Drawer or Modal, visible toolbar/header, pagination and confirmation area to give native table bodies an internal vertical scroll budget. It recomputes for resize, rendered chrome and fullscreen changes. Inline analysis tables keep their surrounding page's vertical scroll; Exchange, unit and calculation-result tables retain their necessary domain columns.
 
 `DatasetClassificationFilter` reads localized governed taxonomy resources, but submits stable classification/elementary codes and paths. `withDatasetClassification` combines them with business filters. List, lexical, Hybrid and UUID-reference queries carry the same filter to Database/Edge before count and pagination; app code does not filter an already fetched catalog page. `query_dataset_catalog`, `search_dataset_uuid_mentions_page`, existing search RPCs and the filtered mixed-display RPCs own complete-set filtering and totals. UUID-reference lookup uses native server paging instead of a fixed 50-result cap. A missing filtered contract is an error, never permission to retry without the filter. Matching deployment dependencies belong to `supabase-branching.md`.
+
+Classification navigation and clearing edit a pending selection inside the native popup. Only explicit confirmation applies a changed value to the list; cancelling, Escape or closing outside discards it. An unchanged confirmation does not repeat the query, and an external classification scope/value change cannot submit an older draft.
 
 Model Results is an exact referenced Process set, not an open catalog query. `getProcessesByIdAndVersion` deduplicates exact ID/version references, reads every readable batch and backend page, rejects unexpected identities or incomplete responses, then applies keyword/classification matching to that complete set before native UI paging. Main and subproduct tables use the base columns and independent toolbar filters; the one-row main result hides redundant pagination, while only the subproduct table fills the remaining Drawer height. These presentation queries do not recalculate or mutate the stored Model/Process results.
 

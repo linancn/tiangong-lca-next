@@ -1,5 +1,6 @@
 import {
   ResponsiveDataListViewport,
+  dataListTooltipContent,
   dataListPagination,
   orderDataListColumns,
   responsiveDataListTableProps,
@@ -86,7 +87,11 @@ const IoPortSelect: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+        <Tooltip
+          key={0}
+          placement='topLeft'
+          title={dataListTooltipContent(row.referenceToFlowDataSet, row.generalComment)}
+        >
           {row.referenceToFlowDataSet}
         </Tooltip>,
       ],
@@ -252,6 +257,19 @@ const IoPortSelect: FC<Props> = ({
     }
   }, [drawerVisible, exchangeTableParams.contentLanguage]);
 
+  const displayColumns = orderDataListColumns<ProcessExchangeTable>(
+    processExchangeColumns.map((column) => {
+      if (column.dataIndex === 'referenceToFlowDataSet') return { ...column, dataIndex: 'name' };
+      if (column.dataIndex === 'referenceToFlowDataSetVersion')
+        return {
+          ...column,
+          dataIndex: 'version',
+          render: (_, row) => row.referenceToFlowDataSetVersion,
+        };
+      return column;
+    }),
+    { dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' /> },
+  );
   return (
     <>
       <Drawer
@@ -294,7 +312,7 @@ const IoPortSelect: FC<Props> = ({
           </Space>
         }
       >
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={displayColumns}>
           {({ scroll }) => (
             <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -346,20 +364,7 @@ const IoPortSelect: FC<Props> = ({
                   }
                 }
               }}
-              columns={orderDataListColumns(
-                processExchangeColumns.map((column) => {
-                  if (column.dataIndex === 'referenceToFlowDataSet')
-                    return { ...column, dataIndex: 'name' };
-                  if (column.dataIndex === 'referenceToFlowDataSetVersion')
-                    return {
-                      ...column,
-                      dataIndex: 'version',
-                      render: (_, row) => row.referenceToFlowDataSetVersion,
-                    };
-                  return column;
-                }),
-                { dataType: <FormattedMessage id='menu.tgdata.flows' defaultMessage='Flows' /> },
-              )}
+              columns={displayColumns}
               tableAlertOptionRender={tableAlertOptionRender}
               rowSelection={{
                 alwaysShowAlert: true,

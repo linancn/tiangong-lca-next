@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
-lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
+lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
+lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: the inherited historical baseline is retained. Width/confirmation review adds no current full-gate pass or new verified counts; actual execution remains in Issue/PR records.'
 ---
 
 # Testing Execution State

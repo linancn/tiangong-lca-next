@@ -205,4 +205,41 @@ describe('ResponsiveDataList viewport observer lifecycle', () => {
     act(() => jest.advanceTimersByTime(20));
     expect(screen.getByRole('status')).toHaveTextContent('900');
   });
+  it('uses the explicit column budget for native horizontal scrolling without changing disabled vertical ownership', () => {
+    render(
+      <ResponsiveDataListViewport
+        enabled={false}
+        columns={[{ dataIndex: 'name' }, { dataIndex: 'option', width: 184 }]}
+      >
+        {({ scroll }) => <output>{JSON.stringify(scroll)}</output>}
+      </ResponsiveDataListViewport>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('{"x":1092}');
+    expect(observe).not.toHaveBeenCalled();
+  });
+  it('updates the horizontal budget from new columns while retaining native measured vertical scrolling', () => {
+    const { rerender, unmount } = render(
+      <ResponsiveDataListViewport columns={[{ dataIndex: 'name' }]}>
+        {({ scroll }) => <output>{JSON.stringify(scroll)}</output>}
+      </ResponsiveDataListViewport>,
+    );
+    act(() => jest.advanceTimersByTime(20));
+    expect(screen.getByRole('status')).toHaveTextContent('{"x":908,"y":900}');
+    const observationCount = observe.mock.calls.length;
+    rerender(
+      <ResponsiveDataListViewport columns={[{ dataIndex: 'name' }, { dataIndex: 'modifiedAt' }]}>
+        {({ scroll }) => <output>{JSON.stringify(scroll)}</output>}
+      </ResponsiveDataListViewport>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('{"x":1064,"y":900}');
+    expect(observe).toHaveBeenCalledTimes(observationCount);
+    window.innerHeight = 1000;
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+      jest.advanceTimersByTime(20);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('{"x":1064,"y":1000}');
+    unmount();
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  });
 });

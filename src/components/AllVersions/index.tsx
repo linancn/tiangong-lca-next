@@ -272,7 +272,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         }
         mask={{ closable: false }}
       >
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={allVersionsColumns}>
           {({ scroll }) => (
             <ProTable<any, ContentLanguageAwareTableParams & { versionScope: string }>
               {...responsiveDataListTableProps}
