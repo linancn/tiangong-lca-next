@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader tests await observable close completion under the existing strict act-warning guard. Runtime, dependency, branch, release and full-gate contracts are unchanged.'
+lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
+lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
 ---
 
 # Development Bootstrap

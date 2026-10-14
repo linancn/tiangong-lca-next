@@ -5,7 +5,9 @@
 
 import { DarkMode, Question, SelectLang, SelectLangAction } from '@/components/RightContent';
 import { MANUAL_LOCALE_STORAGE_KEY } from '@/services/general/runtimeLocale';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { brandProfile } from '../../../config/brandProfile';
 
 type ReactNode = import('react').ReactNode;
 
@@ -40,6 +42,7 @@ const defaultAvailableLocales = () => [
 let mockAvailableLocales: Array<Record<string, unknown>> = defaultAvailableLocales();
 
 jest.mock('@ant-design/icons', () => ({
+  ...jest.requireActual('@ant-design/icons'),
   MoonOutlined: (props: IconProps) => <span data-testid='moon-icon' {...props} />,
   SunFilled: (props: IconProps) => <span data-testid='sun-icon' {...props} />,
   QuestionCircleOutlined: () => <span>?</span>,
@@ -125,6 +128,7 @@ jest.mock('antd', () => {
   };
 
   return {
+    Dropdown: jest.requireActual('antd').Dropdown,
     ConfigProvider,
     Tooltip: ({ children, title }: { children: ReactNode; title: ReactNode }) => (
       <>
@@ -181,67 +185,56 @@ describe('RightContent Components', () => {
     expect(mockHandleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('opens documentation link when question icon is clicked', () => {
+  it.each([
+    ['zh-CN', 'Help', 'https://docs.tiangong.earth'],
+    ['en-US', 'Help', 'https://docs.tiangong.earth/en'],
+    [undefined, 'Help', 'https://docs.tiangong.earth/en'],
+    ['de-DE', 'Hilfedokumentation (English)', 'https://docs.tiangong.earth/en'],
+    ['fr-FR', 'Documentation d’aide (English)', 'https://docs.tiangong.earth/en'],
+  ])(
+    'keeps documentation routing and fallback labels in the %s help menu',
+    async (locale, label, url) => {
+      mockLocale = locale;
+      const user = userEvent.setup();
+      render(<Question />);
+
+      const button = screen.getByRole('button', { name: 'Help and about' });
+      expect(button).toHaveClass('tg-global-header-help-action');
+      expect(button).toHaveAttribute('aria-haspopup', 'menu');
+      expect(button).not.toHaveAttribute('style');
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Help and about');
+      await user.click(button);
+
+      const documentation = await screen.findByRole('link', { name: label });
+      expect(documentation).toHaveAttribute('href', url);
+      expect(documentation).toHaveAttribute('target', '_blank');
+      expect(documentation).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(mockWindowOpen).not.toHaveBeenCalled();
+      await user.click(button);
+      await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    },
+  );
+
+  it('relocates brand links and copyright into the keyboard-accessible global menu', async () => {
+    const user = userEvent.setup();
     render(<Question />);
+    const button = screen.getByRole('button', { name: 'Help and about' });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(button).toHaveAttribute('aria-expanded', 'true');
 
-    const button = screen.getByRole('button', { name: 'Help' });
-
-    expect(button).toHaveClass('tg-global-header-help-action');
-    expect(button).not.toHaveAttribute('style');
-    expect(button).not.toHaveAttribute('title');
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Help');
-    fireEvent.click(button);
-
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
-  });
-
-  it('opens the English documentation link when locale starts with en', () => {
-    mockLocale = 'en-US';
-
-    render(<Question />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
-
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
-  });
-
-  it('falls back to the default docs URL when the locale is missing', () => {
-    mockLocale = undefined;
-
-    render(<Question />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
-
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
-  });
-
-  it('opens explicitly labelled English documentation for the German app locale', () => {
-    mockLocale = 'de-DE';
-
-    render(<Question />);
-
-    const helpButton = screen.getByRole('button', {
-      name: 'Hilfedokumentation (English)',
-    });
-    expect(helpButton).not.toHaveAttribute('title');
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Hilfedokumentation (English)');
-    fireEvent.click(helpButton);
-
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
-  });
-
-  it('opens explicitly labelled English documentation for the French app locale', () => {
-    mockLocale = 'fr-FR';
-
-    render(<Question />);
-
-    const helpButton = screen.getByRole('button', {
-      name: 'Documentation d’aide (English)',
-    });
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Documentation d’aide (English)');
-    fireEvent.click(helpButton);
-
-    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
+    const source = await screen.findByRole('link', { name: 'GitHub' });
+    expect(source).toHaveAttribute('href', brandProfile.links.source);
+    expect(source).toHaveAttribute('rel', 'noopener noreferrer');
+    const homepage = screen.getByRole('link', { name: brandProfile.displayName });
+    expect(homepage).toHaveAttribute('href', brandProfile.links.homepage);
+    expect(homepage).toHaveAttribute('target', '_blank');
+    await waitFor(() => expect(screen.getByText(`© ${brandProfile.displayName}`)).toBeVisible());
+    homepage.addEventListener('click', (event) => event.preventDefault());
+    await user.click(homepage);
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('renders the language selector with padding style', () => {

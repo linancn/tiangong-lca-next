@@ -199,6 +199,47 @@ describe('ResponsiveDataList helpers', () => {
     expect(columns).toHaveLength(8);
   });
 
+  it('preserves the shared toolbar layout class and native control callbacks with a caller class', () => {
+    const onSearch = jest.fn();
+    const onFilter = jest.fn();
+    const onReload = jest.fn();
+    const search = { onSearch };
+    const filter = (
+      <button type='button' onClick={onFilter}>
+        Classification
+      </button>
+    );
+    const actions = [
+      <button key='create' type='button'>
+        Create
+      </button>,
+    ];
+    const settings = [{ key: 'reload', icon: <span>Reload</span>, onClick: onReload }];
+    const style = { width: '100%' };
+    const toolbar = getDataListToolbar({
+      className: 'model-results-toolbar',
+      title: 'Sub products',
+      search,
+      filter,
+      actions,
+      settings,
+      style,
+      multipleLine: false,
+    });
+    expect(toolbar.className).toBe('responsive-data-list-toolbar model-results-toolbar');
+    expect(toolbar.title).toBe('Sub products');
+    expect(toolbar.search).toBe(search);
+    expect(toolbar.filter).toBe(filter);
+    expect(toolbar.actions).toBe(actions);
+    expect(toolbar.settings).toBe(settings);
+    expect(toolbar.style).toBe(style);
+    expect(toolbar.multipleLine).toBe(false);
+    expect(responsiveDataListTableProps.toolbar.className).toBe('responsive-data-list-toolbar');
+    expect(onSearch).not.toHaveBeenCalled();
+    expect(onFilter).not.toHaveBeenCalled();
+    expect(onReload).not.toHaveBeenCalled();
+  });
+
   it('adds explicit unavailable fields and an entity type without guessing missing metadata', () => {
     const ordered = orderDataListColumns<any>([{ dataIndex: 'name' }], { dataType: 'Model' });
     render(

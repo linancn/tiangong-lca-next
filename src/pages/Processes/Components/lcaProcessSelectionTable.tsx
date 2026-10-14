@@ -1,9 +1,9 @@
 import { processtypeOfDataSetOptions } from './optiondata';
 import type { TablePaginationConfig } from 'antd/es/table';
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
-import { ResponsiveDataListViewport } from '@/components/ResponsiveDataList';
+import { ResponsiveDataListViewport, dataListSearchStyle } from '@/components/ResponsiveDataList';
 import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
-import { Button, Input, Select, Space, Table, Typography } from 'antd';
+import { Button, Flex, Input, Select, Space, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -219,24 +219,33 @@ const LcaProcessSelectionTable = ({
           scroll={scroll}
           tableLayout='fixed'
           title={() => (
-            <Space orientation='vertical' size='small' style={{ width: '100%' }}>
-              <Typography.Text strong>
-                <FormattedMessage
-                  id={messages.title.id}
-                  defaultMessage={messages.title.defaultMessage}
-                />
-              </Typography.Text>
-              <Typography.Text type='secondary'>
-                <FormattedMessage
-                  id={messages.hint.id}
-                  defaultMessage={messages.hint.defaultMessage}
-                  values={{
-                    selectedCount: selectedProcessIds.length,
-                    totalCount: totalProcessCount ?? processOptions.length,
-                  }}
-                />
-              </Typography.Text>
-              <Space wrap={true} size='small' style={{ width: '100%' }}>
+            <Flex vertical gap='small' style={{ width: '100%' }}>
+              <Flex wrap align='center' gap='small'>
+                <Typography.Text strong>
+                  <FormattedMessage
+                    id={messages.title.id}
+                    defaultMessage={messages.title.defaultMessage}
+                  />
+                </Typography.Text>
+                <Typography.Text type='secondary'>
+                  <FormattedMessage
+                    id={messages.hint.id}
+                    defaultMessage={messages.hint.defaultMessage}
+                    values={{
+                      selectedCount: selectedProcessIds.length,
+                      totalCount: totalProcessCount ?? processOptions.length,
+                    }}
+                  />
+                </Typography.Text>
+                <Typography.Text type='secondary'>
+                  <FormattedMessage
+                    id='pages.process.lca.selection.visibleCount'
+                    defaultMessage='{visibleCount, plural, one {Showing # process in this list.} other {Showing # processes in this list.}}'
+                    values={{ visibleCount: visibleProcessOptions.length }}
+                  />
+                </Typography.Text>
+              </Flex>
+              <Flex wrap align='center' gap='small' className='lca-process-selection-toolbar'>
                 <Select
                   aria-label={intl.formatMessage({
                     id: 'pages.process.lca.selection.filter.label',
@@ -278,7 +287,7 @@ const LcaProcessSelectionTable = ({
                           defaultMessage: 'Filter processes in this list',
                         })
                   }
-                  style={{ width: 'min(440px, 100%)' }}
+                  style={dataListSearchStyle}
                   placeholder={
                     onSearch
                       ? intl.formatMessage({ id: 'pages.search.keyWord' })
@@ -300,17 +309,8 @@ const LcaProcessSelectionTable = ({
                     onChange={onClassificationChange}
                   />
                 ) : null}
-              </Space>
-              <Typography.Text type='secondary'>
-                <FormattedMessage
-                  id='pages.process.lca.selection.visibleCount'
-                  defaultMessage='{visibleCount, plural, one {Showing # process in this list.} other {Showing # processes in this list.}}'
-                  values={{
-                    visibleCount: visibleProcessOptions.length,
-                  }}
-                />
-              </Typography.Text>
-            </Space>
+              </Flex>
+            </Flex>
           )}
           loading={loading}
           rowKey={getProcessSelectionKey}

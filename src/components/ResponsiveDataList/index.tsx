@@ -1,7 +1,7 @@
 import type { ProColumns, ProTableProps } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-components';
 import { Grid, Space, Tooltip, theme, type CardProps } from 'antd';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Children } from 'react';
 import { FormattedMessage } from 'umi';
 
@@ -44,13 +44,27 @@ export const dataListPagination = {
   pageSizeOptions: [20, 50, 100],
 };
 
+/** The same shrinkable search budget for native Table toolbars outside ProTable. */
+export const dataListSearchStyle: CSSProperties = {
+  width: 'var(--data-list-search-width, clamp(180px, 22vw, 400px))',
+  flex: '0 1 auto',
+  minWidth: 0,
+  maxWidth: '100%',
+};
+
 /** Keep the native tab overflow menu above the drawer that owns its trigger. */
 export const dataListTabProps: CardProps['tabProps'] = {
   getPopupContainer: (trigger) => trigger.closest<HTMLElement>('[role="dialog"]') ?? document.body,
 };
 
 export function getDataListToolbar(toolbar: ProTableProps<any, any>['toolbar'] = {}) {
-  return { ...responsiveDataListTableProps.toolbar, ...toolbar };
+  return {
+    ...responsiveDataListTableProps.toolbar,
+    ...toolbar,
+    className: [responsiveDataListTableProps.toolbar.className, toolbar.className]
+      .filter(Boolean)
+      .join(' '),
+  };
 }
 
 type DataListBaseField = 'index' | 'name' | 'location' | 'referenceYear' | 'dataType' | 'version';

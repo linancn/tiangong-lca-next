@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
+lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
+lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -237,6 +237,8 @@ E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:80
 ```
 
 The configured suite exercises all seven Open Data catalogs, desktop/narrow layouts, six-column order, default paging, internal body scrolling, toolbar containment, combined classification/full-text/reference query bodies, mixed display filters, AllVersions/fullscreen/zoom geometry and nested Flow selectors. Its screenshots and run output live under ignored `.local/dataset-list-unification/`; fixture credentials and synthetic records never reach a live backend. It is focused frontend/layout evidence, not deployed filter/ACL proof, canonical semantic localization evidence, authenticated production persistence proof or release qualification. Record actual commands and results in the delivery Issue/PR; this guide does not claim those checks have run. Existing full-gate and production-authorization boundaries remain unchanged.
+
+Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots, and obtain the user's requested interface confirmation before any further production publication.
 
 ### Model product-provider persistence qualification
 
