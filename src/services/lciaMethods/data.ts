@@ -174,7 +174,7 @@ export type LciaMethodCoverageRow = {
 export type LciaMethodFactorCoverageMatrix<
   TArtifact extends LcaUncharacterizedEvidenceArtifactBase = LcaUncharacterizedEvidenceArtifactV1,
 > = {
-  schema_version: 'lcia.method_factor_coverage.matrix.v1';
+  schema_version: 'lcia.method_factor_coverage.matrix.v1' | 'lcia.method_factor_coverage.matrix.v2';
   source_snapshot_sha256: string;
   method_manifest_sha256: string;
   method_identity_manifest_sha256: string;
@@ -237,7 +237,10 @@ export type LcaStaticMethodFactorSourceV2 = {
 
 export type LcaUncharacterizedEvidenceArtifactBase = {
   artifact_url: string;
-  artifact_format: 'lcia-uncharacterized-jsonl:v1' | 'lcia-uncharacterized-jsonl:v2';
+  artifact_format:
+    | 'lcia-uncharacterized-jsonl:v1'
+    | 'lcia-uncharacterized-jsonl:v2'
+    | 'lcia-coverage-replay-snapshot:v1';
   artifact_sha256: string;
   record_count: number;
 };
@@ -247,7 +250,7 @@ export type LcaUncharacterizedEvidenceArtifactV1 = LcaUncharacterizedEvidenceArt
 };
 
 export type LcaUncharacterizedEvidenceArtifactV2 = LcaUncharacterizedEvidenceArtifactBase & {
-  artifact_format: 'lcia-uncharacterized-jsonl:v2';
+  artifact_format: 'lcia-uncharacterized-jsonl:v2' | 'lcia-coverage-replay-snapshot:v1';
 };
 
 export type LcaUncharacterizedEvidenceArtifact = LcaUncharacterizedEvidenceArtifactV1;

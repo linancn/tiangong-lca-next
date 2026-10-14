@@ -273,6 +273,24 @@ describe('LcaCalculationEvidenceNotice', () => {
     ).toBeInTheDocument();
   });
 
+  it('never presents a replay snapshot as a downloadable gap file', () => {
+    const matrix = {
+      ...mockMatrix,
+      uncharacterized_evidence: {
+        artifact_url: 'http://localhost/release.json.zst',
+        artifact_format: 'lcia-coverage-replay-snapshot:v1',
+        artifact_sha256: 'a'.repeat(64),
+        record_count: 25,
+      },
+    };
+    render(
+      <LcaCalculationEvidenceNotice
+        calculationEvidence={{ status: 'incomplete_coverage', matrix }}
+      />,
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
   it('exposes only loopback artifacts and tolerates an absent locale', () => {
     mockLocale = undefined as any;
     const matrix = {

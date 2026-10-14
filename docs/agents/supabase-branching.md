@@ -25,8 +25,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: document Database #838 and Edge #477 deployment dependencies and explicit failure when filtered contracts are unavailable. Environment selection, visibility, authorization and production promotion policy are unchanged.'
+lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
+lastReviewedNote: 'Reviewed Platform #1224 replay evidence compatibility and terminal polling regressions. Static calculation and legacy artifact semantics remain; replay snapshots are not gap-download links. Existing full validation and release policies remain.'
 ---
 
 # Supabase Environment And Database Workflow

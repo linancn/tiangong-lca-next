@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
+lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
+lastReviewedNote: 'Reviewed Platform #1224 replay evidence compatibility and terminal polling regressions. Static calculation and legacy artifact semantics remain; replay snapshots are not gap-download links. Existing full validation and release policies remain.'
 ---
 
 # Testing Patterns Reference
