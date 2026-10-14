@@ -211,7 +211,7 @@ async function startProcessCaptureServers(config) {
           return deny(response);
         if (
           target.pathname !== '/' &&
-          !/\.(?:js|css|json|xml|svg|png|jpe?g|gif|webp|ico|woff2?|ttf|map)$/iu.test(
+          !/\.(?:js|css|json|json\.gz|xml|svg|png|jpe?g|gif|webp|ico|woff2?|ttf|map)$/iu.test(
             target.pathname,
           )
         )

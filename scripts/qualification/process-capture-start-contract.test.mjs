@@ -109,6 +109,23 @@ test('launches the exact copied bundle through a separate loopback sandbox and c
     const ready = await (await fetch(`${identity.frontendOrigin}/__tiangong_e2e__/ready`)).json();
     assert.equal(ready.bundleSha256, receipt.bundleSha256);
     assert.equal(ready.candidateCommit, receipt.candidate.commit);
+    const status = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Status signal did not return')), 3000);
+      child.stdout.on('data', () => {
+        const line = stdout
+          .split('\n')
+          .slice(0, -1)
+          .find((entry) => entry.includes('"event":"status"'));
+        if (line) {
+          clearTimeout(timeout);
+          resolve(JSON.parse(line));
+        }
+      });
+    });
+    child.kill('SIGUSR2');
+    const reported = await status;
+    assert.equal(reported.summary.businessMutationDispatches, 0);
+    assert.equal(reported.summary.authDispatches, 0);
     const exit = new Promise((resolve) => child.once('exit', resolve));
     child.kill('SIGTERM');
     await exit;
@@ -133,6 +150,9 @@ test('rejects modified source, receipt identity and bundle bytes before serving'
       { nodeVersion: '0.0.1' },
       { pnpmVersion: '0.0.1' },
       { bundleSha256: '0'.repeat(64) },
+      { buildProfile: { ...receipt.buildProfile, runtimeConfigEnabled: false } },
+      { buildProfile: { ...receipt.buildProfile, sourceEnvironmentSha256: '0'.repeat(64) } },
+      { buildProfile: { ...receipt.buildProfile, effectiveEnvironmentSha256: '0'.repeat(64) } },
       { bundleRoot: path.join(value.repo, 'dist') },
     ]) {
       fs.writeFileSync(value.receipt, JSON.stringify({ ...receipt, ...change }));

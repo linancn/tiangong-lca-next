@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import { afterEach, beforeEach, test } from 'node:test';
 import { classifyProductionRequest } from '../../tests/e2e/i18n/production-request-guard.ts';
 import server from './process-capture-server.cjs';
@@ -38,6 +39,7 @@ function request(target, method = 'GET', body, headers = {}, rawPath) {
             status: response.statusCode,
             headers: response.headers,
             body: Buffer.concat(chunks).toString(),
+            bodyBytes: Buffer.concat(chunks),
           }),
         );
       },
@@ -82,6 +84,11 @@ beforeEach(async () => {
     }
   });
   dev = http.createServer((req, res) => {
+    if (req.url === '/classifications/example.json.gz') {
+      res.writeHead(200, { 'content-type': 'application/octet-stream' });
+      res.end(gzipSync('{"labels":["synthetic"]}'));
+      return;
+    }
     res.writeHead(200, { 'content-type': req.url === '/' ? 'text/html' : 'text/javascript' });
     res.end(req.url === '/' ? '<html>candidate</html>' : '/* local asset */');
   });
@@ -135,6 +142,18 @@ for (const dest of ['document', 'empty', 'iframe'])
     );
     assert.deepEqual(received, []);
   });
+test('preserves compressed local reference resources without backend forwarding', async () => {
+  const result = await request(
+    `${runtime.appOrigin}/classifications/example.json.gz`,
+    'GET',
+    undefined,
+    { referer: `${runtime.appOrigin}/`, 'sec-fetch-dest': 'empty' },
+  );
+  assert.equal(result.status, 200);
+  assert.equal(gunzipSync(result.bodyBytes).toString(), '{"labels":["synthetic"]}');
+  assert.deepEqual(received, []);
+});
+
 test('allows a native app reload inside the same constrained parent without opening top-level access', async () => {
   const result = await request(`${runtime.appOrigin}/`, 'GET', undefined, {
     referer: `${runtime.appOrigin}/`,

@@ -177,6 +177,9 @@ try {
 process.stdout.write(
   `${JSON.stringify({ sourceCommit, sourceTree, bundleSha256: frontend.identity.bundleSha256, parentOrigin: runtime.parentOrigin, appOrigin: runtime.appOrigin, frontendOrigin, upstreamOrigin: pinnedMain.SUPABASE_URL })}\n`,
 );
+process.on('SIGUSR2', () => {
+  process.stdout.write(`${JSON.stringify({ event: 'status', summary: runtime.summary() })}\n`);
+});
 for (const signal of ['SIGINT', 'SIGTERM'])
   process.once(signal, async () => {
     process.stdout.write(`${JSON.stringify({ event: 'closed', summary: runtime.summary() })}\n`);
