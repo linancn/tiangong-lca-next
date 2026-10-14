@@ -1,5 +1,5 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
-import { dataListPagination } from '@/components/ResponsiveDataList';
+import { dataListPagination, dataListSearchStyle } from '@/components/ResponsiveDataList';
 import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AlignedNumber from '@/components/AlignedNumber';
 import {
@@ -51,6 +51,7 @@ import {
   Col,
   Descriptions,
   Form,
+  Flex,
   Input,
   InputNumber,
   Pagination,
@@ -1970,37 +1971,35 @@ const LcaAnalysisPage = () => {
                 defaultMessage='Use the existing LCA query API to review the LCIA profile of a single process, compare selected processes by impact category, aggregate selected processes into grouped results, or run contribution path analysis for a selected process-impact pair across current-user, open-data, or all-data scopes. Charts support quick interpretation; tables preserve exact values.'
               />
             </Typography.Paragraph>
-            <Row gutter={[16, 16]}>
-              <Col xs={24} md={8}>
-                <Form layout='vertical'>
-                  <Form.Item
-                    label={
-                      <FormattedMessage
-                        id='pages.process.lca.page.dataScope.label'
-                        defaultMessage='Data scope'
-                      />
-                    }
-                  >
-                    <Select
-                      aria-label={intl.formatMessage({
-                        id: 'pages.process.lca.page.dataScope.label',
-                        defaultMessage: 'Data scope',
-                      })}
-                      value={selectedDataScope}
-                      options={dataScopeOptions}
-                      onChange={(value) => {
-                        processOptionsRequestIdRef.current += 1;
-                        clearAnalysisResults();
-                        setSelectedDataScope(value as LcaAnalysisDataScope);
-                      }}
+            <Form layout='vertical'>
+              <Flex wrap align='flex-end' gap='small' className='lca-analysis-input-toolbar'>
+                <Form.Item
+                  style={{ width: 220, maxWidth: '100%', marginBottom: 0 }}
+                  label={
+                    <FormattedMessage
+                      id='pages.process.lca.page.dataScope.label'
+                      defaultMessage='Data scope'
                     />
-                  </Form.Item>
-                </Form>
-              </Col>
-              {activeTabKey === 'profile' ? (
-                <Col xs={24} md={16}>
-                  <Form layout='vertical'>
+                  }
+                >
+                  <Select
+                    aria-label={intl.formatMessage({
+                      id: 'pages.process.lca.page.dataScope.label',
+                      defaultMessage: 'Data scope',
+                    })}
+                    value={selectedDataScope}
+                    options={dataScopeOptions}
+                    onChange={(value) => {
+                      processOptionsRequestIdRef.current += 1;
+                      clearAnalysisResults();
+                      setSelectedDataScope(value as LcaAnalysisDataScope);
+                    }}
+                  />
+                </Form.Item>
+                {activeTabKey === 'profile' ? (
+                  <>
                     <Form.Item
+                      style={{ ...dataListSearchStyle, marginBottom: 0 }}
                       label={
                         <FormattedMessage
                           id='pages.process.lca.page.processes.searchLabel'
@@ -2009,6 +2008,7 @@ const LcaAnalysisPage = () => {
                       }
                     >
                       <Input.Search
+                        style={{ width: '100%' }}
                         allowClear={true}
                         enterButton={true}
                         loading={processOptionsLoading}
@@ -2021,7 +2021,7 @@ const LcaAnalysisPage = () => {
                         onSearch={onProcessSearch}
                       />
                     </Form.Item>
-                    <Form.Item>
+                    <Form.Item style={{ maxWidth: '100%', marginBottom: 0 }}>
                       <DatasetClassificationFilter
                         datasetKind='process'
                         lang={lang}
@@ -2029,10 +2029,10 @@ const LcaAnalysisPage = () => {
                         onChange={onProcessClassificationChange}
                       />
                     </Form.Item>
-                  </Form>
-                </Col>
-              ) : null}
-            </Row>
+                  </>
+                ) : null}
+              </Flex>
+            </Form>
             <Space align='center' wrap={true}>
               <Typography.Text type='secondary'>
                 <FormattedMessage

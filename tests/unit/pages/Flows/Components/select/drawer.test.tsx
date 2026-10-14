@@ -383,7 +383,9 @@ describe('FlowsSelectDrawer', () => {
         { flowType: '', asInput: undefined },
       ),
     );
-    expect(screen.getByText('Elementary flow', { selector: 'div' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Elementary flow', { selector: '.responsive-data-list-cell-text' }),
+    ).toHaveAttribute('title', 'Elementary flow');
     expect(screen.getByText('view flow-tg:1.0.0')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /my data/i }));

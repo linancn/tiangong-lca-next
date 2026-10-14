@@ -323,7 +323,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={contactColumns}>
           {({ scroll }) => (
             <ProTable<ContactTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -398,7 +398,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={contactColumns}>
           {({ scroll }) => (
             <ProTable<ContactTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -473,7 +473,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={contactColumns}>
           {({ scroll }) => (
             <ProTable<ContactTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -551,7 +551,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={contactColumns}>
           {({ scroll }) => (
             <ProTable<ContactTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

@@ -10,12 +10,20 @@ import {
   SUPPORTED_APP_LOCALES,
 } from '@/services/general/runtimeLocale';
 import { selectBrowserRuntimeLocale } from '@/services/general/browserLocaleBridge';
-import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
+import {
+  BookOutlined,
+  GithubOutlined,
+  HomeOutlined,
+  MoonOutlined,
+  QuestionCircleOutlined,
+  SunFilled,
+} from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import type { DropdownProps } from 'antd';
-import { ConfigProvider, theme, Tooltip } from 'antd';
+import { ConfigProvider, Dropdown, theme, Tooltip } from 'antd';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { brandProfile } from '../../../config/brandProfile';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -98,6 +106,7 @@ export const SelectLangAction = () => {
 
 export const Question = () => {
   const intl = useIntl();
+  const [helpOpen, setHelpOpen] = useState(false);
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
   const usesDocumentationFallback = hasLocaleFallback(locale, 'documentationLocale');
@@ -111,19 +120,71 @@ export const Question = () => {
     },
     usesDocumentationFallback ? { language: documentationLocale!.nativeLabel } : undefined,
   );
+  const menuLabel = intl.formatMessage({
+    id: 'component.globalHeader.helpAndAbout',
+    defaultMessage: 'Help and about',
+  });
 
   return (
-    <Tooltip title={helpLabel}>
-      <button
-        type='button'
-        className='tg-global-header-help-action'
-        aria-label={helpLabel}
-        onClick={() => {
-          window.open(docsUrl);
+    <Tooltip title={menuLabel}>
+      <Dropdown
+        autoFocus
+        open={helpOpen}
+        onOpenChange={setHelpOpen}
+        trigger={['click']}
+        placement='bottomRight'
+        menu={{
+          'aria-label': menuLabel,
+          onClick: () => setHelpOpen(false),
+          items: [
+            {
+              key: 'documentation',
+              icon: <BookOutlined />,
+              label: (
+                <a href={docsUrl} target='_blank' rel='noopener noreferrer'>
+                  {helpLabel}
+                </a>
+              ),
+            },
+            { type: 'divider' },
+            {
+              key: 'about',
+              type: 'group',
+              label: `© ${brandProfile.displayName}`,
+              children: [
+                {
+                  key: 'homepage',
+                  icon: <HomeOutlined />,
+                  label: (
+                    <a href={brandProfile.links.homepage} target='_blank' rel='noopener noreferrer'>
+                      {brandProfile.displayName}
+                    </a>
+                  ),
+                },
+                {
+                  key: 'source',
+                  icon: <GithubOutlined />,
+                  label: (
+                    <a href={brandProfile.links.source} target='_blank' rel='noopener noreferrer'>
+                      GitHub
+                    </a>
+                  ),
+                },
+              ],
+            },
+          ],
         }}
       >
-        <QuestionCircleOutlined />
-      </button>
+        <button
+          type='button'
+          className='tg-global-header-help-action'
+          aria-label={menuLabel}
+          aria-haspopup='menu'
+          aria-expanded={helpOpen}
+        >
+          <QuestionCircleOutlined />
+        </button>
+      </Dropdown>
     </Tooltip>
   );
 };

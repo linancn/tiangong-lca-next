@@ -3,12 +3,12 @@
   "locale": "zh-CN",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "595d4ba7c7f8b2a6c16279a687496433a3aeb24038abc6c85853481462858a84",
-    "contextDigest": "1384c30f9638712e5dad5d4511cc90aa93a911f8e1fe1be0af8c4b85b9808200"
+    "sourceManifestDigest": "8e382d0bb22b54f004eb34d33d3e5f4ccdc8a87a5c5595ee302a6ddbf25c1d7a",
+    "contextDigest": "5fdc6cd48c07931f3883dfc740d82f7d41768e51f72d6071269665656d3c0661"
   },
   "catalog": {
-    "messageCount": 3546,
-    "catalogDigest": "84a61a6416c6bdb366ac40e9ddb9ef55fa8d25726df180124300f13a5b6063df",
+    "messageCount": 3547,
+    "catalogDigest": "0d439a5a1de318501982cdea097f5232b722f69cb3f67fc05525685e23a8d12f",
     "emptyTranslationCount": 0,
     "acceptedSourceEmptyCount": 1,
     "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
@@ -42,10 +42,10 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-zh-CN/structural-validation.json",
-    "digest": "a85bed460ae99f695fe06a03164d74880bac865413f7f6841c8a9c0133304f6c",
-    "validationDigest": "0c91f2096c83bd246301ef17be7bcb5221f1b20c79ddc81c4121605d0009a5a5",
+    "digest": "43b08a86efbdac10658ff0e2d2753d0a28adcca29bea6915377203d814bf22f7",
+    "validationDigest": "c21a91001975fb6bdaca380bdac2775a3b0b41fcf94ef990db2f43dfee1266d0",
     "laneCount": 1,
-    "validatedMessageCount": 3546,
+    "validatedMessageCount": 3547,
     "validatedModuleCount": 32,
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
@@ -53,5 +53,5 @@
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "55897191d02f29097126ee8c69c4e2aa9a4def504c0da5e7e0bff8424f6dc87d"
+  "qualityDigest": "586dc734ba9bf5d1e2fb476c7f32a20a90dd3984c8ac1b82d3f7a76f1bc345c2"
 }

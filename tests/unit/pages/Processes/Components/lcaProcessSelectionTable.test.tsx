@@ -1,5 +1,5 @@
 import LcaProcessSelectionTable from '@/pages/Processes/Components/lcaProcessSelectionTable';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { resetUmiMocks, umiMocks } from '../../../../mocks/umi';
 
 jest.mock('umi', () => require('@/tests/mocks/umi').createUmiMock());
@@ -28,6 +28,17 @@ jest.mock('antd', () => {
 
   return {
     ...base,
+    Flex: ({ children, align, gap, wrap, vertical, ...rest }: any) => (
+      <div
+        {...rest}
+        data-flex-align={align}
+        data-flex-gap={gap}
+        data-flex-wrap={String(Boolean(wrap))}
+        data-flex-vertical={String(Boolean(vertical))}
+      >
+        {children}
+      </div>
+    ),
     Input,
     Table: ({
       columns = [],
@@ -123,7 +134,7 @@ describe('LcaProcessSelectionTable', () => {
   it('delegates a submitted search and classification to the parent query without filtering its current page', () => {
     const onSearch = jest.fn();
     const onClassificationChange = jest.fn();
-    render(
+    const { container } = render(
       <LcaProcessSelectionTable
         mode='compare'
         lang='en'
@@ -134,6 +145,12 @@ describe('LcaProcessSelectionTable', () => {
         onClassificationChange={onClassificationChange}
       />,
     );
+    const toolbar = container.querySelector('.lca-process-selection-toolbar') as HTMLElement;
+    expect(toolbar).toHaveAttribute('data-flex-align', 'center');
+    expect(toolbar).toHaveAttribute('data-flex-wrap', 'true');
+    expect(within(toolbar).getByLabelText('Selection visibility')).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText('Classification')).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: 'Search' })).toBeInTheDocument();
     fireEvent.change(
       screen.getByLabelText(umiMocks.useIntl().formatMessage({ id: 'pages.search.keyWord' })),
       {

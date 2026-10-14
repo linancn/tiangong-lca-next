@@ -1,6 +1,8 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
@@ -236,7 +238,11 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.synonyms}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.synonyms)}
+          >
             {row.name}
           </Tooltip>,
         ];
@@ -251,9 +257,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       render: (_, row) => {
         const flowType = flowTypeOptions.find((i) => i.value === row.flowType);
         if (flowType) {
-          return flowType.label;
+          return dataListMetadataText(flowType.label);
         }
-        return row.flowType;
+        return dataListMetadataText(row.flowType);
       },
     },
     {
@@ -323,7 +329,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -427,7 +433,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -531,7 +537,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -617,7 +623,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

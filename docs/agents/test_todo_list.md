@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
+lastReviewedCommit: 91ffd80ad1e1e3400720eb1ed64c5f410c683238
+lastReviewedNote: 'Reviewed Platform #1221 canonical locale-proof refresh against 91ffd80ad1e1e3400720eb1ed64c5f410c683238: generated focused-test digests reflect the final table assertions and preserve locale payloads, runtime sources, coverage thresholds and publication boundaries.'
 ---
 
 # Testing Execution State

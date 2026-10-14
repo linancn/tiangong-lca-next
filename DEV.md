@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader tests await observable close completion under the existing strict act-warning guard. Runtime, dependency, branch, release and full-gate contracts are unchanged.'
+lastReviewedCommit: 91ffd80ad1e1e3400720eb1ed64c5f410c683238
+lastReviewedNote: 'Reviewed Platform #1221 canonical locale-proof refresh against 91ffd80ad1e1e3400720eb1ed64c5f410c683238: generated focused-test digests reflect the final table assertions and preserve locale payloads, runtime sources, coverage thresholds and publication boundaries.'
 ---
 
 # Development Bootstrap

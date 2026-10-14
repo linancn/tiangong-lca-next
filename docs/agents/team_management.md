@@ -20,8 +20,8 @@ checkPaths:
   - src/pages/Review/**
   - src/pages/ManageSystem/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: dataset selector and classification presentation do not change membership, team roles, reviewer profile admission or Review Admin authority.'
+lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
+lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: reviewer-model selector width and hover changes do not alter team membership, owner/admin/member permissions, reviewer profile admission or notification authority.'
 ---
 
 # Team Management Reference

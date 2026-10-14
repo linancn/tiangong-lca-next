@@ -134,11 +134,16 @@ const DisplayedDatasets: FC = () => {
               : [];
         const subtype =
           options.find((option) => option.value === row.typeOfDataSet)?.label ?? row.typeOfDataSet;
-        return (
+        const content = (
           <>
             {intl.formatMessage(datasetKindMessage(row.datasetKind))}
             {subtype ? <> · {subtype}</> : null}
           </>
+        );
+        return (
+          <Tooltip title={content} placement='topLeft'>
+            <span>{content}</span>
+          </Tooltip>
         );
       },
     },
@@ -197,7 +202,7 @@ const DisplayedDatasets: FC = () => {
           }
         />
       )}
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={columns}>
         {({ scroll }) => (
           <ProTable<DatasetDisplayRow>
             {...responsiveDataListTableProps}

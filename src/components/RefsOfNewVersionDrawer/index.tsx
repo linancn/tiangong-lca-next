@@ -1,6 +1,7 @@
 import {
   ResponsiveDataListViewport,
   dataListPagination,
+  dataListText,
   orderDataListColumns,
   responsiveDataListTableProps,
 } from '@/components/ResponsiveDataList';
@@ -47,6 +48,70 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const displayColumns = orderDataListColumns<RefVersionItem>(
+    [
+      {
+        title: (
+          <FormattedMessage id={'component.refsOfNewVersionDrawer.col.id'} defaultMessage={'ID'} />
+        ),
+        dataIndex: 'id',
+        width: 280,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.type'}
+            defaultMessage={'Type'}
+          />
+        ),
+        dataIndex: 'dataType',
+        render: (_, row) => row.type,
+        width: 120,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.desc'}
+            defaultMessage={'Description'}
+          />
+        ),
+        dataIndex: 'name',
+        ellipsis: true,
+        render: (_, r) => {
+          return dataListText(getLangText(r.description, lang));
+        },
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.current'}
+            defaultMessage={'Current version'}
+          />
+        ),
+        dataIndex: 'version',
+        render: (_, row) => row.currentVersion,
+      },
+      {
+        title: (
+          <FormattedMessage
+            id={'component.refsOfNewVersionDrawer.col.new'}
+            defaultMessage={'New version'}
+          />
+        ),
+        dataIndex: 'newVersion',
+      },
+    ],
+    {
+      titles: {
+        version: (
+          <FormattedMessage
+            id='component.refsOfNewVersionDrawer.col.current'
+            defaultMessage='Current version'
+          />
+        ),
+      },
+    },
+  );
   return (
     <Drawer
       getContainer={() => document.body}
@@ -84,7 +149,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
       }
     >
       {open ? (
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={displayColumns}>
           {({ scroll }) => (
             <ProTable<RefVersionItem>
               {...responsiveDataListTableProps}
@@ -141,73 +206,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
                   }
                 },
               }}
-              columns={orderDataListColumns<RefVersionItem>(
-                [
-                  {
-                    title: (
-                      <FormattedMessage
-                        id={'component.refsOfNewVersionDrawer.col.id'}
-                        defaultMessage={'ID'}
-                      />
-                    ),
-                    dataIndex: 'id',
-                    width: 280,
-                  },
-                  {
-                    title: (
-                      <FormattedMessage
-                        id={'component.refsOfNewVersionDrawer.col.type'}
-                        defaultMessage={'Type'}
-                      />
-                    ),
-                    dataIndex: 'dataType',
-                    render: (_, row) => row.type,
-                    width: 120,
-                  },
-                  {
-                    title: (
-                      <FormattedMessage
-                        id={'component.refsOfNewVersionDrawer.col.desc'}
-                        defaultMessage={'Description'}
-                      />
-                    ),
-                    dataIndex: 'name',
-                    ellipsis: true,
-                    render: (_, r) => {
-                      return <>{getLangText(r.description, lang)}</>;
-                    },
-                  },
-                  {
-                    title: (
-                      <FormattedMessage
-                        id={'component.refsOfNewVersionDrawer.col.current'}
-                        defaultMessage={'Current version'}
-                      />
-                    ),
-                    dataIndex: 'version',
-                    render: (_, row) => row.currentVersion,
-                  },
-                  {
-                    title: (
-                      <FormattedMessage
-                        id={'component.refsOfNewVersionDrawer.col.new'}
-                        defaultMessage={'New version'}
-                      />
-                    ),
-                    dataIndex: 'newVersion',
-                  },
-                ],
-                {
-                  titles: {
-                    version: (
-                      <FormattedMessage
-                        id='component.refsOfNewVersionDrawer.col.current'
-                        defaultMessage='Current version'
-                      />
-                    ),
-                  },
-                },
-              )}
+              columns={displayColumns}
             />
           )}
         </ResponsiveDataListViewport>

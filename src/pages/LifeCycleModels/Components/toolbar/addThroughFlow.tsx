@@ -1,6 +1,8 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
@@ -170,7 +172,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.synonyms}>
+        <Tooltip key={0} placement='topLeft' title={dataListTooltipContent(row.name, row.synonyms)}>
           {row.name}
         </Tooltip>,
       ],
@@ -181,8 +183,10 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       sorter: false,
       search: false,
       render: (_, row) =>
-        flowTypeOptions.find((option) => option.value === row.flowType)?.label ??
-        (row.flowType || '—'),
+        dataListMetadataText(
+          flowTypeOptions.find((option) => option.value === row.flowType)?.label ??
+            (row.flowType || '—'),
+        ),
     },
     {
       title: (
@@ -249,7 +253,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const databaseList: Record<string, React.ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -351,7 +355,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowsColumns}>
           {({ scroll }) => (
             <ProTable<FlowTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

@@ -422,7 +422,7 @@ describe('app runtime config', () => {
     expect(screen.queryByTestId('protected-child')).not.toBeInTheDocument();
     expect(runtimeLayout.actionsRender?.()).toEqual([]);
     expect(runtimeLayout.avatarProps).toBeUndefined();
-    expect(runtimeLayout.footerRender).toBeUndefined();
+    expect(runtimeLayout.footerRender).toBe(false);
     expect(runtimeLayout.menuDataRender?.([{ path: '/tgdata' }])).toEqual([]);
   });
 
@@ -955,7 +955,7 @@ describe('app runtime config', () => {
     expect(avatarTrigger.type).toBe('button');
     expect(avatarTrigger.props.type).toBe('button');
     expect(avatarTrigger.props['aria-haspopup']).toBe('menu');
-    expect(runtimeLayout.footerRender?.().type()).toEqual(<div data-testid='footer'>Footer</div>);
+    expect(runtimeLayout.footerRender).toBe(false);
     expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
     render(runtimeLayout.unAccessible);
     expect(screen.getByTestId('access-denied')).toHaveTextContent('Localized access denied');

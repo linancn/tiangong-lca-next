@@ -306,7 +306,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={sourceColumns}>
           {({ scroll }) => (
             <ProTable<SourceTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -392,7 +392,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
     ),
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={sourceColumns}>
           {({ scroll }) => (
             <ProTable<SourceTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -467,7 +467,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={sourceColumns}>
           {({ scroll }) => (
             <ProTable<SourceTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -542,7 +542,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={sourceColumns}>
           {({ scroll }) => (
             <ProTable<SourceTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

@@ -21,8 +21,8 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: candidate toolbar/filter/paging changes do not alter this retained proposed path-computation, async result or exploratory ranking contract. No calculation or browser validation pass is asserted.'
+lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
+lastReviewedNote: 'Reviewed Platform #1221 working tree against Dev 7d74edeb: compact shared and Analysis native toolbars, authenticated footer links relocated to the existing help menu, and four-locale copy. Architecture and visual-proof guidance own the changed UI contract; calculation, query, permission, language capability, coverage and release rules remain unchanged. Further publication requires the user-requested interface confirmation.'
 ---
 
 # Contribution Path Analysis Design

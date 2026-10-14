@@ -1,6 +1,7 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListTooltipContent,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
@@ -200,7 +201,11 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       sorter: false,
       search: false,
       render: (_, row) => [
-        <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+        <Tooltip
+          key={0}
+          placement='topLeft'
+          title={dataListTooltipContent(row.name, row.generalComment)}
+        >
           {row.name}
         </Tooltip>,
       ],
@@ -300,7 +305,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const databaseList: Record<DataTabKey, ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
           {({ scroll }) => (
             <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -400,7 +405,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
           {({ scroll }) => (
             <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -500,7 +505,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
           {({ scroll }) => (
             <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -600,7 +605,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={FlowpropertyColumns}>
           {({ scroll }) => (
             <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

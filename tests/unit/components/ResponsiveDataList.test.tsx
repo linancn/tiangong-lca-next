@@ -6,10 +6,12 @@ import {
   dataListActionColumn,
   dataListIndexColumn,
   dataListText,
+  dataListTooltipContent,
   dataListTextColumn,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
+  getDataListScrollX,
   orderDataListColumns,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
@@ -18,13 +20,30 @@ import {
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { processtypeOfDataSetOptions } from '@/pages/Processes/Components/optiondata';
+import deProcess from '@/locales/de-DE/pages_process';
+import frProcess from '@/locales/fr-FR/pages_process';
 import { Grid } from 'antd';
 
+const mockRealIntl = jest.requireActual(
+  require.resolve('react-intl', {
+    paths: [
+      require.resolve('@umijs/plugins/package.json', {
+        paths: [require.resolve('@umijs/max/package.json')],
+      }),
+    ],
+  }),
+);
+let mockNativeHover = false;
 jest.mock('umi', () => ({
-  FormattedMessage: ({ id, defaultMessage }: any) => (
-    <span data-message={id}>{defaultMessage}</span>
-  ),
+  FormattedMessage: ({ id, defaultMessage }: any) =>
+    mockNativeHover ? (
+      <mockRealIntl.FormattedMessage id={id} defaultMessage={defaultMessage} />
+    ) : (
+      <span data-message={id}>{defaultMessage}</span>
+    ),
 }));
 
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
@@ -39,11 +58,21 @@ jest.mock('antd', () => ({
       {children}
     </div>
   ),
-  Tooltip: ({ children, placement, title }: any) => (
-    <span data-placement={placement} data-testid='tooltip' data-title={String(title)}>
-      {children}
-    </span>
-  ),
+  Tooltip: ({ children, placement, title }: any) => {
+    if (mockNativeHover) {
+      const NativeTooltip = jest.requireActual('antd').Tooltip;
+      return (
+        <NativeTooltip placement={placement} title={title}>
+          {children}
+        </NativeTooltip>
+      );
+    }
+    return (
+      <span data-placement={placement} data-testid='tooltip' data-title={String(title)}>
+        {children}
+      </span>
+    );
+  },
   theme: {
     useToken: () => ({ token: { colorPrimary: 'rgb(22, 119, 255)' } }),
   },
@@ -65,6 +94,7 @@ describe('ResponsiveDataList helpers', () => {
   beforeEach(() => {
     mockBreakpointScreens = {};
     mockUseBreakpoint.mockClear();
+    mockNativeHover = false;
   });
 
   it('keeps collapsed native tabs in the closest dialog stacking context', () => {
@@ -192,11 +222,54 @@ describe('ResponsiveDataList helpers', () => {
       'CASNumber',
       'option',
     ]);
-    expect(ordered[1].title).toBe('Dataset name');
+    render(<>{ordered[1].title as React.ReactNode}</>);
+    expect(screen.getByText('Dataset name')).toBeInTheDocument();
+    expect(screen.getByTestId('tooltip')).toHaveAttribute('data-title', 'Dataset name');
     expect(ordered[2].responsive).toBeUndefined();
     expect(ordered[5].render).toBe(versionRenderer);
     expect(ordered[0].render?.(null, {}, 4, {} as any, {} as any)).toBe(45);
     expect(columns).toHaveLength(8);
+  });
+
+  it('preserves the shared toolbar layout class and native control callbacks with a caller class', () => {
+    const onSearch = jest.fn();
+    const onFilter = jest.fn();
+    const onReload = jest.fn();
+    const search = { onSearch };
+    const filter = (
+      <button type='button' onClick={onFilter}>
+        Classification
+      </button>
+    );
+    const actions = [
+      <button key='create' type='button'>
+        Create
+      </button>,
+    ];
+    const settings = [{ key: 'reload', icon: <span>Reload</span>, onClick: onReload }];
+    const style = { width: '100%' };
+    const toolbar = getDataListToolbar({
+      className: 'model-results-toolbar',
+      title: 'Sub products',
+      search,
+      filter,
+      actions,
+      settings,
+      style,
+      multipleLine: false,
+    });
+    expect(toolbar.className).toBe('responsive-data-list-toolbar model-results-toolbar');
+    expect(toolbar.title).toBe('Sub products');
+    expect(toolbar.search).toBe(search);
+    expect(toolbar.filter).toBe(filter);
+    expect(toolbar.actions).toBe(actions);
+    expect(toolbar.settings).toBe(settings);
+    expect(toolbar.style).toBe(style);
+    expect(toolbar.multipleLine).toBe(false);
+    expect(responsiveDataListTableProps.toolbar.className).toBe('responsive-data-list-toolbar');
+    expect(onSearch).not.toHaveBeenCalled();
+    expect(onFilter).not.toHaveBeenCalled();
+    expect(onReload).not.toHaveBeenCalled();
   });
 
   it('adds explicit unavailable fields and an entity type without guessing missing metadata', () => {
@@ -456,7 +529,190 @@ describe('ResponsiveDataList helpers', () => {
 
     rerender(<>{dataListText('Flow', 'Full flow name')}</>);
     expect(screen.getByTestId('tooltip')).toHaveAttribute('data-placement', 'topLeft');
-    expect(screen.getByTestId('tooltip')).toHaveAttribute('data-title', 'Full flow name');
+    const hover = (dataListText('Flow', 'Full flow name') as React.ReactElement<any>).props.title;
+    expect(
+      hover.props.children.map((node: React.ReactElement<any>) => node.props.children),
+    ).toEqual(['Flow', 'Full flow name']);
     expect(screen.getByText('Flow')).toBeInTheDocument();
+  });
+  it('gives names the remaining width and budgets compact metadata, dates and visible business columns', () => {
+    const raw = [
+      { dataIndex: 'shortName', width: 360 },
+      { dataIndex: 'locationOfSupply', width: 160 },
+      { dataIndex: 'referenceYear', width: 120 },
+      { dataIndex: 'datasetType', width: 180 },
+      { dataIndex: 'version', width: 132 },
+      { dataIndex: 'updatedAt', width: 240, valueType: 'dateTime' as const },
+      { dataIndex: 'CASNumber' },
+      { dataIndex: 'classification', width: 200 },
+      { dataIndex: 'hiddenDetail', hideInTable: true, width: 400 },
+      { dataIndex: 'option', valueType: 'option' as const, width: 184 },
+    ];
+    const ordered = orderDataListColumns<any>(raw);
+    expect(ordered.slice(0, 6).map((column) => column.width)).toEqual([
+      72,
+      undefined,
+      128,
+      100,
+      160,
+      128,
+    ]);
+    expect(ordered.find((column) => column.dataIndex === 'updatedAt')?.width).toBe(156);
+    expect(ordered.find((column) => column.dataIndex === 'CASNumber')?.width).toBe(144);
+    expect(ordered[ordered.length - 1]?.width).toBe(184);
+    expect(getDataListScrollX(raw)).toBe(908 + 156 + 144 + 184);
+    expect(getDataListScrollX(ordered)).toBe(getDataListScrollX(raw));
+    expect(raw[0].width).toBe(360);
+  });
+
+  it('keeps exact version buttons and existing cell props while exposing full hover values', () => {
+    const onClick = jest.fn();
+    const renderVersion = () => (
+      <button type='button' onClick={onClick}>
+        Open exact version
+      </button>
+    );
+    const ordered = orderDataListColumns<any>([
+      { dataIndex: 'name', onCell: () => ({ className: 'business-name' }) },
+      {
+        dataIndex: 'version',
+        render: renderVersion,
+        onCell: () => ({ title: 'Caller version hint' }),
+      },
+    ]);
+    const row = { name: 'Full untruncated dataset name', version: '01.00.001' };
+    expect(ordered[1].onCell?.(row, 0)).toEqual({ className: 'business-name', title: row.name });
+    expect(ordered[5].onCell?.(row, 0)).toEqual({ title: 'Caller version hint' });
+    expect(ordered[5].render).toBe(renderVersion);
+    render(<>{ordered[5].render?.(null, row, 0, {} as any, {} as any) as React.ReactNode}</>);
+    screen.getByRole('button', { name: 'Open exact version' }).click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves formatted date tooltips to ProTable and preserves custom renderer output', () => {
+    const defaultDate = orderDataListColumns<any>([
+      { dataIndex: 'modifiedAt', valueType: 'dateTime' },
+    ])[6];
+    expect(defaultDate.valueType).toBe('dateTime');
+    expect(defaultDate.ellipsis).toBe(true);
+    expect(defaultDate.render).toBeUndefined();
+    const formatted = <span>14.10.2026, 12:30</span>;
+    const cell = { props: { colSpan: 2 }, children: formatted };
+    const renderer = jest.fn(() => cell);
+    const customDate = orderDataListColumns<any>([
+      { dataIndex: 'createdAt', valueType: 'dateTime', render: renderer },
+    ])[6];
+    expect(customDate.render).toBe(renderer);
+    const row = { createdAt: '2026-10-14T12:30:00Z' };
+    const output = customDate.render?.(formatted, row, 0, {} as any, {} as any) as typeof cell;
+    expect(output).toBe(cell);
+    expect(output.props).toBe(cell.props);
+    expect(output.children).toBe(formatted);
+    expect(renderer).toHaveBeenCalledTimes(1);
+    render(<>{output.children}</>);
+    expect(screen.getByText('14.10.2026, 12:30')).toBeInTheDocument();
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+  it.each([undefined, null, ''])(
+    'keeps a name-only hover value intact when description is %s',
+    (description) => {
+      const name = <strong>Full dataset name</strong>;
+      const hover = dataListTooltipContent(name, description);
+      expect(hover).toBe(name);
+      render(<>{hover}</>);
+      expect(screen.getAllByText('Full dataset name')).toHaveLength(1);
+    },
+  );
+
+  it('exposes numeric metadata and alias names through native cell titles without inventing missing values', () => {
+    const ordered = orderDataListColumns<any>([]);
+    const nameProps = ordered[1].onCell?.({ shortName: 'Full alias name' }, 0);
+    const yearProps = ordered[3].onCell?.({ referenceYear: 2026 }, 0);
+    expect(nameProps).toEqual({ title: 'Full alias name' });
+    expect(yearProps).toEqual({ title: '2026' });
+    expect(ordered[1].onCell?.({}, 0)).toEqual({});
+    render(
+      <>
+        <span {...nameProps}>Full alias name</span>
+        <span {...yearProps}>2026</span>
+      </>,
+    );
+    expect(screen.getByText('Full alias name')).toHaveAttribute('title', 'Full alias name');
+    expect(screen.getByText('2026')).toHaveAttribute('title', '2026');
+  });
+
+  it('preserves a native dynamic date header and leaves its formatted content to ProTable', () => {
+    const title = () => <span>Updated at</span>;
+    const date = orderDataListColumns<any>([
+      { dataIndex: 'updated_at', title, valueType: 'dateTime' },
+    ])[6];
+    expect(date.title).toBe(title);
+    expect(date.width).toBe(156);
+    expect(date.valueType).toBe('dateTime');
+    expect(date.render).toBeUndefined();
+    render(title());
+    expect(screen.getByText('Updated at')).toBeInTheDocument();
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
+  });
+  it.each([
+    ['de-DE', deProcess, 'Prozessmodul, Einzeloperation'],
+    ['fr-FR', frProcess, 'Processus élémentaire, opération unique'],
+  ])(
+    'shows the complete %s FormattedMessage in one native hover tooltip without the raw English enum',
+    async (locale, messages, localizedLabel) => {
+      mockNativeHover = true;
+      const user = userEvent.setup();
+      const raw = 'Unit process, single operation';
+      const label = processtypeOfDataSetOptions.find((option) => option.value === raw)!.label;
+      const typeColumn = orderDataListColumns<any>([
+        { dataIndex: 'typeOfDataSet', render: () => dataListText(label) },
+      ])[4];
+      const row = { typeOfDataSet: raw };
+      const props = typeColumn.onCell?.(row, 0);
+      expect(props).not.toHaveProperty('title');
+      const { container, unmount } = render(
+        <mockRealIntl.IntlProvider locale={locale} messages={messages}>
+          <table>
+            <tbody>
+              <tr>
+                <td {...props}>
+                  {typeColumn.render?.(null, row, 0, {} as any, {} as any) as React.ReactNode}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </mockRealIntl.IntlProvider>,
+      );
+      try {
+        const cell = screen.getByRole('cell');
+        expect(cell).toHaveTextContent(localizedLabel as string);
+        expect(cell).not.toHaveAttribute('title', raw);
+        const text = container.querySelector('.responsive-data-list-cell-text')!;
+        expect(text).not.toHaveAttribute('title');
+        await user.hover(text);
+        const tooltip = await screen.findByRole('tooltip');
+        expect(tooltip).toHaveTextContent(localizedLabel as string);
+        expect(tooltip).not.toHaveTextContent(raw);
+        expect(screen.getAllByRole('tooltip')).toHaveLength(1);
+        await user.unhover(text);
+        await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+      } finally {
+        unmount();
+        mockNativeHover = false;
+      }
+    },
+  );
+
+  it('preserves a caller supplied data type cell title while skipping automatic raw enum titles', () => {
+    const onClick = jest.fn();
+    const type = orderDataListColumns<any>([
+      { dataIndex: 'flowType', onCell: () => ({ title: 'Caller localized type', onClick }) },
+    ])[4];
+    expect(type.onCell?.({ flowType: 'Product flow' }, 0)).toEqual({
+      title: 'Caller localized type',
+      onClick,
+    });
+    const automatic = orderDataListColumns<any>([{ dataIndex: 'flowType' }])[4];
+    expect(automatic.onCell?.({ flowType: 'Product flow' }, 0)).toEqual({});
   });
 });

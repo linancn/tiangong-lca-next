@@ -377,7 +377,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={processColumns}>
         {({ scroll }) => (
           <ProTable<LifeCycleModelTable, LifeCycleModelTableRequestParams>
             key={`lifecycle-model-table:${dataSource}:${tid ?? ''}`}

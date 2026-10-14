@@ -145,6 +145,7 @@ describe('RefsOfNewVersionDrawer', () => {
     expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'true');
     expect(screen.getByText('References with newer versions')).toBeInTheDocument();
     expect(screen.getByText('Contact v1')).toBeInTheDocument();
+    expect(screen.getByText('Contact v1')).toHaveAttribute('title', 'Contact v1');
 
     const updateButton = screen.getByRole('button', { name: 'Update to latest versions' });
     expect(updateButton).toBeDisabled();
