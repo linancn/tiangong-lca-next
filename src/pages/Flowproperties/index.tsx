@@ -356,7 +356,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={flowpropertiesColumns}>
         {({ scroll }) => (
           <ProTable<FlowpropertyTable, LocaleAwareTableParams>
             key={`flowproperties-table:${dataSource}:${tid ?? ''}`}

@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
-lastReviewedNote: 'Reviewed Platform #1224 replay evidence compatibility and terminal polling regressions. Static calculation and legacy artifact semantics remain; replay snapshots are not gap-download links. Existing full validation and release policies remain.'
+lastReviewedCommit: '64f6e94e8fedb8785917cfa0c999aa413cc26dca'
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -237,6 +237,12 @@ E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:80
 ```
 
 The configured suite exercises all seven Open Data catalogs, desktop/narrow layouts, six-column order, default paging, internal body scrolling, toolbar containment, combined classification/full-text/reference query bodies, mixed display filters, AllVersions/fullscreen/zoom geometry and nested Flow selectors. Its screenshots and run output live under ignored `.local/dataset-list-unification/`; fixture credentials and synthetic records never reach a live backend. It is focused frontend/layout evidence, not deployed filter/ACL proof, canonical semantic localization evidence, authenticated production persistence proof or release qualification. Record actual commands and results in the delivery Issue/PR; this guide does not claim those checks have run. Existing full-gate and production-authorization boundaries remain unchanged.
+
+Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots, and obtain the user's requested interface confirmation before any further production publication.
+
+The follow-up width refinement must prove that metadata widths stay bounded as the viewport grows while the name column and search input receive the extra room. Include all active locales, long unbroken names, header/value hover, formatted timestamps and usable version actions. Classification tests must distinguish draft navigation/clear from confirmation: no list query while drafting or cancelling, one query for a changed confirmation, no request for unchanged confirmation, and no stale draft after an external scope change. Show the actual classification popup in an isolated synthetic test instance for the requested user review; explicitly record ownership and retention of its server/browser processes.
+
+Capture an open classification popup within the current viewport after asserting its bounds. Chromium's beyond-viewport capture has been observed to briefly resize the page to one pixel and remount responsive controls, invalidating the pending state being tested. Retain all confirmation, cancellation and request-count assertions; changing the capture method must not hide a failed interaction.
 
 ### Model product-provider persistence qualification
 

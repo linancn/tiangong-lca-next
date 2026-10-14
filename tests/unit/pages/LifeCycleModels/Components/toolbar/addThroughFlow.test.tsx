@@ -283,8 +283,19 @@ describe('ModelToolbarAddThroughFlow', () => {
       (column: any) => column.dataIndex === 'flowType',
     );
     const localized = dataTypeColumn.render(null, { flowType: 'Elementary flow' });
-    expect(localized.props.defaultMessage).toBe('Elementary flow');
-    expect(dataTypeColumn.render(null, { flowType: '' })).toBe('—');
+    expect(localized.props.title.props.defaultMessage).toBe('Elementary flow');
+    const unavailable = dataTypeColumn.render(null, { flowType: '' });
+    const { container } = render(
+      <>
+        {localized}
+        {unavailable}
+      </>,
+    );
+    expect(container).toHaveTextContent('Elementary flow');
+    expect(container).toHaveTextContent('—');
+    expect(
+      container.querySelector('.responsive-data-list-cell-text[title="—"]'),
+    ).toBeInTheDocument();
   });
 
   it('loads default TianGong flow list on open', async () => {

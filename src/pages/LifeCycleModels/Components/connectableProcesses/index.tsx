@@ -1,6 +1,8 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
+  dataListMetadataText,
+  dataListTooltipContent,
   dataListPagination,
   dataListTabProps,
   getDataListToolbar,
@@ -130,7 +132,11 @@ const ConnectableProcesses: FC<Props> = ({
       search: false,
       render: (_, row) => {
         return [
-          <Tooltip key={0} placement='topLeft' title={row.generalComment}>
+          <Tooltip
+            key={0}
+            placement='topLeft'
+            title={dataListTooltipContent(row.name, row.generalComment)}
+          >
             {row.name}
           </Tooltip>,
         ];
@@ -155,7 +161,7 @@ const ConnectableProcesses: FC<Props> = ({
       sorter: false,
       search: false,
       render: (_, row) => {
-        return getProcesstypeOfDataSetOptions(row.typeOfDataSet);
+        return dataListMetadataText(getProcesstypeOfDataSetOptions(row.typeOfDataSet));
       },
     },
     {
@@ -198,7 +204,7 @@ const ConnectableProcesses: FC<Props> = ({
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -275,7 +281,7 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -352,7 +358,7 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -429,7 +435,7 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={processColumns}>
           {({ scroll }) => (
             <ProTable<ProcessTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

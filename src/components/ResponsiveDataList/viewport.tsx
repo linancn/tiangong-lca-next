@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
+import { getDataListScrollX, type DataListSizingColumn } from './columnSizing';
 
 type ViewportDimensions = { height?: number; bodyHeight?: number };
 
@@ -78,8 +79,11 @@ export function measureDataListViewport(element: HTMLDivElement): ViewportDimens
 export function ResponsiveDataListViewport({
   children,
   enabled = true,
+  columns,
 }: {
-  children: (props: { scroll: { x: 'max-content'; y?: number } }) => ReactNode;
+  children: (props: { scroll: { x: number | 'max-content'; y?: number } }) => ReactNode;
+  /** Explicit presentation columns; no DOM inspection or hidden child-prop replacement. */
+  columns?: readonly DataListSizingColumn[];
   /** Disable for inline business tables whose surrounding content owns vertical scrolling. */
   enabled?: boolean;
 }) {
@@ -148,7 +152,12 @@ export function ResponsiveDataListViewport({
           : undefined
       }
     >
-      {children({ scroll: { x: 'max-content', ...(enabled ? { y: dimensions.bodyHeight } : {}) } })}
+      {children({
+        scroll: {
+          x: columns ? getDataListScrollX(columns) : 'max-content',
+          ...(enabled ? { y: dimensions.bodyHeight } : {}),
+        },
+      })}
     </div>
   );
 }

@@ -1,13 +1,20 @@
 import type { ProColumns, ProTableProps } from '@ant-design/pro-components';
 import { TableDropdown } from '@ant-design/pro-components';
 import { Grid, Space, Tooltip, theme, type CardProps } from 'antd';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Children } from 'react';
 import { FormattedMessage } from 'umi';
 
 export { ResponsiveDataListViewport } from './viewport';
 
 import './index.less';
+import {
+  dataListColumnWidths,
+  dataListDateAliases,
+  getDataListColumnField,
+  getDataListColumnWidth,
+} from './columnSizing';
+export { dataListColumnWidths, getDataListScrollX } from './columnSizing';
 
 export const DATA_LIST_ACTION_SPACE_CLASS_NAME = 'responsive-data-list-actions';
 
@@ -44,13 +51,27 @@ export const dataListPagination = {
   pageSizeOptions: [20, 50, 100],
 };
 
+/** The same shrinkable search budget for native Table toolbars outside ProTable. */
+export const dataListSearchStyle: CSSProperties = {
+  width: 'auto',
+  flex: '1 1 240px',
+  minWidth: 0,
+  maxWidth: '100%',
+};
+
 /** Keep the native tab overflow menu above the drawer that owns its trigger. */
 export const dataListTabProps: CardProps['tabProps'] = {
   getPopupContainer: (trigger) => trigger.closest<HTMLElement>('[role="dialog"]') ?? document.body,
 };
 
 export function getDataListToolbar(toolbar: ProTableProps<any, any>['toolbar'] = {}) {
-  return { ...responsiveDataListTableProps.toolbar, ...toolbar };
+  return {
+    ...responsiveDataListTableProps.toolbar,
+    ...toolbar,
+    className: [responsiveDataListTableProps.toolbar.className, toolbar.className]
+      .filter(Boolean)
+      .join(' '),
+  };
 }
 
 type DataListBaseField = 'index' | 'name' | 'location' | 'referenceYear' | 'dataType' | 'version';
@@ -65,37 +86,36 @@ export type DataListColumnOptions = {
 const baseColumnDefinitions: {
   field: DataListBaseField;
   aliases: string[];
-  width: number;
+  width?: number;
   title: ReactNode;
 }[] = [
   {
     field: 'index',
     aliases: ['index'],
-    width: 72,
+    width: dataListColumnWidths.index,
     title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
   },
   {
     field: 'name',
     aliases: ['name', 'shortName', 'baseName'],
-    width: 360,
     title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
   },
   {
     field: 'location',
     aliases: ['location', 'locationOfSupply'],
-    width: 160,
+    width: dataListColumnWidths.location,
     title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
   },
   {
     field: 'referenceYear',
     aliases: ['referenceYear'],
-    width: 120,
+    width: dataListColumnWidths.referenceYear,
     title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
   },
   {
     field: 'dataType',
     aliases: ['dataType', 'datasetType', 'typeOfDataSet', 'flowType', 'datasetKind'],
-    width: 180,
+    width: dataListColumnWidths.dataType,
     title: (
       <FormattedMessage id='pages.table.filter.all.datasetType' defaultMessage='Type of data set' />
     ),
@@ -103,7 +123,7 @@ const baseColumnDefinitions: {
   {
     field: 'version',
     aliases: ['version'],
-    width: 132,
+    width: dataListColumnWidths.version,
     title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
   },
 ];
@@ -233,6 +253,16 @@ const normalizeTextValue = (value: ReactNode) => {
   return value;
 };
 
+export function dataListTooltipContent(value: ReactNode, description?: ReactNode) {
+  if (description === undefined || description === null || description === '') return value;
+  return (
+    <>
+      <div>{value}</div>
+      <div>{description}</div>
+    </>
+  );
+}
+
 export function dataListText(value: ReactNode, tooltip?: ReactNode) {
   const content = normalizeTextValue(value);
   const textTitle =
@@ -243,12 +273,12 @@ export function dataListText(value: ReactNode, tooltip?: ReactNode) {
     </span>
   );
 
-  if (tooltip === undefined || tooltip === null || tooltip === '') {
+  if ((tooltip === undefined || tooltip === null || tooltip === '') && textTitle !== undefined) {
     return textNode;
   }
 
   return (
-    <Tooltip placement='topLeft' title={tooltip}>
+    <Tooltip placement='topLeft' title={dataListTooltipContent(content, tooltip)}>
       {textNode}
     </Tooltip>
   );
@@ -262,23 +292,49 @@ const isEmptyDataListMetadata = (value: ReactNode) =>
 export const dataListMetadataText = (value: ReactNode) =>
   dataListText(isEmptyDataListMetadata(value) ? '—' : value);
 
+const dataListHeader = (title: ReactNode) => (
+  <Tooltip title={title} placement='topLeft'>
+    <span>{title}</span>
+  </Tooltip>
+);
+
+function dataListCellTitle<T>(column: ProColumns<T>, aliases: string[], autoTitle: boolean) {
+  const previousOnCell = column.onCell;
+  return {
+    ...column,
+    onCell: (record: T, rowIndex?: number) => {
+      const previous = previousOnCell?.(record, rowIndex) ?? {};
+      const row = record as Record<string, unknown>;
+      const value = [getDataListColumnField(column), ...aliases]
+        .map((field) => row[field])
+        .find((item) => typeof item === 'string' || typeof item === 'number');
+      return {
+        ...previous,
+        ...(autoTitle && previous.title === undefined && value !== undefined
+          ? { title: String(value) }
+          : {}),
+      };
+    },
+  };
+}
+
 /** Keep business renderers and exact-version actions while standardizing every dataset list. */
 export function orderDataListColumns<T>(
   columns: ProColumns<T>[],
   options: DataListColumnOptions = {},
 ): ProColumns<T>[] {
-  const remaining = columns.filter((column) => column.dataIndex !== 'classification');
+  const remaining = columns.filter((column) => getDataListColumnField(column) !== 'classification');
   const ordered = baseColumnDefinitions.map(({ field, aliases, width, title }) => {
     const index = remaining.findIndex(
       (column) =>
-        aliases.includes(String(column.dataIndex)) ||
+        aliases.includes(getDataListColumnField(column)) ||
         (field === 'index' && column.valueType === 'index'),
     );
     const existing = index >= 0 ? remaining.splice(index, 1)[0] : undefined;
     const column: ProColumns<T> = {
       ellipsis: field !== 'index',
       ...existing,
-      title: options.titles?.[field] ?? title,
+      title: dataListHeader(options.titles?.[field] ?? title),
       dataIndex: existing?.dataIndex ?? field,
       width,
       responsive: undefined,
@@ -306,13 +362,28 @@ export function orderDataListColumns<T>(
         column.render = (_, __, rowIndex) => (current - 1) * pageSize + rowIndex + 1;
       }
     }
-    return column;
+    return field === 'index' ? column : dataListCellTitle(column, aliases, field !== 'dataType');
   });
   const isAction = (column: ProColumns<T>) =>
     column.dataIndex === 'option' || column.dataIndex === 'action' || column.valueType === 'option';
   return [
     ...ordered,
-    ...remaining.filter((column) => !isAction(column)),
-    ...remaining.filter(isAction),
+    ...remaining
+      .filter((column) => !isAction(column))
+      .map((column) => {
+        const result = {
+          ...column,
+          width: getDataListColumnWidth(column) ?? dataListColumnWidths.business,
+        };
+        if (dataListDateAliases.includes(getDataListColumnField(column))) {
+          result.title =
+            typeof column.title === 'function' ? column.title : dataListHeader(column.title);
+          result.ellipsis = true;
+        }
+        return result;
+      }),
+    ...remaining
+      .filter(isAction)
+      .map((column) => ({ ...column, width: column.width ?? dataListColumnWidths.business })),
   ];
 }

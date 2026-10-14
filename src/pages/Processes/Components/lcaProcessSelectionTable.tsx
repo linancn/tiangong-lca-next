@@ -1,9 +1,13 @@
 import { processtypeOfDataSetOptions } from './optiondata';
 import type { TablePaginationConfig } from 'antd/es/table';
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
-import { ResponsiveDataListViewport } from '@/components/ResponsiveDataList';
+import {
+  ResponsiveDataListViewport,
+  dataListSearchStyle,
+  dataListColumnWidths,
+} from '@/components/ResponsiveDataList';
 import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
-import { Button, Input, Select, Space, Table, Typography } from 'antd';
+import { Button, Flex, Input, Select, Space, Table, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -95,52 +99,81 @@ type LcaProcessSelectionTableProps = {
   onSelectionChange: (selectedProcessIds: string[]) => void;
 };
 
-const processSelectionColumns: ColumnsType<LcaProcessOption> = [
-  {
-    title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
-    key: 'index',
-    width: 72,
-    align: 'center',
-  },
-  {
-    title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
-    key: 'name',
-    dataIndex: 'name',
-    width: 360,
-    ellipsis: true,
-    render: (_, item) => <Typography.Text strong>{item.name}</Typography.Text>,
-  },
-  {
-    title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
-    key: 'location',
-    width: 160,
-    ellipsis: true,
-    render: (_, item) => item.location || '—',
-  },
-  {
-    title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
-    key: 'referenceYear',
-    width: 120,
-    render: (_, item) => item.referenceYear || '—',
-  },
-  {
-    title: (
-      <FormattedMessage id='pages.table.filter.all.datasetType' defaultMessage='Type of data set' />
-    ),
-    key: 'dataType',
-    width: 180,
-    render: (_, item) =>
-      processtypeOfDataSetOptions.find((option) => option.value === item.typeOfDataSet)?.label ??
-      item.typeOfDataSet ??
-      '—',
-  },
-  {
-    title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
-    key: 'version',
-    dataIndex: 'version',
-    width: 132,
-  },
-];
+const processSelectionColumns: ColumnsType<LcaProcessOption> = (
+  [
+    {
+      title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
+      key: 'index',
+      width: 72,
+      align: 'center',
+    },
+    {
+      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Name' />,
+      key: 'name',
+      dataIndex: 'name',
+      ellipsis: true,
+      render: (_, item) => (
+        <Typography.Text strong title={item.name}>
+          {item.name}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: <FormattedMessage id='pages.process.location' defaultMessage='Location' />,
+      key: 'location',
+      width: dataListColumnWidths.location,
+      ellipsis: true,
+      render: (_, item) => item.location || '—',
+    },
+    {
+      title: <FormattedMessage id='pages.process.referenceYear' defaultMessage='Reference year' />,
+      key: 'referenceYear',
+      width: dataListColumnWidths.referenceYear,
+      ellipsis: true,
+      render: (_, item) => item.referenceYear || '—',
+    },
+    {
+      title: (
+        <FormattedMessage
+          id='pages.table.filter.all.datasetType'
+          defaultMessage='Type of data set'
+        />
+      ),
+      key: 'dataType',
+      width: dataListColumnWidths.dataType,
+      ellipsis: true,
+      render: (_, item) =>
+        processtypeOfDataSetOptions.find((option) => option.value === item.typeOfDataSet)?.label ??
+        item.typeOfDataSet ??
+        '—',
+    },
+    {
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
+      key: 'version',
+      dataIndex: 'version',
+      width: dataListColumnWidths.version,
+      ellipsis: true,
+    },
+  ] satisfies ColumnsType<LcaProcessOption>
+).map((column) => ({
+  ...column,
+  title: (
+    <Tooltip title={column.title} placement='topLeft'>
+      <span>{column.title}</span>
+    </Tooltip>
+  ),
+  ...(column.key !== 'index' &&
+    column.key !== 'name' && {
+      render: (value, item) => {
+        const content = column.render ? column.render(value, item) : value;
+        return (
+          <Tooltip title={content} placement='topLeft'>
+            <span>{content}</span>
+          </Tooltip>
+        );
+      },
+    }),
+}));
 
 function getProcessSelectionKey(item: LcaProcessOption): string {
   return item.selectionKey;
@@ -213,30 +246,39 @@ const LcaProcessSelectionTable = ({
   const showPaginationFooter = !!pagination && !tablePagination && selectionViewMode !== 'selected';
 
   return (
-    <ResponsiveDataListViewport enabled={false}>
+    <ResponsiveDataListViewport enabled={false} columns={processSelectionColumns}>
       {({ scroll }) => (
         <Table<LcaProcessOption>
           scroll={scroll}
           tableLayout='fixed'
           title={() => (
-            <Space orientation='vertical' size='small' style={{ width: '100%' }}>
-              <Typography.Text strong>
-                <FormattedMessage
-                  id={messages.title.id}
-                  defaultMessage={messages.title.defaultMessage}
-                />
-              </Typography.Text>
-              <Typography.Text type='secondary'>
-                <FormattedMessage
-                  id={messages.hint.id}
-                  defaultMessage={messages.hint.defaultMessage}
-                  values={{
-                    selectedCount: selectedProcessIds.length,
-                    totalCount: totalProcessCount ?? processOptions.length,
-                  }}
-                />
-              </Typography.Text>
-              <Space wrap={true} size='small' style={{ width: '100%' }}>
+            <Flex vertical gap='small' style={{ width: '100%' }}>
+              <Flex wrap align='center' gap='small'>
+                <Typography.Text strong>
+                  <FormattedMessage
+                    id={messages.title.id}
+                    defaultMessage={messages.title.defaultMessage}
+                  />
+                </Typography.Text>
+                <Typography.Text type='secondary'>
+                  <FormattedMessage
+                    id={messages.hint.id}
+                    defaultMessage={messages.hint.defaultMessage}
+                    values={{
+                      selectedCount: selectedProcessIds.length,
+                      totalCount: totalProcessCount ?? processOptions.length,
+                    }}
+                  />
+                </Typography.Text>
+                <Typography.Text type='secondary'>
+                  <FormattedMessage
+                    id='pages.process.lca.selection.visibleCount'
+                    defaultMessage='{visibleCount, plural, one {Showing # process in this list.} other {Showing # processes in this list.}}'
+                    values={{ visibleCount: visibleProcessOptions.length }}
+                  />
+                </Typography.Text>
+              </Flex>
+              <Flex wrap align='center' gap='small' className='lca-process-selection-toolbar'>
                 <Select
                   aria-label={intl.formatMessage({
                     id: 'pages.process.lca.selection.filter.label',
@@ -278,7 +320,7 @@ const LcaProcessSelectionTable = ({
                           defaultMessage: 'Filter processes in this list',
                         })
                   }
-                  style={{ width: 'min(440px, 100%)' }}
+                  style={dataListSearchStyle}
                   placeholder={
                     onSearch
                       ? intl.formatMessage({ id: 'pages.search.keyWord' })
@@ -300,17 +342,8 @@ const LcaProcessSelectionTable = ({
                     onChange={onClassificationChange}
                   />
                 ) : null}
-              </Space>
-              <Typography.Text type='secondary'>
-                <FormattedMessage
-                  id='pages.process.lca.selection.visibleCount'
-                  defaultMessage='{visibleCount, plural, one {Showing # process in this list.} other {Showing # processes in this list.}}'
-                  values={{
-                    visibleCount: visibleProcessOptions.length,
-                  }}
-                />
-              </Typography.Text>
-            </Space>
+              </Flex>
+            </Flex>
           )}
           loading={loading}
           rowKey={getProcessSelectionKey}

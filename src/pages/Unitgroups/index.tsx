@@ -333,7 +333,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={unitGroupColumns}>
         {({ scroll }) => (
           <ProTable<UnitGroupTable, LocaleAwareTableParams>
             key={`unitgroups-table:${dataSource}:${tid ?? ''}`}

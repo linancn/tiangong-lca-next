@@ -389,7 +389,7 @@ const TableList: FC = () => {
         breadcrumb: {},
       }}
     >
-      <ResponsiveDataListViewport>
+      <ResponsiveDataListViewport columns={flowsColumns}>
         {({ scroll }) => (
           <ProTable<FlowTable, LocaleAwareTableParams>
             key={`flows-table:${dataSource}:${tid ?? ''}`}

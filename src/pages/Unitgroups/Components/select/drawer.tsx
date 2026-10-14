@@ -304,7 +304,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const databaseList: Record<DataTabKey, ReactNode> = {
     my: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={unitGroupColumns}>
           {({ scroll }) => (
             <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -382,7 +382,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     ),
     tg: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={unitGroupColumns}>
           {({ scroll }) => (
             <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -459,7 +459,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     ),
     co: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={unitGroupColumns}>
           {({ scroll }) => (
             <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}
@@ -536,7 +536,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     ),
     te: (
       <>
-        <ResponsiveDataListViewport>
+        <ResponsiveDataListViewport columns={unitGroupColumns}>
           {({ scroll }) => (
             <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
               {...responsiveDataListTableProps}

@@ -47,7 +47,21 @@ jest.mock('antd', () => {
       </select>
     </div>
   );
-  return { ...base, Pagination };
+  return {
+    ...base,
+    Pagination,
+    Flex: ({ children, align, gap, wrap, vertical, ...rest }: any) => (
+      <div
+        {...rest}
+        data-flex-align={align}
+        data-flex-gap={gap}
+        data-flex-wrap={String(Boolean(wrap))}
+        data-flex-vertical={String(Boolean(vertical))}
+      >
+        {children}
+      </div>
+    ),
+  };
 });
 jest.mock('@ant-design/icons', () =>
   require('@/tests/mocks/antDesignIcons').createAntDesignIconsMock(),
@@ -674,6 +688,22 @@ describe('LcaAnalysisPage', () => {
         diagnostics: null,
       },
     });
+  });
+
+  it('keeps labeled profile scope, search and classification in one wrapping native control strip', async () => {
+    const { container } = render(<LcaAnalysisPage />);
+    await screen.findByText('3 process rows are currently available for analysis.');
+    const toolbar = container.querySelector('.lca-analysis-input-toolbar') as HTMLElement;
+    expect(toolbar).toHaveAttribute('data-flex-align', 'flex-end');
+    expect(toolbar).toHaveAttribute('data-flex-wrap', 'true');
+    expect(within(toolbar).getByText('Data scope')).toBeInTheDocument();
+    expect(within(toolbar).getByText('Process search')).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText('Data scope')).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText('Classification')).toBeInTheDocument();
+    expect(
+      within(toolbar).getByPlaceholderText('Search processes in the selected data scope'),
+    ).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: /search/i })).toBeInTheDocument();
   });
 
   it('loads a process profile and renders the chart summary', async () => {

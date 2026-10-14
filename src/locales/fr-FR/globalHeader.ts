@@ -4,6 +4,7 @@ export default {
   'component.globalHeader.search.example2': 'Exemple de recherche 2',
   'component.globalHeader.search.example3': 'Exemple de recherche 3',
   'component.globalHeader.help': 'Aide',
+  'component.globalHeader.helpAndAbout': 'Aide et à propos',
   'component.globalHeader.help.englishFallback': 'Documentation d’aide (en anglais)',
   'component.globalHeader.help.fallback': 'Documentation d’aide ({language})',
   'component.globalHeader.openapiDocumentation': 'Documentation OpenAPI',

@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7d74edeb1ff16c35adfdb2a2201ff002e424256a
-lastReviewedNote: 'Reviewed Platform #1224 replay evidence compatibility and terminal polling regressions. Static calculation and legacy artifact semantics remain; replay snapshots are not gap-download links. Existing full validation and release policies remain.'
+lastReviewedCommit: '64f6e94e8fedb8785917cfa0c999aa413cc26dca'
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 ---
 
 # Testing Troubleshooting
