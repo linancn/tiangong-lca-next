@@ -537,6 +537,83 @@ describe('annual unit at the process save boundary', () => {
     expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, processData);
   });
 
+  it.each(['create', 'createVersion', 'update'])(
+    'passes the complete prepared payload through normalization, validation and the %s command unchanged',
+    async (action) => {
+      const prepared = {
+        processDataSet: {
+          processInformation: {
+            dataSetInformation: { 'common:UUID': sampleId },
+            quantitativeReference: { functionalUnitOrOther: reference.functionalUnitOrOther },
+          },
+          modellingAndValidation: {
+            LCIMethodAndAllocation: {
+              modellingConstants: [{ '@xml:lang': 'en', '#text': 'Cut-off.' }],
+            },
+            dataSourcesTreatmentAndRepresentativeness: {
+              annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '12.5 MJ/year' }],
+              useAdviceForDataSet: [{ '@xml:lang': 'en', '#text': 'Use within the boundary.' }],
+            },
+            validation: { review: { '@type': 'Not reviewed' } },
+            complianceDeclarations: {
+              compliance: { 'common:approvalOfOverallCompliance': 'Not defined' },
+            },
+          },
+          administrativeInformation: {
+            dataEntryBy: { 'common:timeStamp': '2026-10-14T00:00:00Z' },
+          },
+          exchanges: {
+            exchange: {
+              '@dataSetInternalID': '0',
+              meanAmount: 1,
+              referenceToFlowDataSet: reference.referenceToFlowDataSet,
+            },
+          },
+        },
+      };
+      const before = JSON.stringify(prepared);
+      mockGetAnnualSupplyVolumeUnitRows.mockResolvedValue([
+        {
+          referenceToFlowDataSetId: 'flow-current',
+          referenceToFlowDataSetVersion: '02.00.000',
+          refUnitRes: { refUnitName: 'MJ' },
+        },
+      ]);
+      mockGenProcessJsonOrdered.mockReturnValue(prepared);
+      mockNormalizeLangPayloadForSave.mockResolvedValue({ payload: prepared });
+      await save(action, processData);
+      expect(mockNormalizeLangPayloadForSave).toHaveBeenCalledWith(prepared, undefined);
+      expect(mockValidateDatasetRuleVerification).toHaveBeenCalledWith(
+        'process data set',
+        prepared,
+        '',
+      );
+      const command =
+        action === 'createVersion'
+          ? mockInvokeDatasetCreateVersion.mock.calls[0][0]
+          : mockInvokeDatasetCommand.mock.calls[0][1];
+      expect(command).toEqual({
+        id: sampleId,
+        table: 'processes',
+        ...(action === 'createVersion' ? { sourceVersion: sampleVersion } : {}),
+        ...(action === 'update' ? { version: sampleVersion } : {}),
+        jsonOrdered: prepared,
+        modelId: action === 'update' ? undefined : null,
+        ruleVerification: true,
+      });
+      expect(JSON.stringify(command.jsonOrdered)).toBe(before);
+      expect(mockGetAnnualSupplyVolumeUnitRows.mock.invocationCallOrder[0]).toBeLessThan(
+        mockGenProcessJsonOrdered.mock.invocationCallOrder[0],
+      );
+      expect(mockGenProcessJsonOrdered.mock.invocationCallOrder[0]).toBeLessThan(
+        mockNormalizeLangPayloadForSave.mock.invocationCallOrder[0],
+      );
+      expect(mockNormalizeLangPayloadForSave.mock.invocationCallOrder[0]).toBeLessThan(
+        mockValidateDatasetRuleVerification.mock.invocationCallOrder[0],
+      );
+    },
+  );
+
   it('does not add a unit lookup when no annual value is supplied', async () => {
     await save('create', { exchanges: { exchange: [reference] } });
     expect(mockGetAnnualSupplyVolumeUnitRows).not.toHaveBeenCalled();

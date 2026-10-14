@@ -55,7 +55,7 @@ This repo is a Umi `4.7.9` React 19 SPA on one native Ant Design `6.6.2` / ProCo
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
 | `src/services/general/tidasScalarStorage.ts` | canonical TIDAS year/percentage scalar normalization and the Process/Flow save-boundary issue format |
-| `src/services/processes/annualSupplyOrProductionVolume.ts`, `annualSupplyVolumeUnit.ts` | numeric annual formatting and exact versioned reference-unit resolution; the Process save boundary rechecks the unit without changing the server-owned allocator |
+| `src/services/processes/annualSupplyOrProductionVolume.ts`, `annualSupplyVolumeUnit.ts`, `saveSerialization.ts` | numeric annual formatting, exact versioned reference-unit resolution and shared save preparation; Process API and LifecycleModel persistence planning use the same boundary after final field overrides |
 | `src/services/general/aiSuggestion.ts` | authenticated AI suggestion enqueue, bounded polling, terminal validation, and versioned result decoding |
 | `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
