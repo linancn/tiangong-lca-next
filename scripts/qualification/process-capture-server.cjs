@@ -6,6 +6,63 @@ const crypto = require('node:crypto');
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const CAPTURE_PATH = '/functions/v1/app_dataset_create_version';
 const API_PATH = /^\/(?:auth|rest|functions|storage|graphql|realtime)\/v\d+(?:\/|$)/u;
+// This authoring diagnostic deliberately admits less than the general E2E guard.
+// Result/query Edge functions can enqueue computation; their names do not prove reads.
+const CAPTURE_DATASET_RELATIONS = new Set([
+  'processes',
+  'flows',
+  'contacts',
+  'sources',
+  'unitgroups',
+  'flowproperties',
+  'lciamethods',
+  'lifecyclemodels',
+  'ilcd',
+]);
+const CAPTURE_READ_RPCS = new Set([
+  'qry_system_status',
+  'qry_identity_get_mine',
+  'qry_membership_get_mine',
+  'qry_review_get_my_contact_status',
+  'qry_notification_get_my_data_count',
+  'qry_notification_get_my_issue_count',
+  'qry_notification_get_my_team_count',
+  'get_latest_contact_versions',
+  'get_latest_flow_versions',
+  'get_latest_flowproperty_versions',
+  'get_latest_lifecyclemodel_versions',
+  'get_latest_process_versions',
+  'get_latest_source_versions',
+  'get_latest_unitgroup_versions',
+  'search_contacts',
+  'search_flowproperties',
+  'search_flows',
+  'search_lifecyclemodels',
+  'search_processes',
+  'search_sources',
+  'search_unitgroups',
+]);
+
+function isCaptureReadSurface(method, target, headers) {
+  if (target.pathname === '/auth/v1/token') return method === 'POST';
+  if (['GET', 'HEAD'].includes(method)) {
+    if (['/auth/v1/user', '/auth/v1/.well-known/jwks.json'].includes(target.pathname)) return true;
+    return (
+      headers['accept-profile'] === 'public' &&
+      CAPTURE_DATASET_RELATIONS.has(target.pathname.replace(/^\/rest\/v1\//u, '')) &&
+      target.pathname.startsWith('/rest/v1/')
+    );
+  }
+  if (method === 'POST' && target.pathname.startsWith('/rest/v1/rpc/')) {
+    return (
+      headers['content-profile'] === 'api' &&
+      CAPTURE_READ_RPCS.has(target.pathname.slice('/rest/v1/rpc/'.length))
+    );
+  }
+  // The exact create-version sink is handled earlier, without dispatch. No Edge,
+  // storage signing, job, result, semantic AI search or computation route is forwarded.
+  return false;
+}
 
 function origin(value, loopback = false) {
   const url = new URL(value);
@@ -250,14 +307,15 @@ async function startProcessCaptureServers(config) {
       );
       if (
         backend &&
-        (config.classifyRequest(
-          request.method,
-          destination.href,
-          upstreamOrigin,
-          bytes.length ? bytes.toString('utf8') : null,
-          request.headers,
-          config.publishableKey,
-        ) !== 'allow' ||
+        (!isCaptureReadSurface(request.method, target, request.headers) ||
+          config.classifyRequest(
+            request.method,
+            destination.href,
+            upstreamOrigin,
+            bytes.length ? bytes.toString('utf8') : null,
+            request.headers,
+            config.publishableKey,
+          ) !== 'allow' ||
           !exactAuthBody(target, bytes))
       )
         return deny(response);

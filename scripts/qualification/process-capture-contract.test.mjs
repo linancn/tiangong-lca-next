@@ -53,6 +53,8 @@ const apiHeaders = () => ({
   'sec-fetch-dest': 'empty',
   apikey: publishableKey,
   'content-type': 'application/json',
+  'accept-profile': 'public',
+  'content-profile': 'api',
 });
 const captureBody = () =>
   JSON.stringify({
@@ -152,6 +154,182 @@ test('preserves compressed local reference resources without backend forwarding'
   assert.equal(result.status, 200);
   assert.equal(gunzipSync(result.bodyBytes).toString(), '{"labels":["synthetic"]}');
   assert.deepEqual(received, []);
+});
+
+for (const endpoint of [
+  'lca_query_results',
+  'lca_contribution_path_result',
+  'lca_results',
+  'lca_release_results',
+  'data_product_results',
+  'query_calculation_results',
+  'query_calculation_status',
+  'app_worker_jobs',
+  'app_data_product_commands',
+  'process_hybrid_search',
+  'flow_hybrid_search',
+  'source_hybrid_search',
+])
+  test(`capture profile never dispatches ${endpoint}, including a no-fallback result request`, async () => {
+    const body = JSON.stringify({
+      mode: 'process_all_impacts',
+      process_id: processId,
+      version: sourceVersion,
+      allow_fallback: false,
+      scope: 'full_library',
+    });
+    const result = await request(
+      `${runtime.appOrigin}/functions/v1/${endpoint}?forceFunctionRegion=us-east-1`,
+      'POST',
+      body,
+      { ...apiHeaders(), authorization: 'Bearer synthetic-user-session' },
+    );
+    assert.deepEqual(received, []);
+    assert.equal(result.status, 403);
+    assert.equal(runtime.summary().upstreamDispatches, 0);
+  });
+
+test('does not inherit worker/data-product list escapes or unrelated relation reads', async () => {
+  for (const [endpoint, body] of [
+    ['app_worker_jobs', { action: 'list', limit: 10 }],
+    ['app_worker_jobs', { action: 'read', jobId: 'synthetic-job' }],
+    [
+      'app_data_product_commands',
+      {
+        action: 'list_task_feed',
+        category: 'data_product',
+        jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
+        limit: 200,
+        rootOnly: false,
+      },
+    ],
+  ])
+    assert.equal(
+      (
+        await request(
+          `${runtime.appOrigin}/functions/v1/${endpoint}`,
+          'POST',
+          JSON.stringify(body),
+          apiHeaders(),
+        )
+      ).status,
+      403,
+    );
+  assert.equal(
+    (await request(`${runtime.appOrigin}/rest/v1/worker_jobs`, 'GET', undefined, apiHeaders()))
+      .status,
+    403,
+  );
+  assert.equal(
+    (
+      await request(
+        `${runtime.appOrigin}/rest/v1/rpc/qry_review_get_admin_queue_items_v6`,
+        'POST',
+        '{}',
+        apiHeaders(),
+      )
+    ).status,
+    403,
+  );
+  assert.deepEqual(received, []);
+});
+
+test('refuses unqualified catalog and UUID-search RPCs', async () => {
+  for (const rpc of [
+    'query_dataset_catalog',
+    'search_dataset_uuid_mentions_page',
+    'search_dataset_json_uuid_mentions',
+    'search_open_data_catalog',
+  ]) {
+    const result = await request(
+      `${runtime.appOrigin}/rest/v1/rpc/${rpc}`,
+      'POST',
+      '{}',
+      apiHeaders(),
+    );
+    assert.deepEqual(received, []);
+    assert.equal(result.status, 403);
+  }
+});
+
+test('requires the audited schema for relation and RPC reads', async () => {
+  for (const profile of ['private', 'public', '']) {
+    assert.equal(
+      (
+        await request(`${runtime.appOrigin}/rest/v1/rpc/qry_system_status`, 'POST', '{}', {
+          ...apiHeaders(),
+          'content-profile': profile,
+        })
+      ).status,
+      403,
+    );
+  }
+  for (const profile of ['private', 'api', '']) {
+    assert.equal(
+      (
+        await request(`${runtime.appOrigin}/rest/v1/processes`, 'GET', undefined, {
+          ...apiHeaders(),
+          'accept-profile': profile,
+        })
+      ).status,
+      403,
+    );
+  }
+  assert.deepEqual(received, []);
+});
+
+test('admits the native authoring dataset and RPC read prerequisites', async () => {
+  for (const relation of [
+    'processes',
+    'flows',
+    'contacts',
+    'sources',
+    'unitgroups',
+    'flowproperties',
+    'lciamethods',
+    'lifecyclemodels',
+    'ilcd',
+  ]) {
+    const result = await request(
+      `${runtime.appOrigin}/rest/v1/${relation}?select=id,version`,
+      'GET',
+      undefined,
+      { ...apiHeaders(), 'accept-profile': 'public' },
+    );
+    assert.equal(result.status, 200, relation);
+    assert.equal(received.at(-1), `GET /rest/v1/${relation}?select=id,version`);
+  }
+  for (const rpc of [
+    'qry_system_status',
+    'qry_identity_get_mine',
+    'qry_membership_get_mine',
+    'qry_review_get_my_contact_status',
+    'qry_notification_get_my_data_count',
+    'qry_notification_get_my_issue_count',
+    'qry_notification_get_my_team_count',
+    'get_latest_contact_versions',
+    'get_latest_flow_versions',
+    'get_latest_flowproperty_versions',
+    'get_latest_lifecyclemodel_versions',
+    'get_latest_process_versions',
+    'get_latest_source_versions',
+    'get_latest_unitgroup_versions',
+    'search_contacts',
+    'search_flowproperties',
+    'search_flows',
+    'search_lifecyclemodels',
+    'search_processes',
+    'search_sources',
+    'search_unitgroups',
+  ]) {
+    const result = await request(`${runtime.appOrigin}/rest/v1/rpc/${rpc}`, 'POST', '{}', {
+      ...apiHeaders(),
+      'content-profile': 'api',
+    });
+    assert.equal(result.status, 200, rpc);
+    assert.equal(received.at(-1), `POST /rest/v1/rpc/${rpc}`);
+  }
+  assert.equal(runtime.summary().readDispatches, received.length);
 });
 
 test('allows a native app reload inside the same constrained parent without opening top-level access', async () => {

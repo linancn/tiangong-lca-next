@@ -123,7 +123,7 @@ pnpm e2e:env:doctor
 
 ## Process payload capture
 
-`scripts/qualification/process-capture-start.mjs` is a local diagnostic for the native Process **All Versions → Create Version** UI. It requires a clean committed candidate and pins backend reads/authentication to that commit's tracked main environment. It captures one exact Process/source-version command and aborts it before forwarding; it never returns a created version or successful save. Qualification and evidence limits are in [repo-validation](docs/agents/repo-validation.md#process-payload-capture-qualification).
+`scripts/qualification/process-capture-start.mjs` is a local diagnostic for the native Process **All Versions → Create Version** UI. It requires a clean committed candidate and pins backend reads/authentication to that commit's tracked main environment. Its separate positive admission list excludes calculation/result queries, worker/data-product endpoints, semantic AI search and storage signing. It captures one exact Process/source-version command and aborts it before forwarding; it never returns a created version or successful save. Qualification and evidence limits are in [repo-validation](docs/agents/repo-validation.md#process-payload-capture-qualification).
 
 Build the unchanged app with its backend URL pointing only at the diagnostic gateway. The pinned Umi development server calls `listen(port)` without binding `HOST`, so this diagnostic uses the repository's existing loopback static-candidate server. With a clean commit and unused gateway port, create a new build receipt:
 

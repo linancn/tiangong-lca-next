@@ -43,7 +43,7 @@ const output = document.getElementById('results');
 const show = (text) => { output.textContent += text + '\\n'; };
 document.addEventListener('securitypolicyviolation', (event) => show('CSP blocked: ' + event.effectiveDirective));
 document.getElementById('read').onclick = async () => {
-  const response = await fetch('/rest/v1/processes', { headers: { apikey: ${JSON.stringify(publishableKey)} } });
+  const response = await fetch('/rest/v1/processes', { headers: { apikey: ${JSON.stringify(publishableKey)}, 'accept-profile': 'public' } });
   show('Permitted read: ' + response.status);
 };
 document.getElementById('capture').onclick = async () => {
@@ -57,6 +57,12 @@ document.getElementById('writes').onclick = async () => {
   for (const [url, method] of [['/rest/v1/processes', 'POST'], ['/functions/v1/app_dataset_save_draft', 'POST'], ['/functions/v1/translate_text', 'POST']]) {
     const response = await fetch(url, { method, headers: { 'content-type': 'application/json', apikey: ${JSON.stringify(publishableKey)} }, body: '{}' });
     show('Denied write: ' + response.status);
+  }
+};
+document.getElementById('compute').onclick = async () => {
+  for (const endpoint of ['lca_query_results', 'lca_contribution_path_result', 'app_worker_jobs', 'app_data_product_commands', 'process_hybrid_search']) {
+    const response = await fetch('/functions/v1/' + endpoint, { method: 'POST', headers: { 'content-type': 'application/json', apikey: ${JSON.stringify(publishableKey)}, authorization: 'Bearer synthetic-user-session' }, body: JSON.stringify({ mode: 'process_all_impacts', process_id: ${JSON.stringify(processId)}, version: ${JSON.stringify(sourceVersion)}, allow_fallback: false, action: 'list' }) });
+    show('Denied computation/result: ' + endpoint + ' ' + response.status);
   }
 };
 document.getElementById('network').onclick = () => {
@@ -91,7 +97,7 @@ const dev = http.createServer((request, response) => {
   }
   response.writeHead(200, { 'content-type': 'text/html' });
   response.end(
-    '<!doctype html><html><head><title>Synthetic capture isolation probes</title></head><body><h1>Synthetic capture isolation probes</h1><p>No production data or credentials.</p><button id="reload">Reload embedded app</button><button id="read">Permitted read</button><button id="capture">Capture synthetic payload</button><button id="writes">Try denied writes</button><button id="network">Try external network requests</button><button id="navigation">Try popup and top navigation</button><button id="frame">Try nested frame</button><button id="form">Try external form</button><button id="navigate">Try frame navigation last</button><pre id="results"></pre><script src="/probe.js"></script></body></html>',
+    '<!doctype html><html><head><title>Synthetic capture isolation probes</title></head><body><h1>Synthetic capture isolation probes</h1><p>No production data or credentials.</p><button id="reload">Reload embedded app</button><button id="read">Permitted read</button><button id="capture">Capture synthetic payload</button><button id="writes">Try denied writes</button><button id="compute">Try computation and result routes</button><button id="network">Try external network requests</button><button id="navigation">Try popup and top navigation</button><button id="frame">Try nested frame</button><button id="form">Try external form</button><button id="navigate">Try frame navigation last</button><pre id="results"></pre><script src="/probe.js"></script></body></html>',
   );
 });
 const devOrigin = await listen(dev);
