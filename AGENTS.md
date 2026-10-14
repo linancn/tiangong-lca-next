@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: cf8629d8294c237192968fa0bbe8df911a2c025d
+lastReviewedCommit: 5cf3baff2e5b9d2bfec5b26e64bb6a8993484590
 lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
 related:
   - .docpact/config.yaml

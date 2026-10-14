@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-10-15"
-lastReviewedCommit: "cf8629d8294c237192968fa0bbe8df911a2c025d"
+lastReviewedCommit: "5cf3baff2e5b9d2bfec5b26e64bb6a8993484590"
 lastReviewedNote: 'Reviewed Platform #1229 against Dev732b55351e9b2b19391ebbacf2885d481e3fba85: preserve the native ProLayout collapse element and layout ownership while adding accessible keyboard/state decoration. Real installed-component and registry-driven browser geometry tests cover collapse, expansion and mobile navigation; existing ownership, gate thresholds, locale capabilities and release policy remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
