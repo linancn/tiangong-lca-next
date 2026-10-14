@@ -6,12 +6,13 @@ import {
 } from '@/services/general/datasetClassification';
 import type { OpenDataDatasetKind } from '@/services/openDataCatalog/types';
 import { LoadingOutlined } from '@ant-design/icons';
-import { Button, Cascader, Space } from 'antd';
+import { Button, Cascader, Space, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 type ClassificationOption = {
   label: string;
+  title: string;
   value: string;
   filter: DatasetClassificationFilterValue;
   children?: ClassificationOption[];
@@ -21,19 +22,30 @@ export function toDatasetClassificationOptions(
   nodes: Classification[],
   scope: DatasetClassificationFilterValue['scope'],
   ancestors: string[] = [],
+  ancestorLabels: string[] = [],
 ): ClassificationOption[] {
   return nodes.map((node) => {
     const path = [...ancestors, node.id];
+    const labels = [...ancestorLabels, node.label];
     return {
       label: node.label,
+      title: labels.join(' / '),
       value: `${scope}:${node.id}`,
       filter: { scope, code: node.id, path },
       ...(node.children.length > 0
-        ? { children: toDatasetClassificationOptions(node.children, scope, path) }
+        ? { children: toDatasetClassificationOptions(node.children, scope, path, labels) }
         : {}),
     };
   });
 }
+
+const fullNameTooltipProps = {
+  getPopupContainer: () => document.body,
+  styles: {
+    root: { maxWidth: 'min(480px, calc(100vw - 16px))' },
+    container: { whiteSpace: 'normal' as const, overflowWrap: 'anywhere' as const },
+  },
+};
 
 type Props = {
   datasetKind: OpenDataDatasetKind;
@@ -169,97 +181,119 @@ export default function DatasetClassificationFilter({
   }, [datasetKind, flowType, lang, revision]);
 
   const selected = draft[0];
+  let selectedLevel = options;
+  const selectedTitle = selected
+    ? (selected.path ?? [selected.code])
+        .map((code) => {
+          const optionValue = `${selected.scope}:${code}`;
+          const option = selectedLevel.find((item) => item.value === optionValue);
+          selectedLevel = option?.children ?? [];
+          return option?.label ?? optionValue;
+        })
+        .join(' / ')
+    : undefined;
   return (
-    <span ref={triggerRoot}>
-      <Cascader<ClassificationOption>
-        aria-label={intl.formatMessage({ id: 'pages.table.title.classification' })}
-        placeholder={intl.formatMessage({ id: 'pages.table.title.classification' })}
-        options={options}
-        open={open}
-        onOpenChange={(nextOpen) => {
-          if (!mounted.current) return;
-          if (nextOpen) {
-            setSession({ contextKey, draft: value });
-          } else if (!selectionInProgress.current) {
-            close();
-          }
-        }}
-        popupRender={(menus) => (
-          <div ref={popupRoot}>
-            {menus}
-            <Space
-              wrap
-              style={{ display: 'flex', justifyContent: 'flex-end', padding: 8 }}
-              onMouseDown={(event) => event.preventDefault()}
-            >
-              <Button size='small' onClick={() => setSession({ contextKey, draft: [] })}>
-                <FormattedMessage id='pages.button.clear' />
-              </Button>
-              <Button size='small' onClick={close}>
-                <FormattedMessage id='pages.button.cancel' />
-              </Button>
-              <Button
-                size='small'
-                type='primary'
-                disabled={!open}
-                onClick={() => {
-                  // Compare stable query fields; a code-only root and its hydrated path are equivalent.
-                  const identity = (filters: DatasetClassificationFilterValue[]) =>
-                    JSON.stringify(
-                      filters.map(({ scope, code, path, system }) => ({
-                        scope,
-                        code,
-                        path: path ?? [code],
-                        system,
-                      })),
-                    );
-                  if (open && identity(draft) !== identity(value)) onChange(draft);
-                  close();
-                }}
+    <Tooltip
+      {...fullNameTooltipProps}
+      title={open ? undefined : selectedTitle}
+      trigger={['hover', 'focus']}
+    >
+      <span ref={triggerRoot} title={open ? undefined : selectedTitle}>
+        <Cascader<ClassificationOption>
+          aria-label={intl.formatMessage({ id: 'pages.table.title.classification' })}
+          placeholder={intl.formatMessage({ id: 'pages.table.title.classification' })}
+          options={options}
+          optionRender={(option) => (
+            <Tooltip {...fullNameTooltipProps} title={option.title}>
+              <span style={{ display: 'block' }}>{option.label}</span>
+            </Tooltip>
+          )}
+          open={open}
+          onOpenChange={(nextOpen) => {
+            if (!mounted.current) return;
+            if (nextOpen) {
+              setSession({ contextKey, draft: value });
+            } else if (!selectionInProgress.current) {
+              close();
+            }
+          }}
+          popupRender={(menus) => (
+            <div ref={popupRoot}>
+              {menus}
+              <Space
+                wrap
+                style={{ display: 'flex', justifyContent: 'flex-end', padding: 8 }}
+                onMouseDown={(event) => event.preventDefault()}
               >
-                <FormattedMessage id='pages.button.confirm' />
-              </Button>
-            </Space>
-          </div>
-        )}
-        value={
-          selected
-            ? (selected.path ?? [selected.code]).map((code) => `${selected.scope}:${code}`)
-            : []
-        }
-        onChange={(_, selectedOptions) => {
-          const last = selectedOptions?.[selectedOptions.length - 1];
-          // A leaf's native close is asynchronous. Keep the draft open until
-          // an explicit dismissal interaction, independently of native task timing.
-          selectionInProgress.current = {};
-          setSession({ contextKey, draft: last ? [last.filter] : [] });
-        }}
-        allowClear
-        changeOnSelect
-        showSearch={{
-          filter: (input, path) =>
-            path.some((option) =>
-              `${option.label} ${option.filter.code}`
-                .toLocaleLowerCase()
-                .includes(input.toLocaleLowerCase()),
-            ),
-        }}
-        status={failed ? 'error' : undefined}
-        {...(loading ? { suffixIcon: <LoadingOutlined /> } : {})}
-        notFoundContent={
-          failed ? (
-            <Space orientation='vertical'>
-              <FormattedMessage id='pages.classification.loadFailed' />
-              <Button size='small' onClick={() => setRevision((current) => current + 1)}>
-                <FormattedMessage id='pages.classification.retry' />
-              </Button>
-            </Space>
-          ) : undefined
-        }
-        style={{ width: 220, maxWidth: '100%' }}
-        styles={{ popup: { root: { maxWidth: 'calc(100vw - 16px)', overflowX: 'auto' } } }}
-        popupAlign={{ overflow: { adjustX: true, adjustY: true, shiftX: true } }}
-      />
-    </span>
+                <Button size='small' onClick={() => setSession({ contextKey, draft: [] })}>
+                  <FormattedMessage id='pages.button.clear' />
+                </Button>
+                <Button size='small' onClick={close}>
+                  <FormattedMessage id='pages.button.cancel' />
+                </Button>
+                <Button
+                  size='small'
+                  type='primary'
+                  disabled={!open}
+                  onClick={() => {
+                    // Compare stable query fields; a code-only root and its hydrated path are equivalent.
+                    const identity = (filters: DatasetClassificationFilterValue[]) =>
+                      JSON.stringify(
+                        filters.map(({ scope, code, path, system }) => ({
+                          scope,
+                          code,
+                          path: path ?? [code],
+                          system,
+                        })),
+                      );
+                    if (open && identity(draft) !== identity(value)) onChange(draft);
+                    close();
+                  }}
+                >
+                  <FormattedMessage id='pages.button.confirm' />
+                </Button>
+              </Space>
+            </div>
+          )}
+          value={
+            selected
+              ? (selected.path ?? [selected.code]).map((code) => `${selected.scope}:${code}`)
+              : []
+          }
+          onChange={(_, selectedOptions) => {
+            const last = selectedOptions?.[selectedOptions.length - 1];
+            // A leaf's native close is asynchronous. Keep the draft open until
+            // an explicit dismissal interaction, independently of native task timing.
+            selectionInProgress.current = {};
+            setSession({ contextKey, draft: last ? [last.filter] : [] });
+          }}
+          allowClear
+          changeOnSelect
+          showSearch={{
+            filter: (input, path) =>
+              path.some((option) =>
+                `${option.label} ${option.filter.code}`
+                  .toLocaleLowerCase()
+                  .includes(input.toLocaleLowerCase()),
+              ),
+          }}
+          status={failed ? 'error' : undefined}
+          {...(loading ? { suffixIcon: <LoadingOutlined /> } : {})}
+          notFoundContent={
+            failed ? (
+              <Space orientation='vertical'>
+                <FormattedMessage id='pages.classification.loadFailed' />
+                <Button size='small' onClick={() => setRevision((current) => current + 1)}>
+                  <FormattedMessage id='pages.classification.retry' />
+                </Button>
+              </Space>
+            ) : undefined
+          }
+          style={{ width: 220, maxWidth: '100%' }}
+          styles={{ popup: { root: { maxWidth: 'calc(100vw - 16px)', overflowX: 'auto' } } }}
+          popupAlign={{ overflow: { adjustX: true, adjustY: true, shiftX: true } }}
+        />
+      </span>
+    </Tooltip>
   );
 }
