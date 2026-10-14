@@ -8,6 +8,7 @@ const DATASET_PICKERS = [
     file: 'src/pages/Contacts/Components/select/drawer.tsx',
     formFile: 'src/pages/Contacts/Components/select/form.tsx',
     rowType: 'ContactTable',
+    columns: 'contactColumns',
     tableCount: 4,
     serviceCallCounts: {
       contact_hybrid_search: 4,
@@ -18,6 +19,7 @@ const DATASET_PICKERS = [
     file: 'src/pages/Flowproperties/Components/select/drawer.tsx',
     formFile: 'src/pages/Flowproperties/Components/select/form.tsx',
     rowType: 'FlowpropertyTable',
+    columns: 'FlowpropertyColumns',
     tableCount: 4,
     serviceCallCounts: {
       flowproperty_hybrid_search: 4,
@@ -28,6 +30,7 @@ const DATASET_PICKERS = [
     file: 'src/pages/Flows/Components/select/drawer.tsx',
     formFile: 'src/pages/Flows/Components/select/form.tsx',
     rowType: 'FlowTable',
+    columns: 'FlowsColumns',
     tableCount: 4,
     serviceCallCounts: {
       flow_hybrid_search: 2,
@@ -39,6 +42,7 @@ const DATASET_PICKERS = [
     file: 'src/pages/Sources/Components/select/drawer.tsx',
     formFile: 'src/pages/Sources/Components/select/form.tsx',
     rowType: 'SourceTable',
+    columns: 'sourceColumns',
     tableCount: 4,
     serviceCallCounts: {
       source_hybrid_search: 4,
@@ -49,6 +53,7 @@ const DATASET_PICKERS = [
     file: 'src/pages/Unitgroups/Components/select/drawer.tsx',
     formFile: 'src/pages/Unitgroups/Components/select/form.tsx',
     rowType: 'UnitGroupTable',
+    columns: 'unitGroupColumns',
     tableCount: 4,
     serviceCallCounts: {
       unitgroup_hybrid_search: 4,
@@ -154,7 +159,12 @@ describe.each(DATASET_PICKERS)('$file content-language-aware ProTable contract',
       countOccurrences(source, "className='responsive-data-list-table tg-dataset-selector-table'"),
     ).toBe(picker.tableCount);
     expect(countOccurrences(source, 'scroll={scroll}')).toBe(picker.tableCount);
-    expect(countOccurrences(source, '<ResponsiveDataListViewport>')).toBe(picker.tableCount);
+    expect(
+      countOccurrences(source, `<ResponsiveDataListViewport columns={${picker.columns}}>`),
+    ).toBe(picker.tableCount);
+    expect(countOccurrences(source, `columns={orderDataListColumns(${picker.columns},`)).toBe(
+      picker.tableCount,
+    );
     expect(countOccurrences(source, 'pagination={dataListPagination}')).toBe(picker.tableCount);
     expect(compactFormSource).toContain('<Space {...RESPONSIVE_REFERENCE_SELECTOR_SPACE_PROPS}>');
     expect(compactFormSource).toContain('style={RESPONSIVE_REFERENCE_SELECTOR_FORM_ITEM_STYLE}');

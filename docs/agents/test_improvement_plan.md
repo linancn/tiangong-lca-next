@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
-lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: pure column sizing and native-popup confirmation fit the existing scoped, unit-heavy maintenance strategy. No testing strategy or qualification-trust change.'
+lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
+lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: preserve native confirmation/hover/column-budget assertions, cover callback lifetime and popup containment, and isolate the evidenced Chromium beyond-viewport capture side effect. No runtime, authorization, coverage threshold or delivery-gate change.'
 ---
 
 # Testing Strategy

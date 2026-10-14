@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
-lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: compact metadata, fluid names/search and confirmed classification drafts change presentation and query timing; ownership, authorization, branches and delivery gates are unchanged.'
+lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
+lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: validation now distinguishes viewport popup capture from the evidenced Chromium capture side effect; entrypoints, source ownership, required gates and the publication hold are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

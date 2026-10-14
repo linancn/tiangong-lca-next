@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
-lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: the retained synthetic review instance uses the existing qualification bootstrap. Dependencies, runtime/environment selection and canonical commands are unchanged; process ownership belongs in the task receipt.'
+lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
+lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: validation now distinguishes viewport popup capture from the evidenced Chromium capture side effect; entrypoints, source ownership, required gates and the publication hold are unchanged.'
 ---
 
 # Development Bootstrap

@@ -746,7 +746,10 @@ test('classification confirmation stages a searched leaf and cancels the first o
     .toBe(true);
   await page.screenshot({
     path: testInfo.outputPath('classification-pending-confirmation.png'),
-    fullPage: true,
+    // Chromium captureBeyondViewport can briefly emulate a 1px viewport and remount
+    // native responsive toolbars. Capture the verified in-viewport popup without
+    // mutating the interface whose pending confirmation is being exercised.
+    fullPage: false,
   });
   await popup.getByRole('button', { name: '确认', exact: true }).click();
   await expect.poll(() => queries.length).toBe(before + 1);

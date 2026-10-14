@@ -2,6 +2,20 @@ import DatasetClassificationFilter from '@/components/DatasetClassificationFilte
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ConfigProvider } from 'antd';
+
+let mockCascaderProps: any;
+jest.mock('antd', () => {
+  const React = require('react');
+  const actual = jest.requireActual('antd');
+  return {
+    ...actual,
+    Cascader: function CaptureNativeCascader(props: any) {
+      mockCascaderProps = props;
+      return React.createElement(actual.Cascader, props);
+    },
+  };
+});
 
 jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: jest.fn(),
@@ -28,12 +42,94 @@ const label = 'pages.table.title.classification';
 describe('DatasetClassificationFilter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCascaderProps = undefined;
     mockLocale = 'en-US';
     classification.mockResolvedValue({ success: true, data: nodes });
     elementary.mockResolvedValue({
       success: true,
       data: [{ id: 'air', label: 'Emissions to air', value: 'Emissions to air', children: [] }],
     });
+  });
+
+  it('keeps native popup content internal when a configured prefix changes the popup classname', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    render(
+      <ConfigProvider prefixCls='classification-proof'>
+        <DatasetClassificationFilter
+          datasetKind='process'
+          lang='en'
+          value={[]}
+          onChange={onChange}
+        />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(classification).toHaveBeenCalled());
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    await user.click(await screen.findByText('Manufacturing'));
+    await user.click(await screen.findByText('Mineral products'));
+    expect(document.querySelector('.ant-cascader-dropdown')).toBeNull();
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('button', { name: 'pages.button.confirm' }));
+    expect(onChange).toHaveBeenCalledWith([
+      { scope: 'classification', code: '23', path: ['C', '23'] },
+    ]);
+    await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
+  });
+
+  it('retains the pending filter for trigger text-node events and non-dismissal keyboard input', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    const { container } = render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[{ scope: 'classification', code: 'C', path: ['C'] }]}
+        onChange={onChange}
+      />,
+    );
+    await screen.findByText('Manufacturing');
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    const text = document.createTreeWalker(container, NodeFilter.SHOW_TEXT).nextNode();
+    expect(text).toBeInstanceOf(Text);
+    fireEvent.mouseDown(text!);
+    fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, which: 40 });
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    expect(onChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'pages.button.cancel' }));
+    await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
+  });
+
+  it('accepts a controlled native close without a selection and ignores late callbacks after unmount', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    const { unmount } = render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[]}
+        onChange={onChange}
+      />,
+    );
+    await waitFor(() => expect(classification).toHaveBeenCalled());
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    await act(async () => {
+      mockCascaderProps.onOpenChange(false);
+    });
+    await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
+    await user.click(input);
+    const lateNativeCallback = mockCascaderProps.onOpenChange;
+    unmount();
+    await act(async () => {
+      lateNativeCallback(false);
+      lateNativeCallback(true);
+    });
+    expect(screen.queryByRole('combobox', { name: label })).not.toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('searches taxonomy labels and codes without changing the active server filter', async () => {

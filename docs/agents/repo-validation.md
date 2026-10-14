@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 349c49def9e7fdfd2660d7484b8a21daae3a5c36
-lastReviewedNote: 'Platform #1221 width/confirmation follow-up reviewed against 349c49def9e7fdfd2660d7484b8a21daae3a5c36: updated width/hover and draft/confirm/cancel/scope-change proof plus owned synthetic-instance retention. This records proof requirements, not an executed full gate or production pass.'
+lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
+lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: preserve native confirmation/hover/column-budget assertions, cover callback lifetime and popup containment, and isolate the evidenced Chromium beyond-viewport capture side effect. No runtime, authorization, coverage threshold or delivery-gate change.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -241,6 +241,8 @@ The configured suite exercises all seven Open Data catalogs, desktop/narrow layo
 Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots, and obtain the user's requested interface confirmation before any further production publication.
 
 The follow-up width refinement must prove that metadata widths stay bounded as the viewport grows while the name column and search input receive the extra room. Include all active locales, long unbroken names, header/value hover, formatted timestamps and usable version actions. Classification tests must distinguish draft navigation/clear from confirmation: no list query while drafting or cancelling, one query for a changed confirmation, no request for unchanged confirmation, and no stale draft after an external scope change. Show the actual classification popup in an isolated synthetic test instance for the requested user review; explicitly record ownership and retention of its server/browser processes.
+
+Capture an open classification popup within the current viewport after asserting its bounds. Chromium's beyond-viewport capture has been observed to briefly resize the page to one pixel and remount responsive controls, invalidating the pending state being tested. Retain all confirmation, cancellation and request-count assertions; changing the capture method must not hide a failed interaction.
 
 ### Model product-provider persistence qualification
 

@@ -599,7 +599,8 @@ describe('ProcessesPage', () => {
     expect(screen.getByRole('heading', { name: 'Process Team' })).toBeInTheDocument();
     expect(
       screen.getAllByText(
-        (_content, element) => element?.textContent === 'General commentCement process',
+        (_content, element) =>
+          element?.textContent === 'Cement processGeneral commentCement process',
       ).length,
     ).toBeGreaterThan(0);
     expect(screen.queryByText('Materials')).not.toBeInTheDocument();
