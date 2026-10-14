@@ -46,7 +46,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: '64f6e94e8fedb8785917cfa0c999aa413cc26dca'
+lastReviewedCommit: fc55139045b5ff19b1124d3d44488fb7f5527f56
 lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 related:
   - ../AGENTS.md
