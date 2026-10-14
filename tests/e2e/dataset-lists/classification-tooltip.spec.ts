@@ -5,6 +5,7 @@ import { signInViaUi } from '../i18n/auth';
 import { APP_LOCALES, getLocaleMessage, selectAppLocaleThroughUi } from '../i18n/contracts';
 import { loadReferenceFixture } from '../i18n/reference-fixture';
 import { installDatasetListFixture } from './fixture';
+import { assertReadableTooltip, captureReadableTooltip } from './tooltip-readability';
 
 test.use({ semanticPersona: 'data_product_manager' });
 test.skip(
@@ -12,35 +13,41 @@ test.skip(
   'Classification tooltip proof requires the isolated qualification backend.',
 );
 
-async function assertReadableTooltip(page: Page, text: string) {
-  const tooltip = page.getByRole('tooltip').filter({ hasText: text });
-  await expect(tooltip).toBeVisible();
-  await expect(tooltip).toHaveText(text);
-  await expect
-    .poll(() =>
-      tooltip.evaluate((element) => {
-        const bounds = element.getBoundingClientRect();
-        const shell = element.closest('.ant-tooltip')!;
-        return (
-          getComputedStyle(shell).opacity === '1' &&
-          shell.getAnimations().every((animation) => animation.playState !== 'running') &&
-          bounds.left >= 0 &&
-          bounds.right <= innerWidth + 1 &&
-          bounds.top >= 0 &&
-          bounds.bottom <= innerHeight + 1 &&
-          element.scrollWidth <= element.clientWidth + 1
-        );
-      }),
-    )
-    .toBe(true);
-  return tooltip;
-}
-
 async function hoverLabel(page: Page, option: Locator) {
   // Enter the current label after search replaces the row under the pointer.
   // Firefox does not synthesize a new mouseenter for a stationary pointer.
   await page.mouse.move(0, 0);
-  await option.locator('.ant-cascader-menu-item-content').hover();
+  const label = option.locator('.ant-cascader-menu-item-content');
+  // Search and responsive placement can move the popup after two stable frames.
+  // Keep the pointer outside until the label has settled, then enter it once.
+  await expect
+    .poll(() =>
+      label.evaluate(async (element) => {
+        const bounds = JSON.stringify(element.getBoundingClientRect().toJSON());
+        const started = performance.now();
+        do {
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => resolve());
+          });
+          if (
+            !element.isConnected ||
+            JSON.stringify(element.getBoundingClientRect().toJSON()) !== bounds
+          )
+            return false;
+          for (let node: Element | null = element; node; node = node.parentElement) {
+            if (
+              node
+                .getAnimations()
+                .some((animation) => animation.pending || animation.playState === 'running')
+            )
+              return false;
+          }
+        } while (performance.now() - started < 250);
+        return true;
+      }),
+    )
+    .toBe(true);
+  await label.hover();
 }
 
 const reference = loadReferenceFixture();
@@ -84,16 +91,21 @@ for (const locale of APP_LOCALES) {
       const result = popup.locator('.ant-cascader-menu-item').filter({ hasText: leaf }).first();
       await expect(result).toHaveText(fullPath);
       await hoverLabel(page, result);
-      const tooltip = await assertReadableTooltip(page, fullPath);
+      const evidence = await captureReadableTooltip(page, fullPath);
       expect(queries).toHaveLength(before);
       await expect
         .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1))
         .toBe(true);
-      geometry.push({ width, fullPath, tooltip: await tooltip.boundingBox() });
-      await page.screenshot({
-        path: testInfo.outputPath(`${locale}-${width}-classification-full-path.png`),
-        fullPage: false,
+      geometry.push({
+        width,
+        fullPath,
+        tooltip: evidence.observation,
+        afterScreenshot: evidence.afterScreenshot,
       });
+      await writeFile(
+        testInfo.outputPath(`${locale}-${width}-classification-full-path.png`),
+        evidence.screenshot,
+      );
     }
 
     // Native keyboard selection must still stage, rather than apply, the filter.
