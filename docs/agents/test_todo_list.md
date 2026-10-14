@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 5cf3baff2e5b9d2bfec5b26e64bb6a8993484590
-lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
+lastReviewedCommit: c350fc21edc96ce30f6d04e62b0741be57cf6ef4
+lastReviewedNote: 'Reviewed for Platform #1239 at c350fc2: classification-tooltip browser evidence requires positive visible unclipped settled geometry, complete expected text, atomic observations, capture checks and invalid-state controls. Review preserves bootstrap, ownership, gate/release policy and the historical coverage baseline; it claims no product defect or completed browser run.'
 ---
 
 # Testing Execution State

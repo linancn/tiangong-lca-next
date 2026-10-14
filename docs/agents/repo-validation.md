@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 5cf3baff2e5b9d2bfec5b26e64bb6a8993484590
-lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
+lastReviewedCommit: c350fc21edc96ce30f6d04e62b0741be57cf6ef4
+lastReviewedNote: 'Reviewed for Platform #1239 at c350fc2: classification-tooltip browser evidence requires positive visible unclipped settled geometry, complete expected text, atomic observations, capture checks and invalid-state controls. Review preserves bootstrap, ownership, gate/release policy and the historical coverage baseline; it claims no product defect or completed browser run.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -231,7 +231,7 @@ For Platform #1213, focused proof covers shared column aliases and missing metad
 
 Service assertions must bind source/state/team, exact-version scope, classification and existing business filters to the complete server query before count/page, including empty keyword, lexical, Hybrid and UUID-reference paths. Unavailable filtered RPCs fail explicitly without an unfiltered fallback. Model Results proof covers the complete exact referenced set across backend batch/page caps, a matching subproduct beyond the first UI page, native paging after filtering, and stale-filter response rejection. Analysis proof covers native page-size changes, server search/classification forwarding, selected rows across pages, and rejection of stale candidate/error and LCIA completions after selection resets. Backend correctness and deployment proof remain in Database #838 and Edge #477.
 
-Classification full-name changes require real Cascader/Tooltip component proof for ordinary options, highlighted search results, selected paths, focus disclosure and locale refresh. The focused dataset-list browser scenario uses governed localized taxonomy paths across the registry locales, verifies readable wrapped tooltip bounds at desktop and narrow widths, and checks that hover and native keyboard navigation preserve explicit confirmation and outside cancellation. Native `title` attributes alone are insufficient proof of the visible tooltip behavior.
+Classification full-name changes require real Cascader/Tooltip component proof for ordinary options, highlighted search results, selected paths, focus disclosure and locale refresh. The focused dataset-list browser scenario uses governed localized taxonomy paths across the registry locales, verifies readable wrapped tooltip bounds at desktop and narrow widths, and checks that hover and native keyboard navigation preserve explicit confirmation and outside cancellation. Readability requires a settled, visible tooltip with positive panel and text geometry, complete expected text, viewport containment and no clipping. Bracket each screenshot with the same readability check; browser negative controls must reject collapsed, hidden, clipped and moving tooltips. Native `title` attributes, DOM text or zero-size rectangles alone are insufficient proof of the visible tooltip behavior.
 
 `playwright.dataset-lists.config.ts` selects the separate `tests/e2e/dataset-lists/**` Chromium suite against a loopback qualification frontend with synthetic requests intercepted at the reserved `semantic-harness.invalid` backend origin. With that frontend already running, use:
 
