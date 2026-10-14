@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
-lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: validation now distinguishes viewport popup capture from the evidenced Chromium capture side effect; entrypoints, source ownership, required gates and the publication hold are unchanged.'
+lastReviewedCommit: 91ffd80ad1e1e3400720eb1ed64c5f410c683238
+lastReviewedNote: 'Reviewed Platform #1221 canonical locale-proof refresh against 91ffd80ad1e1e3400720eb1ed64c5f410c683238: generated focused-test digests reflect the final table assertions and preserve locale payloads, runtime sources, coverage thresholds and publication boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

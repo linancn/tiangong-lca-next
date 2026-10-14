@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 64d051e2307274a51e3d978c2f05843eac4f8050
-lastReviewedNote: 'Reviewed Platform #1221 test follow-up against 64d051e2307274a51e3d978c2f05843eac4f8050: preserve native confirmation/hover/column-budget assertions, cover callback lifetime and popup containment, and isolate the evidenced Chromium beyond-viewport capture side effect. No runtime, authorization, coverage threshold or delivery-gate change.'
+lastReviewedCommit: 91ffd80ad1e1e3400720eb1ed64c5f410c683238
+lastReviewedNote: 'Reviewed Platform #1221 canonical locale-proof refresh against 91ffd80ad1e1e3400720eb1ed64c5f410c683238: generated focused-test digests reflect the final table assertions and preserve locale payloads, runtime sources, coverage thresholds and publication boundaries.'
 ---
 
 # Testing Execution State
