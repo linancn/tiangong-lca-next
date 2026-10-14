@@ -30,6 +30,7 @@ export function createBuildFixture() {
   };
   for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key];
   const fixture = { temporary, repo, tools, env, receipt: env.PROCESS_CAPTURE_BUILD_RECEIPT };
+  env.FAKE_ORIGINAL_REPO = repo;
   for (const relative of [
     'scripts/qualification/process-capture-build.mjs',
     'scripts/e2e/static-server.cjs',
@@ -58,7 +59,15 @@ const path = require('node:path');
 const { parseEnv } = require('node:util');
 const args = process.argv.slice(2);
 if (args[0] === '--version') { process.stdout.write(process.env.FAKE_PNPM_VERSION || '11.24.0'); process.exit(0); }
+if (args[0] === 'install') {
+  if (args.join(' ') !== 'install --frozen-lockfile --offline --prod=false' || process.env.GIT_WORK_TREE) process.exit(9);
+  if (process.env.FAKE_BUILD_MODE === 'installfail') process.exit(7);
+  fs.mkdirSync('node_modules', {recursive:true});
+  fs.writeFileSync('node_modules/fixture-installed', 'frozen');
+  process.exit(0);
+}
 if (args.join(' ') !== 'build') process.exit(9);
+if (!fs.existsSync('node_modules/fixture-installed') || fs.lstatSync('node_modules').isSymbolicLink()) process.exit(9);
 if (process.env.FAKE_BUILD_MODE === 'fail') process.exit(7);
 // Match installed Umi4.7.9: .env then .env.local overwrite even explicit process values.
 for (const file of ['.env', '.env.local']) if (fs.existsSync(file)) Object.assign(process.env, parseEnv(fs.readFileSync(file, 'utf8')));
@@ -67,7 +76,7 @@ if (process.env.APP_RUNTIME_CONFIG_ENABLED !== 'true' || process.env.MOCK !== 'n
 fs.mkdirSync('dist', { recursive: true });
 fs.writeFileSync('dist/index.html', '<!doctype html><script src="/umi.js"></script>');
 fs.writeFileSync('dist/umi.js', 'const capturedConfiguration=' + JSON.stringify({supabaseUrl:process.env.SUPABASE_URL,runtimeConfigEnabled:process.env.APP_RUNTIME_CONFIG_ENABLED}) + ';');
-const original = process.env.GIT_WORK_TREE;
+const original = process.env.FAKE_ORIGINAL_REPO;
 if (process.env.FAKE_BUILD_MODE === 'dirty') fs.writeFileSync(path.join(original,'tracked.txt'), 'changed');
 if (process.env.FAKE_BUILD_MODE === 'lock') fs.appendFileSync(path.join(original,'pnpm-lock.yaml'), '#changed');
 if (process.env.FAKE_BUILD_MODE === 'head') { fs.writeFileSync(path.join(original,'tracked.txt'), 'new revision'); cp.execFileSync('git', ['add', 'tracked.txt'],{cwd:original}); cp.execFileSync('git', ['commit', '-qm', 'drift'],{cwd:original}); }
@@ -179,6 +188,7 @@ if (path.resolve(process.argv[1] ?? '') === fileURLToPath(import.meta.url)) {
   });
   for (const mode of [
     'fail',
+    'installfail',
     'dirty',
     'lock',
     'head',

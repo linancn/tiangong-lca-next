@@ -245,12 +245,24 @@ function main() {
     .split('\0')
     .filter(Boolean);
   const sourceIdentity = sourceDigest(sourceRoot, trackedPaths);
-  const dependencyGraph = path.join(repository, 'node_modules');
-  if (fs.existsSync(dependencyGraph))
-    fs.symlinkSync(dependencyGraph, path.join(sourceRoot, 'node_modules'), 'dir');
+  const childEnvironment = buildEnvironment(overrides);
+  // The archive owns its install. pnpm must never repair/remove the source
+  // checkout's modules through a symlink or discover its Git repository.
+  delete childEnvironment.GIT_WORK_TREE;
+  childEnvironment.GIT_CEILING_DIRECTORIES = path.dirname(sourceRoot);
+  const install = spawnSync('pnpm', ['install', '--frozen-lockfile', '--offline', '--prod=false'], {
+    cwd: sourceRoot,
+    env: childEnvironment,
+    stdio: 'inherit',
+  });
+  if (install.error || install.status !== 0)
+    fail('Isolated frozen install failed; no receipt was written');
+  requireUnchanged(initial);
+  if (sourceDigest(sourceRoot, trackedPaths) !== sourceIdentity)
+    fail('Exported candidate source changed while installing');
   const build = spawnSync('pnpm', ['build'], {
     cwd: sourceRoot,
-    env: buildEnvironment(overrides),
+    env: childEnvironment,
     stdio: 'inherit',
   });
   if (build.error || build.status !== 0) fail('Production build failed; no receipt was written');
@@ -313,6 +325,8 @@ try {
     'pnpm version differs from the repository pin',
     'Repository receipt must be ignored',
     'Production build failed; no receipt was written',
+    'Isolated frozen install failed; no receipt was written',
+    'Exported candidate source changed while installing',
     'Build did not produce the application shell',
     'Private candidate bundles must be ignored',
     'Bundle storage escaped the repository',
