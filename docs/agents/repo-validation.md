@@ -45,9 +45,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7cc6f1fac9c9533802059488d289c0482d6c8d64
-lastReviewedNote: 'Reviewed Platform #1229 against Dev732b55351e9b2b19391ebbacf2885d481e3fba85: preserve the native ProLayout collapse element and layout ownership while adding accessible keyboard/state decoration. Real installed-component and registry-driven browser geometry tests cover collapse, expansion and mobile navigation; existing ownership, gate thresholds, locale capabilities and release policy remain unchanged.'
+lastReviewedAt: 2026-10-15
+lastReviewedCommit: cf8629d8294c237192968fa0bbe8df911a2c025d
+lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -230,6 +230,8 @@ Dataset-display configuration changes require focused service, manager-page, dis
 For Platform #1213, focused proof covers shared column aliases and missing metadata, classification resources and stable filter values, viewport measurement, all seven catalogs and their dataset selectors, AllVersions, Model Results, mixed display pages, UUID-reference lookup and Process Analysis candidate services/pages. Assert native 50-row defaults and 20/50/100 choices; the base sequence is index, name, location, reference year, dataset type and version before business/action columns. Flow selectors and version drawers must display real location metadata. Exchange/unit/calculation result tables keep their domain columns.
 
 Service assertions must bind source/state/team, exact-version scope, classification and existing business filters to the complete server query before count/page, including empty keyword, lexical, Hybrid and UUID-reference paths. Unavailable filtered RPCs fail explicitly without an unfiltered fallback. Model Results proof covers the complete exact referenced set across backend batch/page caps, a matching subproduct beyond the first UI page, native paging after filtering, and stale-filter response rejection. Analysis proof covers native page-size changes, server search/classification forwarding, selected rows across pages, and rejection of stale candidate/error and LCIA completions after selection resets. Backend correctness and deployment proof remain in Database #838 and Edge #477.
+
+Classification full-name changes require real Cascader/Tooltip component proof for ordinary options, highlighted search results, selected paths, focus disclosure and locale refresh. The focused dataset-list browser scenario uses governed localized taxonomy paths across the registry locales, verifies readable wrapped tooltip bounds at desktop and narrow widths, and checks that hover and native keyboard navigation preserve explicit confirmation and outside cancellation. Native `title` attributes alone are insufficient proof of the visible tooltip behavior.
 
 `playwright.dataset-lists.config.ts` selects the separate `tests/e2e/dataset-lists/**` Chromium suite against a loopback qualification frontend with synthetic requests intercepted at the reserved `semantic-harness.invalid` backend origin. With that frontend already running, use:
 

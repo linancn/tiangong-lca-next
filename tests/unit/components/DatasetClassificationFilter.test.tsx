@@ -1,6 +1,8 @@
-import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import DatasetClassificationFilter, {
+  toDatasetClassificationOptions,
+} from '@/components/DatasetClassificationFilter';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfigProvider } from 'antd';
 
@@ -49,6 +51,200 @@ describe('DatasetClassificationFilter', () => {
       success: true,
       data: [{ id: 'air', label: 'Emissions to air', value: 'Emissions to air', children: [] }],
     });
+  });
+
+  it('keeps labels and query identities separate from complete localized hierarchy titles', () => {
+    const options = toDatasetClassificationOptions(nodes, 'classification');
+    expect(options[0]).toMatchObject({
+      label: 'Manufacturing',
+      title: 'Manufacturing',
+      value: 'classification:C',
+      filter: { scope: 'classification', code: 'C', path: ['C'] },
+    });
+    expect(options[0].children?.[0]).toEqual({
+      label: 'Mineral products',
+      title: 'Manufacturing / Mineral products',
+      value: 'classification:23',
+      filter: { scope: 'classification', code: '23', path: ['C', '23'] },
+    });
+  });
+
+  it('shows full option names in visible body tooltips while preserving native search highlighting', async () => {
+    const user = userEvent.setup();
+    const root = 'Manufacturing with a very long localized classification name';
+    const first = 'Mineral products with a shared long prefix and distinct first ending';
+    const second = 'Mineral products with a shared long prefix and distinct second ending';
+    classification.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          ...nodes[0],
+          label: root,
+          children: [
+            { ...nodes[0].children[0], label: first },
+            { ...nodes[0].children[0], id: '24', label: second },
+          ],
+        },
+      ],
+    });
+    const onChange = jest.fn();
+    render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[]}
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByRole('combobox', { name: label });
+    await user.click(input);
+    const rootOption = await screen.findByRole('menuitemcheckbox', {
+      name: new RegExp(`^${root}`),
+    });
+    expect(rootOption).toHaveAttribute('title', root);
+    await user.hover(within(rootOption).getByText(root));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(root);
+    expect(screen.getByRole('tooltip').closest('.ant-cascader-dropdown')).toBeNull();
+    expect(input).toHaveFocus();
+    await user.unhover(within(rootOption).getByText(root));
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    await user.click(within(rootOption).getByText(root));
+    const leaf = await screen.findByRole('menuitemcheckbox', { name: first });
+    expect(leaf).toHaveAttribute('title', `${root} / ${first}`);
+    await user.hover(within(leaf).getByText(first));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(`${root} / ${first}`);
+    await user.unhover(within(leaf).getByText(first));
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    fireEvent.change(input, { target: { value: 'second' } });
+    const searched = await screen.findByRole('menuitemcheckbox', { name: `${root} / ${second}` });
+    expect(searched).toHaveAttribute('title', `${root} / ${second}`);
+    const highlighted = searched.querySelector('.ant-cascader-menu-item-keyword');
+    expect(highlighted).toHaveTextContent('second');
+    await user.hover(highlighted!);
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent(`${root} / ${second}`);
+    expect(tooltip).toHaveStyle({ whiteSpace: 'normal', overflowWrap: 'anywhere' });
+    expect(tooltip.parentElement).toHaveStyle({ maxWidth: 'min(480px, calc(100vw - 16px))' });
+    expect(input).toHaveFocus();
+    expect(onChange).not.toHaveBeenCalled();
+    await user.unhover(highlighted!);
+    await user.click(searched);
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    expect(onChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'pages.button.confirm' }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith([
+      { scope: 'classification', code: '24', path: ['C', '24'] },
+    ]);
+  });
+
+  it('shows the complete selected path on hover and native input focus and refreshes after locale changes', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    const props = {
+      datasetKind: 'process' as const,
+      value: [{ scope: 'classification' as const, code: '23', path: ['C', '23'] }],
+      onChange,
+    };
+    const { container, rerender } = render(
+      <>
+        <DatasetClassificationFilter {...props} lang='en' />
+        <button type='button'>Outside</button>
+      </>,
+    );
+    const fullPath = 'Manufacturing / Mineral products';
+    await screen.findByText(fullPath);
+    const input = screen.getByRole('combobox', { name: label });
+    expect(container.querySelectorAll('[tabindex="0"]')).toHaveLength(0);
+    await user.tab();
+    expect(input).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(fullPath);
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    await user.click(input);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'pages.button.cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Outside' }));
+    await user.hover(within(container).getByText(fullPath));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(fullPath);
+    await user.unhover(within(container).getByText(fullPath));
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    classification.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          ...nodes[0],
+          label: '制造业完整本地化名称',
+          children: [{ ...nodes[0].children[0], label: '非金属矿物制品完整本地化名称' }],
+        },
+      ],
+    });
+    mockLocale = 'zh-CN';
+    rerender(
+      <>
+        <DatasetClassificationFilter {...props} lang='zh' />
+        <button type='button'>Outside</button>
+      </>,
+    );
+    const translatedPath = '制造业完整本地化名称 / 非金属矿物制品完整本地化名称';
+    await within(container).findByText(translatedPath);
+    await user.hover(within(container).getByText(translatedPath));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(translatedPath);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps the complete code fallback available when a controlled selected path is missing from the taxonomy', async () => {
+    const user = userEvent.setup();
+    render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[{ scope: 'classification', code: 'missing-leaf', path: ['C', 'missing-leaf'] }]}
+        onChange={jest.fn()}
+      />,
+    );
+    const fallback = 'Manufacturing / classification:missing-leaf';
+    await screen.findByText(fallback);
+    await user.hover(screen.getByText(fallback));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(fallback);
+  });
+
+  it('keeps native search keyboard selection staged for cancel and confirmation without moving focus', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    render(
+      <DatasetClassificationFilter
+        datasetKind='process'
+        lang='en'
+        value={[]}
+        onChange={onChange}
+      />,
+    );
+    const input = screen.getByRole('combobox', { name: label });
+    for (const [action, expectedCalls] of [
+      ['cancel', 0],
+      ['confirm', 1],
+    ] as const) {
+      await user.click(input);
+      fireEvent.change(input, { target: { value: 'mineral' } });
+      expect(
+        await screen.findByRole('menuitemcheckbox', {
+          name: 'Manufacturing / Mineral products',
+        }),
+      ).toHaveAttribute('title', 'Manufacturing / Mineral products');
+      fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, which: 40 });
+      fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13 });
+      fireEvent.keyUp(input, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13 });
+      expect(input).toHaveFocus();
+      expect(input).toHaveAttribute('aria-expanded', 'true');
+      expect(onChange).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: `pages.button.${action}` }));
+      await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'false'));
+      expect(onChange).toHaveBeenCalledTimes(expectedCalls);
+    }
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith([
+      { scope: 'classification', code: '23', path: ['C', '23'] },
+    ]);
   });
 
   it('keeps native popup content internal when a configured prefix changes the popup classname', async () => {
