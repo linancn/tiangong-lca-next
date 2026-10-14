@@ -46,7 +46,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: c350fc21edc96ce30f6d04e62b0741be57cf6ef4
+lastReviewedCommit: 3adac15b21a9b7414a8e98da1cd6f2f1448695bb
 lastReviewedNote: 'Reviewed for Platform #1239 at c350fc2: classification-tooltip browser evidence requires positive visible unclipped settled geometry, complete expected text, atomic observations, capture checks and invalid-state controls. Review preserves bootstrap, ownership, gate/release policy and the historical coverage baseline; it claims no product defect or completed browser run.'
 related:
   - ../AGENTS.md
