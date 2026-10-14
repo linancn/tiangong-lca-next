@@ -36,7 +36,10 @@ async function assertReadableTooltip(page: Page, text: string) {
   return tooltip;
 }
 
-async function hoverLabel(option: Locator) {
+async function hoverLabel(page: Page, option: Locator) {
+  // Enter the current label after search replaces the row under the pointer.
+  // Firefox does not synthesize a new mouseenter for a stationary pointer.
+  await page.mouse.move(0, 0);
   await option.locator('.ant-cascader-menu-item-content').hover();
 }
 
@@ -71,7 +74,7 @@ for (const locale of APP_LOCALES) {
 
     await selector.click();
     const parent = popup.locator('.ant-cascader-menu-item').filter({ hasText: labels[0] }).first();
-    await hoverLabel(parent);
+    await hoverLabel(page, parent);
     await assertReadableTooltip(page, labels[0]);
     expect(queries).toHaveLength(before);
 
@@ -80,7 +83,7 @@ for (const locale of APP_LOCALES) {
       await selector.fill(leaf);
       const result = popup.locator('.ant-cascader-menu-item').filter({ hasText: leaf }).first();
       await expect(result).toHaveText(fullPath);
-      await hoverLabel(result);
+      await hoverLabel(page, result);
       const tooltip = await assertReadableTooltip(page, fullPath);
       expect(queries).toHaveLength(before);
       await expect
@@ -130,7 +133,7 @@ for (const locale of APP_LOCALES) {
     await selector.click();
     await selector.fill(labels[0]);
     const other = popup.locator('.ant-cascader-menu-item').filter({ hasText: labels[0] }).first();
-    await hoverLabel(other);
+    await hoverLabel(page, other);
     await assertReadableTooltip(page, labels[0]);
     await other.click();
     await page.locator('.ant-pro-layout-content').click({ position: { x: 4, y: 4 } });
