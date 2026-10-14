@@ -21,8 +21,8 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 2136fc6f8f8389f47d0d5bf93a70416c35cedb31
-lastReviewedNote: 'Reviewed Platform #1213 working tree against base 2136fc6f8: candidate toolbar/filter/paging changes do not alter this retained proposed path-computation, async result or exploratory ranking contract. No calculation or browser validation pass is asserted.'
+lastReviewedCommit: c85147a29b801b638db4da0d3e73895b12782642
+lastReviewedNote: 'Reviewed the #432 shared Process save preparation working tree after c85147a: exact annual-unit serialization is reused by LifecycleModel persistence after metadata overrides; this retained analysis proposal and numerical contracts are unchanged.'
 ---
 
 # Contribution Path Analysis Design

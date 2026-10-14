@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: d6a83729b6a5e4094b59af35cb1ba794f6f7014b
-lastReviewedNote: 'Reviewed Platform #1216 against Dev 8a04000b: native Cascader selection tests await the observable close lifecycle with React act warnings fatal. Product behavior, dependencies, test inventory, coverage, timeouts, retries and release policy are unchanged.'
+lastReviewedCommit: edf69d6216904e48c92f36fdaf96282acaf1abc3
+lastReviewedNote: 'Reviewed Platform #432 working tree against dev 7d74edeb: exact annual units, supported use advice and Process form siblings; local capture qualification is separate from business persistence and release. Existing ownership, dependency and full-gate contracts remain.'
 ---
 
 # Pre-Push Gate Policy
