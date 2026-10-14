@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "d33e172f3e165a665fa5c0a6c239ad2c63f1ecf4ed28ea5f259d7a5a5786cab5",
+    "auditedInputDigest": "317066a859f7e18e1381d70d05717a390428a431ae660db15cc3e796605531e7",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "tiangong-lca/platform"
   },
@@ -158716,7 +158716,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 316,
+          "line": 317,
           "column": 14,
           "symbol": "details",
           "defaultMessage": null,
@@ -159199,7 +159199,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 342,
+          "line": 343,
           "column": 16,
           "symbol": "LcaCalculationEvidenceNotice",
           "defaultMessage": null,
@@ -159622,7 +159622,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 326,
+          "line": 327,
           "column": 8,
           "symbol": "details",
           "defaultMessage": null,
@@ -160212,7 +160212,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
-          "line": 361,
+          "line": 362,
           "column": 24,
           "symbol": "LcaCalculationEvidenceNotice",
           "defaultMessage": null,
@@ -291698,7 +291698,7 @@
       "count": 1,
       "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
       "expression": "`pages.process.lca.evidence.status.${resolved.status}`",
-      "locations": ["338:14"],
+      "locations": ["339:14"],
       "category": "active-dynamic",
       "family": "lcaEvidenceStatus",
       "reviewStatus": "reviewed"

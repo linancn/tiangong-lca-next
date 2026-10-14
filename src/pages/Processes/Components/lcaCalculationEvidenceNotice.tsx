@@ -306,6 +306,7 @@ export default function LcaCalculationEvidenceNotice({
             )}
           </Button>
         ) : matrix.uncharacterized_evidence &&
+          matrix.uncharacterized_evidence.artifact_format !== 'lcia-coverage-replay-snapshot:v1' &&
           isTrustedLciaGapArtifactUrl(matrix.uncharacterized_evidence.artifact_url) ? (
           <Button
             href={matrix.uncharacterized_evidence.artifact_url}

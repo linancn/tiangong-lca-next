@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-14
-lastReviewedCommit: 91ffd80ad1e1e3400720eb1ed64c5f410c683238
-lastReviewedNote: 'Reviewed Platform #1221 canonical locale-proof refresh against 91ffd80ad1e1e3400720eb1ed64c5f410c683238: generated focused-test digests reflect the final table assertions and preserve locale payloads, runtime sources, coverage thresholds and publication boundaries.'
+lastReviewedCommit: '64f6e94e8fedb8785917cfa0c999aa413cc26dca'
+lastReviewedNote: 'Reviewed combined Platform #1224 replay evidence and terminal polling with #1221 compact table changes. Regenerated canonical locale proofs for the combined source; static calculation semantics, coverage thresholds and release policy are preserved.'
 ---
 
 # Testing Execution State
