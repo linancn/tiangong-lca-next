@@ -44,9 +44,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-14
-lastReviewedCommit: 7cc6f1fac9c9533802059488d289c0482d6c8d64
-lastReviewedNote: 'Reviewed Platform #1229 native sidebar collapse repair against Dev732b55351: existing serial Umi build/test workflow, isolated qualification configuration and supported native layout presets remain applicable; no bootstrap, dependency or release command changes.'
+lastReviewedAt: 2026-10-15
+lastReviewedCommit: 5cf3baff2e5b9d2bfec5b26e64bb6a8993484590
+lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
 ---
 
 # Development Bootstrap

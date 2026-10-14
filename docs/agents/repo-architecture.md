@@ -27,9 +27,9 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
-lastReviewedAt: 2026-10-14
-lastReviewedCommit: 732b55351e9b2b19391ebbacf2885d481e3fba85
-lastReviewedNote: 'Reviewed Platform #1229 against Dev732b55351e9b2b19391ebbacf2885d481e3fba85: preserve the native ProLayout collapse element and layout ownership while adding accessible keyboard/state decoration. Real installed-component and registry-driven browser geometry tests cover collapse, expansion and mobile navigation; existing ownership, gate thresholds, locale capabilities and release policy remain unchanged.'
+lastReviewedAt: 2026-10-15
+lastReviewedCommit: cf8629d8294c237192968fa0bbe8df911a2c025d
+lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -147,6 +147,8 @@ Catalogs, dataset selectors, AllVersions and mixed display lists default to 50 r
 `DatasetClassificationFilter` reads localized governed taxonomy resources, but submits stable classification/elementary codes and paths. `withDatasetClassification` combines them with business filters. List, lexical, Hybrid and UUID-reference queries carry the same filter to Database/Edge before count and pagination; app code does not filter an already fetched catalog page. `query_dataset_catalog`, `search_dataset_uuid_mentions_page`, existing search RPCs and the filtered mixed-display RPCs own complete-set filtering and totals. UUID-reference lookup uses native server paging instead of a fixed 50-result cap. A missing filtered contract is an error, never permission to retry without the filter. Matching deployment dependencies belong to `supabase-branching.md`.
 
 Classification navigation and clearing edit a pending selection inside the native popup. Only explicit confirmation applies a changed value to the list; cancelling, Escape or closing outside discards it. An unchanged confirmation does not repeat the query, and an external classification scope/value change cannot submit an older draft.
+
+Classification options and highlighted search results reveal their complete localized hierarchy in native Ant Design tooltips; option labels remain strings for native search and retain full-path browser titles. The closed control reveals its selected path on hover or keyboard focus. Tooltips wrap within the viewport and render outside the scrollable Cascader popup; they do not add option tab stops or change native navigation and pending-selection behavior.
 
 Model Results is an exact referenced Process set, not an open catalog query. `getProcessesByIdAndVersion` deduplicates exact ID/version references, reads every readable batch and backend page, rejects unexpected identities or incomplete responses, then applies keyword/classification matching to that complete set before native UI paging. Main and subproduct tables use the base columns and independent toolbar filters; the one-row main result hides redundant pagination, while only the subproduct table fills the remaining Drawer height. These presentation queries do not recalculate or mutate the stored Model/Process results.
 
