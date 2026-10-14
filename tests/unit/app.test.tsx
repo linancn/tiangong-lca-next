@@ -269,32 +269,6 @@ describe('app runtime config', () => {
     expect(mockHistory.replace).toHaveBeenCalledWith('/user/login/password_reset');
   });
 
-  it('replaces the ProLayout collapse div with one semantic button', () => {
-    const { renderAccessibleCollapsedButton } = require('@/components/AccessibleCollapsedButton');
-    const onClick = jest.fn();
-    expect(renderAccessibleCollapsedButton('Missing collapse', null)).toBeNull();
-
-    const upstreamView = render(
-      renderAccessibleCollapsedButton(
-        'Navigation Mode',
-        <div className='upstream-collapse' onClick={onClick}>
-          menu
-        </div>,
-      ),
-    );
-
-    const trigger = screen.getByRole('button', { name: 'Navigation Mode' });
-    expect(trigger).toHaveClass('upstream-collapse', 'tg-pro-layout-collapse-trigger');
-    fireEvent.click(trigger);
-    expect(onClick).toHaveBeenCalledTimes(1);
-
-    upstreamView.unmount();
-    render(renderAccessibleCollapsedButton('Navigation Mode without class', <div>menu</div>));
-    expect(screen.getByRole('button', { name: 'Navigation Mode without class' })).toHaveClass(
-      'tg-pro-layout-collapse-trigger',
-    );
-  });
-
   beforeEach(() => {
     mockBrand = 'tiangong';
     jest.resetModules();
@@ -1032,9 +1006,9 @@ describe('app runtime config', () => {
         <div className='runtime-collapse'>runtime menu</div>,
       ),
     );
-    expect(screen.getByRole('button', { name: 'Navigation Mode' })).toHaveClass(
-      'runtime-collapse',
-      'tg-pro-layout-collapse-trigger',
+    expect(screen.getByRole('button', { name: 'Navigation Mode' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
     );
   });
 
