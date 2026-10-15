@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 3adac15b21a9b7414a8e98da1cd6f2f1448695bb
-lastReviewedNote: 'Reviewed for Platform #1239 at c350fc2: classification-tooltip browser evidence requires positive visible unclipped settled geometry, complete expected text, atomic observations, capture checks and invalid-state controls. Review preserves bootstrap, ownership, gate/release policy and the historical coverage baseline; it claims no product defect or completed browser run.'
+lastReviewedCommit: ec30213b87301d137ef14cc8db887fc90238a975
+lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
 ---
 
 # Testing Patterns Reference
@@ -189,6 +189,13 @@ Browser semantic E2E pattern:
 - treat adding a registry locale or changing a bound route/source/test, raw `pnpm-lock.yaml`, or `pnpm-workspace.yaml` install policy as evidence invalidation, not as a request to reuse the old result; a root `package.json.version`-only release may reuse dependency identity because pnpm does not encode that version in its lockfile
 - when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
 - when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
+
+Dataset search submission pattern:
+
+- keep Checkbox mocks controlled by their `checked` prop so tests exercise mutual exclusion like native Ant Design
+- cover the native clear event (`onSearch` with `source: clear`) separately from Search/Enter; clearing must not publish draft mode
+- hold replacement reloads while resolving earlier requests to prove accepted submissions invalidate stale results synchronously, rather than relying on the next request's epoch increment
+- pair request mode/keyword/page observations with visible result identity and test each selector tab's independent draft and accepted query
 
 Release Gate proof pattern:
 

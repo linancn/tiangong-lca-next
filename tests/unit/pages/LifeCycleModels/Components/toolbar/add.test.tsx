@@ -139,22 +139,16 @@ jest.mock('antd', () => {
   const Row = ({ children }: any) => <div>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
 
-  const Checkbox = ({ onChange, children }: any) => {
-    const [checked, setChecked] = React.useState(false);
-    return (
-      <label>
-        <input
-          type='checkbox'
-          checked={checked}
-          onChange={(event) => {
-            setChecked(event.target.checked);
-            onChange?.({ target: { checked: event.target.checked } });
-          }}
-        />
-        <span>{toText(children)}</span>
-      </label>
-    );
-  };
+  const Checkbox = ({ checked, onChange, children }: any) => (
+    <label>
+      <input
+        type='checkbox'
+        checked={checked}
+        onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
+      />
+      <span>{toText(children)}</span>
+    </label>
+  );
 
   const Card = ({ tabList = [], activeTabKey, onTabChange, children }: any) => (
     <div>
@@ -595,6 +589,9 @@ describe('ModelToolbarAdd', () => {
       ),
     );
 
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    await userEvent.click(screen.getByRole('checkbox'));
+
     const teSearchInput = screen.getByRole('textbox', { name: 'te' });
     await userEvent.clear(teSearchInput);
     await userEvent.type(teSearchInput, 'steam');
@@ -841,6 +838,161 @@ describe('ModelToolbarAdd', () => {
       );
     },
   );
+});
+
+describe('ModelToolbarAdd submitted search', () => {
+  it.each([
+    ['tg', 'TianGong Data', true],
+    ['co', 'Business Data', true],
+    ['my', 'My Data', true],
+    ['te', 'Team Data', true],
+  ])(
+    'uses only submitted keyword and mode for %s paging and reloads',
+    async (source, label, hasAI) => {
+      mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+      mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+      mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
+      render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+      if (source !== 'tg') await userEvent.click(screen.getByRole('button', { name: label }));
+      await waitFor(() => expect(mockGetProcessTableAll.mock.calls.at(-1)?.[3]).toBe(source));
+      await userEvent.type(screen.getByRole('textbox', { name: source }), 'applied');
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'applied',
+      ]);
+      await act(async () => latestProTableProps.rowSelection.onChange(['selected:1']));
+      const api = latestProTableProps.actionRef.current;
+      api.setPageInfo.mockClear();
+      const count = () =>
+        mockGetProcessTableAll.mock.calls.length +
+        mockGetProcessTablePgroongaSearch.mock.calls.length +
+        mockProcessHybridSearch.mock.calls.length;
+      const beforeDraft = count();
+      if (hasAI) await userEvent.click(screen.getByRole('checkbox'));
+      await userEvent.clear(screen.getByRole('textbox', { name: source }));
+      await userEvent.type(screen.getByRole('textbox', { name: source }), 'draft');
+      expect(count()).toBe(beforeDraft);
+      expect(latestProTableProps.rowSelection.selectedRowKeys).toEqual(['selected:1']);
+      expect(api.setPageInfo).not.toHaveBeenCalled();
+      await act(async () => {
+        await latestProTableProps.request(
+          { ...latestProTableProps.params, current: 3, pageSize: 10 },
+          {},
+          {},
+        );
+      });
+      expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'applied',
+      ]);
+      expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)?.[0].current).toBe(3);
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      const submittedService = hasAI ? mockProcessHybridSearch : mockGetProcessTablePgroongaSearch;
+      expect(submittedService.mock.calls.at(-1)?.slice(2, 4)).toEqual([source, 'draft']);
+      expect(latestProTableProps.rowSelection.selectedRowKeys).toEqual([]);
+      expect(api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      const beforeToggle = count();
+      if (hasAI) await userEvent.click(screen.getByRole('checkbox'));
+      expect(count()).toBe(beforeToggle);
+      await act(async () => {
+        await latestProTableProps.request(
+          { ...latestProTableProps.params, current: 3, pageSize: 10 },
+          {},
+          {},
+        );
+      });
+      expect(submittedService.mock.calls.at(-1)?.slice(2, 4)).toEqual([source, 'draft']);
+      if (hasAI) await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'draft',
+      ]);
+      const beforeRepeat = mockGetProcessTablePgroongaSearch.mock.calls.length;
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetProcessTablePgroongaSearch.mock.calls.length).toBeGreaterThan(beforeRepeat);
+    },
+  );
+
+  it('preserves each tab draft and submitted mode through tab changes and reopening', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'first query');
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.clear(screen.getByRole('textbox', { name: 'tg' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'unsubmitted');
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    await userEvent.type(screen.getByRole('textbox', { name: 'co' }), 'second query');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+    expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+      'co',
+      'second query',
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: 'tg' })).toHaveValue('unsubmitted');
+    await act(async () => {
+      await latestProTableProps.request(
+        { ...latestProTableProps.params, current: 2, pageSize: 10 },
+        {},
+        {},
+      );
+    });
+    expect(mockProcessHybridSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual(['tg', 'first query']);
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    expect(screen.getByRole('textbox', { name: 'tg' })).toHaveValue('unsubmitted');
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    await act(async () => {
+      await latestProTableProps.request(
+        { ...latestProTableProps.params, current: 2, pageSize: 10 },
+        {},
+        {},
+      );
+    });
+    expect(mockProcessHybridSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual(['tg', 'first query']);
+  });
+
+  it('invalidates a pending result immediately when a new search is submitted', async () => {
+    mockGetProcessTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    render(<ModelToolbarAdd buttonType='text' lang='en' onData={jest.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    let resolveOld;
+    mockGetProcessTableAll.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    const pending = latestProTableProps.request(
+      { ...latestProTableProps.params, current: 3, pageSize: 10 },
+      {},
+      {},
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'new query');
+    // Prevent the replacement request from invalidating the old request on its own.
+    const heldReload = jest
+      .spyOn(latestProTableProps.actionRef.current, 'reload')
+      .mockResolvedValueOnce(undefined);
+    heldReload.mockClear();
+    const previousListCount = mockGetProcessTableAll.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    expect(heldReload).toHaveBeenCalledTimes(1);
+    expect(mockGetProcessTableAll).toHaveBeenCalledTimes(previousListCount);
+    expect(mockGetProcessTablePgroongaSearch).not.toHaveBeenCalled();
+    resolveOld({ data: [{ id: 'stale', version: '1' }], success: true });
+    await expect(pending).resolves.toEqual({ data: [], success: false });
+    heldReload.mockRestore();
+  });
 });
 
 jest.mock('@/components/DatasetClassificationFilter', () => ({

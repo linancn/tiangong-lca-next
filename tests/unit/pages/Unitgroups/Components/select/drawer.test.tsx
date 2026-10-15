@@ -1,6 +1,6 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { act, renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let mockLatestDatasetSelectorTableProps: any = null;
 
@@ -226,8 +226,14 @@ jest.mock('@ant-design/pro-components', () => {
     latestRequestRef.current = request;
     latestParamsRef.current = params;
 
+    const paramsKey = JSON.stringify(params);
     const api = React.useMemo(
       () => ({
+        request: (nextParams = {}, sort = {}) =>
+          latestRequestRef.current(
+            { ...latestParamsRef.current, pageSize: 10, current: 1, ...nextParams },
+            sort,
+          ),
         setPageInfo: jest.fn(),
         reload: jest.fn(async () => {
           await Promise.resolve();
@@ -249,7 +255,7 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
       api.reload();
-    }, [actionRef, api, request]);
+    }, [actionRef, api, paramsKey]);
 
     return (
       <div>
@@ -292,6 +298,128 @@ describe('UnitgroupsSelectDrawer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+  it.each([
+    ['tg', 'TianGong Data'],
+    ['co', 'Business Data'],
+    ['my', 'My Data'],
+    ['te', 'Team Data'],
+  ])(
+    'keeps the submitted %s keyword for paging, sorting and classification',
+    async (source, title) => {
+      renderWithProviders(
+        <UnitgroupsSelectDrawer buttonType='text' lang='en' onData={jest.fn()} />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+      if (source !== 'tg') await userEvent.click(screen.getByRole('button', { name: title }));
+      const input = screen.getByLabelText(source);
+      await userEvent.type(input, 'accepted');
+      expect(mockGetUnitGroupTablePgroongaSearch).not.toHaveBeenCalled();
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      await waitFor(() =>
+        expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('accepted'),
+      );
+      const api = mockLatestDatasetSelectorTableProps.api;
+      const count = mockGetUnitGroupTablePgroongaSearch.mock.calls.length;
+      await userEvent.clear(input);
+      await userEvent.type(input, 'draft');
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledTimes(count);
+      await act(async () => {
+        await api.request({ current: 3 }, { name: 'descend' });
+      });
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1).slice(0, 5)).toEqual([
+        expect.objectContaining({ current: 3, pageSize: 10 }),
+        'en',
+        source,
+        'accepted',
+        {},
+      ]);
+      await act(async () => {
+        await api.reload();
+      });
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('accepted');
+      await userEvent.selectOptions(screen.getByLabelText('Classification'), 'C');
+      await waitFor(() =>
+        expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+          { scope: 'classification', code: 'C', path: ['C'] },
+        ]),
+      );
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('accepted');
+      api.setPageInfo.mockClear();
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      await waitFor(() =>
+        expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('draft'),
+      );
+      expect(api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      const listCount = mockGetUnitGroupTableAll.mock.calls.length;
+      await userEvent.clear(input);
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      await waitFor(() =>
+        expect(mockGetUnitGroupTableAll.mock.calls.length).toBeGreaterThan(listCount),
+      );
+      expect(mockGetUnitGroupTableAll.mock.calls.at(-1)[3]).toBe(source);
+    },
+  );
+
+  it('keeps submitted keywords independent when switching tabs', async () => {
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={jest.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await userEvent.type(screen.getByLabelText('tg'), 'accepted-tg');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('accepted-tg'),
+    );
+    await userEvent.clear(screen.getByLabelText('tg'));
+    await userEvent.type(screen.getByLabelText('tg'), 'draft-tg');
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    await userEvent.type(screen.getByLabelText('co'), 'accepted-co');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('accepted-co'),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1).slice(2, 4)).toEqual([
+        'tg',
+        'accepted-tg',
+      ]),
+    );
+    expect(screen.getByLabelText('tg')).toHaveValue('draft-tg');
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1).slice(2, 4)).toEqual([
+        'tg',
+        'accepted-tg',
+      ]),
+    );
+    expect(screen.getByLabelText('tg')).toHaveValue('draft-tg');
+  });
+
+  it('invalidates an older response synchronously when a new keyword is submitted', async () => {
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={jest.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await userEvent.type(screen.getByLabelText('tg'), 'old');
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('old'),
+    );
+    const api = mockLatestDatasetSelectorTableProps.api;
+    let resolveOld;
+    mockGetUnitGroupTablePgroongaSearch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    const oldRequest = api.request({ current: 2 });
+    await userEvent.clear(screen.getByLabelText('tg'));
+    await userEvent.type(screen.getByLabelText('tg'), 'new');
+    // Hold the reload so the submit handler itself must invalidate the old request.
+    api.reload.mockImplementationOnce(async () => undefined);
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    resolveOld({ data: [{ id: 'stale' }], success: true });
+    await expect(oldRequest).resolves.toEqual({ data: [], success: false });
   });
 
   it('loads tg data by default, supports tab switching/search, and submits the selected row', async () => {

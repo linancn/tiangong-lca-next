@@ -64,7 +64,6 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC } from 'react';
 import { getAllVersionsColumns } from '../Utils';
 import {
-  getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
@@ -72,6 +71,7 @@ import {
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
+import { useSubmittedDatasetSearch } from '../Utils/useSubmittedDatasetSearch';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -82,11 +82,12 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const { message } = App.useApp();
-  const [, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const { draftMode, setDraftMode, submitted, submittedRef, submitSearch } =
+    useSubmittedDatasetSearch();
+  const openAI = draftMode === 'smart';
+  const referenceLookup = draftMode === 'reference';
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -112,7 +113,6 @@ const TableList: FC = () => {
   const currentAppLocaleRef = useRef(appLocale);
   const tableRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
-  const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
 
@@ -370,13 +370,15 @@ const TableList: FC = () => {
     });
   }, []);
 
-  const onSearch: SearchProps['onSearch'] = (value) => {
-    keyWordRef.current = value;
-    setKeyWord(value);
-    actionRef.current?.setPageInfo?.({ current: 1 });
-    if (referenceLookup && !getReferenceLookupUuid(value)) {
+  const onSearch: SearchProps['onSearch'] = (value, _event, info) => {
+    if (info?.source === 'clear') return;
+    if (!submitSearch(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
+      return;
     }
+    tableRequestEpochRef.current += 1;
+    setListPage((page) => ({ ...page, current: 1 }));
+    actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: FlowImportData) => {
@@ -415,12 +417,7 @@ const TableList: FC = () => {
                 <Space wrap>
                   <Checkbox
                     checked={openAI}
-                    onChange={(e) => {
-                      setOpenAI(e.target.checked);
-                      if (e.target.checked) {
-                        setReferenceLookup(false);
-                      }
-                    }}
+                    onChange={(e) => setDraftMode(e.target.checked ? 'smart' : 'normal')}
                   >
                     <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
                   </Checkbox>
@@ -431,12 +428,7 @@ const TableList: FC = () => {
                   >
                     <Checkbox
                       checked={referenceLookup}
-                      onChange={(e) => {
-                        setReferenceLookup(e.target.checked);
-                        if (e.target.checked) {
-                          setOpenAI(false);
-                        }
-                      }}
+                      onChange={(e) => setDraftMode(e.target.checked ? 'reference' : 'normal')}
                     >
                       <FormattedMessage
                         id='pages.search.referenceLookup'
@@ -487,7 +479,7 @@ const TableList: FC = () => {
             pagination={{
               ...dataListPagination,
               onChange: (current, pageSize) => setListPage({ current, pageSize }),
-              ...getReferenceLookupPaginationProps(referenceLookup),
+              ...getReferenceLookupPaginationProps(submitted.mode === 'reference'),
             }}
             toolBarRender={() => {
               if (dataSource === 'my') {
@@ -534,12 +526,13 @@ const TableList: FC = () => {
                 ...requestParams
               } = params;
               void _openDataFilterRevision;
+              const submittedSearch = submittedRef.current;
               return guardLocaleMaterializedTableRequest(
                 requestedLocale,
                 () => currentAppLocaleRef.current,
                 tableRequestEpochRef,
                 async ({ isCurrentRequest }) => {
-                  const currentKeyWord = keyWordRef.current;
+                  const currentKeyWord = submittedSearch.keyword;
                   const currentStateCode = stateCodeRef.current;
                   const flowTypeFilter = flowType;
                   const classificationFilter = requestParams.classification ?? [];
@@ -549,13 +542,9 @@ const TableList: FC = () => {
                       ? { classification: classificationFilter }
                       : {}),
                   };
-                  if (referenceLookup) {
-                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-                    if (!referenceLookupUuid) {
-                      return attachReviewState(
-                        getReferenceLookupEmptyResult(requestParams.current),
-                      );
-                    }
+                  if (submittedSearch.mode === 'reference') {
+                    // Reference snapshots are published only after UUID validation.
+                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord)!;
                     const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
                     const result = await getFlowTableUuidMentionSearch(
@@ -604,7 +593,7 @@ const TableList: FC = () => {
                         };
                       }
                     }
-                    if (openAI) {
+                    if (submittedSearch.mode === 'smart') {
                       return attachReviewState(
                         await flow_hybrid_search(
                           requestParams,

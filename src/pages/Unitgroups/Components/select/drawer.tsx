@@ -1,4 +1,5 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
 import {
   ResponsiveDataListViewport,
   dataListPagination,
@@ -42,9 +43,13 @@ const { Search } = Input;
 
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const tgSearch = useSubmittedDatasetSearch('smart');
   const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const coSearch = useSubmittedDatasetSearch('smart');
   const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const mySearch = useSubmittedDatasetSearch('smart');
   const [teKeyWord, setTeKeyWord] = useState<string>('');
+  const teSearch = useSubmittedDatasetSearch('smart');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
@@ -136,30 +141,38 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTgKeyWord(value);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setCoKeyWord(value);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setMyKeyWord(value);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
 
-  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+  const onTeSearch: SearchProps['onSearch'] = (value) => {
+    teSearch.submitSearch(value);
+    teRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTeKeyWord(value);
+    setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
   };
@@ -349,12 +362,13 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
                   () => currentContentLanguageRef.current,
                   myRequestEpochRef,
                   async () => {
-                    if (myKeyWord.length > 0) {
+                    const submittedKeyword = mySearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return unitgroup_hybrid_search(
                         params,
                         params.contentLanguage,
                         'my',
-                        myKeyWord,
+                        submittedKeyword,
                         {},
                         0,
                       );
@@ -427,12 +441,13 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
                   () => currentContentLanguageRef.current,
                   tgRequestEpochRef,
                   async () => {
-                    if (tgKeyWord.length > 0) {
+                    const submittedKeyword = tgSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return unitgroup_hybrid_search(
                         params,
                         params.contentLanguage,
                         'tg',
-                        tgKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
@@ -504,12 +519,13 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
                   () => currentContentLanguageRef.current,
                   coRequestEpochRef,
                   async () => {
-                    if (coKeyWord.length > 0) {
+                    const submittedKeyword = coSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return unitgroup_hybrid_search(
                         params,
                         params.contentLanguage,
                         'co',
-                        coKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
@@ -581,12 +597,13 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
                   () => currentContentLanguageRef.current,
                   teRequestEpochRef,
                   async () => {
-                    if (teKeyWord.length > 0) {
+                    const submittedKeyword = teSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return unitgroup_hybrid_search(
                         params,
                         params.contentLanguage,
                         'te',
-                        teKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }

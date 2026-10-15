@@ -1,3 +1,4 @@
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
@@ -51,7 +52,8 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<'tg' | 'my'>('tg');
-  const [openAI, setOpenAI] = useState<boolean>(false);
+  const tgSearch = useSubmittedDatasetSearch();
+  const mySearch = useSubmittedDatasetSearch();
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType>(undefined);
   const myActionRefSelect = useRef<ActionType>(undefined);
@@ -132,16 +134,20 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    inputRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTgKeyWord(value);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    outputRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setMyKeyWord(value);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -264,7 +270,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                   <Search
                     name={'tg'}
                     placeholder={
-                      openAI
+                      tgSearch.draftMode === 'smart'
                         ? intl.formatMessage({ id: 'pages.search.placeholder' })
                         : intl.formatMessage({ id: 'pages.search.keyWord' })
                     }
@@ -277,8 +283,9 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={tgSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        tgSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -316,13 +323,14 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                   () => currentContentLanguageRef.current,
                   inputRequestEpochRef,
                   async () => {
-                    if (tgKeyWord.length > 0) {
-                      if (openAI) {
+                    const search = tgSearch.submittedRef.current;
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
                         return flow_hybrid_search(
                           requestParams,
                           contentLanguage,
                           'tg',
-                          tgKeyWord,
+                          search.keyword,
                           {},
                         );
                       }
@@ -330,7 +338,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                         requestParams,
                         contentLanguage,
                         'tg',
-                        tgKeyWord,
+                        search.keyword,
                         {},
                       );
                     }
@@ -403,12 +411,13 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                   () => currentContentLanguageRef.current,
                   outputRequestEpochRef,
                   async () => {
-                    if (myKeyWord.length > 0) {
+                    const search = mySearch.submittedRef.current;
+                    if (search.keyword.length > 0) {
                       return getFlowTablePgroongaSearch(
                         requestParams,
                         contentLanguage,
                         'my',
-                        myKeyWord,
+                        search.keyword,
                         {},
                       );
                     }

@@ -67,7 +67,6 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns } from '../Utils';
 import {
-  getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
@@ -75,6 +74,7 @@ import {
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
+import { useSubmittedDatasetSearch } from '../Utils/useSubmittedDatasetSearch';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
@@ -92,14 +92,13 @@ type LifeCycleModelTableRequestParams = LocaleAwareTableParams & {
 
 const TableList: FC = () => {
   const { message } = App.useApp();
-  const [keyWord, setKeyWord] = useState('');
-  const [searchRevision, setSearchRevision] = useState(0);
   const [stateCode, setStateCode] = useState<string | number>('all');
   const [tableDataSource, setTableDataSource] = useState<LifeCycleModelTable[]>([]);
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
-  const [openAI, setOpenAI] = useState<boolean>(false);
-  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const { draftMode, setDraftMode, submitted, submitSearch } = useSubmittedDatasetSearch();
+  const openAI = draftMode === 'smart';
+  const referenceLookup = draftMode === 'reference';
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -351,12 +350,14 @@ const TableList: FC = () => {
     },
   ];
 
-  const onSearch: SearchProps['onSearch'] = (value) => {
-    setKeyWord(value);
-    setSearchRevision((revision) => revision + 1);
-    if (referenceLookup && !getReferenceLookupUuid(value)) {
+  const onSearch: SearchProps['onSearch'] = (value, _event, info) => {
+    if (info?.source === 'clear') return;
+    if (!submitSearch(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
+      return;
     }
+    tableRequestEpochRef.current += 1;
+    setListPage((page) => ({ ...page, current: 1 }));
   };
 
   useEffect(() => {
@@ -403,12 +404,7 @@ const TableList: FC = () => {
                 <Space wrap>
                   <Checkbox
                     checked={openAI}
-                    onChange={(e) => {
-                      setOpenAI(e.target.checked);
-                      if (e.target.checked) {
-                        setReferenceLookup(false);
-                      }
-                    }}
+                    onChange={(e) => setDraftMode(e.target.checked ? 'smart' : 'normal')}
                   >
                     <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
                   </Checkbox>
@@ -419,12 +415,7 @@ const TableList: FC = () => {
                   >
                     <Checkbox
                       checked={referenceLookup}
-                      onChange={(e) => {
-                        setReferenceLookup(e.target.checked);
-                        if (e.target.checked) {
-                          setOpenAI(false);
-                        }
-                      }}
+                      onChange={(e) => setDraftMode(e.target.checked ? 'reference' : 'normal')}
                     >
                       <FormattedMessage
                         id='pages.search.referenceLookup'
@@ -455,9 +446,14 @@ const TableList: FC = () => {
               classification,
               dataSource,
               teamId: tid ?? '',
-              keyword: keyWord,
-              searchRevision,
-              searchMode: referenceLookup ? 'reference' : openAI ? 'ai' : 'keyword',
+              keyword: submitted.keyword,
+              searchRevision: submitted.revision,
+              searchMode:
+                submitted.mode === 'reference'
+                  ? 'reference'
+                  : submitted.mode === 'smart'
+                    ? 'ai'
+                    : 'keyword',
               stateCode,
               ...(dataSource === 'tg'
                 ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
@@ -468,7 +464,7 @@ const TableList: FC = () => {
             pagination={{
               ...dataListPagination,
               onChange: (current, pageSize) => setListPage({ current, pageSize }),
-              ...getReferenceLookupPaginationProps(referenceLookup),
+              ...getReferenceLookupPaginationProps(submitted.mode === 'reference'),
             }}
             toolBarRender={() => {
               if (dataSource === 'my') {
@@ -528,12 +524,8 @@ const TableList: FC = () => {
                 tableRequestEpochRef,
                 async ({ isCurrentRequest }) => {
                   if (searchMode === 'reference') {
-                    const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword);
-                    if (!referenceLookupUuid) {
-                      return attachReviewState(
-                        getReferenceLookupEmptyResult(requestParams.current),
-                      );
-                    }
+                    // Reference snapshots are published only after UUID validation.
+                    const referenceLookupUuid = getReferenceLookupUuid(requestedKeyword)!;
                     const referenceLookupTeamId = getReferenceLookupTeamId(requestedTeamId);
 
                     const result = await getLifeCycleModelTableUuidMentionSearch(

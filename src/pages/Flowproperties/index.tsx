@@ -63,15 +63,14 @@ import {
 } from '@/services/openDataCatalog/types';
 import { getAllVersionsColumns } from '../Utils';
 import {
-  getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
-  type DatasetSearchMode,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
+import { useSubmittedDatasetSearch } from '../Utils/useSubmittedDatasetSearch';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
@@ -79,11 +78,11 @@ import FlowpropertyView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
-  const [, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
-  const [searchMode, setSearchMode] = useState<DatasetSearchMode>('normal');
+  const { draftMode, setDraftMode, submitted, submittedRef, submitSearch } =
+    useSubmittedDatasetSearch();
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [viewId, setViewId] = useState<string>('');
@@ -112,11 +111,10 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType | undefined>(undefined);
   const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
-  const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
-  const openAI = searchMode === 'smart';
-  const referenceLookup = searchMode === 'reference';
+  const openAI = draftMode === 'smart';
+  const referenceLookup = draftMode === 'reference';
   const attachReviewState = async (result: {
     data?: FlowpropertyTable[];
     page?: number;
@@ -335,13 +333,15 @@ const TableList: FC = () => {
     });
   }, []);
 
-  const onSearch: SearchProps['onSearch'] = (value) => {
-    keyWordRef.current = value;
-    setKeyWord(value);
-    actionRef.current?.setPageInfo?.({ current: 1 });
-    if (referenceLookup && !getReferenceLookupUuid(value)) {
+  const onSearch: SearchProps['onSearch'] = (value, _event, info) => {
+    if (info?.source === 'clear') return;
+    if (!submitSearch(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
+      return;
     }
+    tableRequestEpochRef.current += 1;
+    setListPage((page) => ({ ...page, current: 1 }));
+    actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
 
@@ -382,7 +382,7 @@ const TableList: FC = () => {
                 <Space wrap>
                   <Checkbox
                     checked={openAI}
-                    onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+                    onChange={(e) => setDraftMode(e.target.checked ? 'smart' : 'normal')}
                   >
                     <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
                   </Checkbox>
@@ -393,7 +393,7 @@ const TableList: FC = () => {
                   >
                     <Checkbox
                       checked={referenceLookup}
-                      onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
+                      onChange={(e) => setDraftMode(e.target.checked ? 'reference' : 'normal')}
                     >
                       <FormattedMessage
                         id='pages.search.referenceLookup'
@@ -434,7 +434,7 @@ const TableList: FC = () => {
             pagination={{
               ...dataListPagination,
               onChange: (current, pageSize) => setListPage({ current, pageSize }),
-              ...getReferenceLookupPaginationProps(referenceLookup),
+              ...getReferenceLookupPaginationProps(submitted.mode === 'reference'),
             }}
             toolBarRender={() => {
               if (dataSource === 'my') {
@@ -479,20 +479,17 @@ const TableList: FC = () => {
                 ...requestParams
               } = params;
               void _openDataFilterRevision;
+              const submittedSearch = submittedRef.current;
               return guardLocaleMaterializedTableRequest(
                 requestedLocale,
                 () => currentAppLocaleRef.current,
                 tableRequestEpochRef,
                 async ({ isCurrentRequest }) => {
-                  const currentKeyWord = keyWordRef.current;
+                  const currentKeyWord = submittedSearch.keyword;
                   const currentStateCode = stateCodeRef.current;
-                  if (referenceLookup) {
-                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-                    if (!referenceLookupUuid) {
-                      return attachRefUnitData(
-                        getReferenceLookupEmptyResult(requestParams.current),
-                      );
-                    }
+                  if (submittedSearch.mode === 'reference') {
+                    // Reference snapshots are published only after UUID validation.
+                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord)!;
                     const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
                     const result = await getFlowpropertyTableUuidMentionSearch(
@@ -522,7 +519,7 @@ const TableList: FC = () => {
                     return attachRefUnitData(result);
                   }
                   if (currentKeyWord.length > 0) {
-                    if (openAI) {
+                    if (submittedSearch.mode === 'smart') {
                       return attachRefUnitData(
                         await flowproperty_hybrid_search(
                           requestParams,
