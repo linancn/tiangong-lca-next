@@ -1,3 +1,4 @@
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
@@ -51,7 +52,10 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const [myKeyWord, setMyKeyWord] = useState('');
   const [teKeyWord, setTeKeyWord] = useState('');
   const [coKeyWord, setCoKeyWord] = useState('');
-  const [openAI, setOpenAI] = useState<boolean>(false);
+  const tgSearch = useSubmittedDatasetSearch();
+  const coSearch = useSubmittedDatasetSearch();
+  const mySearch = useSubmittedDatasetSearch();
+  const teSearch = useSubmittedDatasetSearch();
 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -160,30 +164,38 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTgKeyWord(value);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setCoKeyWord(value);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setMyKeyWord(value);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
 
-  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+  const onTeSearch: SearchProps['onSearch'] = (value) => {
+    teSearch.submitSearch(value);
+    teRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTeKeyWord(value);
+    setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
   };
@@ -328,7 +340,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   <Search
                     name={'tg'}
                     placeholder={
-                      openAI
+                      tgSearch.draftMode === 'smart'
                         ? intl.formatMessage({ id: 'pages.search.placeholder' })
                         : intl.formatMessage({ id: 'pages.search.keyWord' })
                     }
@@ -341,8 +353,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={tgSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        tgSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -379,14 +392,15 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   () => currentContentLanguageRef.current,
                   tgRequestEpochRef,
                   async () => {
+                    const search = tgSearch.submittedRef.current;
                     let result;
-                    if (tgKeyWord.length > 0) {
-                      if (openAI) {
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
                         return process_hybrid_search(
                           requestParams,
                           contentLanguage,
                           'tg',
-                          tgKeyWord,
+                          search.keyword,
                           {},
                         );
                       }
@@ -394,7 +408,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                         requestParams,
                         contentLanguage,
                         'tg',
-                        tgKeyWord,
+                        search.keyword,
                         {},
                       );
                     } else {
@@ -440,7 +454,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   <Search
                     name={'co'}
                     placeholder={
-                      openAI
+                      coSearch.draftMode === 'smart'
                         ? intl.formatMessage({ id: 'pages.search.placeholder' })
                         : intl.formatMessage({ id: 'pages.search.keyWord' })
                     }
@@ -453,8 +467,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={coSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        coSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -491,14 +506,15 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   () => currentContentLanguageRef.current,
                   coRequestEpochRef,
                   async () => {
+                    const search = coSearch.submittedRef.current;
                     let result;
-                    if (coKeyWord.length > 0) {
-                      if (openAI) {
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
                         return process_hybrid_search(
                           requestParams,
                           contentLanguage,
                           'co',
-                          coKeyWord,
+                          search.keyword,
                           {},
                         );
                       }
@@ -506,7 +522,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                         requestParams,
                         contentLanguage,
                         'co',
-                        coKeyWord,
+                        search.keyword,
                         {},
                       );
                     } else {
@@ -561,8 +577,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={mySearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        mySearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -602,14 +619,15 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   () => currentContentLanguageRef.current,
                   myRequestEpochRef,
                   async () => {
+                    const search = mySearch.submittedRef.current;
                     let result;
-                    if (myKeyWord.length > 0) {
-                      if (openAI) {
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
                         return process_hybrid_search(
                           requestParams,
                           contentLanguage,
                           'my',
-                          myKeyWord,
+                          search.keyword,
                           {},
                         );
                       }
@@ -617,7 +635,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                         requestParams,
                         contentLanguage,
                         'my',
-                        myKeyWord,
+                        search.keyword,
                         {},
                       );
                     } else {
@@ -672,8 +690,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={teSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        teSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -710,14 +729,15 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   () => currentContentLanguageRef.current,
                   teRequestEpochRef,
                   async () => {
+                    const search = teSearch.submittedRef.current;
                     let result;
-                    if (teKeyWord.length > 0) {
-                      if (openAI) {
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
                         return process_hybrid_search(
                           requestParams,
                           contentLanguage,
                           'te',
-                          teKeyWord,
+                          search.keyword,
                           {},
                         );
                       }
@@ -725,7 +745,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                         requestParams,
                         contentLanguage,
                         'te',
-                        teKeyWord,
+                        search.keyword,
                         {},
                       );
                     } else {

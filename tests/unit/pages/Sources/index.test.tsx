@@ -277,7 +277,17 @@ jest.mock('antd', () => {
 
   const Search = ({ onSearch, placeholder }: any) => (
     <div>
-      <input aria-label='search-input' placeholder={placeholder} />
+      <input
+        aria-label='search-input'
+        placeholder={placeholder}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter')
+            onSearch?.(event.currentTarget.value, event, { source: 'input' });
+        }}
+      />
+      <button type='button' onClick={() => onSearch?.('', undefined, { source: 'clear' })}>
+        clear
+      </button>
       <button type='button' onClick={() => onSearch?.('iso')}>
         search
       </button>
@@ -359,7 +369,7 @@ jest.mock('@ant-design/pro-components', () => {
     rowKey,
     pagination,
   }: any) => {
-    mockCapturedTableProps = { columns, pagination, params };
+    mockCapturedTableProps = { columns, pagination, params, request, actionRef };
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
     const paramsRef = React.useRef(params);
@@ -753,7 +763,85 @@ describe('SourcesPage', () => {
     consoleLogSpy.mockRestore();
   });
 
-  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+  it('keeps clear as an edit and applies empty input only on Enter', async () => {
+    renderWithProviders(<SourcesPage />);
+    await waitFor(() => expect(mockCapturedTableProps.actionRef.current).toBeDefined());
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    const reload = mockCapturedTableProps.actionRef.current.reload;
+    const count = reload.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(reload).toHaveBeenCalledTimes(count);
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(count + 1));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByRole('textbox', { name: 'search-input' }), '{enter}');
+    expect(jest.requireMock('antd').message.warning).toHaveBeenCalled();
+    expect(reload).toHaveBeenCalledTimes(count + 1);
+  });
+
+  it('keeps draft modes staged across paging, sorting, classification, and reload until submission', async () => {
+    renderWithProviders(<SourcesPage />);
+    await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalled());
+    const smartSearch = screen.getByRole('checkbox', { name: 'AI Recommendation' });
+    const referenceSearch = screen.getByRole('checkbox', { name: 'Reference Lookup' });
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    await userEvent.click(smartSearch);
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(jest.requireMock('antd').message.warning).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockSourceHybridSearch).not.toHaveBeenCalled();
+    expect(mockGetSourceTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(referenceSearch);
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalled());
+    await userEvent.click(smartSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        { modifiedAt: 'descend' },
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockGetSourceTablePgroongaSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockGetSourceTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('iso');
+    expect(mockSourceHybridSearch).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByTestId('dataset-classification-filter'));
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch.mock.calls.at(-1)[0].classification).toEqual([
+        { scope: 'classification', code: 'C', path: ['C'] },
+      ]),
+    );
+    expect(mockSourceHybridSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockSourceHybridSearch).toHaveBeenCalled());
+    expect(mockSourceHybridSearch.mock.calls.at(-1)[3]).toBe('iso');
+    const appliedCount = mockSourceHybridSearch.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockSourceHybridSearch).toHaveBeenCalledTimes(appliedCount + 1));
+    await userEvent.click(referenceSearch);
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        {},
+      );
+    });
+    expect(mockSourceHybridSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockSourceHybridSearch.mock.calls.at(-1)[3]).toBe('iso');
+    expect(mockGetSourceTableUuidMentionSearch).not.toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and retains rows for incomplete UUIDs', async () => {
     const { message } = jest.requireMock('antd');
     const referenceRows = [{ ...baseSourceRow, id: 'source-ref', shortName: 'Referenced source' }];
     mockGetSourceTableUuidMentionSearch.mockResolvedValue({
@@ -772,13 +860,19 @@ describe('SourcesPage', () => {
       'pages.search.referenceLookup.placeholder',
     );
 
+    const initialReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
     await userEvent.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(message.warning).toHaveBeenCalledWith(
         'Enter a complete dataset UUID before running Reference Lookup.',
       ),
     );
-    await waitFor(() => expect(screen.queryByTestId('source-view')).not.toBeInTheDocument());
+    expect(screen.getByTestId('source-view')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      initialReloadCount,
+    );
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
     expect(mockGetSourceTableUuidMentionSearch).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
@@ -797,6 +891,35 @@ describe('SourcesPage', () => {
       'Showing up to the first 50 reference lookup results.',
     );
 
+    await userEvent.click(screen.getByRole('checkbox', { name: 'AI Recommendation' }));
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 2, pageSize: 20 },
+        { modifiedAt: 'ascend' },
+      );
+    });
+    expect(mockGetSourceTableUuidMentionSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 2, pageSize: 20 }),
+    );
+    expect(mockGetSourceTableUuidMentionSearch.mock.calls.at(-1)[3]).toBe(
+      'd1380000-0000-4000-8000-000000000001',
+    );
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+
+    const appliedReloadCount = mockCapturedTableProps.actionRef.current.reload.mock.calls.length;
+    const appliedLookupCount = mockGetSourceTableUuidMentionSearch.mock.calls.length;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+    mockCapturedTableProps.actionRef.current.setPageInfo.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    expect(screen.getByText('Referenced source')).toBeInTheDocument();
+    expect(mockCapturedTableProps.actionRef.current.reload).toHaveBeenCalledTimes(
+      appliedReloadCount,
+    );
+    expect(mockGetSourceTableUuidMentionSearch).toHaveBeenCalledTimes(appliedLookupCount);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+
     const callCountBeforeUncappedLookup = mockGetSourceTableUuidMentionSearch.mock.calls.length;
     mockGetSourceTableUuidMentionSearch.mockResolvedValue({
       data: referenceRows,
@@ -810,6 +933,10 @@ describe('SourcesPage', () => {
         callCountBeforeUncappedLookup,
       ),
     );
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+    expect(mockCapturedTableProps.actionRef.current.setPageInfo).toHaveBeenCalledWith({
+      current: 1,
+    });
   });
 
   it('renders missing base metadata without a row classification column', async () => {

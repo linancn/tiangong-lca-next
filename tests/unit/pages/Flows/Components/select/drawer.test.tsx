@@ -1,6 +1,12 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
+import {
+  act,
+  renderWithProviders,
+  screen,
+  waitFor,
+  within,
+} from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -228,11 +234,12 @@ jest.mock('antd', () => {
   const Input = (() => null) as any;
   Input.Search = Search;
 
-  const Checkbox = ({ onChange, children }: any) => (
+  const Checkbox = ({ checked, onChange, children }: any) => (
     <label>
       <input
         type='checkbox'
         aria-label='open-ai'
+        checked={checked}
         onChange={(event) => onChange?.({ target: { checked: event.target.checked } })}
       />
       {toText(children)}
@@ -298,14 +305,15 @@ jest.mock('@ant-design/pro-components', () => {
       [],
     );
 
-    mockLatestFlowSelectorTableProps = { rowKey, rowSelection, params, api };
+    mockLatestFlowSelectorTableProps = { rowKey, rowSelection, params, api, request };
+    const serializedParams = JSON.stringify(params);
 
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = api;
       }
       api.reload();
-    }, [actionRef, api, request, flowTypeFilter]);
+    }, [actionRef, api, serializedParams, flowTypeFilter]);
 
     return (
       <div>
@@ -722,6 +730,190 @@ describe('FlowsSelectDrawer', () => {
       );
     },
   );
+});
+
+describe('FlowsSelectDrawer submitted search', () => {
+  const FlowsSelectDrawer = require('@/pages/Flows/Components/select/drawer').default;
+
+  beforeEach(() => {
+    mockGetFlowTableAll.mockReset();
+    mockGetFlowTablePgroongaSearch.mockReset();
+    mockFlowHybridSearch.mockReset();
+    mockLatestFlowSelectorTableProps = undefined;
+  });
+  it.each([
+    ['tg', 'TianGong Data', true],
+    ['co', 'Business Data', true],
+    ['my', 'My Data', false],
+    ['te', 'Team Data', false],
+  ])(
+    'uses only submitted keyword and mode for %s paging and reloads',
+    async (source, label, hasAI) => {
+      mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+      mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+      mockFlowHybridSearch.mockResolvedValue({ data: [], success: true });
+      renderWithProviders(
+        <FlowsSelectDrawer
+          buttonType='text'
+          buttonText='Choose submitted flow'
+          lang='en'
+          onData={jest.fn()}
+        />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Choose submitted flow' }));
+      if (source !== 'tg') await userEvent.click(screen.getByRole('button', { name: label }));
+      await waitFor(() => expect(mockGetFlowTableAll.mock.calls.at(-1)?.[3]).toBe(source));
+      await userEvent.type(screen.getByRole('textbox', { name: source }), 'applied');
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetFlowTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'applied',
+      ]);
+      await act(async () => mockLatestFlowSelectorTableProps.rowSelection.onChange(['selected:1']));
+      const api = mockLatestFlowSelectorTableProps.api;
+      api.setPageInfo.mockClear();
+      const count = () =>
+        mockGetFlowTableAll.mock.calls.length +
+        mockGetFlowTablePgroongaSearch.mock.calls.length +
+        mockFlowHybridSearch.mock.calls.length;
+      const beforeDraft = count();
+      if (hasAI) await userEvent.click(screen.getByRole('checkbox'));
+      await userEvent.clear(screen.getByRole('textbox', { name: source }));
+      await userEvent.type(screen.getByRole('textbox', { name: source }), 'draft');
+      expect(count()).toBe(beforeDraft);
+      expect(mockLatestFlowSelectorTableProps.rowSelection.selectedRowKeys).toEqual(['selected:1']);
+      expect(api.setPageInfo).not.toHaveBeenCalled();
+      await act(async () => {
+        await mockLatestFlowSelectorTableProps.request(
+          { ...mockLatestFlowSelectorTableProps.params, current: 3, pageSize: 10 },
+          {},
+          {},
+        );
+      });
+      expect(mockGetFlowTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'applied',
+      ]);
+      expect(mockGetFlowTablePgroongaSearch.mock.calls.at(-1)?.[0].current).toBe(3);
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      const submittedService = hasAI ? mockFlowHybridSearch : mockGetFlowTablePgroongaSearch;
+      expect(submittedService.mock.calls.at(-1)?.slice(2, 4)).toEqual([source, 'draft']);
+      expect(mockLatestFlowSelectorTableProps.rowSelection.selectedRowKeys).toEqual([]);
+      expect(api.setPageInfo).toHaveBeenCalledWith({ current: 1 });
+      const beforeToggle = count();
+      if (hasAI) await userEvent.click(screen.getByRole('checkbox'));
+      expect(count()).toBe(beforeToggle);
+      await act(async () => {
+        await mockLatestFlowSelectorTableProps.request(
+          { ...mockLatestFlowSelectorTableProps.params, current: 3, pageSize: 10 },
+          {},
+          {},
+        );
+      });
+      expect(submittedService.mock.calls.at(-1)?.slice(2, 4)).toEqual([source, 'draft']);
+      if (hasAI) await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetFlowTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+        source,
+        'draft',
+      ]);
+      const beforeRepeat = mockGetFlowTablePgroongaSearch.mock.calls.length;
+      await userEvent.click(screen.getByRole('button', { name: `search-${source}` }));
+      expect(mockGetFlowTablePgroongaSearch.mock.calls.length).toBeGreaterThan(beforeRepeat);
+    },
+  );
+
+  it('preserves each tab draft and submitted mode through tab changes and reopening', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    mockFlowHybridSearch.mockResolvedValue({ data: [], success: true });
+    renderWithProviders(
+      <FlowsSelectDrawer
+        buttonType='text'
+        buttonText='Choose submitted flow'
+        lang='en'
+        onData={jest.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Choose submitted flow' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'first query');
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.clear(screen.getByRole('textbox', { name: 'tg' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'unsubmitted');
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    await userEvent.type(screen.getByRole('textbox', { name: 'co' }), 'second query');
+    await userEvent.click(screen.getByRole('button', { name: 'search-co' }));
+    expect(mockGetFlowTablePgroongaSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual([
+      'co',
+      'second query',
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: 'TianGong Data' }));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByRole('textbox', { name: 'tg' })).toHaveValue('unsubmitted');
+    await act(async () => {
+      await mockLatestFlowSelectorTableProps.request(
+        { ...mockLatestFlowSelectorTableProps.params, current: 2, pageSize: 10 },
+        {},
+        {},
+      );
+    });
+    expect(mockFlowHybridSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual(['tg', 'first query']);
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Choose submitted flow' }));
+    expect(screen.getByRole('textbox', { name: 'tg' })).toHaveValue('unsubmitted');
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    await act(async () => {
+      await mockLatestFlowSelectorTableProps.request(
+        { ...mockLatestFlowSelectorTableProps.params, current: 2, pageSize: 10 },
+        {},
+        {},
+      );
+    });
+    expect(mockFlowHybridSearch.mock.calls.at(-1)?.slice(2, 4)).toEqual(['tg', 'first query']);
+  });
+
+  it('invalidates a pending result immediately when a new search is submitted', async () => {
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+    mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    renderWithProviders(
+      <FlowsSelectDrawer
+        buttonType='text'
+        buttonText='Choose submitted flow'
+        lang='en'
+        onData={jest.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Choose submitted flow' }));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+    let resolveOld;
+    mockGetFlowTableAll.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    const pending = mockLatestFlowSelectorTableProps.request(
+      { ...mockLatestFlowSelectorTableProps.params, current: 3, pageSize: 10 },
+      {},
+      {},
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: 'tg' }), 'new query');
+    // Prevent the replacement request from invalidating the old request on its own.
+    const heldReload = jest
+      .spyOn(mockLatestFlowSelectorTableProps.api, 'reload')
+      .mockResolvedValueOnce(undefined);
+    heldReload.mockClear();
+    const previousListCount = mockGetFlowTableAll.mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
+    expect(heldReload).toHaveBeenCalledTimes(1);
+    expect(mockGetFlowTableAll).toHaveBeenCalledTimes(previousListCount);
+    expect(mockGetFlowTablePgroongaSearch).not.toHaveBeenCalled();
+    resolveOld({ data: [{ id: 'stale', version: '1' }], success: true });
+    await expect(pending).resolves.toEqual({ data: [], success: false });
+    heldReload.mockRestore();
+  });
 });
 
 jest.mock('@/components/DatasetClassificationFilter', () => ({

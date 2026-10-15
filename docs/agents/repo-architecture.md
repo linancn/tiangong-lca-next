@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: cf8629d8294c237192968fa0bbe8df911a2c025d
-lastReviewedNote: 'Reviewed for Platform #1234 against Dev cf8629d: complete localized classification paths are exposed through native Cascader/Tooltip rendering while preserving string labels, highlighted search, keyboard navigation and pending confirmation. Focused real-component and browser proof cover disclosure, locale refresh and viewport bounds; ownership, dependencies, gate thresholds and release policy are unchanged.'
+lastReviewedCommit: ec30213b87301d137ef14cc8db887fc90238a975
+lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -141,6 +141,8 @@ The seven dataset catalogs reuse the same layout across `tg`, `co`, `ex`, `my`, 
 Search and the native filter/action/settings area share the complete toolbar width instead of reserving equal halves. Wide layouts keep their visible controls on one aligned row; constrained pages and drawers reflow controls without clipping or hiding their actions. The common rule applies to every consumer of the shared list toolbar.
 
 Search expands into the space left by the controls, without a desktop maximum-width cap. Dataset names are the single fluid table column; compact metadata and business/action columns retain explicit widths. `ResponsiveDataList/columnSizing.ts` owns this presentation budget, and each viewport receives its actual column definition to derive native horizontal scrolling. Extra screen width therefore goes to names instead of stretching years or versions. Headers and truncated values retain full hover content, including the original name description, formatted dates and exact-version controls.
+
+Catalog and selector search uses `src/pages/Utils/useSubmittedDatasetSearch.ts` to separate draft controls from the submitted query. Typing, clearing the input, and toggling AI Recommendation or Reference Lookup only edit the draft. Search or Enter submits keyword and mode together, invalidates earlier requests immediately and starts from page one; paging, sorting, classification, and reload continue using the last submitted query. Each selector tab keeps its own draft and submitted query. An incomplete Reference Lookup UUID warns without replacing results or changing the accepted query, page, or request identity. Existing source/filter behavior and selection handling remain owned by the consuming list.
 
 Catalogs, dataset selectors, AllVersions and mixed display lists default to 50 rows with native 20/50/100 choices. `ResponsiveDataListViewport` measures the enclosing page, Drawer or Modal, visible toolbar/header, pagination and confirmation area to give native table bodies an internal vertical scroll budget. It recomputes for resize, rendered chrome and fullscreen changes. Inline analysis tables keep their surrounding page's vertical scroll; Exchange, unit and calculation-result tables retain their necessary domain columns.
 

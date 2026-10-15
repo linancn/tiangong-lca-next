@@ -60,15 +60,14 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, RefObject } from 'react';
 import { getAllVersionsColumns } from '../Utils';
 import {
-  getReferenceLookupEmptyResult,
   getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
-  type DatasetSearchMode,
 } from '../Utils/referenceLookup';
 import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
+import { useSubmittedDatasetSearch } from '../Utils/useSubmittedDatasetSearch';
 import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
 import SourceEdit from './Components/edit';
@@ -77,10 +76,10 @@ const { Search } = Input;
 
 const TableList: FC = () => {
   const { message } = App.useApp();
-  const [, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
-  const [searchMode, setSearchMode] = useState<DatasetSearchMode>('normal');
+  const { draftMode, setDraftMode, submitted, submittedRef, submitSearch } =
+    useSubmittedDatasetSearch();
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -110,10 +109,9 @@ const TableList: FC = () => {
   const [classification, setClassification] = useState<DatasetClassificationFilterValue[]>([]);
   const [listPage, setListPage] = useState({ current: 1, pageSize: 50 });
   const stateCodeRef = useRef<string | number>('all');
-  const keyWordRef = useRef<string>('');
   const referenceLookupLimitNoticeRef = useRef<string>('');
-  const openAI = searchMode === 'smart';
-  const referenceLookup = searchMode === 'reference';
+  const openAI = draftMode === 'smart';
+  const referenceLookup = draftMode === 'reference';
   const attachReviewState = async (result: {
     data?: SourceTable[];
     page?: number;
@@ -333,13 +331,15 @@ const TableList: FC = () => {
       if (res.data.length > 0) setTeam(res.data[0]);
     });
   }, []);
-  const onSearch: SearchProps['onSearch'] = (value) => {
-    keyWordRef.current = value;
-    setKeyWord(value);
-    actionRef.current?.setPageInfo?.({ current: 1 });
-    if (referenceLookup && !getReferenceLookupUuid(value)) {
+  const onSearch: SearchProps['onSearch'] = (value, _event, info) => {
+    if (info?.source === 'clear') return;
+    if (!submitSearch(value)) {
       showInvalidReferenceLookupUuidMessage(intl);
+      return;
     }
+    tableRequestEpochRef.current += 1;
+    setListPage((page) => ({ ...page, current: 1 }));
+    actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: SourceImportData) => {
@@ -378,7 +378,7 @@ const TableList: FC = () => {
                 <Space wrap>
                   <Checkbox
                     checked={openAI}
-                    onChange={(e) => setSearchMode(e.target.checked ? 'smart' : 'normal')}
+                    onChange={(e) => setDraftMode(e.target.checked ? 'smart' : 'normal')}
                   >
                     <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
                   </Checkbox>
@@ -389,7 +389,7 @@ const TableList: FC = () => {
                   >
                     <Checkbox
                       checked={referenceLookup}
-                      onChange={(e) => setSearchMode(e.target.checked ? 'reference' : 'normal')}
+                      onChange={(e) => setDraftMode(e.target.checked ? 'reference' : 'normal')}
                     >
                       <FormattedMessage
                         id='pages.search.referenceLookup'
@@ -425,7 +425,7 @@ const TableList: FC = () => {
             pagination={{
               ...dataListPagination,
               onChange: (current, pageSize) => setListPage({ current, pageSize }),
-              ...getReferenceLookupPaginationProps(referenceLookup),
+              ...getReferenceLookupPaginationProps(submitted.mode === 'reference'),
             }}
             toolBarRender={() => {
               if (dataSource === 'my') {
@@ -471,20 +471,17 @@ const TableList: FC = () => {
                 ...requestParams
               } = params;
               void _openDataFilterRevision;
+              const submittedSearch = submittedRef.current;
               return guardLocaleMaterializedTableRequest(
                 requestedLocale,
                 () => currentAppLocaleRef.current,
                 tableRequestEpochRef,
                 async ({ isCurrentRequest }) => {
-                  const currentKeyWord = keyWordRef.current;
+                  const currentKeyWord = submittedSearch.keyword;
                   const currentStateCode = stateCodeRef.current;
-                  if (referenceLookup) {
-                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-                    if (!referenceLookupUuid) {
-                      return attachReviewState(
-                        getReferenceLookupEmptyResult(requestParams.current),
-                      );
-                    }
+                  if (submittedSearch.mode === 'reference') {
+                    // Reference snapshots are published only after UUID validation.
+                    const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord)!;
                     const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
                     const result = await getSourceTableUuidMentionSearch(
@@ -514,7 +511,7 @@ const TableList: FC = () => {
                     return attachReviewState(result);
                   }
                   if (currentKeyWord.length > 0) {
-                    if (openAI) {
+                    if (submittedSearch.mode === 'smart') {
                       return attachReviewState(
                         await source_hybrid_search(
                           requestParams,

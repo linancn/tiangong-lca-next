@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 3adac15b21a9b7414a8e98da1cd6f2f1448695bb
-lastReviewedNote: 'Reviewed for Platform #1239 at c350fc2: classification-tooltip browser evidence requires positive visible unclipped settled geometry, complete expected text, atomic observations, capture checks and invalid-state controls. Review preserves bootstrap, ownership, gate/release policy and the historical coverage baseline; it claims no product defect or completed browser run.'
+lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
+lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
 ---
 
 # Testing Strategy
