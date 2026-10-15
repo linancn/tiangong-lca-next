@@ -46,7 +46,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
 lastReviewedNote: 'Reviewed for Platform #1263 final design: proof requires both-mode native dark navigation, scoped-provider inheritance, primary-driven selection, page/overlay mode separation, persistence, contrast and mobile behavior. This records requirements without claiming new execution.'
 related:
   - ../AGENTS.md

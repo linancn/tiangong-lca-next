@@ -43,7 +43,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
 lastReviewedNote: 'Reviewed for Platform #1263 final design: native dark Menu and scoped-provider regression tests do not revise the checked-in reference baseline or reopen a coverage queue. Actual new validation results belong to the delivery Issue/PR.'
 ---
 
