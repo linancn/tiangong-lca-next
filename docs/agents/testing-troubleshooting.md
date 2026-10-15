@@ -63,6 +63,13 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | release environment diagnosis | `pnpm e2e:env:doctor --format json` |
 | exact pre-fixture continuation | `pnpm e2e:release:resume` (no arguments) |
 
+## Atlas publication recovery
+
+- If exact project lookup fails, verify the configured token's access to `makers-dtpthotshhpt`; never substitute a name-only deployment or auto-create a project.
+- If a deployment ID is retained but waiting fails, query that exact ID and inspect its state before any rerun. Do not infer that the remote deployment stopped.
+- If hidden routing/assets disappear, inspect the ZIP layout and use SDK archive mode; ordinary directory mode at `dist-edgeone` excludes `.edgeone`.
+- If `atlas-web` admission fails, use the current version's real tag and exact SHA from Main, not a branch, current workflow SHA, older version or new tag. The safe command is in `DEV.md`.
+
 ## Failure Diagnosis
 
 | Symptom | Likely cause | First action |

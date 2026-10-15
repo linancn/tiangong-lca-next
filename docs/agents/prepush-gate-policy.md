@@ -119,6 +119,14 @@ It does not own:
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and always run the full reusable Release Gate before deploy/release |
 
+## Dual-brand web publication
+
+Normal formal publication has separate TianGong and Atlas jobs, both downstream of successful release context, qualification and tag verification and both checking out exactly `release_head`. TianGong explicitly selects `APP_BRAND=tiangong`; Atlas selects `APP_BRAND=atlas` and binds only `atlas-lca-platform` / `makers-dtpthotshhpt`. A failed brand job fails the workflow; one successful site is not a complete dual-brand release. Desktop publication remains TianGong-only.
+
+Atlas uses isolated runner tooling `@edgeone/makers-sdk@0.1.0`, pinned independently of the application manifest/lock, with exact-ID project/name verification before build and immediately before production deployment. The existing pinned CLI only generates the reviewed routing table. Archive construction preserves `.edgeone/assets`, `.edgeone/routes.json` and adjacent `edgeone.json`, verifies every ZIP entry against the source, and rejects symlinks; ordinary SDK directory mode must not be used because it excludes a root `.edgeone` directory. SDK archive mode uploads the verified ZIP unchanged. Record the created deployment ID before waiting, require the same project/environment/ID and terminal `Success`, and preserve sanitized receipts even on failure. Waiting errors do not authorize an automatic second creation. A public `release-manifest.json` binds brand, exact source/tag, destination, entry hash and workflow run for production verification.
+
+The dispatch default `publication_scope=full` preserves full release recovery. Explicit `atlas-web` is restricted to Main dispatch, an exact expected tag SHA and Main's current package version. It requires a real existing stable version tag contained in Main, runs the same fresh full recovery gate, verifies the existing tag, and excludes TianGong web and all Electron mutation jobs. Recovery uses current reviewed inline workflow logic with the old tag's application checkout; it must not silently require new helper files unavailable at that old source. It does not move tags or accept an older-version Atlas rollback. Execution commands live in `DEV.md`.
+
 ## Adoption Conditions
 
 - the hook accepts an already-active exact Node.js 24.19.0 from `PATH`; it falls back to local NVM only when the active Node is absent or has another version, and fails clearly if Node 24.19.0 is still unavailable

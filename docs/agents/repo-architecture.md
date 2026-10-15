@@ -83,7 +83,7 @@ Sidebar collapse and expansion remain owned by the native ProLayout component, i
 
 `config/brandAssets.ts` connects the shared profile to in-memory development middleware and a Webpack asset plugin. `scripts/branding/assets.cjs` generates the selected manifest and the 404, maintenance and OAuth-bridge shell presentation without editing tracked templates. The bridge script and hosted routing/noindex contracts remain intact. Static assets live under `public/brands/atlas`; desktop icons under `icons/atlas` come from the supplied rounded ATLAS asset package.
 
-`scripts/branding/electron-builder.cjs` adapts desktop package settings from the same profile. `scripts/branding/package-local.cjs` builds and packages locally with publication disabled. The existing release workflow and version-tag contract are unchanged; adding a deployed ATLAS target requires a separately reviewed release configuration. Local commands and override precedence live in `DEV.md`.
+`scripts/branding/electron-builder.cjs` adapts desktop package settings from the same profile. `scripts/branding/package-local.cjs` builds and packages locally with publication disabled. Formal web publication builds both brands from one qualified release SHA; Atlas uses the exact EdgeOne project binding and sanitized source/archive/deployment receipts in `build.yml`. Desktop release identity stays TianGong-only. The existing canonical version-tag and candidate-proof contracts remain unchanged. Local commands and override precedence live in `DEV.md`.
 
 ## Runtime Model
 

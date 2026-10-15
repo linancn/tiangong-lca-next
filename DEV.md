@@ -87,7 +87,19 @@ Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans
 
 Brand settings are build inputs. Build once for each brand before uploading static assets; changing a hosting environment variable after a manual upload does not rewrite the uploaded bundle. For local visual proof, build with `APP_BRAND=<brand> REACT_APP_ENV=qualification pnpm build`, serve that bundle on loopback, then run `E2E_BRAND=<brand> E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:<port> pnpm exec playwright test --config=playwright.branding.config.ts`. This suite uses only the existing semantic backend simulator and is not hosted/release qualification. Ordinary `pnpm start:atlas` retains the configured dev backend for user preview.
 
-`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Release workflows still use the existing canonical version tag and TianGong deployment configuration; this local preview capability does not enable ATLAS publication. A future reviewed release change must bind brand, exact source commit and deployment destination explicitly.
+`pnpm dist` and `pnpm dist:atlas` use the local packaging adapter with `--publish never`. Brand-specific desktop outputs are named distinctly; ATLAS has its own application identity and icon resources. Formal `Build/release` publication builds both TianGong and Atlas separately from the same qualified `release_head`. Atlas web publication targets only `atlas-lca-platform` / `makers-dtpthotshhpt`; desktop publication remains TianGong-only. Local preview/packaging never publishes. Exact Atlas destination checks, production publication receipts and recovery policy are owned by `docs/agents/prepush-gate-policy.md`.
+
+### Atlas release recovery
+
+To backfill only the current release into Atlas, resolve the existing tag to its full commit and confirm it is contained in Main and matches Main's current package version. Then dispatch the reviewed workflow on Main:
+
+```bash
+gh workflow run build.yml --repo tiangong-lca/platform --ref main \
+  -f tag_name=v<version> -f publication_scope=atlas-web \
+  -f expected_release_sha=<exact-40-character-tag-commit>
+```
+
+This recovery runs a fresh full Release Gate on the existing tag, verifies the tag without moving it, and publishes only the Atlas web bundle. It does not republish TianGong or change desktop Draft assets. Missing/mismatched SHA, wrong ref, missing tag, nonancestor source and older-version Atlas backfill fail before publication. New workflow code executes inline while application checkout remains the exact old tag, so recovery never depends on a helper absent from that source. Verify the uploaded Atlas receipts and production `release-manifest.json` against the tag, project, brand and entry-file hash before declaring completion. A failed wait with a recorded deployment ID requires querying that deployment; do not blindly create a replacement.
 
 ## Prerequisites
 
