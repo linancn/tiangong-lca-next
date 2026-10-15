@@ -85,7 +85,7 @@ test('all seven catalog tables fill the viewport and retain controls across scre
       await expect(
         root.getByRole('button', { name: /^(全部数据|文献数据|企业数据|商业数据)$/ }),
       ).toHaveCount(0);
-      const catalogQuery = queries.findLast((query) => query.kind === kind);
+      const catalogQuery = [...queries].reverse().find((query) => query.kind === kind);
       expect(catalogQuery?.rpc).toBe('search_open_data_catalog');
       expect(catalogQuery?.body).toMatchObject({
         p_source_filter: 'all',

@@ -399,7 +399,7 @@ describe('open data catalog service route matrix', () => {
         const previousCalls = mockInvoke.mock.calls.length;
         await search(scope);
         expect(mockInvoke).toHaveBeenCalledTimes(previousCalls + 1);
-        const [functionName, request] = mockInvoke.mock.calls.at(-1)!;
+        const [functionName, request] = mockInvoke.mock.calls[mockInvoke.mock.calls.length - 1];
         expect(functionName).toBe(`${kind}_hybrid_search`);
         expect(request.body).toMatchObject({
           query: 'query',
@@ -411,8 +411,12 @@ describe('open data catalog service route matrix', () => {
         });
         expect(request.body.source_filter).toBe(scope[0] ? 'all' : undefined);
         expect(request.body.publication_filter).toBe(scope[0] ? 'all' : undefined);
-        expect(Object.hasOwn(request.body, 'source_filter')).toBe(scope[0] === true);
-        expect(Object.hasOwn(request.body, 'publication_filter')).toBe(scope[0] === true);
+        expect(Object.prototype.hasOwnProperty.call(request.body, 'source_filter')).toBe(
+          scope[0] === true,
+        );
+        expect(Object.prototype.hasOwnProperty.call(request.body, 'publication_filter')).toBe(
+          scope[0] === true,
+        );
       }
     },
   );
