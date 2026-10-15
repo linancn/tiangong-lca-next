@@ -51,6 +51,10 @@ async function expectApplied(
   await expect.poll(() => latest(queries, kind)).toMatchObject({ mode, keyword, current });
   await expect(root.locator('.ant-pagination-item-active')).toHaveText(String(current));
   await expect(rows(root)).toHaveCount(current === 3 ? 37 : 50);
+  await expect(rows(root).first()).toHaveAttribute(
+    'data-row-key',
+    new RegExp(datasetRow(kind, (current - 1) * 50).id),
+  );
   await expect(rows(root).first()).toContainText(`${mode}:${keyword}`);
 }
 
@@ -86,6 +90,11 @@ for (const kind of kinds) {
     await expect(rows(root)).toHaveCount(50);
     await root.locator('.ant-pagination-item-2').click();
     await expect.poll(() => latest(queries, kind)?.current).toBe(2);
+    // A recorded request and updated paginator precede materialized response rows.
+    await expect(rows(root).first()).toHaveAttribute(
+      'data-row-key',
+      new RegExp(datasetRow(kind, 50).id),
+    );
     await settledPaint(page, root);
     const initialKeys = await rowKeys(root);
     const initialCount = queries.length;
