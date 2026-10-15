@@ -44,7 +44,7 @@
     "catalogDigest": "4aeefeb2c4973995f2e100f8d24cef199f52bae296b131b62b03edd18cd5132e",
     "dossierDigest": "b840bf40699ed1440a83d82b45e5d69522de2288a8c55e7be26fef4e68cae822",
     "typedContentDossierDigest": "3d7e2672b67b20ef5b25fd6d3bbc0bd1c5cfcf2c39d33a3fdec372de137582d3",
-    "routeEvidenceDigest": "5c77aae03802f5c1cc24cad8fc16ef7ad26ce43604f6fe94a19e5b9e7a505006",
+    "routeEvidenceDigest": "857f964ca04cb30f6aeb87205e27ad978f7345859da98f65cb74e2c3de8aae1f",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "56a2fafcdaf8dad97d76d71b122b604451b7d64b4707cbadc74aa8c13056af05"
+  "validationDigest": "dd5e4eb060a3ce9939214e0977d343a64d89a72deab06b01e386a09043ac2158"
 }
