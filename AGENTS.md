@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: ec30213b87301d137ef14cc8db887fc90238a975
+lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
 lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
 related:
   - .docpact/config.yaml
