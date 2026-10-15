@@ -258,6 +258,7 @@ export async function installDatasetListFixture(
     ].includes(rpc);
     const kind =
       (body.p_dataset_kind as Kind | 'all' | undefined) ??
+      kinds.find((k) => rpc === `${k}_hybrid_search`) ??
       kinds.find((k) => rpc.includes(tables[k])) ??
       kinds.find((k) => rpc.includes(k));
     if (!kind) {
