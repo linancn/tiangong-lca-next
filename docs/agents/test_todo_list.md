@@ -42,9 +42,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
+lastReviewedNote: 'Reviewed for Platform #1263: sidebar palette and theme-adapter regression tests do not change the checked-in reference baseline or reopen a coverage queue. Actual focused and final-gate results belong to the delivery Issue/PR.'
 ---
 
 # Testing Execution State

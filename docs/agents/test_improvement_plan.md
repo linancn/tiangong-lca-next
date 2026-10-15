@@ -44,9 +44,9 @@ checkPaths:
   - pnpm-lock.yaml
   - pnpm-workspace.yaml
   - Dockerfile.app
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
+lastReviewedNote: 'Reviewed for Platform #1263: risk-scoped profile/theme unit tests and synthetic sidebar browser checks follow the existing maintenance strategy. No change to coverage thresholds, browser release boundaries or strategy reopen conditions.'
 ---
 
 # Testing Strategy

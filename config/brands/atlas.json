@@ -66,7 +66,8 @@
         "colorBgContainer": "#FFFFFF",
         "colorText": "#183247",
         "colorTextSecondary": "#536777",
-        "colorBorderSecondary": "#DDE4E8"
+        "colorBorderSecondary": "#DDE4E8",
+        "colorBgElevated": "#FFFFFF"
       },
       "components": {
         "Button": {
@@ -85,22 +86,22 @@
       },
       "layoutTokens": {
         "sider": {
-          "colorMenuBackground": "#06162A",
-          "colorBgMenuItemCollapsedElevated": "#102B43",
-          "colorTextMenuTitle": "#F5F3EC",
-          "colorTextMenu": "#BACADA",
-          "colorTextMenuSecondary": "#BACADA",
-          "colorTextSubMenuSelected": "#FFFFFF",
-          "colorTextMenuSelected": "#FFFFFF",
-          "colorTextMenuItemHover": "#FFFFFF",
-          "colorTextMenuActive": "#FFFFFF",
-          "colorBgMenuItemSelected": "#234969",
-          "colorBgMenuItemHover": "#15334D",
-          "colorBgMenuItemActive": "#234969",
-          "colorMenuItemDivider": "#294052",
-          "colorBgCollapsedButton": "#16334D",
-          "colorTextCollapsedButton": "#BACADA",
-          "colorTextCollapsedButtonHover": "#FFFFFF",
+          "colorMenuBackground": "#FFFFFF",
+          "colorBgMenuItemCollapsedElevated": "#FFFFFF",
+          "colorTextMenuTitle": "#183247",
+          "colorTextMenu": "#536777",
+          "colorTextMenuSecondary": "#536777",
+          "colorTextSubMenuSelected": "#2F6B9A",
+          "colorTextMenuSelected": "#2F6B9A",
+          "colorTextMenuItemHover": "#183247",
+          "colorTextMenuActive": "#183247",
+          "colorBgMenuItemSelected": "#E8F0F7",
+          "colorBgMenuItemHover": "#F0F5FA",
+          "colorBgMenuItemActive": "#E8F0F7",
+          "colorMenuItemDivider": "#DDE4E8",
+          "colorBgCollapsedButton": "#EAF0F3",
+          "colorTextCollapsedButton": "#536777",
+          "colorTextCollapsedButtonHover": "#183247",
           "menuHeight": 44
         },
         "header": {
@@ -124,7 +125,8 @@
         "colorBgContainer": "#102337",
         "colorText": "#ECF1F4",
         "colorTextSecondary": "#ADBCC9",
-        "colorBorderSecondary": "#2B4256"
+        "colorBorderSecondary": "#2B4256",
+        "colorBgElevated": "#102B43"
       },
       "components": {
         "Button": {
@@ -155,7 +157,7 @@
           "colorBgMenuItemSelected": "#234969",
           "colorBgMenuItemHover": "#15334D",
           "colorBgMenuItemActive": "#234969",
-          "colorMenuItemDivider": "#294052",
+          "colorMenuItemDivider": "#2B4256",
           "colorBgCollapsedButton": "#16334D",
           "colorTextCollapsedButton": "#BACADA",
           "colorTextCollapsedButtonHover": "#FFFFFF",

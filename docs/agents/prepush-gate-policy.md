@@ -44,9 +44,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
+lastReviewedNote: 'Reviewed for Platform #1263: focused synthetic sidebar proof remains separate from the unchanged checked-push aggregate and exact dev Release PR proof; existing dual-brand publication and immutable promotion requirements still apply.'
 ---
 
 # Pre-Push Gate Policy

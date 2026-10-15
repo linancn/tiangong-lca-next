@@ -179,7 +179,7 @@
     background: var(--ant-color-primary-bg);
   }
   &:focus-visible {
-    outline: 2px solid var(--ant-color-primary);
+    outline: 2px solid var(--ant-color-primary-text-hover);
     outline-offset: 4px;
   }
 }
@@ -284,7 +284,12 @@
     align-items: stretch;
     gap: 8px;
     padding-block: 12px 4px;
-    border-top: 1px solid rgba(186, 202, 218, 0.2);
+    border-top: 1px solid var(--ant-color-border-secondary);
+  }
+  // The controls own their hover surface; avoid stacking two translucent layers.
+  .ant-pro-sider-actions-list-item:hover,
+  .ant-pro-sider-actions-avatar:hover {
+    background: transparent;
   }
   .ant-pro-sider-actions-list {
     display: grid;
@@ -310,6 +315,8 @@
       width: 100%;
       min-height: 40px;
       min-width: 0;
+      color: inherit;
+      border-radius: var(--ant-border-radius);
     }
     .anticon {
       // HeaderActionIcon sets inline opacity for light headers.
@@ -358,5 +365,43 @@
     .tg-global-header-avatar-name-text {
       display: none;
     }
+  }
+}
+
+.atlas-app-shell {
+  // On mobile ProLayout moves these same actions into the global header.
+  .ant-pro-global-header-header-actions-item {
+    color: var(--ant-color-text-secondary);
+    .ant-badge {
+      color: inherit;
+    }
+  }
+  .ant-pro-global-header-header-actions-item .anticon {
+    opacity: 1 !important;
+  }
+  .ant-pro-global-header-header-actions-item:hover,
+  .ant-pro-global-header-header-actions-avatar:hover {
+    background: transparent;
+  }
+  .ant-pro-sider-actions-list [role='button'],
+  .ant-pro-sider-actions-list button,
+  .ant-pro-global-header-header-actions-item [role='button'],
+  .ant-pro-global-header-header-actions-item button,
+  .tg-global-header-avatar-trigger,
+  .tg-pro-layout-mobile-menu-action {
+    &:hover {
+      background: var(--ant-color-bg-text-hover);
+    }
+    &:active {
+      background: var(--ant-color-bg-text-active);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--ant-color-primary-text-hover);
+      outline-offset: -2px;
+    }
+  }
+  [data-tg-pro-layout-collapse-trigger]:focus-visible {
+    outline: 2px solid var(--ant-color-primary-text-hover);
+    outline-offset: 2px;
   }
 }

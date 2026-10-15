@@ -11,10 +11,29 @@ export function createAntdThemeConfig(
   selectedProfile: BrandProfile = brandProfile,
 ): ThemeConfig {
   const profile = selectedProfile.theme[isDarkMode ? 'dark' : 'light'];
+  const sider =
+    selectedProfile.id === 'atlas' && isDarkMode ? profile.layoutTokens?.sider : undefined;
+  // ProLayout maps its sider tokens to Menu's light fields only. Its realDark
+  // navigation selects the separate native dark fields, so bridge those here.
+  const menu = sider
+    ? {
+        Menu: {
+          darkItemBg: sider.colorMenuBackground,
+          darkItemColor: sider.colorTextMenu,
+          darkItemHoverBg: sider.colorBgMenuItemHover,
+          darkItemHoverColor: sider.colorTextMenuItemHover,
+          darkItemSelectedBg: sider.colorBgMenuItemSelected,
+          darkItemSelectedColor: sider.colorTextMenuSelected,
+          darkGroupTitleColor: sider.colorTextMenuSecondary,
+          ...profile.components?.Menu,
+        },
+      }
+    : {};
   return {
     cssVar: { key: ANTD_CSS_VAR_KEY },
     components: {
       ...profile.components,
+      ...menu,
       Divider: { orientationMargin: 0, ...profile.components?.Divider },
     },
     token: { ...profile.tokens, colorPrimary: colorPrimary ?? profile.colorPrimary },

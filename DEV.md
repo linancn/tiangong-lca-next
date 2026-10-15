@@ -44,9 +44,9 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .github/workflows/build.yml
   - .nvmrc
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
+lastReviewedNote: 'Reviewed for Platform #1263: documented the white/slate/blue light sidebar, navy dark sidebar, mode-following elevated surfaces and profile-owned full palette using existing primary/logo overrides. Serial local preview/build and formal publication boundaries remain unchanged.'
 ---
 
 # Development Bootstrap
@@ -81,7 +81,7 @@ Run Umi dev/build/test commands serially in one checkout because they share gene
 
 Edit `config/brands/atlas.json` or `tiangong.json` for localized titles, slogans, footer/legal links, light/dark theme, favicon, static manifest and desktop identity. ATLAS has independent four-locale product copy and a local application-home link; source and legal links retain their factual destinations. Existing `APP_LIGHT_PRIMARY`, `APP_DARK_PRIMARY`, `APP_LIGHT_LOGO`, `APP_DARK_LOGO`, `APP_FAVICON`, `APP_TITLE_<LOCALE>` and `APP_LOGIN_SUBTITLE_<LOCALE>` overrides take precedence over the selected profile. Restart/rebuild after changing build-time settings.
 
-`APP_BRAND=atlas` selects the complete presentation: navy side navigation, ocean-blue light/dark interaction colors, component tokens, split login and task-oriented welcome. TianGong keeps its existing `mix` layout and component defaults. `APP_LAYOUT=side|top|mix` overrides the selected profile's navigation mode. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `splitMenus` (mix only), and `contentWidth` (top only). Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens); the same resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes.
+`APP_BRAND=atlas` selects the complete presentation: a white sidebar with slate text and ocean-blue selection in light mode, navy side navigation in dark mode, component tokens, split login and task-oriented welcome. TianGong keeps its existing `mix` layout and component defaults. `APP_LAYOUT=side|top|mix` overrides the selected profile's navigation mode. The brand JSON `layout` config also accepts `siderWidth`, `fixedHeader`, `fixSiderbar`, `splitMenus` (mix only), and `contentWidth` (top only). Each theme mode can supply `tokens`, `components` and `layoutTokens` (ProLayout header, sider and pageContainer tokens); the same resolved Ant Design theme is applied at startup and after light/dark switches, including layout-free routes. Atlas dark navigation also bridges its sider palette into the native Ant Design Menu dark fields. Collapsed menu popups and other elevated surfaces follow the active mode. The existing primary/logo environment overrides remain sufficient for those individual inputs; edit the per-mode profile `tokens`, `components` and `layoutTokens` for a complete palette. No additional palette environment variables are required.
 
 `presentation.login` selects `standard|split`, and `presentation.welcome` selects `overview|workspace`. Optional `presentation.navigationTitle` gives navigation a short label while localized product titles remain available to page consumers. Presentation copy must cover every supported locale. Layout variants only compose the shared auth forms and existing business routes; they do not select permissions or datasets. Atlas workspace omits TianGong's promotional counters instead of claiming them as Atlas statistics. Dataset source labels, TIDAS descriptions and legal/operator identities retain their actual attribution.
 
