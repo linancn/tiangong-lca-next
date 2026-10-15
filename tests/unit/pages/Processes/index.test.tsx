@@ -1269,6 +1269,45 @@ describe('ProcessesPage', () => {
     expect(mockGetProcessTableUuidMentionSearch).not.toHaveBeenCalled();
   });
 
+  it('keeps the applied AI search after unchecking AI until Search submits normal mode', async () => {
+    renderWithProviders(<ProcessesPage />);
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockProcessHybridSearch).toHaveBeenCalledTimes(1));
+    const appliedParams = mockCapturedTableProps.params;
+    act(() => mockCapturedTableProps.pagination.onChange(3, 20));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
+    expect(screen.getByRole('checkbox', { name: /ai recommendation/i })).not.toBeChecked();
+    expect(mockCapturedTableProps.params).toEqual(appliedParams);
+    expect(mockProcessHybridSearch).toHaveBeenCalledTimes(1);
+    expect(mockGetProcessTablePgroongaSearch).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await mockCapturedTableProps.request(
+        { ...mockCapturedTableProps.params, current: 3, pageSize: 20 },
+        {},
+      );
+      await mockCapturedTableProps.actionRef.current.reload();
+    });
+    expect(mockProcessHybridSearch).toHaveBeenCalledTimes(3);
+    expect(mockProcessHybridSearch.mock.calls.at(-2)[0]).toEqual(
+      expect.objectContaining({ current: 3, pageSize: 20 }),
+    );
+    expect(mockProcessHybridSearch.mock.calls.at(-1)[3]).toBe('cement');
+    expect(mockGetProcessTablePgroongaSearch).not.toHaveBeenCalled();
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(41);
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() => expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledTimes(1));
+    expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)[0]).toEqual(
+      expect.objectContaining({ current: 1 }),
+    );
+    expect(mockGetProcessTablePgroongaSearch.mock.calls.at(-1)[3]).toBe('cement');
+    expect(mockProcessHybridSearch).toHaveBeenCalledTimes(3);
+    expect(mockCapturedTableProps.columns[0].render(null, {}, 0)).toBe(1);
+  });
+
   it('keeps draft modes staged through paging, sorting, classification, and reload until submission', async () => {
     renderWithProviders(<ProcessesPage />);
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
