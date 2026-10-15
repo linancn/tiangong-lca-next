@@ -169,7 +169,7 @@ async function expectGlobalContentMode(page: Page, mode: Mode) {
 }
 
 async function expectNativeDarkMenu(sidebar: Locator) {
-  await expect(sidebar.locator('.ant-menu-root')).toHaveClass(/ant-menu-dark/);
+  await expect(sidebar.locator('.ant-pro-sider-menu.ant-menu-root')).toHaveClass(/ant-menu-dark/);
   const inlineSubmenu = sidebar.locator('.ant-menu-sub.ant-menu-inline').first();
   await expect(inlineSubmenu).toBeVisible();
   await expect(inlineSubmenu).toHaveCSS('background-color', 'rgb(0, 12, 23)');
@@ -296,7 +296,7 @@ for (const mode of ['light', 'dark'] as const) {
       const popup = page.locator('.ant-menu-submenu-popup:visible').first();
       await insideViewport(popup);
       const popupMenu = popup.locator('.ant-menu').first();
-      await expect(popupMenu).toHaveClass(/ant-menu-dark/);
+      await expect(popup).toHaveClass(/ant-menu-dark/);
       await expect(popupMenu).toHaveCSS('background-color', palette.popup);
       const popupSelected = popup.locator('.ant-menu-item-selected');
       await expect(popupSelected).toHaveCSS('background-color', palette.selectedBackground);
