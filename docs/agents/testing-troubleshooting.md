@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
-lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
+lastReviewedCommit: 46fb8f2228e1ad631612482bba34a52e3a902c4d
+lastReviewedNote: 'Reviewed for Platform #1253 at 46fb8f22: Atlas temporary paths are initialized at a supported runner step through RUNNER_TEMP and GITHUB_ENV. Actions semantic lint reproduces the prior rejected dispatch and passes the corrected workflow; executed path propagation with spaces and downstream receipt creation passes. Exact source, destination, old-tag recovery, full-gate and production-verification requirements remain unchanged. No live publication is claimed by this review.'
 ---
 
 # Testing Troubleshooting
@@ -64,6 +64,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | exact pre-fixture continuation | `pnpm e2e:release:resume` (no arguments) |
 
 ## Atlas publication recovery
+
+- If dispatch returns `Unrecognized named-value: runner`, run Actions semantic lint and check context availability. Job-level `env` cannot read `runner.temp`; initialize paths in a runner step through `RUNNER_TEMP` and `GITHUB_ENV`. A rejected dispatch creates no deployment.
 
 - If exact project lookup fails, verify the configured token's access to `makers-dtpthotshhpt`; never substitute a name-only deployment or auto-create a project.
 - If a deployment ID is retained but waiting fails, query that exact ID and inspect its state before any rerun. Do not infer that the remote deployment stopped.

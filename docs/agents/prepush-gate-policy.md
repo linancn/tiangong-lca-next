@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
-lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
+lastReviewedCommit: 46fb8f2228e1ad631612482bba34a52e3a902c4d
+lastReviewedNote: 'Reviewed for Platform #1253 at 46fb8f22: Atlas temporary paths are initialized at a supported runner step through RUNNER_TEMP and GITHUB_ENV. Actions semantic lint reproduces the prior rejected dispatch and passes the corrected workflow; executed path propagation with spaces and downstream receipt creation passes. Exact source, destination, old-tag recovery, full-gate and production-verification requirements remain unchanged. No live publication is claimed by this review.'
 ---
 
 # Pre-Push Gate Policy

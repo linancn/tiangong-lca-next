@@ -508,9 +508,6 @@ jobs:
       EDGEONE_VITE_NODE_VERSION: 3.2.4
       ATLAS_PROJECT_ID: makers-dtpthotshhpt
       ATLAS_PROJECT_NAME: atlas-lca-platform
-      ATLAS_SDK_DIR: ${{ runner.temp }}/atlas-sdk
-      ATLAS_PROOF_DIR: ${{ runner.temp }}/atlas-publication
-      ATLAS_ARCHIVE_PATH: ${{ runner.temp }}/atlas-release.zip
       RELEASE_HEAD: ${{ needs.release-context.outputs.release_head }}
       TAG_NAME: ${{ needs.release-context.outputs.tag_name }}
 
@@ -527,6 +524,14 @@ jobs:
           runtime: node@24.19.0
           cache: true
           install: false
+
+      - name: Initialize Atlas publication paths
+        run: |
+          {
+            printf 'ATLAS_SDK_DIR=%s/atlas-sdk\n' "$RUNNER_TEMP"
+            printf 'ATLAS_PROOF_DIR=%s/atlas-publication\n' "$RUNNER_TEMP"
+            printf 'ATLAS_ARCHIVE_PATH=%s/atlas-release.zip\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
 
       - name: Install isolated exact-ID deployment SDK
         run: |

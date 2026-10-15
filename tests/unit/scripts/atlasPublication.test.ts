@@ -156,6 +156,33 @@ describe('Atlas publication (executed build.yml scripts)', () => {
 
   afterEach(() => rmSync(folder, { recursive: true, force: true }));
 
+  it('initializes runner paths for subsequent steps, preserving spaces and existing environment entries', () => {
+    const runnerTemp = path.join(folder, 'runner temporary files');
+    const githubEnv = path.join(folder, 'github environment');
+    writeFileSync(githubEnv, 'EXISTING_ENTRY=retained\n');
+    expect(
+      run('Initialize Atlas publication paths', {
+        RUNNER_TEMP: runnerTemp,
+        GITHUB_ENV: githubEnv,
+      }).status,
+    ).toBe(0);
+    const exported = Object.fromEntries(
+      readFileSync(githubEnv, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
+    );
+    expect(exported).toEqual({
+      EXISTING_ENTRY: 'retained',
+      ATLAS_SDK_DIR: path.join(runnerTemp, 'atlas-sdk'),
+      ATLAS_PROOF_DIR: path.join(runnerTemp, 'atlas-publication'),
+      ATLAS_ARCHIVE_PATH: path.join(runnerTemp, 'atlas-release.zip'),
+    });
+    mkdirSync(exported.ATLAS_PROOF_DIR, { recursive: true });
+    expect(run('Record Atlas build provenance', exported).status).toBe(0);
+    expect(json(path.join(exported.ATLAS_PROOF_DIR, 'build.json')).sourceCommit).toBe(SOURCE);
+  });
+
   it('verifies the exact destination before producing a destination receipt', () => {
     expect(run('Verify exact Atlas destination').status).toBe(0);
     expect(calls()).toEqual([{ method: 'get', input: { projectId: PROJECT_ID } }]);
