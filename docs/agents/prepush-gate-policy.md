@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
+lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
 ---
 
 # Pre-Push Gate Policy
