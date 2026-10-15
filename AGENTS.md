@@ -47,9 +47,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: Atlas native dark navigation in both page modes and a menu-scoped theme provider remain within frontend ownership. Branch, permission, release, full-gate and workspace integration contracts remain applicable.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

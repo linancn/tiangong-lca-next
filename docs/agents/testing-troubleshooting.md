@@ -41,9 +41,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: focused diagnosis, settled geometry/tooltip checks, qualification isolation and serial Umi recovery cover native dark navigation and scoped theme inheritance. No new recovery workflow is required.'
 ---
 
 # Testing Troubleshooting

@@ -45,9 +45,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: a06358855ad5cfd4396b729885437360f3d11fca
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: proof requires both-mode native dark navigation, scoped-provider inheritance, primary-driven selection, page/overlay mode separation, persistence, contrast and mobile behavior. This records requirements without claiming new execution.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -244,7 +244,7 @@ E2E_QUALIFICATION=true E2E_EXTERNAL_SERVER=true E2E_BASE_URL=http://127.0.0.1:80
 
 The configured suite exercises all seven Open Data catalogs, desktop/narrow layouts, six-column order, default paging, internal body scrolling, toolbar containment, combined classification/full-text/reference query bodies, mixed display filters, AllVersions/fullscreen/zoom geometry and nested Flow selectors. Its screenshots and run output live under ignored `.local/dataset-list-unification/`; fixture credentials and synthetic records never reach a live backend. It is focused frontend/layout evidence, not deployed filter/ACL proof, canonical semantic localization evidence, authenticated production persistence proof or release qualification. Record actual commands and results in the delivery Issue/PR; this guide does not claim those checks have run. Existing full-gate and production-authorization boundaries remain unchanged.
 
-Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots, and obtain the user's requested interface confirmation before any further production publication.
+Platform #1221 additionally checks the actual vertical alignment of search, filters and native settings at wide desktop widths; containment alone does not prove a compact single row. Verify no authenticated global footer occupies table space and keyboard entry/exit of the help/about menu preserves documentation fallback and brand-specific links. Retain laptop/narrow, dark/light, zoom and drawer screenshots. The interface-confirmation condition was specific to the user's #1221 review request; later work follows its own current authorization. Platform #1263 separately authorizes complete delivery and publication after the required validation and release gates.
 
 The follow-up width refinement must prove that metadata widths stay bounded as the viewport grows while the name column and search input receive the extra room. Include all active locales, long unbroken names, header/value hover, formatted timestamps and usable version actions. Classification tests must distinguish draft navigation/clear from confirmation: no list query while drafting or cancelling, one query for a changed confirmation, no request for unchanged confirmation, and no stale draft after an external scope change. Show the actual classification popup in an isolated synthetic test instance for the requested user review; explicitly record ownership and retention of its server/browser processes.
 
@@ -267,3 +267,19 @@ Allocation-repair regressions cover both missing non-reference allocation and an
 ## Brand presentation proof
 
 For changes to brand tokens, copy or layout presets, run focused brand-profile/default-settings/message tests, theme-sync tests and the affected Login/Welcome suites; run typecheck/lint and both brand builds. The `tests/e2e/branding/brand-presentation.spec.ts` browser smoke suite, selected with `playwright.branding.config.ts` outside the release qualification inventory, is explicitly selected with `E2E_BRAND` and only executes with `E2E_QUALIFICATION=true` against the existing semantic simulator. It exercises both brands separately, all four login locales, light/dark toggles, narrow-screen control access and overflow, then shared login, welcome, dataset navigation and the Atlas guide. Screenshots contain deterministic fixture UI only. Test login credentials are never sent to a real backend. Local smoke proof does not replace final release gates or hosted deployment evidence.
+
+### Atlas sidebar theme proof
+
+For sidebar-palette changes, protect the profile, default settings, global `createAntdThemeConfig` adapter, menu-scoped `BrandMenuTheme` provider and app wiring with focused suites. Prove Atlas uses native dark Menu in both page modes, its popup/submenu tokens are reapplied below ProLayout, explicit primary/component overrides retain their effect, and default TianGong behavior is preserved. The nested provider must retain inherited primary/container tokens and child identity across mode changes; global page content and non-navigation overlays must retain their page mode. Run both brand builds serially and the existing checked-push gate.
+
+`tests/e2e/branding/sidebar-theme.spec.ts`, selected by the same branding config, requires the compiled Atlas qualification bundle, `E2E_BRAND=atlas` and the closed semantic backend. Its intended proof matrix is:
+
+| Surface | Required modes and viewports | Assertions |
+| --- | --- | --- |
+| Expanded and collapsed sidebar | light and dark at 1440 and 1366 px wide | Standard `#001529` dark Menu in both page modes, `#000C17` inline submenus and `#002140` collapse control; white/translucent-white text; native resolved-primary selection and transparent menu hover; mode-correct page/container surfaces; logo/title, selected and hovered menu states; account text/icon; all permitted tools remain visible; collapse Enter/Space and focus; released table width and exact restoration; no document overflow or page errors. |
+| Controls, menus and persistence | both modes; complete dropdown/persistence cases at 1440 px | Sidebar tools use white 12% hover and 18% active surfaces with visible keyboard focus; account/collapse focus; readable settled theme tooltip; help, language and account dropdown bounds; native dark collapsed popup background and resolved-primary selection; other dropdown surfaces retain the page mode; public theme control switches in both directions and the stored mode survives reload while navigation stays dark. |
+| Mobile drawer | light and dark at 390 × 844 | Focus-visible mobile trigger, dark selected navigation in both page modes and drawer bounds; readable account/tools in the native mobile header before opening the modal drawer; navigation updates the selected route, Escape dismisses the drawer before and after reopening, and no document overflow. |
+
+Measure rendered text contrast against composited backgrounds at least 4.5:1 and tool/account icons at least 3:1, including inherited opacity. Assert computed mode colors and a visible 2 px keyboard-focus outline with at least 3:1 contrast against its surface; a nominal token or DOM text alone does not prove readability. Capture settled viewport screenshots, plus the tooltip helper's before/after readability checks. The existing brand-presentation smoke retains both brands and all four login locales; the sidebar matrix is focused Atlas layout/theme evidence and does not claim every locale or engine.
+
+These synthetic, loopback-only screenshots and checks prove frontend presentation and interaction. They do not replace the exact release candidate gates, production deployment receipts or served-manifest verification. Record actual commands, results, screenshot paths and owned resource cleanup or retention in the tracked Issue/PR; this matrix states required proof, not a completed run.

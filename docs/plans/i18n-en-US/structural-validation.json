@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "3432e6370687fba61c82b7336084c003a04b967eb502548ba6ef29f5f00b17f0",
+    "auditedInputDigest": "216277dc484429a108429f94874dd0a100515d5e96c104a2d65aa71a44148b46",
     "validatedMessageCount": 3543,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1662,
     "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
     "catalogDigest": "04a34582332594a8d6f0ea85fa2af58d23f31d97ea7ece41b940357ef31b4b16",
-    "dossierDigest": "35c39bc898b1b493d37758d3fbfaa6d46ae91da3264528ff8b541c315871aa0b",
+    "dossierDigest": "46c38d2edf51726f9be5f7c5079d96aa9c7dfe45e13126fea743023433b40583",
     "typedContentDossierDigest": "93ff72bef2323e7a766f111c3945669da9e0f3fc6c961dfebe977787d5d8b158",
-    "routeEvidenceDigest": "e25df5e23be2b34baeb4d7ae2d5d76f9317b485d7e0d14805d12a8b445d9fae1",
+    "routeEvidenceDigest": "eef3f1683395ddc80380345ef3e6cdaac82e2a7e3b9f4681a783da778c9f98b7",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "9d811525db5c924d3c36e7a2680d4315d52901a3a1d1aacf21a0e36924f41347",
         "highRiskMessageCount": 1662,
         "highRiskMessageDigest": "e37518afe9f8e284ad3aa480011beba503d2ffc2db3dcb59f4b8b253b83c1169",
-        "dossierDigest": "35c39bc898b1b493d37758d3fbfaa6d46ae91da3264528ff8b541c315871aa0b",
+        "dossierDigest": "46c38d2edf51726f9be5f7c5079d96aa9c7dfe45e13126fea743023433b40583",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "c164aa56df4ae2b936f9273d8bb7fb5192595036bf59ab1d820ccdff5c61b3a4"
+  "validationDigest": "2c8d216a08e507d2b1e403f1bfaa9f83890772612bd11fbb3da8177b0163dab7"
 }

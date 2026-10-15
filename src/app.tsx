@@ -1,4 +1,5 @@
 import { brandProfile } from '../config/brandProfile';
+import { BrandMenuTheme } from '@/contexts/BrandMenuTheme';
 import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
@@ -468,6 +469,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     ...initialState?.settings,
+    menuContentRender:
+      brandProfile.id === 'atlas'
+        ? (_props, defaultDom) => (
+            <BrandMenuTheme isDarkMode={!!initialState?.isDarkMode}>{defaultDom}</BrandMenuTheme>
+          )
+        : undefined,
     collapsedButtonRender: (collapsed, defaultDom) =>
       renderAccessibleCollapsedButton(
         formatMessage({

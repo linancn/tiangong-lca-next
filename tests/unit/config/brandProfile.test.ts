@@ -26,4 +26,47 @@ describe('brand profiles', () => {
     expect(atlas.links.terms).toBe(original.links.terms);
     expect(atlas.links.source).toBe(original.links.source);
   });
+
+  it.each(['light', 'dark'] as const)(
+    'uses native dark Atlas navigation independently of the global %s theme',
+    (mode) => {
+      const atlas = resolveBrandProfile('atlas');
+      const profile = atlas.theme[mode];
+      const sider = profile.layoutTokens!.sider!;
+      expect(atlas.layout?.menuProps).toEqual({ theme: 'dark' });
+      expect(sider).toMatchObject({
+        colorMenuBackground: '#001529',
+        colorBgMenuItemCollapsedElevated: '#001529',
+        colorTextMenuTitle: '#FFFFFF',
+        colorTextMenu: 'rgba(255, 255, 255, 0.65)',
+        colorTextMenuSecondary: 'rgba(255, 255, 255, 0.65)',
+        colorTextMenuSelected: '#FFFFFF',
+        colorTextMenuItemHover: '#FFFFFF',
+        colorTextMenuActive: '#FFFFFF',
+        colorBgCollapsedButton: '#002140',
+        colorTextCollapsedButton: '#FFFFFF',
+        colorTextCollapsedButtonHover: '#FFFFFF',
+      });
+      for (const field of [
+        'colorBgMenuItemSelected',
+        'colorBgMenuItemHover',
+        'colorBgMenuItemActive',
+      ]) {
+        expect(sider).not.toHaveProperty(field);
+      }
+      expect(profile.components?.Menu).toEqual({
+        darkPopupBg: '#001529',
+        darkSubMenuItemBg: '#000c17',
+      });
+      expect(profile.tokens!.colorBgContainer).toBe(mode === 'light' ? '#FFFFFF' : '#102337');
+      expect(profile.tokens!.colorBgElevated).toBe(mode === 'light' ? '#FFFFFF' : '#102B43');
+    },
+  );
+
+  it('preserves TianGong theme and menu defaults', () => {
+    const tiangong = resolveBrandProfile('tiangong');
+    expect(tiangong.layout?.menuProps).toBeUndefined();
+    expect(tiangong.theme.light).toEqual({ colorPrimary: '#5C246A', logo: '/logo.svg' });
+    expect(tiangong.theme.dark).toEqual({ colorPrimary: '#9e3ffd', logo: '/logo_dark.svg' });
+  });
 });

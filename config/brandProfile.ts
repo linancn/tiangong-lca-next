@@ -26,7 +26,13 @@ export interface BrandProfile {
   >;
   layout?: Pick<
     ProLayoutProps,
-    'layout' | 'siderWidth' | 'fixedHeader' | 'fixSiderbar' | 'splitMenus' | 'contentWidth'
+    | 'layout'
+    | 'siderWidth'
+    | 'fixedHeader'
+    | 'fixSiderbar'
+    | 'splitMenus'
+    | 'contentWidth'
+    | 'menuProps'
   >;
   presentation?: {
     login: 'standard' | 'split';
