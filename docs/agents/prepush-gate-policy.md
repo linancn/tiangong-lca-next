@@ -45,7 +45,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 46fb8f2228e1ad631612482bba34a52e3a902c4d
+lastReviewedCommit: 216ef53e7aa7fd41d5e75ab85afd2307ad95e65e
 lastReviewedNote: 'Reviewed for Platform #1253 at 46fb8f22: Atlas temporary paths are initialized at a supported runner step through RUNNER_TEMP and GITHUB_ENV. Actions semantic lint reproduces the prior rejected dispatch and passes the corrected workflow; executed path propagation with spaces and downstream receipt creation passes. Exact source, destination, old-tag recovery, full-gate and production-verification requirements remain unchanged. No live publication is claimed by this review.'
 ---
 
