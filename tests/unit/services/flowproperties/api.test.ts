@@ -2020,8 +2020,7 @@ describe('flowproperty server classification query contract', () => {
 
   it('preserves open-data publication/source scope together with classification', async () => {
     const api = require('@/services/flowproperties/api');
-    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
-    await api.getFlowpropertyTableAll(params, {}, 'en', 'tg', '', 'all', openDataFilters);
+    await api.getFlowpropertyTableAll(params, {}, 'en', 'tg', '', 'all', true);
     expect(rpc).toHaveBeenCalledWith(
       'search_open_data_catalog',
       expect.objectContaining({

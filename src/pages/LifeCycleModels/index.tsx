@@ -1,7 +1,6 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import type { DatasetClassificationFilterValue } from '@/services/general/datasetClassification';
 import AllVersionsList from '@/components/AllVersions';
-import OpenDataCatalogFilters from '@/components/OpenDataCatalogFilters';
 import ContributeData from '@/components/ContributeData';
 import {
   extractContributeDataError,
@@ -24,11 +23,7 @@ import {
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import {
-  DEFAULT_OPEN_DATA_FILTERS,
-  getOpenDataCatalogFilterArgs,
-  type OpenDataCatalogFilters as OpenDataCatalogFilterValue,
-} from '@/services/openDataCatalog/types';
+import { getOpenDataCatalogArgs } from '@/services/openDataCatalog/types';
 import { attachStateCodesToRows } from '@/services/general/api';
 import {
   getServiceQueryLanguage,
@@ -106,9 +101,6 @@ const TableList: FC = () => {
   const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
-  const [openDataFilters, setOpenDataFilters] = useState<OpenDataCatalogFilterValue>({
-    ...DEFAULT_OPEN_DATA_FILTERS,
-  });
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
@@ -455,9 +447,6 @@ const TableList: FC = () => {
                     ? 'ai'
                     : 'keyword',
               stateCode,
-              ...(dataSource === 'tg'
-                ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-                : {}),
             }}
             search={false}
             options={isMobileDataList ? false : { fullScreen: true }}
@@ -490,15 +479,7 @@ const TableList: FC = () => {
                   <ImportData onJsonData={handleImportData} key={1} />,
                 ];
               }
-              return dataSource === 'tg'
-                ? [
-                    <OpenDataCatalogFilters
-                      key='open-data-filters'
-                      value={openDataFilters}
-                      onChange={setOpenDataFilters}
-                    />,
-                  ]
-                : [];
+              return [];
             }}
             request={async (
               params: LifeCycleModelTableRequestParams & { pageSize?: number; current?: number },
@@ -512,11 +493,9 @@ const TableList: FC = () => {
                 searchRevision: _searchRevision,
                 searchMode,
                 stateCode: requestedStateCode,
-                openDataFilterRevision: _openDataFilterRevision,
                 ...requestParams
               } = params;
               void _searchRevision;
-              void _openDataFilterRevision;
               setTableDataSource([]);
               return guardLocaleMaterializedTableRequest(
                 requestedLocale,
@@ -535,7 +514,7 @@ const TableList: FC = () => {
                       referenceLookupUuid,
                       requestedStateCode,
                       referenceLookupTeamId,
-                      ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                      ...getOpenDataCatalogArgs(requestedDataSource),
                     );
                     const noticeKey = [
                       requestedDataSource,
@@ -587,7 +566,7 @@ const TableList: FC = () => {
                           requestedKeyword,
                           {},
                           requestedStateCode,
-                          requestedDataSource === 'tg' ? openDataFilters : undefined,
+                          requestedDataSource === 'tg' ? true : undefined,
                           requestedTeamId,
                         ),
                       );
@@ -602,7 +581,7 @@ const TableList: FC = () => {
                         requestedStateCode,
                         orderBy,
                         requestedTeamId,
-                        ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                        ...getOpenDataCatalogArgs(requestedDataSource),
                       ),
                     );
                   }
@@ -614,7 +593,7 @@ const TableList: FC = () => {
                       requestedDataSource,
                       requestedTeamId,
                       requestedStateCode,
-                      ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                      ...getOpenDataCatalogArgs(requestedDataSource),
                     ),
                   );
                 },

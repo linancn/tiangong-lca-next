@@ -15,7 +15,6 @@ import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
-import OpenDataCatalogFilters from '@/components/OpenDataCatalogFilters';
 import ContributeData from '@/components/ContributeData';
 import {
   extractContributeDataError,
@@ -60,11 +59,7 @@ import {
 } from '@/services/general/runtimeLocale';
 import { getActiveTableSort, mapActiveTableSort } from '@/services/general/tableSort';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
-import {
-  DEFAULT_OPEN_DATA_FILTERS,
-  getOpenDataCatalogFilterArgs,
-  type OpenDataCatalogFilters as OpenDataCatalogFilterValue,
-} from '@/services/openDataCatalog/types';
+import { getOpenDataCatalogArgs } from '@/services/openDataCatalog/types';
 import {
   ProcessImportData,
   ProcessTable,
@@ -115,9 +110,6 @@ const TableList: FC = () => {
   const [stateCode, setStateCode] = useState<string | number>('all');
   const [typeOfDataSet, setTypeOfDataSet] = useState<string>('all');
   const [tableDataSource, setTableDataSource] = useState<ProcessTable[]>([]);
-  const [openDataFilters, setOpenDataFilters] = useState<OpenDataCatalogFilterValue>({
-    ...DEFAULT_OPEN_DATA_FILTERS,
-  });
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const { draftMode, setDraftMode, submitted, submitSearch } = useSubmittedDatasetSearch();
@@ -633,9 +625,6 @@ const TableList: FC = () => {
                     : 'keyword',
               stateCode,
               typeOfDataSet,
-              ...(dataSource === 'tg'
-                ? { openDataFilterRevision: JSON.stringify(openDataFilters) }
-                : {}),
             }}
             search={false}
             options={isMobileDataList ? false : { fullScreen: true }}
@@ -731,18 +720,6 @@ const TableList: FC = () => {
                     ];
                 return [...filters, ...mobileActions, ...desktopActions];
               }
-              if (dataSource === 'tg') {
-                return [
-                  <span key='process-type-filter'>
-                    {typeOfDataSetFilter(isMobileDataList ? 120 : 160)}
-                  </span>,
-                  <OpenDataCatalogFilters
-                    key='open-data-filters'
-                    value={openDataFilters}
-                    onChange={setOpenDataFilters}
-                  />,
-                ];
-              }
               return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
             }}
             request={async (
@@ -758,11 +735,9 @@ const TableList: FC = () => {
                 searchMode,
                 stateCode: requestedStateCode,
                 typeOfDataSet: requestedTypeOfDataSet,
-                openDataFilterRevision: _openDataFilterRevision,
                 ...requestParams
               } = params;
               void _searchRevision;
-              void _openDataFilterRevision;
               setTableDataSource([]);
               return guardLocaleMaterializedTableRequest(
                 requestedLocale,
@@ -783,7 +758,7 @@ const TableList: FC = () => {
                         requestedStateCode,
                         requestedTypeOfDataSet,
                         referenceLookupTeamId,
-                        ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                        ...getOpenDataCatalogArgs(requestedDataSource),
                       );
                       const noticeKey = [
                         requestedDataSource,
@@ -838,7 +813,7 @@ const TableList: FC = () => {
                             requestedStateCode,
                             requestedTypeOfDataSet,
                             requestedTeamId,
-                            ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                            ...getOpenDataCatalogArgs(requestedDataSource),
                           ),
                         );
                       }
@@ -855,7 +830,7 @@ const TableList: FC = () => {
                               orderBy,
                               requestedTeamId,
                               false,
-                              openDataFilters,
+                              true,
                             )
                           : await getProcessTablePgroongaSearch(
                               requestParams,
@@ -888,7 +863,7 @@ const TableList: FC = () => {
                         requestedTeamId,
                         requestedStateCode,
                         requestedTypeOfDataSet,
-                        ...getOpenDataCatalogFilterArgs(requestedDataSource, openDataFilters),
+                        ...getOpenDataCatalogArgs(requestedDataSource),
                       ),
                     );
                   } catch (error) {

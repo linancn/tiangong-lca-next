@@ -544,6 +544,18 @@ describe('ProcessesPage', () => {
     message.error.mockReset();
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/processes', search: '' };
+    renderWithProviders(<ProcessesPage />);
+    await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
+    expect(mockGetProcessTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
     renderWithProviders(<ProcessesPage />);
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
@@ -1168,7 +1180,7 @@ describe('ProcessesPage', () => {
     expect(mockPublishOpenDataProcesses).not.toHaveBeenCalled();
   });
 
-  it('preserves Open Data keyword search and its original catalog filters after moving display configuration', async () => {
+  it('preserves Open Data keyword search and its catalog route after moving display configuration', async () => {
     mockGetDataSource.mockReturnValue('tg');
     mockLocation = { pathname: '/tgdata/processes', search: '?tid=team-1' };
     renderWithProviders(<ProcessesPage />);
@@ -1187,7 +1199,7 @@ describe('ProcessesPage', () => {
         undefined,
         'team-1',
         false,
-        { sourceFilter: 'all', publicationFilter: 'all' },
+        true,
       ),
     );
     expect(mockPublishOpenDataProcesses).not.toHaveBeenCalled();

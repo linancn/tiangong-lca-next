@@ -88,10 +88,6 @@ export default {
   'pages.tab.title.tgdata': '天工数据',
   'pages.tab.title.co': '商业数据',
 
-  'pages.openData.source.filter': '数据来源筛选',
-  'pages.openData.source.all': '全部数据',
-  'pages.openData.source.literature': '文献数据',
-  'pages.openData.source.enterprise': '企业数据',
   'pages.openData.publication.filter': '发布状态筛选',
   'pages.openData.publication.status': '发布状态',
   'pages.openData.publication.all': '全部发布状态',

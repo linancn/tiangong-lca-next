@@ -89,10 +89,6 @@ export default {
   'pages.tab.title.tgdata': 'TianGong Data',
   'pages.tab.title.co': 'Business Data',
 
-  'pages.openData.source.filter': 'Data source filter',
-  'pages.openData.source.all': 'All data',
-  'pages.openData.source.literature': 'Literature data',
-  'pages.openData.source.enterprise': 'Enterprise data',
   'pages.openData.publication.filter': 'Publication filter',
   'pages.openData.publication.status': 'Publication status',
   'pages.openData.publication.all': 'All publication states',

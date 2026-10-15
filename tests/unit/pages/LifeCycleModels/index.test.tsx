@@ -495,6 +495,18 @@ describe('LifeCycleModelsPage', () => {
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '' };
+    renderWithProviders(<LifeCycleModelsPage />);
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+    expect(mockGetLifeCycleModelTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
     renderWithProviders(<LifeCycleModelsPage />);
     await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
@@ -737,7 +749,7 @@ describe('LifeCycleModelsPage', () => {
     );
   });
 
-  it('preserves Open Data filters, classification and selected institution in tg Hybrid search', async () => {
+  it('preserves Open Data catalog scope, classification and selected institution in tg Hybrid search', async () => {
     mockLocation = { pathname: '/tgdata/lifecyclemodels', search: '?tid=public-team' };
     mockGetDataSource.mockReturnValue('tg');
     renderWithProviders(<LifeCycleModelsPage />);
@@ -757,7 +769,7 @@ describe('LifeCycleModelsPage', () => {
         'steel',
         {},
         'all',
-        { publicationFilter: 'all', sourceFilter: 'all' },
+        true,
         'public-team',
       ),
     );
@@ -828,7 +840,7 @@ describe('LifeCycleModelsPage', () => {
         scope,
         '',
         'all',
-        ...(scope === 'tg' ? [{ publicationFilter: 'all', sourceFilter: 'all' }] : []),
+        ...(scope === 'tg' ? [true] : []),
       );
       expect(screen.queryByRole('heading')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /table-filter/i })).not.toBeInTheDocument();

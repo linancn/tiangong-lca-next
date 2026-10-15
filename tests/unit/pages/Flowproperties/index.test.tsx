@@ -492,6 +492,18 @@ describe('FlowpropertiesPage', () => {
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
+  it('keeps the Open Data catalog route and classification control without a source toggle', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockLocation = { pathname: '/tgdata/flowproperties', search: '' };
+    renderWithProviders(<FlowpropertiesPage />);
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    expect(mockGetFlowpropertyTableAll.mock.calls.at(-1)?.at(-1)).toBe(true);
+    expect(screen.getByTestId('dataset-classification-filter')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^(All data|Enterprise data|Literature data)$/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('uses the shared six-column native pagination layout and sends toolbar classification to the complete query', async () => {
     renderWithProviders(<FlowpropertiesPage />);
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());

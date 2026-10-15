@@ -20,7 +20,6 @@ export type ListPagination = {
  */
 export type LocaleAwareTableParams = DatasetTableParams & {
   locale: SupportedAppLocale;
-  openDataFilterRevision?: string;
 };
 
 /**

@@ -31,7 +31,7 @@ import {
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
 import { invokeFoundationHybridSearch } from '../general/hybridSearch';
-import { queryMappedOpenDataCatalog, type OpenDataCatalogFilters } from '../openDataCatalog/api';
+import { queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import { resolveTableSort } from '../general/tableSort';
 import { genContactJsonOrdered } from './util';
 
@@ -280,16 +280,15 @@ export async function getContactTableAll(
   dataSource: string,
   tid: string | [],
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'contact',
         filterCondition,
-        filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -381,15 +380,14 @@ export async function getContactTablePgroongaSearch(
   rawFilterCondition: any,
   stateCode?: string | number,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'contact',
         filterCondition,
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -452,7 +450,7 @@ export async function contact_hybrid_search(
   rawFilterCondition: unknown,
   stateCode?: string | number,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
   return invokeFoundationHybridSearch({
@@ -465,7 +463,7 @@ export async function contact_hybrid_search(
     queryText,
     stateCode,
     teamId: await getContactTeamFilter(dataSource, tid),
-    openDataFilters,
+    useOpenDataCatalog,
   });
 }
 
@@ -476,15 +474,14 @@ export async function getContactTableUuidMentionSearch(
   uuid: string,
   stateCode?: string | number,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'contact',
         filterCondition,
-        filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,

@@ -1,23 +1,8 @@
 export type OpenDataDatasetKind =
   'process' | 'flow' | 'lifecyclemodel' | 'contact' | 'source' | 'unitgroup' | 'flowproperty';
 
-export type OpenDataSourceFilter = 'all' | 'literature' | 'enterprise';
-export type OpenDataPublicationFilter = 'all' | 'published' | 'unpublished';
-
-export type OpenDataCatalogFilters = {
-  sourceFilter: OpenDataSourceFilter;
-  publicationFilter?: OpenDataPublicationFilter;
-};
-
-export const DEFAULT_OPEN_DATA_FILTERS: OpenDataCatalogFilters = {
-  sourceFilter: 'all',
-  publicationFilter: 'all',
-};
-
-export function getOpenDataCatalogFilterArgs(
-  dataSource: string,
-  filters: OpenDataCatalogFilters,
-): [] | [OpenDataCatalogFilters] {
-  if (dataSource === 'tg') return [filters];
+// Main Open Data catalogs opt into catalog routing; selectors retain their own query semantics.
+export function getOpenDataCatalogArgs(dataSource: string): [] | [true] {
+  if (dataSource === 'tg') return [true];
   return [];
 }

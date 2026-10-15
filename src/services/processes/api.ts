@@ -51,11 +51,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getCachedLocationData } from '../locations/cache';
-import {
-  addOpenDataHybridFilters,
-  queryMappedOpenDataCatalog,
-  type OpenDataCatalogFilters,
-} from '../openDataCatalog/api';
+import { addOpenDataCatalogScope, queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import {
   toProcessModelVersionField,
   type ProcessDetailByVersionResponse,
@@ -548,19 +544,18 @@ export async function getProcessTableAll(
   tid: string | [],
   stateCode?: string | number,
   typeOfDataSet?: string,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {
     typeOfDataSet: typeOfDataSet ?? 'all',
   });
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
 
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
         filterCondition,
-        filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -803,15 +798,14 @@ export async function getProcessTablePgroongaSearch(
   _orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
   ownerDraftOnly = false,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
         filterCondition: { ...filterCondition, typeOfDataSet: typeOfDataSet ?? 'all' },
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -997,17 +991,16 @@ export async function getProcessTableUuidMentionSearch(
   stateCode?: string | number,
   typeOfDataSet?: string,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ): Promise<ProcessTableResponse & { capped?: boolean }> {
   const filterCondition = withDatasetClassification(params, {
     typeOfDataSet: typeOfDataSet ?? 'all',
   });
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'process',
         filterCondition,
-        filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1256,7 +1249,7 @@ export async function process_hybrid_search(
   stateCode?: string | number,
   typeOfDataSet?: string,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
   const teamId = await getProcessTeamFilter(dataSource, tid);
@@ -1269,7 +1262,7 @@ export async function process_hybrid_search(
     };
   }
   let result: any = {};
-  const bodyParams: { [key: string]: any } = addOpenDataHybridFilters(
+  const bodyParams: { [key: string]: any } = addOpenDataCatalogScope(
     {
       query: queryText,
       version_scope: 'matched',
@@ -1279,7 +1272,7 @@ export async function process_hybrid_search(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
     },
-    openDataFilters,
+    useOpenDataCatalog,
   );
   if (typeof stateCode === 'number') {
     bodyParams['state_code'] = stateCode;
