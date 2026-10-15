@@ -3832,7 +3832,6 @@ describe('flow server classification query contract', () => {
 
   it('preserves open-data publication/source scope together with classification', async () => {
     const api = require('@/services/flows/api');
-    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
     await api.getFlowTableAll(
       params,
       {},
@@ -3841,7 +3840,7 @@ describe('flow server classification query contract', () => {
       '',
       { flowType: 'Product flow' },
       'all',
-      openDataFilters,
+      true,
     );
     expect(rpc).toHaveBeenCalledWith(
       'search_open_data_catalog',

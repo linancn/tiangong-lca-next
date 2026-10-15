@@ -65,7 +65,7 @@ test.skip(
 test('all seven catalog tables fill the viewport and retain controls across screen sizes', async ({
   page,
 }, testInfo) => {
-  await installDatasetListFixture(page);
+  const queries = await installDatasetListFixture(page);
   await signInViaUi(page);
   await expect(page.locator('.ant-message-notice')).toHaveCount(0);
   await selectAppLocaleThroughUi(page, 'zh-CN');
@@ -81,6 +81,16 @@ test('all seven catalog tables fill the viewport and retain controls across scre
       await expect(root.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(50);
       await expect(root.locator('.ant-pagination')).toBeVisible();
       await expect(root.locator('.ant-input-search')).toBeVisible();
+      await expect(root.locator('.tg-open-data-catalog-source-filter')).toHaveCount(0);
+      await expect(
+        root.getByRole('button', { name: /^(全部数据|文献数据|企业数据|商业数据)$/ }),
+      ).toHaveCount(0);
+      const catalogQuery = [...queries].reverse().find((query) => query.kind === kind);
+      expect(catalogQuery?.rpc).toBe('search_open_data_catalog');
+      expect(catalogQuery?.body).toMatchObject({
+        p_source_filter: 'all',
+        p_publication_filter: 'all',
+      });
       await assertToolbarContained(root);
       if (size.width >= 1366) {
         await assertToolbarSingleRow(root);

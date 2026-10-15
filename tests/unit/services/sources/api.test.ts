@@ -1534,8 +1534,7 @@ describe('source server classification query contract', () => {
 
   it('preserves open-data publication/source scope together with classification', async () => {
     const api = require('@/services/sources/api');
-    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
-    await api.getSourceTableAll(params, {}, 'en', 'tg', '', 'all', openDataFilters);
+    await api.getSourceTableAll(params, {}, 'en', 'tg', '', 'all', true);
     expect(rpc).toHaveBeenCalledWith(
       'search_open_data_catalog',
       expect.objectContaining({
