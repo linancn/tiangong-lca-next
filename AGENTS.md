@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
+lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -225,9 +225,10 @@ Route those tasks to:
 - marker-bound version PRs targeting `dev` run the non-browser Release Gate against their exact base/head and retain proof only after the complete gate succeeds; their restricted local push runs Docpact and static preflight, while browser E2E remains a separate manual business-PR-stage decision
 - promotion PRs targeting `main` verify the exact dev proof and tree-identical promotion; the deterministic promotion push also runs only Docpact and static preflight. A marked direct main hotfix instead proves exact base/head, unchanged version, static readiness, and the full non-browser gate
 - canonical version-changing `main` pushes reuse that dev proof only when the exact dev and main two-parent merges, main/dev bases, candidate tree/version, successful job, run attempt, and unexpired artifact payload all match; any direct, squash, rebase, ambiguous, expired, unavailable, or mismatched case fails before publication and requires a new dev candidate
-- canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy the web app and build draft Electron releases in the same workflow run
+- canonical `main` branch pushes create or verify the matching `v*` tag only after proof verification, then deploy TianGong and Atlas web bundles from the same exact qualified release commit and build TianGong draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
 - manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases and always run the full reusable Release Gate
+- recovery dispatch uses the reviewed workflow on `main`; `publication_scope=atlas-web` additionally requires the current Main version's existing tag and exact expected SHA, preserves that tag, and skips TianGong/desktop publication. Atlas binds `APP_BRAND=atlas` to exact project `makers-dtpthotshhpt` / `atlas-lca-platform`; the release workflow owns the SDK, archive and receipt boundary
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 

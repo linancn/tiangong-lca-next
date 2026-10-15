@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
+lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -118,6 +118,14 @@ It does not own:
 | canonical post-merge `main` pushes | read `package.json.version`; require the exact main merge, promotion merge, dev Release PR, main/dev bases, candidate tree, version, successful aggregate job, run attempt, unexpired artifact, and payload all to match; normal pushes fail fast and require a new dev candidate when proof is absent or invalid, then create or verify the matching `v*` tag and continue publication without rerunning candidate acceptance |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and always run the full reusable Release Gate before deploy/release |
+
+## Dual-brand web publication
+
+Normal formal publication has separate TianGong and Atlas jobs, both downstream of successful release context, qualification and tag verification and both checking out exactly `release_head`. TianGong explicitly selects `APP_BRAND=tiangong`; Atlas selects `APP_BRAND=atlas` and binds only `atlas-lca-platform` / `makers-dtpthotshhpt`. A failed brand job fails the workflow; one successful site is not a complete dual-brand release. Desktop publication remains TianGong-only.
+
+Atlas uses isolated runner tooling `@edgeone/makers-sdk@0.1.0`, pinned independently of the application manifest/lock, with exact-ID project/name verification before build and immediately before production deployment. The existing pinned CLI only generates the reviewed routing table. Archive construction preserves `.edgeone/assets`, `.edgeone/routes.json` and adjacent `edgeone.json`, verifies every ZIP entry against the source, and rejects symlinks; ordinary SDK directory mode must not be used because it excludes a root `.edgeone` directory. SDK archive mode uploads the verified ZIP unchanged. Record the created deployment ID before waiting, require the same project/environment/ID and terminal `Success`, and preserve sanitized receipts even on failure. Waiting errors do not authorize an automatic second creation. A public `release-manifest.json` binds brand, exact source/tag, destination, entry hash and workflow run for production verification.
+
+The dispatch default `publication_scope=full` preserves full release recovery. Explicit `atlas-web` is restricted to Main dispatch, an exact expected tag SHA and Main's current package version. It requires a real existing stable version tag contained in Main, runs the same fresh full recovery gate, verifies the existing tag, and excludes TianGong web and all Electron mutation jobs. Recovery uses current reviewed inline workflow logic with the old tag's application checkout; it must not silently require new helper files unavailable at that old source. It does not move tags or accept an older-version Atlas rollback. Execution commands live in `DEV.md`.
 
 ## Adoption Conditions
 
