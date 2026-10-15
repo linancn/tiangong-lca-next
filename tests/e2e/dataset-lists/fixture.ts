@@ -125,10 +125,24 @@ export function datasetRow(kind: Kind, index: number) {
     total_count: 137,
   };
 }
-export type QueryObservation = { rpc: string; body: Record<string, any> };
-export async function installDatasetListFixture(page: Page) {
+export type QueryObservation = {
+  rpc: string;
+  body: Record<string, any>;
+  kind: Kind | 'all';
+  mode: 'list' | 'lexical' | 'smart' | 'reference';
+  keyword: string;
+  current: number;
+};
+type DatasetListFixtureOptions = {
+  /** Visible evidence that a response belongs to the applied query. */
+  labelSearchResults?: boolean;
+};
+export async function installDatasetListFixture(
+  page: Page,
+  options: DatasetListFixtureOptions = {},
+) {
   const queries: QueryObservation[] = [];
-  await page.route('**/rest/v1/**', async (route) => {
+  await page.route(/\/(rest|functions)\/v1\//, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     expect(url.origin).toBe('https://semantic-harness.invalid');
@@ -237,43 +251,75 @@ export async function installDatasetListFixture(page: Page) {
       });
       return;
     }
+    const hybrid = rpc.endsWith('_hybrid_search');
     const display = [
       'list_dataset_display_candidates_filtered',
       'list_displayed_datasets_filtered',
     ].includes(rpc);
     const kind =
-      (body.p_dataset_kind as Kind) ??
+      (body.p_dataset_kind as Kind | 'all' | undefined) ??
       kinds.find((k) => rpc.includes(tables[k])) ??
       kinds.find((k) => rpc.includes(k));
+    if (!kind) {
+      await route.fallback();
+      return;
+    }
     if (
       !display &&
-      (!kind ||
-        (!rpc.startsWith('get_latest_') &&
-          !rpc.startsWith('search_') &&
-          rpc !== 'query_dataset_catalog'))
+      !hybrid &&
+      !rpc.startsWith('get_latest_') &&
+      !rpc.startsWith('search_') &&
+      rpc !== 'query_dataset_catalog'
     ) {
       await route.fallback();
       return;
     }
-    queries.push({ rpc, body });
+    const mode: QueryObservation['mode'] = hybrid
+      ? 'smart'
+      : rpc === 'search_dataset_uuid_mentions_page' || body.p_search_mode === 'uuid'
+        ? 'reference'
+        : body.p_search_mode === 'lexical' || (rpc.startsWith('search_') && !body.p_search_mode)
+          ? 'lexical'
+          : 'list';
+    const keyword = body.p_uuid ?? body.p_query_text ?? body.query_text ?? body.query ?? '';
+
     const filters = body.p_filter_condition ?? body.filter_condition ?? {};
     const total = filters.classification?.length ? 76 : 137;
     const pageSize = body.p_page_size ?? body.page_size ?? 50;
     const current = body.p_page_current ?? body.page_current ?? body.p_page ?? 1;
+    queries.push({ rpc, body, kind, mode, keyword, current });
     const count = Math.max(0, Math.min(pageSize, total - (current - 1) * pageSize));
-    const rows = Array.from({ length: count }, (_, index) => ({
-      ...datasetRow(
-        kind === ('all' as Kind) ? kinds[index % kinds.length] : kind,
-        (current - 1) * pageSize + index,
-      ),
-      total_count: total,
-    }));
+    const rows = Array.from({ length: count }, (_, index) => {
+      const rowKind = kind === 'all' ? kinds[index % kinds.length] : kind;
+      const row = datasetRow(rowKind, (current - 1) * pageSize + index);
+      if (options.labelSearchResults && mode !== 'list') {
+        const name = `${mode}:${keyword} ${row.name}`;
+        const metadata = row.json[dataRoots[rowKind]][infoNames[rowKind]].dataSetInformation;
+        metadata.name = { baseName: langText(name) };
+        metadata['common:name'] = langText(name);
+        metadata['common:shortName'] = langText(name);
+        row.name = name;
+      }
+      return { ...row, total_count: total };
+    });
+    if (hybrid) {
+      // Process/Flow reject legacy latest-version envelopes. Other catalog
+      // adapters accept the shared data envelope without matched-version metadata.
+      await route.fulfill({
+        json: {
+          data: rows,
+          total_count: total,
+          ...(['process', 'flow'].includes(kind) ? { versionScope: 'matched' } : {}),
+        },
+      });
+      return;
+    }
     if (display) {
       await route.fulfill({
         json: {
           total,
           data: rows.map((row, index) => {
-            const rowKind = kind === ('all' as Kind) ? kinds[index % kinds.length] : kind;
+            const rowKind = kind === 'all' ? kinds[index % kinds.length] : kind;
             return {
               dataset_kind: rowKind,
               dataset_id: row.id,
@@ -307,7 +353,7 @@ export async function installDatasetListFixture(page: Page) {
           source_modified_at: row.modified_at,
           source_team_id: row.team_id,
           matched_by: 'json_reference',
-          matched_entity_table: tables[kind],
+          matched_entity_table: kind === 'all' ? 'all' : tables[kind],
           rank: 1,
           total_count: total,
         })),

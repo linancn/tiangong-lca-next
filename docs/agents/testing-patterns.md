@@ -190,6 +190,13 @@ Browser semantic E2E pattern:
 - when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
 - when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
 
+Dataset search submission pattern:
+
+- keep Checkbox mocks controlled by their `checked` prop so tests exercise mutual exclusion like native Ant Design
+- cover the native clear event (`onSearch` with `source: clear`) separately from Search/Enter; clearing must not publish draft mode
+- hold replacement reloads while resolving earlier requests to prove accepted submissions invalidate stale results synchronously, rather than relying on the next request's epoch increment
+- pair request mode/keyword/page observations with visible result identity and test each selector tab's independent draft and accepted query
+
 Release Gate proof pattern:
 
 - emit release proof only after every exact dev Release PR non-browser gate step succeeds, and bind repository, dev PR number, main baseline, dev base, candidate commit/tree/version, workflow path, run ID, run attempt, and artifact name in one short-lived artifact; browser qualification is deliberately outside this scope

@@ -1,3 +1,4 @@
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
 import {
   ResponsiveDataListViewport,
@@ -58,7 +59,10 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
-  const [openAI, setOpenAI] = useState<boolean>(false);
+  const tgSearch = useSubmittedDatasetSearch();
+  const coSearch = useSubmittedDatasetSearch();
+  const mySearch = useSubmittedDatasetSearch();
+  const teSearch = useSubmittedDatasetSearch();
   // const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tgActionRefSelect = useRef<ActionType | undefined>(undefined);
   const coActionRefSelect = useRef<ActionType | undefined>(undefined);
@@ -180,30 +184,38 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTgKeyWord(value);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setCoKeyWord(value);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+  const onTeSearch: SearchProps['onSearch'] = (value) => {
+    teSearch.submitSearch(value);
+    teRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTeKeyWord(value);
+    setTeKeyWord(value);
     teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setMyKeyWord(value);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -340,7 +352,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   <Search
                     name={'tg'}
                     placeholder={
-                      openAI
+                      tgSearch.draftMode === 'smart'
                         ? intl.formatMessage({ id: 'pages.search.placeholder' })
                         : intl.formatMessage({ id: 'pages.search.keyWord' })
                     }
@@ -353,8 +365,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={tgSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        tgSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -391,18 +404,25 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   () => currentContentLanguageRef.current,
                   tgRequestEpochRef,
                   async () => {
+                    const search = tgSearch.submittedRef.current;
                     const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                    if (tgKeyWord.length > 0) {
-                      if (openAI) {
-                        return flow_hybrid_search(params, params.contentLanguage, 'tg', tgKeyWord, {
-                          flowType: flowTypeFilter,
-                        });
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
+                        return flow_hybrid_search(
+                          params,
+                          params.contentLanguage,
+                          'tg',
+                          search.keyword,
+                          {
+                            flowType: flowTypeFilter,
+                          },
+                        );
                       }
                       return getFlowTablePgroongaSearch(
                         params,
                         params.contentLanguage,
                         'tg',
-                        tgKeyWord,
+                        search.keyword,
                         {
                           flowType: flowTypeFilter,
                           asInput: asInput,
@@ -444,7 +464,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   <Search
                     name={'co'}
                     placeholder={
-                      openAI
+                      coSearch.draftMode === 'smart'
                         ? intl.formatMessage({ id: 'pages.search.placeholder' })
                         : intl.formatMessage({ id: 'pages.search.keyWord' })
                     }
@@ -457,8 +477,9 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                 filter: (
                   <Space wrap>
                     <Checkbox
+                      checked={coSearch.draftMode === 'smart'}
                       onChange={(e) => {
-                        setOpenAI(e.target.checked);
+                        coSearch.setDraftMode(e.target.checked ? 'smart' : 'normal');
                       }}
                     >
                       <FormattedMessage
@@ -495,18 +516,25 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   () => currentContentLanguageRef.current,
                   coRequestEpochRef,
                   async () => {
+                    const search = coSearch.submittedRef.current;
                     const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                    if (coKeyWord.length > 0) {
-                      if (openAI) {
-                        return flow_hybrid_search(params, params.contentLanguage, 'co', coKeyWord, {
-                          flowType: flowTypeFilter,
-                        });
+                    if (search.keyword.length > 0) {
+                      if (search.mode === 'smart') {
+                        return flow_hybrid_search(
+                          params,
+                          params.contentLanguage,
+                          'co',
+                          search.keyword,
+                          {
+                            flowType: flowTypeFilter,
+                          },
+                        );
                       }
                       return getFlowTablePgroongaSearch(
                         params,
                         params.contentLanguage,
                         'co',
-                        coKeyWord,
+                        search.keyword,
                         {
                           flowType: flowTypeFilter,
                           asInput: asInput,
@@ -583,13 +611,14 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   () => currentContentLanguageRef.current,
                   teRequestEpochRef,
                   async () => {
+                    const search = teSearch.submittedRef.current;
                     const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                    if (teKeyWord.length > 0) {
+                    if (search.keyword.length > 0) {
                       return getFlowTablePgroongaSearch(
                         params,
                         params.contentLanguage,
                         'te',
-                        teKeyWord,
+                        search.keyword,
                         {
                           flowType: flowTypeFilter,
                           asInput: asInput,
@@ -669,13 +698,14 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
                   () => currentContentLanguageRef.current,
                   myRequestEpochRef,
                   async () => {
+                    const search = mySearch.submittedRef.current;
                     const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-                    if (myKeyWord.length > 0) {
+                    if (search.keyword.length > 0) {
                       return getFlowTablePgroongaSearch(
                         params,
                         params.contentLanguage,
                         'my',
-                        myKeyWord,
+                        search.keyword,
                         {
                           flowType: flowTypeFilter,
                           asInput: asInput,

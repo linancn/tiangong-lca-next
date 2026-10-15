@@ -1,4 +1,5 @@
 import DatasetClassificationFilter from '@/components/DatasetClassificationFilter';
+import { useSubmittedDatasetSearch } from '@/pages/Utils/useSubmittedDatasetSearch';
 import {
   ResponsiveDataListViewport,
   dataListPagination,
@@ -43,9 +44,13 @@ const { Search } = Input;
 
 const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, filterTabs }) => {
   const [tgKeyWord, setTgKeyWord] = useState<string>('');
+  const tgSearch = useSubmittedDatasetSearch('smart');
   const [coKeyWord, setCoKeyWord] = useState<string>('');
+  const coSearch = useSubmittedDatasetSearch('smart');
   const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const mySearch = useSubmittedDatasetSearch('smart');
   const [teamKeyWord, setTeamKeyWord] = useState<string>('');
+  const teamSearch = useSubmittedDatasetSearch('smart');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>(() => {
@@ -143,29 +148,37 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
     }
   };
 
-  const onTgSearch: SearchProps['onSearch'] = async (value) => {
+  const onTgSearch: SearchProps['onSearch'] = (value) => {
+    tgSearch.submitSearch(value);
+    tgRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setTgKeyWord(value);
+    setTgKeyWord(value);
     tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
     tgActionRefSelect.current?.reload();
   };
 
-  const onTeamSearch: SearchProps['onSearch'] = async (value) => {
-    await setTeamKeyWord(value);
+  const onTeamSearch: SearchProps['onSearch'] = (value) => {
+    teamSearch.submitSearch(value);
+    teamRequestEpochRef.current += 1;
+    setTeamKeyWord(value);
     teamActionRefSelect.current?.setPageInfo?.({ current: 1 });
     teamActionRefSelect.current?.reload();
   };
 
-  const onCoSearch: SearchProps['onSearch'] = async (value) => {
+  const onCoSearch: SearchProps['onSearch'] = (value) => {
+    coSearch.submitSearch(value);
+    coRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setCoKeyWord(value);
+    setCoKeyWord(value);
     coActionRefSelect.current?.setPageInfo?.({ current: 1 });
     coActionRefSelect.current?.reload();
   };
 
-  const onMySearch: SearchProps['onSearch'] = async (value) => {
+  const onMySearch: SearchProps['onSearch'] = (value) => {
+    mySearch.submitSearch(value);
+    myRequestEpochRef.current += 1;
     setSelectedRowKeys([]);
-    await setMyKeyWord(value);
+    setMyKeyWord(value);
     myActionRefSelect.current?.setPageInfo?.({ current: 1 });
     myActionRefSelect.current?.reload();
   };
@@ -368,12 +381,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
                   () => currentContentLanguageRef.current,
                   tgRequestEpochRef,
                   async () => {
-                    if (tgKeyWord.length > 0) {
+                    const submittedKeyword = tgSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return contact_hybrid_search(
                         params,
                         params.contentLanguage,
                         'tg',
-                        tgKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
@@ -443,12 +457,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
                   () => currentContentLanguageRef.current,
                   coRequestEpochRef,
                   async () => {
-                    if (coKeyWord.length > 0) {
+                    const submittedKeyword = coSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return contact_hybrid_search(
                         params,
                         params.contentLanguage,
                         'co',
-                        coKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
@@ -518,12 +533,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
                   () => currentContentLanguageRef.current,
                   myRequestEpochRef,
                   async () => {
-                    if (myKeyWord.length > 0) {
+                    const submittedKeyword = mySearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return contact_hybrid_search(
                         params,
                         params.contentLanguage,
                         'my',
-                        myKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
@@ -596,12 +612,13 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
                   () => currentContentLanguageRef.current,
                   teamRequestEpochRef,
                   async () => {
-                    if (teamKeyWord.length > 0) {
+                    const submittedKeyword = teamSearch.submittedRef.current.keyword;
+                    if (submittedKeyword.length > 0) {
                       return contact_hybrid_search(
                         params,
                         params.contentLanguage,
                         'te',
-                        teamKeyWord,
+                        submittedKeyword,
                         {},
                       );
                     }
