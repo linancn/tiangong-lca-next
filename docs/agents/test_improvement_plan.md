@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 46fb8f2228e1ad631612482bba34a52e3a902c4d
+lastReviewedNote: 'Reviewed for Platform #1253 at 46fb8f22: Atlas temporary paths are initialized at a supported runner step through RUNNER_TEMP and GITHUB_ENV. Actions semantic lint reproduces the prior rejected dispatch and passes the corrected workflow; executed path propagation with spaces and downstream receipt creation passes. Exact source, destination, old-tag recovery, full-gate and production-verification requirements remain unchanged. No live publication is claimed by this review.'
 ---
 
 # Testing Strategy

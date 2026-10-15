@@ -38,6 +38,10 @@ describe('build.yml release-context canonical admission (executed workflow guard
   const work = path.join(folder, 'work');
   let baseSha = '';
   let headSha = '';
+  let workflowHotfixSha = '';
+  let nextVersionSha = '';
+  let branchOnlySha = '';
+  let nonancestorSha = '';
   let blockFile: string;
   let outputFile: string;
   let summaryFile: string;
@@ -96,6 +100,8 @@ describe('build.yml release-context canonical admission (executed workflow guard
         GITHUB_SHA: headSha,
         PUSH_BEFORE_SHA: baseSha,
         REQUESTED_TAG_NAME: '',
+        REQUESTED_PUBLICATION_SCOPE: '',
+        EXPECTED_RELEASE_SHA: '',
         GITHUB_REPOSITORY: CANONICAL_REPOSITORY,
         GITHUB_REPOSITORY_ID: CANONICAL_REPOSITORY_ID,
         GITHUB_REPOSITORY_OWNER_ID: CANONICAL_REPOSITORY_OWNER_ID,
@@ -122,16 +128,38 @@ describe('build.yml release-context canonical admission (executed workflow guard
     git('config', 'user.name', 'Release guard fixture');
     git('config', 'user.email', 'release-guard@example.invalid');
     git('remote', 'add', 'origin', CANONICAL_URL);
+    writeCommit('0.0.101', 'initial release history');
     baseSha = writeCommit('0.0.102', 'base 0.0.102');
     git('push', '-q', 'origin', 'main');
     headSha = writeCommit('0.0.103', 'release 0.0.103');
     // The workflow runs after GitHub accepted this main push, so origin/main already
     // contains the release head; the guard's ancestry check depends on it.
     git('push', '-q', 'origin', 'main');
+    git('tag', 'v0.0.102', baseSha);
+    git('tag', 'v0.0.103', headSha);
+    git('tag', 'v9.9.999', headSha);
+    writeFileSync(path.join(work, 'workflow.txt'), 'Atlas deployment wiring\n');
+    git('add', 'workflow.txt');
+    git('commit', '-qm', 'unchanged-version workflow hotfix');
+    workflowHotfixSha = git('rev-parse', 'HEAD');
+    nextVersionSha = writeCommit('0.0.104', 'next release candidate');
+    branchOnlySha = writeCommit('0.0.105', 'branch-only release candidate');
+    git('branch', 'v0.0.105', branchOnlySha);
+    git('checkout', '-q', '--orphan', 'unmerged-release');
+    nonancestorSha = writeCommit('0.0.104', 'unmerged same-version release');
+    git('tag', 'v0.0.104', nonancestorSha);
+    git('checkout', '-q', 'main');
+    git('push', '-q', 'origin', '--tags');
     blockFile = path.join(folder, 'release-target.sh');
     writeFileSync(blockFile, extractReleaseTargetBlock());
     outputFile = path.join(folder, 'github-output.txt');
     summaryFile = path.join(folder, 'github-step-summary.txt');
+  });
+
+  beforeEach(() => {
+    // A previous case may advance main to the workflow hotfix or next product
+    // version. Restore the authoritative fixture ref without changing its tags.
+    git('push', '-q', '--force', 'origin', `${headSha}:refs/heads/main`);
   });
 
   afterAll(() => {
@@ -145,6 +173,151 @@ describe('build.yml release-context canonical admission (executed workflow guard
     expect(outputs.tag_name).toBe('v0.0.103');
     expect(outputs.release_head).toBe(headSha);
     expect(outputs.release_base).toBe(baseSha);
+    expect(outputs.publication_scope).toBe('full');
+  });
+
+  function dispatch(overrides: Record<string, string> = {}) {
+    return runGuard({
+      GITHUB_EVENT_NAME: 'workflow_dispatch',
+      GITHUB_SHA: workflowHotfixSha,
+      REQUESTED_TAG_NAME: 'v0.0.103',
+      REQUESTED_PUBLICATION_SCOPE: 'atlas-web',
+      EXPECTED_RELEASE_SHA: headSha,
+      ...overrides,
+    });
+  }
+
+  it('backfills Atlas from the exact existing tag using a newer unchanged-version main workflow', () => {
+    git('push', '-q', '--force', 'origin', `${workflowHotfixSha}:refs/heads/main`);
+    const { status, outputs } = dispatch();
+    expect(status).toBe(0);
+    expect(outputs.should_release).toBe('true');
+    expect(outputs.publication_scope).toBe('atlas-web');
+    expect(outputs.tag_name).toBe('v0.0.103');
+    expect(outputs.release_head).toBe(headSha);
+    expect(outputs.release_head).not.toBe(workflowHotfixSha);
+    expect(outputs.release_base).toBe(baseSha);
+    expect(git('rev-parse', 'v0.0.103')).toBe(headSha);
+  });
+
+  it.each(['', 'full'])('retains full existing-tag recovery for scope %j', (scope) => {
+    const { status, outputs } = dispatch({
+      REQUESTED_TAG_NAME: 'v0.0.102',
+      REQUESTED_PUBLICATION_SCOPE: scope,
+      EXPECTED_RELEASE_SHA: '',
+    });
+    expect(status).toBe(0);
+    expect(outputs.should_release).toBe('true');
+    expect(outputs.publication_scope).toBe('full');
+    expect(outputs.release_head).toBe(baseSha);
+    expect(outputs.tag_name).toBe('v0.0.102');
+  });
+
+  it('skips a main workflow hotfix whose unchanged version is already tagged at the older commit', () => {
+    git('push', '-q', '--force', 'origin', `${workflowHotfixSha}:refs/heads/main`);
+    const { status, outputs } = runGuard({
+      GITHUB_SHA: workflowHotfixSha,
+      PUSH_BEFORE_SHA: headSha,
+    });
+    expect(status).toBe(0);
+    expect(outputs.should_release).toBe('false');
+    expect(outputs.tag_name).toBe('v0.0.103');
+    expect(outputs.publication_scope).toBe('full');
+    expect(git('rev-parse', 'v0.0.103')).toBe(headSha);
+  });
+
+  it.each(['unknown', 'Atlas-web', 'atlas-web full'])('rejects invalid scope %j', (scope) => {
+    const { status, outputs } = dispatch({ REQUESTED_PUBLICATION_SCOPE: scope });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it.each(['', '1234', 'A'.repeat(40), 'g'.repeat(40), 'a'.repeat(39), 'a'.repeat(41)])(
+    'rejects Atlas recovery without an exact lowercase commit identity: %j',
+    (sha) => {
+      const { status, outputs } = dispatch({ EXPECTED_RELEASE_SHA: sha });
+      expect(status).not.toBe(0);
+      expect(outputs.should_release).not.toBe('true');
+    },
+  );
+
+  it('rejects Atlas recovery when the expected commit differs from the tag', () => {
+    const { status, outputs } = dispatch({ EXPECTED_RELEASE_SHA: workflowHotfixSha });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it('rejects a stale Atlas version after main advances to a new product version', () => {
+    git('push', '-q', '--force', 'origin', `${nextVersionSha}:refs/heads/main`);
+    const { status, outputs } = dispatch();
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it.each(['', 'v8.8.888', 'main'])('rejects missing or non-tag recovery target %j', (tag) => {
+    const { status, outputs } = dispatch({ REQUESTED_TAG_NAME: tag });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it('rejects an existing tag whose spelling does not match its package version', () => {
+    const { status, outputs } = dispatch({ REQUESTED_TAG_NAME: 'v9.9.999' });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it('rejects a version-shaped branch when no corresponding tag exists', () => {
+    git('push', '-q', '--force', 'origin', `${branchOnlySha}:refs/heads/main`);
+    const { status, outputs } = dispatch({
+      REQUESTED_TAG_NAME: 'v0.0.105',
+      EXPECTED_RELEASE_SHA: branchOnlySha,
+    });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+    expect(git('rev-parse', 'refs/heads/v0.0.105')).toBe(branchOnlySha);
+  });
+
+  it.each([
+    ['atlas-web', 'refs/heads/dev', 'dev'],
+    ['full', 'refs/heads/dev', 'dev'],
+    ['atlas-web', 'refs/tags/v0.0.103', 'v0.0.103'],
+    ['full', 'refs/tags/v0.0.103', 'v0.0.103'],
+  ])('rejects %s dispatch from %s', (scope, ref, refName) => {
+    const { status, outputs } = dispatch({
+      GITHUB_REF: ref,
+      GITHUB_REF_NAME: refName,
+      REQUESTED_PUBLICATION_SCOPE: scope,
+    });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it('rejects Atlas-only scope on a push event', () => {
+    const { status, outputs } = runGuard({ REQUESTED_PUBLICATION_SCOPE: 'atlas-web' });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+  });
+
+  it('does not admit a same-version exact tag that is outside main history', () => {
+    git('push', '-q', '--force', 'origin', `${nextVersionSha}:refs/heads/main`);
+    const { status, outputs } = dispatch({
+      REQUESTED_TAG_NAME: 'v0.0.104',
+      EXPECTED_RELEASE_SHA: nonancestorSha,
+    });
+    expect(status).not.toBe(0);
+    expect(outputs.should_release).not.toBe('true');
+    expect(git('rev-parse', 'v0.0.104')).toBe(nonancestorSha);
+  });
+
+  it('retains a nonancestor skip for full existing-tag recovery', () => {
+    const { status, outputs } = dispatch({
+      REQUESTED_TAG_NAME: 'v0.0.104',
+      REQUESTED_PUBLICATION_SCOPE: 'full',
+      EXPECTED_RELEASE_SHA: '',
+    });
+    expect(status).toBe(0);
+    expect(outputs.should_release).toBe('false');
+    expect(outputs.publication_scope).toBe('full');
   });
 
   it('denies the legacy repository name', () => {

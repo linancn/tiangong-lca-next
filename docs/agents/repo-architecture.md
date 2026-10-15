@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: ec30213b87301d137ef14cc8db887fc90238a975
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
+lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -83,7 +83,7 @@ Sidebar collapse and expansion remain owned by the native ProLayout component, i
 
 `config/brandAssets.ts` connects the shared profile to in-memory development middleware and a Webpack asset plugin. `scripts/branding/assets.cjs` generates the selected manifest and the 404, maintenance and OAuth-bridge shell presentation without editing tracked templates. The bridge script and hosted routing/noindex contracts remain intact. Static assets live under `public/brands/atlas`; desktop icons under `icons/atlas` come from the supplied rounded ATLAS asset package.
 
-`scripts/branding/electron-builder.cjs` adapts desktop package settings from the same profile. `scripts/branding/package-local.cjs` builds and packages locally with publication disabled. The existing release workflow and version-tag contract are unchanged; adding a deployed ATLAS target requires a separately reviewed release configuration. Local commands and override precedence live in `DEV.md`.
+`scripts/branding/electron-builder.cjs` adapts desktop package settings from the same profile. `scripts/branding/package-local.cjs` builds and packages locally with publication disabled. Formal web publication builds both brands from one qualified release SHA; Atlas uses the exact EdgeOne project binding and sanitized source/archive/deployment receipts in `build.yml`. Desktop release identity stays TianGong-only. The existing canonical version-tag and candidate-proof contracts remain unchanged. Local commands and override precedence live in `DEV.md`.
 
 ## Runtime Model
 

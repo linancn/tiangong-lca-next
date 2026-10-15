@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 105edeb697658259ad022c661c6587b72e772ab4
-lastReviewedNote: 'Reviewed for Platform #1244 at ec30213b8: seven catalogs and seven selector surfaces separate draft controls from accepted search snapshots. Search/Enter commits query and mode, invalid reference UUIDs preserve results/page, native clear remains an edit, and accepted submissions invalidate earlier requests before reload. Architecture and proof guidance updated; dependency/backend ownership, gate/release policy and historical coverage baseline preserved. Browser execution and release state remain in Issue/PR evidence.'
+lastReviewedCommit: 46fb8f2228e1ad631612482bba34a52e3a902c4d
+lastReviewedNote: 'Reviewed for Platform #1253 at 46fb8f22: Atlas temporary paths are initialized at a supported runner step through RUNNER_TEMP and GITHUB_ENV. Actions semantic lint reproduces the prior rejected dispatch and passes the corrected workflow; executed path propagation with spaces and downstream receipt creation passes. Exact source, destination, old-tag recovery, full-gate and production-verification requirements remain unchanged. No live publication is claimed by this review.'
 ---
 
 # Testing Troubleshooting
@@ -62,6 +62,15 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused semantic localization E2E | `pnpm e2e:dev <Playwright arguments>` |
 | release environment diagnosis | `pnpm e2e:env:doctor --format json` |
 | exact pre-fixture continuation | `pnpm e2e:release:resume` (no arguments) |
+
+## Atlas publication recovery
+
+- If dispatch returns `Unrecognized named-value: runner`, run Actions semantic lint and check context availability. Job-level `env` cannot read `runner.temp`; initialize paths in a runner step through `RUNNER_TEMP` and `GITHUB_ENV`. A rejected dispatch creates no deployment.
+
+- If exact project lookup fails, verify the configured token's access to `makers-dtpthotshhpt`; never substitute a name-only deployment or auto-create a project.
+- If a deployment ID is retained but waiting fails, query that exact ID and inspect its state before any rerun. Do not infer that the remote deployment stopped.
+- If hidden routing/assets disappear, inspect the ZIP layout and use SDK archive mode; ordinary directory mode at `dist-edgeone` excludes `.edgeone`.
+- If `atlas-web` admission fails, use the current version's real tag and exact SHA from Main, not a branch, current workflow SHA, older version or new tag. The safe command is in `DEV.md`.
 
 ## Failure Diagnosis
 
