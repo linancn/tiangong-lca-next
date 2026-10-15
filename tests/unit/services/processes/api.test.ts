@@ -4995,8 +4995,7 @@ describe('process server classification query contract', () => {
 
   it('preserves open-data publication/source scope together with classification', async () => {
     const api = require('@/services/processes/api');
-    const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
-    await api.getProcessTableAll(params, {}, 'en', 'tg', '', 'all', 'all', openDataFilters);
+    await api.getProcessTableAll(params, {}, 'en', 'tg', '', 'all', 'all', true);
     expect(rpc).toHaveBeenCalledWith(
       'search_open_data_catalog',
       expect.objectContaining({

@@ -1425,8 +1425,7 @@ describe('Contacts API Service', () => {
 
     it('preserves open-data publication/source scope together with classification', async () => {
       const api = require('@/services/contacts/api');
-      const openDataFilters = { sourceFilter: 'all', publicationFilter: 'all' };
-      await api.getContactTableAll(params, {}, 'en', 'tg', '', 'all', openDataFilters);
+      await api.getContactTableAll(params, {}, 'en', 'tg', '', 'all', true);
       expect(rpc).toHaveBeenCalledWith(
         'search_open_data_catalog',
         expect.objectContaining({

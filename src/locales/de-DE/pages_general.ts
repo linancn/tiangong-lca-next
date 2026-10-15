@@ -89,10 +89,6 @@ export default {
   'pages.tab.title.tgdata': 'TianGong-Daten',
   'pages.tab.title.co': 'Geschäftsdaten',
 
-  'pages.openData.source.filter': 'Datenquellenfilter',
-  'pages.openData.source.all': 'Alle Daten',
-  'pages.openData.source.literature': 'Literaturdaten',
-  'pages.openData.source.enterprise': 'Unternehmensdaten',
   'pages.openData.publication.filter': 'Veröffentlichungsfilter',
   'pages.openData.publication.status': 'Veröffentlichungsstatus',
   'pages.openData.publication.all': 'Alle Veröffentlichungsstatus',

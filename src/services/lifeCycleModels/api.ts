@@ -38,11 +38,7 @@ import {
   jsonToList,
 } from '../general/util';
 import { getProcessDetailByIdsAndVersion } from '../processes/api';
-import {
-  addOpenDataHybridFilters,
-  queryMappedOpenDataCatalog,
-  type OpenDataCatalogFilters,
-} from '../openDataCatalog/api';
+import { addOpenDataCatalogScope, queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import { genProcessName } from '../processes/util';
 import type {
   LifeCycleModelGraphData,
@@ -803,16 +799,15 @@ export async function getLifeCycleModelTableAll(
   dataSource: string,
   tid: string,
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
         filterCondition,
-        filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -955,15 +950,14 @@ export async function getLifeCycleModelTablePgroongaSearch(
   stateCode?: string | number,
   _orderBy?: LifeCycleModelSearchOrderBy,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
         filterCondition,
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1085,15 +1079,14 @@ export async function getLifeCycleModelTableUuidMentionSearch(
   uuid: string,
   stateCode?: string | number,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'lifecyclemodel',
         filterCondition,
-        filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -1132,7 +1125,7 @@ export async function lifeCycleModel_hybrid_search(
   queryText: string,
   rawFilterCondition: any,
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
   tid: string | [] = [],
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
@@ -1141,7 +1134,7 @@ export async function lifeCycleModel_hybrid_search(
     return { data: [], success: true, page: params.current ?? 1, total: 0 };
   }
   let result: any = {};
-  const bodyParams: Record<string, any> = addOpenDataHybridFilters(
+  const bodyParams: Record<string, any> = addOpenDataCatalogScope(
     {
       query: queryText,
       filter_condition: filterCondition,
@@ -1149,7 +1142,7 @@ export async function lifeCycleModel_hybrid_search(
       page_size: params.pageSize ?? 10,
       page_current: params.current ?? 1,
     },
-    openDataFilters,
+    useOpenDataCatalog,
   );
   if (typeof stateCode === 'number') {
     bodyParams.state_code = stateCode;

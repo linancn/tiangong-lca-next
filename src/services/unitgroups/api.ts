@@ -32,7 +32,7 @@ import {
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
 import { invokeFoundationHybridSearch } from '../general/hybridSearch';
-import { queryMappedOpenDataCatalog, type OpenDataCatalogFilters } from '../openDataCatalog/api';
+import { queryMappedOpenDataCatalog } from '../openDataCatalog/api';
 import { resolveTableSort } from '../general/tableSort';
 import { genUnitGroupJsonOrdered } from './util';
 
@@ -289,16 +289,15 @@ export async function getUnitGroupTableAll(
   dataSource: string,
   tid: string | [],
   stateCode?: string | number,
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
   const { field: sortBy, order: orderBy } = resolveTableSort(sort, 'modified_at');
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'unitgroup',
         filterCondition,
-        filters: openDataFilters,
         mode: 'list',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -390,15 +389,14 @@ export async function getUnitGroupTablePgroongaSearch(
   rawFilterCondition: any,
   stateCode?: string | number,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'unitgroup',
         filterCondition,
-        filters: openDataFilters,
         mode: 'lexical',
         pageCurrent: params.current,
         pageSize: params.pageSize,
@@ -475,7 +473,7 @@ export async function unitgroup_hybrid_search(
   rawFilterCondition: unknown,
   stateCode?: string | number,
   tid: string | [] = [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, rawFilterCondition);
   return invokeFoundationHybridSearch({
@@ -488,7 +486,7 @@ export async function unitgroup_hybrid_search(
     queryText,
     stateCode,
     teamId: await getUnitGroupTeamFilter(dataSource, tid),
-    openDataFilters,
+    useOpenDataCatalog,
   });
 }
 
@@ -499,15 +497,14 @@ export async function getUnitGroupTableUuidMentionSearch(
   uuid: string,
   stateCode?: string | number,
   tid?: string | [],
-  openDataFilters?: OpenDataCatalogFilters,
+  useOpenDataCatalog?: boolean,
 ) {
   const filterCondition = withDatasetClassification(params, {});
-  if (dataSource === 'tg' && openDataFilters) {
+  if (dataSource === 'tg' && useOpenDataCatalog) {
     return queryMappedOpenDataCatalog(
       {
         datasetKind: 'unitgroup',
         filterCondition,
-        filters: openDataFilters,
         mode: 'uuid',
         pageCurrent: params.current,
         pageSize: params.pageSize,

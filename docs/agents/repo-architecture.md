@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: 1352f442802ebdc64bcfaeeac71830d3ec84c600
-lastReviewedNote: 'Reviewed for Platform #1249 at 1352f442: formal Atlas web publication uses the same qualified release SHA as TianGong with exact project ID/name binding, preserved hidden routing ZIP and sanitized creation-before-wait receipts. Current-version Atlas-only recovery keeps the existing tag/SHA and fresh full gate while excluding TianGong/desktop mutations. Local package/SDK compatibility and executed workflow guards were reviewed; production permission/publication remain tracked Issue evidence. Application dependencies and source coverage policy are unchanged.'
+lastReviewedCommit: 4f8dcb384dcb3d994db5d0f94dfbccb87926e5e8
+lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -137,6 +137,8 @@ Rules:
 ### Unified dataset lists and selection
 
 The seven dataset catalogs reuse the same layout across `tg`, `co`, `ex`, `my`, and `te` sources. `src/components/ResponsiveDataList/**` owns native Table/ProTable column ordering, toolbar composition, pagination, and viewport sizing. Search sits in the table toolbar; classification is a toolbar filter rather than a displayed column. Duplicate data-source headings are omitted. The base order is index, name, location, reference year, dataset type, and version, followed by business columns and actions. Missing metadata renders `—`; available metadata is read through the common field aliases, including Flow `locationOfSupply`. Exact-version view, edit and selection actions retain their original identities.
+
+The seven Open Data catalogs show all sources without a source toggle. Their requests explicitly opt into the catalog query path through `getOpenDataCatalogArgs`; the service retains fixed `all` source/publication values required by the current RPC/Hybrid protocol. This routing choice is independent of UI filter state. Callers that omit it, including reference selectors and analysis candidates, retain their existing authorization, version, count and search semantics.
 
 Search and the native filter/action/settings area share the complete toolbar width instead of reserving equal halves. Wide layouts keep their visible controls on one aligned row; constrained pages and drawers reflow controls without clipping or hiding their actions. The common rule applies to every consumer of the shared list toolbar.
 
