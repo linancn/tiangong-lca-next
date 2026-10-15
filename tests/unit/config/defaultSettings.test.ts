@@ -42,6 +42,24 @@ describe('default settings config (config/defaultSettings.ts)', () => {
     expect(defaultLoginSubtitle).toBe("World's Largest Open LCA Data Platform");
   });
 
+  it('keeps Atlas navigation dark while the initial global theme remains light', () => {
+    process.env.APP_BRAND = 'atlas';
+    const settings = require('../../../config/defaultSettings').default;
+    expect(settings).toMatchObject({
+      layout: 'side',
+      navTheme: 'light',
+      menuProps: { theme: 'dark' },
+      token: { sider: { colorMenuBackground: '#001529' } },
+    });
+  });
+
+  it('keeps TianGong native menu selection unchanged', () => {
+    const settings = require('../../../config/defaultSettings').default;
+    expect(settings.navTheme).toBe('light');
+    expect(settings.menuProps).toBeUndefined();
+    expect(settings.token).toEqual({});
+  });
+
   it('reads APP_LAYOUT from env when value is supported', () => {
     process.env.APP_LAYOUT = ' top ';
 

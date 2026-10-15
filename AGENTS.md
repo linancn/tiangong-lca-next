@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: Atlas mode-specific sidebar tokens, native dark Menu adaptation and synthetic presentation proof remain within the existing frontend owner. Branch, permission, release, full-gate and workspace integration contracts are unchanged.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: Atlas native dark navigation in both page modes and a menu-scoped theme provider remain within frontend ownership. Branch, permission, release, full-gate and workspace integration contracts remain applicable.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

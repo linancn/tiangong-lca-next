@@ -12,29 +12,33 @@ test.skip(
 
 const palettes = {
   light: {
-    background: 'rgb(255, 255, 255)',
-    text: 'rgb(83, 103, 119)',
+    background: 'rgb(0, 21, 41)',
+    text: 'rgba(255, 255, 255, 0.65)',
     headerText: 'rgb(83, 103, 119)',
-    title: 'rgb(24, 50, 71)',
-    selected: 'rgb(47, 107, 154)',
-    selectedBackground: 'rgb(232, 240, 247)',
-    hover: 'rgb(24, 50, 71)',
-    hoverBackground: 'rgb(240, 245, 250)',
-    collapseBackground: 'rgb(234, 240, 243)',
-    popup: 'rgb(255, 255, 255)',
+    title: 'rgb(255, 255, 255)',
+    selected: 'rgb(255, 255, 255)',
+    selectedBackground: 'rgb(47, 107, 154)',
+    hover: 'rgb(255, 255, 255)',
+    hoverBackground: 'rgba(0, 0, 0, 0)',
+    collapseBackground: 'rgb(0, 33, 64)',
+    popup: 'rgb(0, 21, 41)',
+    contentBackground: 'rgb(242, 244, 244)',
+    containerBackground: 'rgb(255, 255, 255)',
     focus: 'rgb(78, 131, 166)',
   },
   dark: {
-    background: 'rgb(6, 22, 42)',
-    text: 'rgb(186, 202, 218)',
+    background: 'rgb(0, 21, 41)',
+    text: 'rgba(255, 255, 255, 0.65)',
     headerText: 'rgb(173, 188, 201)',
-    title: 'rgb(245, 243, 236)',
+    title: 'rgb(255, 255, 255)',
     selected: 'rgb(255, 255, 255)',
-    selectedBackground: 'rgb(35, 73, 105)',
+    selectedBackground: 'rgb(85, 121, 162)',
     hover: 'rgb(255, 255, 255)',
-    hoverBackground: 'rgb(21, 51, 77)',
-    collapseBackground: 'rgb(22, 51, 77)',
-    popup: 'rgb(16, 43, 67)',
+    hoverBackground: 'rgba(0, 0, 0, 0)',
+    collapseBackground: 'rgb(0, 33, 64)',
+    popup: 'rgb(0, 21, 41)',
+    contentBackground: 'rgb(8, 21, 34)',
+    containerBackground: 'rgb(16, 35, 55)',
     // The primary-text-hover token retains contrast on hovered dark surfaces.
     focus: 'rgb(124, 152, 181)',
   },
@@ -153,6 +157,24 @@ function themeToggle(scope: Page | Locator) {
   return scope.getByRole('button', { name: message('pages.theme.toggleDarkMode'), exact: true });
 }
 
+async function expectGlobalContentMode(page: Page, mode: Mode) {
+  await expect(page.locator('.atlas-app-shell .ant-pro-layout-container')).toHaveCSS(
+    'background-color',
+    palettes[mode].contentBackground,
+  );
+  await expect(page.locator('.ant-table').first()).toHaveCSS(
+    'background-color',
+    palettes[mode].containerBackground,
+  );
+}
+
+async function expectNativeDarkMenu(sidebar: Locator) {
+  await expect(sidebar.locator('.ant-menu-root')).toHaveClass(/ant-menu-dark/);
+  const inlineSubmenu = sidebar.locator('.ant-menu-sub.ant-menu-inline').first();
+  await expect(inlineSubmenu).toBeVisible();
+  await expect(inlineSubmenu).toHaveCSS('background-color', 'rgb(0, 12, 23)');
+}
+
 async function applyMode(page: Page, mode: Mode) {
   const toggle = themeToggle(page);
   if (mode === 'dark') await toggle.click();
@@ -202,6 +224,8 @@ for (const mode of ['light', 'dark'] as const) {
       const table = page.locator('.responsive-data-list-viewport').first();
       await expect(table.locator('.ant-table-tbody > tr[data-row-key]')).toHaveCount(50);
       await expect(sidebar).toHaveCSS('background-color', palette.background);
+      await expectGlobalContentMode(page, mode);
+      await expectNativeDarkMenu(sidebar);
       await expect(sidebar.locator('.ant-pro-sider-logo h1')).toHaveCSS('color', palette.title);
       const selected = sidebar.locator('.ant-menu-item:has(a[href="#/tgdata/processes"])');
       const flow = sidebar.locator('.ant-menu-item:has(a[href="#/tgdata/flows"])');
@@ -220,9 +244,13 @@ for (const mode of ['light', 'dark'] as const) {
 
       const avatar = sidebar.locator('.tg-global-header-avatar-trigger');
       await expect(avatar.locator('.tg-global-header-avatar-name-text')).toBeVisible();
+      await expect(avatar.locator('.tg-global-header-avatar-name-text')).toHaveCSS(
+        'color',
+        palette.text,
+      );
       await readable(avatar.locator('.tg-global-header-avatar-name-text'));
       await avatar.hover();
-      await expect(avatar).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(avatar).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.12)');
       await page.mouse.move(width - 2, 2);
       // The account menu also opens on hover. Close it before checking tools.
       await page.keyboard.press('Escape');
@@ -231,9 +259,10 @@ for (const mode of ['light', 'dark'] as const) {
       for (const tool of await tools.all()) {
         await insideViewport(tool);
         await expect(tool.locator('svg').first()).toBeVisible();
+        await expect(tool.locator('.anticon').first()).toHaveCSS('color', palette.text);
         await readable(tool.locator('.anticon').first(), 3);
         await tool.hover();
-        await expect(tool).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        await expect(tool).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.12)');
         await focusVisible(page, tool, mode);
       }
       await page.mouse.move(width - 2, 2);
@@ -244,6 +273,7 @@ for (const mode of ['light', 'dark'] as const) {
       await capture(page, sidebar, testInfo, `${mode}-${width}-expanded`);
       const expandedWidth = (await table.boundingBox())!.width;
       await expect(collapse).toHaveCSS('background-color', palette.collapseBackground);
+      await expect(collapse).toHaveCSS('color', 'rgb(255, 255, 255)');
       await focusVisible(page, collapse, mode);
       await collapse.press('Enter');
       await expect(collapse).toHaveAttribute('aria-expanded', 'false');
@@ -266,6 +296,7 @@ for (const mode of ['light', 'dark'] as const) {
       const popup = page.locator('.ant-menu-submenu-popup:visible').first();
       await insideViewport(popup);
       const popupMenu = popup.locator('.ant-menu').first();
+      await expect(popupMenu).toHaveClass(/ant-menu-dark/);
       await expect(popupMenu).toHaveCSS('background-color', palette.popup);
       const popupSelected = popup.locator('.ant-menu-item-selected');
       await expect(popupSelected).toHaveCSS('background-color', palette.selectedBackground);
@@ -289,12 +320,10 @@ for (const mode of ['light', 'dark'] as const) {
           exact: true,
         });
         await help.hover();
-        const hoverBackground = await help.evaluate(
-          (element) => getComputedStyle(element).backgroundColor,
-        );
+        await expect(help).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.12)');
         await page.mouse.down();
         await expect.poll(() => help.evaluate((element) => element.matches(':active'))).toBe(true);
-        await expect(help).not.toHaveCSS('background-color', hoverBackground);
+        await expect(help).toHaveCSS('background-color', 'rgba(255, 255, 255, 0.18)');
         await capture(page, sidebar, testInfo, `${mode}-tool-active`);
         // Release outside the trigger so this style check does not open a menu.
         await page.mouse.move(width - 2, 2);
@@ -336,9 +365,13 @@ for (const mode of ['light', 'dark'] as const) {
           'background-color',
           palettes[mode === 'dark' ? 'light' : 'dark'].background,
         );
+        await expectGlobalContentMode(page, mode === 'dark' ? 'light' : 'dark');
+        await expectNativeDarkMenu(sidebar);
         await themeToggle(sidebar).click();
         await page.reload({ waitUntil: 'domcontentloaded' });
         await expect(sidebar).toHaveCSS('background-color', palette.background);
+        await expectGlobalContentMode(page, mode);
+        await expectNativeDarkMenu(sidebar);
       }
       expect(errors).toEqual([]);
     });
@@ -353,6 +386,7 @@ for (const mode of ['light', 'dark'] as const) {
     await applyMode(page, mode);
     await page.goto('/#/tgdata/processes');
     await page.setViewportSize({ width: 390, height: 844 });
+    await expectGlobalContentMode(page, mode);
     const mobileTrigger = page.locator('.tg-pro-layout-mobile-menu-action');
     await insideViewport(mobileTrigger);
     const header = page.getByTestId('pro-layout-global-header');
@@ -380,6 +414,7 @@ for (const mode of ['light', 'dark'] as const) {
     await expect(drawer).toBeVisible();
     const sidebar = drawer.locator('.ant-pro-sider');
     await expect(sidebar).toHaveCSS('background-color', palettes[mode].background);
+    await expectNativeDarkMenu(sidebar);
     const selected = drawer.locator('.ant-menu-item-selected:has(a[href="#/tgdata/processes"])');
     await readable(selected.locator('a'));
     await expect(selected).toHaveCSS('background-color', palettes[mode].selectedBackground);

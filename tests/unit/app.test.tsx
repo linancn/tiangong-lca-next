@@ -737,6 +737,35 @@ describe('app runtime config', () => {
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
   });
 
+  it.each([false, true])(
+    'wraps only the Atlas menu beneath ProLayout in global mode %s',
+    (isDarkMode) => {
+      mockBrand = 'atlas';
+      const { layout } = require('@/app');
+      const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
+      const nativeMenu = <div>Native menu</div>;
+      const runtimeLayout = layout({
+        initialState: {
+          currentUser: { name: 'Alice' },
+          isDarkMode,
+          settings: { navTheme: isDarkMode ? 'realDark' : 'light', menuProps: { theme: 'dark' } },
+        },
+        setInitialState: jest.fn(),
+      });
+      const wrappedMenu = runtimeLayout.menuContentRender({}, nativeMenu);
+      expect(wrappedMenu.type).toBe(BrandMenuTheme);
+      expect(wrappedMenu.props.isDarkMode).toBe(isDarkMode);
+      expect(wrappedMenu.props.children).toBe(nativeMenu);
+      expect(runtimeLayout.navTheme).toBe(isDarkMode ? 'realDark' : 'light');
+      expect(runtimeLayout.menuProps).toEqual({ theme: 'dark' });
+
+      mockBrand = 'tiangong';
+      expect(
+        layout({ initialState: {}, setInitialState: jest.fn() }).menuContentRender,
+      ).toBeUndefined();
+    },
+  );
+
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
     const { layout } = require('@/app');
     const setInitialState = jest.fn();

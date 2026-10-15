@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: risk-scoped profile/theme unit tests and synthetic sidebar browser checks follow the existing maintenance strategy. No change to coverage thresholds, browser release boundaries or strategy reopen conditions.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: scoped profile/global-theme/menu-provider tests and native navigation browser proof follow maintenance strategy. Coverage thresholds, browser release boundaries and strategy reopen conditions remain applicable.'
 ---
 
 # Testing Strategy

@@ -87,24 +87,21 @@ it('preserves complete Atlas tokens and component settings across mode switches'
   expect(dark.components?.Divider).toEqual({ orientationMargin: 0 });
 });
 
-it('bridges Atlas sider states to native dark Menu tokens without changing the light Menu', () => {
-  const atlas = resolveBrandProfile('atlas');
-  const sider = atlas.theme.dark.layoutTokens!.sider!;
-  const light = createAntdThemeConfig(false, undefined, atlas);
-  const dark = createAntdThemeConfig(true, undefined, atlas);
-  expect(light.components?.Menu).toBeUndefined();
-  expect(dark.components?.Menu).toMatchObject({
-    darkItemBg: sider.colorMenuBackground,
-    darkItemColor: sider.colorTextMenu,
-    darkItemHoverBg: sider.colorBgMenuItemHover,
-    darkItemHoverColor: sider.colorTextMenuItemHover,
-    darkItemSelectedBg: sider.colorBgMenuItemSelected,
-    darkItemSelectedColor: sider.colorTextMenuSelected,
-    darkGroupTitleColor: sider.colorTextMenuSecondary,
-  });
-});
+it.each([false, true])(
+  'leaves native dark Menu state colors derived from the global primary in mode %s',
+  (isDarkMode) => {
+    const atlas = resolveBrandProfile('atlas');
+    const result = createAntdThemeConfig(isDarkMode, '#123456', atlas);
+    expect(result.token?.colorPrimary).toBe('#123456');
+    expect(result.components?.Menu).toEqual({
+      darkPopupBg: '#001529',
+      darkSubMenuItemBg: '#000c17',
+    });
+    expect(result.algorithm).toBe(isDarkMode ? 'dark-algorithm' : 'default-algorithm');
+  },
+);
 
-it('lets explicit Atlas Menu and Divider settings win over adapter defaults', () => {
+it('preserves explicit Menu and Divider component settings', () => {
   const atlas = resolveBrandProfile('atlas');
   const customized = {
     ...atlas,
@@ -121,8 +118,7 @@ it('lets explicit Atlas Menu and Divider settings win over adapter defaults', ()
     },
   };
   const result = createAntdThemeConfig(true, '#123456', customized);
-  expect(result.components?.Menu).toMatchObject({
-    darkItemColor: atlas.theme.dark.layoutTokens!.sider!.colorTextMenu,
+  expect(result.components?.Menu).toEqual({
     darkItemSelectedColor: '#fefefe',
     itemBorderRadius: 12,
   });
@@ -130,28 +126,15 @@ it('lets explicit Atlas Menu and Divider settings win over adapter defaults', ()
   expect(result.token?.colorPrimary).toBe('#123456');
 });
 
-it('does not inject dark Menu settings for TianGong, a missing sider or a header-only layout', () => {
-  const tiangong = resolveBrandProfile('tiangong');
-  const atlas = resolveBrandProfile('atlas');
-  const withDarkLayout = (
-    profile: import('../../../config/brandProfile').BrandProfile,
-    layoutTokens: import('../../../config/brandProfile').BrandProfile['theme']['dark']['layoutTokens'],
-  ) => ({
-    ...profile,
-    theme: { ...profile.theme, dark: { ...profile.theme.dark, layoutTokens } },
-  });
-  const profiles = [
-    withDarkLayout(tiangong, atlas.theme.dark.layoutTokens),
-    withDarkLayout(atlas, undefined),
-    withDarkLayout(atlas, { header: { heightLayoutHeader: 64 } }),
-  ];
-  for (const profile of profiles) {
-    expect(createAntdThemeConfig(true, undefined, profile).components?.Menu).toBeUndefined();
-  }
-  expect(createAntdThemeConfig(false, undefined, tiangong)).toEqual({
-    algorithm: 'default-algorithm',
-    components: { Divider: { orientationMargin: 0 } },
-    cssVar: { key: 'tiangong-lca' },
-    token: { colorPrimary: '#5C246A' },
-  });
-});
+it.each([false, true])(
+  'keeps the exact TianGong global theme unchanged in mode %s',
+  (isDarkMode) => {
+    const tiangong = resolveBrandProfile('tiangong');
+    expect(createAntdThemeConfig(isDarkMode, undefined, tiangong)).toEqual({
+      algorithm: isDarkMode ? 'dark-algorithm' : 'default-algorithm',
+      components: { Divider: { orientationMargin: 0 } },
+      cssVar: { key: 'tiangong-lca' },
+      token: { colorPrimary: tiangong.theme[isDarkMode ? 'dark' : 'light'].colorPrimary },
+    });
+  },
+);

@@ -43,8 +43,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: sidebar palette and theme-adapter regression tests do not change the checked-in reference baseline or reopen a coverage queue. Actual focused and final-gate results belong to the delivery Issue/PR.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: native dark Menu and scoped-provider regression tests do not revise the checked-in reference baseline or reopen a coverage queue. Actual new validation results belong to the delivery Issue/PR.'
 ---
 
 # Testing Execution State

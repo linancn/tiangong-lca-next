@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: defined desktop/light/dark, control/popup, persistence, composited contrast and mobile sidebar proof without claiming execution or release qualification. Historical #1221 interface confirmation is distinguished from current full-delivery/publication authorization.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: proof requires both-mode native dark navigation, scoped-provider inheritance, primary-driven selection, page/overlay mode separation, persistence, contrast and mobile behavior. This records requirements without claiming new execution.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -270,15 +270,15 @@ For changes to brand tokens, copy or layout presets, run focused brand-profile/d
 
 ### Atlas sidebar theme proof
 
-For sidebar-palette changes, protect both per-mode profile values and the shared `createAntdThemeConfig` adapter with focused `brandProfile`, `branding` and `AntdThemeSync` suites. Prove the default TianGong theme remains unchanged, explicit primary/component overrides still win, and Atlas dark sider colors reach native Menu dark fields. Run both brand builds serially and the existing checked-push gate.
+For sidebar-palette changes, protect the profile, default settings, global `createAntdThemeConfig` adapter, menu-scoped `BrandMenuTheme` provider and app wiring with focused suites. Prove Atlas uses native dark Menu in both page modes, its popup/submenu tokens are reapplied below ProLayout, explicit primary/component overrides retain their effect, and default TianGong behavior is preserved. The nested provider must retain inherited primary/container tokens and child identity across mode changes; global page content and non-navigation overlays must retain their page mode. Run both brand builds serially and the existing checked-push gate.
 
 `tests/e2e/branding/sidebar-theme.spec.ts`, selected by the same branding config, requires the compiled Atlas qualification bundle, `E2E_BRAND=atlas` and the closed semantic backend. Its intended proof matrix is:
 
 | Surface | Required modes and viewports | Assertions |
 | --- | --- | --- |
-| Expanded and collapsed sidebar | light and dark at 1440 and 1366 px wide | White/slate/blue light palette and navy/pale/white dark palette; logo/title, selected and hovered menu states; account text/icon; all permitted tools remain visible; collapse Enter/Space and focus; released table width and exact restoration; no document overflow or page errors. |
-| Controls, menus and persistence | both modes; complete dropdown/persistence cases at 1440 px | Visible tool hover, active and keyboard focus states; account/collapse focus; readable settled theme tooltip; help, language and account dropdown bounds; native collapsed popup background and selection; public theme control switches in both directions and the stored mode survives reload. |
-| Mobile drawer | light and dark at 390 × 844 | Focus-visible mobile trigger, mode-correct selected menu and drawer bounds; readable account/tools in the native mobile header before opening the modal drawer; navigation updates the selected route, Escape dismisses the drawer before and after reopening, and no document overflow. |
+| Expanded and collapsed sidebar | light and dark at 1440 and 1366 px wide | Standard `#001529` dark Menu in both page modes, `#000C17` inline submenus and `#002140` collapse control; white/translucent-white text; native resolved-primary selection and transparent menu hover; mode-correct page/container surfaces; logo/title, selected and hovered menu states; account text/icon; all permitted tools remain visible; collapse Enter/Space and focus; released table width and exact restoration; no document overflow or page errors. |
+| Controls, menus and persistence | both modes; complete dropdown/persistence cases at 1440 px | Sidebar tools use white 12% hover and 18% active surfaces with visible keyboard focus; account/collapse focus; readable settled theme tooltip; help, language and account dropdown bounds; native dark collapsed popup background and resolved-primary selection; other dropdown surfaces retain the page mode; public theme control switches in both directions and the stored mode survives reload while navigation stays dark. |
+| Mobile drawer | light and dark at 390 × 844 | Focus-visible mobile trigger, dark selected navigation in both page modes and drawer bounds; readable account/tools in the native mobile header before opening the modal drawer; navigation updates the selected route, Escape dismisses the drawer before and after reopening, and no document overflow. |
 
 Measure rendered text contrast against composited backgrounds at least 4.5:1 and tool/account icons at least 3:1, including inherited opacity. Assert computed mode colors and a visible 2 px keyboard-focus outline with at least 3:1 contrast against its surface; a nominal token or DOM text alone does not prove readability. Capture settled viewport screenshots, plus the tooltip helper's before/after readability checks. The existing brand-presentation smoke retains both brands and all four login locales; the sidebar matrix is focused Atlas layout/theme evidence and does not claim every locale or engine.
 

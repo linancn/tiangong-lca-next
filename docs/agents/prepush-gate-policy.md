@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: focused synthetic sidebar proof remains separate from the unchanged checked-push aggregate and exact dev Release PR proof; existing dual-brand publication and immutable promotion requirements still apply.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: focused native-dark-sidebar proof remains separate from the checked-push aggregate and exact dev Release PR proof; dual-brand publication and immutable promotion requirements remain applicable.'
 ---
 
 # Pre-Push Gate Policy

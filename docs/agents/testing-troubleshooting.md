@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 70bc7f6eeea4ddcfe9ef28ac1253b3b6409c3152
-lastReviewedNote: 'Reviewed for Platform #1263: existing focused-first diagnosis, settled geometry/tooltip checks, qualification backend isolation and serial Umi recovery guidance cover the sidebar work. No new recovery workflow is required.'
+lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedNote: 'Reviewed for Platform #1263 final design: focused diagnosis, settled geometry/tooltip checks, qualification isolation and serial Umi recovery cover native dark navigation and scoped theme inheritance. No new recovery workflow is required.'
 ---
 
 # Testing Troubleshooting

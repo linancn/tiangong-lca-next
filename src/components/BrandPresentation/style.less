@@ -279,12 +279,15 @@
 // ProLayout's side mode places actions in the sider, not the top header.
 // Keep all existing tools reachable when the configured navigation changes.
 .atlas-app-shell .ant-pro-sider {
+  // Both page modes use native dark navigation. Controls share its dark surface.
+  --atlas-control-hover-bg: rgba(255, 255, 255, 0.12);
+  --atlas-control-active-bg: rgba(255, 255, 255, 0.18);
   .ant-pro-sider-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
     padding-block: 12px 4px;
-    border-top: 1px solid var(--ant-color-border-secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
   // The controls own their hover surface; avoid stacking two translucent layers.
   .ant-pro-sider-actions-list-item:hover,
@@ -390,10 +393,10 @@
   .tg-global-header-avatar-trigger,
   .tg-pro-layout-mobile-menu-action {
     &:hover {
-      background: var(--ant-color-bg-text-hover);
+      background: var(--atlas-control-hover-bg, var(--ant-color-bg-text-hover));
     }
     &:active {
-      background: var(--ant-color-bg-text-active);
+      background: var(--atlas-control-active-bg, var(--ant-color-bg-text-active));
     }
     &:focus-visible {
       outline: 2px solid var(--ant-color-primary-text-hover);

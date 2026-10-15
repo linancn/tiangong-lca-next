@@ -114,7 +114,7 @@ describe('branding config (config/branding.ts)', () => {
     expect(overridden.favicon).toBe('/custom.ico');
   });
 
-  it('switches the complete Atlas sidebar palette without changing primary or logo override precedence', () => {
+  it('retains the native dark Atlas sidebar across global mode switches without changing primary or logo override precedence', () => {
     process.env.APP_BRAND = 'atlas';
     process.env.APP_LIGHT_PRIMARY = ' #123456 ';
     process.env.APP_DARK_PRIMARY = ' #abcdef ';
@@ -136,8 +136,8 @@ describe('branding config (config/branding.ts)', () => {
       logo: '/custom-dark.svg',
       token: profile.theme.dark.layoutTokens,
     });
-    expect(getBrandTheme(false).token.sider.colorMenuBackground).toBe('#FFFFFF');
-    expect(getBrandTheme(true).token.sider.colorMenuBackground).toBe('#06162A');
+    expect(getBrandTheme(false).token.sider.colorMenuBackground).toBe('#001529');
+    expect(getBrandTheme(true).token.sider.colorMenuBackground).toBe('#001529');
     expect(getBrandTheme(undefined)).toEqual(getBrandTheme(false));
     expect(getBrandTheme(false).token).toEqual(profile.theme.light.layoutTokens);
   });
@@ -150,8 +150,13 @@ it('selects the Atlas layout preset and honors the explicit layout override', ()
     delete process.env.APP_LAYOUT;
     jest.resetModules();
     const defaults = require('../../../config/defaultSettings').default;
-    expect(defaults).toMatchObject({ layout: 'side', siderWidth: 256, fixedHeader: true });
-    expect(defaults.token.sider.colorMenuBackground).toBe('#FFFFFF');
+    expect(defaults).toMatchObject({
+      layout: 'side',
+      siderWidth: 256,
+      fixedHeader: true,
+      menuProps: { theme: 'dark' },
+    });
+    expect(defaults.token.sider.colorMenuBackground).toBe('#001529');
     process.env.APP_LAYOUT = 'top';
     jest.resetModules();
     expect(require('../../../config/defaultSettings').default.layout).toBe('top');
