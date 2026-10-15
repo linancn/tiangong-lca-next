@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
 lastReviewedNote: 'Reviewed for Platform #1263 final design: Atlas native dark navigation in both page modes and a menu-scoped theme provider remain within frontend ownership. Branch, permission, release, full-gate and workspace integration contracts remain applicable.'
 related:
   - .docpact/config.yaml

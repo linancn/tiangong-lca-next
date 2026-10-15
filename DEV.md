@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
+lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
 lastReviewedNote: 'Reviewed for Platform #1263 final design: documented standard dark Atlas navigation in both page modes, mode-following content and ordinary overlays, menu-scoped popup tokens and existing primary/logo overrides. Serial preview/build and publication boundaries remain applicable.'
 ---
 

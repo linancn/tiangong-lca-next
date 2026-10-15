@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-10-16'
-lastReviewedCommit: '9d88b67c63192a4e89d137c2bbee5aed2cc79fda'
+lastReviewedAt: "2026-10-16"
+lastReviewedCommit: "db978bb22d43fd9204fadd2bbc40cfff311e9359"
 lastReviewedNote: 'Reviewed for Platform #1263 final design: existing branding, frontend-runtime, testing and bootstrap rules cover native dark Menu configuration, app wiring, scoped provider, styles, tests and documentation closure; no routing or ownership change is required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
