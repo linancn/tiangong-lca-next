@@ -65,6 +65,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 
 ## Atlas publication recovery
 
+- If dispatch returns `Unrecognized named-value: runner`, run Actions semantic lint and check context availability. Job-level `env` cannot read `runner.temp`; initialize paths in a runner step through `RUNNER_TEMP` and `GITHUB_ENV`. A rejected dispatch creates no deployment.
+
 - If exact project lookup fails, verify the configured token's access to `makers-dtpthotshhpt`; never substitute a name-only deployment or auto-create a project.
 - If a deployment ID is retained but waiting fails, query that exact ID and inspect its state before any rerun. Do not infer that the remote deployment stopped.
 - If hidden routing/assets disappear, inspect the ZIP layout and use SDK archive mode; ordinary directory mode at `dist-edgeone` excludes `.edgeone`.
