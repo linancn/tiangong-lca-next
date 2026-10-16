@@ -595,7 +595,7 @@ export const createAntdMock = () => {
   const FormContext = React.createContext<any>(null);
 
   const Form = React.forwardRef(
-    ({ children, initialValues = {}, form, onValuesChange }: any, ref: any) => {
+    ({ children, initialValues = {}, form, onValuesChange, onFinish }: any, ref: any) => {
       const [values, setValues] = React.useState<Record<string, any>>(initialValues ?? {});
       const rulesRef = React.useRef<Record<string, any[]>>({});
 
@@ -704,7 +704,18 @@ export const createAntdMock = () => {
 
       return (
         <FormContext.Provider value={contextValue}>
-          <form data-testid='form'>{children}</form>
+          <form
+            data-testid='form'
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (onFinish)
+                void validateFields()
+                  .then(onFinish)
+                  .catch(() => {});
+            }}
+          >
+            {children}
+          </form>
         </FormContext.Provider>
       );
     },

@@ -686,6 +686,54 @@ describe('DataProcessing page', () => {
     ).toHaveTextContent('Test result set');
   });
 
+  it.each(['response', 'rejection'])(
+    'serializes form and footer creation and unlocks after %s failure',
+    async (failure) => {
+      mockInjectResultSet = false;
+      mockLocation = { pathname: '/data-processing', search: '' };
+      let settle!: () => void;
+      mockCreateLciaResultSet
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve, reject) => {
+              settle = () =>
+                failure === 'response'
+                  ? resolve({ data: null, error: { message: 'creation unavailable' } })
+                  : reject(new Error('creation unavailable'));
+            }),
+        )
+        .mockResolvedValue({ data: TEST_RESULT_SET, error: null });
+      render(<DataProcessing />);
+      fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
+      const input = await screen.findByLabelText('New result set name');
+      fireEvent.change(input, { target: { value: 'Single creation' } });
+      const form = input.closest('form')!;
+      const submit = within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Create result set',
+      });
+      await act(async () => {
+        fireEvent.submit(form);
+        fireEvent.click(submit);
+        fireEvent.submit(form);
+      });
+      expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        fireEvent.submit(form);
+        fireEvent.click(submit);
+      });
+      expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(1);
+      await act(async () => settle());
+      expect(await screen.findByText('creation unavailable')).toBeInTheDocument();
+      fireEvent.submit(form);
+      await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(mockHistoryPush).toHaveBeenCalledWith({
+        pathname: '/data-processing',
+        search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds`,
+      });
+    },
+  );
+
   it('replaces an existing ResultSet projection after creation', async () => {
     mockInjectResultSet = false;
     mockLocation = { pathname: '/data-processing', search: '' };

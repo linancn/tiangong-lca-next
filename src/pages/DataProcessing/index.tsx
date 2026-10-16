@@ -607,6 +607,7 @@ const DataProcessing = () => {
   const [commandStatus, setCommandStatus] = useState<CommandStatus | null>(null);
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const commandSequenceRef = useRef(0);
+  const createResultSetInFlightRef = useRef(false);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const dataProductTasks = useSyncExternalStore(
@@ -1330,18 +1331,24 @@ const DataProcessing = () => {
   };
 
   const handleCreateResultSet = async () => {
-    const values = await resultSetForm.validateFields().catch(() => null);
-    if (!values) return;
-    const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
-    if (!result?.data || result.error) return;
-    const createdResultSet = result.data as LciaResultSetV1;
-    setResultSets([
-      createdResultSet,
-      ...resultSets.filter((item) => item.resultSetId !== createdResultSet.resultSetId),
-    ]);
-    resultSetForm.resetFields?.();
-    setCreateDialogOpen(false);
-    navigateToResultSet(result.data.resultSetId);
+    if (createResultSetInFlightRef.current) return;
+    createResultSetInFlightRef.current = true;
+    try {
+      const values = await resultSetForm.validateFields().catch(() => null);
+      if (!values) return;
+      const result = await runCommand('createResultSet', () => createLciaResultSet(values.name));
+      if (!result?.data || result.error) return;
+      const createdResultSet = result.data as LciaResultSetV1;
+      setResultSets([
+        createdResultSet,
+        ...resultSets.filter((item) => item.resultSetId !== createdResultSet.resultSetId),
+      ]);
+      resultSetForm.resetFields?.();
+      setCreateDialogOpen(false);
+      navigateToResultSet(result.data.resultSetId);
+    } finally {
+      createResultSetInFlightRef.current = false;
+    }
   };
 
   const clearResultSetContext = () => {
