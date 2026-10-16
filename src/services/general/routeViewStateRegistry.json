@@ -45,6 +45,7 @@
       "variants": [
         { "id": "builds", "queryValue": "builds" },
         { "id": "preview", "queryValue": "preview" },
+        { "id": "exports", "queryValue": "exports" },
         { "id": "publication", "queryValue": "publication" }
       ]
     },

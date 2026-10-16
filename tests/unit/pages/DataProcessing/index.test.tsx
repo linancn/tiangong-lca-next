@@ -96,7 +96,16 @@ jest.mock('@ant-design/icons', () =>
 );
 jest.mock('@/pages/DataProcessing/CalculationBundlePanel', () => ({
   __esModule: true,
-  default: ({ packageId }: any) => <div data-testid='calculation-bundle-panel'>{packageId}</div>,
+  default: ({ packageId, onReviewCalculation }: any) => (
+    <div data-testid='calculation-bundle-panel'>
+      {packageId}
+      {onReviewCalculation ? (
+        <button type='button' onClick={onReviewCalculation}>
+          Review calculation
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 jest.mock('@/components/LcaReleaseReadPanel', () => ({
   __esModule: true,
@@ -192,14 +201,14 @@ const mockMessages: Record<string, Record<string, string>> = {
     'pages.dataProcessing.form.coverageMode': '覆盖范围',
     'pages.dataProcessing.form.defaultImpactCategory': '默认影响类别',
     'pages.dataProcessing.form.publishDefaultImpactCategory': '发布默认影响类别',
-    'pages.dataProcessing.form.previewPackageId': '选择结果集',
+    'pages.dataProcessing.workspace.version': '选择结果集',
     'pages.dataProcessing.form.publishPackageId': '发布结果集',
     'pages.dataProcessing.form.publishReason': '发布原因',
     'pages.dataProcessing.form.unpublishPublicationId': '下架发布 ID',
     'pages.dataProcessing.form.unpublishReason': '下架原因',
     'pages.dataProcessing.action.createBuild': '生成结果集',
     'pages.dataProcessing.action.calculateFromCheck': '使用此检查开始计算',
-    'pages.dataProcessing.action.previewPackage': '预览结果集',
+    'pages.dataProcessing.workspace.loadVersion': '预览结果集',
     'pages.dataProcessing.action.publishPackage': '发布结果集',
     'pages.dataProcessing.action.unpublishPublication': '下架发布',
     'pages.dataProcessing.jobs.title': '结果生成任务',
@@ -462,7 +471,7 @@ describe('DataProcessing page', () => {
   async function waitForReadyPreviewPackage() {
     await waitFor(() =>
       expect(
-        screen.getByLabelText('Select result set').querySelector('option[value="package-1"]'),
+        screen.getByLabelText('Calculation version').querySelector('option[value="package-1"]'),
       ).not.toBeNull(),
     );
   }
@@ -473,9 +482,9 @@ describe('DataProcessing page', () => {
 
   it('derives the next recoverable ResultSet step from authoritative task projections', () => {
     expect(deriveResultSetWorkflowSummary(TEST_RESULT_SET_ID, [], [])).toEqual({
-      closureStatus: 'not_checked',
-      buildStatus: 'not_started',
-      publicationStatus: 'not_published',
+      closureStatus: 'unknown',
+      buildStatus: 'unknown',
+      publicationStatus: 'unknown',
       nextAction: 'start_closure',
     });
 
@@ -494,12 +503,64 @@ describe('DataProcessing page', () => {
     expect(deriveResultSetWorkflowSummary(TEST_RESULT_SET_ID, [closureTask], [])).toEqual(
       expect.objectContaining({
         closureStatus: 'ready',
-        buildStatus: 'not_started',
+        buildStatus: 'unknown',
         nextAction: 'start_build',
         closureCheckId: 'closure-ready',
       }),
     );
 
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [{ ...closureTask, runState: 'failed', workerStatus: 'failed', domainStatus: 'failed' }],
+        [],
+      ),
+    ).toEqual(expect.objectContaining({ nextAction: 'view_closure' }));
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [
+          {
+            ...closureTask,
+            jobKind: 'lcia_result.package_build',
+            runState: 'active',
+            workerStatus: 'queued',
+          },
+        ],
+        [],
+      ),
+    ).toEqual(expect.objectContaining({ nextAction: 'view_build' }));
+
+    for (const status of ['queued', 'running', 'waiting']) {
+      expect(
+        deriveResultSetWorkflowSummary(
+          TEST_RESULT_SET_ID,
+          [{ ...closureTask, runState: 'unknown', workerStatus: status }],
+          [],
+        ).closureStatus,
+      ).toBe('checking');
+    }
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [{ ...closureTask, domainValidity: 'invalid' }],
+        [],
+      ).closureStatus,
+    ).toBe('needs_attention');
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [{ ...closureTask, jobKind: 'lcia_result.package_build', workerStatus: 'failed' }],
+        [],
+      ).buildStatus,
+    ).toBe('failed');
+    expect(
+      deriveResultSetWorkflowSummary(
+        TEST_RESULT_SET_ID,
+        [],
+        [{ status: 'draft', isCurrent: false } as any],
+      ).publicationStatus,
+    ).toBe('unknown');
     const buildTask = {
       schemaVersion: 'task-summary.v2',
       jobId: 'build-job',
@@ -607,13 +668,16 @@ describe('DataProcessing page', () => {
 
     render(<DataProcessing />);
 
+    fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
     fireEvent.change(await screen.findByLabelText('New result set name'), {
       target: { value: 'Test result set' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Create result set' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Create result set' }),
+    );
 
     await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalledWith('Test result set'));
-    expect(mockHistoryReplace).toHaveBeenCalledWith({
+    expect(mockHistoryPush).toHaveBeenCalledWith({
       pathname: '/data-processing',
       search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds`,
     });
@@ -621,6 +685,54 @@ describe('DataProcessing page', () => {
       await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
     ).toHaveTextContent('Test result set');
   });
+
+  it.each(['response', 'rejection'])(
+    'serializes form and footer creation and unlocks after %s failure',
+    async (failure) => {
+      mockInjectResultSet = false;
+      mockLocation = { pathname: '/data-processing', search: '' };
+      let settle!: () => void;
+      mockCreateLciaResultSet
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve, reject) => {
+              settle = () =>
+                failure === 'response'
+                  ? resolve({ data: null, error: { message: 'creation unavailable' } })
+                  : reject(new Error('creation unavailable'));
+            }),
+        )
+        .mockResolvedValue({ data: TEST_RESULT_SET, error: null });
+      render(<DataProcessing />);
+      fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
+      const input = await screen.findByLabelText('New result set name');
+      fireEvent.change(input, { target: { value: 'Single creation' } });
+      const form = input.closest('form')!;
+      const submit = within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Create result set',
+      });
+      await act(async () => {
+        fireEvent.submit(form);
+        fireEvent.click(submit);
+        fireEvent.submit(form);
+      });
+      expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        fireEvent.submit(form);
+        fireEvent.click(submit);
+      });
+      expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(1);
+      await act(async () => settle());
+      expect(await screen.findByText('creation unavailable')).toBeInTheDocument();
+      fireEvent.submit(form);
+      await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(mockHistoryPush).toHaveBeenCalledWith({
+        pathname: '/data-processing',
+        search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds`,
+      });
+    },
+  );
 
   it('replaces an existing ResultSet projection after creation', async () => {
     mockInjectResultSet = false;
@@ -633,14 +745,19 @@ describe('DataProcessing page', () => {
 
     render(<DataProcessing />);
 
+    fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
     fireEvent.change(await screen.findByLabelText('New result set name'), {
       target: { value: 'Test result set' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Create result set' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Create result set' }),
+    );
 
     expect(
       await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
-    ).toHaveTextContent('Test result set');
+    ).toHaveTextContent('Previous name');
+    await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByText('Previous name')).not.toBeInTheDocument());
     expect(screen.queryByText('Previous name')).not.toBeInTheDocument();
   });
 
@@ -741,16 +858,18 @@ describe('DataProcessing page', () => {
     const resultSetRow = await screen.findByTestId(
       `data-processing-result-set-${TEST_RESULT_SET_ID}`,
     );
-    expect(resultSetRow).toHaveTextContent('Ready to calculate');
-    fireEvent.click(within(resultSetRow).getByRole('button', { name: 'Start calculation' }));
-    expect(mockHistoryReplace).toHaveBeenCalledWith({
+    expect(resultSetRow).toHaveTextContent('Test result set');
+    fireEvent.change(screen.getByLabelText('Current result set'), {
+      target: { value: TEST_RESULT_SET_ID },
+    });
+    expect(mockHistoryPush).toHaveBeenCalledWith({
       pathname: '/data-processing',
       search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds&closureCheckId=closure-history`,
     });
 
     const historySelect = await screen.findByLabelText('Check history');
     fireEvent.change(historySelect, { target: { value: 'closure-history' } });
-    expect(mockHistoryReplace).toHaveBeenLastCalledWith({
+    expect(mockHistoryPush).toHaveBeenLastCalledWith({
       pathname: '/data-processing',
       search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=builds&closureCheckId=closure-history`,
     });
@@ -758,8 +877,8 @@ describe('DataProcessing page', () => {
     fireEvent.change(screen.getByLabelText('Current result set'), {
       target: { value: '99999999-9999-4999-8999-999999999999' },
     });
-    fireEvent.change(screen.getByLabelText('Current result set'), { target: { value: '' } });
-    expect(mockHistoryReplace).toHaveBeenLastCalledWith({ pathname: '/data-processing' });
+    fireEvent.click(screen.getByRole('button', { name: 'Back to result sets' }));
+    expect(mockHistoryPush).toHaveBeenLastCalledWith({ pathname: '/data-processing', search: '' });
   });
 
   it('uses the package destination selected by a ResultSet summary', async () => {
@@ -783,13 +902,11 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     const resultSetRow = await waitForTestResultSetLoaded();
-    await waitFor(() =>
-      expect(within(resultSetRow).getByRole('button', { name: 'Preview result' })).toBeEnabled(),
-    );
+    expect(resultSetRow).toHaveTextContent('Test result set');
     fireEvent.change(await screen.findByLabelText('Current result set'), {
       target: { value: TEST_RESULT_SET_ID },
     });
-    expect(mockHistoryReplace).toHaveBeenCalledWith({
+    expect(mockHistoryPush).toHaveBeenCalledWith({
       pathname: '/data-processing',
       search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=preview&packageId=package-from-result-set`,
     });
@@ -822,8 +939,11 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     const row = await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`);
-    fireEvent.click(within(row).getByRole('button', { name: 'View publication' }));
-    expect(mockHistoryReplace).toHaveBeenCalledWith({
+    expect(row).toHaveTextContent('Test result set');
+    fireEvent.change(screen.getByLabelText('Current result set'), {
+      target: { value: TEST_RESULT_SET_ID },
+    });
+    expect(mockHistoryPush).toHaveBeenCalledWith({
       pathname: '/data-processing',
       search: `?resultSetId=${TEST_RESULT_SET_ID}&tab=publication&packageId=published-package`,
     });
@@ -839,10 +959,13 @@ describe('DataProcessing page', () => {
     });
 
     render(<DataProcessing />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
     fireEvent.change(await screen.findByLabelText('New result set name'), {
       target: { value: 'Rejected result set' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Create result set' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Create result set' }),
+    );
 
     expect(await screen.findByText('Unable to create result set')).toBeInTheDocument();
     expect(mockHistoryReplace).not.toHaveBeenCalled();
@@ -1260,10 +1383,10 @@ describe('DataProcessing page', () => {
     expect(runningJob).not.toHaveTextContent('build-1');
 
     fireEvent.click(screen.getByTestId('tab-preview'));
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     await waitFor(() =>
       expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
@@ -1851,7 +1974,7 @@ describe('DataProcessing page', () => {
     expect(readyJob).not.toHaveTextContent('package-ready');
 
     const previewButton = within(readyJob).getByRole('button', { name: 'Preview result set' });
-    expect(previewButton).not.toHaveTextContent('Preview result set');
+    expect(previewButton).not.toHaveTextContent('Load calculation version');
     fireEvent.click(previewButton);
 
     await waitFor(() =>
@@ -2101,10 +2224,10 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     await waitForValidCertificate();
     fireEvent.click(screen.getByTestId('tab-preview'));
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     expect(await screen.findByText('Input scope')).toBeInTheDocument();
     expect(screen.getByText('published-state-code-100-199:latest-per-id:v1')).toBeInTheDocument();
@@ -2133,7 +2256,7 @@ describe('DataProcessing page', () => {
     expect(screen.queryByRole('columnheader', { name: 'Method version' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Unit' })).not.toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Value (kg CO2 eq)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Export all results' })).toBeInTheDocument();
     expect(screen.queryByText('Some preview data could not be loaded')).not.toBeInTheDocument();
     expect(screen.getByText('12.5')).toBeInTheDocument();
     expect(screen.getByText('-0.45')).toBeInTheDocument();
@@ -2149,27 +2272,13 @@ describe('DataProcessing page', () => {
       screen.getByText('unique_match=9.15 any_match=35.44 singular_risk=medium'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
-
-    await waitFor(() =>
-      expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
-        packageId: 'package-1',
-        impactCategoryId: 'climate-change',
-        rowOffset: 0,
-        rowLimit: 100,
-      }),
+    const reads = mockPreviewLciaResultPackage.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Export all results' }));
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: expect.stringContaining('tab=exports') }),
     );
-    expect(URL.createObjectURL).toHaveBeenCalled();
-    const exportedBlob = (URL.createObjectURL as jest.Mock).mock.calls[0][0] as Blob;
-    const exportedHtml = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(exportedBlob);
-    });
-    expect(exportedHtml).toContain('<th>Process UUID</th>');
-    expect(exportedHtml).toContain('<td>process-a</td>');
-    expect(exportedHtml).toContain('<td>process-b</td>');
+    expect(mockPreviewLciaResultPackage).toHaveBeenCalledTimes(reads);
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
   });
 
   it('paginates preview details, switches impact categories, and renders preview warnings', async () => {
@@ -2275,10 +2384,10 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     fireEvent.click(screen.getByTestId('tab-preview'));
     await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     expect(await screen.findByText('Some preview data could not be loaded')).toBeInTheDocument();
     expect(screen.getByText('Process without version')).toBeInTheDocument();
@@ -2335,136 +2444,6 @@ describe('DataProcessing page', () => {
     );
   });
 
-  it('shows an error when preview detail export fails', async () => {
-    mockPreviewLciaResultPackage
-      .mockResolvedValueOnce({
-        data: {
-          summary: {
-            packageId: 'package-1',
-            packageVersion: '2026-06-public',
-            status: 'preview_ready',
-            defaultImpactCategory: 'climate-change',
-          },
-          detailPage: {
-            status: 'ready',
-            impactCategoryId: 'climate-change',
-            unit: 'kg CO2 eq',
-            offset: 0,
-            limit: 25,
-            returnedCount: 1,
-            totalCount: 1,
-            rows: [
-              {
-                rowNumber: 1,
-                processId: 'process-a',
-                processVersion: '01.00.000',
-                processName: 'Process A',
-                stateCode: 100,
-                value: 1,
-              },
-            ],
-          },
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: null,
-        error: {},
-      });
-
-    render(<DataProcessing />);
-
-    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    fireEvent.click(screen.getByTestId('tab-preview'));
-    await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Select result set'), {
-      target: { value: 'package-1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
-    expect(await screen.findByText('Process A')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
-
-    expect(await screen.findByText('Failed to export result details')).toBeInTheDocument();
-    expect(URL.createObjectURL).not.toHaveBeenCalled();
-  });
-
-  it('exports an empty preview page when the export query returns no rows', async () => {
-    mockPreviewLciaResultPackage
-      .mockResolvedValueOnce({
-        data: {
-          summary: {
-            packageId: 'package-1',
-            packageVersion: '2026-06-public',
-            status: 'preview_ready',
-          },
-          detailPage: {
-            status: 'ready',
-            offset: 0,
-            limit: 25,
-            returnedCount: 0,
-            totalCount: 0,
-            rows: [],
-          },
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: {
-          detailPage: {
-            status: 'ready',
-            offset: 0,
-            limit: 100,
-            totalCount: 0,
-            rows: [
-              {
-                rowNumber: 1,
-                stateCode: undefined,
-                value: 'not-a-number',
-              },
-            ],
-          },
-        },
-        error: null,
-      });
-
-    render(<DataProcessing />);
-
-    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    fireEvent.click(screen.getByTestId('tab-preview'));
-    await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Select result set'), {
-      target: { value: 'package-1' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
-    expect(await screen.findByText('0-0 / 0')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
-
-    await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
-    const exportedBlob = (URL.createObjectURL as jest.Mock).mock.calls[0][0] as Blob;
-    const exportedHtml = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsText(exportedBlob);
-    });
-    expect(exportedHtml).toContain('<td>1</td>');
-    expect(exportedHtml.match(/<td>-<\/td>/g)?.length).toBeGreaterThanOrEqual(4);
-    expect(mockPreviewLciaResultPackage).toHaveBeenLastCalledWith({
-      packageId: 'package-1',
-      rowOffset: 0,
-      rowLimit: 100,
-    });
-
-    mockPreviewLciaResultPackage.mockResolvedValueOnce({
-      data: {},
-      error: null,
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
-    await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalledTimes(2));
-  });
-
   it('uses local impact labels without version suffixes in preview details', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -2507,10 +2486,10 @@ describe('DataProcessing page', () => {
     await screen.findByText('Plain impact (01.00.000)');
     fireEvent.click(screen.getByTestId('tab-preview'));
     await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     expect(await screen.findByRole('columnheader', { name: 'Value' })).toBeInTheDocument();
   });
@@ -2600,10 +2579,10 @@ describe('DataProcessing page', () => {
 
     fireEvent.click(screen.getByTestId('tab-preview'));
     await waitForReadyPreviewPackage();
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     await waitFor(() =>
       expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith({
@@ -2617,10 +2596,10 @@ describe('DataProcessing page', () => {
     expect(screen.getByText('Artifact verification')).toBeInTheDocument();
     expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(5);
 
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalledTimes(2));
     expect(await screen.findByText('preview failed')).toBeInTheDocument();
@@ -2964,10 +2943,10 @@ describe('DataProcessing page', () => {
     expect(await screen.findByText('build exploded')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-preview'));
-    fireEvent.change(screen.getByLabelText('Select result set'), {
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
       target: { value: 'package-1' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
 
     expect(await screen.findByText('plain preview failure')).toBeInTheDocument();
   });
@@ -3838,5 +3817,185 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('access-denied')).toBeInTheDocument();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+  it('keeps directory filters on entry and return without exposing workflow tabs in the list', async () => {
+    mockInjectResultSet = false;
+    mockLocation = { pathname: '/data-processing', search: '?rsQuery=Test&rsPage=2' };
+    const view = render(<DataProcessing />);
+    await waitForTestResultSetLoaded();
+    expect(screen.queryByTestId('tab-builds')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Search loaded names or IDs'), {
+      target: { value: 'changed' },
+    });
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: expect.stringContaining('rsQuery=changed') }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Test result set' }));
+    expect(mockHistoryPush).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        search: expect.stringContaining('rsQuery=Test&rsPage=2&resultSetId='),
+      }),
+    );
+    mockLocation.search = `?rsQuery=Test&rsPage=2&resultSetId=${TEST_RESULT_SET_ID}&tab=preview&packageId=package-1`;
+    view.rerender(<DataProcessing />);
+    expect(await screen.findByTestId('calculation-bundle-panel')).toHaveTextContent('package-1');
+    expect(screen.queryByPlaceholderText('Search loaded names or IDs')).not.toBeInTheDocument();
+    expect(mockCreateClosureCheck).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('tab-exports'));
+    fireEvent.click(screen.getByRole('button', { name: 'Review calculation' }));
+    expect(mockHistoryReplace).toHaveBeenLastCalledWith(
+      expect.objectContaining({ search: expect.stringContaining('tab=builds') }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Back to result sets' }));
+    expect(mockHistoryPush).toHaveBeenLastCalledWith({
+      pathname: '/data-processing',
+      search: '?rsQuery=Test&rsPage=2',
+    });
+  });
+
+  it.each(['resolve', 'reject'])(
+    'ignores old direct-preview %s after navigation and reports current failures',
+    async (outcome) => {
+      let settle!: (value: any) => void;
+      mockPreviewLciaResultPackage.mockImplementationOnce(
+        () =>
+          new Promise((resolve, reject) => {
+            settle = outcome === 'resolve' ? resolve : reject;
+          }),
+      );
+      mockLocation.search = '?tab=preview&packageId=old';
+      const view = render(<DataProcessing />);
+      await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalled());
+      mockPreviewLciaResultPackage.mockRejectedValueOnce(new Error('new preview failed'));
+      mockLocation.search = '?tab=preview&packageId=new';
+      view.rerender(<DataProcessing />);
+      expect(await screen.findByText('Error: new preview failed')).toBeInTheDocument();
+      await act(async () => {
+        settle(
+          outcome === 'resolve'
+            ? { data: { summary: { packageId: 'old' } }, error: null }
+            : new Error('old failure'),
+        );
+      });
+      expect(screen.getByText('Error: new preview failed')).toBeInTheDocument();
+      expect(screen.queryByTestId('calculation-bundle-panel')).not.toBeInTheDocument();
+    },
+  );
+
+  it('closes creation without submitting and handles rejected validation', async () => {
+    mockInjectResultSet = false;
+    mockLocation.search = '';
+    render(<DataProcessing />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Create result set' }),
+    );
+    await act(async () => {});
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(mockCreateLciaResultSet).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockCreateLciaResultSet).not.toHaveBeenCalled();
+  });
+  it.each(['resolve', 'reject', 'linked'])(
+    'discards a late %s directory response after unmount',
+    async (outcome) => {
+      let settle!: (value: any) => void;
+      const pending = new Promise((resolve, reject) => {
+        settle = outcome === 'reject' ? reject : resolve;
+      });
+      if (outcome === 'linked') {
+        mockListLciaResultSets.mockResolvedValueOnce({ data: { items: [] }, error: null });
+        mockGetLciaResultSet.mockReturnValueOnce(pending);
+      } else mockListLciaResultSets.mockReturnValueOnce(pending);
+      const view = render(<DataProcessing />);
+      await waitFor(() =>
+        expect(
+          outcome === 'linked' ? mockGetLciaResultSet : mockListLciaResultSets,
+        ).toHaveBeenCalled(),
+      );
+      view.unmount();
+      await act(async () => {
+        settle(
+          outcome === 'reject'
+            ? new Error('late list failure')
+            : { data: { items: [] }, error: null },
+        );
+      });
+    },
+  );
+
+  it('discards a manual preview response after leaving its workspace', async () => {
+    let settle!: (value: any) => void;
+    mockLocation.search = '?tab=preview';
+    const view = render(<DataProcessing />);
+    await waitForReadyPreviewPackage();
+    mockPreviewLciaResultPackage.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          settle = resolve;
+        }),
+    );
+    fireEvent.change(screen.getByLabelText('Calculation version'), {
+      target: { value: 'package-1' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Load calculation version' }));
+    await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalled());
+    view.unmount();
+    await act(async () => {
+      settle({ data: { summary: { packageId: 'package-1' } }, error: null });
+    });
+  });
+
+  it('shows the current direct-preview service error without requiring a second load', async () => {
+    mockLocation.search = '?tab=preview&packageId=broken';
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Version unavailable' },
+    });
+    render(<DataProcessing />);
+    expect(await screen.findByText('Version unavailable')).toBeInTheDocument();
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+  it('clears previous route errors and selects the loaded version method after history navigation', async () => {
+    mockLocation.search = '?tab=preview&packageId=broken';
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Previous version unavailable' },
+    });
+    const view = render(<DataProcessing />);
+    expect(await screen.findByText('Previous version unavailable')).toBeInTheDocument();
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        summary: { packageId: 'recovered', defaultImpactCategory: 'method-current' },
+        detailPage: {
+          status: 'ready',
+          impactCategoryId: 'method-current',
+          offset: 0,
+          limit: 25,
+          returnedCount: 25,
+          totalCount: 60,
+        },
+      },
+      error: null,
+    });
+    mockLocation.search = '?tab=preview&packageId=recovered';
+    view.rerender(<DataProcessing />);
+    await waitFor(() =>
+      expect(screen.getByTestId('calculation-bundle-panel')).toHaveTextContent('recovered'),
+    );
+    expect(screen.queryByText('Previous version unavailable')).not.toBeInTheDocument();
+    mockPreviewLciaResultPackage.mockClear();
+    // Paging inherits the loaded version's method rather than the previous route.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          packageId: 'recovered',
+          impactCategoryId: 'method-current',
+          rowOffset: 25,
+        }),
+      ),
+    );
   });
 });

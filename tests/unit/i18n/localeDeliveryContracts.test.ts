@@ -228,6 +228,7 @@ describe('shared locale delivery contracts', () => {
       'vv.process.required-enabled',
       'vv.data-processing.builds',
       'vv.data-processing.preview',
+      'vv.data-processing.exports',
       'vv.data-processing.publication',
     ]);
     const viewStateRegistry = readJson(coverage.viewStateRegistry.sourcePath);

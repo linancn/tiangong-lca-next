@@ -15,8 +15,8 @@ checkPaths:
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 487ae2368843a5bc9f3a972e9a7fdec829512693
-lastReviewedNote: 'Platform #1282: reconciled the residual real-Git checkout regression and leaf-tooltip assertion repair against released Main v0.0.137 at 487ae2368843a5bc9f3a972e9a7fdec829512693; retained the full-history workflow already delivered by #1279. Current runtime, dependency graph, release inputs, full gates and production boundaries remain unchanged; no new hosted qualification is claimed.'
+lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
+lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
 related:
   - ../../AGENTS.md
   - repo-validation.md

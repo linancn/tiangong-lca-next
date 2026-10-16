@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 487ae2368843a5bc9f3a972e9a7fdec829512693
-lastReviewedNote: 'Platform #1282: reconciled the residual real-Git checkout regression and leaf-tooltip assertion repair against released Main v0.0.137 at 487ae2368843a5bc9f3a972e9a7fdec829512693; retained the full-history workflow already delivered by #1279. Current runtime, dependency graph, release inputs, full gates and production boundaries remain unchanged; no new hosted qualification is claimed.'
+lastReviewedCommit: c273b5b09fe80d1a9b5c37b648ddc55b7ed425e9
+lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
 ---
 
 # Testing Strategy

@@ -41,9 +41,16 @@ const DATA_PROCESSING_VARIANTS = [
   {
     assertionId: 'vv.data-processing.preview',
     id: 'preview',
-    markerMessageId: 'pages.dataProcessing.form.previewPackageId',
+    markerMessageId: 'pages.dataProcessing.workspace.version',
     markerRole: 'combobox',
     tabMessageId: 'pages.dataProcessing.tabs.preview',
+  },
+  {
+    assertionId: 'vv.data-processing.exports',
+    id: 'exports',
+    markerMessageId: 'pages.dataProcessing.workspace.selectVersion',
+    markerRole: 'text',
+    tabMessageId: 'pages.dataProcessing.workspace.exports',
   },
   {
     assertionId: 'vv.data-processing.publication',
@@ -283,9 +290,11 @@ async function expectSelectedDataProcessingTab(
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   const markerName = getLocaleMessage(locale, variant.markerMessageId);
   const marker =
-    variant.markerRole === 'textbox'
-      ? page.getByRole('textbox', { name: markerName, exact: true })
-      : page.getByRole('combobox', { name: markerName, exact: true });
+    variant.markerRole === 'text'
+      ? page.getByText(markerName, { exact: true })
+      : variant.markerRole === 'textbox'
+        ? page.getByRole('textbox', { name: markerName, exact: true })
+        : page.getByRole('combobox', { name: markerName, exact: true });
   await expect(marker).toBeVisible();
   await expect(page.locator("[data-testid='access-denied']")).toHaveCount(0);
 }

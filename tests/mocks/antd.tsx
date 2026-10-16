@@ -492,7 +492,7 @@ export const createAntdMock = () => {
     );
   };
 
-  const Table = ({ columns = [], dataSource = [], rowKey }: any) => (
+  const Table = ({ columns = [], dataSource = [], rowKey, onRow }: any) => (
     <table data-testid='table'>
       <thead>
         <tr>
@@ -511,7 +511,7 @@ export const createAntdMock = () => {
                 : (row?.key ?? rowIndex);
 
           return (
-            <tr key={resolvedRowKey}>
+            <tr key={resolvedRowKey} {...onRow?.(row, rowIndex)}>
               {columns.map((column: any, columnIndex: number) => {
                 const dataIndex = column?.dataIndex;
                 const value = Array.isArray(dataIndex)
@@ -550,6 +550,8 @@ export const createAntdMock = () => {
   (Modal as any).confirm = antdMocks.modal.confirm;
 
   const Typography = {
+    Title: ({ children, level = 2, ...props }: any) =>
+      React.createElement(`h${level}`, props, children),
     Link: ({ children, onClick, href = '#', strong: _strong, ...rest }: any) => {
       void _strong;
       const styleColor = rest?.style?.color;
@@ -593,7 +595,7 @@ export const createAntdMock = () => {
   const FormContext = React.createContext<any>(null);
 
   const Form = React.forwardRef(
-    ({ children, initialValues = {}, form, onValuesChange }: any, ref: any) => {
+    ({ children, initialValues = {}, form, onValuesChange, onFinish }: any, ref: any) => {
       const [values, setValues] = React.useState<Record<string, any>>(initialValues ?? {});
       const rulesRef = React.useRef<Record<string, any[]>>({});
 
@@ -702,7 +704,18 @@ export const createAntdMock = () => {
 
       return (
         <FormContext.Provider value={contextValue}>
-          <form data-testid='form'>{children}</form>
+          <form
+            data-testid='form'
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (onFinish)
+                void validateFields()
+                  .then(onFinish)
+                  .catch(() => {});
+            }}
+          >
+            {children}
+          </form>
         </FormContext.Provider>
       );
     },
@@ -822,6 +835,16 @@ export const createAntdMock = () => {
     Input,
     InputNumber,
     Layout,
+    Collapse: ({ items = [] }: any) => (
+      <div>
+        {items.map((item: any) => (
+          <section key={item.key}>
+            <span>{item.label}</span>
+            {item.children}
+          </section>
+        ))}
+      </div>
+    ),
     Modal,
     Progress,
     Result,
