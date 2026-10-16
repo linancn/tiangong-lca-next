@@ -45,7 +45,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
 lastReviewedNote: 'Reviewed for Platform #1263 final design: focused native-dark-sidebar proof remains separate from the checked-push aggregate and exact dev Release PR proof; dual-brand publication and immutable promotion requirements remain applicable.'
 ---
 

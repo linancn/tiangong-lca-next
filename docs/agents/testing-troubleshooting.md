@@ -42,7 +42,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
 lastReviewedNote: 'Reviewed for Platform #1263 final design: focused diagnosis, settled geometry/tooltip checks, qualification isolation and serial Umi recovery cover native dark navigation and scoped theme inheritance. No new recovery workflow is required.'
 ---
 

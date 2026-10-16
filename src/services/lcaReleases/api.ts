@@ -463,3 +463,110 @@ export async function fetchCalculationBundleRecords<T>(
     .filter((line) => line.trim().length > 0)
     .map((line) => JSON.parse(line) as T);
 }
+
+export type CalculationExportFormat = 'parquet' | 'csv' | 'lcia_xlsx' | 'lcia_csv' | 'audit';
+export type CalculationExportFile = CalculationBundleSignedDownload & {
+  fileName: string;
+  recordCount: number;
+  sourcePath?: string;
+};
+export type CalculationExportProjection = {
+  packageId: string;
+  format: CalculationExportFormat;
+  bundleContentHash: string;
+  sourceManifestSha256: string;
+  workerJobId: string | null;
+  status:
+    | 'not_requested'
+    | 'queued'
+    | 'running'
+    | 'waiting'
+    | 'stale'
+    | 'blocked'
+    | 'failed'
+    | 'cancelled'
+    | 'completed';
+  progress: number | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  nextAction: string | null;
+  result: null | {
+    files: CalculationExportFile[];
+    manifest: CalculationExportFile;
+    totalFiles: number;
+    offset: number;
+    nextOffset: number | null;
+  };
+};
+
+export function getCalculationExport(
+  packageId: string,
+  format: CalculationExportFormat = 'parquet',
+  offset = 0,
+) {
+  return invokeReleaseFunction<CalculationExportProjection>(
+    'app_lca_release_commands',
+    {
+      action: 'get_calculation_export',
+      packageId,
+      format,
+      offset,
+    },
+    { requireAuth: true },
+  );
+}
+export function requestCalculationExport(
+  packageId: string,
+  format: CalculationExportFormat = 'parquet',
+) {
+  return invokeReleaseFunction<CalculationExportProjection>(
+    'app_lca_release_commands',
+    {
+      action: 'request_calculation_export',
+      packageId,
+      format,
+    },
+    { requireAuth: true },
+  );
+}
+export async function fetchFreshCalculationExportBlob(
+  projection: CalculationExportProjection,
+  file: CalculationExportFile,
+): Promise<Blob> {
+  const resolve = async () => {
+    const fresh = await getCalculationExport(
+      projection.packageId,
+      projection.format,
+      projection.result?.offset ?? 0,
+    );
+    if (
+      fresh.error ||
+      !fresh.data ||
+      fresh.data.workerJobId !== projection.workerJobId ||
+      fresh.data.bundleContentHash !== projection.bundleContentHash ||
+      fresh.data.sourceManifestSha256 !== projection.sourceManifestSha256 ||
+      fresh.data.status !== 'completed' ||
+      !fresh.data.result
+    )
+      throw new Error(fresh.error?.message ?? 'Export binding changed; refresh the export.');
+    const download = [...fresh.data.result.files, fresh.data.result.manifest].find(
+      (item) => item.fileName === file.fileName,
+    );
+    if (
+      !download ||
+      download.sha256 !== file.sha256 ||
+      download.byteSize !== file.byteSize ||
+      download.mediaType !== file.mediaType
+    )
+      throw new Error('Export file metadata changed; refresh the export.');
+    return download;
+  };
+  let download = await resolve();
+  try {
+    return await fetchCalculationBundleDownloadBlob(download);
+  } catch (error) {
+    if (!isRefreshableSignedDownloadFailure(error)) throw error;
+    download = await resolve();
+    return fetchCalculationBundleDownloadBlob(download);
+  }
+}

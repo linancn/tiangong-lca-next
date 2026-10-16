@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
 lastReviewedNote: 'Reviewed for Platform #1263 final design: real nested ConfigProvider inheritance, retained child identity, semantic controls, settled popup readability and serial Umi ownership follow existing patterns. No shared helper or test-runner contract changed.'
 ---
 
