@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Platform #1263 final design: real nested ConfigProvider inheritance, retained child identity, semantic controls, settled popup readability and serial Umi ownership follow existing patterns. No shared helper or test-runner contract changed.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Reviewed Platform #1275 Main-to-Dev backmerge: exact monitoring hotfix f1e5096 is combined with existing Dev calculation/export contracts from PR #1270. Only review metadata conflicts were resolved; runtime, package version, release authorization and coverage requirements remain unchanged.'
 ---
 
 # Testing Patterns Reference

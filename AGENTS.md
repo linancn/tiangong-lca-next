@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Reviewed Platform #1275 Main-to-Dev backmerge: exact monitoring hotfix f1e5096 is combined with existing Dev calculation/export contracts from PR #1270. Only review metadata conflicts were resolved; runtime, package version, release authorization and coverage requirements remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
