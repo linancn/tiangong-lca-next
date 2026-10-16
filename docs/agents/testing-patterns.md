@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
-lastReviewedNote: 'Reviewed for Platform #1263 final design: real nested ConfigProvider inheritance, retained child identity, semantic controls, settled popup readability and serial Umi ownership follow existing patterns. No shared helper or test-runner contract changed.'
+lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
+lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
 ---
 
 # Testing Patterns Reference

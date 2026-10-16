@@ -45,13 +45,15 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
-lastReviewedNote: 'Reviewed for Platform #1263 final design: documented standard dark Atlas navigation in both page modes, mode-following content and ordinary overlays, menu-scoped popup tokens and existing primary/logo overrides. Serial preview/build and publication boundaries remain applicable.'
+lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
+lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
 ---
 
 # Development Bootstrap
 
 > Purpose: local setup and the shortest safe work loop for this repo. Repo contract and document ownership live in `AGENTS.md`; minimum proof lives in `docs/agents/repo-validation.md`.
+
+Dependency proposals and ordinary credential-free PR checks follow [dependency maintenance](docs/agents/dependency-maintenance.md); this does not change the local bootstrap or protected release workflow.
 
 ## Use When
 

@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
-lastReviewedNote: 'Reviewed for Platform #1263 final design: proof requires both-mode native dark navigation, scoped-provider inheritance, primary-driven selection, page/overlay mode separation, persistence, contrast and mobile behavior. This records requirements without claiming new execution.'
+lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
+lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -84,6 +84,10 @@ pnpm docpact:gate
 ```bash
 pnpm prepush:gate
 ```
+
+## Ordinary dependency PR validation
+
+The scoped `dependency-pr.yml` workflow runs the same pinned frozen install and `pnpm prepush:gate` for relevant PRs into Dev or Main. It uses no production credentials, static release preflight, publication or browser command. Existing Main Candidate and release gates retain their separate requirements. [Dependency maintenance](dependency-maintenance.md) owns monitoring targets, default-branch activation, deferred ecosystems and manual acceptance.
 
 ## Proof Matrix
 
