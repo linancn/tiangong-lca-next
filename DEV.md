@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
-lastReviewedNote: 'Reviewed Platform #1275 Main-to-Dev backmerge: exact monitoring hotfix f1e5096 is combined with existing Dev calculation/export contracts from PR #1270. Only review metadata conflicts were resolved; runtime, package version, release authorization and coverage requirements remain unchanged.'
+lastReviewedCommit: 45b6070a9b0cef415ff48a4a3fd91ce96e64a0d9
+lastReviewedNote: 'Platform #1275: reviewed Main-to-Dev monitoring backmerge and the inherited tooltip assertion race. Waiting for the exact leaf title preserves existing UI expectations and timeouts; full local/hosted gates, runtime, version, release and paired-integration boundaries remain unchanged.'
 ---
 
 # Development Bootstrap
