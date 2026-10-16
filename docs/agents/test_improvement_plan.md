@@ -45,7 +45,7 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
 lastReviewedNote: 'Reviewed for Platform #1263 final design: scoped profile/global-theme/menu-provider tests and native navigation browser proof follow maintenance strategy. Coverage thresholds, browser release boundaries and strategy reopen conditions remain applicable.'
 ---
 

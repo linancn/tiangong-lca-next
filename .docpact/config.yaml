@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-10-16"
-lastReviewedCommit: "db978bb22d43fd9204fadd2bbc40cfff311e9359"
-lastReviewedNote: 'Reviewed for Platform #1263 final design: existing branding, frontend-runtime, testing and bootstrap rules cover native dark Menu configuration, app wiring, scoped provider, styles, tests and documentation closure; no routing or ownership change is required.'
+lastReviewedAt: '2026-10-16'
+lastReviewedCommit: '37e4bf777dca08dbdcf4e148730f394c9fb5c568'
+lastReviewedNote: 'Reviewed Worker #320 phase-one calculation/export separation and terminal protection; ownership, branch and production boundaries remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

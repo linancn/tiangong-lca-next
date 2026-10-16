@@ -16,6 +16,7 @@ import { useIntl } from '@umijs/max';
 import { Alert, Button, Card, Descriptions, Select, Space, Spin, Table, Tabs } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './index.less';
+import CalculationExportsPanel from './CalculationExportsPanel';
 
 const MAX_INLINE_ARTIFACT_BYTES = 24 * 1024 * 1024;
 
@@ -575,6 +576,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                         }
                       />
                     ) : null}
+                    <CalculationExportsPanel packageId={packageId} />
                     <strong>{t('pages.dataProcessing.bundle.resultFiles', 'Result files')}</strong>
                     <div className={styles.bundleDownloadGrid}>
                       {productDownloadCards(downloadsFor('results'))}

@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
-lastReviewedNote: 'Reviewed for Platform #1263 final design: Atlas native dark navigation in both page modes and a menu-scoped theme provider remain within frontend ownership. Branch, permission, release, full-gate and workspace integration contracts remain applicable.'
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
+lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
