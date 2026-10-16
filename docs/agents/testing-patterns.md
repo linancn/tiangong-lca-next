@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedCommit: f01b79fa20aa4e3776a9f0f42f95f4ac1fd03ab9
 lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 ---
 
