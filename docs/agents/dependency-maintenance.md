@@ -15,8 +15,8 @@ checkPaths:
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
-lastReviewedNote: 'Platform #1264: bounded Dev-targeted npm/Actions discovery and a separate credential-free dependency PR gate preserve the existing marked main-hotfix, release and backmerge contracts; image and Edge coverage remain deferred.'
+lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
+lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
 related:
   - ../../AGENTS.md
   - repo-validation.md
@@ -31,7 +31,7 @@ Keep the reviewed React/Ant Design/ProComponents generation, internal SDK, TypeS
 
 ## Ordinary dependency checks
 
-`dependency-pr.yml` runs for relevant dependency, package-policy, runtime-selector and workflow paths in PRs targeting `dev` or `main`, including human-authored changes. It checks out the exact head, uses the existing pinned pnpm/Node setup, installs the frozen graph and runs the unchanged `pnpm prepush:gate`. Full Jest logs remain available as a seven-day artifact. Manual runs have independent run identities; newer PR commits cancel only superseded runs for that PR.
+`dependency-pr.yml` runs for relevant dependency, package-policy, runtime-selector and workflow paths in PRs targeting `dev` or `main`, including human-authored changes. It checks out the exact head with `fetch-depth: 0`, uses the existing pinned pnpm/Node setup, installs the frozen graph and runs the unchanged `pnpm prepush:gate`. Complete history and the `origin/main` and `origin/dev` refs are required by the locale audit, frozen German review and correction provenance contracts. Checkout fetches that history before removing its credentials; the candidate stays bound to its exact SHA. Full Jest logs remain available as a seven-day artifact. Manual runs have independent run identities; newer PR commits cancel only superseded runs for that PR.
 
 Marked Dev Release PRs and Main candidates from `dev`, `codex/promote-*` or `codex/hotfix-*` defer to their existing exact Release Candidate or Main Candidate validation owner. The dependency job is skipped for those phases, not reported as proof. Existing candidate checks still reject invalid marker, lineage, version or head evidence; no protected gate is bypassed. Ordinary dependency proposals and human maintenance PRs outside those protected phases run the new job, including unmarked Main security proposals. This avoids a second aggregate execution on deterministic release/promotion/hotfix candidates.
 

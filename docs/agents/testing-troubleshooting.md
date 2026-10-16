@@ -42,8 +42,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 45b6070a9b0cef415ff48a4a3fd91ce96e64a0d9
-lastReviewedNote: 'Platform #1275: reviewed Main-to-Dev monitoring backmerge and the inherited tooltip assertion race. Waiting for the exact leaf title preserves existing UI expectations and timeouts; full local/hosted gates, runtime, version, release and paired-integration boundaries remain unchanged.'
+lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
+lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
 ---
 
 # Testing Troubleshooting
