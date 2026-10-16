@@ -1,5 +1,8 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 
 const workflow = fs.readFileSync(
@@ -73,5 +76,101 @@ describe('ordinary dependency workflow validation ownership', () => {
       /pull_request_target|secrets\.|release:static-preflight|pnpm deploy|pages deploy|gh release/u,
     );
     expect(workflow).not.toMatch(/contents:\s*write|id-token:\s*write|pull-requests:\s*write/u);
+  });
+
+  it('checks out the exact candidate with the remote refs and frozen history required by locale contracts', () => {
+    const checkout = workflow.match(
+      /- name: Check out exact candidate\n([\s\S]*?)(?=\n      - name:)/u,
+    )?.[1];
+    expect(checkout).toBeDefined();
+    expect(checkout).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
+    expect(checkout).toContain('persist-credentials: false');
+    const configuredDepth = Number(checkout?.match(/fetch-depth:\s*(\d+)/u)?.[1] ?? 1);
+    const container = fs.mkdtempSync(path.join(os.tmpdir(), 'dependency-checkout-history-'));
+    const env = Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+    );
+    const emptyConfig = path.join(container, 'empty.gitconfig');
+    const hooks = path.join(container, 'hooks');
+    fs.writeFileSync(emptyConfig, '');
+    fs.mkdirSync(hooks);
+    Object.assign(env, {
+      GIT_CONFIG_GLOBAL: emptyConfig,
+      GIT_CONFIG_SYSTEM: emptyConfig,
+      GIT_CONFIG_NOSYSTEM: '1',
+      GIT_TERMINAL_PROMPT: '0',
+      GIT_ALLOW_PROTOCOL: 'file',
+    });
+    const git = (root: string, args: string[]) =>
+      execFileSync(
+        'git',
+        [
+          '-c',
+          `core.hooksPath=${hooks}`,
+          '-c',
+          'user.name=Checkout fixture',
+          '-c',
+          'user.email=checkout-fixture@example.invalid',
+          '-c',
+          'commit.gpgSign=false',
+          ...args,
+        ],
+        { cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      ).trim();
+    try {
+      const source = path.join(container, 'source');
+      const remote = path.join(container, 'remote.git');
+      fs.mkdirSync(source);
+      git(source, ['init', '--initial-branch=main']);
+      fs.writeFileSync(path.join(source, 'frozen.json'), '{"approved":true}\n');
+      git(source, ['add', '.']);
+      git(source, ['commit', '-m', 'Frozen approval']);
+      const frozen = git(source, ['rev-parse', 'HEAD']);
+      git(source, ['commit', '--allow-empty', '-m', 'Main advances']);
+      const main = git(source, ['rev-parse', 'HEAD']);
+      git(source, ['checkout', '-b', 'dev']);
+      git(source, ['commit', '--allow-empty', '-m', 'Exact dependency candidate']);
+      const candidate = git(source, ['rev-parse', 'HEAD']);
+      git(source, ['branch', 'candidate']);
+      git(source, ['commit', '--allow-empty', '-m', 'Dev advances past candidate']);
+      const dev = git(source, ['rev-parse', 'HEAD']);
+      git(container, ['init', '--bare', remote]);
+      const remoteUrl = pathToFileURL(remote).href;
+      git(source, ['push', remoteUrl, 'main', 'dev', 'candidate']);
+      const checkoutCandidate = (name: string, depth: number) => {
+        const root = path.join(container, name);
+        fs.mkdirSync(root);
+        git(root, ['init']);
+        git(root, ['remote', 'add', 'origin', remoteUrl]);
+        // These are checkout v7's SHA-only and all-history refspecs. Use file
+        // transport so Git cannot reuse local objects or silently ignore depth.
+        git(root, [
+          'fetch',
+          '--no-tags',
+          ...(depth === 0 ? [] : [`--depth=${depth}`]),
+          'origin',
+          ...(depth === 0 ? ['+refs/heads/*:refs/remotes/origin/*'] : [candidate]),
+        ]);
+        git(root, ['checkout', '--detach', candidate]);
+        expect(fs.existsSync(path.join(root, '.git/objects/info/alternates'))).toBe(false);
+        return root;
+      };
+      const shallow = checkoutCandidate('shallow-control', 1);
+      expect(git(shallow, ['rev-parse', '--is-shallow-repository'])).toBe('true');
+      for (const ref of ['origin/main', 'origin/dev', frozen]) {
+        expect(() => git(shallow, ['rev-parse', '--verify', `${ref}^{commit}`])).toThrow();
+      }
+      expect(() => git(shallow, ['show', `${frozen}:frozen.json`])).toThrow();
+
+      const configured = checkoutCandidate('configured-workflow', configuredDepth);
+      expect(git(configured, ['rev-parse', 'HEAD'])).toBe(candidate);
+      expect(git(configured, ['rev-parse', '--is-shallow-repository'])).toBe('false');
+      expect(git(configured, ['rev-parse', 'origin/main'])).toBe(main);
+      expect(git(configured, ['rev-parse', 'origin/dev'])).toBe(dev);
+      expect(git(configured, ['show', `${frozen}:frozen.json`])).toBe('{"approved":true}');
+      expect(git(configured, ['merge-base', '--is-ancestor', frozen, 'HEAD'])).toBe('');
+    } finally {
+      fs.rmSync(container, { recursive: true, force: true });
+    }
   });
 });

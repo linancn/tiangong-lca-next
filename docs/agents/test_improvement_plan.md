@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: f01b79fa20aa4e3776a9f0f42f95f4ac1fd03ab9
-lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
+lastReviewedCommit: 487ae2368843a5bc9f3a972e9a7fdec829512693
+lastReviewedNote: 'Platform #1282: reconciled the residual real-Git checkout regression and leaf-tooltip assertion repair against released Main v0.0.137 at 487ae2368843a5bc9f3a972e9a7fdec829512693; retained the full-history workflow already delivered by #1279. Current runtime, dependency graph, release inputs, full gates and production boundaries remain unchanged; no new hosted qualification is claimed.'
 ---
 
 # Testing Strategy
