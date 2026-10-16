@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
+lastReviewedCommit: c273b5b09fe80d1a9b5c37b648ddc55b7ed425e9
 lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
 related:
   - .docpact/config.yaml
