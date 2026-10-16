@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
-lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
+lastReviewedCommit: f1e50964062ec5888f6d9c2d6c30573f70342a0b
+lastReviewedNote: 'Platform #1282: reviewed complete-history checkout for frozen locale provenance and an isolated shallow/full Git regression, plus the inherited leaf-tooltip assertion race. Exact candidate binding, nonpersistent credentials, full local/hosted gates, frozen approvals, version and production boundaries remain unchanged; no hosted result is claimed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
