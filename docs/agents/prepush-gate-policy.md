@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Platform #1263 final design: focused native-dark-sidebar proof remains separate from the checked-push aggregate and exact dev Release PR proof; dual-brand publication and immutable promotion requirements remain applicable.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 ---
 
 # Pre-Push Gate Policy

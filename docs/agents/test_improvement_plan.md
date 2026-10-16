@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Platform #1263 final design: scoped profile/global-theme/menu-provider tests and native navigation browser proof follow maintenance strategy. Coverage thresholds, browser release boundaries and strategy reopen conditions remain applicable.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 ---
 
 # Testing Strategy

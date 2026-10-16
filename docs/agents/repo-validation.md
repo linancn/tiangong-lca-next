@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -84,6 +84,10 @@ pnpm docpact:gate
 ```bash
 pnpm prepush:gate
 ```
+
+## Ordinary dependency PR validation
+
+The scoped `dependency-pr.yml` workflow runs the same pinned frozen install and `pnpm prepush:gate` for relevant PRs into Dev or Main. It uses no production credentials, static release preflight, publication or browser command. Existing Main Candidate and release gates retain their separate requirements. [Dependency maintenance](dependency-maintenance.md) owns monitoring targets, default-branch activation, deferred ecosystems and manual acceptance.
 
 ## Proof Matrix
 

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-10-16'
-lastReviewedCommit: '37e4bf777dca08dbdcf4e148730f394c9fb5c568'
-lastReviewedNote: 'Reviewed Worker #320 phase-one calculation/export separation and terminal protection; ownership, branch and production boundaries remain unchanged.'
+lastReviewedCommit: da5de6fb9ac078fde475772bf02e2f9b726338a2
+lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -16,6 +16,7 @@ catalog:
       workflowDocs:
         - DEV.md
         - docs/agents/repo-validation.md
+        - docs/agents/dependency-maintenance.md
       workspaceIntegrationRequired: true
 
 ownership:
@@ -72,6 +73,7 @@ ownership:
           - .husky/pre-commit
           - .husky/pre-push
           - .github/workflows/**
+          - .github/dependabot.yml
           - scripts/docpact
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
@@ -146,6 +148,7 @@ coverage:
     - .husky/pre-commit
     - .husky/pre-push
     - .github/workflows/**
+    - .github/dependabot.yml
     - scripts/docpact
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
@@ -175,6 +178,11 @@ freshness:
 
 routing:
   intents:
+    dependency-maintenance:
+      paths:
+        - .github/dependabot.yml
+        - .github/workflows/dependency-pr.yml
+        - docs/agents/dependency-maintenance.md
     page-ui:
       paths:
         - config/routes.ts
@@ -397,6 +405,7 @@ docInventory:
     - README_CN.md
     - .docpact/config.yaml
     - docs/agents/repo-validation.md
+    - docs/agents/dependency-maintenance.md
     - docs/agents/repo-architecture.md
     - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
@@ -423,6 +432,20 @@ repo:
   runtime: node
 
 rules:
+  - id: next-dependency-monitoring-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: .github/dependabot.yml
+        kind: dependency-monitoring-config
+      - path: .github/workflows/dependency-pr.yml
+        kind: ordinary-dependency-ci
+      - path: docs/agents/dependency-maintenance.md
+        kind: dependency-maintainer-guide
+    requiredDocs:
+      - path: docs/agents/dependency-maintenance.md
+        mode: review_or_update
+    reason: Routine Dev discovery and credential-free dependency checks must preserve the separate release, hotfix, backmerge and deferred ecosystem qualification boundaries.
   - id: next-bootstrap-contract
     scope: repo
     repo: next
