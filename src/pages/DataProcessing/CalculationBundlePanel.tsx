@@ -13,7 +13,18 @@ import {
 } from '@/services/lcaReleases';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
-import { Alert, Button, Card, Descriptions, Select, Space, Spin, Table, Tabs } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Collapse,
+  Descriptions,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tabs,
+} from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './index.less';
 import CalculationExportsPanel from './CalculationExportsPanel';
@@ -91,11 +102,19 @@ function hashValue(value: unknown): string {
 
 type Props = {
   packageId: string;
+  view?: 'results' | 'exports';
+  onReviewCalculation?: () => void;
   initialProcessId?: string;
   initialProcessVersion?: string;
 };
 
-const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVersion }: Props) => {
+const CalculationBundlePanel = ({
+  packageId,
+  view,
+  onReviewCalculation,
+  initialProcessId,
+  initialProcessVersion,
+}: Props) => {
   const intl = useIntl();
   const t = useCallback(
     (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage }),
@@ -188,7 +207,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   useEffect(() => {
     let cancelled = false;
     const loadRecords = async () => {
-      if (!bundle || selectedProcessIndex === undefined) return;
+      if (view === 'exports' || !bundle || selectedProcessIndex === undefined) return;
       setRecordsLoading(true);
       setRecordsIssue(null);
       setLciRows([]);
@@ -229,7 +248,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
     return () => {
       cancelled = true;
     };
-  }, [bundle, selectedProcessIndex]);
+  }, [bundle, selectedProcessIndex, view]);
 
   const selectedProcess = processes.find(
     (process) => process.processIndex === selectedProcessIndex,
@@ -376,7 +395,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         onClick={exportLciCsv}
         disabled={!lciRows.length}
       >
-        {t('pages.dataProcessing.bundle.exportCsv', 'Export CSV')}
+        {t('pages.dataProcessing.workspace.currentCsv', 'Current process CSV')}
       </Button>
       <Button
         size='small'
@@ -384,7 +403,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
         onClick={() => exportJson('lci', lciRows)}
         disabled={!lciRows.length}
       >
-        {t('pages.dataProcessing.bundle.exportJson', 'Export JSON')}
+        {t('pages.dataProcessing.workspace.currentJson', 'Current process JSON')}
       </Button>
     </Space>
   );
@@ -426,50 +445,60 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
       }
     >
       <Space orientation='vertical' size='middle' className={styles.previewDetails}>
-        <Descriptions
-          bordered
-          size='small'
-          column={2}
+        <Collapse
           items={[
             {
-              key: 'contract',
-              label: t('pages.dataProcessing.bundle.schema', 'Contract'),
-              children: manifest.schemaVersion,
-            },
-            {
-              key: 'coverage',
-              label: t('pages.dataProcessing.bundle.coverage', 'Coverage'),
-              children:
-                coverageComplete === true
-                  ? t('pages.dataProcessing.bundle.complete', 'Complete')
-                  : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked'),
-            },
-            {
-              key: 'process-count',
-              label: t('pages.dataProcessing.bundle.processCount', 'Processes'),
-              children: manifest.scope.processCount,
-            },
-            {
-              key: 'impact-count',
-              label: t('pages.dataProcessing.bundle.impactCount', 'LCIA methods'),
-              children: manifest.snapshot.impactCount,
-            },
-            {
-              key: 'snapshot',
-              label: t('pages.dataProcessing.bundle.snapshot', 'Snapshot'),
-              children: <code>{manifest.snapshot.id}</code>,
-            },
-            {
-              key: 'content-hash',
-              label: t('pages.dataProcessing.bundle.contentHash', 'Bundle hash'),
-              children: <code>{manifest.bundleContentHash}</code>,
+              key: 'identity',
+              label: t('pages.dataProcessing.workspace.evidence', 'Technical evidence'),
+              children: (
+                <Descriptions
+                  bordered
+                  size='small'
+                  column={2}
+                  items={[
+                    {
+                      key: 'contract',
+                      label: t('pages.dataProcessing.bundle.schema', 'Contract'),
+                      children: manifest.schemaVersion,
+                    },
+                    {
+                      key: 'coverage',
+                      label: t('pages.dataProcessing.bundle.coverage', 'Coverage'),
+                      children:
+                        coverageComplete === true
+                          ? t('pages.dataProcessing.bundle.complete', 'Complete')
+                          : t('pages.dataProcessing.bundle.blocked', 'Incomplete / blocked'),
+                    },
+                    {
+                      key: 'process-count',
+                      label: t('pages.dataProcessing.bundle.processCount', 'Processes'),
+                      children: manifest.scope.processCount,
+                    },
+                    {
+                      key: 'impact-count',
+                      label: t('pages.dataProcessing.bundle.impactCount', 'LCIA methods'),
+                      children: manifest.snapshot.impactCount,
+                    },
+                    {
+                      key: 'snapshot',
+                      label: t('pages.dataProcessing.bundle.snapshot', 'Snapshot'),
+                      children: <code>{manifest.snapshot.id}</code>,
+                    },
+                    {
+                      key: 'content-hash',
+                      label: t('pages.dataProcessing.bundle.contentHash', 'Bundle hash'),
+                      children: <code>{manifest.bundleContentHash}</code>,
+                    },
+                  ]}
+                />
+              ),
             },
           ]}
         />
-        {processControl}
+        {view !== 'exports' ? processControl : null}
         <Spin spinning={recordsLoading}>
           <Tabs
-            activeKey={activeResultTab}
+            activeKey={view === 'exports' ? 'downloads' : activeResultTab}
             onChange={setActiveResultTab}
             items={[
               {
@@ -503,7 +532,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                       onClick={() => exportJson('lcia', lciaRows)}
                       disabled={!lciaRows.length}
                     >
-                      {t('pages.dataProcessing.bundle.exportJson', 'Export JSON')}
+                      {t('pages.dataProcessing.workspace.currentJson', 'Current process JSON')}
                     </Button>
                     <Table
                       size='small'
@@ -576,7 +605,10 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                         }
                       />
                     ) : null}
-                    <CalculationExportsPanel packageId={packageId} />
+                    <CalculationExportsPanel
+                      packageId={packageId}
+                      onReviewCalculation={onReviewCalculation}
+                    />
                     <strong>{t('pages.dataProcessing.bundle.resultFiles', 'Result files')}</strong>
                     <div className={styles.bundleDownloadGrid}>
                       {productDownloadCards(downloadsFor('results'))}
@@ -614,7 +646,10 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                   </Space>
                 ),
               },
-            ]}
+            ].filter(
+              (item) =>
+                !view || (view === 'exports' ? item.key === 'downloads' : item.key !== 'downloads'),
+            )}
           />
         </Spin>
       </Space>

@@ -7,10 +7,16 @@ import {
   type CalculationExportFile,
 } from '@/services/lcaReleases';
 import { useIntl } from '@umijs/max';
-import { Alert, Button, Select, Space, Table } from 'antd';
+import { Alert, Button, Collapse, Select, Space, Table } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export default function CalculationExportsPanel({ packageId }: { packageId: string }) {
+export default function CalculationExportsPanel({
+  packageId,
+  onReviewCalculation,
+}: {
+  packageId: string;
+  onReviewCalculation?: () => void;
+}) {
   const intl = useIntl();
   const [format, setFormat] = useState<CalculationExportFormat>('parquet');
   const [projection, setProjection] = useState<CalculationExportProjection | null>(null);
@@ -114,6 +120,13 @@ export default function CalculationExportsPanel({ packageId }: { packageId: stri
             'Calculation results are ready independently of exports. CSV files contain at most 250,000 rows and 64 MiB each.',
         })}
       </span>
+      <span>
+        {intl.formatMessage({
+          id: 'pages.dataProcessing.workspace.exportScope',
+          defaultMessage:
+            'All results in this calculation version. Parquet and CSV parts contain LCI; LCIA formats contain impact results.',
+        })}
+      </span>
       <Space wrap>
         <Select
           aria-label={intl.formatMessage({
@@ -179,7 +192,47 @@ export default function CalculationExportsPanel({ packageId }: { packageId: stri
             id: 'pages.dataProcessing.exports.failed',
             defaultMessage: 'Export stopped. Calculation results remain available.',
           })}
-          description={`${projection.errorCode ?? projection.status} (${projection.workerJobId ?? ''}): ${projection.errorMessage ?? ''} ${intl.formatMessage({ id: 'pages.dataProcessing.exports.retry', defaultMessage: 'An explicit task retry is required; refreshing does not restart work.' })}`}
+          description={
+            <Space orientation='vertical'>
+              <span>
+                {projection.errorCode === 'frozen_method_axis_missing'
+                  ? intl.formatMessage({
+                      id: 'pages.dataProcessing.workspace.exportIncompatible',
+                      defaultMessage:
+                        'This calculation lacks the frozen method data required for this format. A compatible calculation is needed; refreshing or repeating the export will not repair it.',
+                    })
+                  : intl.formatMessage({
+                      id: 'pages.dataProcessing.workspace.exportRecovery',
+                      defaultMessage:
+                        'Refreshing only checks status. This screen cannot retry a stopped export. Review the calculation and share the technical details with an administrator.',
+                    })}
+              </span>
+              {onReviewCalculation ? (
+                <Button onClick={onReviewCalculation}>
+                  {intl.formatMessage({
+                    id: 'pages.dataProcessing.workspace.reviewCalculation',
+                    defaultMessage: 'Review calculation',
+                  })}
+                </Button>
+              ) : null}
+              <Collapse
+                items={[
+                  {
+                    key: 'error',
+                    label: intl.formatMessage({
+                      id: 'pages.dataProcessing.workspace.evidence',
+                      defaultMessage: 'Technical evidence',
+                    }),
+                    children: (
+                      <code
+                        style={{ overflowWrap: 'anywhere' }}
+                      >{`${projection.errorCode ?? projection.status} (${projection.workerJobId ?? ''}): ${projection.errorMessage ?? ''}`}</code>
+                    ),
+                  },
+                ]}
+              />
+            </Space>
+          }
         />
       ) : null}
       {error ? <Alert type='error' title={error} /> : null}
@@ -191,7 +244,18 @@ export default function CalculationExportsPanel({ packageId }: { packageId: stri
               defaultMessage: 'Download export manifest',
             })}
           </Button>
+          <span>
+            {intl.formatMessage(
+              {
+                id: 'pages.dataProcessing.workspace.fileCount',
+                defaultMessage:
+                  '{count} files. Download files individually; the manifest describes the complete export.',
+              },
+              { count: result.totalFiles },
+            )}
+          </span>
           <Table<CalculationExportFile>
+            scroll={{ x: 560 }}
             size='small'
             rowKey='fileName'
             dataSource={result.files}
@@ -233,6 +297,13 @@ export default function CalculationExportsPanel({ packageId }: { packageId: stri
                 render: (_, file) => (
                   <Button
                     size='small'
+                    aria-label={intl.formatMessage(
+                      {
+                        id: 'pages.dataProcessing.workspace.downloadFile',
+                        defaultMessage: 'Download {name}',
+                      },
+                      { name: file.fileName },
+                    )}
                     loading={downloading === file.fileName}
                     disabled={downloading !== null}
                     onClick={() => void download(file)}

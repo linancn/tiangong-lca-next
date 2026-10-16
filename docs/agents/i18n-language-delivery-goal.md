@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 4f8dcb384dcb3d994db5d0f94dfbccb87926e5e8
-lastReviewedNote: 'Reviewed for Platform #1258: remove the seven Open Data source controls and frontend filter state while retaining explicit catalog routing with fixed all/all protocol values. Selector, analysis, authorization, model calculation and persistence semantics remain unchanged. Existing focused service/page, locale, synthetic browser and full-gate requirements apply; execution results belong to the tracked Issue/PR.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
+lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

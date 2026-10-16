@@ -25,8 +25,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
-lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
+lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
+lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
 ---
 
 # Supabase Environment And Database Workflow

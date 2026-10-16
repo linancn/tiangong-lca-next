@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
-lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
+lastReviewedCommit: b7b9f14f33badb2ddc05ee50899c99f7117ec7e0
+lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
