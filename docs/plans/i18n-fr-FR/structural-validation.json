@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "367939d25f7f4bb15c2744815bed540e61f4203447f696f2a967f7fad5e20e07",
+    "auditedInputDigest": "b85c8d4dfbd8663edec91d3b065708999d8f521b872a2b156816af057ea88cf4",
     "validatedMessageCount": 3580,
     "validatedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageCount": 1686,
     "highRiskMessageDigest": "2baa5a329de915902dd52bc5f1c5a0d5b1f43e61a78c5ae1484d5ce0a2617644",
     "catalogDigest": "adbaa506d1a554ffca1fcbf807a037777dc95c285eaf663988e5f5db74d5f5bd",
-    "dossierDigest": "5155158464b38a37e49d723f339a10c9b196bd5ffbe42719f562293f85fdf051",
+    "dossierDigest": "9634f6c909c7934f3404996030e271b6ecda6d471b07ba529f6fb3fa715783a2",
     "typedContentDossierDigest": "381b7b7af87d349151ab51d77de2402d93629029efa5ff964e45d5e00cddf454",
-    "routeEvidenceDigest": "5cf0fa2d834a2e9c85d547f1857390c1db396f729c4d479d6c37ee8c28cfe7ba",
+    "routeEvidenceDigest": "3972803b163e01d712f9f70b8b1187415d3e36ae2dd9e8c4ed5404629a57f02d",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -98,7 +98,7 @@
         "messageDigest": "2071d4d7a416495922d3a804dde45eeeeb7b2aa95cec09e7c777bd64959c8ba8",
         "highRiskMessageCount": 1686,
         "highRiskMessageDigest": "2baa5a329de915902dd52bc5f1c5a0d5b1f43e61a78c5ae1484d5ce0a2617644",
-        "dossierDigest": "5155158464b38a37e49d723f339a10c9b196bd5ffbe42719f562293f85fdf051",
+        "dossierDigest": "9634f6c909c7934f3404996030e271b6ecda6d471b07ba529f6fb3fa715783a2",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -113,5 +113,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "e13c18fe1975cced410c4d80ab99ded1156e6027fcfd8d0953307255d43cf217"
+  "validationDigest": "a4fe20d08f0eaeec26672e5029a0689c9e788704cd316385b71067bf94186668"
 }

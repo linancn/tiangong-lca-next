@@ -1613,8 +1613,8 @@ const DataProcessing = () => {
           result.error
             ? undefined
             : firstString(
-                result.data?.detailPage?.impactCategoryId,
-                result.data?.summary?.defaultImpactCategory,
+                isRecord(result.data?.detailPage) && result.data.detailPage.impactCategoryId,
+                isRecord(result.data?.summary) && result.data.summary.defaultImpactCategory,
               ),
         );
         if (result.error) setCommandStatus({ kind: 'error', message: result.error.message });
