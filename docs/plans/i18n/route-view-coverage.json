@@ -62,12 +62,13 @@
       {
         "registryId": "data-processing-tab",
         "sourcePaths": ["src/pages/DataProcessing/index.tsx"],
-        "variantIds": ["builds", "preview", "publication"],
+        "variantIds": ["builds", "preview", "exports", "publication"],
         "proof": {
           "kind": "browser",
           "variantAssertionIds": [
             "vv.data-processing.builds",
             "vv.data-processing.preview",
+            "vv.data-processing.exports",
             "vv.data-processing.publication"
           ],
           "supplementalFocusedTestPaths": ["tests/unit/pages/DataProcessing/index.test.tsx"]
@@ -382,7 +383,33 @@
             "tab": "preview"
           }
         },
-        "visibleMessageIds": ["pages.dataProcessing.form.previewPackageId"]
+        "visibleMessageIds": ["pages.dataProcessing.workspace.version"]
+      }
+    },
+    {
+      "assertionId": "vv.data-processing.exports",
+      "registryId": "data-processing-tab",
+      "variantId": "exports",
+      "routeAssertionId": "rv.data-processing.build-preview-publication-tabs",
+      "scenario": "typed-data-processing-tabs",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "exports"
+          }
+        },
+        "expected": {
+          "hashPath": "/data-processing",
+          "hashQuery": {
+            "tab": "exports"
+          }
+        },
+        "visibleMessageIds": ["pages.dataProcessing.workspace.selectVersion"]
       }
     },
     {

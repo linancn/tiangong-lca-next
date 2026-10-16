@@ -492,7 +492,7 @@ export const createAntdMock = () => {
     );
   };
 
-  const Table = ({ columns = [], dataSource = [], rowKey }: any) => (
+  const Table = ({ columns = [], dataSource = [], rowKey, onRow }: any) => (
     <table data-testid='table'>
       <thead>
         <tr>
@@ -511,7 +511,7 @@ export const createAntdMock = () => {
                 : (row?.key ?? rowIndex);
 
           return (
-            <tr key={resolvedRowKey}>
+            <tr key={resolvedRowKey} {...onRow?.(row, rowIndex)}>
               {columns.map((column: any, columnIndex: number) => {
                 const dataIndex = column?.dataIndex;
                 const value = Array.isArray(dataIndex)
@@ -550,6 +550,8 @@ export const createAntdMock = () => {
   (Modal as any).confirm = antdMocks.modal.confirm;
 
   const Typography = {
+    Title: ({ children, level = 2, ...props }: any) =>
+      React.createElement(`h${level}`, props, children),
     Link: ({ children, onClick, href = '#', strong: _strong, ...rest }: any) => {
       void _strong;
       const styleColor = rest?.style?.color;
@@ -822,6 +824,16 @@ export const createAntdMock = () => {
     Input,
     InputNumber,
     Layout,
+    Collapse: ({ items = [] }: any) => (
+      <div>
+        {items.map((item: any) => (
+          <section key={item.key}>
+            <span>{item.label}</span>
+            {item.children}
+          </section>
+        ))}
+      </div>
+    ),
     Modal,
     Progress,
     Result,

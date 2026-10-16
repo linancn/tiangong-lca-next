@@ -4,7 +4,7 @@
 }
 
 .resultSetWorkspace {
-  width: min(1180px, 100%);
+  width: 100%;
   border-top: 3px solid var(--ant-color-primary);
 }
 
@@ -491,4 +491,64 @@
   color: var(--ant-color-success);
   font-size: 12px;
   line-height: 20px;
+}
+
+.directoryToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.directoryToolbar > :first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.directoryToolbar > :global(.ant-select) {
+  min-width: 160px;
+}
+
+.workspaceTitle {
+  margin: 0 !important;
+  overflow-wrap: anywhere;
+}
+
+.resultSetName {
+  height: auto;
+  padding: 0;
+  white-space: normal;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 860px) {
+  .resultSetCreateForm,
+  .resultSetSelector {
+    flex: 0 0 auto;
+  }
+
+  .directoryToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .directoryToolbar > :first-child {
+    flex: 0 0 auto;
+  }
+
+  .bundleProcessSelect,
+  .previewResultSelect {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .previewDetails,
+  .workbenchPanel,
+  .pageStack {
+    min-width: 0;
+    max-width: 100%;
+  }
 }

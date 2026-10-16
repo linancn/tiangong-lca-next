@@ -211,7 +211,7 @@ test('downloads verified files, changes pages and resets pages when changing for
   const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
   render(<CalculationExportsPanel packageId='package' />);
   await settle();
-  fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+  fireEvent.click(screen.getByRole('button', { name: /^Download (?!export manifest)/ }));
   await settle();
   fireEvent.click(screen.getByRole('button', { name: 'Download export manifest' }));
   await settle();
@@ -233,7 +233,7 @@ test.each([new Error('download error'), 'download string'])(
     mockDownload.mockRejectedValue(error);
     render(<CalculationExportsPanel packageId='package' />);
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Download (?!export manifest)/ }));
     await settle();
     expect(screen.getByRole('alert')).toBeInTheDocument();
   },
@@ -252,14 +252,14 @@ test.each(['resolve', 'reject'])(
     );
     const view = render(<CalculationExportsPanel packageId='old' />);
     await settle();
-    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Download (?!export manifest)/ }));
     view.rerender(<CalculationExportsPanel packageId='new' />);
     await settle();
     await act(async () => {
       finish(mode === 'resolve' ? new Blob(['old']) : new Error('old'));
     });
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Download' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /^Download (?!export manifest)/ })).toBeEnabled();
   },
 );
 
@@ -273,4 +273,17 @@ test('renders numeric progress and terminal states without optional details', as
   view.rerender(<CalculationExportsPanel packageId='new' />);
   await settle();
   expect(screen.getByRole('alert')).toBeInTheDocument();
+});
+
+test('explains incompatible calculation failures and exposes recovery without resubmitting', async () => {
+  const onReviewCalculation = jest.fn();
+  mockGet.mockResolvedValue({
+    data: { ...projection('failed'), errorCode: 'frozen_method_axis_missing' },
+    error: null,
+  });
+  render(<CalculationExportsPanel packageId='package' onReviewCalculation={onReviewCalculation} />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Review calculation' }));
+  expect(onReviewCalculation).toHaveBeenCalledTimes(1);
+  expect(mockRequest).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Generate export' })).toBeDisabled();
 });

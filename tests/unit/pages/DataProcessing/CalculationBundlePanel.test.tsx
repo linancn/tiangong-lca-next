@@ -266,8 +266,8 @@ describe('CalculationBundlePanel', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-lci'));
-    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Export JSON' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Current process CSV' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Current process JSON' }));
     expect(URL.createObjectURL).toHaveBeenCalledTimes(downloadButtons.length + 2);
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(downloadButtons.length + 2);
 
@@ -359,5 +359,14 @@ describe('CalculationBundlePanel', () => {
       .mockRejectedValueOnce(new Error('record download expired'));
     rerender(<CalculationBundlePanel packageId='expired' />);
     expect(await screen.findByText('record download expired')).toBeInTheDocument();
+  });
+  it('opens exports without loading numerical preview chunks or exposing a process selector', async () => {
+    render(<CalculationBundlePanel packageId='package' view='exports' />);
+    expect(await screen.findByRole('button', { name: 'Generate export' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Process' })).not.toBeInTheDocument();
+    expect(
+      mockFetchRecords.mock.calls.every(([artifact]) => artifact.kind === 'process_axis'),
+    ).toBe(true);
+    expect(screen.queryByTestId('tab-lci')).not.toBeInTheDocument();
   });
 });
