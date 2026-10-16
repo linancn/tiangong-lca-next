@@ -112,7 +112,9 @@ describe('DatasetClassificationFilter', () => {
     const leaf = await screen.findByRole('menuitemcheckbox', { name: first });
     expect(leaf).toHaveAttribute('title', `${root} / ${first}`);
     await user.hover(within(leaf).getByText(first));
-    expect(await screen.findByRole('tooltip')).toHaveTextContent(`${root} / ${first}`);
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveTextContent(`${root} / ${first}`),
+    );
     await user.unhover(within(leaf).getByText(first));
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
     fireEvent.change(input, { target: { value: 'second' } });
