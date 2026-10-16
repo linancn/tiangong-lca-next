@@ -15,8 +15,8 @@ checkPaths:
   - .github/workflows/dependency-pr.yml
   - docs/agents/dependency-maintenance.md
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: f1e50964062ec5888f6d9c2d6c30573f70342a0b
-lastReviewedNote: 'Platform #1282: reviewed complete-history checkout for frozen locale provenance and an isolated shallow/full Git regression, plus the inherited leaf-tooltip assertion race. Exact candidate binding, nonpersistent credentials, full local/hosted gates, frozen approvals, version and production boundaries remain unchanged; no hosted result is claimed.'
+lastReviewedCommit: 487ae2368843a5bc9f3a972e9a7fdec829512693
+lastReviewedNote: 'Platform #1282: reconciled the residual real-Git checkout regression and leaf-tooltip assertion repair against released Main v0.0.137 at 487ae2368843a5bc9f3a972e9a7fdec829512693; retained the full-history workflow already delivered by #1279. Current runtime, dependency graph, release inputs, full gates and production boundaries remain unchanged; no new hosted qualification is claimed.'
 related:
   - ../../AGENTS.md
   - repo-validation.md

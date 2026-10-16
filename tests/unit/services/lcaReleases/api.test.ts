@@ -17,6 +17,9 @@ jest.mock('@/services/supabase', () => ({
 }));
 
 import {
+  getCalculationExport,
+  requestCalculationExport,
+  fetchFreshCalculationExportBlob,
   createLcaReleaseArtifactDownload,
   fetchCalculationBundleArtifactText,
   fetchCalculationBundleDownloadBlob,
@@ -103,6 +106,92 @@ describe('lcaReleases api', () => {
     restoreGlobal('DecompressionStream', originalDecompressionStream);
     restoreGlobal('fetch', originalFetch);
     restoreGlobal('Response', originalResponse);
+  });
+
+  it('keeps status reads distinct from explicit export requests and defaults to Parquet', async () => {
+    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true, data: {} }, error: null });
+    await getCalculationExport('package-1');
+    await requestCalculationExport('package-1');
+    expect(mockFunctionsInvoke.mock.calls.map((call) => call[1].body)).toEqual([
+      { action: 'get_calculation_export', packageId: 'package-1', format: 'parquet', offset: 0 },
+      { action: 'request_calculation_export', packageId: 'package-1', format: 'parquet' },
+    ]);
+  });
+
+  it('refreshes only the same export binding and verifies downloaded bytes', async () => {
+    setCryptoDigest(1);
+    const file = {
+      fileName: 'lci-inventory-000000.parquet',
+      sha256: '01'.repeat(32),
+      byteSize: 1,
+      mediaType: 'application/vnd.apache.parquet',
+      signedDownloadUrl: 'https://download.example/fresh',
+    };
+    const projection: any = {
+      packageId: 'package-1',
+      format: 'parquet',
+      workerJobId: 'job-1',
+      bundleContentHash: 'bundle-1',
+      sourceManifestSha256: 'manifest-1',
+      status: 'completed',
+      result: {
+        offset: 20,
+        files: [file],
+        manifest: { ...file, fileName: 'export-manifest.json' },
+      },
+    };
+    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true, data: projection }, error: null });
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 403 })
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new Uint8Array([1]).buffer,
+      }) as any;
+    await expect(fetchFreshCalculationExportBlob(projection, file as any)).resolves.toBeInstanceOf(
+      Blob,
+    );
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(2);
+    expect(
+      mockFunctionsInvoke.mock.calls.every(
+        (call) => call[1].body.action === 'get_calculation_export' && call[1].body.offset === 20,
+      ),
+    ).toBe(true);
+    for (const change of [
+      { workerJobId: 'replacement' },
+      { bundleContentHash: 'replacement' },
+      { status: 'failed' },
+    ]) {
+      mockFunctionsInvoke.mockResolvedValue({
+        data: { ok: true, data: { ...projection, ...change } },
+        error: null,
+      });
+      await expect(fetchFreshCalculationExportBlob(projection, file as any)).rejects.toThrow(
+        'binding changed',
+      );
+    }
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        data: {
+          ...projection,
+          result: { ...projection.result, files: [{ ...file, sha256: '02'.repeat(32) }] },
+        },
+      },
+      error: null,
+    });
+    await expect(fetchFreshCalculationExportBlob(projection, file as any)).rejects.toThrow(
+      'metadata changed',
+    );
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    mockFunctionsInvoke.mockResolvedValue({ data: { ok: true, data: projection }, error: null });
+    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500 }) as any;
+    await expect(
+      fetchFreshCalculationExportBlob({ ...projection, result: null }, file as any),
+    ).rejects.toThrow('(500)');
+    expect(mockFunctionsInvoke.mock.lastCall[1].body.offset).toBe(0);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('routes authenticated Calculation Bundle and release read requests', async () => {

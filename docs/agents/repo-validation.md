@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: f1e50964062ec5888f6d9c2d6c30573f70342a0b
-lastReviewedNote: 'Platform #1282: reviewed complete-history checkout for frozen locale provenance and an isolated shallow/full Git regression, plus the inherited leaf-tooltip assertion race. Exact candidate binding, nonpersistent credentials, full local/hosted gates, frozen approvals, version and production boundaries remain unchanged; no hosted result is claimed.'
+lastReviewedCommit: 487ae2368843a5bc9f3a972e9a7fdec829512693
+lastReviewedNote: 'Platform #1282: reconciled the residual real-Git checkout regression and leaf-tooltip assertion repair against released Main v0.0.137 at 487ae2368843a5bc9f3a972e9a7fdec829512693; retained the full-history workflow already delivered by #1279. Current runtime, dependency graph, release inputs, full gates and production boundaries remain unchanged; no new hosted qualification is claimed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -287,3 +287,5 @@ For sidebar-palette changes, protect the profile, default settings, global `crea
 Measure rendered text contrast against composited backgrounds at least 4.5:1 and tool/account icons at least 3:1, including inherited opacity. Assert computed mode colors and a visible 2 px keyboard-focus outline with at least 3:1 contrast against its surface; a nominal token or DOM text alone does not prove readability. Capture settled viewport screenshots, plus the tooltip helper's before/after readability checks. The existing brand-presentation smoke retains both brands and all four login locales; the sidebar matrix is focused Atlas layout/theme evidence and does not claim every locale or engine.
 
 These synthetic, loopback-only screenshots and checks prove frontend presentation and interaction. They do not replace the exact release candidate gates, production deployment receipts or served-manifest verification. Record actual commands, results, screenshot paths and owned resource cleanup or retention in the tracked Issue/PR; this matrix states required proof, not a completed run.
+
+For independent calculation exports, keep the new panel and service inside statement/branch coverage. Focused proof covers no enqueue on mount, explicit request, terminal/read-failure polling stop, package/format/page reset, stale read/request/download completion, verified file/manifest downloads and authorization/binding drift. Pair this with credential-free rendered desktop/narrow interaction and the separate original-full-library Database/Edge/Worker scenario. Synthetic browser evidence does not claim a logged-in production replay.
