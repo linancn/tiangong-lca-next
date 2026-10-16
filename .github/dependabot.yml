@@ -1,0 +1,45 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: '05:00'
+      timezone: Asia/Shanghai
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 2
+    groups:
+      native-ui-generation:
+        patterns:
+          [react, react-dom, antd, '@ant-design/*', '@umijs/*', '@types/react', '@types/react-dom']
+        update-types: [minor, patch]
+      supabase-client:
+        patterns: ['@supabase/*']
+        update-types: [minor, patch]
+      test-runtime:
+        patterns: [jest, 'jest-*', '@jest/*', '@testing-library/*', '@playwright/test']
+        update-types: [minor, patch]
+      compiler-lint:
+        dependency-type: development
+        patterns: [typescript, tsx, '@types/node', oxlint, oxlint-tsgolint, prettier]
+        update-types: [minor, patch]
+      desktop-tools:
+        patterns: [electron, electron-builder]
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: '05:20'
+      timezone: Asia/Shanghai
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 1
+    groups:
+      actions:
+        patterns: ['*']

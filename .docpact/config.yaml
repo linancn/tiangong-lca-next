@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-10-16"
-lastReviewedCommit: "db978bb22d43fd9204fadd2bbc40cfff311e9359"
-lastReviewedNote: 'Reviewed for Platform #1263 final design: existing branding, frontend-runtime, testing and bootstrap rules cover native dark Menu configuration, app wiring, scoped provider, styles, tests and documentation closure; no routing or ownership change is required.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
+lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -16,6 +16,7 @@ catalog:
       workflowDocs:
         - DEV.md
         - docs/agents/repo-validation.md
+        - docs/agents/dependency-maintenance.md
       workspaceIntegrationRequired: true
 
 ownership:
@@ -72,6 +73,7 @@ ownership:
           - .husky/pre-commit
           - .husky/pre-push
           - .github/workflows/**
+          - .github/dependabot.yml
           - scripts/docpact
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
@@ -146,6 +148,7 @@ coverage:
     - .husky/pre-commit
     - .husky/pre-push
     - .github/workflows/**
+    - .github/dependabot.yml
     - scripts/docpact
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
@@ -175,6 +178,11 @@ freshness:
 
 routing:
   intents:
+    dependency-maintenance:
+      paths:
+        - .github/dependabot.yml
+        - .github/workflows/dependency-pr.yml
+        - docs/agents/dependency-maintenance.md
     page-ui:
       paths:
         - config/routes.ts
@@ -397,6 +405,7 @@ docInventory:
     - README_CN.md
     - .docpact/config.yaml
     - docs/agents/repo-validation.md
+    - docs/agents/dependency-maintenance.md
     - docs/agents/repo-architecture.md
     - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
@@ -423,6 +432,20 @@ repo:
   runtime: node
 
 rules:
+  - id: next-dependency-monitoring-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: .github/dependabot.yml
+        kind: dependency-monitoring-config
+      - path: .github/workflows/dependency-pr.yml
+        kind: ordinary-dependency-ci
+      - path: docs/agents/dependency-maintenance.md
+        kind: dependency-maintainer-guide
+    requiredDocs:
+      - path: docs/agents/dependency-maintenance.md
+        mode: review_or_update
+    reason: Routine Dev discovery and credential-free dependency checks must preserve the separate release, hotfix, backmerge and deferred ecosystem qualification boundaries.
   - id: next-bootstrap-contract
     scope: repo
     repo: next

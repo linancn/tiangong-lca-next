@@ -45,8 +45,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: db978bb22d43fd9204fadd2bbc40cfff311e9359
-lastReviewedNote: 'Reviewed for Platform #1263 final design: focused native-dark-sidebar proof remains separate from the checked-push aggregate and exact dev Release PR proof; dual-brand publication and immutable promotion requirements remain applicable.'
+lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
+lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
 ---
 
 # Pre-Push Gate Policy
