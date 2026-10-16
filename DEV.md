@@ -45,8 +45,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: f01b79fa20aa4e3776a9f0f42f95f4ac1fd03ab9
-lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
+lastReviewedCommit: b1bfe7124be7e8562ec464b0c6fd69475ceff41e
+lastReviewedNote: 'Platform #1275: reviewed exact qualified Main b1bfe7124be7e8562ec464b0c6fd69475ceff41e backmerge into released Dev 71fc65d0abf0c8b25176020c635149fad554270e. Preserves v0.0.137 runtime, dependencies, workflows, release inputs and frozen evidence; carries the Main-owned Git history regression and tooltip assertion repair. Full local and fresh hosted validation remain required; no release or production operation is authorized.'
 ---
 
 # Development Bootstrap
