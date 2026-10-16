@@ -5,8 +5,8 @@
     "repository": "tiangong-lca/platform",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "fd64a30fdb84d9ab79ed3f768708f92c2e4314716fabf440abfa326fb356d665",
-    "auditedInputDigest": "47c8d87324c4f1e591870f35452be052d675113ddf1ed68cff10791f254ce7fc"
+    "sourceManifestDigest": "6a8652c5c755d246a1dfcd6caa806a806ea949f2b317f0e505e0644d306e0b62",
+    "auditedInputDigest": "367939d25f7f4bb15c2744815bed540e61f4203447f696f2a967f7fad5e20e07"
   },
   "inventory": {
     "sourceMessageCount": 3580,
@@ -47,7 +47,7 @@
     "messageCount": 3580,
     "completeCount": 3580,
     "blockedCount": 0,
-    "dossierDigest": "4ff547fc6b29d4d5d6c9b235957fd569f81131483803c0255fa15c75a7fbae39",
+    "dossierDigest": "7d8f5b61f8d0b3ba7ba60b63c22b14bbb3a9bdc5eba84d1e964cd1440599d883",
     "catalogDigest": "b3e19de380223e8a8840c506b3bf16cb11ef5d5072cba8aa12c2f81eba1d66e1",
     "moduleCount": 32,
     "moduleDigest": "3b4f2df2201d552cc6e09b75bcebf64a30ac3511d401d79c50d4eb6e806195d3",
@@ -144,7 +144,7 @@
         "focusedVariantCount": 8
       },
       "sourceFileCount": 42,
-      "sourceEvidenceDigest": "4d909336ad23003a2e0d095923f5e9d2239a2c439bdd096ea79131cc28b34feb",
+      "sourceEvidenceDigest": "c6aec10a913e845be8f45fee03cd0e5141fb773417f2a11a8574517e12da5135",
       "rowEvidence": [
         {
           "executableAssertionId": "rv.root.redirect-to-welcome",
@@ -1225,8 +1225,8 @@
           "route": "/data-processing",
           "viewState": "build-preview-publication-tabs",
           "requiredEvidenceScope": "access-boundary-observed",
-          "sourceDigest": "914d91008ad413864d1f81ec2e27ef630d74c30aeeb69737f175b83540ef7615",
-          "focusedTestDigest": "ab1ad36d78eb984e61643c45dbee9355f5c44fb4c93420e36345c96908974741",
+          "sourceDigest": "47e9f185ef19873f883797bb1a8b115c70ba88bd949831682395a8e18f530678",
+          "focusedTestDigest": "ba6376bb810620d0e5349bc92647eab82afc0f00a987f718257e5e85ab1ab78e",
           "plannedBrowserAssertionCount": 1,
           "plannedBrowserAssertionDigest": "bab91c736a148188c3778bd30db083f6ac1af6408c3505f399dfdebf9d510ccc",
           "derivedMessageCount": 137,
@@ -1298,7 +1298,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "7c45486854c5a4b9de2f6e3dc8a16cae55edea8da2b70f75e12b812a16dad4eb",
+      "rowEvidenceDigest": "5cf0fa2d834a2e9c85d547f1857390c1db396f729c4d479d6c37ee8c28cfe7ba",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -1322,5 +1322,5 @@
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "0b0b7de9d7ceeaeba12c4d61c58ef6745c0af1c2bd4e6c67cf90f13336c19934"
+  "contextDigest": "1657fbef125bd6155a7c6fe2a69b706eae309a3e961de4907e4f8082293046d8"
 }

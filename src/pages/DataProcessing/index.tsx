@@ -1593,6 +1593,8 @@ const DataProcessing = () => {
 
   useEffect(() => {
     setPreviewData(null);
+    setPreviewImpactCategoryId(undefined);
+    setCommandStatus(null);
     setSelectedPackageId(deepLink.packageId);
     if (!isAuthorized || !deepLink.packageId || (deepLink.resultSetId && !selectedResultSet))
       return;
@@ -1607,6 +1609,14 @@ const DataProcessing = () => {
       .then((result) => {
         if (cancelled || generation !== previewReadGeneration.current) return;
         setPreviewData(result.error ? null : result.data);
+        setPreviewImpactCategoryId(
+          result.error
+            ? undefined
+            : firstString(
+                result.data?.detailPage?.impactCategoryId,
+                result.data?.summary?.defaultImpactCategory,
+              ),
+        );
         if (result.error) setCommandStatus({ kind: 'error', message: result.error.message });
       })
       .catch((error) => {

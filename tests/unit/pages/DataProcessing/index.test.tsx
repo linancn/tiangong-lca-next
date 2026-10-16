@@ -3909,4 +3909,45 @@ describe('DataProcessing page', () => {
     expect(await screen.findByText('Version unavailable')).toBeInTheDocument();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
+  it('clears previous route errors and selects the loaded version method after history navigation', async () => {
+    mockLocation.search = '?tab=preview&packageId=broken';
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Previous version unavailable' },
+    });
+    const view = render(<DataProcessing />);
+    expect(await screen.findByText('Previous version unavailable')).toBeInTheDocument();
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        summary: { packageId: 'recovered', defaultImpactCategory: 'method-current' },
+        detailPage: {
+          status: 'ready',
+          impactCategoryId: 'method-current',
+          offset: 0,
+          limit: 25,
+          returnedCount: 25,
+          totalCount: 60,
+        },
+      },
+      error: null,
+    });
+    mockLocation.search = '?tab=preview&packageId=recovered';
+    view.rerender(<DataProcessing />);
+    await waitFor(() =>
+      expect(screen.getByTestId('calculation-bundle-panel')).toHaveTextContent('recovered'),
+    );
+    expect(screen.queryByText('Previous version unavailable')).not.toBeInTheDocument();
+    mockPreviewLciaResultPackage.mockClear();
+    // Paging inherits the loaded version's method rather than the previous route.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          packageId: 'recovered',
+          impactCategoryId: 'method-current',
+          rowOffset: 25,
+        }),
+      ),
+    );
+  });
 });
