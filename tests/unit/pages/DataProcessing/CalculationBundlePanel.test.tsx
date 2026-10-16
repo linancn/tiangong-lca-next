@@ -26,6 +26,10 @@ const mockFetchFreshDownloadBlob = jest.fn();
 jest.mock('@/services/lcaReleases', () => ({
   __esModule: true,
   getCalculationBundle: (...args: any[]) => mockGetCalculationBundle(...args),
+  getCalculationExport: async () => ({
+    data: { status: 'not_requested', result: null },
+    error: null,
+  }),
   fetchCalculationBundleRecords: (...args: any[]) => mockFetchRecords(...args),
   fetchCalculationBundleArtifactText: (...args: any[]) => mockFetchText(...args),
   fetchFreshCalculationBundleDownloadBlob: (...args: any[]) => mockFetchFreshDownloadBlob(...args),

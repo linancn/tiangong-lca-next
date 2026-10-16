@@ -28,8 +28,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - tests/e2e/dataset-lists/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: 9d88b67c63192a4e89d137c2bbee5aed2cc79fda
-lastReviewedNote: 'Reviewed for Platform #1263 final design: native dark Menu owns both-mode navigation and interactions, with popup/submenu overrides below ProLayout through BrandMenuTheme. Global page mode and explicit primary overrides retain their effect.'
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
+lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

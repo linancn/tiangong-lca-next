@@ -601,24 +601,27 @@ describe('ProcessLciaResultsPanel', () => {
     jest.useRealTimers();
   });
 
-  it.each(['SNAPSHOT_BUILD_FAILED', 'SNAPSHOT_BUILD_BLOCKED', 'SNAPSHOT_BUILD_NOT_PENDING'])(
-    'stops polling after %s',
-    async (code) => {
-      jest.useFakeTimers();
-      const error = Object.assign(new Error(code), { code });
-      mockIsLcaFunctionInvokeError.mockImplementation((candidate: any) => candidate?.code === code);
-      mockQueryLcaResults.mockRejectedValue(error);
-      render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
-      await waitFor(() =>
-        expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
-      );
-      await act(async () => {
-        jest.advanceTimersByTime(60_000);
-      });
-      expect(mockQueryLcaResults).toHaveBeenCalledTimes(1);
-      jest.useRealTimers();
-    },
-  );
+  it.each([
+    'SNAPSHOT_BUILD_FAILED',
+    'SNAPSHOT_BUILD_BLOCKED',
+    'SNAPSHOT_BUILD_NOT_PENDING',
+    'LCA_REQUEST_TERMINAL',
+    'WORKER_REQUEST_NON_RETRYABLE_FAILURE',
+  ])('stops polling after %s', async (code) => {
+    jest.useFakeTimers();
+    const error = Object.assign(new Error(code), { code });
+    mockIsLcaFunctionInvokeError.mockImplementation((candidate: any) => candidate?.code === code);
+    mockQueryLcaResults.mockRejectedValue(error);
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+    await act(async () => {
+      jest.advanceTimersByTime(60_000);
+    });
+    expect(mockQueryLcaResults).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
 
   it('does not turn a solver query failure into a calculation-evidence mismatch', async () => {
     mockQueryLcaResults.mockRejectedValueOnce(new Error('unsupported_query_artifact_format'));

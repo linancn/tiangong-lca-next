@@ -27,9 +27,9 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-10-08
-lastReviewedCommit: 55dfcb2c5ebfda7bc0462734ba15c0f4f0173d6d
-lastReviewedNote: 'Reviewed Platform #1188 local brand profiles, presentation and package adapter; backend, authorization, calculation and release gates remain unchanged. Full release qualification is deferred pending local user review.'
+lastReviewedAt: 2026-10-16
+lastReviewedCommit: 37e4bf777dca08dbdcf4e148730f394c9fb5c568
+lastReviewedNote: 'Reviewed for Worker #320 phase one: independent immutable-bundle export jobs, default Parquet, bounded compressed CSV and terminal polling protection. Existing authorization, numerical, lease and production boundaries remain; validation results belong to the linked Issues and PRs.'
 ---
 
 # LCIA Method Bundle and Calculation Evidence Contract
@@ -88,7 +88,7 @@ Both normal listing and keyword search use that exact predicate. Ownership is de
 
 `tiangong.calculation-bundle.v1/v2` is the private, package-level read model for Worker-produced LCI, LCIA, coverage, and calculation evidence. Data Processing loads it by package identity through the authenticated user session. It does not reconstruct complete LCI or LCIA files in the browser. Process-axis and fixed process-range artifacts select the exact records to display; parsed preview artifacts must match their declared byte size and SHA-256 before their NDJSON is trusted. Oversized chunks are not parsed inline.
 
-Product downloads use the same integrity boundary: each click resolves a fresh authenticated bundle projection, requires its role, media type, stored byte size, and SHA-256 to match the displayed immutable metadata, fetches the short-lived signed URL without credentials, and only then exposes a local Blob for saving. The normal surface contains LCIA XLSX/CSV, LCI Parquet/CSV, the manifest, and one complete audit ZIP; it does not list every canonical shard. A `401`, `403`, `404`, or `410` object response refreshes the projection once and retries; other network, size, or digest failures create no local file. The UI must not rely on cross-origin `<a download>` behavior, because browsers may navigate to the signed object instead of downloading it, and keeps a failed action visible for manual secure-link refresh.
+Product downloads use the same integrity boundary: each click resolves a fresh authenticated bundle projection, requires its role, media type, stored byte size, and SHA-256 to match the displayed immutable metadata, fetches the short-lived signed URL without credentials, and only then exposes a local Blob for saving. Legacy downloads retain LCIA XLSX/CSV, LCI Parquet/CSV, the manifest, and the old audit ZIP; it does not list every canonical shard. A `401`, `403`, `404`, or `410` object response refreshes the projection once and retries; other network, size, or digest failures create no local file. The UI must not rely on cross-origin `<a download>` behavior, because browsers may navigate to the signed object instead of downloading it, and keeps a failed action visible for manual secure-link refresh.
 
 Published release readback is a separate sanitized projection. It becomes anonymously readable only when Database marks one release current and Edge exposes its release, validation, artifact, and source-Process identity projection. A source Process maps to the exact Unit Process plus generated LifecycleModel and Result Process UUID/version identities. The Unit Process package remains result-free; the Model/Result package carries the LCI exchanges and LCIA results without changing TIDAS schema.
 
@@ -97,3 +97,5 @@ Next is never a publication authority. It cannot approve, publish, supersede, or
 ## FP/UG release handoff
 
 Keeping BAFU flow properties and unit groups private is compatible with this contract. A later publication review must name exact FP/UG IDs and versions, the reviewed bundle manifest hash, method source evidence, conversion decisions, and affected method coverage. Factor presence alone is not evidence that an FP/UG is suitable for public release.
+
+New Calculation Bundles are ready independently of optional export jobs. The export panel defaults to Parquet and only an explicit Generate action enqueues. Status polling continues only for queued/running/waiting/stale work; terminal states and read failures stop polling. Refresh reads status without retrying. CSV is independently gzipped and bounded per file (250,000 rows, 64 MiB serialized CSV); audit files reuse canonical evidence. Pages contain at most 20 member links plus an export manifest. Each download refreshes authorization and rechecks the same Worker job, package, Bundle hash, source manifest hash and file hash/size/media type before saving verified bytes. Package/format changes discard stale in-flight responses.

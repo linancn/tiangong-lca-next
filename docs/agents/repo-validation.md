@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-16
-lastReviewedCommit: fbc8f6e7ce8870233d6ad5d6c821b658504c0dd1
-lastReviewedNote: 'Platform #1264: reviewed Dev-targeted dependency discovery and separate credential-free PR execution of the canonical gate. Validation-owner regressions preserve existing product tests, source coverage targets, static/main-hotfix/release authorization and backmerge obligations; no hosted result is claimed.'
+lastReviewedCommit: f01b79fa20aa4e3776a9f0f42f95f4ac1fd03ab9
+lastReviewedNote: 'Platform #1279: reviewed backmerge of main dependency CI hotfix #1273 into Dev; preserves Worker #320 calculation/export separation, terminal guards and Platform #1263 navigation. Canonical validation, release proof, production and coverage boundaries remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -287,3 +287,5 @@ For sidebar-palette changes, protect the profile, default settings, global `crea
 Measure rendered text contrast against composited backgrounds at least 4.5:1 and tool/account icons at least 3:1, including inherited opacity. Assert computed mode colors and a visible 2 px keyboard-focus outline with at least 3:1 contrast against its surface; a nominal token or DOM text alone does not prove readability. Capture settled viewport screenshots, plus the tooltip helper's before/after readability checks. The existing brand-presentation smoke retains both brands and all four login locales; the sidebar matrix is focused Atlas layout/theme evidence and does not claim every locale or engine.
 
 These synthetic, loopback-only screenshots and checks prove frontend presentation and interaction. They do not replace the exact release candidate gates, production deployment receipts or served-manifest verification. Record actual commands, results, screenshot paths and owned resource cleanup or retention in the tracked Issue/PR; this matrix states required proof, not a completed run.
+
+For independent calculation exports, keep the new panel and service inside statement/branch coverage. Focused proof covers no enqueue on mount, explicit request, terminal/read-failure polling stop, package/format/page reset, stale read/request/download completion, verified file/manifest downloads and authorization/binding drift. Pair this with credential-free rendered desktop/narrow interaction and the separate original-full-library Database/Edge/Worker scenario. Synthetic browser evidence does not claim a logged-in production replay.
