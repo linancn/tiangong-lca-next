@@ -45,7 +45,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
 lastReviewedNote: 'Platform #1293: reviewed navigation regression coverage against the existing hook-owned full gate and separate synthetic branding browser proof; gate ownership, coverage and publication policy remain applicable.'
 ---
 

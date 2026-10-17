@@ -45,7 +45,7 @@ checkPaths:
   - .github/workflows/build.yml
   - .nvmrc
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
 lastReviewedNote: 'Platform #1293: reviewed both-brand native mix/splitMenus preview defaults, explicit side/top overrides and Atlas menu theme placement. Publication and validation evidence remain owned by their existing records.'
 ---
 

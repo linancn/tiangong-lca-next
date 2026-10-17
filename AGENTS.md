@@ -48,7 +48,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
 lastReviewedNote: 'Platform #1293: reviewed native mixed split navigation within frontend ownership; route/auth/service boundaries, delivery and integration requirements remain applicable. Execution evidence belongs to the Issue and PR.'
 related:
   - .docpact/config.yaml
