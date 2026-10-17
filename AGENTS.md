@@ -47,9 +47,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: c273b5b09fe80d1a9b5c37b648ddc55b7ed425e9
-lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
+lastReviewedAt: 2026-10-17
+lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
+lastReviewedNote: 'Platform #1297: reviewed the test-only ResultSet replacement assertion correction and generated evidence refresh; bootstrap, repository boundaries, dependency versions and delivery gates remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

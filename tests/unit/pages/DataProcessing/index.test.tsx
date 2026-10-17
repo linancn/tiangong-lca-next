@@ -745,6 +745,10 @@ describe('DataProcessing page', () => {
 
     render(<DataProcessing />);
 
+    expect(
+      await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
+    ).toHaveTextContent('Previous name');
+
     fireEvent.click(await screen.findByRole('button', { name: 'Create result set' }));
     fireEvent.change(await screen.findByLabelText('New result set name'), {
       target: { value: 'Test result set' },
@@ -753,11 +757,12 @@ describe('DataProcessing page', () => {
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Create result set' }),
     );
 
-    expect(
-      await screen.findByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`),
-    ).toHaveTextContent('Previous name');
-    await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalled());
-    await waitFor(() => expect(screen.queryByText('Previous name')).not.toBeInTheDocument());
+    await waitFor(() => expect(mockCreateLciaResultSet).toHaveBeenCalledWith('Test result set'));
+    await waitFor(() => {
+      const projections = screen.getAllByTestId(`data-processing-result-set-${TEST_RESULT_SET_ID}`);
+      expect(projections).toHaveLength(1);
+      expect(projections[0]).toHaveTextContent('Test result set');
+    });
     expect(screen.queryByText('Previous name')).not.toBeInTheDocument();
   });
 

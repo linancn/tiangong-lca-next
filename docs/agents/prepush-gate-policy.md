@@ -44,9 +44,9 @@ checkPaths:
   - scripts/typescript-native-parser.*
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-10-16
-lastReviewedCommit: c273b5b09fe80d1a9b5c37b648ddc55b7ed425e9
-lastReviewedNote: 'Platform #1288: reviewed frontend-only ResultSet directory/workspace separation, bounded loaded-record navigation, direct preview and existing export recovery. Service authorization, export integrity, production boundaries and the full coverage gate remain unchanged; execution results belong to the Issue and PR.'
+lastReviewedAt: 2026-10-17
+lastReviewedCommit: 1978aa0bd6340b0095f004f720287c28d43e0de2
+lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
 ---
 
 # Pre-Push Gate Policy

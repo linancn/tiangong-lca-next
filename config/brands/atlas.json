@@ -106,7 +106,13 @@
           "menuHeight": 44
         },
         "header": {
-          "heightLayoutHeader": 64
+          "heightLayoutHeader": 64,
+          "colorBgHeader": "#001529",
+          "colorHeaderTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorTextRightActionsItem": "rgba(255, 255, 255, 0.85)"
         },
         "pageContainer": {
           "paddingInlinePageContainerContent": 28,
@@ -166,7 +172,13 @@
           "menuHeight": 44
         },
         "header": {
-          "heightLayoutHeader": 64
+          "heightLayoutHeader": 64,
+          "colorBgHeader": "#001529",
+          "colorHeaderTitle": "#FFFFFF",
+          "colorTextMenu": "rgba(255, 255, 255, 0.65)",
+          "colorTextMenuSelected": "#FFFFFF",
+          "colorTextMenuActive": "#FFFFFF",
+          "colorTextRightActionsItem": "rgba(255, 255, 255, 0.85)"
         },
         "pageContainer": {
           "paddingInlinePageContainerContent": 28,
@@ -194,11 +206,11 @@
     "downloadPrefix": "atlas-lca"
   },
   "layout": {
-    "layout": "side",
+    "layout": "mix",
     "siderWidth": 256,
     "fixedHeader": true,
     "fixSiderbar": true,
-    "splitMenus": false,
+    "splitMenus": true,
     "contentWidth": "Fluid",
     "menuProps": {
       "theme": "dark"

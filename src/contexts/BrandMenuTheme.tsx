@@ -1,6 +1,6 @@
 import { brandProfile, type BrandProfile } from '../../config/brandProfile';
 import { ConfigProvider } from 'antd';
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, type ReactNode } from 'react';
 
 /** Keep a dark navigation menu independent of the page's light/dark algorithm. */
 export function BrandMenuTheme({
@@ -20,5 +20,19 @@ export function BrandMenuTheme({
     <ConfigProvider theme={{ components: { Menu: profile.components?.Menu } }}>
       {children}
     </ConfigProvider>
+  );
+}
+
+/** ProLayout's header render slot contains its Menu ConfigProvider, unlike its sider slot. */
+export function renderBrandHeaderMenu(defaultDom: ReactNode, isDarkMode: boolean) {
+  if (!isValidElement<{ children?: ReactNode }>(defaultDom) || defaultDom.type !== ConfigProvider) {
+    return defaultDom;
+  }
+  // Retain the native provider and menu, inserting only the brand token boundary
+  // below ProLayout's popup overrides. Browser proof covers the installed adapter.
+  return cloneElement(
+    defaultDom,
+    undefined,
+    <BrandMenuTheme isDarkMode={isDarkMode}>{defaultDom.props.children}</BrandMenuTheme>,
   );
 }

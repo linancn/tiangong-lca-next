@@ -1,4 +1,5 @@
 export default {
+  'menu.supportingData': 'Begleitdaten',
   'menu.welcome': 'Willkommen',
   'menu.more-blocks': 'Weitere Blöcke',
   'menu.home': 'Startseite',
