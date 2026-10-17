@@ -48,8 +48,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
-lastReviewedNote: 'Platform #1293: reviewed native mixed split navigation within frontend ownership; route/auth/service boundaries, delivery and integration requirements remain applicable. Execution evidence belongs to the Issue and PR.'
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
+lastReviewedNote: 'Platform #1297: reviewed the test-only ResultSet replacement assertion correction and generated evidence refresh; bootstrap, repository boundaries, dependency versions and delivery gates remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
