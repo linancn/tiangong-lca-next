@@ -1,6 +1,7 @@
 import { brandProfile } from '../config/brandProfile';
 import { BrandMenuTheme, renderBrandHeaderMenu } from '@/contexts/BrandMenuTheme';
 import { buildDataNavigation, resolveDataScopeLink } from '@/components/DataNavigation/navigation';
+import { renderDataNavigationHeader } from '@/components/DataNavigation/header';
 import './components/BrandPresentation/style.less';
 import {
   AvatarDropdown,
@@ -465,6 +466,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     splitMenus:
       (initialState?.settings?.layout ?? defaultSettings.layout) === 'mix' &&
       (initialState?.settings?.splitMenus ?? defaultSettings.splitMenus),
+    headerRender: renderDataNavigationHeader,
     menuContentRender:
       brandProfile.id === 'atlas'
         ? (_props, defaultDom) => (

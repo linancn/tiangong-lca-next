@@ -176,6 +176,33 @@ ol {
   min-width: 0 !important;
 }
 
+.tg-data-navigation-header {
+  height: 100%;
+
+  &-aligned {
+    .ant-pro-top-nav-header-main-left {
+      // Native TopNavHeader has a 16px leading inset; the menu begins at the sider edge.
+      flex: 0 0 calc(var(--tg-header-sider-width) - 16px);
+      overflow: hidden;
+      transition: flex-basis 0.2s ease;
+    }
+
+    .ant-pro-top-nav-header-menu {
+      padding-inline-start: 0;
+    }
+
+    &[data-collapsed='true'] .ant-pro-top-nav-header-logo > *:first-child > h1 {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tg-data-navigation-header-aligned .ant-pro-top-nav-header-main-left {
+    transition: none;
+  }
+}
+
 .ant-pro-global-header-header-actions {
   min-width: 0;
 }

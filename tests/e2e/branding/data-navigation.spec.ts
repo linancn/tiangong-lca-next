@@ -56,6 +56,9 @@ function scopeLink(menu: Locator, scope: (typeof scopes)[number]) {
 }
 
 async function clickTopScope(page: Page, scope: (typeof scopes)[number]) {
+  // A fresh login toast may cover the native overflow trigger; hovering it also
+  // pauses its dismissal. Let the notification finish before interacting below it.
+  await expect(page.locator('.ant-message-notice')).toHaveCount(0);
   const header = topHeader(page);
   const name = message(`menu.${scope}`);
   const link = scopeLink(header, scope);
@@ -91,7 +94,130 @@ async function noPageOverflow(page: Page) {
     .toBe(true);
 }
 
+async function expectDesktopNavigationAligned(page: Page, collapsed: boolean) {
+  const header = topHeader(page);
+  const alignedHeader = page.locator('.tg-data-navigation-header');
+  const menu = header.locator('.ant-menu-root');
+  const firstItem = menu.locator(':scope > .ant-menu-item:visible').first();
+  const content = page.locator('.ant-pro-layout-content');
+  const sidebar = sideMenu(page);
+  await expect(alignedHeader).toHaveClass(/tg-data-navigation-header-aligned/);
+  await expect(alignedHeader).toHaveAttribute('data-collapsed', String(collapsed));
+  await expect(firstItem).toBeVisible();
+  // Poll the rendered boxes through the native sider/header width transitions.
+  // Compare Menu/item edges, rather than text that has native Menu item padding.
+  await expect
+    .poll(
+      async () => {
+        const [menuBox, itemBox, contentBox, sidebarBox] = await Promise.all([
+          menu.boundingBox(),
+          firstItem.boundingBox(),
+          content.boundingBox(),
+          sidebar.boundingBox(),
+        ]);
+        if (!menuBox || !itemBox || !contentBox || !sidebarBox) return Number.POSITIVE_INFINITY;
+        const boundary = sidebarBox.x + sidebarBox.width;
+        return Math.max(
+          Math.abs(menuBox.x - boundary),
+          Math.abs(itemBox.x - boundary),
+          Math.abs(contentBox.x - boundary),
+        );
+      },
+      { message: 'Top data scopes start at the rendered main content / sider boundary' },
+    )
+    .toBeLessThanOrEqual(2);
+  await expect(header.locator('.ant-pro-top-nav-header-logo img')).toBeVisible();
+  const title = header.locator('.ant-pro-top-nav-header-logo h1');
+  if (collapsed) await expect(title).toBeHidden();
+  else await expect(title).toBeVisible();
+}
+
+async function expectUnreservedHeader(page: Page) {
+  const header = topHeader(page);
+  await expect(sideMenu(page)).toHaveCount(0);
+  await expect(page.locator('.tg-data-navigation-header')).not.toHaveClass(
+    /tg-data-navigation-header-aligned/,
+  );
+  const logo = header.locator('.ant-pro-top-nav-header-logo');
+  await expect(logo.locator('img')).toBeVisible();
+  await expect(logo.locator('h1')).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const [leftBox, logoBox, menuBox] = await Promise.all([
+          header.locator('.ant-pro-top-nav-header-main-left').boundingBox(),
+          logo.boundingBox(),
+          header.locator('.ant-menu-root').boundingBox(),
+        ]);
+        if (!leftBox || !logoBox || !menuBox) return Number.POSITIVE_INFINITY;
+        // With no sider, retain only the native logo/title width and menu gutter.
+        return Math.max(
+          Math.abs(leftBox.width - logoBox.width),
+          Math.abs(menuBox.x - (leftBox.x + leftBox.width)),
+        );
+      },
+      { message: 'Routes without a sider reserve no sidebar-sized header column' },
+    )
+    .toBeLessThanOrEqual(8);
+}
+
 for (const width of [1440, 1024]) {
+  test(`${brand} top scopes align with the content boundary through sider collapse at ${width}`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width, height: 960 });
+    await installNavigationFixture(page);
+    await signInViaUi(page);
+    await page.goto('/#/tgdata/processes');
+    const header = topHeader(page);
+    const collapse = sideMenu(page).getByRole('button', {
+      name: message('app.setting.navigationmode'),
+      exact: true,
+    });
+    await expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    await expectDesktopNavigationAligned(page, false);
+    const expanded = (await sideMenu(page).boundingBox())!.width;
+    await collapse.click();
+    await expect(collapse).toHaveAttribute('aria-expanded', 'false');
+    await expectDesktopNavigationAligned(page, true);
+    expect((await sideMenu(page).boundingBox())!.width).toBeLessThan(expanded - 2);
+    await expect(page.locator('.ant-message-notice')).toHaveCount(0);
+    await expect(page.locator('.ant-table-tbody tr.ant-table-row').first()).toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath(`${brand}-${width}-header-alignment-collapsed.png`),
+    });
+    await clickTopScope(page, 'codata');
+    await expectRoute(page, '/codata/processes');
+    await expectDesktopNavigationAligned(page, true);
+    const help = header.getByRole('button', {
+      name: message('component.globalHeader.helpAndAbout'),
+      exact: true,
+    });
+    await help.click();
+    await expect(page.locator('.ant-dropdown:visible').getByRole('menu')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await collapse.click();
+    await expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    await expectDesktopNavigationAligned(page, false);
+    await expect
+      .poll(async () => Math.abs((await sideMenu(page).boundingBox())!.width - expanded))
+      .toBeLessThanOrEqual(2);
+    await noPageOverflow(page);
+    await page.screenshot({ path: testInfo.outputPath(`${brand}-${width}-header-alignment.png`) });
+
+    // Native routes without a dataset scope have no sider and use intrinsic header branding.
+    for (const route of ['/welcome', '/account']) {
+      await page.goto(`/#${route}`);
+      await expectRoute(page, route);
+      await expectUnreservedHeader(page);
+      const avatar = header.locator('.tg-global-header-avatar-trigger');
+      await avatar.click();
+      await expect(page.locator('.ant-dropdown:visible').getByRole('menu')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await noPageOverflow(page);
+    }
+  });
+
   test(`${brand} native split navigation preserves object and browser history at ${width}`, async ({
     page,
   }, testInfo) => {
@@ -165,6 +291,9 @@ test(`${brand} mobile native drawer keeps all scopes and supporting data keyboar
   await signInViaUi(page);
   await page.goto('/#/tgdata/processes');
   const trigger = page.locator('.tg-pro-layout-mobile-menu-action');
+  await expect(trigger).toBeVisible();
+  await expect(page.getByTestId('pro-layout-top-nav-header')).toHaveCount(0);
+  await expect(page.locator('.tg-data-navigation-header-aligned:visible')).toHaveCount(0);
   await trigger.focus();
   await trigger.press('Enter');
   const drawer = page.getByRole('dialog');
@@ -286,6 +415,8 @@ test(`${brand} split navigation follows the active language without changing the
     if (!(await source.isVisible())) await group.click();
     await expect(source).toHaveText(getLocaleMessage(locale, 'menu.tgdata.sources'));
     await noPageOverflow(page);
+    await expect(page.locator('.ant-message-notice')).toHaveCount(0);
+    await expect(page.locator('.ant-table-tbody tr.ant-table-row').first()).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`${brand}-${locale}-navigation.png`) });
   }
 });
