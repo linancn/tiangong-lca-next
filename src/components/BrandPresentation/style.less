@@ -372,9 +372,8 @@
 }
 
 .atlas-app-shell {
-  // On mobile ProLayout moves these same actions into the global header.
+  // Native mixed layout owns desktop header actions and the mobile drawer.
   .ant-pro-global-header-header-actions-item {
-    color: var(--ant-color-text-secondary);
     .ant-badge {
       color: inherit;
     }
@@ -406,5 +405,17 @@
   [data-tg-pro-layout-collapse-trigger]:focus-visible {
     outline: 2px solid var(--ant-color-primary-text-hover);
     outline-offset: 2px;
+  }
+}
+
+// Keep account text and shared controls on the native dark header token surface.
+// Their dropdown contents remain outside this boundary and follow the page theme.
+.atlas-app-shell .ant-pro-top-nav-header,
+.atlas-app-shell .ant-pro-global-header {
+  --atlas-control-hover-bg: rgba(255, 255, 255, 0.12);
+  --atlas-control-active-bg: rgba(255, 255, 255, 0.18);
+  .tg-global-header-avatar-trigger,
+  .tg-global-header-avatar-name {
+    color: inherit !important;
   }
 }
