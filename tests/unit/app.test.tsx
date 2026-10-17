@@ -770,6 +770,46 @@ describe('app runtime config', () => {
     },
   );
 
+  it.each([false, true])(
+    'preserves the native Atlas header provider and menu while applying menu tokens in dark mode %s',
+    (isDarkMode) => {
+      mockBrand = 'atlas';
+      const { layout } = require('@/app');
+      const { ConfigProvider } = require('antd');
+      const { BrandMenuTheme } = require('@/contexts/BrandMenuTheme');
+      const { brandProfile } = require('../../config/brandProfile');
+      const nativeMenu = <nav aria-label='Native data scopes'>Native scope menu</nav>;
+      const nativeTheme = {
+        token: { colorBgElevated: 'native-header-surface' },
+        components: { Menu: { popupBg: 'native-popup-surface' } },
+      };
+      const nativeProvider = <ConfigProvider theme={nativeTheme}>{nativeMenu}</ConfigProvider>;
+      const runtimeLayout = layout({
+        initialState: { currentUser: { name: 'Alice' }, isDarkMode, settings: {} },
+        setInitialState: jest.fn(),
+      });
+
+      const wrappedHeader = runtimeLayout.headerContentRender({}, nativeProvider);
+      expect(wrappedHeader.type).toBe(ConfigProvider);
+      expect(wrappedHeader.props.theme).toBe(nativeTheme);
+      const brandBoundary = wrappedHeader.props.children;
+      expect(brandBoundary.type).toBe(BrandMenuTheme);
+      expect(brandBoundary.props.isDarkMode).toBe(isDarkMode);
+      expect(brandBoundary.props.children).toBe(nativeMenu);
+      const menuProvider = BrandMenuTheme(brandBoundary.props);
+      expect(menuProvider.props.theme).toEqual({
+        components: { Menu: brandProfile.theme[isDarkMode ? 'dark' : 'light'].components.Menu },
+      });
+      render(wrappedHeader);
+      expect(screen.getAllByRole('navigation', { name: 'Native data scopes' })).toHaveLength(1);
+
+      mockBrand = 'tiangong';
+      expect(
+        layout({ initialState: {}, setInitialState: jest.fn() }).headerContentRender,
+      ).toBeUndefined();
+    },
+  );
+
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
     const { layout } = require('@/app');
     const setInitialState = jest.fn();

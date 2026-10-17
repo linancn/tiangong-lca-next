@@ -139,8 +139,8 @@ export function resolveDataScopeLink(
     kind && dataKinds.includes(kind) ? findLeaf(destinations, `/${scope}/${kind}`) : undefined;
   const target = sameKind ?? findLeaf(destinations, `/${scope}/models`);
   // A scope redirect remains the fallback when its menu has no available model leaf.
-  const destination = target?.path ?? root.path ?? menuItem.path;
-  if (!destination) return destination;
+  // The matched root has a scope path: getScope(undefined) cannot match a scope.
+  const destination = target?.path ?? root.path!;
   const parts = splitDestination(destination);
   // Data scopes carry team context only; record selection belongs to the previous page.
   const params = new URLSearchParams(parts.query);
