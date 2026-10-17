@@ -46,8 +46,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
-lastReviewedNote: 'Platform #1293: reviewed focused helper/default/theme and synthetic browser proof requirements for native split navigation, permission boundaries, mobile drawer and Atlas top/side menus. Browser execution and final gates are recorded separately in the Issue and PR.'
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
+lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

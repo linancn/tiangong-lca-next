@@ -45,8 +45,8 @@ checkPaths:
   - pnpm-workspace.yaml
   - Dockerfile.app
 lastReviewedAt: 2026-10-17
-lastReviewedCommit: c1d60e2b950701b9111c231c39672c0ce8f4ed40
-lastReviewedNote: 'Platform #1293: reviewed pure navigation helper, runtime/provider and synthetic browser regression coverage against the maintenance strategy; no strategy or proof-ownership change is required.'
+lastReviewedCommit: 855ce913535cb0495bfd0820760c80e6e3ba5c68
+lastReviewedNote: 'Platform #1297: reviewed the ResultSet replacement test ordering correction; initial-state and completed-replacement assertions preserve existing async-test, coverage, source-bound locale evidence and release-gate contracts without product or policy changes.'
 ---
 
 # Testing Strategy
